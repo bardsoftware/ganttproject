@@ -17,8 +17,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Properties;
 
@@ -31,10 +29,6 @@ import biz.ganttproject.core.chart.canvas.Canvas.Line;
  * @author dbarashev (Dmitry Barashev)
  */
 public class LineRenderer {
-  private final static BasicStroke DASHED_STROKE = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-      1f, new float[] { 2.5f }, 0f);
-  private final static BasicStroke DEFAULT_STROKE = new BasicStroke();
-  
   private final Properties myProperties;
   private Graphics2D myGraphics;
 
@@ -47,25 +41,19 @@ public class LineRenderer {
   }
   
   public void renderLine(Canvas.Line line) {
-    Color foreColor = line.getForegroundColor();
-    if (foreColor == null) {
-      foreColor = Color.BLACK;
-    }
-    myGraphics.setColor(foreColor);
-    if ("dependency.line.rubber".equals(line.getStyle())) {
-      myGraphics.setStroke(DASHED_STROKE);
-    }
-    myGraphics.drawLine(line.getStartX(), line.getStartY(), line.getFinishX(), line.getFinishY());
+    Graphics2D g = (Graphics2D) myGraphics.create();
+    Style style = Style.getStyle(myProperties, line.getStyle());
+
+    Style.Border border = style.getBorder(line);
+    g.setColor(border == null ? java.awt.Color.BLACK : border.getColor());
+    g.setStroke(border == null ? Style.DEFAULT_STROKE : border.getStroke());
+    g.drawLine(line.getStartX(), line.getStartY(), line.getFinishX(), line.getFinishY());
     if (line.getArrow() == Line.Arrow.FINISH) {
       int xsign = Integer.signum(line.getFinishX() - line.getStartX());
       int ysign = Integer.signum(line.getFinishY() - line.getStartY());
       int[] xpoints = new int[] {line.getFinishX(), line.getFinishX() - xsign * 7 - Math.abs(ysign) * 3, line.getFinishX() - xsign * 7 + Math.abs(ysign) * 3};
       int[] ypoints = new int[] {line.getFinishY(), line.getFinishY() - ysign * 7 - Math.abs(xsign) * 3, line.getFinishY() - ysign * 7 + Math.abs(xsign) * 3};
-      myGraphics.fillPolygon(xpoints, ypoints, 3);
-    }
-    if ("dependency.line.rubber".equals(line.getStyle())) {
-      // Revert to default stroke
-      myGraphics.setStroke(DEFAULT_STROKE);
+      g.fillPolygon(xpoints, ypoints, 3);
     }
   }
 }

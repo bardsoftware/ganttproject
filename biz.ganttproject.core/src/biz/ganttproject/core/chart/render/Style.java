@@ -18,17 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.core.chart.render;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.render.Style.Border;
 import biz.ganttproject.core.option.ColorOption;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Encapsulates style information for rendering graphic primitives. Styles
@@ -40,6 +45,8 @@ import com.google.common.collect.Lists;
  * @author Dmitry Barashev
  */
 class Style {
+  final static BasicStroke DEFAULT_STROKE = new BasicStroke();
+  private static final Map<String, Style> ourCache = Maps.newHashMap();
   /**
    * Padding which is added between text and border. Property name is 'padding' and
    * its value is four space-delimited numbers, which specify padding at top, right, bottom and left
@@ -96,6 +103,32 @@ class Style {
     }
   }
 
+  private static BasicStroke parseStroke(String[] components) {
+    boolean solid = true;
+    for (int i = 0; i < components.length; i++) {
+      if ("dashed".equalsIgnoreCase(components[i])) {
+        solid = false;
+        components[i] = null;
+        break;
+      } else if ("solid".equalsIgnoreCase(components[i])) {
+        solid = true;
+        components[i] = null;
+        break;        
+      }
+    }
+    int width = 1;
+    for (int i = 0; i < components.length; i++) {
+      String s = components[i];
+      if (s != null && s.endsWith("px")) {
+        width = Integer.parseInt(s.substring(0, s.length() - 2));
+        components[i] = null;
+      }
+    }    
+    if (solid) {
+      return new BasicStroke(width);
+    }
+    return new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 2.5f }, 0f);
+  }
   /**
    * Border style. Property name is 'border' and in the value only color is supported,
    * and it should be a 6-digit hex RGB value prefixed with #
@@ -104,39 +137,49 @@ class Style {
    * Example: text.foo.border = #000000
    */
   static class Border {
+    private final BasicStroke myStroke;
     private final java.awt.Color myColor;
 
     Border(java.awt.Color color) {
-      myColor = color;
+      this(color, DEFAULT_STROKE);
     }
+    
+    Border(java.awt.Color color, BasicStroke stroke) {
+      myColor = color;
+      myStroke = stroke;
+    }
+
 
     java.awt.Color getColor() {
       return myColor;
     }
 
+    BasicStroke getStroke() {
+      return myStroke;
+    }
+    
     static Border parse(String value) {
       if (value == null) {
         return null;
       }
-      return new Border(ColorOption.Util.determineColor(value));
+      String[] components = value.trim().split("\\s+");
+      BasicStroke stroke = parseStroke(components);
+      java.awt.Color color = java.awt.Color.BLACK;
+      for (String s : components) {
+        if (s != null) {
+          color = ColorOption.Util.determineColor(s);
+          break;
+        }
+      }
+      return new Border(color, stroke);
     }
 
   }
 
   static class Color {
-
-  }
-
-  /**
-   * Background color. Property name is 'background-color' and value is
-   * a 6-digit hex RGB value prefixed with #
-   *
-   * Example: text.foo.background-color = #ffffff
-   */
-  static class BackgroundColor {
     private final java.awt.Color myColor;
 
-    BackgroundColor(java.awt.Color color) {
+    Color(java.awt.Color color) {
       myColor = color;
     }
 
@@ -144,41 +187,71 @@ class Style {
       return myColor;
     }
 
-    public static BackgroundColor parse(String value) {
+    public static Color parse(String value) {
       if (value == null) {
         return null;
       }
-      return new BackgroundColor(ColorOption.Util.determineColor(value));
+      return new Color(ColorOption.Util.determineColor(value));
     }
-
   }
 
   private Padding myPadding;
   private Border myBorder;
+
+  /**
+   * Foreground color. Property name is 'color' and value is
+   * a 6-digit hex RGB value prefixed with #
+   *
+   * Example: text.foo.color = #ffffff
+   */
   private Color myColor;
-  private BackgroundColor myBackground;
+  
+  /**
+   * Background color. Property name is 'background-color' and value is
+   * a 6-digit hex RGB value prefixed with #
+   *
+   * Example: text.foo.background-color = #ffffff
+   */
+  private Color myBackground;
 
   Style(Properties props, String styleName) {
     myPadding = Padding.parse(props.getProperty(styleName + ".padding"));
-    myBackground = BackgroundColor.parse(props.getProperty(styleName + ".background-color"));
+    myBackground = Color.parse(props.getProperty(styleName + ".background-color"));
     myBorder = Border.parse(props.getProperty(styleName + ".border"));
+    myColor = Color.parse(props.getProperty(styleName + ".color"));
   }
 
   Padding getPadding() {
     return myPadding;
   }
 
-  BackgroundColor getBackgroundColor(Canvas.Shape primitive) {
+  Color getForegroundColor(Canvas.Shape shape) {
+    if (shape.getForegroundColor() != null) {
+      return new Color(shape.getForegroundColor());
+    }
+    return myColor;
+  }
+  
+  Color getBackgroundColor(Canvas.Shape primitive) {
     if (primitive.getBackgroundColor() != null) {
-      return new BackgroundColor(primitive.getBackgroundColor());
+      return new Color(primitive.getBackgroundColor());
     }
     return myBackground;
   }
 
-  Border getBorder(Canvas.Shape primitive) {
-    if (primitive.getForegroundColor() != null) {
-      return new Border(primitive.getForegroundColor());
+  Border getBorder(Canvas.Shape shape) {
+    if (shape.getForegroundColor() != null) {
+      return myBorder == null ? new Border(shape.getForegroundColor()) : new Border(shape.getForegroundColor(), myBorder.getStroke());
     }
     return myBorder;
+  }
+  
+  static Style getStyle(Properties props, String styleName) {
+    Style result = ourCache.get(styleName);
+    if (result == null) {
+      result = new Style(props, styleName);
+      ourCache.put(styleName, result);
+    }
+    return result;
   }
 }

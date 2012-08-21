@@ -65,16 +65,16 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
   @Override
   public void build() {
     if (myRedlineOption.isChecked()) {
-      renderLine(new Date(), Color.RED, 2, OffsetLookup.BY_END_DATE);
+      renderLine(new Date(), "timeline.today", 2, OffsetLookup.BY_END_DATE);
     }
     if (isProjectBoundariesOptionOn()) {
-      renderLine(myInputApi.getProjectStart(), Color.BLUE, -2, OffsetLookup.BY_START_DATE);
-      renderLine(myInputApi.getProjectEnd(), Color.BLUE, 2, OffsetLookup.BY_START_DATE);
+      renderLine(myInputApi.getProjectStart(), "timeline.project_start", -2, OffsetLookup.BY_START_DATE);
+      renderLine(myInputApi.getProjectEnd(), "timeline.project_end", 2, OffsetLookup.BY_START_DATE);
     }
     renderNonWorkingDayColumns();
   }
 
-  private void renderLine(Date date, Color color, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
+  private void renderLine(Date date, String style, int marginPx, OffsetLookup.ComparatorBy<Date> dateComparator) {
     final int topUnitHeight = myInputApi.getTopLineHeight();
     OffsetLookup lookup = new OffsetLookup();
     int todayOffsetIdx = lookup.lookupOffsetBy(date, myInputApi.getAtomUnitOffsets(), dateComparator);
@@ -89,8 +89,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();
     Line line = getCanvas().createLine(yesterdayEndPixel + marginPx, topUnitHeight * 2,
         yesterdayEndPixel + marginPx, getHeight() + topUnitHeight * 2);
-    line.setForegroundColor(color);
-
+    line.setStyle(style);
   }
 
   private void renderNonWorkingDayColumns() {
