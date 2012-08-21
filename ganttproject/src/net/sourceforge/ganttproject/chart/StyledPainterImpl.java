@@ -34,13 +34,13 @@ import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
+import biz.ganttproject.core.chart.render.LineRenderer;
 import biz.ganttproject.core.chart.render.TextPainter;
 
 import net.sourceforge.ganttproject.shape.ShapeConstants;
 import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.util.MathUtil;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
@@ -68,11 +68,10 @@ public class StyledPainterImpl implements Painter {
 
   private final TextPainter myTextPainter;
 
+  private final LineRenderer myLineRenderer;
+
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
-
-  private final static BasicStroke dependencyRubber = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-      1f, new float[] { 2.5f }, 0f);
 
   public StyledPainterImpl(ChartUIConfiguration config) {
     myConfig = config;
@@ -115,11 +114,13 @@ public class StyledPainterImpl implements Painter {
     myProperties = new Properties();
     PropertiesUtil.loadProperties(myProperties, "/chart.properties");
     myTextPainter = new TextPainter(myProperties);
+    myLineRenderer = new LineRenderer(myProperties);
   }
 
   public void setGraphics(Graphics g) {
     myGraphics = (Graphics2D) g;
     myTextPainter.setGraphics(myGraphics);
+    myLineRenderer.setGraphics(myGraphics);
   }
 
   @Override
@@ -573,26 +574,7 @@ public class StyledPainterImpl implements Painter {
 
   @Override
   public void paint(Line line) {
-    Color foreColor = line.getForegroundColor();
-    if (foreColor == null) {
-      foreColor = Color.BLACK;
-    }
-    myGraphics.setColor(foreColor);
-    if ("dependency.line.rubber".equals(line.getStyle())) {
-      myGraphics.setStroke(dependencyRubber);
-    }
-    myGraphics.drawLine(line.getStartX(), line.getStartY(), line.getFinishX(), line.getFinishY());
-    if (line.getArrow() == Line.Arrow.FINISH) {
-      int xsign = MathUtil.signum(line.getFinishX() - line.getStartX());
-      int ysign = MathUtil.signum(line.getFinishY() - line.getStartY());
-      int[] xpoints = new int[] {line.getFinishX(), line.getFinishX() - xsign * 7 - Math.abs(ysign) * 3, line.getFinishX() - xsign * 7 + Math.abs(ysign) * 3};
-      int[] ypoints = new int[] {line.getFinishY(), line.getFinishY() - ysign * 7 - Math.abs(xsign) * 3, line.getFinishY() - ysign * 7 + Math.abs(xsign) * 3};
-      myGraphics.fillPolygon(xpoints, ypoints, 3);
-    }
-    if ("dependency.line.rubber".equals(line.getStyle())) {
-      // Revert to default stroke
-      myGraphics.setStroke(defaultStroke);
-    }
+    myLineRenderer.renderLine(line);
   }
 
   @Override
