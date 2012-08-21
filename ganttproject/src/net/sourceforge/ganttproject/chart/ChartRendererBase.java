@@ -20,21 +20,17 @@ package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 
 /**
  * @author bard
  */
-public class ChartRendererBase {
-  private int myHeight;
-
+public class ChartRendererBase extends AbstractSceneBuilder {
   private ChartModel myChartModel;
-
-  private final Canvas myPrimitiveContainer;
 
   private boolean isEnabled = true;
 
   protected ChartRendererBase() {
-    myPrimitiveContainer = new Canvas();
   }
 
   public ChartRendererBase(ChartModel model) {
@@ -43,16 +39,8 @@ public class ChartRendererBase {
   }
 
   public ChartRendererBase(ChartModelBase chartModel, Canvas canvas) {
+    super(canvas);
     myChartModel = chartModel;
-    myPrimitiveContainer = canvas;
-  }
-
-  public void setHeight(int height) {
-    myHeight = height;
-  }
-
-  protected int getHeight() {
-    return myHeight;
   }
 
   protected int getWidth() {
@@ -64,7 +52,7 @@ public class ChartRendererBase {
   }
 
   public Canvas getPrimitiveContainer() {
-    return myPrimitiveContainer;
+    return getCanvas();
   }
 
   protected ChartModel getChartModel() {
@@ -85,6 +73,11 @@ public class ChartRendererBase {
 
   public void clear() {
     getPrimitiveContainer().clear();
+  }
+
+  @Override
+  public void build() {
+    render();
   }
 
   public void render() {

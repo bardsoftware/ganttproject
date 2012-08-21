@@ -14,6 +14,7 @@ import java.util.Set;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -135,8 +136,8 @@ public class ChartModelImpl extends ChartModelBase {
   }
 
   public Canvas.Shape getGraphicPrimitive(Object modelObject) {
-    for (ChartRendererBase renderer : getRenderers()) {
-      Canvas.Shape result = renderer.getPrimitiveContainer().getPrimitive(modelObject);
+    for (SceneBuilder renderer : getRenderers()) {
+      Canvas.Shape result = renderer.getCanvas().getPrimitive(modelObject);
       if (result != null) {
         return result;
       }

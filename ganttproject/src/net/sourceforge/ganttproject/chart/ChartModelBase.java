@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
+import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.GPOption;
@@ -53,6 +55,7 @@ import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -167,7 +170,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final UIConfiguration myProjectConfig;
   private ChartUIConfiguration myChartUIConfiguration;
 
-  private final List<ChartRendererBase> myRenderers = new ArrayList<ChartRendererBase>();
+  private final List<SceneBuilder> myRenderers = Lists.newArrayList();
 
   private final ChartDayGridRenderer myChartGrid;
 
@@ -183,18 +186,56 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private Set<Task> myTimelineTasks = Collections.emptySet();
 
+  private final ChartOptionGroup myChartGridOptions;
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
 
-  public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, UIConfiguration projectConfig) {
+
+  public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
     myChartHeader = new ChartHeaderImpl(this);
-    myChartGrid = new ChartDayGridRenderer(this, projectConfig, myChartHeader.getTimelineContainer());
+    myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
+        new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
+        getOptionEventDispatcher());
+    myChartGrid = new ChartDayGridRenderer(new ChartDayGridRenderer.InputApi() {
+      @Override
+      public Color getWeekendColor() {
+        return myChartUIConfiguration.getHolidayTimeBackgroundColor();
+      }
+      @Override
+      public Color getHolidayColor() {
+        return myChartUIConfiguration.getPublicHolidayTimeBackgroundColor();
+      }
+      @Override
+      public int getTopLineHeight() {
+        return myChartUIConfiguration.getSpanningHeaderHeight();
+      }
+      @Override
+      public BooleanOption getRedlineOption() {
+        return projectConfig.getRedlineOption();
+      }
+      @Override
+      public Date getProjectStart() {
+        return getTaskManager().getProjectStart();
+      }
+      @Override
+      public Date getProjectEnd() {
+        return getTaskManager().getProjectEnd();
+      }
+      @Override
+      public BooleanOption getProjectDatesOption() {
+        return projectConfig.getProjectBoundariesOption();
+      }
+      @Override
+      public OffsetList getAtomUnitOffsets() {
+        return getDefaultUnitOffsets();
+      }
+    }, myChartHeader.getTimelineContainer());
     myBackgroundRenderer = new BackgroundRendererImpl(this);
     myTimelineLabelOptions = new ChartOptionGroup("timelineLabels", new GPOption[] { myTimelineMilestonesOption }, getOptionEventDispatcher());
     myTimelineLabelRenderer = new TimelineLabelRendererImpl(this);
@@ -229,7 +270,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   });
 
   @Override
-  public List<Offset> getTopUnitOffsets() {
+  public OffsetList getTopUnitOffsets() {
     return myOffsetManager.getTopUnitOffsets();
   }
 
@@ -239,7 +280,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   @Override
-  public List<Offset> getDefaultUnitOffsets() {
+  public OffsetList getDefaultUnitOffsets() {
     if (getBottomUnit().equals(getTimeUnitStack().getDefaultTimeUnit())) {
       return getBottomUnitOffsets();
     }
@@ -272,21 +313,20 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   @Override
   public void paint(Graphics g) {
     int height = (int) getBounds().getHeight();
-    for (ChartRendererBase renderer : getRenderers()) {
-      renderer.clear();
-      renderer.setHeight(height);
+    for (SceneBuilder renderer : getRenderers()) {
+      renderer.reset(height);
     }
-    for (ChartRendererBase renderer : getRenderers()) {
-      renderer.render();
+    for (SceneBuilder renderer : getRenderers()) {
+      renderer.build();
     }
     myPainter.setGraphics(g);
-    for (ChartRendererBase renderer : getRenderers()) {
-      renderer.getPrimitiveContainer().paint(myPainter);
+    for (SceneBuilder renderer : getRenderers()) {
+      renderer.getCanvas().paint(myPainter);
     }
     for (int layer = 0;; layer++) {
       boolean layerPainted = false;
-      for (ChartRendererBase renderer : getRenderers()) {
-        List<Canvas> layers = renderer.getPrimitiveContainer().getLayers();
+      for (SceneBuilder renderer : getRenderers()) {
+        List<Canvas> layers = renderer.getCanvas().getLayers();
         if (layer < layers.size()) {
           layers.get(layer).paint(myPainter);
           layerPainted = true;
@@ -298,12 +338,12 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     }
   }
 
-  protected List<ChartRendererBase> getRenderers() {
+  protected List<SceneBuilder> getRenderers() {
     return myRenderers;
   }
 
   @Override
-  public void addRenderer(ChartRendererBase renderer) {
+  public void addRenderer(SceneBuilder renderer) {
     myRenderers.add(renderer);
   }
 
@@ -508,7 +548,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public GPOptionGroup[] getChartOptionGroups() {
-    return new GPOptionGroup[] { myChartGrid.getOptions(), myTimelineLabelOptions };
+    return new GPOptionGroup[] { myChartGridOptions, myTimelineLabelOptions };
   }
 
   public void addOptionChangeListener(GPOptionChangeListener listener) {
