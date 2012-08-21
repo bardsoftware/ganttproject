@@ -42,6 +42,7 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
+import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -172,7 +173,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private final List<SceneBuilder> myRenderers = Lists.newArrayList();
 
-  private final ChartDayGridRenderer myChartGrid;
+  private final DayGridSceneBuilder myChartGrid;
 
   private final TimelineLabelRendererImpl myTimelineLabelRenderer;
 
@@ -202,7 +203,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
         new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
         getOptionEventDispatcher());
-    myChartGrid = new ChartDayGridRenderer(new ChartDayGridRenderer.InputApi() {
+    myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
       public Color getWeekendColor() {
         return myChartUIConfiguration.getHolidayTimeBackgroundColor();
