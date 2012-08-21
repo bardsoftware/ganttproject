@@ -60,7 +60,7 @@ public class TextPainter {
     }
     myGraphics.setColor(foreColor);
 
-    Style style = new Style(myProperties, next.getStyle());
+    Style style = Style.getStyle(myProperties, next.getStyle());
 
     Label[] labels = next.getLabels(myTextLengthCalculator);
     if (labels.length == 0) {
@@ -101,7 +101,7 @@ public class TextPainter {
       ybottom -= padding.getBottom();
       break;
     }
-    Style.BackgroundColor background = style.getBackgroundColor(text);
+    Style.Color background = style.getBackgroundColor(text);
     Style.Border border = style.getBorder(text);
     if (border != null || background != null) {
       int x = xleft - padding.getLeft(), y = ybottom - textHeight - padding.getTop(), w = label.lengthPx
