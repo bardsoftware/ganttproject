@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -15,13 +15,17 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
- */
-package net.sourceforge.ganttproject.chart;
+*/
+package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 
 public class TimeUnitText {
+  public static enum Position {
+    UPPER_LINE, LOWER_LINE
+  }
+
   private static final Label[] EMPTY_LABELS = new Label[] { new Label(null, "", 0), new Label(null, "", 0), new Label(null, "", 0) };
 
   private String myLongText;

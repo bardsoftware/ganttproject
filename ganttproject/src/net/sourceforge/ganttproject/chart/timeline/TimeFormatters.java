@@ -22,18 +22,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import net.sourceforge.ganttproject.chart.TimeUnitText;
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
 public class TimeFormatters {
-  public static enum Position {
-    UPPER_LINE, LOWER_LINE
-  }
-
   private static final Map<String, TimeFormatter> ourUpperFormatters = new HashMap<String, TimeFormatter>();
   private static final Map<String, TimeFormatter> ourLowerFormatters = new HashMap<String, TimeFormatter>();
   protected static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] { new TimeUnitText("") };
@@ -59,7 +56,7 @@ public class TimeFormatters {
     ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
   }
 
-  public static TimeFormatter getFormatter(TimeUnit timeUnit, Position position) {
+  public static TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position) {
     TimeFormatter result = DEFAULT_TIME_FORMATTER;
     switch (position) {
     case UPPER_LINE:

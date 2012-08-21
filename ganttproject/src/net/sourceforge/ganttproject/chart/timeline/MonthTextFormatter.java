@@ -21,7 +21,9 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import net.sourceforge.ganttproject.chart.TimeUnitText;
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
+
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 

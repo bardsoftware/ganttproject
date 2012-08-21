@@ -1,30 +1,42 @@
 /*
- * This code is provided under the terms of GPL version 3.
- * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
- */
-package net.sourceforge.ganttproject.chart;
+Copyright (C) 2004-2012 GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.chart.scene;
 
 import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
-
-import net.sourceforge.ganttproject.chart.TimeUnitText;
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
+import biz.ganttproject.core.chart.text.TimeUnitText.Position;
+import biz.ganttproject.core.time.TimeUnit;
 
 /**
  * Renders chart timeline.
  */
-class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
+public class ChartHeaderImpl extends AbstractSceneBuilder {
 
   private Canvas myTimelineContainer;
   private final InputApi myInputApi;
@@ -41,8 +53,10 @@ class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
     OffsetList getTopUnitOffsets();
     OffsetList getBottomUnitOffsets();
 
+    TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position);
   }
-  ChartHeaderImpl(InputApi inputApi) {
+  
+  public ChartHeaderImpl(InputApi inputApi) {
     myInputApi = inputApi;
     getCanvas().newLayer();
     getCanvas().newLayer();
@@ -54,10 +68,13 @@ class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
           public int getTopLineHeight() {
             return myInputApi.getTopLineHeight();
           }
-
           @Override
           public OffsetList getBottomUnitOffsets() {
             return myInputApi.getBottomUnitOffsets();
+          }
+          @Override
+          public TimeFormatter getFormatter(TimeUnit offsetUnit, Position position) {
+            return myInputApi.getFormatter(offsetUnit, position);
           }
         });
   }
@@ -86,21 +103,10 @@ class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
     Canvas.Rectangle timeunitHeaderBorder = container.createRectangle(0, spanningHeaderHeight,
         sizex - 1, spanningHeaderHeight);
     timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
-    //
-    // GraphicPrimitiveContainer.Line middleGutter1 = getTimelineContainer()
-    // .createLine(1, spanningHeaderHeight - 1, sizex - 2, spanningHeaderHeight
-    // - 1);
-    // middleGutter1.setForegroundColor(getChartModel()
-    // .getChartUIConfiguration().getHorizontalGutterColor1());
-    //
     Canvas.Line bottomBorder = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
         headerHeight - 1);
     bottomBorder.setStyle("timeline.borderBottom");
   }
-
-//  public Canvas paint() {
-//    return myPrimitiveContainer;
-//  }
 
   @Override
   public void build() {
@@ -123,8 +129,8 @@ class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
     TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.top");
     for (Offset nextOffset : topOffsets) {
       if (curX >= 0) {
-        TimeUnitText[] texts = TimeFormatters.getFormatter(nextOffset.getOffsetUnit(), Position.UPPER_LINE).format(
-            nextOffset.getOffsetUnit(), curDate);
+        TimeUnitText[] texts = myInputApi.getFormatter(nextOffset.getOffsetUnit(), TimeUnitText.Position.UPPER_LINE)
+            .format(nextOffset.getOffsetUnit(), curDate);
         final int maxWidth = nextOffset.getOffsetPixels() - curX - 5;
         final TimeUnitText timeUnitText = texts[0];
         textGroup.addText(curX + 5, 0, new TextSelector() {

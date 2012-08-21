@@ -6,10 +6,10 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.util.Date;
 import java.util.HashMap;
 
+import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeUnit;
 
-import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.language.GanttLanguage.Listener;

@@ -22,9 +22,10 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.CalendarFactory;
 
-import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 

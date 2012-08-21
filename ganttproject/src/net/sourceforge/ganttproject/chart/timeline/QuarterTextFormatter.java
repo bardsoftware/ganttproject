@@ -21,9 +21,10 @@ package net.sourceforge.ganttproject.chart.timeline;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.CalendarFactory;
 
-import net.sourceforge.ganttproject.chart.TimeUnitText;
 
 public class QuarterTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private final Calendar myCalendar;
