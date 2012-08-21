@@ -30,6 +30,7 @@ import java.util.Set;
 
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
+import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -42,8 +43,11 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
+import biz.ganttproject.core.chart.scene.ChartHeaderImpl;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.GPOption;
@@ -231,6 +235,10 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       @Override
       public OffsetList getBottomUnitOffsets() {
         return ChartModelBase.this.getBottomUnitOffsets();
+      }
+      @Override
+      public TimeFormatter getFormatter(TimeUnit timeUnit, Position position) {
+        return TimeFormatters.getFormatter(timeUnit, position);
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
@@ -498,11 +506,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   @Override
   public TaskManager getTaskManager() {
     return myTaskManager;
-  }
-
-  @Override
-  public ChartHeader getChartHeader() {
-    return myChartHeader;
   }
 
   @Override

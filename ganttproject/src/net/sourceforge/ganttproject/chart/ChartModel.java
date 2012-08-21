@@ -37,8 +37,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
  * @author dbarashev
  */
 public interface ChartModel {
-  ChartHeader getChartHeader();
-
   void setBounds(Dimension bounds);
 
   Dimension getBounds();

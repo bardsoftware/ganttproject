@@ -1,22 +1,22 @@
 /*
-GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2004-2010 Dmitry Barashev
+Copyright (C) 2004-2012 GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.chart;
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.chart.scene;
 
 import java.util.Date;
 import java.util.List;
@@ -28,12 +28,11 @@ import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
+import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeUnitText;
+import biz.ganttproject.core.chart.text.TimeUnitText.Position;
+import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -43,6 +42,7 @@ public class BottomUnitLineRendererImpl extends AbstractSceneBuilder {
   public static interface InputApi {
     int getTopLineHeight();
     OffsetList getBottomUnitOffsets();
+    TimeFormatter getFormatter(TimeUnit offsetUnit, Position lowerLine);
   }
 
   private final InputApi myInputApi;
@@ -72,7 +72,7 @@ public class BottomUnitLineRendererImpl extends AbstractSceneBuilder {
 
   private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
     final int maxWidth = curOffset.getOffsetPixels() - curX;
-    TimeFormatter formatter = TimeFormatters.getFormatter(curOffset.getOffsetUnit(), Position.LOWER_LINE);
+    TimeFormatter formatter = myInputApi.getFormatter(curOffset.getOffsetUnit(), TimeUnitText.Position.LOWER_LINE);
     TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
     for (int i = 0; i < texts.length; i++) {
       final TimeUnitText timeUnitText = texts[i];
