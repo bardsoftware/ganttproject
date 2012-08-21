@@ -199,7 +199,40 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
-    myChartHeader = new ChartHeaderImpl(this);
+    myChartHeader = new ChartHeaderImpl(new ChartHeaderImpl.InputApi() {
+      @Override
+      public Date getViewportStartDate() {
+        return getStartDate();
+      }
+      @Override
+      public OffsetList getTopUnitOffsets() {
+        return ChartModelBase.this.getTopUnitOffsets();
+      }
+      @Override
+      public int getTopLineHeight() {
+        return getChartUIConfiguration().getSpanningHeaderHeight();
+      }
+      @Override
+      public int getTimelineHeight() {
+        return getChartUIConfiguration().getHeaderHeight();
+      }
+      @Override
+      public Color getTimelineBorderColor() {
+        return getChartUIConfiguration().getHeaderBorderColor();
+      }
+      @Override
+      public Color getTimelineBackgroundColor() {
+        return getChartUIConfiguration().getSpanningHeaderBackgroundColor();
+      }
+      @Override
+      public int getViewportWidth() {
+        return getBounds().width;
+      }
+      @Override
+      public OffsetList getBottomUnitOffsets() {
+        return ChartModelBase.this.getBottomUnitOffsets();
+      }
+    });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
         new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
         getOptionEventDispatcher());

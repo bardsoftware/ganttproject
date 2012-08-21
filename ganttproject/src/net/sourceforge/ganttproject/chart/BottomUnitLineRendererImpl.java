@@ -27,6 +27,8 @@ import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatter;
@@ -36,34 +38,30 @@ import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 /**
  * @author dbarashev (Dmitry Barashev)
  */
-public class BottomUnitLineRendererImpl extends ChartRendererBase {
-  private Canvas myTimelineContainer;
+public class BottomUnitLineRendererImpl extends AbstractSceneBuilder {
 
-  public BottomUnitLineRendererImpl(ChartModel model, Canvas primitiveContainer) {
-    this(model, primitiveContainer, primitiveContainer);
+  public static interface InputApi {
+    int getTopLineHeight();
+    OffsetList getBottomUnitOffsets();
   }
 
-  public BottomUnitLineRendererImpl(ChartModel model, Canvas timelineContainer,
-      Canvas primitiveContainer) {
-    super(model);
-    myTimelineContainer = timelineContainer;
-  }
+  private final InputApi myInputApi;
 
-  @Override
-  public Canvas getPrimitiveContainer() {
-    return myTimelineContainer;
+  public BottomUnitLineRendererImpl(Canvas timelineCanvas, InputApi inputApi) {
+    super(timelineCanvas);
+    myInputApi = inputApi;
   }
 
   @Override
-  public void render() {
+  public void build() {
     Offset prevOffset = null;
     List<Offset> bottomOffsets = getBottomUnitOffsets();
     int xpos = bottomOffsets.get(0).getOffsetPixels();
     if (xpos > 0) {
       xpos = 0;
     }
-    TextGroup textGroup = myTimelineContainer.createTextGroup(0, getLineTopPosition(),
-        getConfig().getSpanningHeaderHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
+    TextGroup textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
+        myInputApi.getTopLineHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
     for (Offset offset : bottomOffsets) {
       renderScaleMark(offset, prevOffset);
       renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
@@ -96,15 +94,15 @@ public class BottomUnitLineRendererImpl extends ChartRendererBase {
         return;
       }
     }
-    myTimelineContainer.createLine(prevOffset.getOffsetPixels(), getLineTopPosition(), prevOffset.getOffsetPixels(),
+    getCanvas().createLine(prevOffset.getOffsetPixels(), getLineTopPosition(), prevOffset.getOffsetPixels(),
         getLineTopPosition() + 10);
   }
 
   private int getLineTopPosition() {
-    return getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+    return myInputApi.getTopLineHeight();
   }
 
-  private List<Offset> getBottomUnitOffsets() {
-    return getChartModel().getBottomUnitOffsets();
+  private OffsetList getBottomUnitOffsets() {
+    return myInputApi.getBottomUnitOffsets();
   }
 }

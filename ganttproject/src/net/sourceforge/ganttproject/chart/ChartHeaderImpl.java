@@ -5,6 +5,7 @@
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +14,8 @@ import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 
 import net.sourceforge.ganttproject.chart.TimeUnitText;
 import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
@@ -21,44 +24,68 @@ import net.sourceforge.ganttproject.chart.timeline.TimeFormatters.Position;
 /**
  * Renders chart timeline.
  */
-class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
+class ChartHeaderImpl extends AbstractSceneBuilder implements ChartHeader {
 
-  private Canvas myPrimitiveContainer;
   private Canvas myTimelineContainer;
-  private Canvas myBackgroundContainer;
+  private final InputApi myInputApi;
+  private final BottomUnitLineRendererImpl myBottomUnitLineRenderer;
 
-  ChartHeaderImpl(ChartModelBase model) {
-    super(model);
-    myPrimitiveContainer = getPrimitiveContainer();
-    myBackgroundContainer = myPrimitiveContainer.newLayer();
-    myPrimitiveContainer.newLayer();
-    myPrimitiveContainer.newLayer();
-    myTimelineContainer = myPrimitiveContainer.newLayer();
+  public static interface InputApi {
+    int getViewportWidth();
+    int getTopLineHeight();
+    int getTimelineHeight();
+    Color getTimelineBackgroundColor();
+    Color getTimelineBorderColor();
+
+    Date getViewportStartDate();
+    OffsetList getTopUnitOffsets();
+    OffsetList getBottomUnitOffsets();
+
   }
+  ChartHeaderImpl(InputApi inputApi) {
+    myInputApi = inputApi;
+    getCanvas().newLayer();
+    getCanvas().newLayer();
+    getCanvas().newLayer();
+    myTimelineContainer = getCanvas().newLayer();
+    myBottomUnitLineRenderer = new BottomUnitLineRendererImpl(
+        myTimelineContainer, new BottomUnitLineRendererImpl.InputApi() {
+          @Override
+          public int getTopLineHeight() {
+            return myInputApi.getTopLineHeight();
+          }
 
-  public void beforeProcessingTimeFrames() {
-    myPrimitiveContainer.clear();
-    createGreyRectangleWithNiceBorders();
+          @Override
+          public OffsetList getBottomUnitOffsets() {
+            return myInputApi.getBottomUnitOffsets();
+          }
+        });
   }
 
   public Canvas getTimelineContainer() {
     return myTimelineContainer;
   }
 
+  @Override
+  public void reset(int sceneHeight) {
+    super.reset(sceneHeight);
+    myBottomUnitLineRenderer.reset(getHeight());
+  }
+
   /**
    * Draws the timeline box
    */
-  private void createGreyRectangleWithNiceBorders() {
-    int sizex = getWidth();
-    final int spanningHeaderHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
-    final int headerHeight = getChartModel().getChartUIConfiguration().getHeaderHeight();
+  private void renderUnderlay() {
+    int sizex = myInputApi.getViewportWidth();
+    final int spanningHeaderHeight = myInputApi.getTopLineHeight();
+    final int headerHeight = myInputApi.getTimelineHeight();
     Canvas container = myTimelineContainer;
     Canvas.Rectangle headerRectangle = container.createRectangle(0, 0, sizex, headerHeight);
-    headerRectangle.setBackgroundColor(getChartModel().getChartUIConfiguration().getSpanningHeaderBackgroundColor());
+    headerRectangle.setBackgroundColor(myInputApi.getTimelineBackgroundColor());
 
     Canvas.Rectangle timeunitHeaderBorder = container.createRectangle(0, spanningHeaderHeight,
         sizex - 1, spanningHeaderHeight);
-    timeunitHeaderBorder.setForegroundColor(getChartModel().getChartUIConfiguration().getHeaderBorderColor());
+    timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
     //
     // GraphicPrimitiveContainer.Line middleGutter1 = getTimelineContainer()
     // .createLine(1, spanningHeaderHeight - 1, sizex - 2, spanningHeaderHeight
@@ -66,18 +93,18 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
     // middleGutter1.setForegroundColor(getChartModel()
     // .getChartUIConfiguration().getHorizontalGutterColor1());
     //
-    Canvas.Line bottomGutter = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
+    Canvas.Line bottomBorder = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
         headerHeight - 1);
-    bottomGutter.setForegroundColor(getChartModel().getChartUIConfiguration().getHorizontalGutterColor1());
+    bottomBorder.setStyle("timeline.borderBottom");
   }
 
-  public Canvas paint() {
-    return myPrimitiveContainer;
-  }
+//  public Canvas paint() {
+//    return myPrimitiveContainer;
+//  }
 
   @Override
-  public void render() {
-    beforeProcessingTimeFrames();
+  public void build() {
+    renderUnderlay();
     renderTopUnits();
     renderBottomUnits();
   }
@@ -86,13 +113,13 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
    * Draws cells of the top line in the time line
    */
   private void renderTopUnits() {
-    Date curDate = getChartModel().getStartDate();
-    List<Offset> topOffsets = getChartModel().getTopUnitOffsets();
+    Date curDate = myInputApi.getViewportStartDate();
+    List<Offset> topOffsets = myInputApi.getTopUnitOffsets();
     int curX = topOffsets.get(0).getOffsetPixels();
     if (curX > 0) {
       curX = 0;
     }
-    final int topUnitHeight = getChartModel().getChartUIConfiguration().getSpanningHeaderHeight();
+    final int topUnitHeight = myInputApi.getTopLineHeight();
     TextGroup textGroup = myTimelineContainer.createTextGroup(0, 0, topUnitHeight, "timeline.top");
     for (Offset nextOffset : topOffsets) {
       if (curX >= 0) {
@@ -117,9 +144,6 @@ class ChartHeaderImpl extends ChartRendererBase implements ChartHeader {
    * Draws cells of the bottom line in the time line
    */
   private void renderBottomUnits() {
-    BottomUnitLineRendererImpl bottomUnitLineRenderer = new BottomUnitLineRendererImpl(getChartModel(),
-        myTimelineContainer, getPrimitiveContainer());
-    bottomUnitLineRenderer.setHeight(getHeight());
-    bottomUnitLineRenderer.render();
+    myBottomUnitLineRenderer.build();
   }
 }
