@@ -27,6 +27,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -37,7 +38,7 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 class TaskActivityRenderer {
   private final ChartModelImpl myChartModel;
   private final Canvas myGraphicPrimitiveContainer;
-  private final TaskLabelsRendererImpl myLabelsRenderer;
+  private final TaskLabelSceneBuilder myLabelsRenderer;
   private final Style myStyle;
 
   static class Style {
@@ -51,7 +52,7 @@ class TaskActivityRenderer {
   }
 
   TaskActivityRenderer(ChartModelImpl chartModel, Canvas primitiveContainer,
-      TaskLabelsRendererImpl labelsRenderer, Style style) {
+      TaskLabelSceneBuilder labelsRenderer, Style style) {
     myChartModel = chartModel;
     myStyle = style;
     myGraphicPrimitiveContainer = primitiveContainer;

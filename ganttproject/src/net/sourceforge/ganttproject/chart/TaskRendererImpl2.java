@@ -32,6 +32,7 @@ import com.google.common.collect.Lists;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -55,7 +56,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private GPOptionGroup[] myOptionGroups;
 
-  private final TaskLabelsRendererImpl myLabelsRenderer;
+  private final TaskLabelSceneBuilder myLabelsRenderer;
 
   private final Canvas myLabelsLayer;
 
@@ -74,14 +75,14 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
     final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
 
-    myLabelsRenderer = new TaskLabelsRendererImpl<Task>(new TaskLabelsRendererImpl.TaskApi<Task>() {
+    myLabelsRenderer = new TaskLabelSceneBuilder<Task>(new TaskLabelSceneBuilder.TaskApi<Task>() {
       TaskProperties myLabelFormatter = new TaskProperties(getChartModel().getTimeUnitStack());
 
       @Override
       public Object getProperty(Task task, String propertyID) {
         return myLabelFormatter.getProperty(task, propertyID);
       }
-    }, new TaskLabelsRendererImpl.InputApi() {
+    }, new TaskLabelSceneBuilder.InputApi() {
       @Override
       public EnumerationOption getTopLabelOption() {
         return topLabelOption;
