@@ -18,11 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import biz.ganttproject.core.option.ChangeValueDispatcher;
-
 import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -30,7 +25,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 /**
  * This class allow the developer to get some useful references. - GanttProject
  * reference; - CustomColumnManager reference; - CustomColumnStorage reference.
- * 
+ *
  * @author bbaranne Mar 2, 2005
  */
 public class Mediator {
@@ -45,11 +40,9 @@ public class Mediator {
 
   private static final PluginManager pluginManager = new PluginManager();
 
-  private static List<ChangeValueDispatcher> changeValueDispatchers = new ArrayList<ChangeValueDispatcher>();
-
   /**
    * Registers the unique GanttProject instance.
-   * 
+   *
    * @param gp
    *          The unique GanttProject instance.
    */
@@ -63,10 +56,6 @@ public class Mediator {
 
   public static void registerDelayManager(DelayManager delayMgr) {
     delayManager = delayMgr;
-  }
-
-  public static void addChangeValueDispatcher(ChangeValueDispatcher dispatcher) {
-    changeValueDispatchers.add(dispatcher);
   }
 
   /** @return The unique GanttProject instance. */
@@ -87,9 +76,5 @@ public class Mediator {
 
   public static PluginManager getPluginManager() {
     return pluginManager;
-  }
-
-  public static List<ChangeValueDispatcher> getChangeValueDispatchers() {
-    return changeValueDispatchers;
   }
 }

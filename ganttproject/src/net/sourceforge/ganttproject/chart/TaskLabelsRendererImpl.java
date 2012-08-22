@@ -18,9 +18,7 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskProperties;
@@ -50,8 +48,6 @@ class TaskLabelsRendererImpl {
 
   private Font myFont;
 
-  private final ChartModelImpl myModel;
-
   static {
     ourInfoList = new ArrayList<String>();
     ourInfoList.add("");
@@ -73,16 +69,10 @@ class TaskLabelsRendererImpl {
     DefaultEnumerationOption<String> deo2 = new DefaultEnumerationOption<String>("taskLabelLeft", ourInfoList);
     DefaultEnumerationOption<String> deo3 = new DefaultEnumerationOption<String>("taskLabelRight", ourInfoList);
 
-    Mediator.addChangeValueDispatcher(deo0);
-    Mediator.addChangeValueDispatcher(deo1);
-    Mediator.addChangeValueDispatcher(deo2);
-    Mediator.addChangeValueDispatcher(deo3);
-
     myLabelOptions = new EnumerationOption[] { deo0, deo1, deo2, deo3 };
     myOptionGroup = new ChartOptionGroup("ganttChartDetails", myLabelOptions, model.getOptionEventDispatcher());
     // model.getTaskManager().getCustomColumnStorage().addCustomColumnsListener(this);
     myFont = model.getChartUIConfiguration().getChartFont();
-    myModel = model;
   }
 
   private void addOption(String name) {
@@ -171,15 +161,6 @@ class TaskLabelsRendererImpl {
         result.append(property);
     }
     return result.toString();
-  }
-
-  public void customPropertyChange(CustomPropertyEvent event) {
-    int type = event.getType();
-    if (type == CustomPropertyEvent.EVENT_ADD) {
-      addOption(event.getColName());
-    } else if (type == CustomPropertyEvent.EVENT_REMOVE) {
-      removeOption((event.getColName()));
-    }
   }
 
   private Canvas getPrimitiveContainer() {
