@@ -35,17 +35,14 @@ class TaskActivityImpl implements TaskActivity {
     myTask = task;
   }
 
-  @Override
   public Date getStart() {
     return myStartDate;
   }
 
-  @Override
   public Date getEnd() {
     return myEndDate;
   }
 
-  @Override
   public TimeDuration getDuration() {
     return myDuration;
   }
@@ -60,19 +57,18 @@ class TaskActivityImpl implements TaskActivity {
     return myTask.toString() + "[" + getStart() + ", " + getEnd() + "]";
   }
 
-  @Override
-  public Task getTask() {
+  public Task getOwner() {
     return myTask;
   }
 
   @Override
   public boolean isFirst() {
-    return this == getTask().getActivities()[0];
+    return this == getOwner().getActivities()[0];
   }
 
   @Override
   public boolean isLast() {
-    TaskActivity[] all = getTask().getActivities();
+    TaskActivity[] all = getOwner().getActivities();
     return this == all[all.length - 1];
   }
 }

@@ -63,7 +63,7 @@ public class MilestoneTaskFakeActivity implements TaskActivity {
   }
 
   @Override
-  public Task getTask() {
+  public Task getOwner() {
     return myTask;
   }
 

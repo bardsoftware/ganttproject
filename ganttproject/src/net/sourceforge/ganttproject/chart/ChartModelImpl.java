@@ -156,14 +156,14 @@ public class ChartModelImpl extends ChartModelBase {
       TaskActivity activity = (TaskActivity) primitive.getModelObject();
       if (activity != null) {
         if (activity.isFirst() && rect.myLeftX - 2 <= x && rect.myLeftX + 2 >= x) {
-          result = new TaskBoundaryChartItem(activity.getTask(), true);
+          result = new TaskBoundaryChartItem(activity.getOwner(), true);
         }
         if (result == null && activity.isLast() && rect.myLeftX + rect.myWidth - 2 <= x
             && rect.myLeftX + rect.myWidth + 2 >= x) {
-          result = new TaskBoundaryChartItem(activity.getTask(), false);
+          result = new TaskBoundaryChartItem(activity.getOwner(), false);
         }
         if (result == null) {
-          result = new TaskRegularAreaChartItem(activity.getTask());
+          result = new TaskRegularAreaChartItem(activity.getOwner());
         }
       }
     }

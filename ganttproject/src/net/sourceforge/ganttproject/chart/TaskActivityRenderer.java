@@ -80,7 +80,7 @@ class TaskActivityRenderer {
   }
 
   private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity) {
-    Canvas container = getContainerFor(nextActivity.getTask());
+    Canvas container = getContainerFor(nextActivity.getOwner());
     int startx = getChartModel().getBottomUnitOffsets().getEndPx() + 1;
     int topy = rowNum * getRowHeight() + 4;
     Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
@@ -94,7 +94,7 @@ class TaskActivityRenderer {
   }
 
   private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity) {
-    Canvas container = getContainerFor(nextActivity.getTask());
+    Canvas container = getContainerFor(nextActivity.getOwner());
     int startx = getChartModel().getBottomUnitOffsets().getStartPx() - 1;
     int topy = rowNum * getRowHeight() + 4;
     Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
@@ -104,7 +104,7 @@ class TaskActivityRenderer {
   }
 
   private Rectangle processRegularActivity(int rowNum, TaskActivity nextStarted, List<Offset> offsets) {
-    Task nextTask = nextStarted.getTask();
+    Task nextTask = nextStarted.getOwner();
     if (nextTask.isMilestone() && !nextStarted.isFirst()) {
       return null;
     }
@@ -159,7 +159,7 @@ class TaskActivityRenderer {
       }
     }
     if (!"task.holiday".equals(nextRectangle.getStyle()) && !"task.supertask".equals(nextRectangle.getStyle())) {
-      nextRectangle.setBackgroundColor(nextStarted.getTask().getColor());
+      nextRectangle.setBackgroundColor(nextStarted.getOwner().getColor());
     }
     container.bind(nextRectangle, nextStarted);
     return nextRectangle;

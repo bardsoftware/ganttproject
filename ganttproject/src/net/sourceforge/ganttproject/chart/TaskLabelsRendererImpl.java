@@ -14,20 +14,21 @@ import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskProperties;
+//import net.sourceforge.ganttproject.task.Task;
+//import net.sourceforge.ganttproject.task.TaskActivity;
+//import net.sourceforge.ganttproject.task.TaskProperties;
 
 /**
  * This class is responsible for rendering text labels on the sides of task bars
  * It keeps the rendering options and it lays out the labels on rendering time
  */
-class TaskLabelsRendererImpl {
+class TaskLabelsRendererImpl<T> {
   public static final int UP = 0;
 
   public static final int DOWN = 1;
@@ -44,9 +45,24 @@ class TaskLabelsRendererImpl {
 
   private static List<String> ourInfoList;
 
-  private TaskProperties myLabelFormatter;
+  //private TaskProperties myLabelFormatter;
 
   private Font myFont;
+
+  private final TaskApi<T> myTaskApi;
+
+  interface TaskApi<T> {
+    Object getProperty(T task, String propertyID);
+  }
+
+  interface InputApi {
+    EnumerationOption getTopLabelOption();
+    EnumerationOption getBottomLabelOption();
+    EnumerationOption getLeftLabelOption();
+    EnumerationOption getRightLabelOption();
+
+    Font getChartFont();
+  }
 
   static {
     ourInfoList = new ArrayList<String>();
@@ -61,38 +77,31 @@ class TaskLabelsRendererImpl {
     ourInfoList.add("predecessors");
   }
 
-  TaskLabelsRendererImpl(ChartModelImpl model, Canvas canvas) {
+  TaskLabelsRendererImpl(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
     myCanvas = canvas;
-    myLabelFormatter = new TaskProperties(model.getTimeUnitStack());
-    DefaultEnumerationOption<String> deo0 = new DefaultEnumerationOption<String>("taskLabelUp", ourInfoList);
-    DefaultEnumerationOption<String> deo1 = new DefaultEnumerationOption<String>("taskLabelDown", ourInfoList);
-    DefaultEnumerationOption<String> deo2 = new DefaultEnumerationOption<String>("taskLabelLeft", ourInfoList);
-    DefaultEnumerationOption<String> deo3 = new DefaultEnumerationOption<String>("taskLabelRight", ourInfoList);
+    myTaskApi = taskApi;
+    //myLabelFormatter = new TaskProperties(model.getTimeUnitStack());
+//    DefaultEnumerationOption<String> deo0 = new DefaultEnumerationOption<String>("taskLabelUp", ourInfoList);
+//    DefaultEnumerationOption<String> deo1 = new DefaultEnumerationOption<String>("taskLabelDown", ourInfoList);
+//    DefaultEnumerationOption<String> deo2 = new DefaultEnumerationOption<String>("taskLabelLeft", ourInfoList);
+//    DefaultEnumerationOption<String> deo3 = new DefaultEnumerationOption<String>("taskLabelRight", ourInfoList);
 
-    myLabelOptions = new EnumerationOption[] { deo0, deo1, deo2, deo3 };
-    myOptionGroup = new ChartOptionGroup("ganttChartDetails", myLabelOptions, model.getOptionEventDispatcher());
+    myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
+    //myOptionGroup = new ChartOptionGroup("ganttChartDetails", myLabelOptions, model.getOptionEventDispatcher());
     // model.getTaskManager().getCustomColumnStorage().addCustomColumnsListener(this);
-    myFont = model.getChartUIConfiguration().getChartFont();
+    myFont = inputApi.getChartFont();
   }
 
-  private void addOption(String name) {
-    ourInfoList.add(name);
-  }
-
-  private void removeOption(String name) {
-    ourInfoList.remove(name);
-  }
-
-  GPOptionGroup getOptionGroup() {
-    return myOptionGroup;
-  }
+//  GPOptionGroup getOptionGroup() {
+//    return myOptionGroup;
+//  }
 
   void createRightSideText(Rectangle rectangle) {
-    TaskActivity activity = (TaskActivity) rectangle.getModelObject();
+    BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = "";
     int xText, yText;
 
-    text = getTaskLabel(activity.getTask(), RIGHT);
+    text = getTaskLabel(activity.getOwner(), RIGHT);
 
     if (text.length() != 0) {
       xText = rectangle.getRightX() + 9;
@@ -103,8 +112,8 @@ class TaskLabelsRendererImpl {
   }
 
   void createDownSideText(Rectangle rectangle) {
-    TaskActivity activity = (TaskActivity) rectangle.getModelObject();
-    String text = getTaskLabel(activity.getTask(), DOWN);
+    BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
+    String text = getTaskLabel(activity.getOwner(), DOWN);
 
     if (text.length() > 0) {
       int xOrigin = rectangle.getRightX();
@@ -115,8 +124,8 @@ class TaskLabelsRendererImpl {
   }
 
   void createUpSideText(Rectangle rectangle) {
-    TaskActivity activity = (TaskActivity) rectangle.getModelObject();
-    String text = getTaskLabel(activity.getTask(), UP);
+    BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
+    String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
       int xOrigin = rectangle.getRightX();
       int yOrigin = rectangle.myTopY - 3;
@@ -126,8 +135,8 @@ class TaskLabelsRendererImpl {
   }
 
   void createLeftSideText(Rectangle rectangle) {
-    TaskActivity activity = (TaskActivity) rectangle.getModelObject();
-    String text = getTaskLabel(activity.getTask(), LEFT);
+    BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
+    String text = getTaskLabel(activity.getOwner(), LEFT);
 
     if (text.length() > 0) {
       int xOrigin = rectangle.myLeftX - 9;
@@ -148,9 +157,9 @@ class TaskLabelsRendererImpl {
   }
 
 
-  private String getTaskLabel(Task task, int position) {
+  private String getTaskLabel(T task, int position) {
     StringBuffer result = new StringBuffer();
-    Object property = myLabelFormatter.getProperty(task, myLabelOptions[position].getValue());
+    Object property = myTaskApi.getProperty(task, myLabelOptions[position].getValue());
     if (property != null) {
       if (property instanceof Boolean)
         if (((Boolean) property).booleanValue())
@@ -222,14 +231,6 @@ class TaskLabelsRendererImpl {
       space = MEDIUM_SPACE;
     }
     nextBounds.y += space;
-    // int topy = nextBounds.y;
-    // topy = topy + (getRowHeight() - 20) / 2;
-    // if (myLabelsRenderer.isOnlyDown())
-    // topy = topy - 6;
-    // else if (myLabelsRenderer.isOnlyUp())
-    // topy = topy + 6;
-    // if (myModel.isPrevious())
-    // topy = topy - 5;
   }
 
   int getFontHeight() {

@@ -151,8 +151,8 @@ class TaskDependencyRenderer {
       TaskDependency next = deps[i];
       TaskDependency.ActivityBinding activityBinding = next.getActivityBinding();
       TaskActivity dependant = activityBinding.getDependantActivity();
-      if (dependant.getTask().isMilestone()) {
-        dependant = new MilestoneTaskFakeActivity(dependant.getTask());
+      if (dependant.getOwner().isMilestone()) {
+        dependant = new MilestoneTaskFakeActivity(dependant.getOwner());
       }
       Canvas graphicPrimitiveContainer = myTaskCanvas;
       Canvas.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
@@ -161,8 +161,8 @@ class TaskDependencyRenderer {
         continue;
       }
       TaskActivity dependee = activityBinding.getDependeeActivity();
-      if (dependee.getTask().isMilestone()) {
-        dependee = new MilestoneTaskFakeActivity(dependee.getTask());
+      if (dependee.getOwner().isMilestone()) {
+        dependee = new MilestoneTaskFakeActivity(dependee.getOwner());
       }
       Canvas.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
       if (dependeeRectangle == null) {
@@ -176,11 +176,11 @@ class TaskDependencyRenderer {
       PointVector dependantVector;
       if (bounds[0].equals(dependant.getStart())) {
         dependantVector = new WestPointVector(new Point(
-            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX,
+            dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX,
             dependantRectangle.getMiddleY()));
       } else if (bounds[0].equals(dependant.getEnd())) {
         dependantVector = new EastPointVector(new Point(
-            dependant.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(),
+            dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(),
             dependantRectangle.getMiddleY()));
       } else {
         throw new RuntimeException();
@@ -189,11 +189,11 @@ class TaskDependencyRenderer {
       PointVector dependeeVector;
       if (bounds[1].equals(dependee.getStart())) {
         dependeeVector = new WestPointVector(new Point(
-            dependee.getTask().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX,
+            dependee.getOwner().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX,
             dependeeRectangle.getMiddleY()));
       } else if (bounds[1].equals(dependee.getEnd())) {
         dependeeVector = new EastPointVector(new Point(
-            dependee.getTask().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(),
+            dependee.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(),
             dependeeRectangle.getMiddleY()));
       } else {
         throw new RuntimeException("bounds: " + Arrays.asList(bounds) + " dependee=" + dependee + " dependant="
