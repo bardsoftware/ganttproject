@@ -32,6 +32,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -58,7 +59,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private final TaskLabelSceneBuilder<Task> myLabelsRenderer;
 
-  private TaskActivityRenderer.TaskApi<Task, TaskActivity> myTaskApi = new TaskActivityRenderer.TaskApi<Task, TaskActivity>() {
+  private TaskActivitySceneBuilder.TaskApi<Task, TaskActivity> myTaskApi = new TaskActivitySceneBuilder.TaskApi<Task, TaskActivity>() {
     @Override
     public boolean isFirst(TaskActivity activity) {
       return activity.isFirst();
@@ -89,7 +90,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   };
 
-  private TaskActivityRenderer.ChartApi myChartApi = new TaskActivityRenderer.ChartApi() {
+  private TaskActivitySceneBuilder.ChartApi myChartApi = new TaskActivitySceneBuilder.ChartApi() {
     @Override
     public Date getChartStartDate() {
       return myModel.getOffsetAnchorDate();
@@ -107,8 +108,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       return myModel.getRowHeight();
     }
   };
-  private final TaskActivityRenderer<Task, TaskActivity> myTaskActivityRenderer;
-  private final TaskActivityRenderer<Task, TaskActivity> myBaselineActivityRenderer;
+  private final TaskActivitySceneBuilder<Task, TaskActivity> myTaskActivityRenderer;
+  private final TaskActivitySceneBuilder<Task, TaskActivity> myBaselineActivityRenderer;
 
   private final Canvas myLabelsLayer;
 
@@ -165,9 +166,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         model.getOptionEventDispatcher());
     myOptionGroups = new GPOptionGroup[] { labelOptions };
 
-    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityRenderer.Style(0, getRectangleHeight()));
+    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivitySceneBuilder.Style(0, getRectangleHeight()));
     myBaselineActivityRenderer = createTaskActivitySceneBuilder(
-        getPrimitiveContainer().getLayer(2), new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight() / 2));
+        getPrimitiveContainer().getLayer(2), new TaskActivitySceneBuilder.Style(getRectangleHeight(), getRectangleHeight() / 2));
   }
 
   private List<Task> getVisibleTasks() {
@@ -392,7 +393,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return myLabelsLayer;
   }
 
-  private TaskActivityRenderer<Task, TaskActivity> createTaskActivitySceneBuilder(Canvas canvas, TaskActivityRenderer.Style style) {
-    return new TaskActivityRenderer<Task, TaskActivity>(myTaskApi, myChartApi, canvas, myLabelsRenderer, style);
+  private TaskActivitySceneBuilder<Task, TaskActivity> createTaskActivitySceneBuilder(Canvas canvas, TaskActivitySceneBuilder.Style style) {
+    return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, myChartApi, canvas, myLabelsRenderer, style);
   }
 }
