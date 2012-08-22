@@ -18,28 +18,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
-
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 
 /**
  * Renders task activity rectangles on the Gantt chart.
  */
-class TaskActivityRenderer {
-  private final ChartModelImpl myChartModel;
-  private final Canvas myGraphicPrimitiveContainer;
-  private final TaskLabelSceneBuilder myLabelsRenderer;
+class TaskActivityRenderer<T, A extends BarChartActivity<T>> {
+  private final Canvas myCanvas;
+  private final TaskLabelSceneBuilder<T> myLabelsRenderer;
   private final Style myStyle;
+  private final TaskApi<T, A> myTaskApi;
+  private final ChartApi myChartApi;
 
   static class Style {
     int marginTop;
@@ -51,38 +51,57 @@ class TaskActivityRenderer {
     }
   }
 
-  TaskActivityRenderer(ChartModelImpl chartModel, Canvas primitiveContainer,
-      TaskLabelSceneBuilder labelsRenderer, Style style) {
-    myChartModel = chartModel;
+  static interface TaskApi<T, A> {
+    boolean isFirst(A activity);
+    boolean isLast(A activity);
+    boolean isVoid(A activity);
+
+    boolean isProjectTask(T task);
+    boolean isMilestone(T task);
+    boolean hasNestedTasks(T task);
+    Color getColor(T task);
+  }
+
+  static interface ChartApi {
+    Date getChartStartDate();
+    Date getEndDate();
+    OffsetList getBottomUnitOffsets();
+    int getRowHeight();
+  }
+
+  TaskActivityRenderer(TaskApi<T, A> taskApi, ChartApi chartApi, Canvas canvas,
+      TaskLabelSceneBuilder<T> labelsRenderer, Style style) {
+    myTaskApi = taskApi;
+    myChartApi = chartApi;
     myStyle = style;
-    myGraphicPrimitiveContainer = primitiveContainer;
+    myCanvas = canvas;
     myLabelsRenderer = labelsRenderer;
   }
 
-  List<Rectangle> renderActivities(int rowNum, List<TaskActivity> activities, List<Offset> offsets) {
+  List<Rectangle> renderActivities(int rowNum, List<A> activities, List<Offset> offsets) {
     List<Rectangle> rectangles = new ArrayList<Rectangle>();
-    for (TaskActivity nextActivity : activities) {
-      if (nextActivity.isFirst() || nextActivity.isLast()) {
-        if (nextActivity.getIntensity() == 0f) {
+    for (A activity : activities) {
+      if (myTaskApi.isFirst(activity) || myTaskApi.isLast(activity)) {
+        if (myTaskApi.isVoid(activity)) {
           continue;
         }
       }
       final Rectangle nextRectangle;
-      if (nextActivity.getEnd().compareTo(getChartModel().getOffsetAnchorDate()) <= 0) {
-        nextRectangle = processActivityEarlierThanViewport(rowNum, nextActivity);
-      } else if (nextActivity.getStart().compareTo(getChartModel().getEndDate()) >= 0) {
-        nextRectangle = processActivityLaterThanViewport(rowNum, nextActivity);
+      if (activity.getEnd().compareTo(myChartApi.getChartStartDate()) <= 0) {
+        nextRectangle = processActivityEarlierThanViewport(rowNum, activity);
+      } else if (activity.getStart().compareTo(myChartApi.getEndDate()) >= 0) {
+        nextRectangle = processActivityLaterThanViewport(rowNum, activity);
       } else {
-        nextRectangle = processRegularActivity(rowNum, nextActivity, offsets);
+        nextRectangle = processRegularActivity(rowNum, activity, offsets);
       }
       rectangles.add(nextRectangle);
     }
     return rectangles;
   }
 
-  private Rectangle processActivityLaterThanViewport(int rowNum, TaskActivity nextActivity) {
-    Canvas container = getContainerFor(nextActivity.getOwner());
-    int startx = getChartModel().getBottomUnitOffsets().getEndPx() + 1;
+  private Rectangle processActivityLaterThanViewport(int rowNum, BarChartActivity<T> nextActivity) {
+    Canvas container = myCanvas;
+    int startx = myChartApi.getBottomUnitOffsets().getEndPx() + 1;
     int topy = rowNum * getRowHeight() + 4;
     Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
     container.bind(rectangle, nextActivity);
@@ -90,13 +109,9 @@ class TaskActivityRenderer {
     return rectangle;
   }
 
-  private Canvas getContainerFor(Task task) {
-    return myGraphicPrimitiveContainer;
-  }
-
-  private Rectangle processActivityEarlierThanViewport(int rowNum, TaskActivity nextActivity) {
-    Canvas container = getContainerFor(nextActivity.getOwner());
-    int startx = getChartModel().getBottomUnitOffsets().getStartPx() - 1;
+  private Rectangle processActivityEarlierThanViewport(int rowNum, BarChartActivity<T> nextActivity) {
+    Canvas container = myCanvas;
+    int startx = myChartApi.getBottomUnitOffsets().getStartPx() - 1;
     int topy = rowNum * getRowHeight() + 4;
     Rectangle rectangle = container.createRectangle(startx, topy, 1, getRowHeight());
     container.bind(rectangle, nextActivity);
@@ -104,30 +119,30 @@ class TaskActivityRenderer {
     return rectangle;
   }
 
-  private Rectangle processRegularActivity(int rowNum, TaskActivity nextStarted, List<Offset> offsets) {
-    Task nextTask = nextStarted.getOwner();
-    if (nextTask.isMilestone() && !nextStarted.isFirst()) {
+  private Rectangle processRegularActivity(int rowNum, A activity, List<Offset> offsets) {
+    T nextTask = activity.getOwner();
+    if (myTaskApi.isMilestone(nextTask) && !myTaskApi.isFirst(activity)) {
       return null;
     }
-    java.awt.Rectangle nextBounds = getBoundingRectangle(rowNum, nextStarted, offsets);
+    java.awt.Rectangle nextBounds = getBoundingRectangle(rowNum, activity, offsets);
     myLabelsRenderer.stripVerticalLabelSpace(nextBounds);
     final int nextLength = nextBounds.width;
     final int topy = nextBounds.y + myStyle.marginTop;
 
     Canvas.Rectangle nextRectangle;
-    boolean nextHasNested = getChartModel().getTaskContainment().hasNestedTasks(nextTask);
-    Canvas container = getContainerFor(nextTask);
+    boolean nextHasNested = myTaskApi.hasNestedTasks(nextTask);
+    Canvas container = myCanvas;
     nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
-    if (nextTask.isMilestone()) {
+    if (myTaskApi.isMilestone(nextTask)) {
       nextRectangle.setStyle("task.milestone");
-    } else if (nextTask.isProjectTask()) {
+    } else if (myTaskApi.isProjectTask(nextTask)) {
       nextRectangle.setStyle("task.projectTask");
-      if (nextStarted.isFirst()) {
+      if (myTaskApi.isFirst(activity)) {
         Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.myLeftX, topy,
             nextLength, getRectangleHeight());
         supertaskStart.setStyle("task.projectTask.start");
       }
-      if (nextStarted.isLast()) {
+      if (myTaskApi.isLast(activity)) {
         Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.myLeftX - 1, topy,
             nextLength, getRectangleHeight());
         supertaskEnd.setStyle("task.projectTask.end");
@@ -135,38 +150,38 @@ class TaskActivityRenderer {
       }
     } else if (nextHasNested) {
       nextRectangle.setStyle("task.supertask");
-      if (nextStarted.isFirst()) {
+      if (myTaskApi.isFirst(activity)) {
         Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.myLeftX, topy,
             nextLength, getRectangleHeight());
         supertaskStart.setStyle("task.supertask.start");
       }
-      if (nextStarted.isLast()) {
+      if (myTaskApi.isLast(activity)) {
         Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.myLeftX, topy,
             nextLength, getRectangleHeight());
         supertaskEnd.setStyle("task.supertask.end");
 
       }
-    } else if (nextStarted.getIntensity() == 0f) {
+    } else if (myTaskApi.isVoid(activity)) {
       nextRectangle.setStyle("task.holiday");
     } else {
-      if (nextStarted.isFirst() && nextStarted.isLast()) {
+      if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
         nextRectangle.setStyle("task.startend");
-      } else if (false == nextStarted.isFirst() ^ nextStarted.isLast()) {
+      } else if (false == myTaskApi.isFirst(activity) ^ myTaskApi.isLast(activity)) {
         nextRectangle.setStyle("task");
-      } else if (nextStarted.isFirst()) {
+      } else if (myTaskApi.isFirst(activity)) {
         nextRectangle.setStyle("task.start");
-      } else if (nextStarted.isLast()) {
+      } else if (myTaskApi.isLast(activity)) {
         nextRectangle.setStyle("task.end");
       }
     }
     if (!"task.holiday".equals(nextRectangle.getStyle()) && !"task.supertask".equals(nextRectangle.getStyle())) {
-      nextRectangle.setBackgroundColor(nextStarted.getOwner().getColor());
+      nextRectangle.setBackgroundColor(myTaskApi.getColor(nextTask));
     }
-    container.bind(nextRectangle, nextStarted);
+    container.bind(nextRectangle, activity);
     return nextRectangle;
   }
 
-  private java.awt.Rectangle getBoundingRectangle(int rowNum, TaskActivity activity, List<Offset> offsets) {
+  private java.awt.Rectangle getBoundingRectangle(int rowNum, BarChartActivity<T> activity, List<Offset> offsets) {
     OffsetLookup offsetLookup = new OffsetLookup();
     int[] bounds = offsetLookup.getBounds(activity.getStart(), activity.getEnd(), offsets);
     int leftX = bounds[0];
@@ -179,11 +194,7 @@ class TaskActivityRenderer {
     return myStyle.height;
   }
 
-  private ChartModelImpl getChartModel() {
-    return myChartModel;
-  }
-
   private int getRowHeight() {
-    return getChartModel().getRowHeight();
+    return myChartApi.getRowHeight();
   }
 }
