@@ -22,8 +22,6 @@ import java.util.Date;
 
 import biz.ganttproject.core.time.GanttCalendar;
 
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
-
 /**
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 2:35:20 To change
  * this template use File | Settings | File Templates.

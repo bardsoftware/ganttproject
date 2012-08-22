@@ -28,7 +28,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreePath;
 
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;

@@ -24,9 +24,6 @@ import java.util.List;
 
 import javax.swing.AbstractListModel;
 
-import com.beust.jcommander.internal.Lists;
-
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
 /**

@@ -19,8 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.util;
 
 import java.awt.Color;
-import java.util.regex.Pattern;
-
 import biz.ganttproject.core.option.ColorOption;
 
 public class ColorConvertion {

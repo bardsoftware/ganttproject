@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;

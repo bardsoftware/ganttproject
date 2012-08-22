@@ -21,8 +21,6 @@ package net.sourceforge.ganttproject.document.webdav;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import javax.xml.ws.http.HTTPException;
-
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 
 

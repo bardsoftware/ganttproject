@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.chart.render;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.render.Style.Border;
 import biz.ganttproject.core.option.ColorOption;
 
 import com.google.common.base.Function;

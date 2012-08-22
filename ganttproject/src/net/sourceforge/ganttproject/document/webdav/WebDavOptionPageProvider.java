@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
