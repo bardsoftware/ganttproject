@@ -1,22 +1,22 @@
 /*
-GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2010 Dmitry Barashev
+Copyright 2010-2012 GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.chart;
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.chart.scene.gantt;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -29,29 +29,30 @@ import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
-import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 
 /**
  * Renders task activity rectangles on the Gantt chart.
+ * 
+ * @author dbarashev (Dmitry Barashev)
  */
-class TaskActivityRenderer<T, A extends BarChartActivity<T>> {
+public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
   private final Canvas myCanvas;
   private final TaskLabelSceneBuilder<T> myLabelsRenderer;
   private final Style myStyle;
   private final TaskApi<T, A> myTaskApi;
   private final ChartApi myChartApi;
 
-  static class Style {
+  public static class Style {
     int marginTop;
     int height;
 
-    Style(int marginTop, int height) {
+    public Style(int marginTop, int height) {
       this.marginTop = marginTop;
       this.height = height;
     }
   }
 
-  static interface TaskApi<T, A> {
+  public static interface TaskApi<T, A> {
     boolean isFirst(A activity);
     boolean isLast(A activity);
     boolean isVoid(A activity);
@@ -62,14 +63,14 @@ class TaskActivityRenderer<T, A extends BarChartActivity<T>> {
     Color getColor(T task);
   }
 
-  static interface ChartApi {
+  public static interface ChartApi {
     Date getChartStartDate();
     Date getEndDate();
     OffsetList getBottomUnitOffsets();
     int getRowHeight();
   }
 
-  TaskActivityRenderer(TaskApi<T, A> taskApi, ChartApi chartApi, Canvas canvas,
+  public TaskActivitySceneBuilder(TaskApi<T, A> taskApi, ChartApi chartApi, Canvas canvas,
       TaskLabelSceneBuilder<T> labelsRenderer, Style style) {
     myTaskApi = taskApi;
     myChartApi = chartApi;
@@ -78,7 +79,7 @@ class TaskActivityRenderer<T, A extends BarChartActivity<T>> {
     myLabelsRenderer = labelsRenderer;
   }
 
-  List<Rectangle> renderActivities(int rowNum, List<A> activities, List<Offset> offsets) {
+  public List<Rectangle> renderActivities(int rowNum, List<A> activities, List<Offset> offsets) {
     List<Rectangle> rectangles = new ArrayList<Rectangle>();
     for (A activity : activities) {
       if (myTaskApi.isFirst(activity) || myTaskApi.isLast(activity)) {
