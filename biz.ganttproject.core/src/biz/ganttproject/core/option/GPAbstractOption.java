@@ -23,8 +23,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-import biz.ganttproject.core.option.GPAbstractOption.I18N;
-
 public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
   public abstract static class I18N {
     private static I18N ourInstance;

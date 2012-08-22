@@ -21,8 +21,6 @@ package net.sourceforge.ganttproject.gui.window;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.image.BufferedImage;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;

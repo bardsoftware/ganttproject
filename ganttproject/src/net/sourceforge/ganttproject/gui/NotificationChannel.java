@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 
 public enum NotificationChannel {
