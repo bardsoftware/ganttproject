@@ -1,9 +1,22 @@
 /*
- * This code is provided under the terms of GPL version 3.
- * Please see LICENSE file for details
- * (C) Dmitry Barashev, GanttProject team, 2004-2008
- */
-package net.sourceforge.ganttproject.chart;
+Copyright 2004-2012 GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.chart.scene.gantt;
 
 import java.awt.Font;
 import java.util.ArrayList;
@@ -15,20 +28,14 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-//import net.sourceforge.ganttproject.task.Task;
-//import net.sourceforge.ganttproject.task.TaskActivity;
-//import net.sourceforge.ganttproject.task.TaskProperties;
 
 /**
- * This class is responsible for rendering text labels on the sides of task bars
- * It keeps the rendering options and it lays out the labels on rendering time
+ * This class is responsible for rendering text labels on the sides of task bars.
+ * 
+ * @author dbarashev (Dmitry Barashev)
  */
-class TaskLabelsRendererImpl<T> {
+public class TaskLabelSceneBuilder<T> {
   public static final int UP = 0;
 
   public static final int DOWN = 1;
@@ -41,27 +48,24 @@ class TaskLabelsRendererImpl<T> {
 
   private Canvas myCanvas;
 
-  private ChartOptionGroup myOptionGroup;
-
   private static List<String> ourInfoList;
-
-  //private TaskProperties myLabelFormatter;
 
   private Font myFont;
 
   private final TaskApi<T> myTaskApi;
 
-  interface TaskApi<T> {
+  public interface TaskApi<T> {
     Object getProperty(T task, String propertyID);
   }
 
-  interface InputApi {
+  public interface InputApi {
     EnumerationOption getTopLabelOption();
     EnumerationOption getBottomLabelOption();
     EnumerationOption getLeftLabelOption();
     EnumerationOption getRightLabelOption();
 
     Font getChartFont();
+
   }
 
   static {
@@ -77,26 +81,15 @@ class TaskLabelsRendererImpl<T> {
     ourInfoList.add("predecessors");
   }
 
-  TaskLabelsRendererImpl(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
+  public TaskLabelSceneBuilder(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
     myCanvas = canvas;
     myTaskApi = taskApi;
-    //myLabelFormatter = new TaskProperties(model.getTimeUnitStack());
-//    DefaultEnumerationOption<String> deo0 = new DefaultEnumerationOption<String>("taskLabelUp", ourInfoList);
-//    DefaultEnumerationOption<String> deo1 = new DefaultEnumerationOption<String>("taskLabelDown", ourInfoList);
-//    DefaultEnumerationOption<String> deo2 = new DefaultEnumerationOption<String>("taskLabelLeft", ourInfoList);
-//    DefaultEnumerationOption<String> deo3 = new DefaultEnumerationOption<String>("taskLabelRight", ourInfoList);
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
-    //myOptionGroup = new ChartOptionGroup("ganttChartDetails", myLabelOptions, model.getOptionEventDispatcher());
-    // model.getTaskManager().getCustomColumnStorage().addCustomColumnsListener(this);
     myFont = inputApi.getChartFont();
   }
 
-//  GPOptionGroup getOptionGroup() {
-//    return myOptionGroup;
-//  }
-
-  void createRightSideText(Rectangle rectangle) {
+  public void createRightSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = "";
     int xText, yText;
@@ -111,7 +104,7 @@ class TaskLabelsRendererImpl<T> {
     }
   }
 
-  void createDownSideText(Rectangle rectangle) {
+  public void createDownSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), DOWN);
 
@@ -123,7 +116,7 @@ class TaskLabelsRendererImpl<T> {
     }
   }
 
-  void createUpSideText(Rectangle rectangle) {
+  public void createUpSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
@@ -134,7 +127,7 @@ class TaskLabelsRendererImpl<T> {
     }
   }
 
-  void createLeftSideText(Rectangle rectangle) {
+  public void createLeftSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
@@ -161,23 +154,13 @@ class TaskLabelsRendererImpl<T> {
     StringBuffer result = new StringBuffer();
     Object property = myTaskApi.getProperty(task, myLabelOptions[position].getValue());
     if (property != null) {
-      if (property instanceof Boolean)
-        if (((Boolean) property).booleanValue())
-          result.append(getLanguage().getText("yes"));
-        else
-          result.append(getLanguage().getText("no"));
-      else
-        result.append(property);
+      result.append(property);
     }
     return result.toString();
   }
 
   private Canvas getPrimitiveContainer() {
     return myCanvas;
-  }
-
-  private GanttLanguage getLanguage() {
-    return GanttLanguage.getInstance();
   }
 
   public boolean isTextUp() {
@@ -200,7 +183,7 @@ class TaskLabelsRendererImpl<T> {
   static final int MEDIUM_SPACE = 2;
   static final int LARGE_SPACE = 4;
 
-  int calculateRowHeight() {
+  public int calculateRowHeight() {
     boolean textUP = isTextUp();
     boolean textDOWN = isTextDown();
 
@@ -233,7 +216,7 @@ class TaskLabelsRendererImpl<T> {
     nextBounds.y += space;
   }
 
-  int getFontHeight() {
+  public int getFontHeight() {
     return myFont.getSize();
   }
 }
