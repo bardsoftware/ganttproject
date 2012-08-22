@@ -26,12 +26,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -56,7 +56,59 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private GPOptionGroup[] myOptionGroups;
 
-  private final TaskLabelSceneBuilder myLabelsRenderer;
+  private final TaskLabelSceneBuilder<Task> myLabelsRenderer;
+
+  private TaskActivityRenderer.TaskApi<Task, TaskActivity> myTaskApi = new TaskActivityRenderer.TaskApi<Task, TaskActivity>() {
+    @Override
+    public boolean isFirst(TaskActivity activity) {
+      return activity.isFirst();
+    }
+    @Override
+    public boolean isLast(TaskActivity activity) {
+      return activity.isLast();
+    }
+    @Override
+    public boolean isVoid(TaskActivity activity) {
+      return activity.getIntensity() == 0f;
+    }
+    @Override
+    public boolean isProjectTask(Task task) {
+      return task.isProjectTask();
+    }
+    @Override
+    public boolean isMilestone(Task task) {
+      return task.isMilestone();
+    }
+    @Override
+    public boolean hasNestedTasks(Task task) {
+      return getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(task);
+    }
+    @Override
+    public Color getColor(Task task) {
+      return task.getColor();
+    }
+  };
+
+  private TaskActivityRenderer.ChartApi myChartApi = new TaskActivityRenderer.ChartApi() {
+    @Override
+    public Date getChartStartDate() {
+      return myModel.getOffsetAnchorDate();
+    }
+    @Override
+    public Date getEndDate() {
+      return getChartModel().getEndDate();
+    }
+    @Override
+    public OffsetList getBottomUnitOffsets() {
+      return getChartModel().getBottomUnitOffsets();
+    }
+    @Override
+    public int getRowHeight() {
+      return myModel.getRowHeight();
+    }
+  };
+  private final TaskActivityRenderer<Task, TaskActivity> myTaskActivityRenderer;
+  private final TaskActivityRenderer<Task, TaskActivity> myBaselineActivityRenderer;
 
   private final Canvas myLabelsLayer;
 
@@ -112,6 +164,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
         model.getOptionEventDispatcher());
     myOptionGroups = new GPOptionGroup[] { labelOptions };
+
+    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityRenderer.Style(0, getRectangleHeight()));
+    myBaselineActivityRenderer = createTaskActivitySceneBuilder(
+        getPrimitiveContainer().getLayer(2), new TaskActivityRenderer.Style(getRectangleHeight(), getRectangleHeight() / 2));
   }
 
   private List<Task> getVisibleTasks() {
@@ -212,10 +268,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
           } else {
             alg.recalculateActivities(t, baselineActivities, startDate, endDate);
           }
-          TaskActivityRenderer activityRenderer = new TaskActivityRenderer(myModel,
-              getPrimitiveContainer().getLayer(2), myLabelsRenderer, new TaskActivityRenderer.Style(
-                  getRectangleHeight(), getRectangleHeight() / 2));
-          List<Rectangle> baselineRectangles = activityRenderer.renderActivities(rowNum, baselineActivities,
+          List<Rectangle> baselineRectangles = myBaselineActivityRenderer.renderActivities(rowNum, baselineActivities,
               defaultUnitOffsets);
           for (int i = 0; i < baselineRectangles.size(); i++) {
             Rectangle r = baselineRectangles.get(i);
@@ -238,9 +291,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private List<Rectangle> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
       List<Offset> defaultUnitOffsets) {
-    TaskActivityRenderer activityRenderer = new TaskActivityRenderer(myModel, getPrimitiveContainer(),
-        myLabelsRenderer, new TaskActivityRenderer.Style(0, getRectangleHeight()));
-    List<Rectangle> rectangles = activityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
+    List<Rectangle> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
       renderProgressBar(rectangles);
     }
@@ -339,5 +390,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   Canvas getLabelLayer() {
     return myLabelsLayer;
+  }
+
+  private TaskActivityRenderer<Task, TaskActivity> createTaskActivitySceneBuilder(Canvas canvas, TaskActivityRenderer.Style style) {
+    return new TaskActivityRenderer<Task, TaskActivity>(myTaskApi, myChartApi, canvas, myLabelsRenderer, style);
   }
 }
