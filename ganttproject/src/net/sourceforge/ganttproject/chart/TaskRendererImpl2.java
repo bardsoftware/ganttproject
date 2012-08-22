@@ -19,15 +19,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -37,6 +44,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskProperties;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -59,8 +67,50 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
     myLabelsLayer = getPrimitiveContainer().newLayer();
-    myLabelsRenderer = new TaskLabelsRendererImpl(model, myLabelsLayer);
-    myOptionGroups = new GPOptionGroup[] { myLabelsRenderer.getOptionGroup() };
+
+    List<String> taskProperties = Lists.newArrayList("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
+    final DefaultEnumerationOption<String> topLabelOption = new DefaultEnumerationOption<String>("taskLabelUp", taskProperties);
+    final DefaultEnumerationOption<String> bottomLabelOption = new DefaultEnumerationOption<String>("taskLabelDown", taskProperties);
+    final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
+    final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
+
+    myLabelsRenderer = new TaskLabelsRendererImpl<Task>(new TaskLabelsRendererImpl.TaskApi<Task>() {
+      TaskProperties myLabelFormatter = new TaskProperties(getChartModel().getTimeUnitStack());
+
+      @Override
+      public Object getProperty(Task task, String propertyID) {
+        return myLabelFormatter.getProperty(task, propertyID);
+      }
+    }, new TaskLabelsRendererImpl.InputApi() {
+      @Override
+      public EnumerationOption getTopLabelOption() {
+        return topLabelOption;
+      }
+
+      @Override
+      public EnumerationOption getBottomLabelOption() {
+        return bottomLabelOption;
+      }
+
+      @Override
+      public EnumerationOption getLeftLabelOption() {
+        return leftLabelOption;
+      }
+
+      @Override
+      public EnumerationOption getRightLabelOption() {
+        return rightLabelOption;
+      }
+
+      @Override
+      public Font getChartFont() {
+        return getChartModel().getChartUIConfiguration().getChartFont();
+      }
+    }, myLabelsLayer);
+    GPOptionGroup labelOptions = new ChartOptionGroup("ganttChartDetails",
+        new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
+        model.getOptionEventDispatcher());
+    myOptionGroups = new GPOptionGroup[] { labelOptions };
   }
 
   private List<Task> getVisibleTasks() {
@@ -218,7 +268,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
     final Canvas container = getPrimitiveContainer().getLayer(0);
     final TimeUnit timeUnit = getChartModel().getTimeUnitStack().getDefaultTimeUnit();
-    final Task task = ((TaskActivity) rectangles.get(0).getModelObject()).getTask();
+    final Task task = ((TaskActivity) rectangles.get(0).getModelObject()).getOwner();
     float length = task.getDuration().getLength(timeUnit);
     float completed = task.getCompletionPercentage() * length / 100f;
     Rectangle lastProgressRectangle = null;

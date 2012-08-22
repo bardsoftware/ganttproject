@@ -95,7 +95,7 @@ public class LoadDistribution {
     if (activity.getIntensity() == 0) {
       return;
     }
-    addLoad(activity.getStart(), activity.getEnd(), load, myLoads, activity.getTask());
+    addLoad(activity.getStart(), activity.getEnd(), load, myLoads, activity.getOwner());
   }
 
   private void addLoad(Date startDate, Date endDate, float load, List<Load> loads, Task t) {

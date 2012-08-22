@@ -176,7 +176,7 @@ public class StyledPainterImpl implements Painter {
       if (modelObject instanceof TaskActivity == false) {
         throw new RuntimeException("Model object is expected to be TaskActivity ");
       }
-      Task task = ((TaskActivity) modelObject).getTask();
+      Task task = ((TaskActivity) modelObject).getOwner();
       Color c = task.getColor();
       myGraphics.setColor(task.getColor());
       ShapePaint shapePaint = task.getShape();
@@ -253,7 +253,7 @@ public class StyledPainterImpl implements Painter {
       if (modelObject instanceof TaskActivity == false) {
         throw new RuntimeException("Model object is expected to be TaskActivity ");
       }
-      Task task = ((TaskActivity) modelObject).getTask();
+      Task task = ((TaskActivity) modelObject).getOwner();
       myGraphics.setColor(task.getColor());
       Composite oldComposite = myGraphics.getComposite();
       myGraphics.setComposite(myAlphaComposite);
@@ -274,7 +274,7 @@ public class StyledPainterImpl implements Painter {
       if (c == null) {
         c = getDefaultColor();
       }
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getTask().isCritical()) {
+      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
         c = Color.RED;
       }
       myGraphics.setColor(c);
@@ -322,7 +322,7 @@ public class StyledPainterImpl implements Painter {
     @Override
     public void paint(Rectangle next) {
       Color c = getDefaultColor();
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getTask().isCritical()) {
+      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
         c = Color.RED;
       }
       myGraphics.setColor(c);
@@ -372,9 +372,9 @@ public class StyledPainterImpl implements Painter {
       if (modelObject instanceof TaskActivity == false) {
         throw new RuntimeException("Model object is expected to be TaskActivity ");
       }
-      Task task = ((TaskActivity) modelObject).getTask();
+      Task task = ((TaskActivity) modelObject).getOwner();
       Color c = task.getColor();
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getTask().isCritical()) {
+      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
         c = Color.RED;
       }
 

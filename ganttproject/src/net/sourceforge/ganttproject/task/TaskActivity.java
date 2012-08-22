@@ -2,24 +2,13 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import java.util.Date;
-
-import biz.ganttproject.core.time.TimeDuration;
-
+import biz.ganttproject.core.chart.scene.BarChartActivity;
 
 /**
  * @author bard
  */
-public interface TaskActivity {
-  Date getStart();
-
-  Date getEnd();
-
-  TimeDuration getDuration();
-
+public interface TaskActivity extends BarChartActivity<Task> {
   float getIntensity();
-
-  Task getTask();
 
   boolean isFirst();
 
