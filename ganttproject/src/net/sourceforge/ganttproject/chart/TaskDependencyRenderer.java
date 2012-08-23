@@ -28,11 +28,11 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
+import biz.ganttproject.core.chart.scene.BarChartConnector;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.util.MathUtil;
 
 /**
  * Renders dependency lines between tasks.
@@ -60,8 +60,8 @@ class TaskDependencyRenderer {
     Canvas primitiveContainer = myOutputCanvas;
     int arrowLength = 7;
     for (int i = 0; i < dependencyDrawData.size(); i++) {
-      PointVector dependantVector;
-      PointVector dependeeVector;
+      BarChartConnector.Vector dependantVector;
+      BarChartConnector.Vector dependeeVector;
       DependencyDrawData next = dependencyDrawData.get(i);
 
       dependantVector = next.myDependantVector;
@@ -75,18 +75,18 @@ class TaskDependencyRenderer {
         lineStyle = "dependency.line.hard";
       }
 
-      if (dependeeVector.reaches(dependantVector.getPoint())) {
+      if (dependeeVector.getHProjection().reaches(dependantVector.getHProjection().getPoint())) {
         // when dependee.end <= dependant.start && dependency.type is
         // any
         // or dependee.end <= dependant.end && dependency.type==FF
         // or dependee.start >= dependant.end && dependency.type==SF
-        int ysign = MathUtil.signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
+        int ysign = Integer.signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
         Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);
         Point second = new Point(dependantVector.getPoint(-3).x, dependeeVector.getPoint().y);
         Point third = new Point(dependantVector.getPoint(-3).x, dependantVector.getPoint().y);
 
         Line lastLine = null;
-        if (dependantVector.reaches(third)) {
+        if (dependantVector.getHProjection().reaches(new Point(third.x, 0))) {
           second.x += arrowLength;
           third.x += arrowLength;
           Point forth = dependantVector.getPoint();
@@ -103,8 +103,8 @@ class TaskDependencyRenderer {
         }
         lastLine.setArrow(Arrow.FINISH);
       } else {
-        Point first = dependeeVector.getPoint(3);
-        if (dependantVector.reaches(first)) {
+        if (dependantVector.getHProjection().reaches(dependeeVector.getHProjection().getPoint(3))) {
+          Point first = dependeeVector.getPoint(3);
           Point second = new Point(first.x, dependantVector.getPoint().y);
           line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
               first.y);
@@ -116,6 +116,7 @@ class TaskDependencyRenderer {
           line.setStyle(lineStyle);
           line.setArrow(Line.Arrow.FINISH);
         } else {
+          Point first = dependeeVector.getPoint(3);
           Point forth = dependantVector.getPoint(3);
           Point second = new Point(first.x, (first.y + forth.y) / 2);
           Point third = new Point(forth.x, (first.y + forth.y) / 2);
@@ -173,28 +174,32 @@ class TaskDependencyRenderer {
         continue;
       }
       Date[] bounds = activityBinding.getAlignedBounds();
-      PointVector dependantVector;
+      BarChartConnector.Vector dependantVector;
       if (bounds[0].equals(dependant.getStart())) {
-        dependantVector = new WestPointVector(new Point(
+        Point origin = new Point(
             dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX,
-            dependantRectangle.getMiddleY()));
+            dependantRectangle.getMiddleY());
+        dependantVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.WEST);
       } else if (bounds[0].equals(dependant.getEnd())) {
-        dependantVector = new EastPointVector(new Point(
+        Point origin = new Point(
             dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(),
-            dependantRectangle.getMiddleY()));
+            dependantRectangle.getMiddleY());
+        dependantVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.EAST);
       } else {
         throw new RuntimeException();
       }
 
-      PointVector dependeeVector;
+      BarChartConnector.Vector dependeeVector;
       if (bounds[1].equals(dependee.getStart())) {
-        dependeeVector = new WestPointVector(new Point(
+        Point origin = new Point(
             dependee.getOwner().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX,
-            dependeeRectangle.getMiddleY()));
+            dependeeRectangle.getMiddleY());
+        dependeeVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.WEST);
       } else if (bounds[1].equals(dependee.getEnd())) {
-        dependeeVector = new EastPointVector(new Point(
+        Point origin = new Point(
             dependee.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(),
-            dependeeRectangle.getMiddleY()));
+            dependeeRectangle.getMiddleY());
+        dependeeVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.EAST);
       } else {
         throw new RuntimeException("bounds: " + Arrays.asList(bounds) + " dependee=" + dependee + " dependant="
             + dependant);
@@ -210,12 +215,12 @@ class TaskDependencyRenderer {
 
     final TaskDependency myDependency;
 
-    final PointVector myDependantVector;
+    final BarChartConnector.Vector myDependantVector;
 
-    final PointVector myDependeeVector;
+    final BarChartConnector.Vector myDependeeVector;
 
     public DependencyDrawData(TaskDependency dependency, Canvas.Shape dependantPrimitive,
-        PointVector dependantVector, PointVector dependeeVector) {
+        BarChartConnector.Vector dependantVector, BarChartConnector.Vector dependeeVector) {
       myDependency = dependency;
       myDependantRectangle = (Canvas.Rectangle) dependantPrimitive;
       myDependantVector = dependantVector;
@@ -227,76 +232,6 @@ class TaskDependencyRenderer {
       return "From activity=" + myDependency.getActivityBinding().getDependantActivity() + " (vector="
           + myDependantVector + ")\n to activity=" + myDependency.getActivityBinding().getDependeeActivity()
           + " (vector=" + myDependeeVector;
-    }
-  }
-
-  private static abstract class PointVector {
-    private final Point myPoint;
-
-    protected PointVector(Point point) {
-      myPoint = point;
-    }
-
-    Point getPoint() {
-      return myPoint;
-    }
-
-    abstract PointVector moveOrigin(Point p);
-
-    abstract boolean reaches(Point targetPoint);
-
-    abstract Point getPoint(int i);
-  }
-
-  private static class WestPointVector extends PointVector {
-    protected WestPointVector(Point point) {
-      super(point);
-    }
-
-    @Override
-    boolean reaches(Point targetPoint) {
-      return targetPoint.x <= getPoint().x;
-    }
-
-    @Override
-    Point getPoint(int diff) {
-      return new Point(getPoint().x - diff, getPoint().y);
-    }
-
-    @Override
-    public String toString() {
-      return "<=" + getPoint().toString();
-    }
-
-    @Override
-    PointVector moveOrigin(Point p) {
-      return new WestPointVector(p);
-    }
-  }
-
-  private static class EastPointVector extends PointVector {
-    protected EastPointVector(Point point) {
-      super(point);
-    }
-
-    @Override
-    boolean reaches(Point targetPoint) {
-      return targetPoint.x >= getPoint().x;
-    }
-
-    @Override
-    Point getPoint(int diff) {
-      return new Point(getPoint().x + diff, getPoint().y);
-    }
-
-    @Override
-    public String toString() {
-      return ">=" + getPoint().toString();
-    }
-
-    @Override
-    PointVector moveOrigin(Point p) {
-      return new EastPointVector(p);
     }
   }
 }
