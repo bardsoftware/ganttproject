@@ -26,7 +26,7 @@ import java.awt.Point;
  * 
  * @author dbarashev (Dmitry Barashev)
  */
-public interface BarChartConnector {
+public class BarChartConnector {
   
   /**
    * Vector is an origin point + direction
@@ -70,5 +70,27 @@ public interface BarChartConnector {
     public Vector getHProjection() {
       return myHProjection == null ? this : myHProjection;
     }
+  }
+
+  private final Vector myStart;
+  private final Vector myEnd;
+  private final String myStyle;
+  
+  public BarChartConnector(Vector start, Vector end, String style) {
+    myStart = start;
+    myEnd = end;
+    myStyle = style;
+  }
+  
+  public Vector getStart() {
+    return myStart;
+  }
+  
+  public Vector getEnd() {
+    return myEnd;
+  }
+  
+  public String getStyleName() {
+    return myStyle;
   }
 }
