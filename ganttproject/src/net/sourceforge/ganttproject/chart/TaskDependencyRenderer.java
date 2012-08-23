@@ -21,18 +21,19 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.Line;
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
-import biz.ganttproject.core.chart.scene.BarChartConnector;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.scene.BarChartConnector;
 
 /**
  * Renders dependency lines between tasks.
@@ -43,37 +44,33 @@ class TaskDependencyRenderer {
   private final List<Task> myVisibleTasks;
   private final Canvas myTaskCanvas;
   private final Canvas myOutputCanvas;
+  private final ChartApi myChartApi;
+
+  public static interface ChartApi {
+    int getBarHeight();
+  }
 
   public TaskDependencyRenderer(List<Task> visibleTasks, Canvas taskCanvas,
-      Canvas outputCanvas) {
+      Canvas outputCanvas, ChartApi chartApi) {
+    myChartApi = chartApi;
     myVisibleTasks = visibleTasks;
     myTaskCanvas = taskCanvas;
     myOutputCanvas = outputCanvas;
   }
 
   void createDependencyLines() {
-    List<DependencyDrawData> dependencyDrawData = prepareDependencyDrawData();
+    List<BarChartConnector> dependencyDrawData = prepareDependencyDrawData();
     drawDependencies(dependencyDrawData);
   }
 
-  private void drawDependencies(List<DependencyDrawData> dependencyDrawData) {
-    Canvas primitiveContainer = myOutputCanvas;
-    int arrowLength = 7;
-    for (int i = 0; i < dependencyDrawData.size(); i++) {
-      BarChartConnector.Vector dependantVector;
-      BarChartConnector.Vector dependeeVector;
-      DependencyDrawData next = dependencyDrawData.get(i);
 
-      dependantVector = next.myDependantVector;
-      dependeeVector = next.myDependeeVector;
+  private void drawDependencies(Collection<BarChartConnector> connectors) {
+    Canvas primitiveContainer = myOutputCanvas;
+    for (BarChartConnector connector : connectors) {
+      BarChartConnector.Vector dependantVector = connector.getEnd();
+      BarChartConnector.Vector dependeeVector = connector.getStart();
       // Determine the line style (depending on type of dependency)
-      Line line;
-      String lineStyle;
-      if (next.myDependency.getHardness() == TaskDependency.Hardness.RUBBER) {
-        lineStyle = "dependency.line.rubber";
-      } else {
-        lineStyle = "dependency.line.hard";
-      }
+      String lineStyle = connector.getStyleName();
 
       if (dependeeVector.getHProjection().reaches(dependantVector.getHProjection().getPoint())) {
         // when dependee.end <= dependant.start && dependency.type is
@@ -83,61 +80,39 @@ class TaskDependencyRenderer {
         int ysign = Integer.signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
         Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);
         Point second = new Point(dependantVector.getPoint(-3).x, dependeeVector.getPoint().y);
-        Point third = new Point(dependantVector.getPoint(-3).x, dependantVector.getPoint().y);
-
-        Line lastLine = null;
-        if (dependantVector.getHProjection().reaches(new Point(third.x, 0))) {
-          second.x += arrowLength;
-          third.x += arrowLength;
-          Point forth = dependantVector.getPoint();
-          lastLine = primitiveContainer.createLine(third.x, third.y, forth.x, forth.y);
-          lastLine.setStyle(lineStyle);
-        } else {
-          third.y -= ysign * next.myDependantRectangle.myHeight / 2;
-        }
+        Point third = new Point(dependantVector.getPoint(-3).x, dependantVector.getPoint().y - ysign * myChartApi.getBarHeight() / 2);
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
         secondLine.setStyle(lineStyle);
-        if (lastLine == null) {
-          lastLine = secondLine;
-        }
-        lastLine.setArrow(Arrow.FINISH);
+        secondLine.setArrow(Arrow.FINISH);
+      } else if (dependantVector.getHProjection().reaches(dependeeVector.getHProjection().getPoint(3))) {
+        Point first = dependeeVector.getPoint(3);
+        Point second = new Point(first.x, dependantVector.getPoint().y);
+        primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
+            first.y).setStyle(lineStyle);
+        primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
+        Line line = primitiveContainer.createLine(second.x, second.y, dependantVector.getPoint().x,
+            dependantVector.getPoint().y);
+        line.setStyle(lineStyle);
+        line.setArrow(Line.Arrow.FINISH);
       } else {
-        if (dependantVector.getHProjection().reaches(dependeeVector.getHProjection().getPoint(3))) {
-          Point first = dependeeVector.getPoint(3);
-          Point second = new Point(first.x, dependantVector.getPoint().y);
-          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
-              first.y);
-          line.setStyle(lineStyle);
-          line = primitiveContainer.createLine(first.x, first.y, second.x, second.y);
-          line.setStyle(lineStyle);
-          line = primitiveContainer.createLine(second.x, second.y, dependantVector.getPoint().x,
-              dependantVector.getPoint().y);
-          line.setStyle(lineStyle);
-          line.setArrow(Line.Arrow.FINISH);
-        } else {
-          Point first = dependeeVector.getPoint(3);
-          Point forth = dependantVector.getPoint(3);
-          Point second = new Point(first.x, (first.y + forth.y) / 2);
-          Point third = new Point(forth.x, (first.y + forth.y) / 2);
-          line = primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
-              first.y);
-          line = primitiveContainer.createLine(first.x, first.y, second.x, second.y);
-          line.setStyle(lineStyle);
-          line = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
-          line.setStyle(lineStyle);
-          line = primitiveContainer.createLine(third.x, third.y, forth.x, forth.y);
-          line.setStyle(lineStyle);
-          line = primitiveContainer.createLine(forth.x, forth.y, dependantVector.getPoint().x,
-              dependantVector.getPoint().y);
-          line.setStyle(lineStyle);
-        }
+        Point first = dependeeVector.getPoint(3);
+        Point forth = dependantVector.getPoint(3);
+        Point second = new Point(first.x, (first.y + forth.y) / 2);
+        Point third = new Point(forth.x, (first.y + forth.y) / 2);
+        primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
+            first.y).setStyle(lineStyle);
+        primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
+        primitiveContainer.createLine(second.x, second.y, third.x, third.y).setStyle(lineStyle);
+        primitiveContainer.createLine(third.x, third.y, forth.x, forth.y).setStyle(lineStyle);
+        primitiveContainer.createLine(forth.x, forth.y, dependantVector.getPoint().x,
+            dependantVector.getPoint().y).setStyle(lineStyle);
       }
     }
   }
 
-  private List<DependencyDrawData> prepareDependencyDrawData() {
-    List<DependencyDrawData> result = new ArrayList<DependencyDrawData>();
+  private List<BarChartConnector> prepareDependencyDrawData() {
+    List<BarChartConnector> result = new ArrayList<BarChartConnector>();
     for (Task nextTask : myVisibleTasks) {
       if (nextTask != null) {
         prepareDependencyDrawData(nextTask, result);
@@ -146,7 +121,7 @@ class TaskDependencyRenderer {
     return result;
   }
 
-  private void prepareDependencyDrawData(Task task, List<DependencyDrawData> result) {
+  private void prepareDependencyDrawData(Task task, List<BarChartConnector> result) {
     TaskDependency[] deps = task.getDependencies().toArray();
     for (int i = 0; i < deps.length; i++) {
       TaskDependency next = deps[i];
@@ -204,34 +179,7 @@ class TaskDependencyRenderer {
         throw new RuntimeException("bounds: " + Arrays.asList(bounds) + " dependee=" + dependee + " dependant="
             + dependant);
       }
-      // System.err.println("dependant rectangle="+dependantRectangle+"\ndependeeREctangle="+dependeeRectangle+"\ndependantVector="+dependantVector+"\ndependeeVector="+dependeeVector);
-      DependencyDrawData data = new DependencyDrawData(next, dependantRectangle, dependantVector, dependeeVector);
-      result.add(data);
-    }
-  }
-
-  private static class DependencyDrawData {
-    final Canvas.Rectangle myDependantRectangle;
-
-    final TaskDependency myDependency;
-
-    final BarChartConnector.Vector myDependantVector;
-
-    final BarChartConnector.Vector myDependeeVector;
-
-    public DependencyDrawData(TaskDependency dependency, Canvas.Shape dependantPrimitive,
-        BarChartConnector.Vector dependantVector, BarChartConnector.Vector dependeeVector) {
-      myDependency = dependency;
-      myDependantRectangle = (Canvas.Rectangle) dependantPrimitive;
-      myDependantVector = dependantVector;
-      myDependeeVector = dependeeVector;
-    }
-
-    @Override
-    public String toString() {
-      return "From activity=" + myDependency.getActivityBinding().getDependantActivity() + " (vector="
-          + myDependantVector + ")\n to activity=" + myDependency.getActivityBinding().getDependeeActivity()
-          + " (vector=" + myDependeeVector;
+      result.add(new BarChartConnector(dependeeVector, dependantVector, next.getHardness() == Hardness.STRONG ? "dependency.line.hard" : "dependency.line.rubber"));
     }
   }
 }

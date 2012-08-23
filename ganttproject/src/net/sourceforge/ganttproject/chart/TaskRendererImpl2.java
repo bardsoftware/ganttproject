@@ -197,8 +197,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderDependencies() {
+    TaskDependencyRenderer.ChartApi chartApi = new TaskDependencyRenderer.ChartApi() {
+      public int getBarHeight() {
+        return getRectangleHeight();
+      }
+    };
     TaskDependencyRenderer dependencyRenderer = new TaskDependencyRenderer(myModel.getVisibleTasks(),
-        getPrimitiveContainer(), getPrimitiveContainer().getLayer(1));
+        getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), chartApi);
     dependencyRenderer.createDependencyLines();
   }
 
