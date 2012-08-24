@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package net.sourceforge.ganttproject.chart;
+package biz.ganttproject.core.chart.scene.gantt;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -37,7 +37,7 @@ import biz.ganttproject.core.chart.scene.Polyline;
  *
  * @author Dmitry Barashev
  */
-class TaskDependencyRenderer<T, D extends BarChartConnector<T, D>> {
+public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
   private final Canvas myTaskCanvas;
   private final Canvas myOutputCanvas;
   private final ChartApi myChartApi;
@@ -55,7 +55,7 @@ class TaskDependencyRenderer<T, D extends BarChartConnector<T, D>> {
     int getBarHeight();
   }
 
-  public TaskDependencyRenderer(Canvas taskCanvas, Canvas outputCanvas, TaskApi<T, D> taskApi, ChartApi chartApi) {
+  public DependencySceneBuilder(Canvas taskCanvas, Canvas outputCanvas, TaskApi<T, D> taskApi, ChartApi chartApi) {
     myTaskApi = taskApi;
     myChartApi = chartApi;
     //myVisibleTasks = visibleTasks;
@@ -63,7 +63,7 @@ class TaskDependencyRenderer<T, D extends BarChartConnector<T, D>> {
     myOutputCanvas = outputCanvas;
   }
 
-  void createDependencyLines() {
+  public void build() {
     List<Polyline> dependencyDrawData = prepareDependencyDrawData();
     drawDependencies(dependencyDrawData);
   }

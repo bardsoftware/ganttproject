@@ -43,6 +43,7 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.Polyline;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
+import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -202,13 +203,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderDependencies() {
-    TaskDependencyRenderer.ChartApi chartApi = new TaskDependencyRenderer.ChartApi() {
+    DependencySceneBuilder.ChartApi chartApi = new DependencySceneBuilder.ChartApi() {
       @Override
       public int getBarHeight() {
         return getRectangleHeight();
       }
     };
-    TaskDependencyRenderer.TaskApi<Task, TaskDependency> taskApi = new TaskDependencyRenderer.TaskApi<Task, TaskDependency>() {
+    DependencySceneBuilder.TaskApi<Task, TaskDependency> taskApi = new DependencySceneBuilder.TaskApi<Task, TaskDependency>() {
       @Override
       public boolean isMilestone(Task task) {
         return task.isMilestone();
@@ -249,9 +250,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return myModel.getVisibleTasks();
       }
     };
-    TaskDependencyRenderer<Task, TaskDependency> dependencyRenderer = new TaskDependencyRenderer<Task, TaskDependency>(
+    DependencySceneBuilder<Task, TaskDependency> dependencyRenderer = new DependencySceneBuilder<Task, TaskDependency>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
-    dependencyRenderer.createDependencyLines();
+    dependencyRenderer.build();
   }
 
   private void renderTasksAboveAndBelowViewport(List<Task> tasksAboveViewport, List<Task> tasksBelowViewport,
