@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.task.dependency;
 
 import java.util.Date;
 
+import biz.ganttproject.core.chart.scene.BarChartConnector;
+
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -28,7 +30,7 @@ import net.sourceforge.ganttproject.task.TaskActivity;
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 2:32:17 To change
  * this template use File | Settings | File Templates.
  */
-public interface TaskDependency {
+public interface TaskDependency extends BarChartConnector<Task, TaskDependency> {
   abstract class Hardness {
     public static final Hardness RUBBER = new Hardness("Rubber") {
       @Override

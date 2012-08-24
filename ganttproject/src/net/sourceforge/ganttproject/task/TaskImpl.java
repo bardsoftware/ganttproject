@@ -118,6 +118,8 @@ public class TaskImpl implements Task {
 
   private boolean critical;
 
+  private MilestoneTaskFakeActivity myMilestoneActivity;
+
   public final static int NONE = 0;
 
   public final static int EARLIESTBEGIN = 1;
@@ -376,7 +378,7 @@ public class TaskImpl implements Task {
   @Override
   public TaskActivity[] getActivities() {
     if (isMilestone()) {
-      return new TaskActivity[] {new MilestoneTaskFakeActivity(this)};
+      return new TaskActivity[] { myMilestoneActivity };
     }
     List<TaskActivity> activities = myMutator == null ? null : myMutator.getActivities();
     if (activities == null) {
@@ -884,6 +886,9 @@ public class TaskImpl implements Task {
       setEnd(null);
     }
     isMilestone = milestone;
+    if (isMilestone) {
+      myMilestoneActivity = new MilestoneTaskFakeActivity(this);
+    }
   }
 
   @Override

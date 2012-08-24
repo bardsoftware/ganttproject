@@ -18,7 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.dependency;
 
+import biz.ganttproject.core.chart.scene.BarChartActivity;
+import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivity;
 
 /**
  * @author bard
@@ -35,6 +38,10 @@ public class TaskDependencyImpl implements TaskDependency {
   private Hardness myHardness;
 
   private TaskDependencyCollectionImpl myCollection;
+
+  private BarChartActivity<Task> myStartActivity;
+
+  private TaskActivity myEndActivity;
 
   public TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection) {
     myDependant = dependant;
@@ -59,6 +66,8 @@ public class TaskDependencyImpl implements TaskDependency {
 
   @Override
   public void setConstraint(TaskDependencyConstraint constraint) {
+    myStartActivity = null;
+    myEndActivity = null;
     myConstraint = constraint;
     constraint.setTaskDependency(this);
     myCollection.fireChanged(this);
@@ -117,5 +126,27 @@ public class TaskDependencyImpl implements TaskDependency {
   @Override
   public String toString() {
     return myDependant + "->" + myDependee;
+  }
+
+  public BarChartActivity<Task> getStart() {
+//    if (myStartActivity == null) {
+      ActivityBinding activityBinding = getConstraint().getActivityBinding();
+      return activityBinding.getDependeeActivity();
+      //myStartActivity = dependeeActivity.getOwner().isMilestone() ? new MilestoneTaskFakeActivity(dependeeActivity.getOwner()) : dependeeActivity;
+//    }
+//    return myStartActivity;
+  }
+
+  public BarChartActivity<Task> getEnd() {
+//    if (myEndActivity == null) {
+      ActivityBinding activityBinding = getConstraint().getActivityBinding();
+      return activityBinding.getDependantActivity();
+      //myEndActivity = dependantActivity.getOwner().isMilestone() ? new MilestoneTaskFakeActivity(dependantActivity.getOwner()) : dependantActivity;
+//    }
+//    return myEndActivity;
+  }
+
+  public TaskDependency getImpl() {
+    return this;
   }
 }
