@@ -15,60 +15,65 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.BarChartConnector;
+import biz.ganttproject.core.chart.scene.Polyline;
 
 /**
  * Renders dependency lines between tasks.
  *
  * @author Dmitry Barashev
  */
-class TaskDependencyRenderer {
-  private final List<Task> myVisibleTasks;
+class TaskDependencyRenderer<T, D extends BarChartConnector<T, D>> {
   private final Canvas myTaskCanvas;
   private final Canvas myOutputCanvas;
   private final ChartApi myChartApi;
+  private final TaskApi<T, D> myTaskApi;
+
+  public static interface TaskApi<T, D> {
+    boolean isMilestone(T task);
+    Dimension getUnitVector(BarChartActivity<T> activity, D dependency);
+    String getStyle(D dependency);
+    Iterable<D> getConnectors(T task);
+    List<T> getTasks();
+  }
 
   public static interface ChartApi {
     int getBarHeight();
   }
 
-  public TaskDependencyRenderer(List<Task> visibleTasks, Canvas taskCanvas,
-      Canvas outputCanvas, ChartApi chartApi) {
+  public TaskDependencyRenderer(Canvas taskCanvas, Canvas outputCanvas, TaskApi<T, D> taskApi, ChartApi chartApi) {
+    myTaskApi = taskApi;
     myChartApi = chartApi;
-    myVisibleTasks = visibleTasks;
+    //myVisibleTasks = visibleTasks;
     myTaskCanvas = taskCanvas;
     myOutputCanvas = outputCanvas;
   }
 
   void createDependencyLines() {
-    List<BarChartConnector> dependencyDrawData = prepareDependencyDrawData();
+    List<Polyline> dependencyDrawData = prepareDependencyDrawData();
     drawDependencies(dependencyDrawData);
   }
 
 
-  private void drawDependencies(Collection<BarChartConnector> connectors) {
+  public void drawDependencies(Collection<Polyline> connectors) {
     Canvas primitiveContainer = myOutputCanvas;
-    for (BarChartConnector connector : connectors) {
-      BarChartConnector.Vector dependantVector = connector.getEnd();
-      BarChartConnector.Vector dependeeVector = connector.getStart();
+    for (Polyline connector : connectors) {
+      Polyline.Vector dependantVector = connector.getEnd();
+      Polyline.Vector dependeeVector = connector.getStart();
       // Determine the line style (depending on type of dependency)
       String lineStyle = connector.getStyleName();
 
@@ -111,75 +116,47 @@ class TaskDependencyRenderer {
     }
   }
 
-  private List<BarChartConnector> prepareDependencyDrawData() {
-    List<BarChartConnector> result = new ArrayList<BarChartConnector>();
-    for (Task nextTask : myVisibleTasks) {
-      if (nextTask != null) {
-        prepareDependencyDrawData(nextTask, result);
+  private List<Polyline> prepareDependencyDrawData() {
+    List<Polyline> result = new ArrayList<Polyline>();
+    for (T t : myTaskApi.getTasks()) {
+      if (t != null) {
+        for (D td : myTaskApi.getConnectors(t)) {
+          prepareDependencyDrawData(td, result);
+        }
       }
     }
     return result;
   }
 
-  private void prepareDependencyDrawData(Task task, List<BarChartConnector> result) {
-    TaskDependency[] deps = task.getDependencies().toArray();
-    for (int i = 0; i < deps.length; i++) {
-      TaskDependency next = deps[i];
-      TaskDependency.ActivityBinding activityBinding = next.getActivityBinding();
-      TaskActivity dependant = activityBinding.getDependantActivity();
-      if (dependant.getOwner().isMilestone()) {
-        dependant = new MilestoneTaskFakeActivity(dependant.getOwner());
-      }
-      Canvas graphicPrimitiveContainer = myTaskCanvas;
-      Canvas.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
-      if (dependantRectangle == null) {
-        // System.out.println("dependantRectangle == null");
-        continue;
-      }
-      TaskActivity dependee = activityBinding.getDependeeActivity();
-      if (dependee.getOwner().isMilestone()) {
-        dependee = new MilestoneTaskFakeActivity(dependee.getOwner());
-      }
-      Canvas.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
-      if (dependeeRectangle == null) {
-        // System.out.println("dependeeRectangle == null");
-        continue;
-      }
-      if (!dependantRectangle.isVisible() && !dependeeRectangle.isVisible()) {
-        continue;
-      }
-      Date[] bounds = activityBinding.getAlignedBounds();
-      BarChartConnector.Vector dependantVector;
-      if (bounds[0].equals(dependant.getStart())) {
-        Point origin = new Point(
-            dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.myLeftX,
-            dependantRectangle.getMiddleY());
-        dependantVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.WEST);
-      } else if (bounds[0].equals(dependant.getEnd())) {
-        Point origin = new Point(
-            dependant.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependantRectangle.getRightX(),
-            dependantRectangle.getMiddleY());
-        dependantVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.EAST);
-      } else {
-        throw new RuntimeException();
-      }
+  private void prepareDependencyDrawData(D connector, List<Polyline> result) {
+    BarChartActivity<T> dependant = connector.getEnd();
+    BarChartActivity<T> dependee = connector.getStart();
 
-      BarChartConnector.Vector dependeeVector;
-      if (bounds[1].equals(dependee.getStart())) {
-        Point origin = new Point(
-            dependee.getOwner().isMilestone() ? dependeeRectangle.getMiddleX() : dependeeRectangle.myLeftX,
-            dependeeRectangle.getMiddleY());
-        dependeeVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.WEST);
-      } else if (bounds[1].equals(dependee.getEnd())) {
-        Point origin = new Point(
-            dependee.getOwner().isMilestone() ? dependantRectangle.getMiddleX() : dependeeRectangle.getRightX(),
-            dependeeRectangle.getMiddleY());
-        dependeeVector = new BarChartConnector.Vector(origin, BarChartConnector.Vector.EAST);
-      } else {
-        throw new RuntimeException("bounds: " + Arrays.asList(bounds) + " dependee=" + dependee + " dependant="
-            + dependant);
-      }
-      result.add(new BarChartConnector(dependeeVector, dependantVector, next.getHardness() == Hardness.STRONG ? "dependency.line.hard" : "dependency.line.rubber"));
+    Canvas graphicPrimitiveContainer = myTaskCanvas;
+    Canvas.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
+    if (dependantRectangle == null) {
+      return;
     }
+    Canvas.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
+    if (dependeeRectangle == null) {
+      return;
+    }
+    if (!dependantRectangle.isVisible() && !dependeeRectangle.isVisible()) {
+      return;
+    }
+    Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector.getImpl());
+    int dependantOriginX = (dependantDirection == Polyline.Vector.WEST) ? dependantRectangle.getLeftX() : dependantRectangle.getRightX();
+    Point dependantOrigin = new Point(
+        myTaskApi.isMilestone(dependant.getOwner()) ? dependantRectangle.getMiddleX() : dependantOriginX,
+        dependantRectangle.getMiddleY());
+    Polyline.Vector dependantVector = new Polyline.Vector(dependantOrigin, dependantDirection);
+
+    Dimension dependeeDirection = myTaskApi.getUnitVector(dependee, connector.getImpl());
+    int dependeeOriginX = (dependeeDirection == Polyline.Vector.WEST) ? dependeeRectangle.getLeftX() : dependeeRectangle.getRightX();
+    Point dependeeOrigin = new Point(
+        myTaskApi.isMilestone(dependee.getOwner()) ? dependeeRectangle.getMiddleX() : dependeeOriginX,
+        dependeeRectangle.getMiddleY());
+    Polyline.Vector dependeeVector = new Polyline.Vector(dependeeOrigin, dependeeDirection);
+    result.add(new Polyline(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));
   }
 }

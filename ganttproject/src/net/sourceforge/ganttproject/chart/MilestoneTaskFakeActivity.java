@@ -34,7 +34,6 @@ public class MilestoneTaskFakeActivity implements TaskActivity {
   }
 
   public MilestoneTaskFakeActivity(Task task, Date startTime, Date endTime) {
-    assert task.isMilestone();
     myTask = task;
     myStartTime = startTime;
     myEndTime = endTime;

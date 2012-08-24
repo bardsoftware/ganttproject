@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,12 +27,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
+import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
+import net.sourceforge.ganttproject.task.TaskActivity;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
+import biz.ganttproject.core.chart.scene.Polyline;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -41,12 +51,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
-import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskProperties;
+import com.google.common.collect.Lists;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -198,12 +203,54 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private void renderDependencies() {
     TaskDependencyRenderer.ChartApi chartApi = new TaskDependencyRenderer.ChartApi() {
+      @Override
       public int getBarHeight() {
         return getRectangleHeight();
       }
     };
-    TaskDependencyRenderer dependencyRenderer = new TaskDependencyRenderer(myModel.getVisibleTasks(),
-        getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), chartApi);
+    TaskDependencyRenderer.TaskApi<Task, TaskDependency> taskApi = new TaskDependencyRenderer.TaskApi<Task, TaskDependency>() {
+      @Override
+      public boolean isMilestone(Task task) {
+        return task.isMilestone();
+      }
+
+      @Override
+      public Dimension getUnitVector(BarChartActivity<Task> activity, TaskDependency dependency) {
+        ActivityBinding activityBinding = dependency.getActivityBinding();
+        TaskDependencyConstraint.Type type = dependency.getConstraint().getType();
+        if (activity == activityBinding.getDependeeActivity()) {
+          if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+            return Polyline.Vector.EAST;
+          }
+          return Polyline.Vector.WEST;
+        } else if (activity == activityBinding.getDependantActivity()) {
+          if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
+            return Polyline.Vector.EAST;
+          }
+          return Polyline.Vector.WEST;
+        } else {
+          assert false : "Should not be here";
+          return null;
+        }
+      }
+
+      @Override
+      public String getStyle(TaskDependency dependency) {
+        return dependency.getHardness() == TaskDependency.Hardness.STRONG ? "dependency.line.hard" : "dependency.line.rubber";
+      }
+
+      @Override
+      public Iterable<TaskDependency> getConnectors(Task task) {
+        return Arrays.asList(task.getDependencies().toArray());
+      }
+
+      @Override
+      public List<Task> getTasks() {
+        return myModel.getVisibleTasks();
+      }
+    };
+    TaskDependencyRenderer<Task, TaskDependency> dependencyRenderer = new TaskDependencyRenderer<Task, TaskDependency>(
+        getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
     dependencyRenderer.createDependencyLines();
   }
 
