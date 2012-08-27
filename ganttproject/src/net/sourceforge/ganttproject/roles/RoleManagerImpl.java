@@ -74,13 +74,6 @@ public class RoleManagerImpl implements RoleManager {
     return myProjectRoleSet.getRoles();
   }
 
-  /** Add a role on the list */
-  @Override
-  public void add(int ID, String roleName) {
-    // myProjectLevelRoles.add(newRole(ID, role));
-    myProjectRoleSet.createRole(roleName, ID);
-  }
-
   @Override
   public RoleSet[] getRoleSets() {
     return myRoleSets.toArray(new RoleSet[0]);

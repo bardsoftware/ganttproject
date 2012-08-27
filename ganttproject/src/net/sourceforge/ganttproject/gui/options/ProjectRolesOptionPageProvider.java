@@ -34,7 +34,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 /**
  * Provides project roles page in the project settings dialog.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
@@ -67,7 +67,7 @@ public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
       @Override
       protected Role createValue(Role prototype) {
         RoleSet projectRoles = getRoleManager().getProjectRoleSet();
-        return projectRoles.createRole(prototype.getName(), projectRoles.getRoles().length);
+        return projectRoles.createRole(prototype.getName());
       }
 
       @Override

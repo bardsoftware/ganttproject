@@ -36,10 +36,6 @@ public interface RoleManager {
   // public String [] getRolesShort();
   public Role[] getProjectLevelRoles();
 
-  /** Load roles from the file */
-  /** Add a role on the list */
-  public void add(int ID, String role);
-
   public class Access {
     public static RoleManager getInstance() {
       return ourInstance;

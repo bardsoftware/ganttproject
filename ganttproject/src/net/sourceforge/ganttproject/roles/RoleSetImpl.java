@@ -48,6 +48,17 @@ public class RoleSetImpl implements RoleSet {
   }
 
   @Override
+  public Role createRole(String name) {
+    int maxId = 0;
+    for (Role role : myRoles) {
+      if (role.getID() > maxId) {
+        maxId = role.getID();
+      }
+    }
+    return createRole(name, maxId + 1);
+  }
+
+  @Override
   public Role createRole(String name, int persistentID) {
     RoleImpl result = new RoleImpl(persistentID, name, this);
     myRoles.add(result);
