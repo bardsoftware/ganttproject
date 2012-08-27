@@ -280,14 +280,10 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       Document defaultDocument = document.getPortfolio().getDefaultDocument();
       project.open(defaultDocument);
     }
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        project.setModified(false);
-      }
-    });
 
-    TaskManager taskManager = project.getTaskManager();
+    boolean resetModified = true;
+
+    final TaskManager taskManager = project.getTaskManager();
     boolean hasLegacyMilestones = false;
     for (Task t : taskManager.getTasks()) {
       if (((TaskImpl)t).isLegacyMilestone()) {
@@ -299,19 +295,33 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       ConvertMilestones option = myConvertMilestonesOption.getSelectedValue() == null ? ConvertMilestones.UNKNOWN : myConvertMilestonesOption.getSelectedValue();
       switch (option) {
       case UNKNOWN:
-        tryPatchMilestones(taskManager);
+        SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+            tryPatchMilestones(project, taskManager);
+          }
+        });
         break;
       case TRUE:
         taskManager.setZeroMilestones(true);
+        resetModified = false;
         break;
       case FALSE:
         taskManager.setZeroMilestones(false);
         break;
       }
     }
+
+    if (resetModified) {
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          project.setModified(false);
+        }
+      });
+    }
   }
 
-  private void tryPatchMilestones(final TaskManager taskManager) {
+  private void tryPatchMilestones(final IGanttProject project, final TaskManager taskManager) {
     final JRadioButton buttonConvert = new JRadioButton(i18n.getText("legacyMilestones.choice.convert"));
     final JRadioButton buttonKeep = new JRadioButton(i18n.getText("legacyMilestones.choice.keep"));
     buttonConvert.setSelected(true);
@@ -344,6 +354,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         if (remember.isSelected()) {
           myConvertMilestonesOption.setSelectedValue(buttonConvert.isSelected() ? ConvertMilestones.TRUE : ConvertMilestones.FALSE);
         }
+        project.setModified(true);
       }
     }}, i18n.getText("legacyMilestones.title")).show();
   }
