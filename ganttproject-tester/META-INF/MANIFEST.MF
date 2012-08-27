@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ganttproject-tester
+Bundle-SymbolicName: ganttproject-tester
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: net.sourceforge.ganttproject;bundle-version="2.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: lib/asm-3.3.jar,
+ lib/cglib-2.2.2.jar,
+ lib/easymock-3.0.jar,
+ lib/objenesis-1.2.jar
+Require-Bundle: org.junit;bundle-version="4.8.2"
