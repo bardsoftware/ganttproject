@@ -104,6 +104,7 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -654,6 +655,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     for (Importer importer : importers) {
       if (Pattern.matches(".*(" + importer.getFileNamePattern() + ")$", document.getFilePath())) {
         try {
+          ((TaskManagerImpl)getTaskManager()).setEventsEnabled(false);
           importer.setContext(getProject(), getUIFacade(), getGanttOptions().getPluginPreferences());
           importer.run(new File(document.getFilePath()));
           success = true;
@@ -662,6 +664,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           if (!GPLogger.log(e)) {
             e.printStackTrace(System.err);
           }
+        } finally {
+          ((TaskManagerImpl)getTaskManager()).setEventsEnabled(true);
         }
       }
     }
