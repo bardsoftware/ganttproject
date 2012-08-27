@@ -540,11 +540,6 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public TaskDependencyConstraint createConstraint(final int constraintID) {
-    return createConstraint(TaskDependencyConstraint.Type.getType(constraintID));
-  }
-
-  @Override
   public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
     TaskDependencyConstraint result;
     switch (type) {
