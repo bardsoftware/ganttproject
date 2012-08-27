@@ -167,8 +167,6 @@ public interface TaskManager {
 
   AlgorithmCollection getAlgorithmCollection();
 
-  TaskDependencyConstraint createConstraint(int constraintID);
-
   TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
 
   GPCalendar getCalendar();

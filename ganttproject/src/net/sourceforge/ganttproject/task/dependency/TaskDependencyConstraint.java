@@ -30,21 +30,8 @@ public interface TaskDependencyConstraint extends Cloneable {
   enum Type {
     startstart, finishstart, finishfinish, startfinish;
 
-//    public static Type getType(TaskDependencyConstraint constraint) {
-//      return getType(constraint.getID());
-//    }
-
-    public static Type getType(int constraintID) {
-      for (Type t : Type.values()) {
-        if (t.ordinal() + 1 == constraintID) {
-          return t;
-        }
-      }
-      return null;
-    }
-
     public String getPersistentValue() {
-      return String.valueOf(ordinal());
+      return String.valueOf(ordinal() + 1);
     }
 
     public static Type fromPersistentValue(String dependencyTypeAsString) {
