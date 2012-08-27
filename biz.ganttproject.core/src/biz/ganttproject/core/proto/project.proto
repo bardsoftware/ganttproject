@@ -1,0 +1,15 @@
+import "task.proto";
+
+package ganttproject;
+
+option java_package = "biz.ganttproject.core.proto";
+option java_outer_classname = "ProjectProto";
+
+message Project {
+  optional string name = 1;
+  optional string organization = 2;
+  optional string project_url = 3;
+  
+  required TaskList task_list = 4;
+  optional DependencyList dependency_list = 5;
+}
