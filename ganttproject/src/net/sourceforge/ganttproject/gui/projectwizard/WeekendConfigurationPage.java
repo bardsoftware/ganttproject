@@ -102,8 +102,10 @@ public class WeekendConfigurationPage implements WizardPage {
     @Override
     public void commit() {
       super.commit();
-      myCalendar.setBaseCalendarID(getSelectedUrl().toString());
-      loadCalendar(myCalendar, getSelectedUrl());
+      if (getSelectedUrl() != null) {
+        myCalendar.setBaseCalendarID(getSelectedUrl().toString());
+        loadCalendar(myCalendar, getSelectedUrl());
+      }
     }
 
     private static void loadCalendar(GPCalendar calendar, URL url) {

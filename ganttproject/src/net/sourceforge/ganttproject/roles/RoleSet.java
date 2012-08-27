@@ -16,6 +16,7 @@ public interface RoleSet {
 
   Role[] getRoles();
 
+  Role createRole(String name);
   Role createRole(String name, int persistentID);
 
   void deleteRole(Role role);
@@ -31,4 +32,5 @@ public interface RoleSet {
   boolean isEmpty();
 
   void clear();
+
 }
