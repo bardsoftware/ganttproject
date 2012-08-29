@@ -121,11 +121,10 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
 
   private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
     if (dayType == GPCalendar.DayType.WEEKEND) {
-      r.setBackgroundColor(myInputApi.getWeekendColor());
+      r.setStyle("calendar.weekend");
     } else if (dayType == GPCalendar.DayType.HOLIDAY) {
-      r.setBackgroundColor(myInputApi.getHolidayColor());
+      r.setStyle("calendar.holiday");
     }
-    r.setStyle("calendar.holiday");
   }
 
   private boolean isProjectBoundariesOptionOn() {

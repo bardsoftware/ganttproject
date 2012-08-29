@@ -20,6 +20,7 @@ package biz.ganttproject.core.chart.canvas;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -142,6 +143,8 @@ public class Canvas {
 
     public final int myHeight;
 
+    public Paint myPaint;
+    
     private Rectangle(int leftx, int topy, int width, int height) {
       myLeftX = leftx;
       myTopY = topy;
@@ -176,6 +179,14 @@ public class Canvas {
 
     public int getWidth() {
       return myWidth;
+    }
+
+    public Paint getBackgroundPaint() {
+      return myPaint;
+    }
+    
+    public void setBackgroundPaint(Paint paint) {
+      myPaint = paint;
     }
   }
 

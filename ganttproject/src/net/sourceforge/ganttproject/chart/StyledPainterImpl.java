@@ -35,6 +35,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.render.LineRenderer;
+import biz.ganttproject.core.chart.render.RectangleRenderer;
 import biz.ganttproject.core.chart.render.TextPainter;
 
 import net.sourceforge.ganttproject.shape.ShapeConstants;
@@ -70,6 +71,8 @@ public class StyledPainterImpl implements Painter {
 
   private final LineRenderer myLineRenderer;
 
+  private final RectangleRenderer myRectangleRenderer;
+
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
 
@@ -81,7 +84,7 @@ public class StyledPainterImpl implements Painter {
     myStyle2painter.put("task.start", myTaskStartRectanglePainter);
     myStyle2painter.put("task.end", myTaskEndRectanglePainter);
     myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);
-    myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
+    //myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
     myStyle2painter.put("task.milestone", myMilestonePainter);
     myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
     myStyle2painter.put("task.supertask", myTaskSupertaskRectanglePainter);
@@ -115,12 +118,14 @@ public class StyledPainterImpl implements Painter {
     PropertiesUtil.loadProperties(myProperties, "/chart.properties");
     myTextPainter = new TextPainter(myProperties);
     myLineRenderer = new LineRenderer(myProperties);
+    myRectangleRenderer = new RectangleRenderer(myProperties);
   }
 
   public void setGraphics(Graphics g) {
     myGraphics = (Graphics2D) g;
     myTextPainter.setGraphics(myGraphics);
     myLineRenderer.setGraphics(myGraphics);
+    myRectangleRenderer.setGraphics(myGraphics);
   }
 
   @Override
@@ -132,6 +137,9 @@ public class StyledPainterImpl implements Painter {
   @Override
   public void paint(Canvas.Rectangle next) {
     assert myGraphics != null;
+    if (myRectangleRenderer.render(next)) {
+      return;
+    }
     RectanglePainter painter = myStyle2painter.get(next.getStyle());
     if (painter != null) {
       // Use found painter
@@ -159,15 +167,6 @@ public class StyledPainterImpl implements Painter {
   private interface RectanglePainter {
     public void paint(Canvas.Rectangle next);
   }
-
-  private final RectanglePainter myCalendarHolidayPainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      Color c = next.getBackgroundColor();
-      myGraphics.setColor(c);
-      myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
-    }
-  };
 
   private class TaskRectanglePainter implements RectanglePainter {
     @Override

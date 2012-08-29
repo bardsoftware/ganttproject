@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.chart.render;
 
 import java.awt.BasicStroke;
+import java.awt.Paint;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -193,6 +194,10 @@ class Style {
     }
   }
 
+  enum Visibility {
+    VISIBLE, HIDDEN
+  }
+  
   private Padding myPadding;
   private Border myBorder;
 
@@ -211,8 +216,12 @@ class Style {
    * Example: text.foo.background-color = #ffffff
    */
   private Color myBackground;
+  private final Properties myProperties;
+  private final String myStyleName;
 
   Style(Properties props, String styleName) {
+    myProperties = props;
+    myStyleName = styleName;
     myPadding = Padding.parse(props.getProperty(styleName + ".padding"));
     myBackground = Color.parse(props.getProperty(styleName + ".background-color"));
     myBorder = Border.parse(props.getProperty(styleName + ".border"));
@@ -237,6 +246,14 @@ class Style {
     return myBackground;
   }
 
+  Paint getBackgroundPaint(Canvas.Rectangle rect) {
+    if (rect.getBackgroundPaint() != null) {
+      return rect.getBackgroundPaint();
+    }
+    String value = myProperties.getProperty(myStyleName + ".background-image");
+    return null;
+  }
+  
   Border getBorder(Canvas.Shape shape) {
     if (shape.getForegroundColor() != null) {
       return myBorder == null ? new Border(shape.getForegroundColor()) : new Border(shape.getForegroundColor(), myBorder.getStroke());
@@ -251,5 +268,21 @@ class Style {
       ourCache.put(styleName, result);
     }
     return result;
+  }
+  
+  Visibility getVisibility(Canvas.Shape shape) {
+    if (!shape.isVisible()) {
+      return Visibility.HIDDEN;
+    }
+    String value = myProperties.getProperty(myStyleName + ".visibility");
+    if (value == null) {
+     // ugly hack for Rectangles to let RectangleRenderer report if it consumed a shape or not
+      return (shape instanceof Canvas.Rectangle) ? Visibility.HIDDEN : Visibility.VISIBLE;  
+    }
+    try {
+      return Visibility.valueOf(value.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return Visibility.VISIBLE;
+    }
   }
 }
