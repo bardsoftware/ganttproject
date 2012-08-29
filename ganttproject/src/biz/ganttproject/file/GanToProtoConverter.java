@@ -153,7 +153,6 @@ public class GanToProtoConverter {
 
   public static void main(String[] args) throws Exception {
     FileProto.File file = readFile(readDocument(new FileInputStream(args[0])));
-    System.out.println(TextFormat.printToString(file));
     file.writeTo(System.out);
   }
 }
