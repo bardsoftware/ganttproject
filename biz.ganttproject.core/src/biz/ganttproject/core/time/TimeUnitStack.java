@@ -5,6 +5,7 @@ package biz.ganttproject.core.time;
 
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ public interface TimeUnitStack {
 
   TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
   
+  TimeDuration parseDuration(String duration) throws ParseException;
   class Util {
     /**
      * @return a common TimeUnit for the given units or null if none if found

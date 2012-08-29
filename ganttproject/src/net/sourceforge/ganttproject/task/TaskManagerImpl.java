@@ -17,6 +17,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
+import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
+import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -28,6 +31,8 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -45,10 +50,8 @@ import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.ProjectBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.ProjectBoundsAlgorithm.Result;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
@@ -217,7 +220,7 @@ public class TaskManagerImpl implements TaskManager {
         return TaskManagerImpl.this.getTaskHierarchy();
       }
     };
-    ProjectBoundsAlgorithm alg5 = new ProjectBoundsAlgorithm();
+    ChartBoundsAlgorithm alg5 = new ChartBoundsAlgorithm();
     CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
     myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6);
   }
@@ -365,12 +368,38 @@ public class TaskManagerImpl implements TaskManager {
     return myTaskMap.size();
   }
 
+  private static Iterable<BarChartActivity<?>> tasksToActivities(Task[] tasks) {
+    return Iterables.transform(Arrays.asList(tasks), new Function<Task, BarChartActivity<?>>() {
+      @Override
+      public BarChartActivity<?> apply(final Task task) {
+        return new BarChartActivity<Task>() {
+          @Override
+          public Date getStart() {
+            return task.getStart().getTime();
+          }
+          @Override
+          public Date getEnd() {
+            return task.getEnd().getTime();
+          }
+          @Override
+          public TimeDuration getDuration() {
+            return task.getDuration();
+          }
+          @Override
+          public Task getOwner() {
+            return task;
+          }
+        };
+      }
+    });
+  }
+
   @Override
   public TimeDuration getProjectLength() {
     if (myTaskMap.isEmpty()) {
       return createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 0);
     }
-    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(Arrays.asList(myTaskMap.getTasks()));
+    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(tasksToActivities(myTaskMap.getTasks()));
     return createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), result.lowerBound, result.upperBound);
   }
 
@@ -379,7 +408,7 @@ public class TaskManagerImpl implements TaskManager {
     if (myTaskMap.isEmpty()) {
       return myRoot.getStart().getTime();
     }
-    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(Arrays.asList(myTaskMap.getTasks()));
+    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(tasksToActivities(myTaskMap.getTasks()));
     return result.lowerBound;
   }
 
@@ -388,7 +417,7 @@ public class TaskManagerImpl implements TaskManager {
     if (myTaskMap.isEmpty()) {
       return myRoot.getStart().getTime();
     }
-    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(Arrays.asList(myTaskMap.getTasks()));
+    Result result = getAlgorithmCollection().getProjectBoundsAlgorithm().getBounds(tasksToActivities(myTaskMap.getTasks()));
     return result.upperBound;
   }
 
