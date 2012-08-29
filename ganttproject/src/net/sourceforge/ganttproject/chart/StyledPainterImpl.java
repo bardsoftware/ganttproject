@@ -28,21 +28,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivity;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
+import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.render.LineRenderer;
 import biz.ganttproject.core.chart.render.RectangleRenderer;
-import biz.ganttproject.core.chart.render.ShapeConstants;
-import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.render.TextPainter;
-
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * Implements styled painters for the available primitives (see
@@ -80,11 +77,6 @@ public class StyledPainterImpl implements Painter {
     myConfig = config;
     margin = myConfig.getMargin();
 
-    myStyle2painter.put("task", myTaskRectanglePainter);
-    myStyle2painter.put("task.start", myTaskStartRectanglePainter);
-    myStyle2painter.put("task.end", myTaskEndRectanglePainter);
-    myStyle2painter.put("task.startend", myTaskStartEndRectanglePainter);
-    //myStyle2painter.put("calendar.holiday", myCalendarHolidayPainter);
     myStyle2painter.put("task.milestone", myMilestonePainter);
     myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
     myStyle2painter.put("task.supertask", myTaskSupertaskRectanglePainter);
@@ -167,76 +159,6 @@ public class StyledPainterImpl implements Painter {
   private interface RectanglePainter {
     public void paint(Canvas.Rectangle next);
   }
-
-  private class TaskRectanglePainter implements RectanglePainter {
-    @Override
-    public void paint(Canvas.Rectangle next) {
-      Object modelObject = next.getModelObject();
-      if (modelObject instanceof TaskActivity == false) {
-        throw new RuntimeException("Model object is expected to be TaskActivity ");
-      }
-      Task task = ((TaskActivity) modelObject).getOwner();
-      Color c = task.getColor();
-      myGraphics.setColor(task.getColor());
-      ShapePaint shapePaint = task.getShape();
-      if (myConfig.isCriticalPathOn() && task.isCritical()) {
-        shapePaint = new ShapePaint(ShapeConstants.THICK_BACKSLASH, Color.BLACK, c);
-      }
-
-      if (shapePaint != null) {
-        myGraphics.setPaint(shapePaint);
-      }
-      myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
-      myGraphics.setColor(Color.BLACK);
-      drawBorder(myGraphics, next);
-    }
-
-    protected void drawBorder(Graphics g, Rectangle next) {
-      g.drawLine(next.myLeftX - getCorrectionShift(), next.myTopY, next.getRightX() - getCorrectionShift(), next.myTopY);
-      g.drawLine(next.myLeftX - getCorrectionShift(), next.getBottomY(), next.getRightX() - getCorrectionShift(),
-          next.getBottomY());
-    }
-
-    protected int getCorrectionShift() {
-      return 0;
-    }
-  }
-
-  private final RectanglePainter myTaskRectanglePainter = new TaskRectanglePainter();
-  private final RectanglePainter myTaskStartRectanglePainter = new TaskRectanglePainter() {
-    @Override
-    protected void drawBorder(Graphics g, Rectangle next) {
-      super.drawBorder(g, next);
-      g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
-    }
-
-    @Override
-    protected int getCorrectionShift() {
-      return -1;
-    }
-  };
-
-  private final RectanglePainter myTaskEndRectanglePainter = new TaskRectanglePainter() {
-    @Override
-    protected void drawBorder(Graphics g, Rectangle next) {
-      super.drawBorder(g, next);
-      g.drawLine(next.getRightX() - 1, next.myTopY, next.getRightX() - 1, next.getBottomY());
-    }
-
-    @Override
-    protected int getCorrectionShift() {
-      return 1;
-    }
-  };
-
-  private final RectanglePainter myTaskStartEndRectanglePainter = new TaskRectanglePainter() {
-    @Override
-    protected void drawBorder(Graphics g, Rectangle next) {
-      super.drawBorder(g, next);
-      g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
-      g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());
-    }
-  };
 
   private final RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
     float myAlphaValue = 0;
