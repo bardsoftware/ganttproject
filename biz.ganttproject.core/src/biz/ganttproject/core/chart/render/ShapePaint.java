@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2012GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.shape;
+package biz.ganttproject.core.chart.render;
 
 import java.awt.Color;
 import java.awt.Rectangle;

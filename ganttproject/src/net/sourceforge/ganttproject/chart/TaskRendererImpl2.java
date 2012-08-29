@@ -79,6 +79,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       return activity.getIntensity() == 0f;
     }
     @Override
+    public boolean isCriticalTask(Task task) {
+      return myModel.getChartUIConfiguration().isCriticalPathOn() && task.isCritical();
+    }
+    @Override
     public boolean isProjectTask(Task task) {
       return task.isProjectTask();
     }

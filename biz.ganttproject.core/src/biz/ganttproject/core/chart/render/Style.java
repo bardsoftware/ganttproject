@@ -172,7 +172,59 @@ class Style {
       }
       return new Border(color, stroke);
     }
+  }
+  
+  static class Borders {
+    private Border myTop;
+    private Border myLeft;
+    private Border myRight;
+    private Border myBottom;
+    private boolean isHomogeneous = false;
+    
+    Borders(Border top, Border left, Border bottom, Border right) {
+      myTop = top;
+      myLeft = left;
+      myRight = right;
+      myBottom = bottom;
+    }
+    
+    public Borders(java.awt.Color color) {
+      this(new Border(color));
+    }
 
+    public Borders(Border border) {
+      this(border, border, border, border);
+      isHomogeneous = true;
+    }
+
+    public Border getTop() {
+      return myTop;
+    }
+    
+    public Border getLeft() {
+      return myLeft;
+    }
+    
+    public Border getBottom() {
+      return myBottom;
+    }
+    
+    public Border getRight() {
+      return myRight;
+    }
+
+    public boolean isHomogeneous() {
+      return isHomogeneous;
+    }
+    
+    public Borders withColor(java.awt.Color color) {
+      return isHomogeneous ? new Borders(new Border(color, myTop.getStroke())) : 
+        new Borders(
+          new Border(color, myTop.getStroke()), 
+          new Border(color, myLeft.getStroke()), 
+          new Border(color, myBottom.getStroke()), 
+          new Border(color, myRight.getStroke()));
+    }
   }
 
   static class Color {
@@ -194,12 +246,48 @@ class Style {
     }
   }
 
+  static class BackgroundImage {
+    private static final String BITMAP_PREFIX = "bitmap(";
+    private final Paint myPaint;
+    
+    private BackgroundImage(Paint paint) {
+      myPaint = paint;
+    }
+    
+    Paint getPaint() {
+      return myPaint;
+    }
+    
+    static BackgroundImage parse(String value) {
+      if (value == null) {
+        return null;
+      }
+      value = value.trim().toLowerCase();
+      if (!value.startsWith(BITMAP_PREFIX)) {
+        return null;
+      }
+      int closingBrace = value.lastIndexOf(')');
+      if (closingBrace < 0) {
+        return null;
+      }
+      value = value.substring(BITMAP_PREFIX.length(), closingBrace);
+      if (value.length() != 16) {
+        return null;
+      }
+      int[] bitmap = new int[16];
+      for (int i = 0; i < value.length(); i++) {
+        if (value.charAt(i) == '1') {
+          bitmap[i] = 1;
+        }
+      }
+      return new BackgroundImage(new ShapePaint(4, 4, bitmap));
+    }
+  }
   enum Visibility {
     VISIBLE, HIDDEN
   }
   
   private Padding myPadding;
-  private Border myBorder;
 
   /**
    * Foreground color. Property name is 'color' and value is
@@ -218,13 +306,24 @@ class Style {
   private Color myBackground;
   private final Properties myProperties;
   private final String myStyleName;
+  private BackgroundImage myBackgroundImage;
+  private Borders myBorders;
 
   Style(Properties props, String styleName) {
     myProperties = props;
     myStyleName = styleName;
     myPadding = Padding.parse(props.getProperty(styleName + ".padding"));
     myBackground = Color.parse(props.getProperty(styleName + ".background-color"));
-    myBorder = Border.parse(props.getProperty(styleName + ".border"));
+    Border border = Border.parse(props.getProperty(styleName + ".border"));
+    Border top = Border.parse(props.getProperty(styleName + ".border-top"));
+    Border left = Border.parse(props.getProperty(styleName + ".border-left"));
+    Border bottom = Border.parse(props.getProperty(styleName + ".border-bottom"));
+    Border right = Border.parse(props.getProperty(styleName + ".border-right"));
+    if (top == null && left == null && right == null && bottom == null) {
+      myBorders = (border != null) ? new Borders(border) : null;
+    } else {
+      myBorders = new Borders(top == null ? border : top, left == null ? border : left, bottom == null ? border : bottom, right == null ? border : right);
+    }
     myColor = Color.parse(props.getProperty(styleName + ".color"));
   }
 
@@ -250,15 +349,15 @@ class Style {
     if (rect.getBackgroundPaint() != null) {
       return rect.getBackgroundPaint();
     }
-    String value = myProperties.getProperty(myStyleName + ".background-image");
-    return null;
+    myBackgroundImage = BackgroundImage.parse(myProperties.getProperty(myStyleName + ".background-image"));
+    return myBackgroundImage == null ? null : myBackgroundImage.getPaint();
   }
   
-  Border getBorder(Canvas.Shape shape) {
-    if (shape.getForegroundColor() != null) {
-      return myBorder == null ? new Border(shape.getForegroundColor()) : new Border(shape.getForegroundColor(), myBorder.getStroke());
+  Borders getBorder(Canvas.Shape shape) {
+    if ((shape instanceof Canvas.Line || shape instanceof Canvas.Text) && shape.getForegroundColor() != null) {
+      return myBorders == null ? new Borders(shape.getForegroundColor()) : myBorders.withColor(shape.getForegroundColor());
     }
-    return myBorder;
+    return myBorders;
   }
   
   static Style getStyle(Properties props, String styleName) {

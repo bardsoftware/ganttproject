@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.render;
 
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.util.Properties;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
@@ -51,15 +52,37 @@ public class RectangleRenderer {
     if (background != null) {
       g.setColor(background.get());
     }
-    
+    Paint paint = style.getBackgroundPaint(rect);
+    if (paint != null) {
+      g.setPaint(paint);
+    }
     g.fillRect(rect.myLeftX, rect.myTopY, rect.myWidth, rect.myHeight);
 
-    Style.Border border = style.getBorder(rect);
+    Style.Borders border = style.getBorder(rect);
+    if (border != null) {
+      renderBorders(g, border, rect.getLeftX(), rect.myTopY, rect.getWidth(), rect.myHeight);
+    }
+    return true;
+  }
+  
+  static void renderBorders(Graphics2D g, Style.Borders border, int leftX, int topY, int width, int height) {
+    if (border.isHomogeneous()) {
+      g.setColor(border.getTop().getColor());
+      g.setStroke(border.getTop().getStroke());
+      g.drawRect(leftX, topY, width, height);
+    } else {
+      renderBorderEdge(g, border.getTop(), leftX, topY, leftX + width, topY);
+      renderBorderEdge(g, border.getLeft(), leftX, topY, leftX, topY + height);
+      renderBorderEdge(g, border.getBottom(), leftX, topY + height, leftX + width, topY + height);
+      renderBorderEdge(g, border.getRight(), leftX + width, topY, leftX + width, topY + height);
+    }
+    
+  }
+  private static void renderBorderEdge(Graphics2D g, Style.Border border, int x1,int y1, int x2, int y2) {
     if (border != null) {
       g.setColor(border.getColor());
       g.setStroke(border.getStroke());
-      g.drawRect(rect.myLeftX, rect.myTopY, rect.getWidth(), rect.myHeight);
+      g.drawLine(x1, y1, x2, y2);
     }
-    return true;
   }
 }

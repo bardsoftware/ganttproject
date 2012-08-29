@@ -36,10 +36,10 @@ import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.render.LineRenderer;
 import biz.ganttproject.core.chart.render.RectangleRenderer;
+import biz.ganttproject.core.chart.render.ShapeConstants;
+import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.render.TextPainter;
 
-import net.sourceforge.ganttproject.shape.ShapeConstants;
-import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.util.PropertiesUtil;

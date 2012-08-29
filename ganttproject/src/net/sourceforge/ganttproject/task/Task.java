@@ -21,11 +21,11 @@ package net.sourceforge.ganttproject.task;
 import java.awt.Color;
 import java.util.List;
 
+import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.shape.ShapePaint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 /**
