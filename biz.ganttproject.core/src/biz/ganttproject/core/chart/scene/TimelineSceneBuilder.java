@@ -98,11 +98,13 @@ public class TimelineSceneBuilder extends AbstractSceneBuilder {
     final int headerHeight = myInputApi.getTimelineHeight();
     Canvas container = myTimelineContainer;
     Canvas.Rectangle headerRectangle = container.createRectangle(0, 0, sizex, headerHeight);
-    headerRectangle.setBackgroundColor(myInputApi.getTimelineBackgroundColor());
+    headerRectangle.setStyle("timeline.area");
+    //headerRectangle.setBackgroundColor(myInputApi.getTimelineBackgroundColor());
 
-    Canvas.Rectangle timeunitHeaderBorder = container.createRectangle(0, spanningHeaderHeight,
+    Canvas.Line timeunitHeaderBorder = container.createLine(0, spanningHeaderHeight,
         sizex - 1, spanningHeaderHeight);
-    timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
+    timeunitHeaderBorder.setStyle("timeline.lineSplitter");
+    //timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
     Canvas.Line bottomBorder = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
         headerHeight - 1);
     bottomBorder.setStyle("timeline.borderBottom");
