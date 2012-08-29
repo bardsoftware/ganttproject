@@ -1,0 +1,63 @@
+package ganttproject;
+
+option java_package = "biz.ganttproject.core.proto";
+option java_outer_classname = "TaskProto";
+
+message EarliestStartConstraint {
+  required string date = 1;
+}
+
+message Task {
+  required int32 id = 1;
+  optional string name = 2;
+  optional int32 parent = 3;
+  message Activity {
+    required string start_date = 1;
+    required string duration = 2;
+  }
+  repeated Activity activity = 4;
+  optional EarliestStartConstraint earliest_start = 5;
+  
+  optional bool is_milestone = 6 [default = false];
+  optional int32 completion = 7[default = 0];
+  optional bool is_project = 8 [default = false];
+  
+  enum Priority {
+    LOW = 0;
+    NORMAL = 1;
+    HIGH = 2;
+    LOWEST = 3;
+    HIGHEST = 4;
+  }
+  
+  optional Priority priority = 9 [default = NORMAL];
+  optional string color = 10;
+  optional string url = 11;
+  optional int32 shape = 12;
+}
+
+message TaskList {
+  repeated Task task = 1;
+}
+
+message Dependency {
+  enum Type {
+    SS = 1;
+    FS = 2;
+    FF = 3;
+    SF = 4;
+  }
+  enum Stiffness {
+    STRONG = 0;
+    RUBBER = 1;
+  }
+  required int32 dependee_task_id = 1;
+  required int32 dependant_task_id = 2;
+  required Type type = 3 [default = FS];
+  optional string lag = 4 [default = "0"];
+  optional Stiffness stiffness = 5 [default = STRONG];
+}
+
+message DependencyList {
+  repeated Dependency dependency = 1;
+}
