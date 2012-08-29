@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.time.impl;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -122,4 +123,12 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public TimeDuration parseDuration(String duration) throws ParseException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  
+  
 }

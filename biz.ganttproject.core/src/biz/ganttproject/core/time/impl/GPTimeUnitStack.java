@@ -4,6 +4,7 @@
 package biz.ganttproject.core.time.impl;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -150,4 +151,105 @@ public class GPTimeUnitStack implements TimeUnitStack {
     result = new TimeDurationImpl(timeUnit, unitCount * sign);
     return result;
   }
+
+  @Override
+  public TimeDuration parseDuration(String lengthAsString) throws ParseException {
+      int state = 0;
+      StringBuffer valueBuffer = new StringBuffer();
+      Integer currentValue = null;
+      TimeDuration currentLength = null;
+      lengthAsString += " ";
+      for (int i = 0; i < lengthAsString.length(); i++) {
+        char nextChar = lengthAsString.charAt(i);
+        if (Character.isDigit(nextChar)) {
+          switch (state) {
+          case 0:
+            if (currentValue != null) {
+              throw new ParseException(lengthAsString, i);
+            }
+            state = 1;
+            valueBuffer.setLength(0);
+          case 1:
+            valueBuffer.append(nextChar);
+            break;
+          case 2:
+            TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+            if (timeUnit == null) {
+              throw new ParseException(lengthAsString, i);
+            }
+            assert currentValue != null;
+            TimeDuration localResult = createLength(timeUnit, currentValue.floatValue());
+            if (currentLength == null) {
+              currentLength = localResult;
+            } else {
+              if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                float recalculatedLength = currentLength.getLength(timeUnit);
+                currentLength = createLength(timeUnit, localResult.getValue() + recalculatedLength);
+              } else {
+                throw new ParseException(lengthAsString, i);
+              }
+            }
+            state = 1;
+            currentValue = null;
+            valueBuffer.setLength(0);
+            valueBuffer.append(nextChar);
+            break;
+          }
+        } else if (Character.isWhitespace(nextChar)) {
+          switch (state) {
+          case 0:
+            break;
+          case 1:
+            currentValue = Integer.valueOf(valueBuffer.toString());
+            state = 0;
+            break;
+          case 2:
+            TimeUnit timeUnit = findTimeUnit(valueBuffer.toString());
+            if (timeUnit == null) {
+              throw new ParseException(lengthAsString, i);
+            }
+            assert currentValue != null;
+            TimeDuration localResult = createLength(timeUnit, currentValue.floatValue());
+            if (currentLength == null) {
+              currentLength = localResult;
+            } else {
+              if (currentLength.getTimeUnit().isConstructedFrom(timeUnit)) {
+                float recalculatedLength = currentLength.getLength(timeUnit);
+                currentLength = createLength(timeUnit, localResult.getValue() + recalculatedLength);
+              } else {
+                throw new ParseException(lengthAsString, i);
+              }
+            }
+            state = 0;
+            currentValue = null;
+            break;
+          }
+        } else {
+          switch (state) {
+          case 1:
+            currentValue = Integer.valueOf(valueBuffer.toString());
+          case 0:
+            if (currentValue == null) {
+              throw new ParseException(lengthAsString, i);
+            }
+            state = 2;
+            valueBuffer.setLength(0);
+          case 2:
+            valueBuffer.append(nextChar);
+            break;
+          }
+        }
+      }
+      if (currentValue != null) {
+        currentValue = Integer.valueOf(valueBuffer.toString());
+        TimeUnit dayUnit = findTimeUnit("d");
+        currentLength = createLength(dayUnit, currentValue.floatValue());
+      }
+      return currentLength;
+    }
+  
+  private TimeDuration createLength(TimeUnit unit, float length) {
+    return new TimeDurationImpl(unit, length);
+  }
+
 }

@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 /**
@@ -32,7 +33,7 @@ public class AlgorithmCollection {
 
   private final RecalculateTaskCompletionPercentageAlgorithm myCompletionPercentageAlgorithm;
 
-  private final ProjectBoundsAlgorithm myProjectBoundsAlgorithm;
+  private final ChartBoundsAlgorithm myProjectBoundsAlgorithm;
 
   private final ShiftTaskTreeAlgorithm myShiftTaskTreeAlgorithm;
 
@@ -43,7 +44,7 @@ public class AlgorithmCollection {
       RecalculateTaskScheduleAlgorithm recalculateTaskScheduleAlgorithm,
       AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
       RecalculateTaskCompletionPercentageAlgorithm completionPercentageAlgorithm,
-      ProjectBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm) {
+      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm) {
     this.myFindPossibleDependeesAlgorithm = myFindPossibleDependeesAlgorithm;
     myRecalculateTaskScheduleAlgorithm = recalculateTaskScheduleAlgorithm;
     myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;
@@ -69,7 +70,7 @@ public class AlgorithmCollection {
     return myCompletionPercentageAlgorithm;
   }
 
-  public ProjectBoundsAlgorithm getProjectBoundsAlgorithm() {
+  public ChartBoundsAlgorithm getProjectBoundsAlgorithm() {
     return myProjectBoundsAlgorithm;
   }
 
