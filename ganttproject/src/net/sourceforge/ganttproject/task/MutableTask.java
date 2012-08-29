@@ -20,10 +20,10 @@ package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
 
+import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
-import net.sourceforge.ganttproject.shape.ShapePaint;
 
 /**
  * @author bard

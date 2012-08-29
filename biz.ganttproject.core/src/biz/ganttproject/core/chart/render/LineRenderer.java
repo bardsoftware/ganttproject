@@ -44,9 +44,9 @@ public class LineRenderer {
     Graphics2D g = (Graphics2D) myGraphics.create();
     Style style = Style.getStyle(myProperties, line.getStyle());
 
-    Style.Border border = style.getBorder(line);
-    g.setColor(border == null ? java.awt.Color.BLACK : border.getColor());
-    g.setStroke(border == null ? Style.DEFAULT_STROKE : border.getStroke());
+    Style.Borders border = style.getBorder(line);
+    g.setColor(border == null ? java.awt.Color.BLACK : border.getTop().getColor());
+    g.setStroke(border == null ? Style.DEFAULT_STROKE : border.getTop().getStroke());
     g.drawLine(line.getStartX(), line.getStartY(), line.getFinishX(), line.getFinishY());
     if (line.getArrow() == Line.Arrow.FINISH) {
       int xsign = Integer.signum(line.getFinishX() - line.getStartX());

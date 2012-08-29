@@ -102,7 +102,7 @@ public class TextPainter {
       break;
     }
     Style.Color background = style.getBackgroundColor(text);
-    Style.Border border = style.getBorder(text);
+    Style.Borders border = style.getBorder(text);
     if (border != null || background != null) {
       int x = xleft - padding.getLeft(), y = ybottom - textHeight - padding.getTop(), w = label.lengthPx
           + padding.getX(), h = textHeight + padding.getY();
@@ -112,8 +112,7 @@ public class TextPainter {
         myGraphics.fillRect(x, y, w, h);
       }
       if (border != null) {
-        myGraphics.setColor(border.getColor());
-        myGraphics.drawRect(x, y, w, h);
+        RectangleRenderer.renderBorders(myGraphics, border, x, y, w, h);
       }
       myGraphics.setColor(savedColor);
     }

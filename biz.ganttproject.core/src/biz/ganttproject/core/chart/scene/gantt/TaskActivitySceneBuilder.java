@@ -28,6 +28,8 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.render.ShapeConstants;
+import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 
 /**
@@ -57,6 +59,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     boolean isLast(A activity);
     boolean isVoid(A activity);
 
+    boolean isCriticalTask(T task);
     boolean isProjectTask(T task);
     boolean isMilestone(T task);
     boolean hasNestedTasks(T task);
@@ -94,6 +97,9 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         nextRectangle = processActivityLaterThanViewport(rowNum, activity);
       } else {
         nextRectangle = processRegularActivity(rowNum, activity, offsets);
+      }
+      if (myTaskApi.isCriticalTask(activity.getOwner())) {
+        nextRectangle.setBackgroundPaint(new ShapePaint(ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi.getColor(activity.getOwner())));
       }
       rectangles.add(nextRectangle);
     }
