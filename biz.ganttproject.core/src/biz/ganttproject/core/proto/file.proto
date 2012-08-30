@@ -8,5 +8,5 @@ option java_outer_classname = "FileProto";
 
 message File {
   required Project project = 1;
-  repeated View view = 2;
+  repeated GanttView gantt_view = 2;
 }
