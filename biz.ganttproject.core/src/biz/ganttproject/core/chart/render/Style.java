@@ -384,4 +384,13 @@ class Style {
       return Visibility.VISIBLE;
     }
   }
+  
+  Float getOpacity(Canvas.Shape shape) {
+    Float result = shape.getOpacity();
+    if (result != null) {
+      return result;
+    }
+    String value = myProperties.getProperty(myStyleName + ".opacity");
+    return (value == null) ? null : Float.valueOf(value);
+  }
 }

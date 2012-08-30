@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.render;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.util.Properties;
@@ -56,11 +57,17 @@ public class RectangleRenderer {
     if (paint != null) {
       g.setPaint(paint);
     }
-    g.fillRect(rect.myLeftX, rect.myTopY, rect.myWidth, rect.myHeight);
+    Float opacity = style.getOpacity(rect);
+    if (opacity != null) {
+      g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity.floatValue()));
+    }
+    Style.Padding padding = style.getPadding();
+    g.fillRect(rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(), 
+        rect.getWidth() - (padding.getLeft() + padding.getRight()), rect.getHeight() - (padding.getTop() + padding.getBottom()));
 
     Style.Borders border = style.getBorder(rect);
     if (border != null) {
-      renderBorders(g, border, rect.getLeftX(), rect.myTopY, rect.getWidth(), rect.myHeight);
+      renderBorders(g, border, rect.getLeftX(), rect.getTopY(), rect.getWidth(), rect.getHeight());
     }
     return true;
   }

@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.awt.Font;
 
+import biz.ganttproject.core.chart.render.AlphaRenderingOption;
+
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 
@@ -188,8 +190,8 @@ public class ChartUIConfiguration {
     return myMargin;
   }
 
-  public float getWeekendAlphaValue() {
-    return myProjectConfig.getWeekendAlphaRenderingOption().getValueAsFloat();
+  public AlphaRenderingOption getWeekendAlphaValue() {
+    return myProjectConfig.getWeekendAlphaRenderingOption();
   }
 
   public ChartUIConfiguration createCopy() {
