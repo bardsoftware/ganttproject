@@ -29,4 +29,6 @@ public interface GanttChart extends TimelineChart {
 
   GPOptionGroup getBaselineColorOptions();
   ColorOption getTaskDefaultColorOption();
+
+  GPOptionGroup getTaskLabelOptions();
 }

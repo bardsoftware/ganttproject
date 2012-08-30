@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import java.util.Arrays;
+
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
@@ -25,6 +27,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.option.GPOption;
 
 /**
  * @author bard
@@ -34,7 +38,10 @@ class ViewSaver extends SaverBase {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
-    emptyElement("view", attrs, handler);
+    startElement("view", attrs, handler);
+    writeColumns(facade.getTaskTree().getVisibleFields(), handler);
+    new OptionSaver().saveOptionList(Arrays.<GPOption<?>>asList(facade.getGanttChart().getTaskLabelOptions().getOptions()), handler);
+    endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
     startElement("view", attrs, handler);
