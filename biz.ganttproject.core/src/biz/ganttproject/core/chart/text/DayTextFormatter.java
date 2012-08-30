@@ -16,13 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
 import java.text.MessageFormat;
 import java.util.Date;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
 
 
 public class DayTextFormatter extends CachingTextFormatter implements TimeFormatter {

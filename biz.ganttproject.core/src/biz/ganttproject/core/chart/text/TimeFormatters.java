@@ -16,14 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
+import com.google.common.collect.Iterables;
+
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
@@ -31,8 +33,8 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TimeFormatters {
-  private static final Map<String, TimeFormatter> ourUpperFormatters = new HashMap<String, TimeFormatter>();
-  private static final Map<String, TimeFormatter> ourLowerFormatters = new HashMap<String, TimeFormatter>();
+  private final Map<String, TimeFormatter> ourUpperFormatters = new HashMap<String, TimeFormatter>();
+  private final Map<String, TimeFormatter> ourLowerFormatters = new HashMap<String, TimeFormatter>();
   protected static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] { new TimeUnitText("") };
   private static final TimeFormatter DEFAULT_TIME_FORMATTER = new TimeFormatter() {
     @Override
@@ -40,7 +42,8 @@ public class TimeFormatters {
       return EMPTY_TEXT;
     }
   };
-  static {
+
+  public TimeFormatters(LocaleApi localeApi) {
     Map<String, TimeFormatter> commonFormatters = new HashMap<String, TimeFormatter>();
 
     commonFormatters.put(GPTimeUnitStack.DAY.getName(), new DayTextFormatter());
@@ -48,15 +51,15 @@ public class TimeFormatters {
     commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());
 
     ourUpperFormatters.putAll(commonFormatters);
-    ourUpperFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter("MMMM yyyy", "MMM''yyyy", "MM''yy"));
+    ourUpperFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, "MMMM yyyy", "MMM''yyyy", "MM''yy"));
     ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
 
     ourLowerFormatters.putAll(commonFormatters);
-    ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter("MMMM", "MMM", "MM"));
+    ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, "MMMM", "MMM", "MM"));
     ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
   }
 
-  public static TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position) {
+  public TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position) {
     TimeFormatter result = DEFAULT_TIME_FORMATTER;
     switch (position) {
     case UPPER_LINE:
@@ -67,5 +70,20 @@ public class TimeFormatters {
       break;
     }
     return result;
+  }
+
+  public static interface LocaleApi {
+    DateFormat getShortDateFormat();
+    DateFormat createDateFormat(String pattern);
+    Locale getLocale();
+    String i18n(String key);
+  }
+
+  public void setLocaleApi(LocaleApi localeApi) {
+    for (TimeFormatter tf : Iterables.concat(ourUpperFormatters.values(), ourLowerFormatters.values())) {
+      if (tf instanceof CachingTextFormatter) {
+        ((CachingTextFormatter)tf).setLocale(localeApi);
+      }
+    }
   }
 }

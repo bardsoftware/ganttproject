@@ -16,13 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.CalendarFactory;
 
 
