@@ -16,16 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Date;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
 
 public class MonthTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private String myLongPattern;
@@ -34,11 +30,11 @@ public class MonthTextFormatter extends CachingTextFormatter implements TimeForm
 
   private String myShortPattern;
 
-  public MonthTextFormatter(String longPattern, String mediumPattern, String shortPattern) {
+  public MonthTextFormatter(LocaleApi localeApi, String longPattern, String mediumPattern, String shortPattern) {
     myLongPattern = longPattern;
     myMediumPattern = mediumPattern;
     myShortPattern = shortPattern;
-    initFormats();
+    initFormats(localeApi);
   }
 
   @Override
@@ -51,21 +47,21 @@ public class MonthTextFormatter extends CachingTextFormatter implements TimeForm
     return new TimeUnitText[] { result };
   }
 
-  private void initFormats() {
-    myLongFormat = GanttLanguage.getInstance().createDateFormat(myLongPattern);
-    myMediumFormat = GanttLanguage.getInstance().createDateFormat(myMediumPattern);
-    myShortFormat = GanttLanguage.getInstance().createDateFormat(myShortPattern);
+  private void initFormats(LocaleApi localeApi) {
+    myLongFormat = localeApi.createDateFormat(myLongPattern);
+    myMediumFormat = localeApi.createDateFormat(myMediumPattern);
+    myShortFormat = localeApi.createDateFormat(myShortPattern);
   }
 
   @Override
-  public void languageChanged(Event event) {
-    super.languageChanged(event);
-    initFormats();
+  public void setLocale(LocaleApi localeApi) {
+    super.setLocale(localeApi);
+    initFormats(localeApi);
   }
 
-  private SimpleDateFormat myLongFormat;
+  private DateFormat myLongFormat;
 
-  private SimpleDateFormat myMediumFormat;
+  private DateFormat myMediumFormat;
 
-  private SimpleDateFormat myShortFormat;
+  private DateFormat myShortFormat;
 }

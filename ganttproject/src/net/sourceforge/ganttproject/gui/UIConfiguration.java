@@ -21,9 +21,9 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Color;
 import java.awt.Font;
 
+import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
 
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
@@ -166,35 +166,6 @@ public class UIConfiguration {
 
   public void setCriticalPathOn(boolean isOn) {
     this.isCriticalPathOn = isOn;
-  }
-
-  public static class AlphaRenderingOption extends DefaultEnumerationOption<Object> {
-    private static final String[] VALUES = new String[] { "chart.weekend_alpha_rendering.100",
-        "chart.weekend_alpha_rendering.75", "chart.weekend_alpha_rendering.50", "chart.weekend_alpha_rendering.25",
-        "chart.weekend_alpha_rendering.0" };
-    private static final float[] FLOATS = new float[] { 1f, 0.75f, 0.5f, 0.25f, 0f };
-
-    private int myIndex = 0;
-
-    AlphaRenderingOption() {
-      super("chart.weekend_alpha_rendering", VALUES);
-    }
-
-    @Override
-    public void commit() {
-      super.commit();
-      String value = getValue();
-      for (int i = 0; i < VALUES.length; i++) {
-        if (VALUES[i].equals(value)) {
-          myIndex = i;
-          break;
-        }
-      }
-    }
-
-    public float getValueAsFloat() {
-      return FLOATS[myIndex];
-    }
   }
 
   public AlphaRenderingOption getWeekendAlphaRenderingOption() {

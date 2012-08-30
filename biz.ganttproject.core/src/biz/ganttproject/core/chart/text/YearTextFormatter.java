@@ -1,14 +1,12 @@
 /*
  * Created on 06.03.2005
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.time.CalendarFactory;
 
 
