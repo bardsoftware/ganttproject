@@ -18,6 +18,7 @@ import biz.ganttproject.core.proto.ProjectProto;
 import biz.ganttproject.core.proto.TaskProto;
 import biz.ganttproject.core.proto.TaskProto.Dependency.Stiffness;
 import biz.ganttproject.core.proto.ViewProto;
+import biz.ganttproject.core.proto.ViewProto.GanttView;
 import biz.ganttproject.core.proto.ViewProto.View;
 
 import com.google.protobuf.TextFormat;
@@ -127,21 +128,17 @@ public class GanToProtoConverter {
   private static FileProto.File.Builder readViews(Element elProject, FileProto.File.Builder fileBuilder) throws JDOMException {
     View.Builder[] viewBuilders = new View.Builder[] {readGanttView(elProject), readResourceView(elProject)};
     viewBuilders[Integer.parseInt(elProject.getAttributeValue("view-index"))].setIsActive(true);
-    for (View.Builder viewBuilder : viewBuilders) {
-      fileBuilder = fileBuilder.addView(viewBuilder);
-    }
+    fileBuilder.addGanttView(GanttView.newBuilder().setBaseView(viewBuilders[0]));
     return fileBuilder;
   }
 
   private static View.Builder readResourceView(Element elProject) {
     return ViewProto.View.newBuilder().setTableWidth(Integer.parseInt(elProject.getAttributeValue("resource-divider-location")))
-        .setName("resource load chart")
         .setViewportStartDate(elProject.getAttributeValue("view-date"));
   }
 
   private static View.Builder readGanttView(Element elProject) throws JDOMException {
     View.Builder builder = ViewProto.View.newBuilder().setTableWidth(Integer.parseInt(elProject.getAttributeValue("gantt-divider-location")))
-        .setName("gantt chart")
         .setViewportStartDate(elProject.getAttributeValue("view-date"));
     XPath xpath = XPath.newInstance("tasks//task[@expand='true']");
     List<Element> expandedTasks = xpath.selectNodes(elProject);

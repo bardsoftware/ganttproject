@@ -16,14 +16,14 @@ public final class FileProto {
     biz.ganttproject.core.proto.ProjectProto.Project getProject();
     biz.ganttproject.core.proto.ProjectProto.ProjectOrBuilder getProjectOrBuilder();
     
-    // repeated .ganttproject.View view = 2;
-    java.util.List<biz.ganttproject.core.proto.ViewProto.View> 
-        getViewList();
-    biz.ganttproject.core.proto.ViewProto.View getView(int index);
-    int getViewCount();
-    java.util.List<? extends biz.ganttproject.core.proto.ViewProto.ViewOrBuilder> 
-        getViewOrBuilderList();
-    biz.ganttproject.core.proto.ViewProto.ViewOrBuilder getViewOrBuilder(
+    // repeated .ganttproject.GanttView gantt_view = 2;
+    java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView> 
+        getGanttViewList();
+    biz.ganttproject.core.proto.ViewProto.GanttView getGanttView(int index);
+    int getGanttViewCount();
+    java.util.List<? extends biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder> 
+        getGanttViewOrBuilderList();
+    biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder getGanttViewOrBuilder(
         int index);
   }
   public static final class File extends
@@ -68,30 +68,30 @@ public final class FileProto {
       return project_;
     }
     
-    // repeated .ganttproject.View view = 2;
-    public static final int VIEW_FIELD_NUMBER = 2;
-    private java.util.List<biz.ganttproject.core.proto.ViewProto.View> view_;
-    public java.util.List<biz.ganttproject.core.proto.ViewProto.View> getViewList() {
-      return view_;
+    // repeated .ganttproject.GanttView gantt_view = 2;
+    public static final int GANTT_VIEW_FIELD_NUMBER = 2;
+    private java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView> ganttView_;
+    public java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView> getGanttViewList() {
+      return ganttView_;
     }
-    public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.ViewOrBuilder> 
-        getViewOrBuilderList() {
-      return view_;
+    public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder> 
+        getGanttViewOrBuilderList() {
+      return ganttView_;
     }
-    public int getViewCount() {
-      return view_.size();
+    public int getGanttViewCount() {
+      return ganttView_.size();
     }
-    public biz.ganttproject.core.proto.ViewProto.View getView(int index) {
-      return view_.get(index);
+    public biz.ganttproject.core.proto.ViewProto.GanttView getGanttView(int index) {
+      return ganttView_.get(index);
     }
-    public biz.ganttproject.core.proto.ViewProto.ViewOrBuilder getViewOrBuilder(
+    public biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder getGanttViewOrBuilder(
         int index) {
-      return view_.get(index);
+      return ganttView_.get(index);
     }
     
     private void initFields() {
       project_ = biz.ganttproject.core.proto.ProjectProto.Project.getDefaultInstance();
-      view_ = java.util.Collections.emptyList();
+      ganttView_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -106,6 +106,12 @@ public final class FileProto {
         memoizedIsInitialized = 0;
         return false;
       }
+      for (int i = 0; i < getGanttViewCount(); i++) {
+        if (!getGanttView(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -116,8 +122,8 @@ public final class FileProto {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeMessage(1, project_);
       }
-      for (int i = 0; i < view_.size(); i++) {
-        output.writeMessage(2, view_.get(i));
+      for (int i = 0; i < ganttView_.size(); i++) {
+        output.writeMessage(2, ganttView_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -132,9 +138,9 @@ public final class FileProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, project_);
       }
-      for (int i = 0; i < view_.size(); i++) {
+      for (int i = 0; i < ganttView_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, view_.get(i));
+          .computeMessageSize(2, ganttView_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -253,7 +259,7 @@ public final class FileProto {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getProjectFieldBuilder();
-          getViewFieldBuilder();
+          getGanttViewFieldBuilder();
         }
       }
       private static Builder create() {
@@ -268,11 +274,11 @@ public final class FileProto {
           projectBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (viewBuilder_ == null) {
-          view_ = java.util.Collections.emptyList();
+        if (ganttViewBuilder_ == null) {
+          ganttView_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
         } else {
-          viewBuilder_.clear();
+          ganttViewBuilder_.clear();
         }
         return this;
       }
@@ -320,14 +326,14 @@ public final class FileProto {
         } else {
           result.project_ = projectBuilder_.build();
         }
-        if (viewBuilder_ == null) {
+        if (ganttViewBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            view_ = java.util.Collections.unmodifiableList(view_);
+            ganttView_ = java.util.Collections.unmodifiableList(ganttView_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
-          result.view_ = view_;
+          result.ganttView_ = ganttView_;
         } else {
-          result.view_ = viewBuilder_.build();
+          result.ganttView_ = ganttViewBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -348,29 +354,29 @@ public final class FileProto {
         if (other.hasProject()) {
           mergeProject(other.getProject());
         }
-        if (viewBuilder_ == null) {
-          if (!other.view_.isEmpty()) {
-            if (view_.isEmpty()) {
-              view_ = other.view_;
+        if (ganttViewBuilder_ == null) {
+          if (!other.ganttView_.isEmpty()) {
+            if (ganttView_.isEmpty()) {
+              ganttView_ = other.ganttView_;
               bitField0_ = (bitField0_ & ~0x00000002);
             } else {
-              ensureViewIsMutable();
-              view_.addAll(other.view_);
+              ensureGanttViewIsMutable();
+              ganttView_.addAll(other.ganttView_);
             }
             onChanged();
           }
         } else {
-          if (!other.view_.isEmpty()) {
-            if (viewBuilder_.isEmpty()) {
-              viewBuilder_.dispose();
-              viewBuilder_ = null;
-              view_ = other.view_;
+          if (!other.ganttView_.isEmpty()) {
+            if (ganttViewBuilder_.isEmpty()) {
+              ganttViewBuilder_.dispose();
+              ganttViewBuilder_ = null;
+              ganttView_ = other.ganttView_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              viewBuilder_ = 
+              ganttViewBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getViewFieldBuilder() : null;
+                   getGanttViewFieldBuilder() : null;
             } else {
-              viewBuilder_.addAllMessages(other.view_);
+              ganttViewBuilder_.addAllMessages(other.ganttView_);
             }
           }
         }
@@ -386,6 +392,12 @@ public final class FileProto {
         if (!getProject().isInitialized()) {
           
           return false;
+        }
+        for (int i = 0; i < getGanttViewCount(); i++) {
+          if (!getGanttView(i).isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -423,9 +435,9 @@ public final class FileProto {
               break;
             }
             case 18: {
-              biz.ganttproject.core.proto.ViewProto.View.Builder subBuilder = biz.ganttproject.core.proto.ViewProto.View.newBuilder();
+              biz.ganttproject.core.proto.ViewProto.GanttView.Builder subBuilder = biz.ganttproject.core.proto.ViewProto.GanttView.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
-              addView(subBuilder.buildPartial());
+              addGanttView(subBuilder.buildPartial());
               break;
             }
           }
@@ -524,190 +536,190 @@ public final class FileProto {
         return projectBuilder_;
       }
       
-      // repeated .ganttproject.View view = 2;
-      private java.util.List<biz.ganttproject.core.proto.ViewProto.View> view_ =
+      // repeated .ganttproject.GanttView gantt_view = 2;
+      private java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView> ganttView_ =
         java.util.Collections.emptyList();
-      private void ensureViewIsMutable() {
+      private void ensureGanttViewIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          view_ = new java.util.ArrayList<biz.ganttproject.core.proto.ViewProto.View>(view_);
+          ganttView_ = new java.util.ArrayList<biz.ganttproject.core.proto.ViewProto.GanttView>(ganttView_);
           bitField0_ |= 0x00000002;
          }
       }
       
       private com.google.protobuf.RepeatedFieldBuilder<
-          biz.ganttproject.core.proto.ViewProto.View, biz.ganttproject.core.proto.ViewProto.View.Builder, biz.ganttproject.core.proto.ViewProto.ViewOrBuilder> viewBuilder_;
+          biz.ganttproject.core.proto.ViewProto.GanttView, biz.ganttproject.core.proto.ViewProto.GanttView.Builder, biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder> ganttViewBuilder_;
       
-      public java.util.List<biz.ganttproject.core.proto.ViewProto.View> getViewList() {
-        if (viewBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(view_);
+      public java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView> getGanttViewList() {
+        if (ganttViewBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(ganttView_);
         } else {
-          return viewBuilder_.getMessageList();
+          return ganttViewBuilder_.getMessageList();
         }
       }
-      public int getViewCount() {
-        if (viewBuilder_ == null) {
-          return view_.size();
+      public int getGanttViewCount() {
+        if (ganttViewBuilder_ == null) {
+          return ganttView_.size();
         } else {
-          return viewBuilder_.getCount();
+          return ganttViewBuilder_.getCount();
         }
       }
-      public biz.ganttproject.core.proto.ViewProto.View getView(int index) {
-        if (viewBuilder_ == null) {
-          return view_.get(index);
+      public biz.ganttproject.core.proto.ViewProto.GanttView getGanttView(int index) {
+        if (ganttViewBuilder_ == null) {
+          return ganttView_.get(index);
         } else {
-          return viewBuilder_.getMessage(index);
+          return ganttViewBuilder_.getMessage(index);
         }
       }
-      public Builder setView(
-          int index, biz.ganttproject.core.proto.ViewProto.View value) {
-        if (viewBuilder_ == null) {
+      public Builder setGanttView(
+          int index, biz.ganttproject.core.proto.ViewProto.GanttView value) {
+        if (ganttViewBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureViewIsMutable();
-          view_.set(index, value);
+          ensureGanttViewIsMutable();
+          ganttView_.set(index, value);
           onChanged();
         } else {
-          viewBuilder_.setMessage(index, value);
+          ganttViewBuilder_.setMessage(index, value);
         }
         return this;
       }
-      public Builder setView(
-          int index, biz.ganttproject.core.proto.ViewProto.View.Builder builderForValue) {
-        if (viewBuilder_ == null) {
-          ensureViewIsMutable();
-          view_.set(index, builderForValue.build());
+      public Builder setGanttView(
+          int index, biz.ganttproject.core.proto.ViewProto.GanttView.Builder builderForValue) {
+        if (ganttViewBuilder_ == null) {
+          ensureGanttViewIsMutable();
+          ganttView_.set(index, builderForValue.build());
           onChanged();
         } else {
-          viewBuilder_.setMessage(index, builderForValue.build());
+          ganttViewBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
-      public Builder addView(biz.ganttproject.core.proto.ViewProto.View value) {
-        if (viewBuilder_ == null) {
+      public Builder addGanttView(biz.ganttproject.core.proto.ViewProto.GanttView value) {
+        if (ganttViewBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureViewIsMutable();
-          view_.add(value);
+          ensureGanttViewIsMutable();
+          ganttView_.add(value);
           onChanged();
         } else {
-          viewBuilder_.addMessage(value);
+          ganttViewBuilder_.addMessage(value);
         }
         return this;
       }
-      public Builder addView(
-          int index, biz.ganttproject.core.proto.ViewProto.View value) {
-        if (viewBuilder_ == null) {
+      public Builder addGanttView(
+          int index, biz.ganttproject.core.proto.ViewProto.GanttView value) {
+        if (ganttViewBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureViewIsMutable();
-          view_.add(index, value);
+          ensureGanttViewIsMutable();
+          ganttView_.add(index, value);
           onChanged();
         } else {
-          viewBuilder_.addMessage(index, value);
+          ganttViewBuilder_.addMessage(index, value);
         }
         return this;
       }
-      public Builder addView(
-          biz.ganttproject.core.proto.ViewProto.View.Builder builderForValue) {
-        if (viewBuilder_ == null) {
-          ensureViewIsMutable();
-          view_.add(builderForValue.build());
+      public Builder addGanttView(
+          biz.ganttproject.core.proto.ViewProto.GanttView.Builder builderForValue) {
+        if (ganttViewBuilder_ == null) {
+          ensureGanttViewIsMutable();
+          ganttView_.add(builderForValue.build());
           onChanged();
         } else {
-          viewBuilder_.addMessage(builderForValue.build());
+          ganttViewBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
-      public Builder addView(
-          int index, biz.ganttproject.core.proto.ViewProto.View.Builder builderForValue) {
-        if (viewBuilder_ == null) {
-          ensureViewIsMutable();
-          view_.add(index, builderForValue.build());
+      public Builder addGanttView(
+          int index, biz.ganttproject.core.proto.ViewProto.GanttView.Builder builderForValue) {
+        if (ganttViewBuilder_ == null) {
+          ensureGanttViewIsMutable();
+          ganttView_.add(index, builderForValue.build());
           onChanged();
         } else {
-          viewBuilder_.addMessage(index, builderForValue.build());
+          ganttViewBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
-      public Builder addAllView(
-          java.lang.Iterable<? extends biz.ganttproject.core.proto.ViewProto.View> values) {
-        if (viewBuilder_ == null) {
-          ensureViewIsMutable();
-          super.addAll(values, view_);
+      public Builder addAllGanttView(
+          java.lang.Iterable<? extends biz.ganttproject.core.proto.ViewProto.GanttView> values) {
+        if (ganttViewBuilder_ == null) {
+          ensureGanttViewIsMutable();
+          super.addAll(values, ganttView_);
           onChanged();
         } else {
-          viewBuilder_.addAllMessages(values);
+          ganttViewBuilder_.addAllMessages(values);
         }
         return this;
       }
-      public Builder clearView() {
-        if (viewBuilder_ == null) {
-          view_ = java.util.Collections.emptyList();
+      public Builder clearGanttView() {
+        if (ganttViewBuilder_ == null) {
+          ganttView_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
-          viewBuilder_.clear();
+          ganttViewBuilder_.clear();
         }
         return this;
       }
-      public Builder removeView(int index) {
-        if (viewBuilder_ == null) {
-          ensureViewIsMutable();
-          view_.remove(index);
+      public Builder removeGanttView(int index) {
+        if (ganttViewBuilder_ == null) {
+          ensureGanttViewIsMutable();
+          ganttView_.remove(index);
           onChanged();
         } else {
-          viewBuilder_.remove(index);
+          ganttViewBuilder_.remove(index);
         }
         return this;
       }
-      public biz.ganttproject.core.proto.ViewProto.View.Builder getViewBuilder(
+      public biz.ganttproject.core.proto.ViewProto.GanttView.Builder getGanttViewBuilder(
           int index) {
-        return getViewFieldBuilder().getBuilder(index);
+        return getGanttViewFieldBuilder().getBuilder(index);
       }
-      public biz.ganttproject.core.proto.ViewProto.ViewOrBuilder getViewOrBuilder(
+      public biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder getGanttViewOrBuilder(
           int index) {
-        if (viewBuilder_ == null) {
-          return view_.get(index);  } else {
-          return viewBuilder_.getMessageOrBuilder(index);
+        if (ganttViewBuilder_ == null) {
+          return ganttView_.get(index);  } else {
+          return ganttViewBuilder_.getMessageOrBuilder(index);
         }
       }
-      public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.ViewOrBuilder> 
-           getViewOrBuilderList() {
-        if (viewBuilder_ != null) {
-          return viewBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder> 
+           getGanttViewOrBuilderList() {
+        if (ganttViewBuilder_ != null) {
+          return ganttViewBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(view_);
+          return java.util.Collections.unmodifiableList(ganttView_);
         }
       }
-      public biz.ganttproject.core.proto.ViewProto.View.Builder addViewBuilder() {
-        return getViewFieldBuilder().addBuilder(
-            biz.ganttproject.core.proto.ViewProto.View.getDefaultInstance());
+      public biz.ganttproject.core.proto.ViewProto.GanttView.Builder addGanttViewBuilder() {
+        return getGanttViewFieldBuilder().addBuilder(
+            biz.ganttproject.core.proto.ViewProto.GanttView.getDefaultInstance());
       }
-      public biz.ganttproject.core.proto.ViewProto.View.Builder addViewBuilder(
+      public biz.ganttproject.core.proto.ViewProto.GanttView.Builder addGanttViewBuilder(
           int index) {
-        return getViewFieldBuilder().addBuilder(
-            index, biz.ganttproject.core.proto.ViewProto.View.getDefaultInstance());
+        return getGanttViewFieldBuilder().addBuilder(
+            index, biz.ganttproject.core.proto.ViewProto.GanttView.getDefaultInstance());
       }
-      public java.util.List<biz.ganttproject.core.proto.ViewProto.View.Builder> 
-           getViewBuilderList() {
-        return getViewFieldBuilder().getBuilderList();
+      public java.util.List<biz.ganttproject.core.proto.ViewProto.GanttView.Builder> 
+           getGanttViewBuilderList() {
+        return getGanttViewFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          biz.ganttproject.core.proto.ViewProto.View, biz.ganttproject.core.proto.ViewProto.View.Builder, biz.ganttproject.core.proto.ViewProto.ViewOrBuilder> 
-          getViewFieldBuilder() {
-        if (viewBuilder_ == null) {
-          viewBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              biz.ganttproject.core.proto.ViewProto.View, biz.ganttproject.core.proto.ViewProto.View.Builder, biz.ganttproject.core.proto.ViewProto.ViewOrBuilder>(
-                  view_,
+          biz.ganttproject.core.proto.ViewProto.GanttView, biz.ganttproject.core.proto.ViewProto.GanttView.Builder, biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder> 
+          getGanttViewFieldBuilder() {
+        if (ganttViewBuilder_ == null) {
+          ganttViewBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              biz.ganttproject.core.proto.ViewProto.GanttView, biz.ganttproject.core.proto.ViewProto.GanttView.Builder, biz.ganttproject.core.proto.ViewProto.GanttViewOrBuilder>(
+                  ganttView_,
                   ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
-          view_ = null;
+          ganttView_ = null;
         }
-        return viewBuilder_;
+        return ganttViewBuilder_;
       }
       
       // @@protoc_insertion_point(builder_scope:ganttproject.File)
@@ -736,10 +748,10 @@ public final class FileProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\nfile.proto\022\014ganttproject\032\rproject.prot" +
-      "o\032\nview.proto\"P\n\004File\022&\n\007project\030\001 \002(\0132\025" +
-      ".ganttproject.Project\022 \n\004view\030\002 \003(\0132\022.ga" +
-      "nttproject.ViewB(\n\033biz.ganttproject.core" +
-      ".protoB\tFileProto"
+      "o\032\nview.proto\"[\n\004File\022&\n\007project\030\001 \002(\0132\025" +
+      ".ganttproject.Project\022+\n\ngantt_view\030\002 \003(" +
+      "\0132\027.ganttproject.GanttViewB(\n\033biz.ganttp" +
+      "roject.core.protoB\tFileProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -751,7 +763,7 @@ public final class FileProto {
           internal_static_ganttproject_File_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ganttproject_File_descriptor,
-              new java.lang.String[] { "Project", "View", },
+              new java.lang.String[] { "Project", "GanttView", },
               biz.ganttproject.core.proto.FileProto.File.class,
               biz.ganttproject.core.proto.FileProto.File.Builder.class);
           return null;
