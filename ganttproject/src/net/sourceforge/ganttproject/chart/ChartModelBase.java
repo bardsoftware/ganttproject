@@ -21,17 +21,20 @@ package net.sourceforge.ganttproject.chart;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
-import net.sourceforge.ganttproject.chart.timeline.TimeFormatters;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
@@ -47,6 +50,7 @@ import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.chart.text.TimeFormatter;
+import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -87,9 +91,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       myPrevXpos = startXpos;
       ChartModelBase.this.myScrollingSession = this;
       ChartModelBase.this.myOffsetManager.reset();
-      myTopOffsets = (OffsetList) getTopUnitOffsets();
+      myTopOffsets = getTopUnitOffsets();
       myBottomOffsets = getBottomUnitOffsets();
-      myDefaultOffsets = (OffsetList) getDefaultUnitOffsets();
+      myDefaultOffsets = getDefaultUnitOffsets();
       // shiftOffsets(-myBottomOffsets.get(0).getOffsetPixels());
       // System.err.println(myBottomOffsets.subList(0, 3));
     }
@@ -135,7 +139,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       myTopOffsets.shift(shiftPixels);
       if (myDefaultOffsets != myBottomOffsets) {
         if (myDefaultOffsets.isEmpty()) {
-          myDefaultOffsets = (OffsetList) ChartModelBase.this.getDefaultUnitOffsets();
+          myDefaultOffsets = ChartModelBase.this.getDefaultUnitOffsets();
         }
         myDefaultOffsets.shift(shiftPixels);
       }
@@ -203,6 +207,31 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
+    final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
+      @Override
+      public Locale getLocale() {
+        return GanttLanguage.getInstance().getDateFormatLocale();
+      }
+      @Override
+      public DateFormat createDateFormat(String pattern) {
+        return GanttLanguage.getInstance().createDateFormat(pattern);
+      }
+      @Override
+      public DateFormat getShortDateFormat() {
+        return GanttLanguage.getInstance().getShortDateFormat();
+      }
+      @Override
+      public String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
+      }
+    };
+    final TimeFormatters timeFormatters = new TimeFormatters(localeApi);
+    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+      @Override
+      public void languageChanged(Event event) {
+        timeFormatters.setLocaleApi(localeApi);
+      }
+    });
     myChartHeader = new TimelineSceneBuilder(new TimelineSceneBuilder.InputApi() {
       @Override
       public Date getViewportStartDate() {
@@ -238,7 +267,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
       @Override
       public TimeFormatter getFormatter(TimeUnit timeUnit, Position position) {
-        return TimeFormatters.getFormatter(timeUnit, position);
+        return timeFormatters.getFormatter(timeUnit, position);
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",

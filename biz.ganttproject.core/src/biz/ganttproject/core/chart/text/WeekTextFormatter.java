@@ -16,21 +16,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart.timeline;
+package biz.ganttproject.core.chart.text;
 
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import biz.ganttproject.core.chart.text.TimeFormatter;
-import biz.ganttproject.core.chart.text.TimeUnitText;
+import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
 import biz.ganttproject.core.time.CalendarFactory;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 
 public class WeekTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private Calendar myCalendar;
+  private DateFormat myDateFormat;
+  private String myWeekText;
 
   WeekTextFormatter() {
     myCalendar = CalendarFactory.newCalendar();
@@ -46,19 +46,21 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
   private TimeUnitText createTopText() {
     Integer weekNo = new Integer(myCalendar.get(Calendar.WEEK_OF_YEAR));
     String shortText = weekNo.toString();
-    String middleText = MessageFormat.format("{0} {1}", GanttLanguage.getInstance().getText("week"), weekNo);
+    String middleText = MessageFormat.format("{0} {1}", myWeekText, weekNo);
     String longText = middleText;
     return new TimeUnitText(longText, middleText, shortText);
   }
 
   private TimeUnitText createBottomText() {
-    return new TimeUnitText(GanttLanguage.getInstance().getShortDateFormat().format(myCalendar.getTime()));
+    return new TimeUnitText(myDateFormat.format(myCalendar.getTime()));
   }
 
   @Override
-  public void languageChanged(Event event) {
-    super.languageChanged(event);
+  public void setLocale(LocaleApi localeApi) {
+    super.setLocale(localeApi);
     myCalendar = CalendarFactory.newCalendar();
+    myDateFormat = localeApi.getShortDateFormat();
+    myWeekText = localeApi.i18n("week");
   }
 
 }
