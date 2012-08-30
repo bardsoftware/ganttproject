@@ -29,6 +29,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
+import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
@@ -71,6 +72,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     OffsetList getBottomUnitOffsets();
     int getRowHeight();
     int getBarHeight();
+    AlphaRenderingOption getWeekendOpacityOption();
   }
 
   public TaskActivitySceneBuilder(TaskApi<T, A> taskApi, ChartApi chartApi, Canvas canvas,
@@ -174,8 +176,6 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
             nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(), 
             nextRectangle.getRightX(), nextRectangle.getBottomY()).setStyle("task.supertask.end");
       }
-    } else if (myTaskApi.isVoid(activity)) {
-      nextRectangle.setStyle("task.holiday");
     } else {
       if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
         nextRectangle.setStyle("task.startend");
@@ -185,6 +185,9 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         nextRectangle.setStyle("task.start");
       } else if (myTaskApi.isLast(activity)) {
         nextRectangle.setStyle("task.end");
+      }
+      if (myTaskApi.isVoid(activity)) {
+        nextRectangle.setOpacity(myChartApi.getWeekendOpacityOption().getValueAsFloat());
       }
     }
     

@@ -18,17 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
@@ -82,7 +79,7 @@ public class StyledPainterImpl implements Painter {
     margin = myConfig.getMargin();
 
 //    myStyle2painter.put("task.milestone", myMilestonePainter);
-    myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
+//    myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
 //    myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
 //    myStyle2painter.put("task.supertask.end", mySupertaskEndPainter);
     myStyle2painter.put("task.projectTask", myTaskProjectTaskRectanglePainter);
@@ -165,33 +162,33 @@ public class StyledPainterImpl implements Painter {
     public void paint(Canvas.Rectangle next);
   }
 
-  private final RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
-    float myAlphaValue = 0;
-    Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
-
-    @Override
-    public void paint(Canvas.Rectangle next) {
-      if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
-        myAlphaValue = myConfig.getWeekendAlphaValue();
-        myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
-      }
-      Object modelObject = next.getModelObject();
-      if (modelObject instanceof TaskActivity == false) {
-        throw new RuntimeException("Model object is expected to be TaskActivity ");
-      }
-      Task task = ((TaskActivity) modelObject).getOwner();
-      myGraphics.setColor(task.getColor());
-      Composite oldComposite = myGraphics.getComposite();
-      myGraphics.setComposite(myAlphaComposite);
-      myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
-      myGraphics.setColor(Color.black);
-      myGraphics.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
-      myGraphics.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
-      // g.drawRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
-
-      myGraphics.setComposite(oldComposite);
-    }
-  };
+//  private final RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
+//    float myAlphaValue = 0;
+//    Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
+//
+//    @Override
+//    public void paint(Canvas.Rectangle next) {
+//      if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
+//        myAlphaValue = myConfig.getWeekendAlphaValue();
+//        myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
+//      }
+//      Object modelObject = next.getModelObject();
+//      if (modelObject instanceof TaskActivity == false) {
+//        throw new RuntimeException("Model object is expected to be TaskActivity ");
+//      }
+//      Task task = ((TaskActivity) modelObject).getOwner();
+//      myGraphics.setColor(task.getColor());
+//      Composite oldComposite = myGraphics.getComposite();
+//      myGraphics.setComposite(myAlphaComposite);
+//      myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
+//      myGraphics.setColor(Color.black);
+//      myGraphics.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
+//      myGraphics.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
+//      // g.drawRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
+//
+//      myGraphics.setComposite(oldComposite);
+//    }
+//  };
 
 //  private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
 //    @Override
