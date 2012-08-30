@@ -40,6 +40,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.Polyline;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
@@ -124,6 +125,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public int getBarHeight() {
       return myBarHeight;
+    }
+    @Override
+    public AlphaRenderingOption getWeekendOpacityOption() {
+      return myModel.getChartUIConfiguration().getWeekendAlphaValue();
     }
   }
 

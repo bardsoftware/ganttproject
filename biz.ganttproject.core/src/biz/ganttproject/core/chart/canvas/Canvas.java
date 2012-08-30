@@ -81,6 +81,8 @@ public class Canvas {
 
     private LinkedHashSet<String> myStyles;
 
+    private Float myOpacity = null;
+
     private LinkedHashSet<String> getStyles() {
       if (myStyles == null) {
         myStyles = new LinkedHashSet<String>();
@@ -134,6 +136,14 @@ public class Canvas {
 
     public void setVisible(boolean visible) {
       isVisible = visible;
+    }
+    
+    public Float getOpacity() {
+      return myOpacity;
+    }
+    
+    public void setOpacity(float opacity) {
+      myOpacity = opacity;
     }
   }
 
