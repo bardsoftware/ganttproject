@@ -62,7 +62,7 @@ import com.google.common.collect.Lists;
 public class TaskRendererImpl2 extends ChartRendererBase {
   private ChartModelImpl myModel;
 
-  private GPOptionGroup[] myOptionGroups;
+  private GPOptionGroup myLabelOptions;
 
   private final TaskLabelSceneBuilder<Task> myLabelsRenderer;
 
@@ -185,10 +185,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return getChartModel().getChartUIConfiguration().getChartFont();
       }
     }, myLabelsLayer);
-    GPOptionGroup labelOptions = new ChartOptionGroup("ganttChartDetails",
+    myLabelOptions = new ChartOptionGroup("ganttChartDetails",
         new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
         model.getOptionEventDispatcher());
-    myOptionGroups = new GPOptionGroup[] { labelOptions };
 
     myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityChartApi(getRectangleHeight()),
         new TaskActivitySceneBuilder.Style(0));
@@ -450,8 +449,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   }
 
-  public GPOptionGroup[] getOptionGroups() {
-    return myOptionGroups;
+  public GPOptionGroup getLabelOptions() {
+    return myLabelOptions;
   }
 
   int calculateRowHeight() {
