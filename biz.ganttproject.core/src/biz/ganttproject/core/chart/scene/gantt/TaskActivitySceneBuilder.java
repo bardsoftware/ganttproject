@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
@@ -46,11 +47,9 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
 
   public static class Style {
     int marginTop;
-    int height;
 
-    public Style(int marginTop, int height) {
+    public Style(int marginTop) {
       this.marginTop = marginTop;
-      this.height = height;
     }
   }
 
@@ -71,6 +70,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     Date getEndDate();
     OffsetList getBottomUnitOffsets();
     int getRowHeight();
+    int getBarHeight();
   }
 
   public TaskActivitySceneBuilder(TaskApi<T, A> taskApi, ChartApi chartApi, Canvas canvas,
@@ -97,9 +97,6 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         nextRectangle = processActivityLaterThanViewport(rowNum, activity);
       } else {
         nextRectangle = processRegularActivity(rowNum, activity, offsets);
-      }
-      if (myTaskApi.isCriticalTask(activity.getOwner())) {
-        nextRectangle.setBackgroundPaint(new ShapePaint(ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi.getColor(activity.getOwner())));
       }
       rectangles.add(nextRectangle);
     }
@@ -140,17 +137,27 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     boolean nextHasNested = myTaskApi.hasNestedTasks(nextTask);
     Canvas container = myCanvas;
     nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
+
+    Canvas.Shape resultShape = nextRectangle;
+    
     if (myTaskApi.isMilestone(nextTask)) {
-      nextRectangle.setStyle("task.milestone");
+      nextRectangle.setVisible(false);
+      container.bind(nextRectangle, activity);
+      Canvas.Polygon p = container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getMiddleY(),
+          nextRectangle.getLeftX() + 5, nextRectangle.getMiddleY() - 5,
+          nextRectangle.getLeftX() + 10, nextRectangle.getMiddleY(),
+          nextRectangle.getLeftX() + 5, nextRectangle.getMiddleY() + 5);
+      p.setStyle("task.milestone");
+      resultShape = p;
     } else if (myTaskApi.isProjectTask(nextTask)) {
       nextRectangle.setStyle("task.projectTask");
       if (myTaskApi.isFirst(activity)) {
-        Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.myLeftX, topy,
+        Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.getLeftX(), topy,
             nextLength, getRectangleHeight());
         supertaskStart.setStyle("task.projectTask.start");
       }
       if (myTaskApi.isLast(activity)) {
-        Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.myLeftX - 1, topy,
+        Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.getLeftX() - 1, topy,
             nextLength, getRectangleHeight());
         supertaskEnd.setStyle("task.projectTask.end");
 
@@ -158,15 +165,14 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     } else if (nextHasNested) {
       nextRectangle.setStyle("task.supertask");
       if (myTaskApi.isFirst(activity)) {
-        Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.myLeftX, topy,
-            nextLength, getRectangleHeight());
-        supertaskStart.setStyle("task.supertask.start");
+        container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(), 
+            nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(), 
+            nextRectangle.getLeftX(), nextRectangle.getBottomY()).setStyle("task.supertask.start");
       }
       if (myTaskApi.isLast(activity)) {
-        Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.myLeftX, topy,
-            nextLength, getRectangleHeight());
-        supertaskEnd.setStyle("task.supertask.end");
-
+        container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(), 
+            nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(), 
+            nextRectangle.getRightX(), nextRectangle.getBottomY()).setStyle("task.supertask.end");
       }
     } else if (myTaskApi.isVoid(activity)) {
       nextRectangle.setStyle("task.holiday");
@@ -181,10 +187,20 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         nextRectangle.setStyle("task.end");
       }
     }
-    if (!"task.holiday".equals(nextRectangle.getStyle()) && !"task.supertask".equals(nextRectangle.getStyle())) {
-      nextRectangle.setBackgroundColor(myTaskApi.getColor(nextTask));
+    
+    if (!"task.holiday".equals(resultShape.getStyle()) && !"task.supertask".equals(resultShape.getStyle())) {
+      resultShape.setBackgroundColor(myTaskApi.getColor(nextTask));
     }
-    container.bind(nextRectangle, activity);
+    if (myTaskApi.isCriticalTask(activity.getOwner())) {
+      if (myTaskApi.hasNestedTasks(activity.getOwner())) {
+        resultShape.setBackgroundColor(Color.RED);
+      } else if (resultShape instanceof Canvas.Rectangle){
+        ((Canvas.Rectangle)resultShape).setBackgroundPaint(
+            new ShapePaint(ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi.getColor(activity.getOwner())));
+      }
+    }
+
+    container.bind(resultShape, activity);
     return nextRectangle;
   }
 
@@ -198,7 +214,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
   }
 
   private int getRectangleHeight() {
-    return myStyle.height;
+    return myChartApi.getBarHeight();
   }
 
   private int getRowHeight() {

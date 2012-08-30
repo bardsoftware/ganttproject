@@ -185,15 +185,15 @@ class ResourceLoadRenderer extends ChartRendererBase {
       style += ".first.last";
       nextRect.setStyle(style);
       nextRect.setModelObject(new ResourceLoad(nextLoad.load));
-      final Text loadLabel = myTextCanvas.createText(nextRect.getMiddleX(), nextRect.myTopY, "");
+      final Text loadLabel = myTextCanvas.createText(nextRect.getMiddleX(), nextRect.getTopY(), "");
       loadLabel.setSelector(new TextSelector() {
         @Override
         public Label[] getLabels(TextMetrics textLengthCalculator) {
           int loadInt = Math.round(nextLoad.load);
           String loadStr = loadInt + "%";
           int emsLength = textLengthCalculator.getTextLength(loadStr);
-          boolean displayLoad = (loadInt != 100 && emsLength <= nextRect.myWidth);
-          return displayLoad ? new Label[] {loadLabel.createLabel(loadStr, nextRect.myWidth)} : new Label[0];
+          boolean displayLoad = (loadInt != 100 && emsLength <= nextRect.getWidth());
+          return displayLoad ? new Label[] {loadLabel.createLabel(loadStr, nextRect.getWidth())} : new Label[0];
         }
       });
       loadLabel.setAlignment(HAlignment.CENTER, VAlignment.TOP);

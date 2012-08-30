@@ -56,11 +56,13 @@ public class RectangleRenderer {
     if (paint != null) {
       g.setPaint(paint);
     }
-    g.fillRect(rect.myLeftX, rect.myTopY, rect.myWidth, rect.myHeight);
+    Style.Padding padding = style.getPadding();
+    g.fillRect(rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(), 
+        rect.getWidth() - (padding.getLeft() + padding.getRight()), rect.getHeight() - (padding.getTop() + padding.getBottom()));
 
     Style.Borders border = style.getBorder(rect);
     if (border != null) {
-      renderBorders(g, border, rect.getLeftX(), rect.myTopY, rect.getWidth(), rect.myHeight);
+      renderBorders(g, border, rect.getLeftX(), rect.getTopY(), rect.getWidth(), rect.getHeight());
     }
     return true;
   }

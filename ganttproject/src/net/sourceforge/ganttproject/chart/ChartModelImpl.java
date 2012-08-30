@@ -150,15 +150,15 @@ public class ChartModelImpl extends ChartModelBase {
     if (primitive == null) {
       primitive = myTaskRendererImpl.getPrimitiveContainer().getLayer(1).getPrimitive(x, y);
     }
-    if (primitive instanceof Canvas.Rectangle) {
-      Canvas.Rectangle rect = (Rectangle) primitive;
+    if (primitive instanceof Canvas.Polygon) {
+      Canvas.Polygon rect = (Canvas.Polygon) primitive;
       TaskActivity activity = (TaskActivity) primitive.getModelObject();
       if (activity != null) {
-        if (activity.isFirst() && rect.myLeftX - 2 <= x && rect.myLeftX + 2 >= x) {
+        if (activity.isFirst() && rect.getLeftX() - 2 <= x && rect.getLeftX() + 2 >= x) {
           result = new TaskBoundaryChartItem(activity.getOwner(), true);
         }
-        if (result == null && activity.isLast() && rect.myLeftX + rect.myWidth - 2 <= x
-            && rect.myLeftX + rect.myWidth + 2 >= x) {
+        if (result == null && activity.isLast() && rect.getRightX() - 2 <= x
+            && rect.getRightX() + 2 >= x) {
           result = new TaskBoundaryChartItem(activity.getOwner(), false);
         }
         if (result == null) {

@@ -121,7 +121,7 @@ public class TaskLabelSceneBuilder<T> {
     String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
       int xOrigin = rectangle.getRightX();
-      int yOrigin = rectangle.myTopY - 3;
+      int yOrigin = rectangle.getTopY() - 3;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
       textPrimitive.setAlignment(HAlignment.RIGHT, VAlignment.BOTTOM);
     }
@@ -132,7 +132,7 @@ public class TaskLabelSceneBuilder<T> {
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
     if (text.length() > 0) {
-      int xOrigin = rectangle.myLeftX - 9;
+      int xOrigin = rectangle.getLeftX() - 9;
       int yOrigin = rectangle.getMiddleY();
       Text textPrimitive = processText(xOrigin, yOrigin, text);
       textPrimitive.setAlignment(HAlignment.RIGHT, VAlignment.CENTER);
