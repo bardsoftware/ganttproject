@@ -24,9 +24,7 @@ import java.io.File;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.JToolBar;
 import javax.xml.parsers.SAXParser;
@@ -45,6 +43,7 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
+import net.sourceforge.ganttproject.io.OptionSaver;
 import net.sourceforge.ganttproject.io.SaverBase;
 import net.sourceforge.ganttproject.parser.IconPositionTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
@@ -63,6 +62,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
+
+import com.google.common.collect.Maps;
 
 /**
  * This class is able to load and save options on the file
@@ -130,7 +131,7 @@ public class GanttOptions extends SaverBase {
   /** CSV export options. */
   private CSVOptions csvOptions;
 
-  private Map<String, GPOption> myGPOptions = new LinkedHashMap<String, GPOption>();
+  private Map<String, GPOption<?>> myGPOptions = Maps.newLinkedHashMap();
   private Map<String, GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
 
   private final DocumentManager myDocumentManager;
@@ -331,19 +332,7 @@ public class GanttOptions extends SaverBase {
       emptyElement("font", attrs, handler);
 
       saveRoleSets(handler);
-      for (Iterator<Entry<String, GPOption>> options = myGPOptions.entrySet().iterator(); options.hasNext();) {
-        Map.Entry<String, GPOption> nextEntry = options.next();
-        GPOption nextOption = nextEntry.getValue();
-        if (nextOption.getPersistentValue() != null) {
-          addAttribute("id", nextEntry.getKey(), attrs);
-          if (nextOption instanceof ListOption) {
-            cdataElement("option", nextOption.getPersistentValue(), attrs, handler);
-          } else {
-            addAttribute("value", nextOption.getPersistentValue(), attrs);
-            emptyElement("option", attrs, handler);
-          }
-        }
-      }
+      new OptionSaver().saveOptionMap(myGPOptions.entrySet(), handler);
       savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
       savePreferences(myPluginPreferencesRootNode.node("/instance"), handler);
       endElement("ganttproject-options", handler);

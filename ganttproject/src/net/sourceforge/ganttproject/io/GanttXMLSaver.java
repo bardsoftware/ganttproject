@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -51,14 +52,14 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private final UIFacade myUIFacade;
 
-  private GanttTree2 tree;
-
   private GanttGraphicArea area;
 
+  private final TaskTreeUIFacade myTaskTree;
+
   /** The constructor */
-  public GanttXMLSaver(IGanttProject project, GanttTree2 tree, GanttResourcePanel peop, GanttGraphicArea area,
+  public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
       UIFacade uiFacade) {
-    this.tree = tree;
+    myTaskTree = taskTree;
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
@@ -115,7 +116,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveGanttChartView(TransformerHandler handler) throws SAXException {
-    new GanttChartViewSaver().save(tree.getVisibleFields(), handler);
+    new GanttChartViewSaver().save(myTaskTree.getVisibleFields(), handler);
   }
 
   private void saveVacations(TransformerHandler handler) throws SAXException {

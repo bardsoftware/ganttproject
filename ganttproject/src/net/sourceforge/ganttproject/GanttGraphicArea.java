@@ -162,7 +162,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return ObjectArrays.concat(super.getOptionGroups(), getBaselineColorOptions());
   }
 
-
   @Override
   public GPOptionGroup getBaselineColorOptions() {
     return myStateDiffOptions;
@@ -171,6 +170,11 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   @Override
   public ColorOption getTaskDefaultColorOption() {
     return myChartModel.getTaskDefaultColorOption();
+  }
+
+  @Override
+  public GPOptionGroup getTaskLabelOptions() {
+    return myChartModel.getTaskLabelOptions();
   }
 
   /** @return the preferred size of the panel. */
