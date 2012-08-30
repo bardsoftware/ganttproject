@@ -49,4 +49,6 @@ public interface SpatialIndex<T> {
    * @return value object containing the given point or {@code null} otherwise
    */
   T get(int x, int y);
+  
+  T get(int x, int xpadding, int y, int ypadding);
 }

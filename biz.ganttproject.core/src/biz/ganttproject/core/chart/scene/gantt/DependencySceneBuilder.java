@@ -133,11 +133,11 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     BarChartActivity<T> dependee = connector.getStart();
 
     Canvas graphicPrimitiveContainer = myTaskCanvas;
-    Canvas.Rectangle dependantRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependant);
+    Canvas.Polygon dependantRectangle = (Canvas.Polygon) graphicPrimitiveContainer.getPrimitive(dependant);
     if (dependantRectangle == null) {
       return;
     }
-    Canvas.Rectangle dependeeRectangle = (Rectangle) graphicPrimitiveContainer.getPrimitive(dependee);
+    Canvas.Polygon dependeeRectangle = (Canvas.Polygon) graphicPrimitiveContainer.getPrimitive(dependee);
     if (dependeeRectangle == null) {
       return;
     }

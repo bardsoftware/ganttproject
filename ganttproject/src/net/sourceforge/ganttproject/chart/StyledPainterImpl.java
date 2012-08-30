@@ -33,11 +33,13 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
+import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.render.LineRenderer;
+import biz.ganttproject.core.chart.render.PolygonRenderer;
 import biz.ganttproject.core.chart.render.RectangleRenderer;
 import biz.ganttproject.core.chart.render.TextPainter;
 
@@ -70,6 +72,8 @@ public class StyledPainterImpl implements Painter {
 
   private final RectangleRenderer myRectangleRenderer;
 
+  private final PolygonRenderer myPolygonRenderer;
+
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
 
@@ -77,11 +81,10 @@ public class StyledPainterImpl implements Painter {
     myConfig = config;
     margin = myConfig.getMargin();
 
-    myStyle2painter.put("task.milestone", myMilestonePainter);
+//    myStyle2painter.put("task.milestone", myMilestonePainter);
     myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
-    myStyle2painter.put("task.supertask", myTaskSupertaskRectanglePainter);
-    myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
-    myStyle2painter.put("task.supertask.end", mySupertaskEndPainter);
+//    myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
+//    myStyle2painter.put("task.supertask.end", mySupertaskEndPainter);
     myStyle2painter.put("task.projectTask", myTaskProjectTaskRectanglePainter);
     myStyle2painter.put("task.projectTask.start", myProjectTaskStartPainter);
     myStyle2painter.put("task.projectTask.end", myProjectTaskEndPainter);
@@ -111,6 +114,7 @@ public class StyledPainterImpl implements Painter {
     myTextPainter = new TextPainter(myProperties);
     myLineRenderer = new LineRenderer(myProperties);
     myRectangleRenderer = new RectangleRenderer(myProperties);
+    myPolygonRenderer = new PolygonRenderer(myProperties);
   }
 
   public void setGraphics(Graphics g) {
@@ -118,6 +122,7 @@ public class StyledPainterImpl implements Painter {
     myTextPainter.setGraphics(myGraphics);
     myLineRenderer.setGraphics(myGraphics);
     myRectangleRenderer.setGraphics(myGraphics);
+    myPolygonRenderer.setGraphics(myGraphics);
   }
 
   @Override
@@ -144,10 +149,10 @@ public class StyledPainterImpl implements Painter {
           foreColor = Color.BLACK;
         }
         myGraphics.setColor(foreColor);
-        myGraphics.drawRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+        myGraphics.drawRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
       } else {
         myGraphics.setColor(next.getBackgroundColor());
-        myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+        myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
       }
     }
   }
@@ -178,66 +183,66 @@ public class StyledPainterImpl implements Painter {
       myGraphics.setColor(task.getColor());
       Composite oldComposite = myGraphics.getComposite();
       myGraphics.setComposite(myAlphaComposite);
-      myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+      myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
       myGraphics.setColor(Color.black);
-      myGraphics.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
-      myGraphics.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
-      // g.drawRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+      myGraphics.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
+      myGraphics.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
+      // g.drawRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
 
       myGraphics.setComposite(oldComposite);
     }
   };
 
-  private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      Color c = next.getBackgroundColor();
-      if (c == null) {
-        c = getDefaultColor();
-      }
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
-        c = Color.RED;
-      }
-      myGraphics.setColor(c);
-      myGraphics.fillRect(next.myLeftX, next.getBottomY() - 6, next.myWidth, 3);
-    }
-
-    private Color getDefaultColor() {
-      return Color.BLACK;
-    }
-
-  };
-
-  private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      int bottomy = next.getBottomY() - 3;
-      myXPoints[0] = next.myLeftX;
-      myYPoints[0] = bottomy;
-      myXPoints[1] = next.myLeftX + 3;
-      myYPoints[1] = bottomy;
-      myXPoints[2] = next.myLeftX;
-      myYPoints[2] = bottomy + 3;
-      myGraphics.setColor(Color.BLACK);
-      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-    }
-  };
-
-  private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      int bottomy = next.getBottomY() - 3;
-      int rightx = next.getRightX();
-      myXPoints[0] = rightx - 3;
-      myYPoints[0] = bottomy;
-      myXPoints[1] = rightx;
-      myYPoints[1] = bottomy;
-      myXPoints[2] = rightx;
-      myYPoints[2] = bottomy + 3;
-      myGraphics.setColor(Color.BLACK);
-      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-    }
-  };
+//  private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
+//    @Override
+//    public void paint(Rectangle next) {
+//      Color c = next.getBackgroundColor();
+//      if (c == null) {
+//        c = getDefaultColor();
+//      }
+//      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
+//        c = Color.RED;
+//      }
+//      myGraphics.setColor(c);
+//      myGraphics.fillRect(next.getLeftX(), next.getBottomY() - 6, next.getWidth(), 3);
+//    }
+//
+//    private Color getDefaultColor() {
+//      return Color.BLACK;
+//    }
+//
+//  };
+//
+//  private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
+//    @Override
+//    public void paint(Rectangle next) {
+//      int bottomy = next.getBottomY() - 3;
+//      myXPoints[0] = next.getLeftX();
+//      myYPoints[0] = bottomy;
+//      myXPoints[1] = next.getLeftX() + 3;
+//      myYPoints[1] = bottomy;
+//      myXPoints[2] = next.getLeftX();
+//      myYPoints[2] = bottomy + 3;
+//      myGraphics.setColor(Color.BLACK);
+//      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
+//    }
+//  };
+//
+//  private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
+//    @Override
+//    public void paint(Rectangle next) {
+//      int bottomy = next.getBottomY() - 3;
+//      int rightx = next.getRightX();
+//      myXPoints[0] = rightx - 3;
+//      myYPoints[0] = bottomy;
+//      myXPoints[1] = rightx;
+//      myYPoints[1] = bottomy;
+//      myXPoints[2] = rightx;
+//      myYPoints[2] = bottomy + 3;
+//      myGraphics.setColor(Color.BLACK);
+//      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
+//    }
+//  };
 
   private final RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
     @Override
@@ -247,7 +252,7 @@ public class StyledPainterImpl implements Painter {
         c = Color.RED;
       }
       myGraphics.setColor(c);
-      myGraphics.fillRect(next.myLeftX, next.myTopY + next.myHeight - 9, next.myWidth, 6);
+      myGraphics.fillRect(next.getLeftX(), next.getTopY() + next.getHeight() - 9, next.getWidth(), 6);
     }
 
     private Color getDefaultColor() {
@@ -259,11 +264,11 @@ public class StyledPainterImpl implements Painter {
     @Override
     public void paint(Rectangle next) {
       int bottomy = next.getBottomY() - 3;
-      myXPoints[0] = next.myLeftX;
+      myXPoints[0] = next.getLeftX();
       myYPoints[0] = bottomy;
-      myXPoints[1] = next.myLeftX + 3;
+      myXPoints[1] = next.getLeftX() + 3;
       myYPoints[1] = bottomy;
-      myXPoints[2] = next.myLeftX;
+      myXPoints[2] = next.getLeftX();
       myYPoints[2] = bottomy + 3;
       myGraphics.setColor(Color.BLACK);
       myGraphics.fillPolygon(myXPoints, myYPoints, 3);
@@ -286,42 +291,42 @@ public class StyledPainterImpl implements Painter {
     }
   };
 
-  private final RectanglePainter myMilestonePainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      Object modelObject = next.getModelObject();
-      if (modelObject instanceof TaskActivity == false) {
-        throw new RuntimeException("Model object is expected to be TaskActivity ");
-      }
-      Task task = ((TaskActivity) modelObject).getOwner();
-      Color c = task.getColor();
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
-        c = Color.RED;
-      }
-
-      int middleX = next.getMiddleX();
-      int middleY = next.getMiddleY();
-      myXPoints[0] = middleX - next.myHeight / 2;
-      myYPoints[0] = middleY;
-      myXPoints[1] = middleX;
-      myYPoints[1] = next.myTopY;
-      myXPoints[2] = middleX + next.myHeight / 2;
-      myYPoints[2] = middleY;
-      myXPoints[3] = middleX;
-      myYPoints[3] = next.getBottomY();
-      myGraphics.setColor(c);
-      myGraphics.fillPolygon(myXPoints, myYPoints, 4);
-    }
-  };
+//  private final RectanglePainter myMilestonePainter = new RectanglePainter() {
+//    @Override
+//    public void paint(Rectangle next) {
+//      Object modelObject = next.getModelObject();
+//      if (modelObject instanceof TaskActivity == false) {
+//        throw new RuntimeException("Model object is expected to be TaskActivity ");
+//      }
+//      Task task = ((TaskActivity) modelObject).getOwner();
+//      Color c = task.getColor();
+//      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
+//        c = Color.RED;
+//      }
+//
+//      int middleX = next.getMiddleX();
+//      int middleY = next.getMiddleY();
+//      myXPoints[0] = middleX - next.getHeight() / 2;
+//      myYPoints[0] = middleY;
+//      myXPoints[1] = middleX;
+//      myYPoints[1] = next.getTopY();
+//      myXPoints[2] = middleX + next.getHeight() / 2;
+//      myYPoints[2] = middleY;
+//      myXPoints[3] = middleX;
+//      myYPoints[3] = next.getBottomY();
+//      myGraphics.setColor(c);
+//      myGraphics.fillPolygon(myXPoints, myYPoints, 4);
+//    }
+//  };
 
   private final RectanglePainter myArrowDownPainter = new RectanglePainter() {
     @Override
     public void paint(Rectangle next) {
-      myXPoints[0] = next.myLeftX;
+      myXPoints[0] = next.getLeftX();
       myXPoints[1] = next.getRightX();
       myXPoints[2] = next.getMiddleX();
-      myYPoints[0] = next.myTopY;
-      myYPoints[1] = next.myTopY;
+      myYPoints[0] = next.getTopY();
+      myYPoints[1] = next.getTopY();
       myYPoints[2] = next.getBottomY();
       myGraphics.setColor(Color.BLACK);
       myGraphics.fillPolygon(myXPoints, myYPoints, 3);
@@ -331,12 +336,12 @@ public class StyledPainterImpl implements Painter {
   private final RectanglePainter myArrowUpPainter = new RectanglePainter() {
     @Override
     public void paint(Rectangle next) {
-      myXPoints[0] = next.myLeftX;
+      myXPoints[0] = next.getLeftX();
       myXPoints[1] = next.getRightX();
       myXPoints[2] = next.getMiddleX();
       myYPoints[0] = next.getBottomY();
       myYPoints[1] = next.getBottomY();
-      myYPoints[2] = next.myTopY;
+      myYPoints[2] = next.getTopY();
       myGraphics.setColor(Color.BLACK);
       myGraphics.fillPolygon(myXPoints, myYPoints, 3);
     }
@@ -347,11 +352,11 @@ public class StyledPainterImpl implements Painter {
     public void paint(Rectangle next) {
       Graphics g = myGraphics;
       g.setColor(Color.BLACK);
-      myXPoints[0] = next.myLeftX;
+      myXPoints[0] = next.getLeftX();
       myXPoints[1] = next.getRightX();
       myXPoints[2] = next.getRightX();
       myYPoints[0] = next.getMiddleY();
-      myYPoints[1] = next.myTopY;
+      myYPoints[1] = next.getTopY();
       myYPoints[2] = next.getBottomY();
       g.fillPolygon(myXPoints, myYPoints, 3);
     }
@@ -360,10 +365,10 @@ public class StyledPainterImpl implements Painter {
   private final RectanglePainter myArrowRightPainter = new RectanglePainter() {
     @Override
     public void paint(Rectangle next) {
-      myXPoints[0] = next.myLeftX;
+      myXPoints[0] = next.getLeftX();
       myXPoints[1] = next.getRightX();
-      myXPoints[2] = next.myLeftX;
-      myYPoints[0] = next.myTopY;
+      myXPoints[2] = next.getLeftX();
+      myYPoints[0] = next.getTopY();
       myYPoints[1] = next.getMiddleY();
       myYPoints[2] = next.getBottomY();
       myGraphics.setColor(Color.BLACK);
@@ -377,12 +382,12 @@ public class StyledPainterImpl implements Painter {
       int margin = StyledPainterImpl.this.margin - 3;
       Color c = myConfig.getDayOffColor();
       myGraphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 100));
-      myGraphics.fillRect(next.myLeftX, next.myTopY + margin, next.myWidth, next.myHeight - 2 * margin);
+      myGraphics.fillRect(next.getLeftX(), next.getTopY() + margin, next.getWidth(), next.getHeight() - 2 * margin);
       myGraphics.setColor(Color.BLACK);
-      myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX, next.getBottomY() - margin);
-      myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.getRightX(), next.myTopY + margin);
-      myGraphics.drawLine(next.myLeftX, next.getBottomY() - margin, next.getRightX(), next.getBottomY() - margin);
-      myGraphics.drawLine(next.getRightX(), next.myTopY + margin, next.getRightX(), next.getBottomY() - margin);
+      myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getLeftX(), next.getBottomY() - margin);
+      myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getRightX(), next.getTopY() + margin);
+      myGraphics.drawLine(next.getLeftX(), next.getBottomY() - margin, next.getRightX(), next.getBottomY() - margin);
+      myGraphics.drawLine(next.getRightX(), next.getTopY() + margin, next.getRightX(), next.getBottomY() - margin);
     }
   };
 
@@ -400,14 +405,14 @@ public class StyledPainterImpl implements Painter {
       }
       myGraphics.setColor(c);
 
-      myGraphics.fillRect(next.myLeftX, next.myTopY + margin, next.myWidth, next.myHeight - 2 * margin);
+      myGraphics.fillRect(next.getLeftX(), next.getTopY() + margin, next.getWidth(), next.getHeight() - 2 * margin);
       if (style.indexOf(".first") > 0) {
         myGraphics.setColor(Color.BLACK);
-        myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX, next.getBottomY() - margin);
+        myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getLeftX(), next.getBottomY() - margin);
       }
       if (style.indexOf(".last") > 0) {
         myGraphics.setColor(Color.BLACK);
-        myGraphics.drawLine(next.getRightX(), next.myTopY + margin, next.getRightX(), next.getBottomY() - margin);
+        myGraphics.drawLine(next.getRightX(), next.getTopY() + margin, next.getRightX(), next.getBottomY() - margin);
       }
       myGraphics.setColor(Color.BLACK);
 
@@ -415,15 +420,15 @@ public class StyledPainterImpl implements Painter {
 //      int loadInt = Math.round(load.getLoad());
 //      String loadStr = loadInt + "%";
 //      int emsLength = myTextLengthCalculator.getTextLength(loadStr);
-//      boolean displayLoad = (loadInt != 100 && emsLength <= next.myWidth);
+//      boolean displayLoad = (loadInt != 100 && emsLength <= next.getWidth());
 //      if (displayLoad) {
 //        myGraphics.drawString(loadStr, next.getMiddleX() - myTextLengthCalculator.getTextLength(loadStr) / 2,
-//            next.myTopY + margin + next.myHeight / 2);
-//        myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.myLeftX, next.getBottomY() - margin);
+//            next.getTopY() + margin + next.getHeight() / 2);
+//        myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getLeftX(), next.getBottomY() - margin);
 //      }
       myGraphics.setColor(Color.BLACK);
-      myGraphics.drawLine(next.myLeftX, next.myTopY + margin, next.getRightX(), next.myTopY + margin);
-      myGraphics.drawLine(next.myLeftX, next.getBottomY() - margin, next.getRightX(), next.getBottomY() - margin);
+      myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getRightX(), next.getTopY() + margin);
+      myGraphics.drawLine(next.getLeftX(), next.getBottomY() - margin, next.getRightX(), next.getBottomY() - margin);
     }
   };
 
@@ -445,35 +450,35 @@ public class StyledPainterImpl implements Painter {
       g.setColor(c);
 
       if (next.hasStyle("milestone")) {
-        int middleX = (next.myWidth <= next.myHeight) ? next.getRightX() - next.myWidth / 2 : next.myLeftX
-            + next.myHeight / 2;
+        int middleX = (next.getWidth() <= next.getHeight()) ? next.getRightX() - next.getWidth() / 2 : next.getLeftX()
+            + next.getHeight() / 2;
         int middleY = next.getMiddleY();
 
-        myXPoints[0] = next.myLeftX + 2;
+        myXPoints[0] = next.getLeftX() + 2;
         myYPoints[0] = middleY;
         myXPoints[1] = middleX + 3;
-        myYPoints[1] = next.myTopY - 1;
-        myXPoints[2] = (next.myWidth <= next.myHeight) ? next.getRightX() + 4 : next.myLeftX + next.myHeight + 4;
+        myYPoints[1] = next.getTopY() - 1;
+        myXPoints[2] = (next.getWidth() <= next.getHeight()) ? next.getRightX() + 4 : next.getLeftX() + next.getHeight() + 4;
         myYPoints[2] = middleY;
         myXPoints[3] = middleX + 3;
         myYPoints[3] = next.getBottomY() + 1;
 
         g.fillPolygon(myXPoints, myYPoints, 4);
       } else if (next.hasStyle("super")) {
-        g.fillRect(next.myLeftX, next.myTopY + next.myHeight - 6, next.myWidth, 3);
-        int topy = next.myTopY + next.myHeight - 3;
-        int rightx = next.myLeftX + next.myWidth;
+        g.fillRect(next.getLeftX(), next.getTopY() + next.getHeight() - 6, next.getWidth(), 3);
+        int topy = next.getTopY() + next.getHeight() - 3;
+        int rightx = next.getLeftX() + next.getWidth();
         g.fillPolygon(new int[] { rightx - 3, rightx, rightx }, new int[] { topy, topy, topy + 3 }, 3);
       } else {
-        g.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+        g.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
         g.setColor(Color.black);
-        g.drawLine(next.myLeftX, next.myTopY, next.getRightX(), next.myTopY);
-        g.drawLine(next.myLeftX, next.getBottomY(), next.getRightX(), next.getBottomY());
+        g.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
+        g.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
         if (next.hasStyle("start")) {
-          g.drawLine(next.myLeftX, next.myTopY, next.myLeftX, next.getBottomY());
+          g.drawLine(next.getLeftX(), next.getTopY(), next.getLeftX(), next.getBottomY());
         }
         if (next.hasStyle("end")) {
-          g.drawLine(next.getRightX(), next.myTopY, next.getRightX(), next.getBottomY());
+          g.drawLine(next.getRightX(), next.getTopY(), next.getRightX(), next.getBottomY());
         }
       }
     }
@@ -489,7 +494,7 @@ public class StyledPainterImpl implements Painter {
     @Override
     public void paint(Rectangle next) {
       myGraphics.setColor(myColor);
-      myGraphics.fillRect(next.myLeftX, next.myTopY, next.myWidth, next.myHeight);
+      myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
     }
   }
 
@@ -506,5 +511,10 @@ public class StyledPainterImpl implements Painter {
   @Override
   public void paint(TextGroup textGroup) {
     myTextPainter.paint(textGroup);
+  }
+
+  @Override
+  public void paint(Polygon p) {
+    myPolygonRenderer.render(p);
   }
 }

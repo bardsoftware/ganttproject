@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 
+
 /**
  * Stores the available primitives and their information (used for painting) and
  * provides methods to retrieve them
@@ -55,6 +56,8 @@ public class Canvas {
 
   private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
 
+  private final DummySpatialIndex<Polygon> myPolygonIndex = new DummySpatialIndex<Canvas.Polygon>();
+  
   /** Horizontal alignments for texts */
   public enum HAlignment {
     CENTER, LEFT, RIGHT
@@ -134,51 +137,88 @@ public class Canvas {
     }
   }
 
-  public static class Rectangle extends Shape {
-    public final int myLeftX;
-
-    public final int myTopY;
-
-    public final int myWidth;
-
-    public final int myHeight;
-
-    public Paint myPaint;
+  public static class Polygon extends Shape {
+    private final int myLeftX;
+    private final int myRightX;
+    private final int myTopY;
+    private final int myBottomY;
     
-    private Rectangle(int leftx, int topy, int width, int height) {
-      myLeftX = leftx;
-      myTopY = topy;
-      myWidth = width;
-      myHeight = height;
+    private final int[] myPointsX;
+    private final int[] myPointsY;
+    
+    private Polygon(int... points) {
+      myPointsX = new int[points.length / 2];
+      myPointsY = new int[points.length / 2];
+      
+      int leftX = Integer.MAX_VALUE;
+      int topY = Integer.MAX_VALUE;
+      int rightX = Integer.MIN_VALUE;
+      int bottomY = Integer.MIN_VALUE;
+      for (int i = 0; i < points.length / 2; i++) {
+        leftX = Math.min(leftX, points[i * 2]);
+        rightX = Math.max(rightX, points[i * 2]);
+        topY = Math.min(topY, points[i * 2 + 1]);
+        bottomY = Math.max(bottomY, points[i * 2 + 1]);
+        
+        myPointsX[i] = points[i * 2];
+        myPointsY[i] = points[i * 2 + 1];
+      }
+      myLeftX = leftX;
+      myRightX = rightX;
+      myTopY = topY;
+      myBottomY = bottomY;
     }
-
-    public int getRightX() {
-      return myLeftX + myWidth;
+    
+    public int[] getPointsX() {
+      return myPointsX;
     }
-
-    public int getBottomY() {
-      return myTopY + myHeight;
+    
+    public int[] getPointsY() {
+      return myPointsY;
     }
-
-    @Override
-    public String toString() {
-      return "leftx=" + myLeftX + " topy=" + myTopY + " width=" + myWidth + " height=" + myHeight;
+    
+    public int getPointCount() {
+      return myPointsX.length;
     }
-
+    
     public int getLeftX() {
       return myLeftX;
     }
-
-    public int getMiddleY() {
-      return myTopY + myHeight / 2;
+    
+    public int getTopY() {
+      return myTopY;
+    }
+    
+    public int getRightX() {
+      return myRightX;
+    }
+    
+    public int getBottomY() {
+      return myBottomY;
     }
 
-    public int getMiddleX() {
-      return myLeftX + myWidth / 2;
+    public int getHeight() {
+      return myBottomY - myTopY;
     }
 
     public int getWidth() {
-      return myWidth;
+      return myRightX - myLeftX;
+    }
+    
+    public int getMiddleY() {
+      return myTopY + getHeight() / 2;
+    }
+
+    public int getMiddleX() {
+      return myLeftX + getWidth() / 2;
+    }
+  }
+  
+  public static class Rectangle extends Polygon {
+    public Paint myPaint;
+    
+    private Rectangle(int leftx, int topy, int width, int height) {
+      super(leftx, topy, leftx + width, topy + height);
     }
 
     public Paint getBackgroundPaint() {
@@ -467,6 +507,13 @@ public class Canvas {
     // }
   }
 
+  public Polygon createPolygon(int... points) {
+    assert points.length % 2 == 0 : "The number of points must be even";
+    Polygon result = new Polygon(points);
+    myPolygonIndex.put(result, result.getLeftX(), result.getTopY(), result.getWidth(), result.getHeight());
+    return result;
+  }
+  
   public Rectangle createRectangle(int leftx, int topy, int width, int height) {
     if (width < 0) {
       width = -width;
@@ -509,6 +556,11 @@ public class Canvas {
         painter.paint(next);
       }
     }
+    for (Polygon p : myPolygonIndex.values()) {
+      if (p.isVisible()) {
+        painter.paint(p);
+      }
+    }
     for (int i = 0; i < myLines.size(); i++) {
       Line next = myLines.get(i);
       if (next.isVisible()) {
@@ -528,6 +580,7 @@ public class Canvas {
 
   public void clear() {
     myTextIndex.clear();
+    myPolygonIndex.clear();
     myRectangles.clear();
     myLines.clear();
     myTexts.clear();
@@ -552,13 +605,22 @@ public class Canvas {
   }
 
   public Shape getPrimitive(int x, int xThreshold, int y, int yThreshold) {
+    Shape result = null;
     for (int i = 0; i < myRectangles.size(); i++) {
       Rectangle next = myRectangles.get(i);
       // System.err.println(" next rectangle="+next);
-      if (next.myLeftX <= x + xThreshold && next.myLeftX + next.myWidth >= x - xThreshold
-          && next.myTopY <= y + yThreshold && next.myTopY + next.myHeight >= y - yThreshold) {
-        return next;
+      if (next.getLeftX() <= x + xThreshold && next.getRightX() >= x - xThreshold
+          && next.getTopY() <= y + yThreshold && next.getBottomY() >= y - yThreshold) {
+        result = next;
+        break;
       }
+    }
+    if (result != null) {
+      return result;
+    }
+    result = myPolygonIndex.get(x, xThreshold, y, yThreshold);
+    if (result != null) {
+      return result;
     }
     return myTextIndex.get(x + myDeltaX, y + myDeltaY);
   }

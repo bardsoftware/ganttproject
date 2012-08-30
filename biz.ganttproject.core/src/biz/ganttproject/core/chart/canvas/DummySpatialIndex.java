@@ -18,8 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.core.chart.canvas;
 
+import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -51,23 +53,34 @@ public class DummySpatialIndex<T> implements SpatialIndex<T>{
   }
 
   private final List<Rect<T>> myRects = Lists.newArrayList();
-
+  private final List<T> myValues = Lists.newArrayList();
+  
   @Override
   public void put(T data, int x, int y, int width, int height) {
     myRects.add(new Rect<T>(data, x, y, width, height));
+    myValues.add(data);
   }
 
   @Override
   public T get(int x, int y) {
+    return get(x, 0, y, 0);
+  }
+
+  public T get(int x, int xpadding, int y, int ypadding) {
     for (Rect<T> r : myRects) {
-      if (r.myLeftX <= x && r.myLeftX + r.myWidth >= x && r.myBottomY >= y && r.myBottomY - r.myHeight <= y) {
+      if (r.myLeftX <= x + xpadding && r.myLeftX + r.myWidth >= x - xpadding 
+          && r.myBottomY >= y - ypadding && r.myBottomY - r.myHeight <= y + ypadding) {
         return r.myObject;
       }
     }
-    return null;
+    return null;    
   }
-
   public void clear() {
     myRects.clear();
+    myValues.clear();
+  }
+
+  public Collection<T> values() {
+    return myValues;
   }
 }

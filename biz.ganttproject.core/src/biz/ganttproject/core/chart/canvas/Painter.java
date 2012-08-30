@@ -35,4 +35,6 @@ public interface Painter {
   void paint(Canvas.Text next);
 
   void paint(Canvas.TextGroup textGroup);
+
+  void paint(Canvas.Polygon p);
 }

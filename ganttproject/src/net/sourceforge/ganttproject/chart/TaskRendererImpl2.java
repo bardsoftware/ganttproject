@@ -100,7 +100,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   };
 
-  private TaskActivitySceneBuilder.ChartApi myChartApi = new TaskActivitySceneBuilder.ChartApi() {
+  class TaskActivityChartApi implements TaskActivitySceneBuilder.ChartApi {
+    private final int myBarHeight;
+    TaskActivityChartApi(int barHeight) {
+      myBarHeight = barHeight;
+    }
     @Override
     public Date getChartStartDate() {
       return myModel.getOffsetAnchorDate();
@@ -117,7 +121,12 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     public int getRowHeight() {
       return myModel.getRowHeight();
     }
-  };
+    @Override
+    public int getBarHeight() {
+      return myBarHeight;
+    }
+  }
+
   private final TaskActivitySceneBuilder<Task, TaskActivity> myTaskActivityRenderer;
   private final TaskActivitySceneBuilder<Task, TaskActivity> myBaselineActivityRenderer;
 
@@ -176,9 +185,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         model.getOptionEventDispatcher());
     myOptionGroups = new GPOptionGroup[] { labelOptions };
 
-    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivitySceneBuilder.Style(0, getRectangleHeight()));
+    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityChartApi(getRectangleHeight()),
+        new TaskActivitySceneBuilder.Style(0));
     myBaselineActivityRenderer = createTaskActivitySceneBuilder(
-        getPrimitiveContainer().getLayer(2), new TaskActivitySceneBuilder.Style(getRectangleHeight(), getRectangleHeight() / 2));
+        getPrimitiveContainer().getLayer(2), new TaskActivityChartApi(getRectangleHeight()/2),
+        new TaskActivitySceneBuilder.Style(getRectangleHeight()));
   }
 
   private List<Task> getVisibleTasks() {
@@ -389,15 +400,15 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
       final int nextProgressBarLength;
       if (completed > nextLength || nextActivity.getIntensity() == 0f) {
-        nextProgressBarLength = nextRectangle.myWidth;
+        nextProgressBarLength = nextRectangle.getWidth();
         if (nextActivity.getIntensity() > 0f) {
           completed -= nextLength;
         }
       } else {
-        nextProgressBarLength = (int) (nextRectangle.myWidth * (completed / nextLength));
+        nextProgressBarLength = (int) (nextRectangle.getWidth() * (completed / nextLength));
         completed = 0f;
       }
-      final Rectangle nextProgressBar = container.createRectangle(nextRectangle.myLeftX,
+      final Rectangle nextProgressBar = container.createRectangle(nextRectangle.getLeftX(),
           nextRectangle.getMiddleY() - 1, nextProgressBarLength, 3);
       nextProgressBar.setStyle(completed == 0f ? "task.progress.end" : "task.progress");
       getPrimitiveContainer().getLayer(0).bind(nextProgressBar, task);
@@ -450,7 +461,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return myLabelsLayer;
   }
 
-  private TaskActivitySceneBuilder<Task, TaskActivity> createTaskActivitySceneBuilder(Canvas canvas, TaskActivitySceneBuilder.Style style) {
-    return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, myChartApi, canvas, myLabelsRenderer, style);
+  private TaskActivitySceneBuilder<Task, TaskActivity> createTaskActivitySceneBuilder(
+      Canvas canvas, TaskActivitySceneBuilder.ChartApi chartApi, TaskActivitySceneBuilder.Style style) {
+    return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
   }
 }
