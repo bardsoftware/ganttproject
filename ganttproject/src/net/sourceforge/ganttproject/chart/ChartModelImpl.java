@@ -6,21 +6,10 @@
 package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.core.chart.scene.SceneBuilder;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.TimeUnitStack;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -34,6 +23,16 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.scene.SceneBuilder;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.TimeUnitStack;
+
+import com.google.common.collect.Lists;
 
 /**
  * Controls painting of the Gantt chart
@@ -237,16 +236,19 @@ public class ChartModelImpl extends ChartModelBase {
   @Override
   public GPOptionGroup[] getChartOptionGroups() {
     GPOptionGroup[] superGroups = super.getChartOptionGroups();
-    GPOptionGroup[] rendererGroups = myTaskRendererImpl.getOptionGroups();
-    List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
+    List<GPOptionGroup> result = Lists.newArrayList();
     result.add(myTaskDefaultsOptions);
     result.addAll(Arrays.asList(superGroups));
-    result.addAll(Arrays.asList(rendererGroups));
+    result.add(myTaskRendererImpl.getLabelOptions());
     return result.toArray(new GPOptionGroup[result.size()]);
   }
 
   public ColorOption getTaskDefaultColorOption() {
     return myTaskDefaultColorOption;
+  }
+
+  public GPOptionGroup getTaskLabelOptions() {
+    return myTaskRendererImpl.getLabelOptions();
   }
 
   public int setBaseline(List<GanttPreviousStateTask> tasks) {
