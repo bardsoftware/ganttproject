@@ -10,6 +10,7 @@
  */
 package net.sourceforge.ganttproject.test.task;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -27,8 +28,8 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
         Task task2 = taskManager.createTask();
         Task task3 = taskManager.createTask();
         //
-        GanttCalendar commonStart = new GanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = new GanttCalendar(2000, 01, 05);
+        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
         task1.setStart(commonStart);
         task1.setEnd(commonEnd);
         task2.setStart(commonStart);
@@ -57,8 +58,8 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
         Task task2 = taskManager.createTask();
         Task task3 = taskManager.createTask();
         //
-        GanttCalendar commonStart = new GanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = new GanttCalendar(2000, 01, 05);
+        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
         task1.setStart(commonStart);
         task1.setEnd(commonEnd);
         task2.setStart(commonStart);
@@ -91,8 +92,8 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
         Task task2 = taskManager.createTask();
         Task task3 = taskManager.createTask();
         //
-        GanttCalendar commonStart = new GanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = new GanttCalendar(2000, 01, 05);
+        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
         task1.setStart(commonStart);
         task1.setEnd(commonEnd);
         task2.setStart(commonStart);

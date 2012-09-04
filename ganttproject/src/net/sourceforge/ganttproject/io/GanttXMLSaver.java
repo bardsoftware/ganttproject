@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.GPLogger;
@@ -75,7 +76,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       addAttribute("name", getProject().getProjectName(), attrs);
       addAttribute("company", getProject().getOrganization(), attrs);
       addAttribute("webLink", getProject().getWebLink(), attrs);
-      addAttribute("view-date", new GanttCalendar(area.getStartDate()).toXMLString(), attrs);
+      addAttribute("view-date", CalendarFactory.createGanttCalendar(area.getStartDate()).toXMLString(), attrs);
       addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
       // TODO for GP 2.0: move view configurations into <view> tag (see
       // ViewSaver)

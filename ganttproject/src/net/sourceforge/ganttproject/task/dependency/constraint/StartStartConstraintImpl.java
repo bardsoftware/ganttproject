@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task.dependency.constraint;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -72,7 +73,7 @@ public class StartStartConstraintImpl extends ConstraintImpl implements TaskDepe
         barrier) > 0
         : dependeeEnd.getTime().compareTo(barrier) != 0;
 
-    return new TaskDependencyConstraint.DefaultCollision(new GanttCalendar(barrier),
+    return new TaskDependencyConstraint.DefaultCollision(CalendarFactory.createGanttCalendar(barrier),
         TaskDependencyConstraint.Collision.START_EARLIER_VARIATION, isActive);
   }
 

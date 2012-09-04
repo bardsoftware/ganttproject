@@ -31,7 +31,7 @@ import org.w3c.util.InvalidDateException;
  * Class use for calendar
  */
 public class GanttCalendar extends java.util.GregorianCalendar {
-  public GanttCalendar() {
+  GanttCalendar() {
     super();
     set(Calendar.HOUR_OF_DAY, 0);
     set(Calendar.MINUTE, 0);
@@ -39,17 +39,17 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     set(Calendar.MILLISECOND, 0);
   }
 
-  public GanttCalendar(int year, int month, int date) {
+  GanttCalendar(int year, int month, int date) {
     super(year, month, date);
   }
 
-  public GanttCalendar(Date date) {
+  GanttCalendar(Date date) {
     super();
     setTime(date);
   }
 
   public static GanttCalendar parseXMLDate(String s) {
-    GanttCalendar result = new GanttCalendar();
+    GanttCalendar result = CalendarFactory.createGanttCalendar();
     result.clear();
     try {
       Date date = DateParser.parse(s);
@@ -74,7 +74,7 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   /** @return a copy of the current date */
   @Override
   public GanttCalendar clone() {
-    GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
+    GanttCalendar clone = CalendarFactory.createGanttCalendar(getYear(), getMonth(), getDay());
     return clone;
   }
 
@@ -162,6 +162,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   };
 
   public GanttCalendar getDisplayValue() {
-    return new GanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
+    return CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
   }
 }

@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.Status;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
@@ -730,7 +731,7 @@ public class TaskImpl implements Task {
 
       myDurationChange.setValue(length);
       Date shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
-      GanttCalendar newEnd = new GanttCalendar(shifted);
+      GanttCalendar newEnd = CalendarFactory.createGanttCalendar(shifted);
       setEnd(newEnd);
       myActivities = null;
     }
@@ -970,7 +971,7 @@ public class TaskImpl implements Task {
         newStart = shiftDate(clone.getStart().getTime(),
             getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
       }
-      clone.setStart(new GanttCalendar(newStart));
+      clone.setStart(CalendarFactory.createGanttCalendar(newStart));
       clone.setDuration(myLength);
     }
     return clone;

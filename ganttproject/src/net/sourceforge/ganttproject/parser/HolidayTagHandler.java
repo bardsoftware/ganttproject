@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.parser;
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 /**
@@ -65,7 +66,7 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
         myCalendar.setPublicHoliDayType(month, date);
       } else {
         int year = Integer.parseInt(yearAsString);
-        myCalendar.setPublicHoliDayType(new GanttCalendar(year, month - 1, date).getTime());
+        myCalendar.setPublicHoliDayType(CalendarFactory.createGanttCalendar(year, month - 1, date).getTime());
       }
     } catch (NumberFormatException e) {
       System.out.println("ERROR in parsing XML File year is not numeric: " + e.toString());

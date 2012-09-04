@@ -71,6 +71,7 @@ import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.base.Objects;
@@ -225,7 +226,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     myThirdDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        setThird(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
+        setThird(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
       }
     });
     extraConstraintBox.add(Box.createHorizontalStrut(5));
