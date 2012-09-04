@@ -460,7 +460,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     area.repaint();
     getResourcePanel().area.repaint();
 
-    this.tree.changeLanguage(language);
     CustomColumnsStorage.changeLanguage(language);
 
     applyComponentOrientation(language.getComponentOrientation());
