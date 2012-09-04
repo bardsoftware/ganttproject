@@ -295,7 +295,8 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId);
+        TaskImpl task = myPrototype == null ?
+            new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId) : new GanttTask((TaskImpl)myPrototype);
 
         String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
         task.setName(name);
@@ -318,10 +319,18 @@ public class TaskManagerImpl implements TaskManager {
         if (myPriority != null) {
           task.setPriority(myPriority);
         }
-        task.setExpand(isExpanded);
-        task.setNotes(myNotes);
-        task.setWebLink(myWebLink);
-        task.setCompletionPercentage(myCompletion);
+        if (isExpanded != null) {
+          task.setExpand(isExpanded);
+        }
+        if (myNotes != null) {
+          task.setNotes(myNotes);
+        }
+        if (myWebLink != null) {
+          task.setWebLink(myWebLink);
+        }
+        if (myCompletion != null) {
+          task.setCompletionPercentage(myCompletion);
+        }
         registerTask(task);
 
 

@@ -53,11 +53,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
@@ -100,12 +98,12 @@ import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
 import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.delay.DelayObserver;
 import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
@@ -114,7 +112,6 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -133,9 +130,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   // TODO Replace with IGanttProject and facade classes
   /** Pointer of application */
   private final GanttProject myProject;
-
-  /** The used language */
-  private static GanttLanguage language = GanttLanguage.getInstance();
 
   private TreePath dragPath = null;
 
@@ -159,6 +153,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   private final GPAction myUnlinkTasksAction;
 
   private boolean isOnTaskSelectionEventProcessing;
+
+  private ClipboardTaskProcessor myClipboardProcessor;
 
   private static Pair<GanttTreeTable, GanttTreeTableModel> createTreeTable(IGanttProject project, UIFacade uiFacade) {
     GanttTreeTableModel tableModel = new GanttTreeTableModel(project.getTaskManager(),
@@ -206,6 +202,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
     getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, newAction,
         myProject.getCutAction(), myProject.getCopyAction(), myProject.getPasteAction(), propertiesAction, deleteAction);
+    myClipboardProcessor = new ClipboardTaskProcessor(myTaskManager);
   }
 
   @Override
@@ -312,11 +309,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   public void stopEditing() {
     getTreeTable().getTable().editingCanceled(new ChangeEvent(getTreeTable().getTreeTable()));
     getTreeTable().getTreeTable().editingCanceled(new ChangeEvent(getTreeTable().getTreeTable()));
-  }
-
-  public void changeLanguage(GanttLanguage ganttLanguage) {
-    language = ganttLanguage;
-    // this.treetable.changeLanguage(language);
   }
 
   private void initRootNode() {
@@ -448,13 +440,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     initRootNode();
     getTreeModel().setRoot(getRootNode());
     // getTreeModel().reload();
-  }
-
-  private void selectTasks(List<Task> tasksList) {
-    clearSelection();
-    for (Task t : tasksList) {
-      setSelected(t, false);
-    }
   }
 
   @Override
@@ -816,10 +801,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   private List<TaskDependency> cpDependencies;
 
-  private Map<Integer, Integer> mapOriginalIDCopyID;
-
-  private int where = -1;
-
   private AbstractAction[] myTreeActions;
 
   /** Cut the current selected tree node */
@@ -840,7 +821,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             if (current != null) {
               cpNodesArrayList.add(current);
               parent = (MutableTreeTableNode) node.getParent();
-              where = parent.getIndex(current);
+              //where = parent.getIndex(current);
               removeCurrentNode(current);
               taskFather = (GanttTask) parent.getUserObject();
               AdjustTaskBoundsAlgorithm alg = myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
@@ -893,123 +874,19 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       getUndoManager().undoableEdit("Paste", new Runnable() {
         @Override
         public void run() {
-          TaskNode current = (TaskNode) getSelectedTaskNode();
-          List<Task> tasksList = new ArrayList<Task>();
-          if (current == null) {
-            current = (TaskNode) getRootNode();
+          DefaultMutableTreeTableNode pasteRoot = getSelectedTaskNode();
+          if (pasteRoot == null) {
+            pasteRoot = getRootNode();
           }
-
-          mapOriginalIDCopyID = new HashMap<Integer, Integer>();
-
-          for (int i = cpNodesArrayList.size() - 1; i >= 0; i--) {
-            if (hasProjectTaskParent(current)) {
-              ((Task) cpNodesArrayList.get(i).getUserObject()).setProjectTask(false);
-            }
-            // this will add new custom columns to the newly created task.
-            TreeNode sel = getSelectedTaskNode();
-            TreeNode parent = null;
-            if (sel != null) {
-              parent = sel.getParent();
-              if (parent != null) {
-                where = parent.getIndex(sel);
-              }
-            }
-            tasksList.add((Task) insertClonedNode(
-                current == getRootNode() ? current : (DefaultMutableTreeTableNode) current.getParent(),
-                cpNodesArrayList.get(i), where + 1, true).getUserObject());
+          List<Task> pasted = myClipboardProcessor.paste((Task)pasteRoot.getUserObject(), cpNodesArrayList, cpDependencies);
+          mySelectionManager.clear();
+          for (Task t : pasted) {
+            mySelectionManager.addTask(t);
           }
-          if (cpDependencies != null) {
-            for (TaskDependency td : cpDependencies) {
-              Task dependee = td.getDependee();
-              Task dependant = td.getDependant();
-              TaskDependencyConstraint constraint = td.getConstraint();
-              boolean hasDependeeNode = false;
-              boolean hasDependantNode = false;
-              for (MutableTreeTableNode node : allNodes) {
-                Object userObject = node.getUserObject();
-                if (dependant.equals(userObject)) {
-                  hasDependantNode = true;
-                }
-                if (dependee.equals(userObject)) {
-                  hasDependeeNode = true;
-                }
-              }
-              if (hasDependantNode && hasDependeeNode) {
-                try {
-                  TaskDependency dep = myTaskManager.getDependencyCollection().createDependency(
-                      myTaskManager.getTask(mapOriginalIDCopyID.get(new Integer(dependant.getTaskID())).intValue()),
-                      myTaskManager.getTask(mapOriginalIDCopyID.get(new Integer(dependee.getTaskID())).intValue()),
-                      myTaskManager.createConstraint(constraint.getType()));
-                  dep.setDifference(td.getDifference());
-                  dep.setHardness(td.getHardness());
-                } catch (TaskDependencyException e) {
-                  myUIFacade.showErrorDialog(e);
-                }
-              }
-            }
-          }
-          selectTasks(tasksList);
         }
       });
       myProject.refreshProjectInformation();
     }
-  }
-
-  // TODO Maybe place method in Task?
-  /** @return true if the task has a parent which is a ProjectTask */
-  private boolean hasProjectTaskParent(TaskNode task) {
-    DefaultMutableTreeTableNode parent = (DefaultMutableTreeTableNode) task.getParent();
-    while (parent != null) {
-      if (((Task) parent.getUserObject()).isProjectTask()) {
-        return true;
-      }
-      parent = (DefaultMutableTreeTableNode) parent.getParent();
-    }
-    return false;
-  }
-
-  /** Insert the cloned node and its children */
-  private TaskNode insertClonedNode(DefaultMutableTreeTableNode parent, DefaultMutableTreeTableNode child,
-      int location, boolean first) {
-    if (parent == null) {
-      return null; // it is the root node
-    }
-    if (first) {
-      GanttTask _t = (GanttTask) (parent.getUserObject());
-      if (_t.isMilestone()) {
-        _t.setMilestone(false);
-        GanttTask _c = (GanttTask) (child.getUserObject());
-        _t.setLength(_c.getLength());
-        _t.setStart(_c.getStart());
-      }
-    }
-
-    GanttTask originalTask = (GanttTask) child.getUserObject();
-    GanttTask newTask = new GanttTask(originalTask);
-
-    String newName = language.formatText("task.copy.prefix", language.getText("copy2"), newTask.getName());
-    newTask.setName(newName);
-
-    mapOriginalIDCopyID.put(new Integer(originalTask.getTaskID()), new Integer(newTask.getTaskID()));
-
-    myTaskManager.registerTask(newTask);
-
-    DefaultMutableTreeTableNode cloneChildNode = new TaskNode(newTask);
-
-    for (int i = 0; i < child.getChildCount(); i++) {
-      insertClonedNode(cloneChildNode, (DefaultMutableTreeTableNode) child.getChildAt(i), i, false);
-    }
-
-    if (parent.getChildCount() < location) {
-      location = parent.getChildCount();
-    }
-
-    getTreeModel().insertNodeInto(cloneChildNode, parent, location);
-
-    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(cloneChildNode));
-
-    newTask.setExpand(false);
-    return (TaskNode) cloneChildNode;
   }
 
   private void forwardScheduling() {
