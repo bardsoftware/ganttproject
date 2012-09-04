@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.Map;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -19,8 +20,10 @@ import biz.ganttproject.core.proto.TaskProto;
 import biz.ganttproject.core.proto.TaskProto.Dependency.Stiffness;
 import biz.ganttproject.core.proto.ViewProto;
 import biz.ganttproject.core.proto.ViewProto.GanttView;
+import biz.ganttproject.core.proto.ViewProto.GanttView.Builder;
 import biz.ganttproject.core.proto.ViewProto.View;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.TextFormat;
 
 public class GanToProtoConverter {
@@ -85,7 +88,6 @@ public class GanToProtoConverter {
         }
       }
 
-
       String shape = elTask.getAttributeValue("shape");
       if (shape != null) {
         int shapeBitmap = 0;
@@ -125,10 +127,27 @@ public class GanToProtoConverter {
   }
 
 
+  private static final Map<String, ViewProto.GanttView.TaskLabel.Position> ourLabelPositions = ImmutableMap.of(
+      "taskLabelUp", ViewProto.GanttView.TaskLabel.Position.TOP,
+      "taskLabelLeft", ViewProto.GanttView.TaskLabel.Position.LEFT,
+      "taskLabelDown", ViewProto.GanttView.TaskLabel.Position.BOTTOM,
+      "taskLabelRight", ViewProto.GanttView.TaskLabel.Position.RIGHT);
+
   private static FileProto.File.Builder readViews(Element elProject, FileProto.File.Builder fileBuilder) throws JDOMException {
     View.Builder[] viewBuilders = new View.Builder[] {readGanttView(elProject), readResourceView(elProject)};
     viewBuilders[Integer.parseInt(elProject.getAttributeValue("view-index"))].setIsActive(true);
-    fileBuilder.addGanttView(GanttView.newBuilder().setBaseView(viewBuilders[0]));
+    ViewProto.GanttView.Builder ganttBuilder = GanttView.newBuilder().setBaseView(viewBuilders[0]);
+    XPath xpath = XPath.newInstance("view[@id='gantt-chart']//option");
+    List<Element> options = xpath.selectNodes(elProject);
+    for (Element elOption : options) {
+      ViewProto.GanttView.TaskLabel.Position position = ourLabelPositions.get(elOption.getAttributeValue("id"));
+      if (position == null) {
+        continue;
+      }
+      ganttBuilder.addLabel(
+          ViewProto.GanttView.TaskLabel.newBuilder().setPosition(position).setPropertyId(elOption.getAttributeValue("value")));
+    }
+    fileBuilder.addGanttView(ganttBuilder);
     return fileBuilder;
   }
 
