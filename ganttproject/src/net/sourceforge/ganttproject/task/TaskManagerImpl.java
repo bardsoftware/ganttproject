@@ -247,8 +247,8 @@ public class TaskManagerImpl implements TaskManager {
   private Task createRootTask() {
     Calendar c = CalendarFactory.newCalendar();
     Date today = c.getTime();
-    Task root = new GanttTask(null, new GanttCalendar(today), 1, this, -1);
-    root.setStart(new GanttCalendar(today));
+    Task root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
+    root.setStart(CalendarFactory.createGanttCalendar(today));
     root.setDuration(createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 1));
     root.setExpand(true);
     root.setName("root");
@@ -296,13 +296,13 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         TaskImpl task = myPrototype == null ?
-            new GanttTask("", new GanttCalendar(), 1, TaskManagerImpl.this, myId) : new GanttTask((TaskImpl)myPrototype);
+            new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId) : new GanttTask((TaskImpl)myPrototype);
 
         String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
         task.setName(name);
 
         if (myStartDate != null) {
-          GanttCalendar cal = new GanttCalendar(myStartDate);
+          GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
           task.setStart(cal);
         }
         TimeDuration duration;

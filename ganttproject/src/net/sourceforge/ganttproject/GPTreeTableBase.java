@@ -84,6 +84,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
@@ -707,7 +708,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     @Override
     public Object getCellEditorValue() {
-      return new GanttCalendar(myDate == null ? new Date() : myDate);
+      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
     }
 
     @Override

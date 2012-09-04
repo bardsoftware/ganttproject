@@ -30,6 +30,7 @@ import org.ganttproject.impex.htmlpdf.FOPEngine.ExportState;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 /**
@@ -71,10 +72,10 @@ public class FopXmlSerializer extends XmlSerializer {
     addAttribute("description", i18n("shortDescription"), attrs);
 
     addAttribute("begin", i18n("start"), attrs);
-    addAttribute("beginValue", new GanttCalendar(getProject().getTaskManager().getProjectStart()).toString(), attrs);
+    addAttribute("beginValue", CalendarFactory.createGanttCalendar(getProject().getTaskManager().getProjectStart()).toString(), attrs);
 
     addAttribute("end", i18n("end"), attrs);
-    addAttribute("endValue", new GanttCalendar(getProject().getTaskManager().getProjectEnd()).toString(), attrs);
+    addAttribute("endValue", CalendarFactory.createGanttCalendar(getProject().getTaskManager().getProjectEnd()).toString(), attrs);
 
     startPrefixedElement("project", attrs, handler);
     textElement("descriptionValue", attrs, getProject().getDescription(), handler);

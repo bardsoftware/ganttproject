@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.time;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public abstract class CalendarFactory {
@@ -30,5 +31,17 @@ public abstract class CalendarFactory {
   
   protected static void setLocale(Locale locale) {
     ourLocale = locale;
+  }
+
+  public static GanttCalendar createGanttCalendar(Date date) {
+    return new GanttCalendar(date);
+  }
+
+  public static GanttCalendar createGanttCalendar(int year, int month, int date) {
+    return new GanttCalendar(year, month, date);
+  }
+
+  public static GanttCalendar createGanttCalendar() {
+    return new GanttCalendar();
   }
 }

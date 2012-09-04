@@ -89,6 +89,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -511,7 +512,7 @@ class ProjectFileImporter {
       return value;
     case DATE:
       assert value instanceof Date;
-      return new GanttCalendar((Date) value);
+      return CalendarFactory.createGanttCalendar((Date) value);
     case CURRENCY:
     case NUMERIC:
     case PERCENTAGE:
