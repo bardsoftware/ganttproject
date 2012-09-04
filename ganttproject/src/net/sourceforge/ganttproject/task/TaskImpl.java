@@ -1119,22 +1119,13 @@ public class TaskImpl implements Task {
   // doesn't affect subtasks and supertasks. It is necessary to call this
   // method explicitly from other
   // parts of code to be sure that constraint fulfills
-  //
-  // Method GanttCalendar.newAdd() assumes that time unit is day
   @Override
   public void applyThirdDateConstraint() {
-    TimeDuration length = getDuration();
     if (getThird() != null)
       switch (getThirdDateConstraint()) {
       case EARLIESTBEGIN:
-        // TODO: TIME UNIT (assumption about days)
         if (getThird().after(getStart())) {
-          int difference = getThird().diff(getStart());
-          GanttCalendar _start = getStart().newAdd(Calendar.DATE, difference);
-          GanttCalendar _end = getEnd().newAdd(Calendar.DATE, difference);
-          setEnd(_end);
-          setStart(_start);
-          setDuration(length);
+          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
         }
         break;
       }
