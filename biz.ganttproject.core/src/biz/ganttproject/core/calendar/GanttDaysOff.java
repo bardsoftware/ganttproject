@@ -78,10 +78,6 @@ public class GanttDaysOff {
     return -1;
   }
 
-  public int getDuration() {
-    return (myStart.diff(myFinish)) + 1;
-  }
-
   public static GanttDaysOff create(GanttDaysOff from) {
     return new GanttDaysOff(from.myStart.clone(), from.myFinish.clone());
   }

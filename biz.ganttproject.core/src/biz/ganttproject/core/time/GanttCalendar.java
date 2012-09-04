@@ -43,10 +43,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     super(year, month, date);
   }
 
-  public GanttCalendar(GanttCalendar g) {
-    super(g.getYear(), g.getMonth(), g.getDate());
-  }
-
   public GanttCalendar(Date date) {
     super();
     setTime(date);
@@ -113,35 +109,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     GanttCalendar gc = clone();
     gc.add(field, dayNumber);
     return gc;
-  }
-
-  /**
-   * @deprecated Use TimeUnit related methods
-   * @returns the difference (in days) between two date
-   */
-  @Deprecated
-  public int diff(GanttCalendar d) {
-    int res = 0;
-    GanttCalendar d1;
-    GanttCalendar d2;
-
-    if (this.compareTo(d) == 0) {
-      return res;
-    }
-
-    else if (compareTo(d) < 0) {
-      d1 = this.clone();
-      d2 = new GanttCalendar(d);
-    } else {
-      d1 = new GanttCalendar(d);
-      d2 = this.clone();
-    }
-
-    while (d1.compareTo(d2) != 0) {
-      d1.add(Calendar.DATE, 1);
-      res++;
-    }
-    return res;
   }
 
   /** @return the sign represented by an integer */
