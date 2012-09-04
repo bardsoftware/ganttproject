@@ -76,9 +76,19 @@ public class GanttLanguage {
     }
   };
 
-  private static class CalendarFactoryImpl extends CalendarFactory {
-    static void setLocaleImpl(Locale locale) {
-      CalendarFactory.setLocale(locale);
+  private static class CalendarFactoryImpl extends CalendarFactory implements CalendarFactory.LocaleApi {
+    static void setLocaleImpl() {
+      CalendarFactory.setLocaleApi(new CalendarFactoryImpl());
+    }
+
+    @Override
+    public Locale getLocale() {
+      return GanttLanguage.getInstance().getLocale();
+    }
+
+    @Override
+    public DateFormat getShortDateFormat() {
+      return GanttLanguage.getInstance().getShortDateFormat();
     }
   }
 
@@ -161,7 +171,7 @@ public class GanttLanguage {
 
   public void setLocale(Locale locale) {
     currentLocale = locale;
-    CalendarFactoryImpl.setLocaleImpl(locale);
+    CalendarFactoryImpl.setLocaleImpl();
     Locale.setDefault(locale);
     int defaultTimezoneOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
