@@ -18,30 +18,36 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.time;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public abstract class CalendarFactory {
-  private static Locale ourLocale = Locale.getDefault();
+  protected static interface LocaleApi {
+    Locale getLocale();
+    DateFormat getShortDateFormat();
+  }
 
+  private static LocaleApi ourLocaleApi;
+  
   public static Calendar newCalendar() {
-    return (Calendar) Calendar.getInstance(ourLocale).clone();
+    return (Calendar) Calendar.getInstance(ourLocaleApi.getLocale()).clone();
   }
   
-  protected static void setLocale(Locale locale) {
-    ourLocale = locale;
+  protected static void setLocaleApi(LocaleApi localeApi) {
+    ourLocaleApi = localeApi;
   }
 
   public static GanttCalendar createGanttCalendar(Date date) {
-    return new GanttCalendar(date);
+    return new GanttCalendar(date, ourLocaleApi);
   }
 
   public static GanttCalendar createGanttCalendar(int year, int month, int date) {
-    return new GanttCalendar(year, month, date);
+    return new GanttCalendar(year, month, date, ourLocaleApi);
   }
 
   public static GanttCalendar createGanttCalendar() {
-    return new GanttCalendar();
+    return new GanttCalendar(ourLocaleApi);
   }
 }

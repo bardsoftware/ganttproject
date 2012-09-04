@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory.LocaleApi;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import org.w3c.util.DateParser;
@@ -31,20 +32,25 @@ import org.w3c.util.InvalidDateException;
  * Class use for calendar
  */
 public class GanttCalendar extends java.util.GregorianCalendar {
-  GanttCalendar() {
+  private final LocaleApi myLocaleApi;
+
+  GanttCalendar(CalendarFactory.LocaleApi localeApi) {
     super();
     set(Calendar.HOUR_OF_DAY, 0);
     set(Calendar.MINUTE, 0);
     set(Calendar.SECOND, 0);
     set(Calendar.MILLISECOND, 0);
+    myLocaleApi = localeApi;
   }
 
-  GanttCalendar(int year, int month, int date) {
+  GanttCalendar(int year, int month, int date, CalendarFactory.LocaleApi localeApi) {
     super(year, month, date);
+    myLocaleApi = localeApi;
   }
 
-  GanttCalendar(Date date) {
+  GanttCalendar(Date date, CalendarFactory.LocaleApi localeApi) {
     super();
+    myLocaleApi = localeApi;
     setTime(date);
   }
 
@@ -80,6 +86,11 @@ public class GanttCalendar extends java.util.GregorianCalendar {
 
   public String toXMLString() {
     return DateParser.getIsoDateNoHours(getTime());
+  }
+
+  @Override
+  public String toString() {
+    return myLocaleApi.getShortDateFormat().format(getTime());
   }
 
   public int getYear() {
