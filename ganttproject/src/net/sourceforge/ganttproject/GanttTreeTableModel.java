@@ -18,8 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
@@ -38,14 +42,19 @@ import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
+import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
@@ -245,16 +254,14 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = sb.toString();
         break;
       case PREDECESSORS:
-        String resStr = "";
-        TaskDependency[] dep = t.getDependenciesAsDependant().toArray();
-        int i = 0;
-        if (dep != null && dep.length > 0) {
-          for (i = 0; i < dep.length - 1; i++) {
-            resStr += dep[i].getDependee().getTaskID() + ", ";
+        List<Integer> depids = Lists.newArrayList(Lists.transform(Arrays.asList(t.getDependenciesAsDependant().toArray()), new Function<TaskDependency, Integer>() {
+          @Override
+          public Integer apply(TaskDependency value) {
+            return value.getDependee().getTaskID();
           }
-          resStr += dep[i].getDependee().getTaskID();
-        }
-        res = resStr;
+        }));
+        Collections.sort(depids);
+        res = Joiner.on(',').join(depids);
         break;
       case ID:
         res = new Integer(t.getTaskID());
@@ -293,10 +300,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       // System.out.println("NOT undoable column: " + column);
       setValue(value, node, column);
     }
-    // System.out.println("node : " + node);
-    // System.out.println("value : " + value);
-    myUiFacade.refresh();
-    //Mediator.getGanttProjectSingleton().setAskForSave(true);
+    myUiFacade.getActiveChart().reset();
   }
 
   /**
@@ -307,41 +311,90 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
    * @param column
    */
   private void setValue(final Object value, final Object node, final int column) {
-    switch (column) {
-    case 0:
-    case 1:
-    case 2: // info
-      ((TaskNode) node).setTaskInfo((TaskInfo) value);
-    case 8:
-      break;
-    case 3:
+    if (column >= STANDARD_COLUMN_COUNT) {
+      setCustomPropertyValue(value, node, column);
+      return;
+    }
+    assert node instanceof TaskNode : "Tree node=" + node + " is not a task node";
+
+    Task task = (Task) ((TaskNode)node).getUserObject();
+    TaskDefaultColumn property = TaskDefaultColumn.values()[column];
+    switch (property) {
+    case NAME:
       ((TaskNode) node).setName(value.toString());
       break;
-    case 4:
+    case BEGIN_DATE:
       ((TaskNode) node).setStart((GanttCalendar) value);
       ((TaskNode) node).applyThirdDateConstraint();
       break;
-    case 5:
+    case END_DATE:
       ((TaskNode) node).setEnd(((GanttCalendar) value).newAdd(Calendar.DATE, 1));
       break;
-    case 6:
-      Task task = (Task) ((TaskNode) node).getUserObject();
+    case DURATION:
       TimeDuration tl = task.getDuration();
       ((TaskNode) node).setDuration(task.getManager().createLength(tl.getTimeUnit(), ((Integer) value).intValue()));
       break;
-    case 7:
+    case COMPLETION:
       ((TaskNode) node).setCompletionPercentage(((Integer) value).intValue());
       break;
-    default: // custom colums
-      try {
-        ((Task) ((TaskNode) node).getUserObject()).getCustomValues().setValue(getCustomProperty(column), value);
-      } catch (CustomColumnsException e) {
-        if (!GPLogger.log(e)) {
-          e.printStackTrace(System.err);
+    case PREDECESSORS:
+      List<Integer> newIds = Lists.transform(Arrays.asList(String.valueOf(value).split(",")), new Function<String, Integer>() {
+          @Override
+          public Integer apply(String value) {
+            try {
+              return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+              throw new ValidationException(MessageFormat.format("{0} is not a number", value));
+            }
+          }
+        });
+      List<Integer> oldIds = Lists.transform(Arrays.asList(task.getDependenciesAsDependant().toArray()), new Function<TaskDependency, Integer>() {
+        @Override
+        public Integer apply(TaskDependency value) {
+          return value.getDependee().getTaskID();
+        }
+      });
+      Set<Integer> removedIds = Sets.difference(Sets.newHashSet(oldIds), Sets.newHashSet(newIds));
+      Set<Integer> addedIds = Sets.difference(Sets.newHashSet(newIds), Sets.newHashSet(oldIds));
+
+      for (Integer id : removedIds) {
+        Task dependee = task.getManager().getTask(id);
+        TaskDependency dep = task.getDependenciesAsDependant().getDependency(dependee);
+        if (dep != null) {
+          dep.delete();
         }
       }
+      for (Integer id : addedIds) {
+        Task predecessorCandidate = null;
+        try {
+          predecessorCandidate = task.getManager().getTask(id);
+          if (predecessorCandidate == null) {
+            continue;
+          }
+          if (task.getManager().getDependencyCollection().canCreateDependency(task, predecessorCandidate)) {
+            task.getManager().getDependencyCollection().createDependency(task, predecessorCandidate);
+          } else {
+            throw new ValidationException(MessageFormat.format("Can't create dependency between task {0} and {1}", task.getName(), predecessorCandidate.getName()));
+          }
+        } catch (TaskDependencyException e) {
+          throw new ValidationException(MessageFormat.format("Can't create dependency between task {0} and {1}", task.getName(), predecessorCandidate.getName()));
+        }
+      }
+      break;
+    default:
+      break;
     }
 
+  }
+
+  private void setCustomPropertyValue(Object value, Object node, int column) {
+    try {
+      ((Task) ((TaskNode) node).getUserObject()).getCustomValues().setValue(getCustomProperty(column), value);
+    } catch (CustomColumnsException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
+    }
   }
 
   @Override

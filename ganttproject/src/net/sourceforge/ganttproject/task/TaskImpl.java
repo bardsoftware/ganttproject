@@ -134,7 +134,7 @@ public class TaskImpl implements Task {
     myID = taskID;
 
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
-    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection());
+    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
     myPriority = DEFAULT_PRIORITY;
@@ -174,7 +174,7 @@ public class TaskImpl implements Task {
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
 
-    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection());
+    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
 
