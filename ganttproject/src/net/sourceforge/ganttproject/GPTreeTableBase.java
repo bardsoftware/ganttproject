@@ -79,13 +79,14 @@ import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
+import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
@@ -471,6 +472,35 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     });
   }
 
+  @Override
+  protected void createDefaultEditors() {
+    super.createDefaultEditors();
+
+    defaultEditorsByColumnClass.put(Object.class, new GenericEditor(){
+      @Override
+      public boolean stopCellEditing() {
+        try {
+          return super.stopCellEditing();
+        } catch (ValidationException e) {
+          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          return false;
+        }
+      }
+    });
+    defaultEditorsByColumnClass.put(Number.class, new NumberEditorExt(true) {
+      @Override
+      public boolean stopCellEditing() {
+        try {
+          return super.stopCellEditing();
+        } catch (ValidationException e) {
+          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          return false;
+        }
+      }
+    });
+
+  }
+
   protected void onProjectOpened() {
   }
 
@@ -642,7 +672,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private TableCellEditor wrapEditor(TableCellEditor editor) {
-    return new TreeTableCellEditorImpl(editor, getTable());
+    return new TreeTableCellEditorImpl((DefaultCellEditor) editor, getTable());
   }
 
   protected TableCellEditor newDateCellEditor() {
@@ -687,12 +717,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private static class DateCellEditor extends DefaultCellEditor {
-    // normal textfield background color
-    private final Color colorNormal = null;
-
-    // error textfield background color (when the date isn't correct
-    private final Color colorError = new Color(255, 125, 125);
-
     private Date myDate;
 
     public DateCellEditor() {
@@ -716,11 +740,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       final String dateString = ((JTextComponent) getComponent()).getText();
       Date parsedDate = GanttLanguage.getInstance().parseDate(dateString);
       if (parsedDate == null) {
-        getComponent().setBackground(colorError);
+        getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
         return false;
       }
       myDate = parsedDate;
-      getComponent().setBackground(colorNormal);
+      getComponent().setBackground(null);
       super.fireEditingStopped();
       return true;
     }
