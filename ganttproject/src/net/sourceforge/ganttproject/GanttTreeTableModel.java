@@ -28,6 +28,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 
 import net.sourceforge.ganttproject.delay.Delay;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -57,6 +58,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
 
   private final CustomPropertyManager myCustomColumnsManager;
 
+  private final UIFacade myUiFacade;
+
   private static final int STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().length;
   /**
    * Creates an instance of GanttTreeTableModel with a root.
@@ -65,8 +68,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
    *          The root.
    * @param customColumnsManager
    */
-  public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager) {
+  public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager, UIFacade uiFacade) {
     super(new TaskNode(taskManager.getRootTask()));
+    myUiFacade = uiFacade;
     GanttLanguage.getInstance().addListener(this);
     changeLanguage(language);
     myCustomColumnsManager = customColumnsManager;
@@ -279,7 +283,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     }
     if (isCellEditable(node, column)) {
       // System.out.println("undoable column: " + column);
-      Mediator.getGanttProjectSingleton().getUndoManager().undoableEdit("Change properties column", new Runnable() {
+      myUiFacade.getUndoManager().undoableEdit("Change properties column", new Runnable() {
         @Override
         public void run() {
           setValue(value, node, column);
@@ -291,8 +295,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     }
     // System.out.println("node : " + node);
     // System.out.println("value : " + value);
-    Mediator.getGanttProjectSingleton().repaint();
-    Mediator.getGanttProjectSingleton().setAskForSave(true);
+    myUiFacade.refresh();
+    //Mediator.getGanttProjectSingleton().setAskForSave(true);
   }
 
   /**
