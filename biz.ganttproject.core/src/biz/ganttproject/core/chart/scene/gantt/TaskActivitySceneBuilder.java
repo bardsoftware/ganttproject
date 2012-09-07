@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
@@ -63,6 +62,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     boolean isProjectTask(T task);
     boolean isMilestone(T task);
     boolean hasNestedTasks(T task);
+    boolean hasNotes(T task);
     Color getColor(T task);
   }
 
@@ -72,6 +72,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     OffsetList getBottomUnitOffsets();
     int getRowHeight();
     int getBarHeight();
+    int getViewportWidth();
     AlphaRenderingOption getWeekendOpacityOption();
   }
 
@@ -84,7 +85,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     myLabelsRenderer = labelsRenderer;
   }
 
-  public List<Rectangle> renderActivities(int rowNum, List<A> activities, List<Offset> offsets) {
+  public List<Rectangle> renderActivities(int rowNum, List<A> activities, OffsetList offsets) {
     List<Rectangle> rectangles = new ArrayList<Rectangle>();
     for (A activity : activities) {
       if (myTaskApi.isFirst(activity) || myTaskApi.isLast(activity)) {
@@ -125,7 +126,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     return rectangle;
   }
 
-  private Rectangle processRegularActivity(int rowNum, A activity, List<Offset> offsets) {
+  private Rectangle processRegularActivity(int rowNum, A activity, OffsetList offsets) {
     T nextTask = activity.getOwner();
     if (myTaskApi.isMilestone(nextTask) && !myTaskApi.isFirst(activity)) {
       return null;
@@ -204,6 +205,11 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     }
 
     container.bind(resultShape, activity);
+    
+    if (myTaskApi.hasNotes(nextTask)) {
+      Rectangle notes = container.createRectangle(myChartApi.getViewportWidth() - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
+      notes.setStyle("task.notesMark");
+    }
     return nextRectangle;
   }
 

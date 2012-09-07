@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
@@ -53,6 +52,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
@@ -99,6 +99,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     public Color getColor(Task task) {
       return task.getColor();
     }
+    @Override
+    public boolean hasNotes(Task task) {
+      return !Strings.isNullOrEmpty(task.getNotes());
+    }
   };
 
   class TaskActivityChartApi implements TaskActivitySceneBuilder.ChartApi {
@@ -125,6 +129,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public int getBarHeight() {
       return myBarHeight;
+    }
+    @Override
+    public int getViewportWidth() {
+      return myModel.getBounds().width;
     }
     @Override
     public AlphaRenderingOption getWeekendOpacityOption() {
@@ -214,7 +222,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     List<Task> tasksBelowViewport = new ArrayList<Task>();
 
     collectTasksAboveAndBelowViewport(getVisibleTasks(), tasksAboveViewport, tasksBelowViewport);
-    List<Offset> defaultUnitOffsets = getChartModel().getDefaultUnitOffsets();
+    OffsetList defaultUnitOffsets = getChartModel().getDefaultUnitOffsets();
 
     renderVisibleTasks(getVisibleTasks(), defaultUnitOffsets);
     renderTasksAboveAndBelowViewport(tasksAboveViewport, tasksBelowViewport, defaultUnitOffsets);
@@ -275,7 +283,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderTasksAboveAndBelowViewport(List<Task> tasksAboveViewport, List<Task> tasksBelowViewport,
-      List<Offset> defaultUnitOffsets) {
+      OffsetList defaultUnitOffsets) {
     for (Task nextAbove : tasksAboveViewport) {
       List<TaskActivity> activities = nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
           nextAbove)) : Arrays.asList(nextAbove.getActivities());
@@ -295,7 +303,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   }
 
-  private void renderVisibleTasks(List<Task> visibleTasks, List<Offset> defaultUnitOffsets) {
+  private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
     int rowNum = 0;
     for (Task t : visibleTasks) {
       List<TaskActivity> activities = t.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
@@ -314,7 +322,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return myModel.getRowHeight();
   }
 
-  private void renderBaseline(Task t, int rowNum, List<Offset> defaultUnitOffsets) {
+  private void renderBaseline(Task t, int rowNum, OffsetList defaultUnitOffsets) {
     TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(getCalendar());
     List<GanttPreviousStateTask> baseline = myModel.getBaseline();
     if (baseline != null) {
@@ -363,7 +371,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private List<Rectangle> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
-      List<Offset> defaultUnitOffsets) {
+      OffsetList defaultUnitOffsets) {
     List<Rectangle> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
       renderProgressBar(rectangles);
