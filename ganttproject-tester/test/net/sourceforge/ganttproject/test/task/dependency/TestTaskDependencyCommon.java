@@ -83,6 +83,22 @@ public class TestTaskDependencyCommon extends TaskTestCase {
                 .getDependenciesAsDependant(), dep1);
     }
 
+    public void testFindDependencyByTask() throws Exception {
+      TaskManager taskMgr = getTaskManager();
+      Task task1 = taskMgr.createTask();
+      Task task2 = taskMgr.createTask();
+      Task task3 = taskMgr.createTask();
+
+      TaskDependency dep12 = taskMgr.getDependencyCollection()
+          .createDependency(task2, task1, new FinishStartConstraintImpl());
+      TaskDependency dep13 = taskMgr.getDependencyCollection()
+          .createDependency(task3, task1, new FinishStartConstraintImpl());
+
+      assertEquals(dep12, task2.getDependenciesAsDependant().getDependency(task1));
+      assertEquals(dep12, task1.getDependenciesAsDependee().getDependency(task2));
+      assertNull(task2.getDependenciesAsDependant().getDependency(task3));
+    }
+
     protected void assertDependenciesCollectionContainsDependency(Task task,
             TaskDependency dependency) {
         assertDependencySliceContainsDependency(task.getDependencies(),

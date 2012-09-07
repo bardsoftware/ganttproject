@@ -12,6 +12,10 @@
       <library name="lib/ganttproject-guava.jar">
          <export name="*"/>
       </library>
+      <library name="resources/">
+         <export name="*"/>
+      </library>
+      
       <library name="lib/protobuf-java-2.4.1.jar">
          <export name="*"/>
       </library>

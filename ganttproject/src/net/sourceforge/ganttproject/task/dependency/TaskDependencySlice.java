@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.task.dependency;
 
 import java.util.List;
 
+import com.google.common.base.Function;
+
 import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskDependencySlice {
@@ -30,4 +32,25 @@ public interface TaskDependencySlice {
   void clear(List<Task> selection);
 
   boolean hasLinks(List<Task> selection);
+
+  TaskDependency getDependency(Task dependee);
+
+  Function<Task, TaskDependencySlice> DEPENDANT_SLICE_FXN = new Function<Task, TaskDependencySlice>() {
+    @Override
+    public TaskDependencySlice apply(Task task) {
+      return task.getDependenciesAsDependant();
+    }
+  };
+  Function<Task, TaskDependencySlice> DEPENDEE_SLICE_FXN = new Function<Task, TaskDependencySlice>() {
+    @Override
+    public TaskDependencySlice apply(Task task) {
+      return task.getDependenciesAsDependee();
+    }
+  };
+  Function<Task, TaskDependencySlice> COMPLETE_SLICE_FXN = new Function<Task, TaskDependencySlice>() {
+    @Override
+    public TaskDependencySlice apply(Task task) {
+      return task.getDependencies();
+    }
+  };
 }

@@ -53,8 +53,6 @@ public class TaskModelModificationListener extends TaskListenerAdapter {
   public void taskAdded(TaskHierarchyEvent e) {
     myGanttProject.setModified();
     myUiFacade.setViewIndex(UIFacade.GANTT_INDEX);
-    myUiFacade.getTaskTree().startDefaultEditing(e.getTask());
-
     myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run(e.getTask());
     myUiFacade.refresh();
   }

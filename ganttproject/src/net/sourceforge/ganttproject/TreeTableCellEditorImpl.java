@@ -18,24 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 
+import biz.ganttproject.core.option.ValidationException;
+
 class TreeTableCellEditorImpl implements TableCellEditor {
-  private final TableCellEditor myProxiedEditor;
+  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
+  private final DefaultCellEditor myProxiedEditor;
   private Runnable myFocusCommand;
   private final JTable myTable;
 
-  TreeTableCellEditorImpl(TableCellEditor proxiedEditor, JTable table) {
+  TreeTableCellEditorImpl(DefaultCellEditor proxiedEditor, JTable table) {
     assert proxiedEditor != null;
     myProxiedEditor = proxiedEditor;
     myTable = table;
@@ -79,7 +84,12 @@ class TreeTableCellEditorImpl implements TableCellEditor {
 
   @Override
   public boolean stopCellEditing() {
-    return myProxiedEditor.stopCellEditing();
+    try {
+      return myProxiedEditor.stopCellEditing();
+    } catch (ValidationException e) {
+      myProxiedEditor.getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+      return false;
+    }
   }
 
   @Override

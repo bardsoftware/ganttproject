@@ -14,6 +14,7 @@ import java.util.Set;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -151,6 +152,9 @@ public class ChartModelImpl extends ChartModelBase {
     }
     if (primitive instanceof Canvas.Polygon) {
       Canvas.Polygon rect = (Canvas.Polygon) primitive;
+      if ("task.notesMark".equals(rect.getStyle())) {
+        return new TaskNotesChartItem((Task)primitive.getModelObject());
+      }
       TaskActivity activity = (TaskActivity) primitive.getModelObject();
       if (activity != null) {
         if (activity.isFirst() && rect.getLeftX() - 2 <= x && rect.getLeftX() + 2 >= x) {

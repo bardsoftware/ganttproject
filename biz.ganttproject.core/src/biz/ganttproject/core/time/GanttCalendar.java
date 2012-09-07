@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory.LocaleApi;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import org.w3c.util.DateParser;
@@ -31,29 +32,30 @@ import org.w3c.util.InvalidDateException;
  * Class use for calendar
  */
 public class GanttCalendar extends java.util.GregorianCalendar {
-  public GanttCalendar() {
+  private final LocaleApi myLocaleApi;
+
+  GanttCalendar(CalendarFactory.LocaleApi localeApi) {
     super();
     set(Calendar.HOUR_OF_DAY, 0);
     set(Calendar.MINUTE, 0);
     set(Calendar.SECOND, 0);
     set(Calendar.MILLISECOND, 0);
+    myLocaleApi = localeApi;
   }
 
-  public GanttCalendar(int year, int month, int date) {
+  GanttCalendar(int year, int month, int date, CalendarFactory.LocaleApi localeApi) {
     super(year, month, date);
+    myLocaleApi = localeApi;
   }
 
-  public GanttCalendar(GanttCalendar g) {
-    super(g.getYear(), g.getMonth(), g.getDate());
-  }
-
-  public GanttCalendar(Date date) {
+  GanttCalendar(Date date, CalendarFactory.LocaleApi localeApi) {
     super();
+    myLocaleApi = localeApi;
     setTime(date);
   }
 
   public static GanttCalendar parseXMLDate(String s) {
-    GanttCalendar result = new GanttCalendar();
+    GanttCalendar result = CalendarFactory.createGanttCalendar();
     result.clear();
     try {
       Date date = DateParser.parse(s);
@@ -78,12 +80,17 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   /** @return a copy of the current date */
   @Override
   public GanttCalendar clone() {
-    GanttCalendar clone = new GanttCalendar(getYear(), getMonth(), getDay());
+    GanttCalendar clone = CalendarFactory.createGanttCalendar(getYear(), getMonth(), getDay());
     return clone;
   }
 
   public String toXMLString() {
     return DateParser.getIsoDateNoHours(getTime());
+  }
+
+  @Override
+  public String toString() {
+    return myLocaleApi.getShortDateFormat().format(getTime());
   }
 
   public int getYear() {
@@ -113,35 +120,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     GanttCalendar gc = clone();
     gc.add(field, dayNumber);
     return gc;
-  }
-
-  /**
-   * @deprecated Use TimeUnit related methods
-   * @returns the difference (in days) between two date
-   */
-  @Deprecated
-  public int diff(GanttCalendar d) {
-    int res = 0;
-    GanttCalendar d1;
-    GanttCalendar d2;
-
-    if (this.compareTo(d) == 0) {
-      return res;
-    }
-
-    else if (compareTo(d) < 0) {
-      d1 = this.clone();
-      d2 = new GanttCalendar(d);
-    } else {
-      d1 = new GanttCalendar(d);
-      d2 = this.clone();
-    }
-
-    while (d1.compareTo(d2) != 0) {
-      d1.add(Calendar.DATE, 1);
-      res++;
-    }
-    return res;
   }
 
   /** @return the sign represented by an integer */
@@ -195,6 +173,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   };
 
   public GanttCalendar getDisplayValue() {
-    return new GanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
+    return CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
   }
 }

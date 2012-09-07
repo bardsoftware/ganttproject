@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -53,7 +54,7 @@ public class GanttDialogPublicHoliday {
   public List<GanttCalendar> getHolidays() {
     List<GanttCalendar> result = new ArrayList<GanttCalendar>();
     for (DateInterval interval : publicHolidays.getIntervals()) {
-      result.add(new GanttCalendar(interval.start));
+      result.add(CalendarFactory.createGanttCalendar(interval.start));
     }
     return result;
   }

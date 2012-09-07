@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -43,7 +44,7 @@ public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction im
   public void apply(MouseEvent e) {
     Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
     if (!dateUnderX.equals(getStartDate())) {
-      myMutator.setStart(new GanttCalendar(dateUnderX));
+      myMutator.setStart(CalendarFactory.createGanttCalendar(dateUnderX));
       getTask().applyThirdDateConstraint();
     }
     updateTooltip(e);

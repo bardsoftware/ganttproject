@@ -50,14 +50,15 @@ public interface TaskManager {
     TimeDuration myDuration;
     Color myColor;
     Task myPrevSibling;
-    boolean isExpanded;
+    Boolean isExpanded;
     Task myParent;
     boolean isLegacyMilestone;
     Date myEndDate;
     String myNotes;
     String myWebLink;
-    int myCompletion;
+    Integer myCompletion;
     Priority myPriority;
+    Task myPrototype;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -115,6 +116,11 @@ public interface TaskManager {
 
     public TaskBuilder withPriority(Priority priority) {
       myPriority = priority;
+      return this;
+    }
+
+    public TaskBuilder withPrototype(Task prototype) {
+      myPrototype = prototype;
       return this;
     }
 
