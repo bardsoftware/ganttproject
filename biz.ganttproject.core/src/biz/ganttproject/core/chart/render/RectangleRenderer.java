@@ -62,9 +62,12 @@ public class RectangleRenderer {
       g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity.floatValue()));
     }
     Style.Padding padding = style.getPadding();
-    g.fillRect(rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(), 
-        rect.getWidth() - (padding.getLeft() + padding.getRight()), rect.getHeight() - (padding.getTop() + padding.getBottom()));
-
+    if (style.getBackgroundImage() != null) {
+      g.drawImage(style.getBackgroundImage(), rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(), null);
+    } else {
+      g.fillRect(rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(), 
+          rect.getWidth() - (padding.getLeft() + padding.getRight()), rect.getHeight() - (padding.getTop() + padding.getBottom()));
+    }
     Style.Borders border = style.getBorder(rect);
     if (border != null) {
       renderBorders(g, border, rect.getLeftX(), rect.getTopY(), rect.getWidth(), rect.getHeight());

@@ -21,6 +21,7 @@ package biz.ganttproject.core.calendar;
 import java.util.Calendar;
 import java.util.Date;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 
@@ -31,12 +32,12 @@ public class GanttDaysOff {
   private final GanttCalendar myStart, myFinish;
 
   public GanttDaysOff(Date start, Date finish) {
-    myStart = new GanttCalendar(start);
-    myFinish = new GanttCalendar(finish);
+    myStart = CalendarFactory.createGanttCalendar(start);
+    myFinish = CalendarFactory.createGanttCalendar(finish);
   }
 
   public GanttDaysOff(GanttCalendar start, GanttCalendar finish) {
-    myStart = new GanttCalendar(start.getYear(), start.getMonth(), start.getDate());
+    myStart = CalendarFactory.createGanttCalendar(start.getYear(), start.getMonth(), start.getDate());
     myFinish = finish;
   }
 
@@ -76,10 +77,6 @@ public class GanttDaysOff {
         return i + 1;
     }
     return -1;
-  }
-
-  public int getDuration() {
-    return (myStart.diff(myFinish)) + 1;
   }
 
   public static GanttDaysOff create(GanttDaysOff from) {

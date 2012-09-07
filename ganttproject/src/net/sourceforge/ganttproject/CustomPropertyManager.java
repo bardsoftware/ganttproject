@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.Status;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 public interface CustomPropertyManager {
@@ -106,7 +107,7 @@ public interface CustomPropertyManager {
           } catch (InvalidDateException e) {
             defaultDate = GanttLanguage.getInstance().parseDate(valueAsString);
           }
-          defaultValue = defaultDate == null ? null : new GanttCalendar(defaultDate);
+          defaultValue = defaultDate == null ? null : CalendarFactory.createGanttCalendar(defaultDate);
         }
       } else {
         propertyClass = CustomPropertyClass.TEXT;

@@ -33,6 +33,7 @@ import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 import org.xml.sax.Attributes;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 /**
@@ -103,7 +104,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
           value = Double.valueOf(valueStr);
         } else if (GregorianCalendar.class.isAssignableFrom(cla)) {
           try {
-            value = new GanttCalendar(DateParser.parse(valueStr));
+            value = CalendarFactory.createGanttCalendar(DateParser.parse(valueStr));
           } catch (InvalidDateException e) {
             if (!GPLogger.log(e)) {
               e.printStackTrace(System.err);

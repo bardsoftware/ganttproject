@@ -47,6 +47,7 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.collect.ImmutableList;
@@ -145,7 +146,7 @@ public class TaskScheduleDatesPanel {
     myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        setStart(new GanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
+        setStart(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
       }
     });
     final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", myStartDateLock);
@@ -156,7 +157,7 @@ public class TaskScheduleDatesPanel {
     myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = new GanttCalendar(((JXDatePicker) e.getSource()).getDate());
+        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
         c.add(Calendar.DATE, 1);
         setEnd(c, false);
       }

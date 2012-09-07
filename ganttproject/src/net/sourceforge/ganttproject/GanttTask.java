@@ -55,11 +55,11 @@ public class GanttTask extends TaskImpl implements Serializable {
 
   /**
    * Will make a copy of the given GanttTask
-   * 
+   *
    * @param copy
    *          task to copy
    */
-  public GanttTask(GanttTask copy) {
+  public GanttTask(TaskImpl copy) {
     super(copy, false);
     enableEvents(true);
   }

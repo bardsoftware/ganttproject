@@ -13,6 +13,7 @@ import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.CalendarActivityImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarActivity;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -92,10 +93,10 @@ public class TestDependencyActivityBinding extends TaskTestCase {
     public void testFinishStartBindings() throws Exception {
         Task dependant = getTaskManager().createTask();
         Task dependee = getTaskManager().createTask();
-        dependant.setStart(new GanttCalendar(1999, Calendar.DECEMBER, 30));
-        dependant.setEnd(new GanttCalendar(2000, Calendar.JANUARY, 3));
-        dependee.setStart(new GanttCalendar(1999, Calendar.NOVEMBER, 15));
-        dependee.setEnd(new GanttCalendar(1999, Calendar.NOVEMBER, 16));
+        dependant.setStart(CalendarFactory.createGanttCalendar(1999, Calendar.DECEMBER, 30));
+        dependant.setEnd(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 3));
+        dependee.setStart(CalendarFactory.createGanttCalendar(1999, Calendar.NOVEMBER, 15));
+        dependee.setEnd(CalendarFactory.createGanttCalendar(1999, Calendar.NOVEMBER, 16));
 
         TaskDependency dep = getTaskManager().getDependencyCollection()
                 .createDependency(dependant, dependee,
@@ -105,10 +106,10 @@ public class TestDependencyActivityBinding extends TaskTestCase {
                 dependant.getActivities()[0]);
         assertEquals(binding.getDependeeActivity(), dependee.getActivities()[0]);
 
-        dependant.setStart(new GanttCalendar(2000, Calendar.JANUARY, 4));
-        dependant.setEnd(new GanttCalendar(2000, Calendar.JANUARY, 5));
-        dependee.setStart(new GanttCalendar(1999, Calendar.DECEMBER, 30));
-        dependee.setEnd(new GanttCalendar(2000, Calendar.JANUARY, 3));
+        dependant.setStart(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 4));
+        dependant.setEnd(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 5));
+        dependee.setStart(CalendarFactory.createGanttCalendar(1999, Calendar.DECEMBER, 30));
+        dependee.setEnd(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 3));
         binding = dep.getActivityBinding();
         assertEquals(binding.getDependantActivity(),
                 dependant.getActivities()[0]);

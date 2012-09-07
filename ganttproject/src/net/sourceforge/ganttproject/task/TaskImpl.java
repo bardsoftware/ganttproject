@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.Status;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
@@ -133,7 +134,7 @@ public class TaskImpl implements Task {
     myID = taskID;
 
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
-    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection());
+    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
     myPriority = DEFAULT_PRIORITY;
@@ -173,7 +174,7 @@ public class TaskImpl implements Task {
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
 
-    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection());
+    myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
 
@@ -730,7 +731,7 @@ public class TaskImpl implements Task {
 
       myDurationChange.setValue(length);
       Date shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
-      GanttCalendar newEnd = new GanttCalendar(shifted);
+      GanttCalendar newEnd = CalendarFactory.createGanttCalendar(shifted);
       setEnd(newEnd);
       myActivities = null;
     }
@@ -970,7 +971,7 @@ public class TaskImpl implements Task {
         newStart = shiftDate(clone.getStart().getTime(),
             getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
       }
-      clone.setStart(new GanttCalendar(newStart));
+      clone.setStart(CalendarFactory.createGanttCalendar(newStart));
       clone.setDuration(myLength);
     }
     return clone;
@@ -1119,22 +1120,13 @@ public class TaskImpl implements Task {
   // doesn't affect subtasks and supertasks. It is necessary to call this
   // method explicitly from other
   // parts of code to be sure that constraint fulfills
-  //
-  // Method GanttCalendar.newAdd() assumes that time unit is day
   @Override
   public void applyThirdDateConstraint() {
-    TimeDuration length = getDuration();
     if (getThird() != null)
       switch (getThirdDateConstraint()) {
       case EARLIESTBEGIN:
-        // TODO: TIME UNIT (assumption about days)
         if (getThird().after(getStart())) {
-          int difference = getThird().diff(getStart());
-          GanttCalendar _start = getStart().newAdd(Calendar.DATE, difference);
-          GanttCalendar _end = getEnd().newAdd(Calendar.DATE, difference);
-          setEnd(_end);
-          setStart(_start);
-          setDuration(length);
+          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
         }
         break;
       }

@@ -38,6 +38,7 @@ import javax.swing.JRadioButton;
 
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
@@ -153,7 +154,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     myMoveAllTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     myMoveStartingTasks = new JRadioButton(MessageFormat.format(i18n.getText("project.calendar.moveSome.label"),
-        i18n.formatDate(new GanttCalendar(myProjectStart))));
+        i18n.formatDate(CalendarFactory.createGanttCalendar(myProjectStart))));
     myMoveStartingTasks.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     ButtonGroup moveGroup = new ButtonGroup();

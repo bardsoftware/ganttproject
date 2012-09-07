@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -39,25 +40,25 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         task1.move(supertask);
         task2.move(supertask);
 
-        task1.setStart(new GanttCalendar(2000, 01, 01));
-        task1.setEnd(new GanttCalendar(2000, 01, 03));
-        task2.setStart(new GanttCalendar(2000, 01, 03));
-        task2.setEnd(new GanttCalendar(2000, 01, 04));
-        supertask.setStart(new GanttCalendar(2000, 01, 01));
-        supertask.setEnd(new GanttCalendar(2000, 01, 04));
+        task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
+        task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 03));
+        task2.setStart(CalendarFactory.createGanttCalendar(2000, 01, 03));
+        task2.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
+        supertask.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
+        supertask.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
 
         taskManager.getDependencyCollection().createDependency(
                 task2, task1, new FinishStartConstraintImpl());
 
-        task1.setEnd(new GanttCalendar(2000, 01, 04));
+        task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
         RecalculateTaskScheduleAlgorithm alg = taskManager
                 .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
         alg.run(task1);
 
         assertEquals("Unexpected start of supertask=" + supertask,
-                new GanttCalendar(2000, 01, 01), supertask.getStart());
+                CalendarFactory.createGanttCalendar(2000, 01, 01), supertask.getStart());
         assertEquals("Unexpected end of supertask=" + supertask,
-                new GanttCalendar(2000, 01, 05), supertask.getEnd());
+                CalendarFactory.createGanttCalendar(2000, 01, 05), supertask.getEnd());
     }
 
     public void testSupertaskDurationShrinksWhenNestedTasksShrink() {
@@ -69,25 +70,25 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         task1.move(supertask);
         task2.move(supertask);
 
-        task1.setStart(new GanttCalendar(2000, 01, 01));
-        task1.setEnd(new GanttCalendar(2000, 01, 03));
-        task2.setStart(new GanttCalendar(2000, 01, 03));
-        task2.setEnd(new GanttCalendar(2000, 01, 04));
-        supertask.setStart(new GanttCalendar(2000, 01, 01));
-        supertask.setEnd(new GanttCalendar(2000, 01, 04));
+        task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
+        task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 03));
+        task2.setStart(CalendarFactory.createGanttCalendar(2000, 01, 03));
+        task2.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
+        supertask.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
+        supertask.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
 
-        task1.setStart(new GanttCalendar(2000, 01, 02));
-        task2.setStart(new GanttCalendar(2000, 01, 02));
-        task2.setEnd(new GanttCalendar(2000, 01, 03));
+        task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 02));
+        task2.setStart(CalendarFactory.createGanttCalendar(2000, 01, 02));
+        task2.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 03));
 
         AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection()
                 .getAdjustTaskBoundsAlgorithm();
         alg.run(new Task[] { task1, task2 });
 
         assertEquals("Unexpected start of supertask=" + supertask,
-                new GanttCalendar(2000, 01, 02), supertask.getStart());
+                CalendarFactory.createGanttCalendar(2000, 01, 02), supertask.getStart());
         assertEquals("Unexpected end of supertask=" + supertask,
-                new GanttCalendar(2000, 01, 03), supertask.getEnd());
+                CalendarFactory.createGanttCalendar(2000, 01, 03), supertask.getEnd());
     }
 
     public void testTaskDurationChangeIsPropagatedTwoLevelsUp() {

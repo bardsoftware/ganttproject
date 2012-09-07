@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -51,18 +52,23 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
     // taskUnderPoint="+taskUnderPoint);
     if (taskUnderPoint == null) {
       myChartComponent.setDefaultCursor();
-    } else {
-      if (itemUnderPoint instanceof TaskBoundaryChartItem) {
-        Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
-            : GanttGraphicArea.E_RESIZE_CURSOR;
-        myChartComponent.setCursor(cursor);
-      }
-      // special cursor
-      else if (itemUnderPoint instanceof TaskProgressChartItem) {
-        myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
-      } else {
-        myChartComponent.setDefaultCursor();
-      }
+      myChartController.hideTooltip();
     }
+    else if (itemUnderPoint instanceof TaskBoundaryChartItem) {
+      Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
+          : GanttGraphicArea.E_RESIZE_CURSOR;
+      myChartComponent.setCursor(cursor);
+    }
+    // special cursor
+    else if (itemUnderPoint instanceof TaskProgressChartItem) {
+      myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
+    }
+    else if (itemUnderPoint instanceof TaskNotesChartItem) {
+      myChartController.showTooltip(e.getX(), e.getY(), taskUnderPoint.getNotes());
+    }
+    else {
+      myChartComponent.setDefaultCursor();
+    }
+
   }
 }

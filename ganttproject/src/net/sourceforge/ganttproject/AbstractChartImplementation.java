@@ -36,10 +36,13 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 
 import net.sourceforge.ganttproject.chart.Chart;
@@ -82,7 +85,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   private MouseInteraction myActiveInteraction;
   private final UIFacade myUiFacade;
   private VScrollController myVScrollController;
-
+  private final Timer myTimer = new Timer();
+  private Runnable myTimerTask = null;
+  
   public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
       ChartComponentBase chartComponent) {
     assert chartModel != null;
@@ -101,6 +106,15 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         fireSelectionChanged();
       }
     });
+    myTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        if (myTimerTask != null) {
+          SwingUtilities.invokeLater(myTimerTask);
+          myTimerTask = null;
+        }
+      }
+    }, 1000, 1000);
   }
 
   @Override
@@ -165,6 +179,13 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myChartModel;
   }
 
+  protected void scheduleTask(Runnable task) {
+    myTimerTask = task;
+  }
+  
+  protected JComponent getChartComponent() {
+    return myChartComponent;
+  }
   // ///////////////////////////////////////////////////////////
   // interface Chart
   @Override
