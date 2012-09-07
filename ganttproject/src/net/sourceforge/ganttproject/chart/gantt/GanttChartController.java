@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -25,6 +26,11 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
+
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.CustomBalloonTip;
+import net.java.balloontip.styles.ToolTipBalloonStyle;
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.ChartImplementation;
@@ -61,8 +67,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import biz.ganttproject.core.chart.canvas.Canvas.Shape;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Shape;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -75,6 +81,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   private final GanttTree2 myTree;
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
+  protected CustomBalloonTip myTooltip;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
       ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState) {
@@ -241,4 +248,24 @@ public class GanttChartController extends AbstractChartImplementation implements
     super.buildImage(settings, imageVisitor);
   }
 
+  void showTooltip(final int x, final int y, final String text) {
+    if (myTooltip == null) {
+      scheduleTask(new Runnable() {
+        @Override
+        public void run() {
+          java.awt.Rectangle offset = new java.awt.Rectangle(x-30, y, 0, 0);
+          myTooltip = new CustomBalloonTip(getChartComponent(), new JLabel("<html>" + text.replace("\n", "<br>") + "</html>"), offset,
+              new ToolTipBalloonStyle(Color.YELLOW, Color.YELLOW.darker()), BalloonTip.Orientation.LEFT_ABOVE, BalloonTip.AttachLocation.ALIGNED, 20, 20, true);
+          myTooltip.setVisible(true);
+        }
+      });
+    }
+  }
+
+  public void hideTooltip() {
+    if (myTooltip != null) {
+      myTooltip.setVisible(false);
+      myTooltip = null;
+    }
+  }
 }

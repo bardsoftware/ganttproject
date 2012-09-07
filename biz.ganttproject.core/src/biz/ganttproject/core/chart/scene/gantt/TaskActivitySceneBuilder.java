@@ -204,12 +204,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       }
     }
 
-    container.bind(resultShape, activity);
-    
-    if (myTaskApi.hasNotes(nextTask)) {
-      Rectangle notes = container.createRectangle(myChartApi.getViewportWidth() - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
-      notes.setStyle("task.notesMark");
-    }
+    container.bind(resultShape, activity);    
     return nextRectangle;
   }
 

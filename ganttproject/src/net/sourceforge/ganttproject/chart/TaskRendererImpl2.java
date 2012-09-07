@@ -376,6 +376,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
       renderProgressBar(rectangles);
     }
+    if (myTaskApi.hasNotes(t)) {
+      Rectangle notes = getPrimitiveContainer().createRectangle(myModel.getBounds().width - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
+      notes.setStyle("task.notesMark");
+      getPrimitiveContainer().bind(notes, t);
+    }
     return rectangles;
   }
 
