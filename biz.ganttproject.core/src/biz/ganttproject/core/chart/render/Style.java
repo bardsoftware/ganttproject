@@ -19,12 +19,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.chart.render;
 
 import java.awt.BasicStroke;
+import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.imageio.ImageIO;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.option.ColorOption;
@@ -248,10 +257,13 @@ class Style {
 
   static class BackgroundImage {
     private static final String BITMAP_PREFIX = "bitmap(";
+    private static final String URL_PREFIX = "url(";
     private final Paint myPaint;
+    private final Image myImage;
     
-    private BackgroundImage(Paint paint) {
+    private BackgroundImage(Paint paint, Image image) {
       myPaint = paint;
+      myImage = image;
     }
     
     Paint getPaint() {
@@ -263,24 +275,40 @@ class Style {
         return null;
       }
       value = value.trim().toLowerCase();
-      if (!value.startsWith(BITMAP_PREFIX)) {
-        return null;
-      }
-      int closingBrace = value.lastIndexOf(')');
-      if (closingBrace < 0) {
-        return null;
-      }
-      value = value.substring(BITMAP_PREFIX.length(), closingBrace);
-      if (value.length() != 16) {
-        return null;
-      }
-      int[] bitmap = new int[16];
-      for (int i = 0; i < value.length(); i++) {
-        if (value.charAt(i) == '1') {
-          bitmap[i] = 1;
+      if (value.startsWith(BITMAP_PREFIX)) {
+        int closingBrace = value.lastIndexOf(')');
+        if (closingBrace < 0) {
+          return null;
+        }
+        value = value.substring(BITMAP_PREFIX.length(), closingBrace);
+        if (value.length() != 16) {
+          return null;
+        }
+        int[] bitmap = new int[16];
+        for (int i = 0; i < value.length(); i++) {
+          if (value.charAt(i) == '1') {
+            bitmap[i] = 1;
+          }
+        }
+        return new BackgroundImage(new ShapePaint(4, 4, bitmap), null);
+      } else if (value.startsWith(URL_PREFIX)) {
+        int closingBrace = value.lastIndexOf(')');
+        if (closingBrace < 0) {
+          return null;
+        }
+        value = value.substring(URL_PREFIX.length(), closingBrace);
+        URL url = Style.class.getResource(value);
+        if (url == null) {
+          return null;
+        }
+        try {
+          BufferedImage image = ImageIO.read(url);
+          return new BackgroundImage(null, image);
+        } catch (IOException e) {
+          e.printStackTrace();
         }
       }
-      return new BackgroundImage(new ShapePaint(4, 4, bitmap));
+      return null;
     }
   }
   enum Visibility {
@@ -349,8 +377,19 @@ class Style {
     if (rect.getBackgroundPaint() != null) {
       return rect.getBackgroundPaint();
     }
+    if (myBackgroundImage != null) {
+      return myBackgroundImage.getPaint();
+    }
     myBackgroundImage = BackgroundImage.parse(myProperties.getProperty(myStyleName + ".background-image"));
     return myBackgroundImage == null ? null : myBackgroundImage.getPaint();
+  }
+  
+  Image getBackgroundImage() {
+    if (myBackgroundImage != null) {
+      return myBackgroundImage.myImage;
+    }
+    myBackgroundImage = BackgroundImage.parse(myProperties.getProperty(myStyleName + ".background-image"));
+    return myBackgroundImage == null ? null : myBackgroundImage.myImage;    
   }
   
   Borders getBorder(Canvas.Shape shape) {
