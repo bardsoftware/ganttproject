@@ -27,13 +27,14 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import biz.ganttproject.core.table.ColumnList;
+
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.ShowHideColumnsDialog;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -58,10 +59,10 @@ public class CustomColumnsPanel {
 
   private CustomPropertyHolder myHolder;
 
-  private TableHeaderUIFacade myTableHeaderFacade;
+  private ColumnList myTableHeaderFacade;
 
   public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade,
-      CustomPropertyHolder customPropertyHolder, TableHeaderUIFacade tableHeaderFacade) {
+      CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
     assert manager != null;
     myCustomPropertyManager = manager;
     myUiFacade = uifacade;

@@ -27,9 +27,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreePath;
 
+import biz.ganttproject.core.table.ColumnList.Column;
+
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.delay.Delay;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
 

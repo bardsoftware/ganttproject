@@ -33,9 +33,10 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
+
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -52,14 +53,14 @@ public class ResourceTreeTable extends GPTreeTableBase {
   private final UIFacade myUiFacade;
 
   private static enum DefaultColumn {
-    NAME(new TableHeaderUIFacade.ColumnStub("0", null, true, 0, 200)), ROLE(new TableHeaderUIFacade.ColumnStub("1",
-        null, true, 1, 75)), EMAIL(new TableHeaderUIFacade.ColumnStub("2", null, false, -1, 75)), PHONE(
-        new TableHeaderUIFacade.ColumnStub("3", null, false, -1, 50)), ROLE_IN_TASK(new TableHeaderUIFacade.ColumnStub(
+    NAME(new ColumnList.ColumnStub("0", null, true, 0, 200)), ROLE(new ColumnList.ColumnStub("1",
+        null, true, 1, 75)), EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75)), PHONE(
+        new ColumnList.ColumnStub("3", null, false, -1, 50)), ROLE_IN_TASK(new ColumnList.ColumnStub(
         "4", null, false, -1, 75));
 
     private final Column myDelegate;
 
-    private DefaultColumn(TableHeaderUIFacade.Column delegate) {
+    private DefaultColumn(ColumnList.Column delegate) {
       myDelegate = delegate;
     }
 

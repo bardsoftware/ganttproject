@@ -82,6 +82,8 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
+import biz.ganttproject.core.table.ColumnList;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -101,7 +103,6 @@ import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
 import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.delay.DelayObserver;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -1061,7 +1062,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   }
 
   @Override
-  public TableHeaderUIFacade getVisibleFields() {
+  public ColumnList getVisibleFields() {
     return getTreeTable().getVisibleFields();
   }
 

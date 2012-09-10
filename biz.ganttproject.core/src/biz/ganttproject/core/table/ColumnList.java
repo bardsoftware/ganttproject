@@ -16,11 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui;
+package biz.ganttproject.core.table;
 
 import java.util.List;
 
-public interface TableHeaderUIFacade {
+public interface ColumnList {
   int getSize();
 
   Column getField(int index);
@@ -29,7 +29,7 @@ public interface TableHeaderUIFacade {
 
   void add(String name, int order, int width);
 
-  void importData(TableHeaderUIFacade source);
+  void importData(ColumnList source);
 
   public interface Column {
     String getID();
@@ -49,7 +49,7 @@ public interface TableHeaderUIFacade {
     void setWidth(int width);
   }
 
-  class ColumnStub implements TableHeaderUIFacade.Column {
+  class ColumnStub implements ColumnList.Column {
     private final String myID;
     private int myOrder;
     private int myWidth;
@@ -112,8 +112,8 @@ public interface TableHeaderUIFacade {
   }
 
   class Immutable {
-    public static TableHeaderUIFacade fromList(final List<Column> columns) {
-      return new TableHeaderUIFacade() {
+    public static ColumnList fromList(final List<Column> columns) {
+      return new ColumnList() {
         @Override
         public int getSize() {
           return columns.size();
@@ -135,7 +135,7 @@ public interface TableHeaderUIFacade {
         }
 
         @Override
-        public void importData(TableHeaderUIFacade source) {
+        public void importData(ColumnList source) {
           throw new UnsupportedOperationException();
         }
       };

@@ -23,12 +23,13 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
+
 
 class GanttChartViewSaver extends SaverBase {
 
-  void save(TableHeaderUIFacade tableHeader, TransformerHandler handler) throws SAXException {
+  void save(ColumnList tableHeader, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     startElement("taskdisplaycolumns", handler);
     for (int i = 0; i < tableHeader.getSize(); i++) {

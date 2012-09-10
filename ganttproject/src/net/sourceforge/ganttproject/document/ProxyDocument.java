@@ -28,9 +28,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.table.ColumnList;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -72,12 +72,12 @@ class ProxyDocument implements Document {
 
   private PortfolioImpl myPortfolio;
 
-  private final TableHeaderUIFacade myTaskVisibleFields;
+  private final ColumnList myTaskVisibleFields;
 
-  private final TableHeaderUIFacade myResourceVisibleFields;
+  private final ColumnList myResourceVisibleFields;
 
   ProxyDocument(DocumentCreator creator, Document physicalDocument, IGanttProject project, UIFacade uiFacade,
-      TableHeaderUIFacade taskVisibleFields, TableHeaderUIFacade resourceVisibleFields, ParserFactory parserFactory) {
+      ColumnList taskVisibleFields, ColumnList resourceVisibleFields, ParserFactory parserFactory) {
     myPhysicalDocument = physicalDocument;
     myProject = project;
     myUIFacade = uiFacade;
