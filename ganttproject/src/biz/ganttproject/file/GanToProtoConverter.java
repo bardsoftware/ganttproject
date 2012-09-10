@@ -1,6 +1,8 @@
 package biz.ganttproject.file;
 
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -169,6 +171,12 @@ public class GanToProtoConverter {
 
   public static void main(String[] args) throws Exception {
     FileProto.File file = readFile(readDocument(new FileInputStream(args[0])));
-    file.writeTo(System.out);
+    BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(args[1]));
+    try {
+      file.writeTo(outputStream);
+      outputStream.flush();
+    } finally {
+      outputStream.close();
+    }
   }
 }
