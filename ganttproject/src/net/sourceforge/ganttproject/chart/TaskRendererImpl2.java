@@ -124,7 +124,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
     @Override
     public int getRowHeight() {
-      return myModel.getRowHeight();
+      return calculateRowHeight();
     }
     @Override
     public int getBarHeight() {
@@ -189,8 +189,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       }
 
       @Override
-      public Font getChartFont() {
-        return getChartModel().getChartUIConfiguration().getChartFont();
+      public int getFontSize() {
+        return getChartModel().getChartUIConfiguration().getChartFont().getSize();
       }
     }, myLabelsLayer);
     myLabelOptions = new ChartOptionGroup("ganttChartDetails",
@@ -319,7 +319,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private int getRowHeight() {
-    return myModel.getRowHeight();
+    return calculateRowHeight();
   }
 
   private void renderBaseline(Task t, int rowNum, OffsetList defaultUnitOffsets) {
@@ -386,17 +386,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private void renderLabels(List<Rectangle> rectangles) {
     if (!rectangles.isEmpty()) {
-      Rectangle lastRectangle = rectangles.get(rectangles.size() - 1);
-
-      if (lastRectangle.isVisible()) {
-        myLabelsRenderer.createRightSideText(lastRectangle);
-        myLabelsRenderer.createDownSideText(lastRectangle);
-        myLabelsRenderer.createUpSideText(lastRectangle);
-      }
-      Rectangle firstRectangle = rectangles.get(0);
-      if (firstRectangle.isVisible()) {
-        myLabelsRenderer.createLeftSideText(firstRectangle);
-      }
+      myLabelsRenderer.renderLabels(rectangles);
     }
   }
 
@@ -467,7 +457,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   int calculateRowHeight() {
-    return myLabelsRenderer.calculateRowHeight();
+    int rowHeight = myLabelsRenderer.calculateRowHeight();
+    if (myModel.getBaseline() != null) {
+      rowHeight = rowHeight + 8;
+    }
+    return rowHeight;
   }
 
   private int getRectangleHeight() {

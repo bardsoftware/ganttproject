@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.*;
 /**
  * Class with which one can get any properties (even custom) from any task.
  *
@@ -40,22 +41,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
  *
  */
 public class TaskProperties {
-
-  public static final String ID_TASK_DATES = "taskDates";
-
-  public static final String ID_TASK_NAME = "name";
-
-  public static final String ID_TASK_LENGTH = "length";
-
-  public static final String ID_TASK_ADVANCEMENT = "advancement";
-
-  public static final String ID_TASK_COORDINATOR = "coordinator";
-
-  public static final String ID_TASK_RESOURCES = "resources";
-
-  public static final String ID_TASK_ID = "id";
-
-  public static final String ID_TASK_PREDECESSORS = "predecessors";
 
   private final TimeUnitStack myTimeUnitStack;
 
