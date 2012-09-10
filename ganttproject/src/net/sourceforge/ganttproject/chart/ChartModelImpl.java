@@ -217,9 +217,6 @@ public class ChartModelImpl extends ChartModelBase {
   @Override
   public int calculateRowHeight() {
     rowHeight = myTaskRendererImpl.calculateRowHeight();
-    if (myBaseline != null) {
-      rowHeight = rowHeight + 8;
-    }
     return rowHeight;
   }
 
@@ -231,10 +228,6 @@ public class ChartModelImpl extends ChartModelBase {
   @Override
   public TaskManager getTaskManager() {
     return taskManager;
-  }
-
-  int getRowHeight() {
-    return rowHeight;
   }
 
   @Override

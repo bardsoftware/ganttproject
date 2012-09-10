@@ -30,6 +30,7 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.table.ColumnList;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -41,7 +42,6 @@ import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
@@ -110,7 +110,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     getUiFacade().getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
   }
 
-  private static class TaskFieldImpl implements TableHeaderUIFacade.Column {
+  private static class TaskFieldImpl implements ColumnList.Column {
     private final String myID;
     private final int myOrder;
     private final int myWidth;
@@ -159,7 +159,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
   }
 
-  private static class VisibleFieldsImpl implements TableHeaderUIFacade {
+  private static class VisibleFieldsImpl implements ColumnList {
     private final List<Column> myFields = new ArrayList<Column>();
 
     @Override
@@ -183,7 +183,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
 
     @Override
-    public void importData(TableHeaderUIFacade source) {
+    public void importData(ColumnList source) {
       for (int i = 0; i < source.getSize(); i++) {
         Column nextField = source.getField(i);
         myFields.add(nextField);
@@ -196,17 +196,17 @@ public class ImporterFromGanttFile extends ImporterBase {
     final DocumentManager myDocumentManager;
     final TaskManager myTaskManager;
     final UIFacade myUIfacade;
-    private final TableHeaderUIFacade myVisibleFields = new VisibleFieldsImpl();
-    private final TableHeaderUIFacade myResourceVisibleFields = new VisibleFieldsImpl();
+    private final ColumnList myVisibleFields = new VisibleFieldsImpl();
+    private final ColumnList myResourceVisibleFields = new VisibleFieldsImpl();
 
     BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
       myDocumentManager = new DocumentCreator(this, uiFacade, this) {
         @Override
-        protected TableHeaderUIFacade getVisibleFields() {
+        protected ColumnList getVisibleFields() {
           return myVisibleFields;
         }
         @Override
-        protected TableHeaderUIFacade getResourceVisibleFields() {
+        protected ColumnList getResourceVisibleFields() {
           return myResourceVisibleFields;
         }
       };
@@ -214,7 +214,7 @@ public class ImporterFromGanttFile extends ImporterBase {
       myUIfacade = uiFacade;
     }
 
-    public TableHeaderUIFacade getVisibleFields() {
+    public ColumnList getVisibleFields() {
       return myVisibleFields;
     }
 

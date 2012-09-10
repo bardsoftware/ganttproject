@@ -44,6 +44,8 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
 
 import com.google.common.base.Function;
 
@@ -56,8 +58,6 @@ import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.ListAndFieldsPanel;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.CustomPropertyDefaultValueAdapter;
@@ -73,10 +73,10 @@ public class ColumnManagerPanel {
 
   private CardLayout cardLayoutDefaultValue = null;
   private final CustomPropertyManager myManager;
-  private final TableHeaderUIFacade myVisibleFields;
+  private final ColumnList myVisibleFields;
   private JComponent myFields;
 
-  public ColumnManagerPanel(CustomPropertyManager columnManager, TableHeaderUIFacade visibleFields) {
+  public ColumnManagerPanel(CustomPropertyManager columnManager, ColumnList visibleFields) {
     myManager = columnManager;
     myVisibleFields = visibleFields;
   }
@@ -231,7 +231,7 @@ public class ColumnManagerPanel {
    * It does it by scanning the tableHeader where all columns live and filtering out
    * the real custom columns.
    */
-  private void createDefaultFieldDefinitions(TableHeaderUIFacade tableHeader,
+  private void createDefaultFieldDefinitions(ColumnList tableHeader,
       List<CustomPropertyDefinition> customFields, List<CustomPropertyDefinition> output) {
     LinkedHashMap<String, Column> name2column = new LinkedHashMap<String, Column>();
     for (int i = 0; i < tableHeader.getSize(); i++) {
@@ -279,14 +279,14 @@ public class ColumnManagerPanel {
   }
 
   class IsVisibleOption extends DefaultBooleanOption {
-    private TableHeaderUIFacade myVisibleFields;
+    private ColumnList myVisibleFields;
     private Column myColumn;
 
     IsVisibleOption() {
       super("customPropertyDialog.isVisible");
     }
 
-    public void setVisibleFields(TableHeaderUIFacade visibleFields) {
+    public void setVisibleFields(ColumnList visibleFields) {
       myVisibleFields = visibleFields;
     }
 

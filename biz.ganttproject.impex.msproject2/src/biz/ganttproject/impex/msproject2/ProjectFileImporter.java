@@ -69,7 +69,6 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -89,6 +88,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
@@ -105,7 +105,7 @@ class ProjectFileImporter {
   private Map<ResourceField, CustomPropertyDefinition> myResourceCustomPropertyMapping;
   private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
   private Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<String, Object>();
-  private TableHeaderUIFacade myTaskFields;
+  private ColumnList myTaskFields;
   private List<String> myErrors = new ArrayList<String>();
   private ProjectFile myProjectFile;
 

@@ -23,8 +23,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
+import biz.ganttproject.core.table.ColumnList;
+
 import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.tableView.ColumnManagerPanel;
 
@@ -32,9 +33,9 @@ public class ShowHideColumnsDialog {
 
   private final UIFacade myUIfacade;
   private final CustomPropertyManager myManager;
-  private final TableHeaderUIFacade myVisibleFields;
+  private final ColumnList myVisibleFields;
 
-  public ShowHideColumnsDialog(UIFacade facade, TableHeaderUIFacade visibleFields, CustomPropertyManager manager) {
+  public ShowHideColumnsDialog(UIFacade facade, ColumnList visibleFields, CustomPropertyManager manager) {
     myUIfacade = facade;
     myVisibleFields = visibleFields;
     myManager = manager;

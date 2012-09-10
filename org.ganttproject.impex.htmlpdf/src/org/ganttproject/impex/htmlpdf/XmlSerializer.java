@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.SaverBase;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -47,6 +46,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import biz.ganttproject.core.table.ColumnList;
 
 /**
  * Serializes project data into XML for GanttProject's HTML/FOP stylesheets.
@@ -96,7 +97,7 @@ public class XmlSerializer extends SaverBase {
     return GanttLanguage.getInstance().correctLabel(text);
   }
 
-  protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
+  protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     int totalWidth = 0;
     for (int i = 0; i < visibleFields.getSize(); i++) {
@@ -105,7 +106,7 @@ public class XmlSerializer extends SaverBase {
       }
     }
     for (int i = 0; i < visibleFields.getSize(); i++) {
-      TableHeaderUIFacade.Column field = visibleFields.getField(i);
+      ColumnList.Column field = visibleFields.getField(i);
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);

@@ -14,6 +14,7 @@ import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.core.table.ColumnList;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -21,7 +22,6 @@ import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 
@@ -167,11 +167,11 @@ public class DocumentCreator implements DocumentManager {
     return null;
   }
 
-  protected TableHeaderUIFacade getVisibleFields() {
+  protected ColumnList getVisibleFields() {
     return null;
   }
 
-  protected TableHeaderUIFacade getResourceVisibleFields() {
+  protected ColumnList getResourceVisibleFields() {
     return null;
   }
 

@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene.gantt;
 
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +35,22 @@ import biz.ganttproject.core.option.EnumerationOption;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskLabelSceneBuilder<T> {
+  public static final String ID_TASK_DATES = "taskDates";
+
+  public static final String ID_TASK_NAME = "name";
+
+  public static final String ID_TASK_LENGTH = "length";
+
+  public static final String ID_TASK_ADVANCEMENT = "advancement";
+
+  public static final String ID_TASK_COORDINATOR = "coordinator";
+
+  public static final String ID_TASK_RESOURCES = "resources";
+
+  public static final String ID_TASK_ID = "id";
+
+  public static final String ID_TASK_PREDECESSORS = "predecessors";
+
   public static final int UP = 0;
 
   public static final int DOWN = 1;
@@ -50,9 +65,9 @@ public class TaskLabelSceneBuilder<T> {
 
   private static List<String> ourInfoList;
 
-  private Font myFont;
-
   private final TaskApi<T> myTaskApi;
+
+  private final int myFontSize;
 
   public interface TaskApi<T> {
     Object getProperty(T task, String propertyID);
@@ -64,21 +79,20 @@ public class TaskLabelSceneBuilder<T> {
     EnumerationOption getLeftLabelOption();
     EnumerationOption getRightLabelOption();
 
-    Font getChartFont();
-
+    int getFontSize();
   }
 
   static {
     ourInfoList = new ArrayList<String>();
     ourInfoList.add("");
-    ourInfoList.add("id");
-    ourInfoList.add("taskDates");
-    ourInfoList.add("name");
-    ourInfoList.add("length");
-    ourInfoList.add("advancement");
-    ourInfoList.add("coordinator");
-    ourInfoList.add("resources");
-    ourInfoList.add("predecessors");
+    ourInfoList.add(ID_TASK_ID);
+    ourInfoList.add(ID_TASK_DATES);
+    ourInfoList.add(ID_TASK_NAME);
+    ourInfoList.add(ID_TASK_LENGTH);
+    ourInfoList.add(ID_TASK_ADVANCEMENT);
+    ourInfoList.add(ID_TASK_COORDINATOR);
+    ourInfoList.add(ID_TASK_RESOURCES);
+    ourInfoList.add(ID_TASK_PREDECESSORS);
   }
 
   public TaskLabelSceneBuilder(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
@@ -86,10 +100,24 @@ public class TaskLabelSceneBuilder<T> {
     myTaskApi = taskApi;
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
-    myFont = inputApi.getChartFont();
+    myFontSize = inputApi.getFontSize();
   }
 
-  public void createRightSideText(Rectangle rectangle) {
+  public void renderLabels(List<Canvas.Rectangle> activityRectangles) {
+    Rectangle lastRectangle = activityRectangles.get(activityRectangles.size() - 1);
+
+    if (lastRectangle.isVisible()) {
+      createRightSideText(lastRectangle);
+      createDownSideText(lastRectangle);
+      createUpSideText(lastRectangle);
+    }
+    Rectangle firstRectangle = activityRectangles.get(0);
+    if (firstRectangle.isVisible()) {
+      createLeftSideText(firstRectangle);
+    }
+  }
+  
+  private void createRightSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = "";
     int xText, yText;
@@ -104,7 +132,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  public void createDownSideText(Rectangle rectangle) {
+  private void createDownSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), DOWN);
 
@@ -116,7 +144,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  public void createUpSideText(Rectangle rectangle) {
+  private void createUpSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
@@ -127,7 +155,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  public void createLeftSideText(Rectangle rectangle) {
+  private void createLeftSideText(Rectangle rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
@@ -217,6 +245,6 @@ public class TaskLabelSceneBuilder<T> {
   }
 
   public int getFontHeight() {
-    return myFont.getSize();
+    return myFontSize;
   }
 }
