@@ -21,17 +21,18 @@ package net.sourceforge.ganttproject.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 
 import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
 
 /**
  * @author bbaranne
  */
 public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener {
 
-  private final TableHeaderUIFacade myVisibleFields;
+  private final ColumnList myVisibleFields;
   private final List<Column> myBuffer = new ArrayList<Column>();
   private final String myIDPropertyName;
   private final String myOrderPropertyName;
@@ -39,11 +40,11 @@ public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener
   private final String myVisiblePropertyName;
   private final String myTagName;
 
-  public TaskDisplayColumnsTagHandler(TableHeaderUIFacade visibleFields) {
+  public TaskDisplayColumnsTagHandler(ColumnList visibleFields) {
     this(visibleFields, "displaycolumn", "property-id", "order", "width", "visible");
   }
 
-  public TaskDisplayColumnsTagHandler(TableHeaderUIFacade visibleFields, String tagName, String idPropertyName,
+  public TaskDisplayColumnsTagHandler(ColumnList visibleFields, String tagName, String idPropertyName,
       String orderPropertyName, String widthPropertyName, String visiblePropertyName) {
     myVisibleFields = visibleFields;
     myTagName = tagName;
@@ -74,7 +75,7 @@ public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener
 
   @Override
   public void parsingFinished() {
-    myVisibleFields.importData(TableHeaderUIFacade.Immutable.fromList(myBuffer));
+    myVisibleFields.importData(ColumnList.Immutable.fromList(myBuffer));
   }
 
   private void loadTaskDisplay(Attributes atts) {
@@ -90,6 +91,6 @@ public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener
     if (atts.getValue(myVisiblePropertyName) != null) {
       visible = Boolean.parseBoolean(atts.getValue(myVisiblePropertyName));
     }
-    myBuffer.add(new TableHeaderUIFacade.ColumnStub(id, id, visible, order, width));
+    myBuffer.add(new ColumnList.ColumnStub(id, id, visible, order, width));
   }
 }

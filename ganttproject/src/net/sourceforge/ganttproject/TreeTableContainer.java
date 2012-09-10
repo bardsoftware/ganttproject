@@ -45,9 +45,10 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
+import biz.ganttproject.core.table.ColumnList;
+
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
@@ -167,7 +168,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
   }
 
   @Override
-  public TableHeaderUIFacade getVisibleFields() {
+  public ColumnList getVisibleFields() {
     return myTreeTable.getVisibleFields();
   }
 

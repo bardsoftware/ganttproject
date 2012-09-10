@@ -33,10 +33,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
 
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskNode;
 
@@ -67,7 +67,7 @@ public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
     final TextLengthCalculatorImpl lengthCalculator = new TextLengthCalculatorImpl((Graphics2D) g);
     // The list of column object which are currently being used or referenced
     // to by the code
-    final TableHeaderUIFacade dispCols = getTree().getTreeTable().getVisibleFields();
+    final ColumnList dispCols = getTree().getTreeTable().getVisibleFields();
 
     // A small constant offset for the X coordinates
     int x = 2;

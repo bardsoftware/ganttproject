@@ -35,6 +35,7 @@ import javax.swing.table.AbstractTableModel;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
@@ -51,7 +52,6 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -130,12 +130,12 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       }
 
       @Override
-      protected TableHeaderUIFacade getVisibleFields() {
+      protected ColumnList getVisibleFields() {
         return getUIFacade().getTaskTree().getVisibleFields();
       }
 
       @Override
-      protected TableHeaderUIFacade getResourceVisibleFields() {
+      protected ColumnList getResourceVisibleFields() {
         return getUIFacade().getResourceTree().getVisibleFields();
       }
     };
