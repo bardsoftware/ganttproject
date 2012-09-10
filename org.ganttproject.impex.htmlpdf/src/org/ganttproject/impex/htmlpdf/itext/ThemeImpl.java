@@ -41,8 +41,6 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
@@ -61,6 +59,8 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -337,7 +337,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     resourceChartWriter.write();
   }
 
-  protected PdfPTable createTableHeader(TableHeaderUIFacade tableHeader, ArrayList<Column> orderedColumns) {
+  protected PdfPTable createTableHeader(ColumnList tableHeader, ArrayList<Column> orderedColumns) {
     for (int i = 0; i < tableHeader.getSize(); i++) {
       Column c = tableHeader.getField(i);
       if (c.isVisible()) {
@@ -408,7 +408,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private void writeTasks() throws Exception {
-    TableHeaderUIFacade visibleFields = getUIFacade().getTaskTree().getVisibleFields();
+    ColumnList visibleFields = getUIFacade().getTaskTree().getVisibleFields();
     final ArrayList<Column> orderedColumns = new ArrayList<Column>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
 
@@ -481,7 +481,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private void writeResources() throws Exception {
-    TableHeaderUIFacade visibleFields = getUIFacade().getResourceTree().getVisibleFields();
+    ColumnList visibleFields = getUIFacade().getResourceTree().getVisibleFields();
     final ArrayList<Column> orderedColumns = new ArrayList<Column>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
     List<HumanResource> resources = getProject().getHumanResourceManager().getResources();
