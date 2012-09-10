@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 
+import biz.ganttproject.core.table.ColumnList;
+
 import net.sourceforge.ganttproject.action.GPAction;
 
 /**
@@ -28,7 +30,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 public interface TreeUiFacade<T> {
   Component getTreeComponent();
 
-  TableHeaderUIFacade getVisibleFields();
+  ColumnList getVisibleFields();
 
   boolean isVisible(T modelElement);
 

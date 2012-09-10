@@ -28,6 +28,7 @@ public interface TimeUnitStack {
 
   String encode(TimeUnit timeUnit);
 
+  TimeDuration createDuration(TimeUnit timeUnit, int count);
   TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
   
   TimeDuration parseDuration(String duration) throws ParseException;

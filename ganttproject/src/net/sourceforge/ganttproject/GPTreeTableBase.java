@@ -69,8 +69,6 @@ import javax.swing.text.JTextComponent;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade.Column;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -86,6 +84,8 @@ import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
 import biz.ganttproject.core.time.CalendarFactory;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
@@ -147,7 +147,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     SwingUtilities.invokeLater(myUpdateUiCommand);
   }
 
-  protected class TableHeaderUiFacadeImpl implements TableHeaderUIFacade {
+  protected class TableHeaderUiFacadeImpl implements ColumnList {
     private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
     private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
 
@@ -207,7 +207,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (width == -1) {
           width = 75;
         }
-        ColumnStub columnStub = new TableHeaderUIFacade.ColumnStub(id, def.getName(), true, order, width);
+        ColumnStub columnStub = new ColumnList.ColumnStub(id, def.getName(), true, order, width);
         column = createColumn(getSize(), columnStub);
       }
       if (column == null) {
@@ -217,7 +217,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     @Override
-    public void importData(TableHeaderUIFacade source) {
+    public void importData(ColumnList source) {
       for (int i = 0; i < source.getSize(); i++) {
         Column foreign = source.getField(i);
         ColumnImpl mine = findColumnByID(foreign.getID());
@@ -264,15 +264,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return -1;
     }
 
-    protected void createDefaultColumns(List<TableHeaderUIFacade.Column> stubs) {
+    protected void createDefaultColumns(List<ColumnList.Column> stubs) {
       myDefaultColumnStubs.clear();
       for (Column stub : stubs) {
-        myDefaultColumnStubs.add(new TableHeaderUIFacade.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
+        myDefaultColumnStubs.add(new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
             stub.getOrder(), stub.getWidth()));
       }
     }
 
-    protected ColumnImpl createColumn(int modelIndex, TableHeaderUIFacade.Column stub) {
+    protected ColumnImpl createColumn(int modelIndex, ColumnList.Column stub) {
       TableColumnExt tableColumn = newTableColumnExt(modelIndex);
       tableColumn.setPreferredWidth(stub.getWidth());
       tableColumn.setIdentifier(stub.getID());
@@ -337,12 +337,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   }
 
-  protected static class ColumnImpl implements TableHeaderUIFacade.Column {
+  protected static class ColumnImpl implements ColumnList.Column {
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
 
-    protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, TableHeaderUIFacade.Column stub) {
+    protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
       myTableColumn = tableColumn;
       myStub = stub;
@@ -506,7 +506,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   protected void onProjectCreated() {
     getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
-    getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()));
   }
 
   protected void initTreeTable() {
@@ -580,7 +580,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         getChart().reset();
       }
     });
-    getTableHeaderUiFacade().importData(TableHeaderUIFacade.Immutable.fromList(getDefaultColumns()));
+    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()));
 
     // getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     getTable().setFillsViewportHeight(true);
@@ -596,7 +596,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private void addNewCustomColumn(CustomColumn customColumn) {
-    TableHeaderUIFacade.Column stub = new TableHeaderUIFacade.ColumnStub(customColumn.getId(), customColumn.getName(),
+    ColumnList.Column stub = new ColumnList.ColumnStub(customColumn.getId(), customColumn.getName(),
         false, getTable().getColumnCount(), 100);
     getTableHeaderUiFacade().createColumn(getTable().getModel().getColumnCount() - 1, stub);
   }
@@ -624,7 +624,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
-  public TableHeaderUIFacade getVisibleFields() {
+  public ColumnList getVisibleFields() {
     return getTableHeaderUiFacade();
   }
 
@@ -632,7 +632,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return myTableHeaderFacade;
   }
 
-  protected List<TableHeaderUIFacade.Column> getDefaultColumns() {
+  protected List<ColumnList.Column> getDefaultColumns() {
     return Collections.emptyList();
   }
 

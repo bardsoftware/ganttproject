@@ -22,13 +22,13 @@ import java.util.Arrays;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sourceforge.ganttproject.gui.TableHeaderUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.table.ColumnList;
 
 /**
  * @author bard
@@ -51,7 +51,7 @@ class ViewSaver extends SaverBase {
 
   }
 
-  protected void writeColumns(TableHeaderUIFacade visibleFields, TransformerHandler handler) throws SAXException {
+  protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     int totalWidth = 0;
     for (int i = 0; i < visibleFields.getSize(); i++) {
@@ -60,7 +60,7 @@ class ViewSaver extends SaverBase {
       }
     }
     for (int i = 0; i < visibleFields.getSize(); i++) {
-      TableHeaderUIFacade.Column field = visibleFields.getField(i);
+      ColumnList.Column field = visibleFields.getField(i);
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);
