@@ -135,6 +135,11 @@ public class GPTimeUnitStack implements TimeUnitStack {
   }
 
   @Override
+  public TimeDuration createDuration(TimeUnit timeUnit, int count) {
+    return createLength(timeUnit, count);
+  }
+
+  @Override
   public TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
     TimeDuration result;
     int sign = 1;
