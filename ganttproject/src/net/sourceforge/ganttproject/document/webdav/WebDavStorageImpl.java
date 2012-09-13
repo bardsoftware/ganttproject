@@ -100,6 +100,9 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       StringBuilder result = new StringBuilder();
       for (WebDavServerDescriptor server : myServers) {
         result.append("\n").append(server.name).append("\t").append(server.rootUrl).append("\t").append(server.username);
+        if (server.savePassword) {
+          result.append("\t").append(server.password);
+        }
       }
       return result.toString();
     }
@@ -118,6 +121,9 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           }
           if (parts.length >= 3) {
             server.username = parts[2];
+          }
+          if (parts.length >= 4) {
+            server.password = parts[3];
           }
           myServers.add(server);
         }
