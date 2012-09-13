@@ -28,6 +28,6 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
 
   @Override
   public GPOptionGroup[] getOptionGroups() {
-    return new GPOptionGroup[] { getUiFacade().getOptions() };
+    return getUiFacade().getOptions();
   }
 }

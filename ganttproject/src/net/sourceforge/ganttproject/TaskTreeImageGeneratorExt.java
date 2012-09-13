@@ -41,8 +41,8 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskNode;
 
 public class TaskTreeImageGeneratorExt extends TaskTreeImageGenerator {
-  TaskTreeImageGeneratorExt(GanttTree2 treeView, UIConfiguration uiConfiguration) {
-    super(treeView, uiConfiguration);
+  TaskTreeImageGeneratorExt(GanttTree2 treeView, UIConfiguration uiConfiguration, Image logo) {
+    super(treeView, uiConfiguration, logo);
   }
 
   @Override

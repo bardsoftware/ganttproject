@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Image;
 import java.util.Collection;
 
 import javax.swing.Action;
@@ -124,6 +125,8 @@ public interface UIFacade {
 
   Frame getMainFrame();
 
+  Image getLogo();
+
   void setWorkbenchTitle(String title);
 
   TaskView getCurrentTaskView();
@@ -136,5 +139,5 @@ public interface UIFacade {
 
   TaskSelectionContext getTaskSelectionContext();
 
-  GPOptionGroup getOptions();
+  GPOptionGroup[] getOptions();
 }

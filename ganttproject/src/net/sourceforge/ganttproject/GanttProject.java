@@ -248,7 +248,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
     getTree().init();
-    options.addOptionGroups(new GPOptionGroup[] { getUIFacade().getOptions() });
+    options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
     options.addOptionGroups(getProjectUIFacade().getOptionGroups());

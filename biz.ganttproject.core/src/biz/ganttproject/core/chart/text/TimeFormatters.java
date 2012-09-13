@@ -57,6 +57,7 @@ public class TimeFormatters {
     ourLowerFormatters.putAll(commonFormatters);
     ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, "MMMM", "MMM", "MM"));
     ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
+    setLocaleApi(localeApi);
   }
 
   public TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position) {
