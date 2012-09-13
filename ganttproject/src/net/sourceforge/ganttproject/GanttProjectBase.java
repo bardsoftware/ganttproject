@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -210,9 +211,18 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myUIFacade;
   }
 
+  protected UIFacadeImpl getUiFacadeImpl() {
+    return myUIFacade;
+  }
+
   @Override
   public Frame getMainFrame() {
     return myUIFacade.getMainFrame();
+  }
+
+  @Override
+  public Image getLogo() {
+    return myUIFacade.getLogo();
   }
 
   @Override
@@ -226,7 +236,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
-  public GPOptionGroup getOptions() {
+  public GPOptionGroup[] getOptions() {
     return myUIFacade.getOptions();
   }
 

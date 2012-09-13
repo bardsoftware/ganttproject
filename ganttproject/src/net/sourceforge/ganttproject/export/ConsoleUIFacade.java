@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.export;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Image;
 import java.util.Collection;
 
 import javax.swing.Action;
@@ -165,6 +166,12 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
+  public Image getLogo() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
   public void setWorkbenchTitle(String title) {
     // TODO Auto-generated method stub
   }
@@ -208,7 +215,7 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public GPOptionGroup getOptions() {
+  public GPOptionGroup[] getOptions() {
     // TODO Auto-generated method stub
     return null;
   }

@@ -43,11 +43,12 @@ class TaskTreeImageGenerator {
   private GanttTree2 myTreeView;
   private UIConfiguration myUIConfiguration;
   private int myWidth;
+  private final Image myLogo;
 
-  TaskTreeImageGenerator(GanttTree2 treeView, UIConfiguration uiConfiguration) {
+  TaskTreeImageGenerator(GanttTree2 treeView, UIConfiguration uiConfiguration, Image logo) {
     myTreeView = treeView;
     myUIConfiguration = uiConfiguration;
-
+    myLogo = logo;
   }
 
   protected GanttTree2 getTree() {
@@ -105,7 +106,7 @@ class TaskTreeImageGenerator {
 
     // GanttImagePanel but = new GanttImagePanel("big.png", 300, 47);
     g.setColor(new Color(102, 153, 153));
-    g.drawImage(AbstractChartImplementation.LOGO.getImage(), 0, 0, null);
+    g.drawImage(myLogo, 0, 0, null);
     // but.paintComponent(g2);
   }
 
