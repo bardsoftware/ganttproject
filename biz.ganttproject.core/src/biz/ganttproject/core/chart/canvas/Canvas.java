@@ -222,6 +222,11 @@ public class Canvas {
     public int getMiddleX() {
       return myLeftX + getWidth() / 2;
     }
+
+    @Override
+    public String toString() {
+      return "Polygon[" + myLeftX + "," + myTopY + ",w=" + getWidth() + ",h=" + getHeight() + ",style=" + getStyle() + "]";
+    }
   }
   
   public static class Rectangle extends Polygon {
@@ -520,20 +525,24 @@ public class Canvas {
   public Polygon createPolygon(int... points) {
     assert points.length % 2 == 0 : "The number of points must be even";
     Polygon result = new Polygon(points);
-    myPolygonIndex.put(result, result.getLeftX(), result.getTopY(), result.getWidth(), result.getHeight());
+    myPolygonIndex.put(result, result.getLeftX(), result.getBottomY(), result.getWidth(), result.getHeight());
     return result;
   }
   
   public Rectangle createRectangle(int leftx, int topy, int width, int height) {
-    if (width < 0) {
-      width = -width;
-      leftx = leftx - width;
-    }
-    Rectangle result = new Rectangle(leftx + myDeltaX, topy + myDeltaY, width, height);
+    Rectangle result = createDetachedRectangle(leftx, topy, width, height);
     myRectangles.add(result);
     return result;
   }
 
+  public Rectangle createDetachedRectangle(int leftx, int topy, int width, int height) {
+    if (width < 0) {
+      width = -width;
+      leftx = leftx - width;
+    }
+    return new Rectangle(leftx + myDeltaX, topy + myDeltaY, width, height);
+  }
+  
   public Line createLine(int startx, int starty, int finishx, int finishy) {
     Line result = new Line(startx + myDeltaX, starty + myDeltaY, finishx + myDeltaX, finishy + myDeltaY);
     myLines.add(result);

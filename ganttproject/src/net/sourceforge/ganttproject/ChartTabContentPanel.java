@@ -58,8 +58,8 @@ abstract class ChartTabContentPanel {
     Box treeHeader = Box.createVerticalBox();
     Component buttonPanel = createButtonPanel();
     treeHeader.add(buttonPanel);
-    treeHeader.add(new GanttImagePanel(AbstractChartImplementation.LOGO, 300,
-        AbstractChartImplementation.LOGO.getIconHeight()));
+
+    treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
     left.add(treeHeader, BorderLayout.NORTH);
 
     left.add(getTreeComponent(), BorderLayout.CENTER);

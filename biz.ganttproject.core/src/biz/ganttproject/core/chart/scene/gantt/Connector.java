@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.core.chart.scene;
+package biz.ganttproject.core.chart.scene.gantt;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -26,7 +26,7 @@ import java.awt.Point;
  * 
  * @author dbarashev (Dmitry Barashev)
  */
-public class Polyline {
+public class Connector {
   
   /**
    * Vector is an origin point + direction
@@ -38,14 +38,14 @@ public class Polyline {
     private final Dimension myUnitVector;
     private final Vector myHProjection;
 
-    public Vector(Point point, Dimension unitVector) {
+    Vector(Point point, Dimension unitVector) {
       myPoint = point;
       myUnitVector = unitVector;
       myHProjection = unitVector.height == 0 && point.y == 0 ? null : 
           new Vector(new Point(point.x, 0), new Dimension(unitVector.width, 0));
     }
 
-    public Point getPoint() {
+    Point getPoint() {
       return myPoint;
     }
 
@@ -53,13 +53,13 @@ public class Polyline {
      * @return {@code true} if target point either equals to this vector origin or 
      *         resides in a quarter-plane where this vector direction points to
      */
-    public boolean reaches(Point targetPoint) {
+    boolean reaches(Point targetPoint) {
       return myPoint.equals(targetPoint) 
           || (Integer.signum(targetPoint.x - myPoint.x) == Integer.signum(myUnitVector.width) 
               && Integer.signum(targetPoint.y - myPoint.y) == Integer.signum(myUnitVector.height)); 
     }
 
-    public Point getPoint(int units) {
+    Point getPoint(int units) {
       return new Point(myPoint.x + myUnitVector.width * units, myPoint.y + myUnitVector.height * units);
     }
 
@@ -67,7 +67,7 @@ public class Polyline {
      * @return horizontal projection of this vector, with origin's y coordinate and moving direction 
      *         set to zero
      */
-    public Vector getHProjection() {
+    Vector getHProjection() {
       return myHProjection == null ? this : myHProjection;
     }
   }
@@ -76,21 +76,21 @@ public class Polyline {
   private final Vector myEnd;
   private final String myStyle;
   
-  public Polyline(Vector start, Vector end, String style) {
+  Connector(Vector start, Vector end, String style) {
     myStart = start;
     myEnd = end;
     myStyle = style;
   }
   
-  public Vector getStart() {
+  Vector getStart() {
     return myStart;
   }
   
-  public Vector getEnd() {
+  Vector getEnd() {
     return myEnd;
   }
   
-  public String getStyleName() {
+  String getStyleName() {
     return myStyle;
   }
 }

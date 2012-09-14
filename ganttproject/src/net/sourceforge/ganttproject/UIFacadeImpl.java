@@ -20,6 +20,9 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -29,7 +32,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -85,6 +90,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import com.google.common.base.Objects;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
+  private static final ImageIcon LOGO = new ImageIcon(UIFacadeImpl.class.getResource("/icons/big.png"));
   private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
@@ -93,6 +99,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskSelectionManager myTaskSelectionManager;
   private final GPOptionGroup myOptions;
   private final LafOption myLafOption;
+  private final GPOptionGroup myLogoOptions;
+  private final DefaultStringOption myLogoOption;
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
@@ -159,6 +167,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
     myOptions.setTitled(false);
+
+    myLogoOption = new DefaultStringOption("logo");
+    myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
+    myLogoOptions.setTitled(false);
   }
 
   @Override
@@ -604,7 +616,24 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public GPOptionGroup getOptions() {
-    return myOptions;
+  public GPOptionGroup[] getOptions() {
+    return new GPOptionGroup[] {myOptions, myLogoOptions};
+  }
+
+  @Override
+  public Image getLogo() {
+    if (myLogoOption.getValue() == null) {
+      return LOGO.getImage();
+    }
+    try {
+      File imageFile = new File(myLogoOption.getValue());
+      if (imageFile.exists() && imageFile.canRead()) {
+        return ImageIO.read(imageFile);
+      }
+      GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
+    } catch (IOException e) {
+      GPLogger.logToLogger(e);
+    }
+    return LOGO.getImage();
   }
 }

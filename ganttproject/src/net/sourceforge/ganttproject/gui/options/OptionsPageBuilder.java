@@ -359,13 +359,21 @@ public class OptionsPageBuilder {
       return createRadioButtonBooleanComponent(group, option);
     }
     JCheckBox result = new JCheckBox(new BooleanOptionAction(option));
-    // result.setText(myi18n.getOptionLabel(group, option));
+    String trailingLabel = getTrailingLabel(option);
+    if (trailingLabel != null) {
+      result.setText(trailingLabel);
+    }
     result.setHorizontalAlignment(JCheckBox.LEFT);
     result.setHorizontalTextPosition(SwingConstants.TRAILING);
     result.setSelected(option.isChecked());
     ComponentOrientation componentOrientation = GanttLanguage.getInstance().getComponentOrientation();
     result.setComponentOrientation(componentOrientation);
     return result;
+  }
+
+  private String getTrailingLabel(BooleanOption option) {
+    String trailingLabelKey = myi18n.getCanonicalOptionLabelKey(option) + ".trailing";
+    return myi18n.hasValue(trailingLabelKey) ? myi18n.getValue(trailingLabelKey) : null;
   }
 
   private boolean isCheckboxOption(GPOptionGroup group, GPOption<?> option) {

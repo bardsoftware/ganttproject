@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.export;
 
-import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 
@@ -30,7 +29,7 @@ public class ChartDimensions {
   private int chartWidth;
 
   ChartDimensions(GanttExportSettings settings, GPTreeTableBase treeTable) {
-    logoHeight = AbstractChartImplementation.LOGO.getIconHeight();
+    logoHeight = settings.getLogo().getHeight(null);
     treeHeight = treeTable.getRowHeight() * (settings.getRowCount());
     tableHeaderHeight = treeTable.getTable().getTableHeader().getHeight();
     treeWidth = treeTable.getTable().getWidth();

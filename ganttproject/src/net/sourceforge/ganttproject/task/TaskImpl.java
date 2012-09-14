@@ -1012,6 +1012,11 @@ public class TaskImpl implements Task {
     if (myLength == null || myManager == null) {
       return;
     }
+    if (isMilestone) {
+      myMilestoneActivity = new MilestoneTaskFakeActivity(this);
+      return;
+    }
+
     recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, myStart.getTime(),
         getEnd().getTime());
     int length = 0;

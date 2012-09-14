@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -75,9 +74,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
-  public static final ImageIcon LOGO = new ImageIcon(AbstractChartImplementation.class.getResource("/icons/big.png"));
-  private static final int HEADER_OFFSET = LOGO.getIconHeight();
-
   private final ChartModelBase myChartModel;
   private final IGanttProject myProject;
   private Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<ChartSelectionListener>();
@@ -87,7 +83,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   private VScrollController myVScrollController;
   private final Timer myTimer = new Timer();
   private Runnable myTimerTask = null;
-  
+
   public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
       ChartComponentBase chartComponent) {
     assert chartModel != null;
@@ -182,9 +178,13 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   protected void scheduleTask(Runnable task) {
     myTimerTask = task;
   }
-  
+
   protected JComponent getChartComponent() {
     return myChartComponent;
+  }
+
+  private Image getLogo() {
+    return myUiFacade.getLogo();
   }
   // ///////////////////////////////////////////////////////////
   // interface Chart
@@ -204,6 +204,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       myChartComponent.getTreeTable().getTable().setRowHeight(modelCopy.calculateRowHeight());
       myChartComponent.getTreeTable().autoFitColumns();
     }
+    settings.setLogo(getLogo());
     ChartImageBuilder builder = new ChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
     builder.buildImage(imageVisitor);
   }
@@ -397,7 +398,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     JTableHeader tableHeader = table.getTableHeader();
     Point headerLocation = tableHeader.getLocationOnScreen();
     Point treeLocation = tableContainer.getLocationOnScreen();
-    return headerLocation.y - treeLocation.y + tableHeader.getHeight() + HEADER_OFFSET;
+    return headerLocation.y - treeLocation.y + tableHeader.getHeight() + myUiFacade.getLogo().getHeight(null);
 
   }
 
