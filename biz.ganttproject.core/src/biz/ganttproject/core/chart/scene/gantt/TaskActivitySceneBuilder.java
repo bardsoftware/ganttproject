@@ -19,11 +19,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.scene.gantt;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
@@ -85,15 +87,15 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     myLabelsRenderer = labelsRenderer;
   }
 
-  public List<Rectangle> renderActivities(int rowNum, List<A> activities, OffsetList offsets) {
-    List<Rectangle> rectangles = new ArrayList<Rectangle>();
+  public List<Polygon> renderActivities(int rowNum, List<A> activities, OffsetList offsets) {
+    List<Polygon> rectangles = Lists.newArrayList();
     for (A activity : activities) {
       if (myTaskApi.isFirst(activity) || myTaskApi.isLast(activity)) {
         if (myTaskApi.isVoid(activity)) {
           continue;
         }
       }
-      final Rectangle nextRectangle;
+      final Polygon nextRectangle;
       if (activity.getEnd().compareTo(myChartApi.getChartStartDate()) <= 0) {
         nextRectangle = processActivityEarlierThanViewport(rowNum, activity);
       } else if (activity.getStart().compareTo(myChartApi.getEndDate()) >= 0) {
@@ -126,7 +128,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     return rectangle;
   }
 
-  private Rectangle processRegularActivity(int rowNum, A activity, OffsetList offsets) {
+  private Polygon processRegularActivity(int rowNum, A activity, OffsetList offsets) {
     T nextTask = activity.getOwner();
     if (myTaskApi.isMilestone(nextTask) && !myTaskApi.isFirst(activity)) {
       return null;
@@ -136,60 +138,64 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     final int nextLength = nextBounds.width;
     final int topy = nextBounds.y + myStyle.marginTop;
 
-    Canvas.Rectangle nextRectangle;
     boolean nextHasNested = myTaskApi.hasNestedTasks(nextTask);
     Canvas container = myCanvas;
-    nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
 
-    Canvas.Shape resultShape = nextRectangle;
+    Canvas.Polygon resultShape;
     
     if (myTaskApi.isMilestone(nextTask)) {
-      nextRectangle.setVisible(false);
-      container.bind(nextRectangle, activity);
-      Canvas.Polygon p = container.createPolygon(nextRectangle.getLeftX() - 2, nextRectangle.getMiddleY(),
-          nextRectangle.getLeftX() + 3, nextRectangle.getMiddleY() - 5,
-          nextRectangle.getLeftX() + 8, nextRectangle.getMiddleY(),
-          nextRectangle.getLeftX() + 3, nextRectangle.getMiddleY() + 5);
+      //nextRectangle.setVisible(false);
+      //System.err.println("milestone rect=" + nextRectangle);
+      //container.bind(nextRectangle, activity);
+      Canvas.Rectangle rect = container.createDetachedRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
+      Canvas.Polygon p = container.createPolygon(rect.getLeftX() - 2, rect.getMiddleY(),
+          rect.getLeftX() + 3, rect.getMiddleY() - 5,
+          rect.getLeftX() + 8, rect.getMiddleY(),
+          rect.getLeftX() + 3, rect.getMiddleY() + 5);
       p.setStyle("task.milestone");
       //container.bind(p, activity);
       resultShape = p;
-    } else if (myTaskApi.isProjectTask(nextTask)) {
-      nextRectangle.setStyle("task.projectTask");
-      if (myTaskApi.isFirst(activity)) {
-        Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.getLeftX(), topy,
-            nextLength, getRectangleHeight());
-        supertaskStart.setStyle("task.projectTask.start");
-      }
-      if (myTaskApi.isLast(activity)) {
-        Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.getLeftX() - 1, topy,
-            nextLength, getRectangleHeight());
-        supertaskEnd.setStyle("task.projectTask.end");
-
-      }
-    } else if (nextHasNested) {
-      nextRectangle.setStyle("task.supertask");
-      if (myTaskApi.isFirst(activity)) {
-        container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(), 
-            nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(), 
-            nextRectangle.getLeftX(), nextRectangle.getBottomY()).setStyle("task.supertask.start");
-      }
-      if (myTaskApi.isLast(activity)) {
-        container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(), 
-            nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(), 
-            nextRectangle.getRightX(), nextRectangle.getBottomY()).setStyle("task.supertask.end");
-      }
     } else {
-      if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
-        nextRectangle.setStyle("task.startend");
-      } else if (false == myTaskApi.isFirst(activity) ^ myTaskApi.isLast(activity)) {
-        nextRectangle.setStyle("task");
-      } else if (myTaskApi.isFirst(activity)) {
-        nextRectangle.setStyle("task.start");
-      } else if (myTaskApi.isLast(activity)) {
-        nextRectangle.setStyle("task.end");
-      }
-      if (myTaskApi.isVoid(activity)) {
-        nextRectangle.setOpacity(myChartApi.getWeekendOpacityOption().getValueAsFloat());
+      Canvas.Rectangle nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
+      resultShape = nextRectangle;
+      if (myTaskApi.isProjectTask(nextTask)) {
+        nextRectangle.setStyle("task.projectTask");
+        if (myTaskApi.isFirst(activity)) {
+          Canvas.Rectangle supertaskStart = container.createRectangle(nextRectangle.getLeftX(), topy,
+              nextLength, getRectangleHeight());
+          supertaskStart.setStyle("task.projectTask.start");
+        }
+        if (myTaskApi.isLast(activity)) {
+          Canvas.Rectangle supertaskEnd = container.createRectangle(nextRectangle.getLeftX() - 1, topy,
+              nextLength, getRectangleHeight());
+          supertaskEnd.setStyle("task.projectTask.end");
+
+        }
+      } else if (nextHasNested) {
+        nextRectangle.setStyle("task.supertask");
+        if (myTaskApi.isFirst(activity)) {
+          container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(), 
+              nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(), 
+              nextRectangle.getLeftX(), nextRectangle.getBottomY()).setStyle("task.supertask.start");
+        }
+        if (myTaskApi.isLast(activity)) {
+          container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(), 
+              nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(), 
+              nextRectangle.getRightX(), nextRectangle.getBottomY()).setStyle("task.supertask.end");
+        }
+      } else {
+        if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
+          nextRectangle.setStyle("task.startend");
+        } else if (false == myTaskApi.isFirst(activity) ^ myTaskApi.isLast(activity)) {
+          nextRectangle.setStyle("task");
+        } else if (myTaskApi.isFirst(activity)) {
+          nextRectangle.setStyle("task.start");
+        } else if (myTaskApi.isLast(activity)) {
+          nextRectangle.setStyle("task.end");
+        }
+        if (myTaskApi.isVoid(activity)) {
+          nextRectangle.setOpacity(myChartApi.getWeekendOpacityOption().getValueAsFloat());
+        }
       }
     }
     
@@ -206,7 +212,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     }
 
     container.bind(resultShape, activity);    
-    return nextRectangle;
+    return resultShape;
   }
 
   private java.awt.Rectangle getBoundingRectangle(int rowNum, BarChartActivity<T> activity, List<Offset> offsets) {

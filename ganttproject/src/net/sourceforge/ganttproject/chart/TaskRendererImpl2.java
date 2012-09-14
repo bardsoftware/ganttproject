@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
@@ -285,19 +286,18 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   private void renderTasksAboveAndBelowViewport(List<Task> tasksAboveViewport, List<Task> tasksBelowViewport,
       OffsetList defaultUnitOffsets) {
     for (Task nextAbove : tasksAboveViewport) {
-      List<TaskActivity> activities = nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          nextAbove)) : Arrays.asList(nextAbove.getActivities());
-      List<Rectangle> rectangles = renderActivities(-1, nextAbove, activities, defaultUnitOffsets);
-      for (Rectangle nextRectangle : rectangles) {
-        nextRectangle.setVisible(false);
+      List<TaskActivity> activities = /*nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
+          nextAbove)) : */Arrays.asList(nextAbove.getActivities());
+      for (Canvas.Shape s : renderActivities(-1, nextAbove, activities, defaultUnitOffsets)) {
+        s.setVisible(false);
       }
     }
     for (Task nextBelow : tasksBelowViewport) {
-      List<TaskActivity> activities = nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          nextBelow)) : Arrays.asList(nextBelow.getActivities());
-      List<Rectangle> rectangles = renderActivities(getVisibleTasks().size() + 1, nextBelow, activities,
+      List<TaskActivity> activities = /*nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
+          nextBelow)) : */Arrays.asList(nextBelow.getActivities());
+      List<Polygon> rectangles = renderActivities(getVisibleTasks().size() + 1, nextBelow, activities,
           defaultUnitOffsets);
-      for (Rectangle nextRectangle : rectangles) {
+      for (Polygon nextRectangle : rectangles) {
         nextRectangle.setVisible(false);
       }
     }
@@ -306,9 +306,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
     int rowNum = 0;
     for (Task t : visibleTasks) {
-      List<TaskActivity> activities = t.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          t)) : Arrays.asList(t.getActivities());
-      List<Rectangle> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
+      List<TaskActivity> activities = /*t.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
+          t)) :*/ Arrays.asList(t.getActivities());
+      List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
       renderLabels(rectangles);
       renderBaseline(t, rowNum, defaultUnitOffsets);
       rowNum++;
@@ -349,10 +349,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
           } else {
             alg.recalculateActivities(t, baselineActivities, startDate, endDate);
           }
-          List<Rectangle> baselineRectangles = myBaselineActivityRenderer.renderActivities(rowNum, baselineActivities,
+          List<Polygon> baselineRectangles = myBaselineActivityRenderer.renderActivities(rowNum, baselineActivities,
               defaultUnitOffsets);
           for (int i = 0; i < baselineRectangles.size(); i++) {
-            Rectangle r = baselineRectangles.get(i);
+            Polygon r = baselineRectangles.get(i);
             r.setStyle("previousStateTask");
             for (String s : styles) {
               r.addStyle(s);
@@ -370,9 +370,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   }
 
-  private List<Rectangle> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
+  private List<Polygon> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
       OffsetList defaultUnitOffsets) {
-    List<Rectangle> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
+    List<Canvas.Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
       renderProgressBar(rectangles);
     }
@@ -384,13 +384,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return rectangles;
   }
 
-  private void renderLabels(List<Rectangle> rectangles) {
+  private void renderLabels(List<Polygon> rectangles) {
     if (!rectangles.isEmpty()) {
       myLabelsRenderer.renderLabels(rectangles);
     }
   }
 
-  private void renderProgressBar(List<Rectangle> rectangles) {
+  private void renderProgressBar(List<Polygon> rectangles) {
     if (rectangles.isEmpty()) {
       return;
     }
@@ -399,9 +399,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     final Task task = ((TaskActivity) rectangles.get(0).getModelObject()).getOwner();
     float length = task.getDuration().getLength(timeUnit);
     float completed = task.getCompletionPercentage() * length / 100f;
-    Rectangle lastProgressRectangle = null;
+    Polygon lastProgressRectangle = null;
 
-    for (Rectangle nextRectangle : rectangles) {
+    for (Polygon nextRectangle : rectangles) {
       final TaskActivity nextActivity = (TaskActivity) nextRectangle.getModelObject();
       final float nextLength = nextActivity.getDuration().getLength(timeUnit);
 

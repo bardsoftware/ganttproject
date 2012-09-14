@@ -1043,7 +1043,7 @@ public class TaskManagerImpl implements TaskManager {
       List<Task> milestones = Lists.newArrayList();
       for (Task t : getTasks()) {
         if (t.isMilestone()) {
-          t.setEnd(null);
+          t.setMilestone(true);
           milestones.add(t);
         }
       }
