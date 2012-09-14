@@ -16,6 +16,7 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
@@ -110,7 +111,15 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     });
     passwordOption.setScreened(true);
 
-    GPOptionGroup optionGroup = new GPOptionGroup("webdav.server", urlOption, usernameOption, passwordOption);
+    final DefaultBooleanOption savePasswordOption = new DefaultBooleanOption("webdav.server.savePassword", false);
+    savePasswordOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        serverList.getSelectedObject().savePassword = savePasswordOption.getValue();
+      }
+    });
+
+    GPOptionGroup optionGroup = new GPOptionGroup("webdav.server", urlOption, usernameOption, passwordOption, savePasswordOption);
 
     serverList.getTableAndActions().addSelectionListener(new SelectionListener<WebDavServerDescriptor>() {
       @Override

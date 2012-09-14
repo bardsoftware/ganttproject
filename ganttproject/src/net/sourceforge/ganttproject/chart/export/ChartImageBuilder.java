@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
 
-import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -63,7 +62,7 @@ public class ChartImageBuilder {
     myChartModel.setHeaderHeight(myDimensions.getLogoHeight() + myDimensions.getTableHeaderHeight() - 1);
     myChartModel.setVisibleTasks(mySettings.getVisibleTasks());
 
-    visitor.acceptLogo(myDimensions, AbstractChartImplementation.LOGO.getImage());
+    visitor.acceptLogo(myDimensions, mySettings.getLogo());
     visitor.acceptTable(myDimensions, myTreeTable.getTable().getTableHeader(), myTreeTable.getTable());
 
     visitor.acceptChart(myDimensions, myChartModel);

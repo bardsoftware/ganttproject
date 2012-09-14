@@ -69,14 +69,10 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     List<Offset> offsets = myChartModel.getDefaultUnitOffsets();
     TaskActivity leadActivity = null;
     for (Task t : myChartModel.getTimelineTasks()) {
-      if (t.isMilestone()) {
-        leadActivity = new MilestoneTaskFakeActivity(t);
-      } else {
-        for (TaskActivity activity : t.getActivities()) {
-          if (activity.getIntensity() > 0f) {
-            leadActivity = activity;
-            break;
-          }
+      for (TaskActivity activity : t.getActivities()) {
+        if (activity.getIntensity() > 0f) {
+          leadActivity = activity;
+          break;
         }
       }
       if (leadActivity == null || leadActivity.getEnd().before(myChartModel.getStartDate())) {

@@ -30,7 +30,6 @@ import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.BarChartConnector;
-import biz.ganttproject.core.chart.scene.Polyline;
 
 /**
  * Renders dependency lines between tasks.
@@ -64,16 +63,16 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
   }
 
   public void build() {
-    List<Polyline> dependencyDrawData = prepareDependencyDrawData();
+    List<Connector> dependencyDrawData = prepareDependencyDrawData();
     drawDependencies(dependencyDrawData);
   }
 
 
-  public void drawDependencies(Collection<Polyline> connectors) {
+  public void drawDependencies(Collection<Connector> connectors) {
     Canvas primitiveContainer = myOutputCanvas;
-    for (Polyline connector : connectors) {
-      Polyline.Vector dependantVector = connector.getEnd();
-      Polyline.Vector dependeeVector = connector.getStart();
+    for (Connector connector : connectors) {
+      Connector.Vector dependantVector = connector.getEnd();
+      Connector.Vector dependeeVector = connector.getStart();
       // Determine the line style (depending on type of dependency)
       String lineStyle = connector.getStyleName();
 
@@ -82,10 +81,13 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
         // any
         // or dependee.end <= dependant.end && dependency.type==FF
         // or dependee.start >= dependant.end && dependency.type==SF
-        int ysign = Integer.signum(dependantVector.getPoint().y - dependeeVector.getPoint().y);
         Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);
-        Point second = new Point(dependantVector.getPoint(-3).x, dependeeVector.getPoint().y);
-        Point third = new Point(dependantVector.getPoint(-3).x, dependantVector.getPoint().y - ysign * myChartApi.getBarHeight() / 2);
+        
+        int xEntry = dependantVector.getPoint().x;
+        int yEntry = dependantVector.getPoint().y;
+        Point second = new Point(xEntry, dependeeVector.getPoint().y);
+        Point third = new Point(xEntry, yEntry);
+        
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
         secondLine.setStyle(lineStyle);
@@ -116,8 +118,8 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     }
   }
 
-  private List<Polyline> prepareDependencyDrawData() {
-    List<Polyline> result = new ArrayList<Polyline>();
+  private List<Connector> prepareDependencyDrawData() {
+    List<Connector> result = new ArrayList<Connector>();
     for (T t : myTaskApi.getTasks()) {
       if (t != null) {
         for (D td : myTaskApi.getConnectors(t)) {
@@ -128,7 +130,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     return result;
   }
 
-  private void prepareDependencyDrawData(D connector, List<Polyline> result) {
+  private void prepareDependencyDrawData(D connector, List<Connector> result) {
     BarChartActivity<T> dependant = connector.getEnd();
     BarChartActivity<T> dependee = connector.getStart();
 
@@ -143,20 +145,42 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     }
     if (!dependantRectangle.isVisible() && !dependeeRectangle.isVisible()) {
       return;
+    }    
+    
+    final int ysign = Integer.signum(dependeeRectangle.getMiddleY() - dependantRectangle.getMiddleY());
+    
+    final Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector.getImpl());
+    final int yDantEntry = ysign > 0 ? dependantRectangle.getBottomY() : dependantRectangle.getTopY();
+    int xDantEntry;
+    if (myTaskApi.isMilestone(dependant.getOwner())) {
+      xDantEntry = dependantRectangle.getMiddleX();
+    } else if (dependantDirection == Connector.Vector.WEST) {
+      xDantEntry = dependantRectangle.getLeftX() + 3;  
+    } else if (dependantDirection == Connector.Vector.EAST) {
+      xDantEntry = dependantRectangle.getRightX() - 3;
+    } else {
+      xDantEntry = dependantRectangle.getMiddleX();
     }
-    Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector.getImpl());
-    int dependantOriginX = (dependantDirection == Polyline.Vector.WEST) ? dependantRectangle.getLeftX() : dependantRectangle.getRightX();
-    Point dependantOrigin = new Point(
-        myTaskApi.isMilestone(dependant.getOwner()) ? dependantRectangle.getMiddleX() : dependantOriginX,
-        dependantRectangle.getMiddleY());
-    Polyline.Vector dependantVector = new Polyline.Vector(dependantOrigin, dependantDirection);
+    Connector.Vector dependantVector = new Connector.Vector(new Point(xDantEntry, yDantEntry), dependantDirection);
 
     Dimension dependeeDirection = myTaskApi.getUnitVector(dependee, connector.getImpl());
-    int dependeeOriginX = (dependeeDirection == Polyline.Vector.WEST) ? dependeeRectangle.getLeftX() : dependeeRectangle.getRightX();
-    Point dependeeOrigin = new Point(
-        myTaskApi.isMilestone(dependee.getOwner()) ? dependeeRectangle.getMiddleX() : dependeeOriginX,
-        dependeeRectangle.getMiddleY());
-    Polyline.Vector dependeeVector = new Polyline.Vector(dependeeOrigin, dependeeDirection);
-    result.add(new Polyline(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));
+    int xDeeExit;
+    int yDeeExit;
+    if (myTaskApi.isMilestone(dependee.getOwner()) && xDantEntry == dependeeRectangle.getMiddleX()) {
+      xDeeExit = xDantEntry;
+      yDeeExit = ysign > 0 ? dependeeRectangle.getTopY() : dependeeRectangle.getBottomY();
+    } else {
+      yDeeExit = dependeeRectangle.getMiddleY();
+      if (dependeeDirection == Connector.Vector.WEST) {
+        xDeeExit = dependeeRectangle.getLeftX();
+      } else if (dependeeDirection == Connector.Vector.EAST) {
+        xDeeExit = dependeeRectangle.getRightX();
+      } else {
+        xDeeExit = dependeeRectangle.getMiddleX();
+      }
+    }
+    Connector.Vector dependeeVector = new Connector.Vector(new Point(xDeeExit, yDeeExit), dependeeDirection);
+    
+    result.add(new Connector(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));
   }
 }

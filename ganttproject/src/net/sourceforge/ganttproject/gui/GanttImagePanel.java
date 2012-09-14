@@ -20,14 +20,14 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 public class GanttImagePanel extends JPanel {
-  private final ImageIcon image;
+  private final Image image;
 
-  public GanttImagePanel(ImageIcon image, int width, int height) {
+  public GanttImagePanel(Image image, int width, int height) {
     super();
     this.image = image;
     setPreferredSize(new Dimension(width, height));
@@ -35,7 +35,7 @@ public class GanttImagePanel extends JPanel {
 
   @Override
   public void paintComponent(Graphics g) {
-    image.paintIcon(this, g, 0, 0);
+    g.drawImage(image,0, 0, null);
   }
 
 }
