@@ -23,7 +23,7 @@ import java.util.List;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
@@ -103,21 +103,21 @@ public class TaskLabelSceneBuilder<T> {
     myFontSize = inputApi.getFontSize();
   }
 
-  public void renderLabels(List<Canvas.Rectangle> activityRectangles) {
-    Rectangle lastRectangle = activityRectangles.get(activityRectangles.size() - 1);
+  public void renderLabels(List<Canvas.Polygon> activityRectangles) {
+    Polygon lastRectangle = activityRectangles.get(activityRectangles.size() - 1);
 
     if (lastRectangle.isVisible()) {
       createRightSideText(lastRectangle);
       createDownSideText(lastRectangle);
       createUpSideText(lastRectangle);
     }
-    Rectangle firstRectangle = activityRectangles.get(0);
+    Polygon firstRectangle = activityRectangles.get(0);
     if (firstRectangle.isVisible()) {
       createLeftSideText(firstRectangle);
     }
   }
   
-  private void createRightSideText(Rectangle rectangle) {
+  private void createRightSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = "";
     int xText, yText;
@@ -132,7 +132,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  private void createDownSideText(Rectangle rectangle) {
+  private void createDownSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), DOWN);
 
@@ -144,7 +144,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  private void createUpSideText(Rectangle rectangle) {
+  private void createUpSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
@@ -155,7 +155,7 @@ public class TaskLabelSceneBuilder<T> {
     }
   }
 
-  private void createLeftSideText(Rectangle rectangle) {
+  private void createLeftSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
