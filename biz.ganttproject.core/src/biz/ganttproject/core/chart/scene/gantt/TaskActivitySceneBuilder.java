@@ -146,11 +146,12 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     if (myTaskApi.isMilestone(nextTask)) {
       nextRectangle.setVisible(false);
       container.bind(nextRectangle, activity);
-      Canvas.Polygon p = container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getMiddleY(),
-          nextRectangle.getLeftX() + 5, nextRectangle.getMiddleY() - 5,
-          nextRectangle.getLeftX() + 10, nextRectangle.getMiddleY(),
-          nextRectangle.getLeftX() + 5, nextRectangle.getMiddleY() + 5);
+      Canvas.Polygon p = container.createPolygon(nextRectangle.getLeftX() - 2, nextRectangle.getMiddleY(),
+          nextRectangle.getLeftX() + 3, nextRectangle.getMiddleY() - 5,
+          nextRectangle.getLeftX() + 8, nextRectangle.getMiddleY(),
+          nextRectangle.getLeftX() + 3, nextRectangle.getMiddleY() + 5);
       p.setStyle("task.milestone");
+      //container.bind(p, activity);
       resultShape = p;
     } else if (myTaskApi.isProjectTask(nextTask)) {
       nextRectangle.setStyle("task.projectTask");
