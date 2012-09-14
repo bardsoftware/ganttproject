@@ -41,7 +41,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
-import biz.ganttproject.core.chart.scene.Polyline;
+import biz.ganttproject.core.chart.scene.gantt.Connector;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
@@ -248,14 +248,14 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         TaskDependencyConstraint.Type type = dependency.getConstraint().getType();
         if (activity == activityBinding.getDependeeActivity()) {
           if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
-            return Polyline.Vector.EAST;
+            return Connector.Vector.EAST;
           }
-          return Polyline.Vector.WEST;
+          return Connector.Vector.WEST;
         } else if (activity == activityBinding.getDependantActivity()) {
           if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
-            return Polyline.Vector.EAST;
+            return Connector.Vector.EAST;
           }
-          return Polyline.Vector.WEST;
+          return Connector.Vector.WEST;
         } else {
           assert false : "Should not be here";
           return null;
