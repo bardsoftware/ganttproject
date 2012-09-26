@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart.mouse;
 import java.util.Date;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -47,7 +48,8 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
 
   @Override
   public TimeDuration createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
-    return myTaskManager.createLength(timeUnit, startDate, endDate);
+    WorkingUnitCounter workingUnitCounter = new WorkingUnitCounter(getCalendar(), timeUnit);
+    return workingUnitCounter.run(startDate, endDate);
   }
 
   @Override
