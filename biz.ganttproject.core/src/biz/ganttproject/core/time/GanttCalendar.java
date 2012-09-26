@@ -33,6 +33,7 @@ import org.w3c.util.InvalidDateException;
  */
 public class GanttCalendar extends java.util.GregorianCalendar {
   private final LocaleApi myLocaleApi;
+  private GanttCalendar myShiftedValue;
 
   GanttCalendar(CalendarFactory.LocaleApi localeApi) {
     super();
@@ -173,6 +174,9 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   };
 
   public GanttCalendar getDisplayValue() {
-    return CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
+    if (myShiftedValue == null) {
+      myShiftedValue = CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime())); 
+    }
+    return myShiftedValue;
   }
 }
