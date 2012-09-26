@@ -33,6 +33,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -104,6 +105,11 @@ public class TaskScheduleDatesPanel {
     return labelPanel;
   }
 
+  private void swapLocks(BooleanOption newLock) {
+    newLock.setValue(true);
+    myPrevLock.setValue(false);
+    myPrevLock = newLock;
+  }
   private GPAction createLockAction(String key, final BooleanOption lock) {
     return new GPAction(key) {
       {
@@ -111,9 +117,7 @@ public class TaskScheduleDatesPanel {
       }
       @Override
       public void actionPerformed(ActionEvent e) {
-        lock.setValue(true);
-        myPrevLock.setValue(false);
-        myPrevLock = lock;
+        swapLocks(lock);
       }
     };
   }
@@ -206,6 +210,12 @@ public class TaskScheduleDatesPanel {
     propertiesPanel.add(myEndDatePicker);
     propertiesPanel.add(durationLabel);
     propertiesPanel.add(durationField1);
+
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        swapLocks(myEndDateLock);
+      }
+    });
   }
 
   public void setStart(GanttCalendar start, boolean test) {
@@ -301,7 +311,16 @@ public class TaskScheduleDatesPanel {
   }
 
   public void enableMilestoneUnfriendlyControls(boolean enable) {
-    myEndDatePicker.setEnabled(enable);
-    durationField1.setEnabled(enable);
+    if (!enable) {
+      myStartDateLock.setValue(false);
+      myDurationLock.setValue(true);
+      myEndDateLock.setValue(true);
+      myLockHyperlink.setEnabled(false);
+    } else {
+      myDurationLock.setValue(false);
+      myEndDateLock.setValue(false);
+      myLockHyperlink.setEnabled(true);
+      myPrevLock.setValue(true);
+    }
   }
 }
