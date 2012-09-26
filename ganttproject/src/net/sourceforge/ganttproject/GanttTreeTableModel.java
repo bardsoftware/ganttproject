@@ -48,8 +48,10 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -328,7 +330,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       ((TaskNode) node).applyThirdDateConstraint();
       break;
     case END_DATE:
-      ((TaskNode) node).setEnd(((GanttCalendar) value).newAdd(Calendar.DATE, 1));
+      ((TaskNode) node).setEnd(CalendarFactory.createGanttCalendar(
+          GPTimeUnitStack.DAY.adjustRight(((GanttCalendar)value).getTime())));
       break;
     case DURATION:
       TimeDuration tl = task.getDuration();

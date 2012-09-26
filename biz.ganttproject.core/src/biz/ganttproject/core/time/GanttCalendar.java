@@ -110,19 +110,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     return this.get(Calendar.DAY_OF_MONTH);
   }
 
-  /**
-   * @deprecated (TODO: add what to use/do instead)
-   *
-   *             Create of copy of the current date and add the specified
-   *             (signed) amount of time
-   */
-  @Deprecated
-  public GanttCalendar newAdd(int field, int dayNumber) {
-    GanttCalendar gc = clone();
-    gc.add(field, dayNumber);
-    return gc;
-  }
-
   /** @return the sign represented by an integer */
   private int module(int number) {
     if (number > 0) {
