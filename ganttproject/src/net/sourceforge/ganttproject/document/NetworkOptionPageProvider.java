@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -53,7 +53,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
 
   @Override
   public GPOptionGroup[] getOptionGroups() {
-    return getProject().getDocumentManager().getNetworkOptionGroups();
+    return new GPOptionGroup[] {getProject().getDocumentManager().getFTPOptions()};
   }
 
   @Override
@@ -80,8 +80,7 @@ public class NetworkOptionPageProvider extends OptionPageProviderBase {
     final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);
     ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(passwordOption), "ftppwd");
 
-    final JComponent optionsPane = builder.buildPage(getProject().getDocumentManager().getNetworkOptionGroups(),
-        getPageID());
+    final JComponent optionsPane = builder.buildPage(new GPOptionGroup[] {ftpGroup}, getPageID());
     final Action testConnectionAction = new AbstractAction() {
       {
         putValue(Action.NAME, GanttLanguage.getInstance().getText("testFTPConnection"));

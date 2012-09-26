@@ -464,8 +464,9 @@ public class OptionsPageBuilder {
   public Component createColorComponent(final ColorOption option) {
     final JButton colorButton = new JButton();
     final JPanel label = new JPanel();
-    label.setPreferredSize(new Dimension(8, 8));
+    label.setPreferredSize(new Dimension(16, 16));
     label.setBackground(option.getValue());
+
     Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -491,10 +492,11 @@ public class OptionsPageBuilder {
     };
     colorButton.setAction(action);
 
-    JPanel result = new JPanel(new FlowLayout());
-    result.add(label);
-    result.add(colorButton);
-    return result;
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+    buttonPanel.add(label);
+    buttonPanel.add(new JLabel(" "));
+    buttonPanel.add(colorButton);
+    return buttonPanel;
   }
 
   public JComponent createDateComponent(final DateOption option) {
