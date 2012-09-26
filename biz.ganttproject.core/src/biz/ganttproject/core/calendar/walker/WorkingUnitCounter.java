@@ -66,6 +66,9 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
   public TimeDuration run(Date startDate, Date endDate) {
     assert startDate != null : "null start date";
     assert endDate != null : "null end date";
+    if (startDate.equals(endDate)) {
+      return new TimeDurationImpl(getTimeUnit(), 0);
+    }
     isMoving = true;
     myNonWorkingUnitCounter = 0;
     myWorkingUnitCounter = 0;
