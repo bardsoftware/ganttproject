@@ -168,7 +168,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
     myOptions.setTitled(false);
 
-    myLogoOption = new DefaultStringOption("logo");
+    myLogoOption = new DefaultStringOption("ui.logo");
     myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
   }
