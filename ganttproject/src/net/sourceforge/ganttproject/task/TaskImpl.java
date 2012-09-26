@@ -883,12 +883,9 @@ public class TaskImpl implements Task {
 
   @Override
   public void setMilestone(boolean milestone) {
+    isMilestone = milestone;
     if (milestone) {
       setEnd(null);
-    }
-    isMilestone = milestone;
-    if (isMilestone) {
-      myMilestoneActivity = new MilestoneTaskFakeActivity(this);
     }
   }
 
@@ -903,6 +900,7 @@ public class TaskImpl implements Task {
     start.setTime(closestWorkingStart);
     myStart = start;
     recalculateActivities();
+    adjustNestedTasks();
   }
 
   private void adjustNestedTasks() {

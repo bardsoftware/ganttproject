@@ -25,6 +25,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.Action;
@@ -237,14 +238,15 @@ public class TaskScheduleDatesPanel {
     if (!isMilestone && myDurationLock.isChecked()) {
       adjustLength();
     } else {
-      setEnd(CalendarFactory.createGanttCalendar(
-          getCalendar().shiftDate(myStart.getTime(), myUnpluggedClone.getDuration())), false);
+      GanttCalendar endDate = isMilestone ? myStart : CalendarFactory.createGanttCalendar(
+          getCalendar().shiftDate(myStart.getTime(), myUnpluggedClone.getDuration()));
+      setEnd(endDate, false);
     }
   }
 
   private void setEnd(GanttCalendar end, boolean recalculateStart) {
     myEnd = end;
-    myEndDatePicker.setDate(end.getDisplayValue().getTime());
+    myEndDatePicker.setDate((isMilestone ? end : end.getDisplayValue()).getTime());
     if (!recalculateStart) {
       return;
     }
