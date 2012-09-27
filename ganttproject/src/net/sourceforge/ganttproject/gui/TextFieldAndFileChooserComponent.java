@@ -65,7 +65,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
   private final UIFacade myUiFacade;
 
-  public TextFieldAndFileChooserComponent(UIFacade uiFacade, String label, String dialogCaption) {
+  public TextFieldAndFileChooserComponent(UIFacade uiFacade, String dialogCaption) {
     myUiFacade = uiFacade;
     myDialogCaption = dialogCaption;
 
@@ -142,7 +142,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
   /**
    * Updates the file path
-   * 
+   *
    * @param file
    *          if this is point to a directory, the previously used file name is
    *          added
