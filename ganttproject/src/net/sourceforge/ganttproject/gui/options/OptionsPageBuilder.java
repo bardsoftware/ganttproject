@@ -16,6 +16,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -42,6 +43,8 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -56,6 +59,7 @@ import biz.ganttproject.core.option.DateOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DoubleOption;
 import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.FileOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
@@ -72,6 +76,7 @@ public class OptionsPageBuilder {
   I18N myi18n = new I18N();
   private Component myParentComponent;
   private final LayoutApi myLayoutApi;
+  private UIFacade myUiFacade;
 
   public static interface LayoutApi {
     void layout(JPanel panel, int componentsCount);
@@ -105,6 +110,10 @@ public class OptionsPageBuilder {
   public OptionsPageBuilder(Component parentComponent, LayoutApi layoutApi) {
     myParentComponent = parentComponent;
     myLayoutApi = layoutApi;
+  }
+
+  public void setUiFacade(UIFacade uiFacade) {
+    myUiFacade = uiFacade;
   }
 
   public void setI18N(I18N i18n) {
@@ -244,6 +253,8 @@ public class OptionsPageBuilder {
     Component result = null;
     if (option instanceof EnumerationOption) {
       result = createEnumerationComponent((EnumerationOption) option, group);
+    } else if (option instanceof FileOption) {
+      result = createFileComponent((FileOption) option);
     } else if (option instanceof BooleanOption) {
       result = createBooleanComponent(group, (BooleanOption) option);
     } else if (option instanceof ColorOption) {
@@ -302,6 +313,23 @@ public class OptionsPageBuilder {
         textField.getDocument().addDocumentListener(listener);
       }
     });
+  }
+
+  private Component createFileComponent(final FileOption option) {
+    final TextFieldAndFileChooserComponent result = new TextFieldAndFileChooserComponent(myUiFacade, myi18n.getValue(myi18n.myOptionKeyPrefix + option.getID() + ".dialogTitle")) {
+      @Override
+      protected void onFileChosen(File file) {
+        option.setValue(file.getAbsolutePath());
+      }
+    };
+    result.setFile(new File(option.getValue()));
+    option.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        result.setFile(new File(String.valueOf(event.getNewValue())));
+      }
+    });
+    return result;
   }
 
   private Component createStringComponent(final StringOption option) {

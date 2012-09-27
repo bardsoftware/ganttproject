@@ -83,6 +83,7 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultFileOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -100,7 +101,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final GPOptionGroup myOptions;
   private final LafOption myLafOption;
   private final GPOptionGroup myLogoOptions;
-  private final DefaultStringOption myLogoOption;
+  private final DefaultFileOption myLogoOption;
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
@@ -168,7 +169,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(languageOption), "language");
     myOptions.setTitled(false);
 
-    myLogoOption = new DefaultStringOption("ui.logo");
+    myLogoOption = new DefaultFileOption("ui.logo");
     myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
   }
