@@ -268,13 +268,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     beforeClose();
     project.close();
 
-    if (document.getFileName().toLowerCase().endsWith(".xml") == false
-        && document.getFileName().toLowerCase().endsWith(".gan") == false) {
-      // Unknown file extension
-      String errorMessage = GanttLanguage.getInstance().getText("msg2") + "\n" + document.getFileName();
-      throw new DocumentException(errorMessage);
-    }
-
     project.open(document);
     if (document.getPortfolio() != null) {
       Document defaultDocument = document.getPortfolio().getDefaultDocument();
