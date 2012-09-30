@@ -18,9 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.Calendar;
-
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.GanttCalendar;
 
 
@@ -53,18 +50,6 @@ public class GanttPreviousStateTask {
 
   public GanttCalendar getStart() {
     return myStart;
-  }
-
-  public GanttCalendar getEnd(GPCalendar calendar) {
-    int duration = myDuration;
-    GanttCalendar end = myStart.newAdd(Calendar.DATE, myDuration);
-    for (int i = 0; i < duration; i++) {
-      if (calendar.isNonWorkingDay(myStart.newAdd(Calendar.DATE, i).getTime())) {
-        end.add(Calendar.DATE, 1);
-        duration++;
-      }
-    }
-    return end;
   }
 
   public int getDuration() {

@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public abstract class CalendarFactory {
-  protected static interface LocaleApi {
+  public static interface LocaleApi {
     Locale getLocale();
     DateFormat getShortDateFormat();
   }

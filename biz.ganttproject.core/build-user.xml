@@ -46,6 +46,10 @@
 <target name="jar" depends="init-install,build">
    <jar destfile="${plugin.install.dir}/${plugin.jar.name}" basedir="bin" compress="yes"/>
 </target>
+<target name="jar-proto" depends="init-install,build">
+   <jar destfile="${plugin.install.dir}/${proto.jar.name}" basedir="bin" compress="yes" includes="biz/ganttproject/core/proto/**"/>
+</target>
+
 
 <target name="copy-libs">
    <copy todir="${plugin.install.dir}">
