@@ -1,0 +1,1 @@
+include ':..:ganttproject','..:biz.ganttproject.core','..:biz.ganttproject.impex.msproject2','..:org.ganttproject.impex.htmlpdf','..:org.ganttproject.chart.pert'
