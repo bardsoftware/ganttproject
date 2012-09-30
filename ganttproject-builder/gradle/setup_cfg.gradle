@@ -1,0 +1,5 @@
+cfg = new Expando()
+if (hasProperty("installDir")) {
+  cfg.installDir = installDir
+}
+cfg.files = [file("build.properties"), file("build-user.properties")]
