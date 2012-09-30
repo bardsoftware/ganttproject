@@ -30,10 +30,12 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 
 public class OptionPageProviderPanel {
-  private OptionPageProvider myProvider;
-  private GPOptionGroup[] myGroups;
+  private final OptionPageProvider myProvider;
+  private final GPOptionGroup[] myGroups;
+  private final UIFacade myUiFacade;
 
   public OptionPageProviderPanel(OptionPageProvider provider, IGanttProject project, UIFacade uiFacade) {
+    myUiFacade = uiFacade;
     myProvider = provider;
     provider.init(project, uiFacade);
     myGroups = myProvider.getOptionGroups();
@@ -45,6 +47,7 @@ public class OptionPageProviderPanel {
       providerComponent = (JComponent) myProvider.buildPageComponent();
     } else {
       OptionsPageBuilder builder = new OptionsPageBuilder();
+      builder.setUiFacade(myUiFacade);
       providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
     }
     providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));

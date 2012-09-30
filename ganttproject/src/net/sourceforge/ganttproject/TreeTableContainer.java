@@ -40,18 +40,19 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-
-import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import biz.ganttproject.core.table.ColumnList;
 
 /**
  *
@@ -87,6 +88,33 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     }
   }
 
+  private class ExpandAllAction extends GPAction {
+    ExpandAllAction() {
+      super("tree.expandAll");
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
+      if (currentSelection != null) {
+        expandAll(currentSelection);
+      }
+    }
+  }
+
+  private class CollapseAllAction extends GPAction {
+    CollapseAllAction() {
+      super("tree.collapseAll");
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
+      if (currentSelection != null) {
+        collapseAll(currentSelection);
+      }
+    }
+  }
   public TreeTableContainer(Pair<TreeTableClass, TreeTableModelClass> tableAndModel) {
     super(new BorderLayout());
     myTreeTableModel = tableAndModel.second();
@@ -95,10 +123,14 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     getTreeTable().setBackground(new Color(1.0f, 1.0f, 1.0f));
 
     myTreeTable.getTree().getTreeTableModel().addTreeModelListener(new ChartUpdater());
-    ExpandCollapseAction expandAction = new ExpandCollapseAction();
-    for (KeyStroke ks : GPAction.getAllKeyStrokes(expandAction.getID())) {
-      UIUtil.pushAction(myTreeTable, false, ks, expandAction);
+    GPAction[] nodeActions = new GPAction[] {new ExpandCollapseAction(), new ExpandAllAction(), new CollapseAllAction()};
+    for (GPAction nodeAction : nodeActions) {
+      for (KeyStroke ks : GPAction.getAllKeyStrokes(nodeAction.getID())) {
+        UIUtil.pushAction(myTreeTable, false, ks, nodeAction);
+      }
     }
+    ExpandAllAction expandAll = new ExpandAllAction();
+
     this.addFocusListener(new FocusAdapter() {
       @Override
       public void focusGained(FocusEvent e) {
@@ -141,6 +173,22 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         onSelectionChanged(Arrays.asList(getSelectedNodes()));
       }
     });
+  }
+
+  public void expandAll(TreePath root) {
+    getTree().expandPath(root);
+    TreeTableNode node = (TreeTableNode) root.getLastPathComponent();
+    for (int i = 0; i < node.getChildCount(); i++) {
+      expandAll(root.pathByAddingChild(node.getChildAt(i)));
+    }
+  }
+
+  private void collapseAll(TreePath root) {
+    TreeTableNode node = (TreeTableNode) root.getLastPathComponent();
+    for (int i = 0; i < node.getChildCount(); i++) {
+      collapseAll(root.pathByAddingChild(node.getChildAt(i)));
+    }
+    getTree().collapsePath(root);
   }
 
   protected abstract void init();

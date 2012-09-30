@@ -158,11 +158,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public GPOptionGroup[] getOptionGroups() {
-    return ObjectArrays.concat(super.getOptionGroups(), getBaselineColorOptions());
-  }
-
-  @Override
   public GPOptionGroup getBaselineColorOptions() {
     return myStateDiffOptions;
   }

@@ -33,6 +33,7 @@ import org.w3c.util.InvalidDateException;
  */
 public class GanttCalendar extends java.util.GregorianCalendar {
   private final LocaleApi myLocaleApi;
+  private GanttCalendar myShiftedValue;
 
   GanttCalendar(CalendarFactory.LocaleApi localeApi) {
     super();
@@ -109,19 +110,6 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     return this.get(Calendar.DAY_OF_MONTH);
   }
 
-  /**
-   * @deprecated (TODO: add what to use/do instead)
-   *
-   *             Create of copy of the current date and add the specified
-   *             (signed) amount of time
-   */
-  @Deprecated
-  public GanttCalendar newAdd(int field, int dayNumber) {
-    GanttCalendar gc = clone();
-    gc.add(field, dayNumber);
-    return gc;
-  }
-
   /** @return the sign represented by an integer */
   private int module(int number) {
     if (number > 0) {
@@ -173,6 +161,9 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   };
 
   public GanttCalendar getDisplayValue() {
-    return CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime()));
+    if (myShiftedValue == null) {
+      myShiftedValue = CalendarFactory.createGanttCalendar(GPTimeUnitStack.DAY.jumpLeft(getTime())); 
+    }
+    return myShiftedValue;
   }
 }

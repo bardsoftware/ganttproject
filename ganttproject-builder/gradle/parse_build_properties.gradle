@@ -1,0 +1,16 @@
+props = new Properties() 
+for (file in files) {
+  file.withReader { reader -> 
+    props.load(reader)
+  }
+}
+for (k in props.keySet()) {
+  if (k.startsWith("output.") && k.endsWith(".jar")) {
+    archiveName = k.substring("output.".length())
+  }
+}
+installRoot = (installDir ?: (props["install.dir"] ?: "dist")) 
+installDir = installRoot + "/plugins/" + props["plugin.name"]
+outputFiles = props["bin.includes"].split(",") as Set
+projectClasspath = (props["jars.extra.classpath"] ? props["jars.extra.classpath"].split(",") : []) as Set
+

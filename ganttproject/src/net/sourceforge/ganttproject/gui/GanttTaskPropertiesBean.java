@@ -463,9 +463,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
     myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
-    setStart(originalStartDate.clone());
-    setEnd(originalEndDate.clone());
-
     if (originalThirdDate != null) {
       setThird(originalThirdDate.clone(), true);
     }
@@ -476,7 +473,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     } else if (projectTaskCheckBox1 != null) {
       projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
-    myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
+    myTaskScheduleDates.setMilestone(isMilestone());
 
     tfWebLink.setText(originalWebLink);
 
@@ -538,14 +535,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private GanttCalendar getEnd() {
     return myTaskScheduleDates.getEnd();
-  }
-
-  private void setEnd(GanttCalendar endDate) {
-    myTaskScheduleDates.setEnd(endDate, false);
-  }
-
-  private void setStart(GanttCalendar startDate) {
-    myTaskScheduleDates.setStart(startDate, true);
   }
 
   private int getLength() {
@@ -632,7 +621,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-          myTaskScheduleDates.enableMilestoneUnfriendlyControls(!isMilestone());
+          myTaskScheduleDates.setMilestone(isMilestone());
         }
       });
       result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);
