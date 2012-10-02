@@ -19,8 +19,13 @@
     </path>
     <path id="deps.classpath">
         <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
-        <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/eclipsito.jar"/>
-        <pathelement location="${net.sourceforge.ganttproject.src.dir}/lib/core/swingx-1.6.3.jar"/>
+        <fileset dir="${net.sourceforge.ganttproject.src.dir}">
+          <include name="lib/core/*.jar"/>
+        </fileset>
+        <pathelement location="${biz.ganttproject.core.src.dir}/bin"/>
+        <fileset dir="${biz.ganttproject.core.src.dir}">
+          <include name="lib/*.jar"/>
+        </fileset>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
