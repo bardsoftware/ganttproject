@@ -322,7 +322,9 @@ public class OptionsPageBuilder {
         option.setValue(file.getAbsolutePath());
       }
     };
-    result.setFile(new File(option.getValue()));
+    if (option.getValue() != null) {
+      result.setFile(new File(option.getValue()));
+    }
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
