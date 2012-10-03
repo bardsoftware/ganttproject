@@ -394,12 +394,20 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myChartModel.getChartUIConfiguration();
   }
 
+  private Integer myCachedHeaderHeight = null;
   public int getHeaderHeight(JComponent tableContainer, JTable table) {
     JTableHeader tableHeader = table.getTableHeader();
-    Point headerLocation = tableHeader.getLocationOnScreen();
-    Point treeLocation = tableContainer.getLocationOnScreen();
-    return headerLocation.y - treeLocation.y + tableHeader.getHeight() + myUiFacade.getLogo().getHeight(null);
+    if (myCachedHeaderHeight == null) {
+      Point headerLocation = tableHeader.getLocationOnScreen();
+      Point treeLocation = tableContainer.getLocationOnScreen();
 
+      int height = headerLocation.y - treeLocation.y + tableHeader.getHeight() + myUiFacade.getLogo().getHeight(null);
+      if (tableHeader.getHeight() == 0) {
+        return height;
+      }
+      myCachedHeaderHeight = height;
+    }
+    return myCachedHeaderHeight;
   }
 
   protected static class ChartSelectionImpl implements ChartSelection {
