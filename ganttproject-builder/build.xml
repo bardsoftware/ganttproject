@@ -99,17 +99,20 @@
 		copy-launchers">
 	</target>
 
-	<target name="dist-bin" depends="build">
+	<target name="make-package-name">
+    <exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
+    </exec>
+    
+    <input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
+      addproperty="package.name.suffix"
+        defaultvalue="2.6-rc1-r${hg.tip.rev}"/>
+    <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
+	</target>
+	
+	<target name="dist-bin" depends="build, make-package-name">
 		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
     <chmod perm="ugo+rx" file="${install.dir}/ganttproject.command"></chmod>
 		
-		<exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
-		</exec>
-		
-		<input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
-			addproperty="package.name.suffix"
-		    defaultvalue="2.6-rc1-r${hg.tip.rev}"/>
-		<property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
 		<move file="${install.dir}" tofile="${package.dir}"></move>
 		<zip destfile="${package.dir}.zip" basedir="." includes="/**">
 			<zipfileset dir="${package.dir}" excludes="ganttproject" prefix="${package.dir}">
@@ -288,5 +291,20 @@
 			<arg value="ganttproject.nsi"/>
 	  </exec>
 		<copy todir="." file="${package.dir}/${package.dir}.exe"/>
+	</target>
+	
+	<target name="dist-deb" description="Builds DEB package" depends="make-package-name">
+    <ant antfile="build-deb.xml" inheritall="false">
+      <property name="package-version" value="${package.name.suffix}"></property>
+    </ant>
+    <copy todir="." file="${deb.dir}/${package.name.prefix}_${package.name.suffix}-1_all.deb"></copy>
+	</target>
+	
+	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">
+    <echo>
+=======================================================
+  All packages build completed
+=======================================================
+    </echo>		
 	</target>
 </project>

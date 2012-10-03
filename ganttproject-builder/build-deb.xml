@@ -66,7 +66,7 @@
           public target: release-dist
          ================================= -->
   <target name="release-dist" depends="dist" description="Release all distribution files">
-    <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="728-beta2" />
+    <input addproperty="dist.version.number" message="Please enter a version number for your distribution" defaultvalue="${package-version}" />
     <mkdir dir="dist-deb/single-package"/>
     <antcall target="createdeb-full" />
     <antcall target="createdeb-minimal" />
