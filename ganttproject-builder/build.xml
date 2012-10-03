@@ -2,6 +2,12 @@
 	<property file="build.public.properties"/>
 	<property file="build.private.properties"/>
 
+  <target name="build_biz.ganttproject.core">
+    <ant antfile="../biz.ganttproject.core/build.xml" target="install" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+      <property name="debug" value="${debug}"></property>
+    </ant>
+  </target>
 	<target name="build_net.sourceforge.ganttproject">
 		<ant antfile="../ganttproject/build.xml" target="install" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
@@ -27,6 +33,11 @@
 		</ant>
 	</target>
 
+	<target name="clean_biz.ganttproject.core">
+    	<ant antfile="../biz.ganttproject.core/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
 	<target name="clean_net.sourceforge.ganttproject">
 		<ant antfile="../ganttproject/build.xml" target="clean" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
@@ -51,7 +62,7 @@
 	<target name="welcome-message">
 		<echo>
 =======================================================
-	Compiling GanttProject 2.0
+	Compiling GanttProject 2.6
 =======================================================
 		</echo>
 	</target>
@@ -67,6 +78,7 @@
 				<include name="README-install.txt"/>
 				<include name="LICENSE"/>
 				<include name="ganttproject.bat"/>
+				<include name="ganttproject.command"/>
 				<include name="ganttproject.exe"/>
 				<include name="ganttproject_16.ico"/>
 				<include name="ganttproject_32_2.ico"/>
@@ -79,6 +91,7 @@
 		</jar>
 	</target>
 	<target name="build" depends="welcome-message,
+		build_biz.ganttproject.core,
 		build_net.sourceforge.ganttproject,
 		build_org.ganttproject.impex.htmlpdf,
 		build_biz.ganttproject.impex.msproject2,
@@ -89,9 +102,13 @@
 	<target name="dist-bin" depends="build">
 		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
     <chmod perm="ugo+rx" file="${install.dir}/ganttproject.command"></chmod>
+		
+		<exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
+		</exec>
+		
 		<input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
 			addproperty="package.name.suffix"
-		    defaultvalue="2.5"/>
+		    defaultvalue="2.6-rc1-r${hg.tip.rev}"/>
 		<property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
 		<move file="${install.dir}" tofile="${package.dir}"></move>
 		<zip destfile="${package.dir}.zip" basedir="." includes="/**">
@@ -255,7 +272,8 @@
 		<delete dir="${webstart.dir}/configuration"/>
 	</target>
 	
-	<target name="clean" description="Removes all intermediate building files" depends="clean_net.sourceforge.ganttproject,
+	<target name="clean" description="Removes all intermediate building files" depends="clean_biz.ganttproject.core,
+		clean_net.sourceforge.ganttproject,
 		clean_org.ganttproject.impex.htmlpdf,
 		clean_biz.ganttproject.impex.msproject2,
 		clean_org.ganttproject.chart.pert">
