@@ -55,6 +55,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -290,7 +291,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     if (value == null) {
       return;
     }
-    if (isCellEditable(node, column)) {
+    if (isCellEditable(node, column) && !Objects.equal(value, getValueAt(node, column))) {
       // System.out.println("undoable column: " + column);
       myUiFacade.getUndoManager().undoableEdit("Change properties column", new Runnable() {
         @Override
