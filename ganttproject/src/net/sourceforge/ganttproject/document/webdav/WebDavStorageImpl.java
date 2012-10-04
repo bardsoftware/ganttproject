@@ -242,19 +242,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   public Components save(Document currentDocument, final DocumentReceiver receiver) {
     final GanttURLChooser chooser = createChooser(currentDocument);
     OkAction saveAction = createNoLockAction("storage.action.save", chooser, receiver);
-    //final OkAction saveAndLockAction = createLockAction("storage.action.saveAndLock", chooser, receiver);
-//    chooser.setSelectionListener(new GanttURLChooser.SelectionListener() {
-//      @Override
-//      public void setSelection(WebDavResource resource) {
-//        try {
-//          saveAndLockAction.setEnabled(resource.canLock());
-//        } catch (WebDavException e) {
-//          chooser.showError(e);
-//        }
-//      }
-//    });
     JComponent contentPane = chooser.createSaveDocumentUi(saveAction);
-    return new Components(contentPane, new Action[] {saveAction, /*saveAndLockAction,*/ new CancelAction() {
+    return new Components(contentPane, new Action[] {saveAction, new CancelAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
         receiver.setDocument(null);
