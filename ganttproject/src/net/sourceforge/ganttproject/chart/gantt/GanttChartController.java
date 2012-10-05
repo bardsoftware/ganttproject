@@ -70,9 +70,7 @@ import org.eclipse.core.runtime.Status;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Shape;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
   private final TaskManager myTaskManager;
@@ -237,13 +235,12 @@ public class GanttChartController extends AbstractChartImplementation implements
   @Override
   public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
     final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
-    List<Task> visibleTasks = ImmutableList.copyOf(Collections2.filter(
-        ImmutableList.copyOf(getTaskManager().getTasks()), new Predicate<Task>() {
-          @Override
-          public boolean apply(Task input) {
-            return taskTree.isVisible(input);
-          }
-        }));
+    List<Task> visibleTasks = Lists.newArrayList();
+    for (Task t : getTaskManager().getTaskHierarchy().getDeepNestedTasks(getTaskManager().getRootTask())) {
+      if (taskTree.isVisible(t)) {
+        visibleTasks.add(t);
+      }
+    }
     settings.setVisibleTasks(visibleTasks);
     super.buildImage(settings, imageVisitor);
   }
