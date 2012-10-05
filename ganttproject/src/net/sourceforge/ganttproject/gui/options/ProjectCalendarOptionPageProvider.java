@@ -52,7 +52,7 @@ import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 
 /**
  * Provides project calendar settings page in the settings dialog.
- * 
+ *
  * @author Dmitry Barashev
  */
 public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
@@ -84,7 +84,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     final GanttLanguage i18n = GanttLanguage.getInstance();
     Box result = Box.createVerticalBox();
 
-    myWeekendsPanel = new WeekendsSettingsPanel(getProject());
+    myWeekendsPanel = new WeekendsSettingsPanel(getProject(), getUiFacade());
     myWeekendsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
     myWeekendsPanel.initialize();
     result.add(myWeekendsPanel);

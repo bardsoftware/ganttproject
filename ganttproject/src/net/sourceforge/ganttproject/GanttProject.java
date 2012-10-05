@@ -181,12 +181,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
     Mediator.registerTaskSelectionManager(getTaskSelectionManager());
-    /*
-     * [bbaranne] I add a Mediator object so that we can get the GanttProject
-     * singleton where ever we are in the source code. Perhaps some of you don't
-     * like this, but I believe that it is practical...
-     */
-    Mediator.registerGanttProject(this);
 
     this.isOnlyViewer = isOnlyViewer;
     if (!isOnlyViewer) {
