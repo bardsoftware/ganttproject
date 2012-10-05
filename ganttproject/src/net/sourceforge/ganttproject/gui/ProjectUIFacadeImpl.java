@@ -56,11 +56,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
+
+import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -289,6 +292,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       switch (option) {
       case UNKNOWN:
         SwingUtilities.invokeLater(new Runnable() {
+          @Override
           public void run() {
             tryPatchMilestones(project, taskManager);
           }
@@ -304,6 +308,12 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       }
     }
 
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        adjustTasks(taskManager);
+      }
+    });
     if (resetModified) {
       SwingUtilities.invokeLater(new Runnable() {
         @Override
@@ -312,6 +322,21 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         }
       });
     }
+  }
+
+  private void adjustTasks(TaskManager taskManager) {
+    try {
+      taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+    } catch (TaskDependencyException e) {
+      GPLogger.logToLogger(e);
+    }
+    List<Task> leafTasks = Lists.newArrayList();
+    for (Task t : taskManager.getTasks()) {
+      if (taskManager.getTaskHierarchy().getNestedTasks(t).length == 0) {
+        leafTasks.add(t);
+      }
+    }
+    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
   }
 
   private void tryPatchMilestones(final IGanttProject project, final TaskManager taskManager) {
@@ -347,6 +372,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         if (remember.isSelected()) {
           myConvertMilestonesOption.setSelectedValue(buttonConvert.isSelected() ? ConvertMilestones.TRUE : ConvertMilestones.FALSE);
         }
+        adjustTasks(taskManager);
         project.setModified(true);
       }
     }}, i18n.getText("legacyMilestones.title")).show();
