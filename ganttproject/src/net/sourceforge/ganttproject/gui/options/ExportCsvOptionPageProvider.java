@@ -49,7 +49,7 @@ public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
   @Override
   public Component buildPageComponent() {
-    myCsvSettings = new CSVSettingsPanel(((GanttProject) getProject()).getGanttOptions().getCSVOptions());
+    myCsvSettings = new CSVSettingsPanel(getUiFacade(), ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
     myCsvSettings.initialize();
     return OptionPageProviderBase.wrapContentComponent(myCsvSettings, getCanonicalPageTitle(), null);
   }

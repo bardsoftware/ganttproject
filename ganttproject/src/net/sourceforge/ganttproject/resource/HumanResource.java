@@ -118,6 +118,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void setName(String name) {
     this.name = name;
+    fireResourceChanged();
   }
 
   public String getName() {
@@ -126,6 +127,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void setDescription(String description) {
     this.description = description;
+    fireResourceChanged();
   }
 
   public String getDescription() {
@@ -184,6 +186,7 @@ public class HumanResource implements CustomPropertyHolder {
   public void setCustomField(CustomPropertyDefinition def, Object value) {
     try {
       myCustomProperties.setValue(def, value);
+      fireResourceChanged();
     } catch (CustomColumnsException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

@@ -24,7 +24,6 @@ import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JPanel;
 
-import net.sourceforge.ganttproject.Mediator;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -34,14 +33,17 @@ public abstract class GeneralOptionPanel extends JPanel {
   protected static final GanttLanguage language = GanttLanguage.getInstance();
 
   /** General vertical box. */
-  protected Box vb = Box.createVerticalBox();
+  protected final Box vb = Box.createVerticalBox();
 
-  private String myTitle;
+  private final String myTitle;
 
-  private String myComment;
+  private final String myComment;
 
-  public GeneralOptionPanel(String title, String comment) {
+  private final UIFacade myUiFacade;
+
+  public GeneralOptionPanel(UIFacade uiFacade, String title, String comment) {
     super();
+    myUiFacade = uiFacade;
     setLayout(new BorderLayout());
     add(vb, BorderLayout.CENTER);
     myTitle = title;
@@ -55,7 +57,7 @@ public abstract class GeneralOptionPanel extends JPanel {
   /**
    * This method checks if options panel has value that got changed changed. And
    * ask the user to commit changes if askForApply is true.
-   * 
+   *
    * @returns true when there were changes which needed to be committed
    */
   public abstract boolean applyChanges(boolean askForApply);
@@ -78,7 +80,7 @@ public abstract class GeneralOptionPanel extends JPanel {
   }
 
   private UIFacade getUIFacade() {
-    return Mediator.getGanttProjectSingleton().getUIFacade();
+    return myUiFacade;
   }
 
   public void rollback() {

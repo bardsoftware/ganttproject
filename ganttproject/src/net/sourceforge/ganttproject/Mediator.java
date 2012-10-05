@@ -28,33 +28,12 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
  * @author bbaranne Mar 2, 2005
  */
 public class Mediator {
-  /**
-   * The unique GanttProject instance.
-   */
-  private static GanttProject ganttprojectSingleton = null;
-
   private static TaskSelectionManager taskSelectionManager = null;
 
   private static final PluginManager pluginManager = new PluginManager();
 
-  /**
-   * Registers the unique GanttProject instance.
-   *
-   * @param gp
-   *          The unique GanttProject instance.
-   */
-  public static void registerGanttProject(GanttProject gp) {
-    ganttprojectSingleton = gp;
-  }
-
   public static void registerTaskSelectionManager(TaskSelectionManager taskSelection) {
     taskSelectionManager = taskSelection;
-  }
-
-  /** @return The unique GanttProject instance. */
-  @Deprecated
-  public static GanttProject getGanttProjectSingleton() {
-    return ganttprojectSingleton;
   }
 
   @Deprecated

@@ -185,7 +185,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   /**
    * Changes the language.
-   * 
+   *
    * @param ganttLanguage
    *          New language to use.
    */
@@ -387,41 +387,8 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
         ((ResourceNode) node).setCustomField(getCustomProperty(column), value);
         break;
       }
-    Mediator.getGanttProjectSingleton().setAskForSave(true);
   }
 
-  // /** Adds a column that cannot be removed afterwards. */
-  // public void addMandatoryColumn(ResourceColumn col) {
-  // columns.put(new Integer(col.getIndex()), col);
-  // }
-  //
-  // /** Adds a custom column (which is removable) to the datamodel */
-  // public void addCustomColumn(String title, ResourceColumn col) throws
-  // Exception{
-  // if (myResourceManager.checkCustomField(title)) {
-  // throw new Exception(language.getText("columnExists"));
-  // }
-  // myResourceManager.addCustomField(col);
-  // columns.put(new Integer(index), col);
-  // }
-  //
-  // /** deletes a custom column from the datamodel */
-  // public ResourceColumn deleteCustomColumn(String name){
-  // ResourceColumn toDel = null;
-  // Collection<ResourceColumn> vals = columns.values();
-  // Iterator<ResourceColumn> i = vals.iterator();
-  //
-  // while (i.hasNext()) {
-  // toDel = i.next();
-  // if (name.equals( toDel.getTitle() )) {
-  // myResourceManager.removeCustomField(toDel.getTitle());
-  // /* this deletes the object from the HashTable too */
-  // vals.remove(toDel);
-  // return toDel;
-  // }
-  // }
-  // return null;
-  // }
 
   public void resourceChanged(HumanResource resource) {
     ResourceNode node = getNodeForResource(resource);
