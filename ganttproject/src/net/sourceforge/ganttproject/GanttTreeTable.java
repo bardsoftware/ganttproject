@@ -30,7 +30,6 @@ import javax.swing.tree.TreePath;
 import biz.ganttproject.core.table.ColumnList.Column;
 
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.TaskNode;
 
@@ -86,13 +85,6 @@ public class GanttTreeTable extends GPTreeTableBase {
     Rectangle rect = getTable().getCellRect(row, col, true);
     getHorizontalScrollBar().scrollRectToVisible(rect);
     getScrollPane().getViewport().scrollRectToVisible(rect);
-  }
-
-  void setDelay(TaskNode taskNode, Delay delay) {
-    try {
-      ttModel.setValueAt(delay, taskNode, TaskDefaultColumn.INFO.ordinal());
-    } catch (IllegalArgumentException e) {
-    }
   }
 
   /**

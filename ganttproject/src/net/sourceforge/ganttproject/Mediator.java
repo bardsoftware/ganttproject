@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
@@ -36,8 +35,6 @@ public class Mediator {
 
   private static TaskSelectionManager taskSelectionManager = null;
 
-  private static DelayManager delayManager = null;
-
   private static final PluginManager pluginManager = new PluginManager();
 
   /**
@@ -54,10 +51,6 @@ public class Mediator {
     taskSelectionManager = taskSelection;
   }
 
-  public static void registerDelayManager(DelayManager delayMgr) {
-    delayManager = delayMgr;
-  }
-
   /** @return The unique GanttProject instance. */
   @Deprecated
   public static GanttProject getGanttProjectSingleton() {
@@ -67,11 +60,6 @@ public class Mediator {
   @Deprecated
   public static TaskSelectionManager getTaskSelectionManager() {
     return taskSelectionManager;
-  }
-
-  @Deprecated
-  public static DelayManager getDelayManager() {
-    return delayManager;
   }
 
   public static PluginManager getPluginManager() {
