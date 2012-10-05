@@ -31,14 +31,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 
-import net.sourceforge.ganttproject.delay.Delay;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -217,17 +215,11 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = new ImageIcon(getClass().getResource(task.getPriority().getIconPath()));
         break;
       case INFO:
-        TaskInfo info = t.getTaskInfo();
-        if (info != null) {
-          if (info instanceof Delay) {
-            int type = ((Delay) info).getType();
-            if (type == Delay.NORMAL) {
+        // TODO(dbarashev): implement alerts some other way
+        /**
               res = new ImageIcon(getClass().getResource("/icons/alert1_16.gif"));
-            } else if (type == Delay.CRITICAL) {
               res = new ImageIcon(getClass().getResource("/icons/alert2_16.gif"));
-            }
-          }
-        }
+              */
         break;
       case NAME:
         res = tn.getName();

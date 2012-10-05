@@ -73,7 +73,6 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.delay.DelayManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
@@ -169,8 +168,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
   private MouseListener myStopEditingMouseListener = null;
-
-  private DelayManager myDelayManager;
 
   private GanttChartTabContentPanel myGanttChartTabContent;
 
@@ -370,9 +367,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       addWindowListener(ourWindowListener);
     }
     addMouseListenerToAllContainer(this.getComponents());
-    myDelayManager = new DelayManager(myTaskManager, getUndoManager(), tree);
-    Mediator.registerDelayManager(myDelayManager);
-    myDelayManager.addObserver(tree);
 
     // Add globally available actions/key strokes
     GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
@@ -1107,9 +1101,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void repaint2() {
     getResourcePanel().getResourceTreeTableModel().updateResources();
     getResourcePanel().getResourceTreeTable().setRowHeight(20);
-    if (myDelayManager != null) {
-      myDelayManager.fireDelayObservation();
-    }
     super.repaint();
   }
 
@@ -1137,9 +1128,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getTaskManager().processCriticalPath(getTaskManager().getRootTask());
     getResourcePanel().getResourceTreeTableModel().updateResources();
     getResourcePanel().getResourceTreeTable().setRowHeight(20);
-    if (myDelayManager != null) {
-      myDelayManager.fireDelayObservation();
-    }
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
     }
