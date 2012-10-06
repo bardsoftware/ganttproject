@@ -18,10 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 
+import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.chart.DependencyInteractionRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -49,6 +51,8 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements M
 
   private final ChartModelFacade myChartModelFacade;
 
+  private final Component myComponent;
+
   public static interface ChartModelFacade {
     Task findTaskUnderMousePointer(int xpos, int ypos);
 
@@ -65,6 +69,8 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements M
     myStartPoint = initiatingEvent.getPoint();
     myTask = taskArea.getTask();
     myArrow = new DependencyInteractionRenderer(myStartPoint.x, myStartPoint.y, myStartPoint.x, myStartPoint.y);
+    myComponent = initiatingEvent.getComponent();
+    myComponent.setCursor(ChartComponentBase.HAND_CURSOR);
   }
 
   @Override
@@ -75,6 +81,7 @@ public class DrawDependencyInteraction extends MouseInteractionBase implements M
 
   @Override
   public void finish() {
+    myComponent.setCursor(ChartComponentBase.DEFAULT_CURSOR);
     if (myLastMouseEvent != null) {
       myDependant = myChartModelFacade.findTaskUnderMousePointer(myLastMouseEvent.getX(), myLastMouseEvent.getY());
       final Task dependee = myTask;

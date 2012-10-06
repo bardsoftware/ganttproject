@@ -64,10 +64,11 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
       myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
     }
     else if (itemUnderPoint instanceof TaskNotesChartItem) {
+      myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);
       myChartController.showTooltip(e.getX(), e.getY(), taskUnderPoint.getNotes());
     }
     else {
-      myChartComponent.setDefaultCursor();
+      myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);
     }
 
   }
