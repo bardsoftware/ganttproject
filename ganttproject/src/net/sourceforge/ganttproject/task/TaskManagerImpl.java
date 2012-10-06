@@ -272,7 +272,9 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public void deleteTask(Task tasktoRemove) {
+    Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
+    fireTaskRemoved(container, tasktoRemove);
   }
 
   @Override
@@ -660,6 +662,14 @@ public class TaskManagerImpl implements TaskManager {
     }
   }
 
+  private void fireTaskRemoved(Task container, Task task) {
+    if (areEventsEnabled) {
+      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, container, null);
+      for (TaskListener l : myListeners) {
+        l.taskRemoved(e);
+      }
+    }
+  }
   void fireTaskPropertiesChanged(Task task) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(task);

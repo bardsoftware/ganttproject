@@ -21,11 +21,16 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.HeadlessException;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.RenderedImage;
+import java.io.IOException;
 import java.util.Date;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.JPanel;
 
@@ -55,8 +60,30 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
-  private static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+  public static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+  public static final Cursor DEFAULT_CURSOR;
+  public static final Cursor CURSOR_DRAG;
 
+  static {
+    Cursor drag = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+    Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+    try {
+       drag = Toolkit.getDefaultToolkit().createCustomCursor(
+           ImageIO.read(ChartComponentBase.class.getResource("/icons/16x16/chart-drag.png")),
+           new Point(16, 16), ChartComponentBase.class.getSimpleName() + "-drag");
+       hand = Toolkit.getDefaultToolkit().createCustomCursor(
+           ImageIO.read(ChartComponentBase.class.getResource("/icons/16x16/chart-hand.png")),
+           new Point(16, 16), ChartComponentBase.class.getSimpleName() + "-hand");
+    } catch (HeadlessException e) {
+      GPLogger.logToLogger(e);
+    } catch (IndexOutOfBoundsException e) {
+      GPLogger.logToLogger(e);
+    } catch (IOException e) {
+      GPLogger.logToLogger(e);
+    }
+    CURSOR_DRAG = drag;
+    DEFAULT_CURSOR = hand;
+  }
   private final IGanttProject myProject;
 
   private final ZoomManager myZoomManager;

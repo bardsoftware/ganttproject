@@ -97,8 +97,6 @@ class GanttURLChooser {
 
   private final StringOption myPath;
 
-  private final BooleanOption myLock;
-
   private final IntegerOption myTimeout;
 
   private SelectionListener mySelectionListener;
@@ -230,7 +228,6 @@ class GanttURLChooser {
     myUsername = username;
     myPassword = new DefaultStringOption("password", password);
     myPassword.setScreened(true);
-    myLock = new DefaultBooleanOption("lock", true);
     myTimeout = lockTimeoutOption;
     myReleaseLockOption = releaseLockOption;
     myInitialUri = currentUri;

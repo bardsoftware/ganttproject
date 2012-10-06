@@ -8,7 +8,7 @@ Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
 !define VERSION "2.6"
-!define VERSION_BUILD "2.6-beta3-r1273"
+!define VERSION_BUILD "2.6-rc1-r1392"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -71,6 +71,7 @@ Section "GanttProject"
   
   StrCpy $OUTDIR "$INSTDIR\plugins"
   File /r plugins\net.sourceforge.ganttproject
+  File /r plugins\biz.ganttproject.core
   SetOutPath $INSTDIR
 
   ; Write the installation path into the registry

@@ -9,9 +9,19 @@
 </filterchain>
 </loadproperties>
 
-    <path id="project.classpath">
+    <path id="mainproject.classpath">
         <pathelement location="bin"/>
         <pathelement path="${jars.extra.classpath}"/>
+    </path>
+    <path id="deps.classpath">
+        <pathelement location="${biz.ganttproject.core.src.dir}/bin"/>
+        <fileset dir="${biz.ganttproject.core.src.dir}">
+          <include name="lib/*.jar"/>
+        </fileset>
+    </path>
+    <path id="project.classpath">
+        <path refid="mainproject.classpath"/>
+        <path refid="deps.classpath"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
