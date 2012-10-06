@@ -66,7 +66,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
@@ -101,8 +100,6 @@ import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
-import net.sourceforge.ganttproject.delay.Delay;
-import net.sourceforge.ganttproject.delay.DelayObserver;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -122,7 +119,7 @@ import net.sourceforge.ganttproject.util.collect.Pair;
  * Class that generate the JTree
  */
 public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> implements
-    DragSourceListener, DragGestureListener, DelayObserver, TaskTreeUIFacade {
+    DragSourceListener, DragGestureListener, TaskTreeUIFacade {
   private UIFacade myUIFacade;
 
   /** Pointer on graphic area */
@@ -1023,19 +1020,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         cpDependencies.add(dependency);
       }
     }
-  }
-
-  @Override
-  public void setDelay(final Task task, final Delay delay) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        TaskNode taskNode = (TaskNode) getNode(task.getTaskID());
-        if (taskNode != null) {
-          getTreeTable().setDelay(taskNode, delay);
-        }
-      }
-    });
   }
 
   GanttTreeTableModel getModel() {

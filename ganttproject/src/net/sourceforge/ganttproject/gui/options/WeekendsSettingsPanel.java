@@ -22,6 +22,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.I18N;
 import net.sourceforge.ganttproject.gui.projectwizard.WeekendConfigurationPage;
 import net.sourceforge.ganttproject.task.Task;
@@ -41,8 +42,8 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
   private GPCalendar calendar;
 
-  public WeekendsSettingsPanel(IGanttProject project) {
-    super(language.getCorrectedLabel("weekends"), language.getText("settingsWeekends"));
+  public WeekendsSettingsPanel(IGanttProject project, UIFacade uiFacade) {
+    super(uiFacade, language.getCorrectedLabel("weekends"), language.getText("settingsWeekends"));
 
     this.project = project;
     calendar = new WeekendCalendarImpl();

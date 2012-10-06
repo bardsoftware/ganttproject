@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
-import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -73,7 +72,6 @@ public class MouseListenerBase extends MouseAdapter {
     super.mouseReleased(e);
     myChartImplementation.finishInteraction();
     myChartComponent.reset();
-    myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   @Override
@@ -83,7 +81,6 @@ public class MouseListenerBase extends MouseAdapter {
 
   @Override
   public void mouseExited(MouseEvent e) {
-    myChartComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   protected Action[] getPopupMenuActions() {
