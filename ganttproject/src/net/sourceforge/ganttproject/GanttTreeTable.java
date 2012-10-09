@@ -27,6 +27,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreePath;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList.Column;
 
 import net.sourceforge.ganttproject.chart.Chart;

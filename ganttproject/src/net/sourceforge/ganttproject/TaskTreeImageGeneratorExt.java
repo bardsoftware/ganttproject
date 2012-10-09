@@ -33,6 +33,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 
