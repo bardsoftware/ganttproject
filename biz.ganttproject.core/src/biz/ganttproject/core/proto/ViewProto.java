@@ -31,6 +31,16 @@ public final class ViewProto {
     java.util.List<java.lang.Integer> getExpandedNodeList();
     int getExpandedNodeCount();
     int getExpandedNode(int index);
+    
+    // repeated .ganttproject.View.TableColumn table_column = 6;
+    java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn> 
+        getTableColumnList();
+    biz.ganttproject.core.proto.ViewProto.View.TableColumn getTableColumn(int index);
+    int getTableColumnCount();
+    java.util.List<? extends biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder> 
+        getTableColumnOrBuilderList();
+    biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder getTableColumnOrBuilder(
+        int index);
   }
   public static final class View extends
       com.google.protobuf.GeneratedMessage
@@ -693,18 +703,46 @@ public final class ViewProto {
       return expandedNode_.get(index);
     }
     
+    // repeated .ganttproject.View.TableColumn table_column = 6;
+    public static final int TABLE_COLUMN_FIELD_NUMBER = 6;
+    private java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn> tableColumn_;
+    public java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn> getTableColumnList() {
+      return tableColumn_;
+    }
+    public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder> 
+        getTableColumnOrBuilderList() {
+      return tableColumn_;
+    }
+    public int getTableColumnCount() {
+      return tableColumn_.size();
+    }
+    public biz.ganttproject.core.proto.ViewProto.View.TableColumn getTableColumn(int index) {
+      return tableColumn_.get(index);
+    }
+    public biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder getTableColumnOrBuilder(
+        int index) {
+      return tableColumn_.get(index);
+    }
+    
     private void initFields() {
       isActive_ = false;
       viewportStartDate_ = "";
       tableWidth_ = 0;
       zooming_ = "";
       expandedNode_ = java.util.Collections.emptyList();;
+      tableColumn_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
+      for (int i = 0; i < getTableColumnCount(); i++) {
+        if (!getTableColumn(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -726,6 +764,9 @@ public final class ViewProto {
       }
       for (int i = 0; i < expandedNode_.size(); i++) {
         output.writeInt32(5, expandedNode_.get(i));
+      }
+      for (int i = 0; i < tableColumn_.size(); i++) {
+        output.writeMessage(6, tableColumn_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -760,6 +801,10 @@ public final class ViewProto {
         }
         size += dataSize;
         size += 1 * getExpandedNodeList().size();
+      }
+      for (int i = 0; i < tableColumn_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, tableColumn_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -877,6 +922,7 @@ public final class ViewProto {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getTableColumnFieldBuilder();
         }
       }
       private static Builder create() {
@@ -895,6 +941,12 @@ public final class ViewProto {
         bitField0_ = (bitField0_ & ~0x00000008);
         expandedNode_ = java.util.Collections.emptyList();;
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (tableColumnBuilder_ == null) {
+          tableColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+        } else {
+          tableColumnBuilder_.clear();
+        }
         return this;
       }
       
@@ -954,6 +1006,15 @@ public final class ViewProto {
           bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.expandedNode_ = expandedNode_;
+        if (tableColumnBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            tableColumn_ = java.util.Collections.unmodifiableList(tableColumn_);
+            bitField0_ = (bitField0_ & ~0x00000020);
+          }
+          result.tableColumn_ = tableColumn_;
+        } else {
+          result.tableColumn_ = tableColumnBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -992,11 +1053,43 @@ public final class ViewProto {
           }
           onChanged();
         }
+        if (tableColumnBuilder_ == null) {
+          if (!other.tableColumn_.isEmpty()) {
+            if (tableColumn_.isEmpty()) {
+              tableColumn_ = other.tableColumn_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+            } else {
+              ensureTableColumnIsMutable();
+              tableColumn_.addAll(other.tableColumn_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.tableColumn_.isEmpty()) {
+            if (tableColumnBuilder_.isEmpty()) {
+              tableColumnBuilder_.dispose();
+              tableColumnBuilder_ = null;
+              tableColumn_ = other.tableColumn_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+              tableColumnBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getTableColumnFieldBuilder() : null;
+            } else {
+              tableColumnBuilder_.addAllMessages(other.tableColumn_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
       
       public final boolean isInitialized() {
+        for (int i = 0; i < getTableColumnCount(); i++) {
+          if (!getTableColumn(i).isInitialized()) {
+            
+            return false;
+          }
+        }
         return true;
       }
       
@@ -1055,6 +1148,12 @@ public final class ViewProto {
                 addExpandedNode(input.readInt32());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 50: {
+              biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder subBuilder = biz.ganttproject.core.proto.ViewProto.View.TableColumn.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addTableColumn(subBuilder.buildPartial());
               break;
             }
           }
@@ -1220,6 +1319,192 @@ public final class ViewProto {
         bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
+      }
+      
+      // repeated .ganttproject.View.TableColumn table_column = 6;
+      private java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn> tableColumn_ =
+        java.util.Collections.emptyList();
+      private void ensureTableColumnIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          tableColumn_ = new java.util.ArrayList<biz.ganttproject.core.proto.ViewProto.View.TableColumn>(tableColumn_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      
+      private com.google.protobuf.RepeatedFieldBuilder<
+          biz.ganttproject.core.proto.ViewProto.View.TableColumn, biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder, biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder> tableColumnBuilder_;
+      
+      public java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn> getTableColumnList() {
+        if (tableColumnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(tableColumn_);
+        } else {
+          return tableColumnBuilder_.getMessageList();
+        }
+      }
+      public int getTableColumnCount() {
+        if (tableColumnBuilder_ == null) {
+          return tableColumn_.size();
+        } else {
+          return tableColumnBuilder_.getCount();
+        }
+      }
+      public biz.ganttproject.core.proto.ViewProto.View.TableColumn getTableColumn(int index) {
+        if (tableColumnBuilder_ == null) {
+          return tableColumn_.get(index);
+        } else {
+          return tableColumnBuilder_.getMessage(index);
+        }
+      }
+      public Builder setTableColumn(
+          int index, biz.ganttproject.core.proto.ViewProto.View.TableColumn value) {
+        if (tableColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTableColumnIsMutable();
+          tableColumn_.set(index, value);
+          onChanged();
+        } else {
+          tableColumnBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      public Builder setTableColumn(
+          int index, biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder builderForValue) {
+        if (tableColumnBuilder_ == null) {
+          ensureTableColumnIsMutable();
+          tableColumn_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          tableColumnBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addTableColumn(biz.ganttproject.core.proto.ViewProto.View.TableColumn value) {
+        if (tableColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTableColumnIsMutable();
+          tableColumn_.add(value);
+          onChanged();
+        } else {
+          tableColumnBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      public Builder addTableColumn(
+          int index, biz.ganttproject.core.proto.ViewProto.View.TableColumn value) {
+        if (tableColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTableColumnIsMutable();
+          tableColumn_.add(index, value);
+          onChanged();
+        } else {
+          tableColumnBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      public Builder addTableColumn(
+          biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder builderForValue) {
+        if (tableColumnBuilder_ == null) {
+          ensureTableColumnIsMutable();
+          tableColumn_.add(builderForValue.build());
+          onChanged();
+        } else {
+          tableColumnBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addTableColumn(
+          int index, biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder builderForValue) {
+        if (tableColumnBuilder_ == null) {
+          ensureTableColumnIsMutable();
+          tableColumn_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          tableColumnBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAllTableColumn(
+          java.lang.Iterable<? extends biz.ganttproject.core.proto.ViewProto.View.TableColumn> values) {
+        if (tableColumnBuilder_ == null) {
+          ensureTableColumnIsMutable();
+          super.addAll(values, tableColumn_);
+          onChanged();
+        } else {
+          tableColumnBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      public Builder clearTableColumn() {
+        if (tableColumnBuilder_ == null) {
+          tableColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+          onChanged();
+        } else {
+          tableColumnBuilder_.clear();
+        }
+        return this;
+      }
+      public Builder removeTableColumn(int index) {
+        if (tableColumnBuilder_ == null) {
+          ensureTableColumnIsMutable();
+          tableColumn_.remove(index);
+          onChanged();
+        } else {
+          tableColumnBuilder_.remove(index);
+        }
+        return this;
+      }
+      public biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder getTableColumnBuilder(
+          int index) {
+        return getTableColumnFieldBuilder().getBuilder(index);
+      }
+      public biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder getTableColumnOrBuilder(
+          int index) {
+        if (tableColumnBuilder_ == null) {
+          return tableColumn_.get(index);  } else {
+          return tableColumnBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      public java.util.List<? extends biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder> 
+           getTableColumnOrBuilderList() {
+        if (tableColumnBuilder_ != null) {
+          return tableColumnBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(tableColumn_);
+        }
+      }
+      public biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder addTableColumnBuilder() {
+        return getTableColumnFieldBuilder().addBuilder(
+            biz.ganttproject.core.proto.ViewProto.View.TableColumn.getDefaultInstance());
+      }
+      public biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder addTableColumnBuilder(
+          int index) {
+        return getTableColumnFieldBuilder().addBuilder(
+            index, biz.ganttproject.core.proto.ViewProto.View.TableColumn.getDefaultInstance());
+      }
+      public java.util.List<biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder> 
+           getTableColumnBuilderList() {
+        return getTableColumnFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          biz.ganttproject.core.proto.ViewProto.View.TableColumn, biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder, biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder> 
+          getTableColumnFieldBuilder() {
+        if (tableColumnBuilder_ == null) {
+          tableColumnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              biz.ganttproject.core.proto.ViewProto.View.TableColumn, biz.ganttproject.core.proto.ViewProto.View.TableColumn.Builder, biz.ganttproject.core.proto.ViewProto.View.TableColumnOrBuilder>(
+                  tableColumn_,
+                  ((bitField0_ & 0x00000020) == 0x00000020),
+                  getParentForChildren(),
+                  isClean());
+          tableColumn_ = null;
+        }
+        return tableColumnBuilder_;
       }
       
       // @@protoc_insertion_point(builder_scope:ganttproject.View)
@@ -1859,6 +2144,10 @@ public final class ViewProto {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (!getBaseView().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       for (int i = 0; i < getLabelCount(); i++) {
         if (!getLabel(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -2139,6 +2428,10 @@ public final class ViewProto {
       
       public final boolean isInitialized() {
         if (!hasBaseView()) {
+          
+          return false;
+        }
+        if (!getBaseView().isInitialized()) {
           
           return false;
         }
@@ -2511,19 +2804,20 @@ public final class ViewProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\nview.proto\022\014ganttproject\"\253\001\n\004View\022\021\n\ti" +
+      "\n\nview.proto\022\014ganttproject\"\341\001\n\004View\022\021\n\ti" +
       "s_active\030\001 \001(\010\022\033\n\023viewport_start_date\030\002 " +
       "\001(\t\022\023\n\013table_width\030\003 \001(\005\022\017\n\007zooming\030\004 \001(" +
-      "\t\022\025\n\rexpanded_node\030\005 \003(\005\0326\n\013TableColumn\022" +
-      "\n\n\002id\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005width\030\003 \001(\005" +
-      "\"\373\001\n\tGanttView\022%\n\tbase_view\030\001 \002(\0132\022.gant" +
-      "tproject.View\0220\n\005label\030\002 \003(\0132!.ganttproj" +
-      "ect.GanttView.TaskLabel\032\224\001\n\tTaskLabel\022\023\n" +
-      "\013property_id\030\001 \002(\t\022<\n\010position\030\002 \002(\0162*.g" +
-      "anttproject.GanttView.TaskLabel.Position",
-      "\"4\n\010Position\022\007\n\003TOP\020\000\022\n\n\006BOTTOM\020\001\022\010\n\004LEF" +
-      "T\020\002\022\t\n\005RIGHT\020\003B(\n\033biz.ganttproject.core." +
-      "protoB\tViewProto"
+      "\t\022\025\n\rexpanded_node\030\005 \003(\005\0224\n\014table_column" +
+      "\030\006 \003(\0132\036.ganttproject.View.TableColumn\0326" +
+      "\n\013TableColumn\022\n\n\002id\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022" +
+      "\r\n\005width\030\003 \001(\005\"\373\001\n\tGanttView\022%\n\tbase_vie" +
+      "w\030\001 \002(\0132\022.ganttproject.View\0220\n\005label\030\002 \003" +
+      "(\0132!.ganttproject.GanttView.TaskLabel\032\224\001" +
+      "\n\tTaskLabel\022\023\n\013property_id\030\001 \002(\t\022<\n\010posi",
+      "tion\030\002 \002(\0162*.ganttproject.GanttView.Task" +
+      "Label.Position\"4\n\010Position\022\007\n\003TOP\020\000\022\n\n\006B" +
+      "OTTOM\020\001\022\010\n\004LEFT\020\002\022\t\n\005RIGHT\020\003B(\n\033biz.gant" +
+      "tproject.core.protoB\tViewProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2535,7 +2829,7 @@ public final class ViewProto {
           internal_static_ganttproject_View_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ganttproject_View_descriptor,
-              new java.lang.String[] { "IsActive", "ViewportStartDate", "TableWidth", "Zooming", "ExpandedNode", },
+              new java.lang.String[] { "IsActive", "ViewportStartDate", "TableWidth", "Zooming", "ExpandedNode", "TableColumn", },
               biz.ganttproject.core.proto.ViewProto.View.class,
               biz.ganttproject.core.proto.ViewProto.View.Builder.class);
           internal_static_ganttproject_View_TableColumn_descriptor =
