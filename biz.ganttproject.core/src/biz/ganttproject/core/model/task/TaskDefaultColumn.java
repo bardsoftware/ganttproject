@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package net.sourceforge.ganttproject;
+package biz.ganttproject.core.model.task;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -27,12 +27,8 @@ import javax.swing.Icon;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-import biz.ganttproject.core.table.ColumnList.ColumnStub;
 
-import com.google.common.base.Function;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
+import com.google.common.base.Predicate;
 
 /**
  * Enumeration of built-in task properties.
@@ -45,27 +41,36 @@ public enum TaskDefaultColumn {
   INFO(new ColumnList.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE),
   NAME(new ColumnList.ColumnStub("tpd3", null, true, 0, 200), String.class, "tableColName"),
   BEGIN_DATE(new ColumnList.ColumnStub("tpd4", null, true, 1, 75), GregorianCalendar.class, "tableColBegDate"),
-  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", Functions.NOT_MILESTONE),
-  DURATION(new ColumnList.ColumnStub("tpd6", null, false, -1, 50), Integer.class, "tableColDuration", Functions.NOT_MILESTONE),
+  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", null),
+  DURATION(new ColumnList.ColumnStub("tpd6", null, false, -1, 50), Integer.class, "tableColDuration", null),
   COMPLETION(new ColumnList.ColumnStub("tpd7", null, false, -1, 50), Integer.class, "tableColCompletion"),
   COORDINATOR(new ColumnList.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE),
   PREDECESSORS(new ColumnList.ColumnStub("tpd9", null, false, -1, 200), String.class, "tableColPredecessors"),
   ID(new ColumnList.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE),
   OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE);
 
+  public interface LocaleApi {
+    String i18n(String key);
+  }
+  private static LocaleApi ourLocaleApi;
+
+  public static void setLocaleApi(LocaleApi localeApi) {
+    ourLocaleApi = localeApi;
+  }
+
   private final Column myDelegate;
   private final Class<?> myValueClass;
-  private final Function<Task, Boolean> myIsEditableFunction;
+  private Predicate<? extends Object> myIsEditablePredicate;
   private final String myNameKey;
 
   private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
     this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);
   }
 
-  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Function<Task, Boolean> isEditable) {
+  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
     myDelegate = delegate;
     myValueClass = valueClass;
-    myIsEditableFunction = isEditable;
+    myIsEditablePredicate= isEditable;
     myNameKey = nameKey;
   }
 
@@ -73,7 +78,7 @@ public enum TaskDefaultColumn {
     return myDelegate;
   }
 
-  static List<Column> getColumnStubs() {
+  public static List<Column> getColumnStubs() {
     List<Column> result = new ArrayList<Column>();
     for (TaskDefaultColumn dc : values()) {
       result.add(dc.myDelegate);
@@ -85,8 +90,12 @@ public enum TaskDefaultColumn {
     return myValueClass;
   }
 
-  public boolean isEditable(Task task) {
-    return myIsEditableFunction.apply(task);
+  public <T> void setIsEditablePredicate(Predicate<T> predicate) {
+    myIsEditablePredicate = predicate;
+  }
+
+  public <T> boolean isEditable(T task) {
+    return ((Predicate<T>)myIsEditablePredicate).apply(task);
   }
 
   public String getNameKey() {
@@ -94,28 +103,21 @@ public enum TaskDefaultColumn {
   }
 
   public String getName() {
-    return GanttLanguage.getInstance().getText(getNameKey());
+    return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
   }
 
   static class Functions {
-    static Function<Task, Boolean> NOT_EDITABLE = new Function<Task, Boolean>() {
+    static Predicate<Object> NOT_EDITABLE = new Predicate<Object>() {
       @Override
-      public Boolean apply(Task input) {
-        return Boolean.FALSE;
+      public boolean apply(Object input) {
+        return false;
       }
     };
 
-    static Function<Task, Boolean> ALWAYS_EDITABLE = new Function<Task, Boolean>() {
+    static Predicate<Object> ALWAYS_EDITABLE = new Predicate<Object>() {
       @Override
-      public Boolean apply(Task input) {
-        return Boolean.TRUE;
-      }
-    };
-
-    static Function<Task, Boolean> NOT_MILESTONE = new Function<Task, Boolean>() {
-      @Override
-      public Boolean apply(Task input) {
-        return !input.isMilestone();
+      public boolean apply(Object input) {
+        return true;
       }
     };
   }

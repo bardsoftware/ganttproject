@@ -22,11 +22,12 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Map;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+
 
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.TaskDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
