@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +44,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -54,6 +55,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -63,7 +65,22 @@ import com.google.common.collect.Sets;
  * @author bbaranne (Benoit Baranne)
  */
 public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, GanttLanguage.Listener {
+  static Predicate<Task> NOT_MILESTONE = new Predicate<Task>() {
+    @Override
+    public boolean apply(Task input) {
+      return !input.isMilestone();
+    }
+  };
 
+  static {
+    new DefaultBooleanOption("");
+    TaskDefaultColumn.setLocaleApi(new TaskDefaultColumn.LocaleApi() {
+      @Override
+      public String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
+      }
+    });
+  }
   private static GanttLanguage language = GanttLanguage.getInstance();
 
   private final CustomPropertyManager myCustomColumnsManager;
@@ -80,6 +97,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
    */
   public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager, UIFacade uiFacade) {
     super(new TaskNode(taskManager.getRootTask()));
+    TaskDefaultColumn.END_DATE.setIsEditablePredicate(NOT_MILESTONE);
+    TaskDefaultColumn.DURATION.setIsEditablePredicate(NOT_MILESTONE);
     myUiFacade = uiFacade;
     GanttLanguage.getInstance().addListener(this);
     changeLanguage(language);
