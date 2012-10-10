@@ -32,6 +32,16 @@ public final class ProjectProto {
     boolean hasDependencyList();
     biz.ganttproject.core.proto.TaskProto.DependencyList getDependencyList();
     biz.ganttproject.core.proto.TaskProto.DependencyListOrBuilder getDependencyListOrBuilder();
+    
+    // optional .ganttproject.ResourceList resources = 6;
+    boolean hasResources();
+    biz.ganttproject.core.proto.ResourceProto.ResourceList getResources();
+    biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder getResourcesOrBuilder();
+    
+    // optional .ganttproject.AllocationList allocations = 7;
+    boolean hasAllocations();
+    biz.ganttproject.core.proto.AllocationProto.AllocationList getAllocations();
+    biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder getAllocationsOrBuilder();
   }
   public static final class Project extends
       com.google.protobuf.GeneratedMessage
@@ -184,12 +194,40 @@ public final class ProjectProto {
       return dependencyList_;
     }
     
+    // optional .ganttproject.ResourceList resources = 6;
+    public static final int RESOURCES_FIELD_NUMBER = 6;
+    private biz.ganttproject.core.proto.ResourceProto.ResourceList resources_;
+    public boolean hasResources() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    public biz.ganttproject.core.proto.ResourceProto.ResourceList getResources() {
+      return resources_;
+    }
+    public biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder getResourcesOrBuilder() {
+      return resources_;
+    }
+    
+    // optional .ganttproject.AllocationList allocations = 7;
+    public static final int ALLOCATIONS_FIELD_NUMBER = 7;
+    private biz.ganttproject.core.proto.AllocationProto.AllocationList allocations_;
+    public boolean hasAllocations() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    public biz.ganttproject.core.proto.AllocationProto.AllocationList getAllocations() {
+      return allocations_;
+    }
+    public biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder getAllocationsOrBuilder() {
+      return allocations_;
+    }
+    
     private void initFields() {
       name_ = "";
       organization_ = "";
       projectUrl_ = "";
       taskList_ = biz.ganttproject.core.proto.TaskProto.TaskList.getDefaultInstance();
       dependencyList_ = biz.ganttproject.core.proto.TaskProto.DependencyList.getDefaultInstance();
+      resources_ = biz.ganttproject.core.proto.ResourceProto.ResourceList.getDefaultInstance();
+      allocations_ = biz.ganttproject.core.proto.AllocationProto.AllocationList.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -206,6 +244,18 @@ public final class ProjectProto {
       }
       if (hasDependencyList()) {
         if (!getDependencyList().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasResources()) {
+        if (!getResources().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasAllocations()) {
+        if (!getAllocations().isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -231,6 +281,12 @@ public final class ProjectProto {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(5, dependencyList_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeMessage(6, resources_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(7, allocations_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -260,6 +316,14 @@ public final class ProjectProto {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, dependencyList_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, resources_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, allocations_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -379,6 +443,8 @@ public final class ProjectProto {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getTaskListFieldBuilder();
           getDependencyListFieldBuilder();
+          getResourcesFieldBuilder();
+          getAllocationsFieldBuilder();
         }
       }
       private static Builder create() {
@@ -405,6 +471,18 @@ public final class ProjectProto {
           dependencyListBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (resourcesBuilder_ == null) {
+          resources_ = biz.ganttproject.core.proto.ResourceProto.ResourceList.getDefaultInstance();
+        } else {
+          resourcesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        if (allocationsBuilder_ == null) {
+          allocations_ = biz.ganttproject.core.proto.AllocationProto.AllocationList.getDefaultInstance();
+        } else {
+          allocationsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       
@@ -471,6 +549,22 @@ public final class ProjectProto {
         } else {
           result.dependencyList_ = dependencyListBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        if (resourcesBuilder_ == null) {
+          result.resources_ = resources_;
+        } else {
+          result.resources_ = resourcesBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (allocationsBuilder_ == null) {
+          result.allocations_ = allocations_;
+        } else {
+          result.allocations_ = allocationsBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -502,6 +596,12 @@ public final class ProjectProto {
         if (other.hasDependencyList()) {
           mergeDependencyList(other.getDependencyList());
         }
+        if (other.hasResources()) {
+          mergeResources(other.getResources());
+        }
+        if (other.hasAllocations()) {
+          mergeAllocations(other.getAllocations());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -517,6 +617,18 @@ public final class ProjectProto {
         }
         if (hasDependencyList()) {
           if (!getDependencyList().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasResources()) {
+          if (!getResources().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasAllocations()) {
+          if (!getAllocations().isInitialized()) {
             
             return false;
           }
@@ -578,6 +690,24 @@ public final class ProjectProto {
               }
               input.readMessage(subBuilder, extensionRegistry);
               setDependencyList(subBuilder.buildPartial());
+              break;
+            }
+            case 50: {
+              biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder subBuilder = biz.ganttproject.core.proto.ResourceProto.ResourceList.newBuilder();
+              if (hasResources()) {
+                subBuilder.mergeFrom(getResources());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setResources(subBuilder.buildPartial());
+              break;
+            }
+            case 58: {
+              biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder subBuilder = biz.ganttproject.core.proto.AllocationProto.AllocationList.newBuilder();
+              if (hasAllocations()) {
+                subBuilder.mergeFrom(getAllocations());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setAllocations(subBuilder.buildPartial());
               break;
             }
           }
@@ -874,6 +1004,186 @@ public final class ProjectProto {
         return dependencyListBuilder_;
       }
       
+      // optional .ganttproject.ResourceList resources = 6;
+      private biz.ganttproject.core.proto.ResourceProto.ResourceList resources_ = biz.ganttproject.core.proto.ResourceProto.ResourceList.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          biz.ganttproject.core.proto.ResourceProto.ResourceList, biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder, biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder> resourcesBuilder_;
+      public boolean hasResources() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      public biz.ganttproject.core.proto.ResourceProto.ResourceList getResources() {
+        if (resourcesBuilder_ == null) {
+          return resources_;
+        } else {
+          return resourcesBuilder_.getMessage();
+        }
+      }
+      public Builder setResources(biz.ganttproject.core.proto.ResourceProto.ResourceList value) {
+        if (resourcesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          resources_ = value;
+          onChanged();
+        } else {
+          resourcesBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      public Builder setResources(
+          biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder builderForValue) {
+        if (resourcesBuilder_ == null) {
+          resources_ = builderForValue.build();
+          onChanged();
+        } else {
+          resourcesBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      public Builder mergeResources(biz.ganttproject.core.proto.ResourceProto.ResourceList value) {
+        if (resourcesBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              resources_ != biz.ganttproject.core.proto.ResourceProto.ResourceList.getDefaultInstance()) {
+            resources_ =
+              biz.ganttproject.core.proto.ResourceProto.ResourceList.newBuilder(resources_).mergeFrom(value).buildPartial();
+          } else {
+            resources_ = value;
+          }
+          onChanged();
+        } else {
+          resourcesBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      public Builder clearResources() {
+        if (resourcesBuilder_ == null) {
+          resources_ = biz.ganttproject.core.proto.ResourceProto.ResourceList.getDefaultInstance();
+          onChanged();
+        } else {
+          resourcesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      public biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder getResourcesBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getResourcesFieldBuilder().getBuilder();
+      }
+      public biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder getResourcesOrBuilder() {
+        if (resourcesBuilder_ != null) {
+          return resourcesBuilder_.getMessageOrBuilder();
+        } else {
+          return resources_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          biz.ganttproject.core.proto.ResourceProto.ResourceList, biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder, biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder> 
+          getResourcesFieldBuilder() {
+        if (resourcesBuilder_ == null) {
+          resourcesBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              biz.ganttproject.core.proto.ResourceProto.ResourceList, biz.ganttproject.core.proto.ResourceProto.ResourceList.Builder, biz.ganttproject.core.proto.ResourceProto.ResourceListOrBuilder>(
+                  resources_,
+                  getParentForChildren(),
+                  isClean());
+          resources_ = null;
+        }
+        return resourcesBuilder_;
+      }
+      
+      // optional .ganttproject.AllocationList allocations = 7;
+      private biz.ganttproject.core.proto.AllocationProto.AllocationList allocations_ = biz.ganttproject.core.proto.AllocationProto.AllocationList.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          biz.ganttproject.core.proto.AllocationProto.AllocationList, biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder, biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder> allocationsBuilder_;
+      public boolean hasAllocations() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      public biz.ganttproject.core.proto.AllocationProto.AllocationList getAllocations() {
+        if (allocationsBuilder_ == null) {
+          return allocations_;
+        } else {
+          return allocationsBuilder_.getMessage();
+        }
+      }
+      public Builder setAllocations(biz.ganttproject.core.proto.AllocationProto.AllocationList value) {
+        if (allocationsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          allocations_ = value;
+          onChanged();
+        } else {
+          allocationsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      public Builder setAllocations(
+          biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder builderForValue) {
+        if (allocationsBuilder_ == null) {
+          allocations_ = builderForValue.build();
+          onChanged();
+        } else {
+          allocationsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      public Builder mergeAllocations(biz.ganttproject.core.proto.AllocationProto.AllocationList value) {
+        if (allocationsBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              allocations_ != biz.ganttproject.core.proto.AllocationProto.AllocationList.getDefaultInstance()) {
+            allocations_ =
+              biz.ganttproject.core.proto.AllocationProto.AllocationList.newBuilder(allocations_).mergeFrom(value).buildPartial();
+          } else {
+            allocations_ = value;
+          }
+          onChanged();
+        } else {
+          allocationsBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      public Builder clearAllocations() {
+        if (allocationsBuilder_ == null) {
+          allocations_ = biz.ganttproject.core.proto.AllocationProto.AllocationList.getDefaultInstance();
+          onChanged();
+        } else {
+          allocationsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        return this;
+      }
+      public biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder getAllocationsBuilder() {
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return getAllocationsFieldBuilder().getBuilder();
+      }
+      public biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder getAllocationsOrBuilder() {
+        if (allocationsBuilder_ != null) {
+          return allocationsBuilder_.getMessageOrBuilder();
+        } else {
+          return allocations_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          biz.ganttproject.core.proto.AllocationProto.AllocationList, biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder, biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder> 
+          getAllocationsFieldBuilder() {
+        if (allocationsBuilder_ == null) {
+          allocationsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              biz.ganttproject.core.proto.AllocationProto.AllocationList, biz.ganttproject.core.proto.AllocationProto.AllocationList.Builder, biz.ganttproject.core.proto.AllocationProto.AllocationListOrBuilder>(
+                  allocations_,
+                  getParentForChildren(),
+                  isClean());
+          allocations_ = null;
+        }
+        return allocationsBuilder_;
+      }
+      
       // @@protoc_insertion_point(builder_scope:ganttproject.Project)
     }
     
@@ -899,13 +1209,16 @@ public final class ProjectProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rproject.proto\022\014ganttproject\032\ntask.prot" +
-      "o\"\244\001\n\007Project\022\014\n\004name\030\001 \001(\t\022\024\n\014organizat" +
-      "ion\030\002 \001(\t\022\023\n\013project_url\030\003 \001(\t\022)\n\ttask_l" +
-      "ist\030\004 \002(\0132\026.ganttproject.TaskList\0225\n\017dep" +
-      "endency_list\030\005 \001(\0132\034.ganttproject.Depend" +
-      "encyListB+\n\033biz.ganttproject.core.protoB" +
-      "\014ProjectProto"
+      "\n\rproject.proto\022\014ganttproject\032\020allocatio" +
+      "n.proto\032\016resource.proto\032\ntask.proto\"\206\002\n\007" +
+      "Project\022\014\n\004name\030\001 \001(\t\022\024\n\014organization\030\002 " +
+      "\001(\t\022\023\n\013project_url\030\003 \001(\t\022)\n\ttask_list\030\004 " +
+      "\002(\0132\026.ganttproject.TaskList\0225\n\017dependenc" +
+      "y_list\030\005 \001(\0132\034.ganttproject.DependencyLi" +
+      "st\022-\n\tresources\030\006 \001(\0132\032.ganttproject.Res" +
+      "ourceList\0221\n\013allocations\030\007 \001(\0132\034.ganttpr" +
+      "oject.AllocationListB+\n\033biz.ganttproject" +
+      ".core.protoB\014ProjectProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -917,7 +1230,7 @@ public final class ProjectProto {
           internal_static_ganttproject_Project_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ganttproject_Project_descriptor,
-              new java.lang.String[] { "Name", "Organization", "ProjectUrl", "TaskList", "DependencyList", },
+              new java.lang.String[] { "Name", "Organization", "ProjectUrl", "TaskList", "DependencyList", "Resources", "Allocations", },
               biz.ganttproject.core.proto.ProjectProto.Project.class,
               biz.ganttproject.core.proto.ProjectProto.Project.Builder.class);
           return null;
@@ -926,6 +1239,8 @@ public final class ProjectProto {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          biz.ganttproject.core.proto.AllocationProto.getDescriptor(),
+          biz.ganttproject.core.proto.ResourceProto.getDescriptor(),
           biz.ganttproject.core.proto.TaskProto.getDescriptor(),
         }, assigner);
   }

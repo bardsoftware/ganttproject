@@ -1,0 +1,15 @@
+package ganttproject;
+
+option java_package = "biz.ganttproject.core.proto";
+option java_outer_classname = "IndustryProto";
+
+message Job {
+  required int32 id = 1;
+  required string name = 2;
+}
+
+message Industry {
+  required string id = 1;
+  
+  repeated Job job = 2;
+}
