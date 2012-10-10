@@ -1,3 +1,5 @@
+import "allocation.proto";
+import "resource.proto";
 import "task.proto";
 
 package ganttproject;
@@ -12,4 +14,7 @@ message Project {
   
   required TaskList task_list = 4;
   optional DependencyList dependency_list = 5;
+  
+  optional ResourceList resources = 6;
+  optional AllocationList allocations = 7;
 }
