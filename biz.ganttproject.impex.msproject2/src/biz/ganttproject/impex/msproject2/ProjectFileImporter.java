@@ -90,7 +90,6 @@ import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
@@ -343,19 +342,25 @@ class ProjectFileImporter {
     }
   }
 
-  private Function<Task, Pair<TimeDuration, TimeDuration>> findDurationFunction(Task t) {
+  private Function<Task, Pair<TimeDuration, TimeDuration>> findDurationFunction(Task t, StringBuilder reportBuilder) {
     if (t.getStart() != null && t.getFinish() != null) {
       return DURATION_FROM_START_FINISH;
     }
+    reportBuilder.append("start+finish not found");
     if (t.getStart() != null && t.getDuration() != null) {
       return DURATION_FROM_START_AND_DURATION;
     }
+    reportBuilder.append(", start+duration not found");
     return null;
   }
 
 
   private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask,
       Map<Integer, GanttTask> foreignId2nativeTask) {
+    if (t.getNull()) {
+      myErrors.add(MessageFormat.format("[harmless] Task with id={0} is blank task and was skipped", t.getID()));
+      return;
+    }
     if (t.getUniqueID() == 0) {
       boolean isRealTask = t.getName() != null && !t.getChildTasks().isEmpty();
       if (!isRealTask) {
@@ -366,9 +371,10 @@ class ProjectFileImporter {
       }
     }
 
-    Function<Task, Pair<TimeDuration, TimeDuration>> getDuration = findDurationFunction(t);
+    StringBuilder report = new StringBuilder();
+    Function<Task, Pair<TimeDuration, TimeDuration>> getDuration = findDurationFunction(t, report);
     if (getDuration == null) {
-      myErrors.add("Failed to import leaf task=" + t + ". Unable to determine its duration. Tried: ");
+      myErrors.add("[suspicious] Failed to import leaf task=" + t + ". Unable to determine its duration (" + report.toString() + ")");
       return;
     }
 
@@ -400,13 +406,13 @@ class ProjectFileImporter {
           taskBuilder.withDuration(workingDuration);
         } else if (nonWorkingDuration.getLength() > 0) {
           myErrors.add(MessageFormat.format(
-              "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
+              "[FYI] Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
                   + "We set its duration to {6}", t.getID(), t.getName(), t.getStart(), t.getFinish(),
               t.getMilestone(), workingDuration, nonWorkingDuration));
           taskBuilder.withDuration(nonWorkingDuration);
         } else {
           myErrors.add(MessageFormat.format(
-              "Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
+              "[FYI] Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
                   + "We set its duration to default={7}", t.getID(), t.getName(), t.getStart(), t.getFinish(),
               t.getMilestone(), workingDuration, nonWorkingDuration, defaultDuration));
           taskBuilder.withDuration(defaultDuration);
@@ -589,12 +595,12 @@ class ProjectFileImporter {
         GanttTask dependant = foreignId2nativeTask.get(r.getSourceTask().getID());
         GanttTask dependee = foreignId2nativeTask.get(r.getTargetTask().getID());
         if (dependant == null) {
-          myErrors.add("Failed to import relation=" + t + " because source task=" + r.getSourceTask().getID()
+          myErrors.add("[suspicious] Failed to import relation=" + t + " because source task=" + r.getSourceTask().getID()
               + " was not found");
           continue;
         }
         if (dependee == null) {
-          myErrors.add("Failed to import relation=" + t + " because target task=" + r.getTargetTask().getID()
+          myErrors.add("[suspicious] Failed to import relation=" + t + " because target task=" + r.getTargetTask().getID()
               + " was not found");
           continue;
         }
@@ -629,7 +635,7 @@ class ProjectFileImporter {
     for (ResourceAssignment ra : pf.getAllResourceAssignments()) {
       GanttTask nativeTask = foreignId2nativeTask.get(ra.getTask().getID());
       if (nativeTask == null) {
-        myErrors.add("Failed to import resource assignment=" + ra + " because its task with ID=" + ra.getTask().getID()
+        myErrors.add("[suspicious] Failed to import resource assignment=" + ra + " because its task with ID=" + ra.getTask().getID()
             + " and name=" + ra.getTask().getName() + " was not found or not imported");
         continue;
       }
@@ -639,7 +645,7 @@ class ProjectFileImporter {
       }
       HumanResource nativeResource = foreignId2nativeResource.get(resource.getUniqueID());
       if (nativeResource == null) {
-        myErrors.add("Failed to import resource assignment=" + ra + " because its resource with ID="
+        myErrors.add("[suspicious] Failed to import resource assignment=" + ra + " because its resource with ID="
             + resource.getUniqueID() + " and name=" + resource.getName() + " was not found or not imported");
         continue;
 
