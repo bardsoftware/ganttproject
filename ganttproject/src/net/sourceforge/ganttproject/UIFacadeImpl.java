@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -41,6 +43,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
@@ -84,6 +87,7 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultFileOption;
+import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -105,6 +109,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
+  private final DefaultIntegerOption myFontSizeOption;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
       IGanttProject project, UIFacade fallbackDelegate) {
@@ -161,8 +166,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         dateSampleOption.setValue(shortDateFormatOption.formatDate(new Date()));
       }
     });
+
+    myFontSizeOption = new DefaultIntegerOption("appFontSize");
     GPOption[] options = new GPOption[] { myLafOption, languageOption, dateFormatSwitchOption, shortDateFormatOption,
-        dateSampleOption };
+        dateSampleOption, myFontSizeOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
@@ -482,6 +489,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private boolean doSetLookAndFeel(GanttLookAndFeelInfo laf) {
     try {
       UIManager.setLookAndFeel(laf.getClassName());
+      if (myFontSizeOption.getValue() != 0) {
+        UIDefaults defaults = UIManager.getDefaults();
+        for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
+          String key = String.valueOf(keys.nextElement());
+          if (key.endsWith(".font")) {
+            Object obj = UIManager.get(key);
+            if (obj instanceof Font) {
+              Font f = (Font) obj;
+              UIManager.put(key, f.deriveFont(f.getSize() + (float)myFontSizeOption.getValue()));
+            }
+          }
+        }
+      }
       SwingUtilities.updateComponentTreeUI(myMainFrame);
       return true;
     } catch (Exception e) {
