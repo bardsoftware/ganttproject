@@ -41,6 +41,7 @@ import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleSet;
@@ -83,6 +84,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
       addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
       addAttribute("version", VERSION, attrs);
+      addAttribute("locale", GanttLanguage.getInstance().getLocale().toString(), attrs);
       startElement("project", attrs, handler);
       //
       cdataElement("description", getProject().getDescription(), attrs, handler);
