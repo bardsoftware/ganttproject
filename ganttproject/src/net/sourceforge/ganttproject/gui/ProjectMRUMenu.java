@@ -52,10 +52,10 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
   }
 
   @Override
-  public void mruListChanged(Collection<Document> newMRUList) {
+  public void mruListChanged(Collection<String> newMRUList) {
     removeAll();
     int index = 0;
-    for (Document doc : newMRUList) {
+    for (String doc : newMRUList) {
       index++;
       Action a = new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade);
       add(new JMenuItem(a));

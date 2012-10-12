@@ -20,6 +20,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
@@ -94,6 +95,13 @@ public class DocumentCreator implements DocumentManager {
     String lowerPath = path.toLowerCase();
     if (lowerPath.startsWith("http://") || lowerPath.startsWith("https://")) {
       try {
+        if (user == null && pass == null) {
+          WebDavServerDescriptor server = myWebDavStorage.findServer(path);
+          if (server != null) {
+            user = server.getUsername();
+            pass = server.getPassword();
+          }
+        }
         return new HttpDocument(path, user, pass);
       } catch (IOException e) {
         GPLogger.log(e);

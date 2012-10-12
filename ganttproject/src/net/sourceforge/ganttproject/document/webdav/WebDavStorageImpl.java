@@ -331,4 +331,14 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     return myReleaseLockOption;
   }
 
+  public WebDavServerDescriptor findServer(String path) {
+    WebDavUri uri = new WebDavUri(path);
+    for (WebDavServerDescriptor server : myServers.getValues()) {
+      if (server.rootUrl.equals(uri.buildRootUrl())) {
+        return server;
+      }
+    }
+    return null;
+  }
+
 }

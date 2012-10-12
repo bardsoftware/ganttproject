@@ -25,5 +25,5 @@ import java.util.Collection;
  */
 public interface DocumentMRUListener {
   /** Fired when the MRU list is changed */
-  void mruListChanged(Collection<Document> newMRUList);
+  void mruListChanged(Collection<String> newMRUList);
 }

@@ -597,7 +597,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public void open(Document document) throws IOException, DocumentException {
     document.read();
-    myMRU.add(document, true);
+    myMRU.add(document.getURI().toString(), true);
     projectDocument = document;
     setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
     for (Chart chart : PluginManager.getCharts()) {
