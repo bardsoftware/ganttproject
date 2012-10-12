@@ -49,7 +49,10 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   @Override
   public TimeDuration createTimeInterval(TimeUnit timeUnit, Date startDate, Date endDate) {
     WorkingUnitCounter workingUnitCounter = new WorkingUnitCounter(getCalendar(), timeUnit);
-    return workingUnitCounter.run(startDate, endDate);
+    if (startDate.before(endDate)) {
+      return workingUnitCounter.run(startDate, endDate);
+    }
+    return workingUnitCounter.run(endDate, startDate).reverse();
   }
 
   @Override
