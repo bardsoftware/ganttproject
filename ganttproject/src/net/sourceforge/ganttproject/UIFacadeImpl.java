@@ -110,6 +110,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
   private final DefaultIntegerOption myFontSizeOption;
+  private Integer myLastFontSize = null;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
       IGanttProject project, UIFacade fallbackDelegate) {
@@ -167,7 +168,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     });
 
-    myFontSizeOption = new DefaultIntegerOption("appFontSize");
+    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
+    myFontSizeOption.setHasUi(false);
+
     GPOption[] options = new GPOption[] { myLafOption, languageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption, myFontSizeOption };
     myOptions = new GPOptionGroup("ui", options);
@@ -489,7 +492,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private boolean doSetLookAndFeel(GanttLookAndFeelInfo laf) {
     try {
       UIManager.setLookAndFeel(laf.getClassName());
-      if (myFontSizeOption.getValue() != 0) {
+      if (myFontSizeOption.getValue() != 0 && myFontSizeOption.getValue() != myLastFontSize) {
         UIDefaults defaults = UIManager.getDefaults();
         for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
           String key = String.valueOf(keys.nextElement());
@@ -501,6 +504,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
           }
         }
+        myLastFontSize = myFontSizeOption.getValue();
       }
       SwingUtilities.updateComponentTreeUI(myMainFrame);
       return true;
