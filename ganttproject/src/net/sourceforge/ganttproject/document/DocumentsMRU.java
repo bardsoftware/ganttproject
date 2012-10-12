@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 /**
  * List of Documents MRU (<b>M</b>ost <b>R</b>ecently <b>U</b>sed)
  *
@@ -33,7 +35,7 @@ public class DocumentsMRU {
 
   private int maxSize;
 
-  private List<Document> documents;
+  private List<String> documents;
 
   private final ArrayList<DocumentMRUListener> myListeners = new ArrayList<DocumentMRUListener>();
 
@@ -44,7 +46,7 @@ public class DocumentsMRU {
   public DocumentsMRU(int maxSize) {
     assert maxSize > 0 : "maxSize must be larger than zero (" + maxSize + ")";
     this.maxSize = maxSize;
-    documents = new ArrayList<Document>(maxSize);
+    documents = Lists.newArrayListWithExpectedSize(maxSize);
   }
 
   /**
@@ -55,10 +57,10 @@ public class DocumentsMRU {
    *          the Document that should be added
    * @return true when the list has changed through the addition
    */
-  public boolean add(Document document, boolean toHead) {
-    // if the document is invalid, we don't add it
-    if (!document.isValidForMRU())
-      return false;
+  public boolean add(String document, boolean toHead) {
+//    // if the document is invalid, we don't add it
+//    if (!document.isValidForMRU())
+//      return false;
 
     int i = documents.indexOf(document);
     // if the document is already on the top,
@@ -90,7 +92,7 @@ public class DocumentsMRU {
   }
 
   /** @return an Iterator over the entries of the list of Documents MRU */
-  public Iterator<Document> iterator() {
+  public Iterator<String> iterator() {
     return documents.iterator();
   }
 
@@ -102,7 +104,7 @@ public class DocumentsMRU {
   }
 
   private void fireMRUListChanged() {
-    Collection<Document> unmodifiableCollection = Collections.unmodifiableCollection(documents);
+    Collection<String> unmodifiableCollection = Collections.unmodifiableCollection(documents);
     for (int i = 0; i < myListeners.size(); i++) {
       DocumentMRUListener next = myListeners.get(i);
       next.mruListChanged(unmodifiableCollection);

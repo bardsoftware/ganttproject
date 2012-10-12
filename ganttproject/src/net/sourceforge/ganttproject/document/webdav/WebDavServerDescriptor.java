@@ -25,7 +25,7 @@ import com.google.common.base.Objects;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class WebDavServerDescriptor {
+public class WebDavServerDescriptor {
   public String name;
   public String rootUrl;
   public String username;
@@ -48,6 +48,14 @@ class WebDavServerDescriptor {
     }
     WebDavServerDescriptor that = (WebDavServerDescriptor) obj;
     return Objects.equal(this.rootUrl, that.rootUrl);
+  }
+
+  public String getUsername() {
+    return this.username;
+  }
+
+  public String getPassword() {
+    return this.password;
   }
 
   @Override

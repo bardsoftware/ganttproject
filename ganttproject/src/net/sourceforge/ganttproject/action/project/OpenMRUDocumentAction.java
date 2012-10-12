@@ -33,14 +33,14 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  * specified listener.
  */
 public class OpenMRUDocumentAction extends GPAction {
-  private final Document myDocument;
+  private final String myDocument;
   private final IGanttProject myProject;
   private final UIFacade myUIFacade;
   private final ProjectUIFacade myProjectUIFacade;
 
   // FIXME Keyboard shortcuts are not working... (because action is created
   // dynamically?)
-  public OpenMRUDocumentAction(int index, Document document, IGanttProject project, UIFacade uiFacade,
+  public OpenMRUDocumentAction(int index, String document, IGanttProject project, UIFacade uiFacade,
       ProjectUIFacade projectUIFacade) {
     super("project.mru." + index);
     myDocument = document;
@@ -55,14 +55,15 @@ public class OpenMRUDocumentAction extends GPAction {
 
   @Override
   protected String getLocalizedName() {
-    return myDocument == null ? "" : myDocument.getFileName();
+    return myDocument == null ? "" : myProject.getDocumentManager().getDocument(myDocument).getFileName();
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
     if (myProjectUIFacade.ensureProjectSaved(myProject)) {
       try {
-        myProjectUIFacade.openProject(myDocument, myProject);
+        Document doc = myProject.getDocumentManager().getDocument(myDocument);
+        myProjectUIFacade.openProject(doc, myProject);
       } catch (DocumentException exception) {
         myUIFacade.showErrorDialog(exception);
       } catch (IOException exception) {

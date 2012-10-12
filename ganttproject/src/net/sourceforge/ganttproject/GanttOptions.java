@@ -36,7 +36,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -316,9 +315,8 @@ public class GanttOptions extends SaverBase {
       // The last opened files
       {
         startElement("files", attrs, handler);
-        for (Iterator<Document> iterator = documentsMRU.iterator(); iterator.hasNext();) {
-          Document document = iterator.next();
-          addAttribute("path", document.getPath(), attrs);
+        for (Iterator<String> it = documentsMRU.iterator(); it.hasNext();) {
+          addAttribute("path", it.next(), attrs);
           emptyElement("file", attrs, handler);
         }
         endElement("files", handler);
@@ -563,7 +561,7 @@ public class GanttOptions extends SaverBase {
             }
           } else if (qName.equals("file")) {
             if (aName.equals("path")) {
-              documentsMRU.add(myDocumentManager.getDocument(value), false);
+              documentsMRU.add(value, false);
             }
           } else if (qName.equals("automatic-launch")) {
             if (aName.equals("value")) {
