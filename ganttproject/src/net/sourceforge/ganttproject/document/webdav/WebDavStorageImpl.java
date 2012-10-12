@@ -186,6 +186,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final IntegerOption myWebDavLockTimeoutOption = new DefaultIntegerOption("webdav.lockTimeout", -1);
   private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("lockRelease", true);
   private final StringOption myUsername = new DefaultStringOption("username", "");
+  private final StringOption myPassword = new DefaultStringOption("password", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
   private final UIFacade myUiFacade;
   private final IGanttProject myProject;
@@ -201,6 +202,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         }
       }
     });
+    myPassword.setScreened(true);
   }
 
   @Override
@@ -256,6 +258,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     if (currentDocument instanceof HttpDocument) {
       currentUri = ((HttpDocument)currentDocument).getWebdavResource().getWebDavUri();
       myUsername.setValue(currentDocument.getUsername());
+      myPassword.setValue(currentDocument.getPassword());
     } else {
       String lastDocument = Objects.firstNonNull(
           getLastWebDavDocumentOption().getValue(), getLegacyLastWebDAVDocumentOption().getValue());
@@ -276,9 +279,8 @@ public class WebDavStorageImpl implements DocumentStorageUi {
         }
       }
     }
-    String password = currentDocument == null ? null : currentDocument.getPassword();
     myWebDavFactory.clearCache();
-    return new GanttURLChooser(myProject, myUiFacade, myServers, currentUri, myUsername, password, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
+    return new GanttURLChooser(myProject, myUiFacade, myServers, currentUri, myUsername, myPassword, getWebDavLockTimeoutOption(), getWebDavReleaseLockOption(), myWebDavFactory);
   }
 
   private OkAction createNoLockAction(String key, final GanttURLChooser chooser, final DocumentReceiver receiver) {
@@ -290,9 +292,14 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       public void actionPerformed(ActionEvent event) {
         try {
           myWebDavFactory.setCredentials(chooser.getUsername(), chooser.getPassword());
-          receiver.setDocument(new HttpDocument(myWebDavFactory.createResource(chooser.getUrl()), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK));
-          myLastWebDavDocumentOption.setValue(chooser.getUrl().buildRootUrl() + "\t" + chooser.getUrl().path);
-          myLegacyLastWebDAVDocument.setValue(chooser.getUrl().buildUrl());
+          WebDavUri webDavUri = chooser.getUrl();
+          if (webDavUri != null) {
+            receiver.setDocument(new HttpDocument(
+                myWebDavFactory.createResource(webDavUri), chooser.getUsername(), chooser.getPassword(), HttpDocument.NO_LOCK));
+            myLastWebDavDocumentOption.setValue(webDavUri.buildRootUrl() + "\t" + webDavUri.path);
+            myLegacyLastWebDAVDocument.setValue(webDavUri.buildUrl());
+          }
+          chooser.dispose();
         } catch (IOException e) {
           chooser.showError(e);
         }

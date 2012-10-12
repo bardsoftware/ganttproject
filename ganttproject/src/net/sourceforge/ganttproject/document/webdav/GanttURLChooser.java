@@ -48,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -72,13 +73,13 @@ import org.jdesktop.swingx.JXList;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -213,12 +214,14 @@ class GanttURLChooser {
 
   private OkAction myOkAction;
 
+  private final List<Runnable> myListenerRemovers = Lists.newArrayList();
+
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
   }
 
   GanttURLChooser(IGanttProject project, UIFacade uiFacade, ListOption<WebDavServerDescriptor> servers, WebDavUri currentUri, StringOption username,
-      String password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption,
+      StringOption password, IntegerOption lockTimeoutOption, BooleanOption releaseLockOption,
       MiltonResourceFactory webDavFactory) {
     myProject = project;
     myUiFacade = uiFacade;
@@ -226,34 +229,42 @@ class GanttURLChooser {
     myPath = new DefaultStringOption("path");
     myServers = servers;
     myUsername = username;
-    myPassword = new DefaultStringOption("password", password);
-    myPassword.setScreened(true);
+    myPassword = password;
     myTimeout = lockTimeoutOption;
     myReleaseLockOption = releaseLockOption;
     myInitialUri = currentUri;
 
-    myServers.addChangeValueListener(new ChangeValueListener() {
+    myListenerRemovers.add(myServers.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         myPath.setValue("");
         updateUsernameAndPassword();
         myReloadAction.actionPerformed(null);
       }
-    });
-    myUsername.addChangeValueListener(new ChangeValueListener() {
+    }));
+
+    myListenerRemovers.add(myUsername.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (myServers.getValue() != null) {
           myServers.getValue().username = myUsername.getValue();
         }
       }
-    });
-    myPassword.addChangeValueListener(new ChangeValueListener() {
+    }));
+
+    myListenerRemovers.add(myPassword.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (myServers.getValue() != null) {
           myServers.getValue().password = myPassword.getValue();
         }
+      }
+    }));
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        reloadFilesTable();
       }
     });
   }
@@ -320,7 +331,10 @@ class GanttURLChooser {
   protected void reloadFilesTable() {
     myWebDavFactory.clearCache();
     myWebDavFactory.setCredentials(myUsername.getValue(), myPassword.getValue());
-    new ReloadWorker(myWebDavFactory.createResource(buildUrl())).execute();
+    WebDavUri webDavUri = buildUrl();
+    if (webDavUri != null) {
+      new ReloadWorker(myWebDavFactory.createResource(webDavUri)).execute();
+    }
   }
 
   private boolean tryApplyUrl(WebDavUri currentUri) {
@@ -358,11 +372,14 @@ class GanttURLChooser {
 
   private WebDavUri buildUrl() {
     WebDavServerDescriptor server= myServers.getValue();
+    if (server == null) {
+      return null;
+    }
     String host = server.rootUrl;
     if (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
-    String path = myPath.getValue();
+    String path = Objects.firstNonNull(myPath.getValue(), "");
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
@@ -642,5 +659,11 @@ class GanttURLChooser {
       setWebDavActionsEnabled(false);
     }
     GPLogger.log(e);
+  }
+
+  public void dispose() {
+    for (Runnable remover : myListenerRemovers) {
+      remover.run();
+    }
   }
 }
