@@ -47,6 +47,8 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
 
   private boolean isScreened;
 
+  private boolean myHasUi = true;
+
   protected GPAbstractOption(String id) {
     this(id, null);
   }
@@ -150,6 +152,14 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   @Override
   public void setScreened(boolean value) {
     isScreened = value;
+  }
+
+  public boolean hasUi() {
+    return myHasUi;
+  }
+  
+  public void setHasUi(boolean hasUi) {
+    myHasUi = hasUi;
   }
 
   protected PropertyChangeSupport getPropertyChangeSupport() {

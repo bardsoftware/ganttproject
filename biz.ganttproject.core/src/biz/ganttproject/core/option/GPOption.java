@@ -38,4 +38,8 @@ public interface GPOption<T> {
   boolean isScreened();
 
   void setScreened(boolean isScreened);
+  
+  boolean hasUi();
+  
+  void setHasUi(boolean hasUi);
 }
