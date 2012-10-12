@@ -203,7 +203,7 @@ public class TaskImpl implements Task {
   @Override
   public TaskMutator createMutator() {
     if (myMutator != null) {
-      throw new MutatorException("Two mutators have been requested for task=" + getName());
+      return myMutator;
     }
     myMutator = new MutatorImpl();
     return myMutator;
@@ -569,6 +569,7 @@ public class TaskImpl implements Task {
 
     private int myIsolationLevel;
 
+    public final Exception myException = new Exception();
     @Override
     public void commit() {
       try {
