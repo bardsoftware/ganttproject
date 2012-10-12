@@ -171,8 +171,14 @@ public class OptionsPageBuilder {
 
   public JComponent createGroupComponent(GPOptionGroup group, GPOption<?>... options) {
     JPanel optionsPanel = new JPanel();
+
+    int hasUiCount = 0;
     for (int i = 0; i < options.length; i++) {
       GPOption<?> nextOption = options[i];
+      if (!nextOption.hasUi()) {
+        continue;
+      }
+      hasUiCount++;
       final Component nextComponent = createOptionComponent(group, nextOption);
       if (needsLabel(group, nextOption)) {
         Component nextLabel = createOptionLabel(group, options[i]);
@@ -193,8 +199,8 @@ public class OptionsPageBuilder {
         });
       }
     }
-    if (options.length > 0) {
-      myLayoutApi.layout(optionsPanel, options.length);
+    if (hasUiCount > 0) {
+      myLayoutApi.layout(optionsPanel, hasUiCount);
     }
     return optionsPanel;
   }
