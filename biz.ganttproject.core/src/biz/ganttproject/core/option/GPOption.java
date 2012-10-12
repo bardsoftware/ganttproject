@@ -27,7 +27,7 @@ public interface GPOption<T> {
 
   boolean isChanged();
 
-  void addChangeValueListener(ChangeValueListener listener);
+  Runnable addChangeValueListener(ChangeValueListener listener);
 
   boolean isWritable();
 

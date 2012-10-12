@@ -51,7 +51,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jdesktop.swingx.JXDatePicker;
 
 import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueDispatcher;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
@@ -548,15 +547,13 @@ public class OptionsPageBuilder {
     result.setDate(option.getValue());
     result.getEditor().addPropertyChangeListener("value", valueUpdater);
 
-    if (option instanceof ChangeValueDispatcher) {
-      ((ChangeValueDispatcher) option).addChangeValueListener(new ChangeValueListener() {
-        @Override
-        public void changeValue(ChangeValueEvent event) {
-          assert event.getNewValue() instanceof Date : "value=" + event.getNewValue();
-          result.setDate((Date) event.getNewValue());
-        }
-      });
-    }
+    option.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        assert event.getNewValue() instanceof Date : "value=" + event.getNewValue();
+        result.setDate((Date) event.getNewValue());
+      }
+    });
 
     return result;
   }
