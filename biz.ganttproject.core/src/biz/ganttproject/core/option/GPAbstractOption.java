@@ -23,7 +23,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDispatcher {
+public abstract class GPAbstractOption<T> implements GPOption<T> {
   public abstract static class I18N {
     private static I18N ourInstance;
 
@@ -106,8 +106,14 @@ public abstract class GPAbstractOption<T> implements GPOption<T>, ChangeValueDis
   }
 
   @Override
-  public void addChangeValueListener(ChangeValueListener listener) {
+  public Runnable addChangeValueListener(final ChangeValueListener listener) {
     myListeners.add(listener);
+    return new Runnable() {
+      @Override
+      public void run() {
+        myListeners.remove(listener);
+      }
+    };
   }
 
   protected void fireChangeValueEvent(ChangeValueEvent event) {
