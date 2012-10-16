@@ -15,6 +15,10 @@
       <library name="resources/">
          <export name="*"/>
       </library>
+      
+      <library name="lib/protobuf-java-2.4.1.jar">
+         <export name="*"/>
+      </library>
    </runtime>
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
