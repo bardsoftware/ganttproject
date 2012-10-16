@@ -105,7 +105,7 @@
     
     <input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
       addproperty="package.name.suffix"
-        defaultvalue="2.6-rc1-r${hg.tip.rev}"/>
+        defaultvalue="2.6-rc2-r${hg.tip.rev}"/>
     <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
 	</target>
 	
