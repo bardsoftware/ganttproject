@@ -1,0 +1,16 @@
+package ganttproject;
+
+option java_package = "biz.ganttproject.core.proto";
+option java_outer_classname = "AllocationProto";
+
+message Allocation {
+  required int32 resource_id = 1;
+  required int32 task_id = 2;
+  optional float load = 3 [default = 100.0];
+  optional string role_id = 4;
+  optional bool is_coordinator = 5;
+}
+
+message AllocationList {
+  repeated Allocation allocation = 1;
+}

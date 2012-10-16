@@ -1,0 +1,39 @@
+package ganttproject;
+
+option java_package = "biz.ganttproject.core.proto";
+option java_outer_classname = "ViewProto";
+
+message View {
+  optional bool is_active = 1;
+  optional string viewport_start_date = 2;
+  optional int32 table_width = 3;
+  optional string zooming = 4;
+  repeated int32 expanded_node = 5;
+  
+  message TableColumn {
+    required string id = 1;
+    optional string name = 2;
+    optional int32 width = 3;
+  }
+  
+  repeated TableColumn table_column = 6;
+}
+
+message GanttView {
+  required View base_view = 1;
+  
+  message TaskLabel {
+    enum Position {
+      TOP = 0;
+      BOTTOM = 1;
+      LEFT = 2;
+      RIGHT = 3;
+    }
+    
+    required string property_id = 1;
+    required Position position = 2;
+  }
+  
+  repeated TaskLabel label = 2;
+}
+
