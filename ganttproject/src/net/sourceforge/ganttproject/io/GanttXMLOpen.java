@@ -113,6 +113,11 @@ public class GanttXMLOpen implements GPParser {
         e.printStackTrace(System.err);
       }
       throw new IOException(e.getMessage());
+    } catch (RuntimeException e) {
+      if (!GPLogger.log(e)) {
+        e.printStackTrace(System.err);
+      }
+      throw new IOException(e.getMessage());
     }
     myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
     myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(true);
