@@ -43,7 +43,7 @@ public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction im
   @Override
   public void apply(MouseEvent e) {
     Date dateUnderX = getChartDateGrid().getDateAt(e.getX());
-    if (!dateUnderX.equals(getStartDate())) {
+    if (!dateUnderX.equals(getStartDate()) && dateUnderX.before(getTask().getEnd().getTime())) {
       myMutator.setStart(CalendarFactory.createGanttCalendar(dateUnderX));
       getTask().applyThirdDateConstraint();
     }
