@@ -647,7 +647,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
 
     @Override
-    public void drop(DropTargetDropEvent dtde) {
+    public void drop(final DropTargetDropEvent dtde) {
       if (!isDropAcceptable(dtde)) {
         dtde.rejectDrop();
         return;
@@ -657,48 +657,53 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       // collapsePath
       hoverTimer.stop();
 
-      dtde.acceptDrop(dtde.getDropAction());
+      myUIFacade.getUndoManager().undoableEdit("Drag tasks", new Runnable() {
+        @Override
+        public void run() {
+          dtde.acceptDrop(dtde.getDropAction());
 
-      Transferable transferable = dtde.getTransferable();
+          Transferable transferable = dtde.getTransferable();
 
-      DataFlavor[] flavors = transferable.getTransferDataFlavors();
-      for (DataFlavor flavor : flavors) {
-        if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
-          try {
-            Point pt = dtde.getLocation();
-            DefaultMutableTreeTableNode target = (DefaultMutableTreeTableNode) getTree().getPathForLocation(pt.x, pt.y).getLastPathComponent();
-            TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
-            DefaultMutableTreeTableNode source = (DefaultMutableTreeTableNode) pathSource.getLastPathComponent();
+          DataFlavor[] flavors = transferable.getTransferDataFlavors();
+          for (DataFlavor flavor : flavors) {
+            if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
+              try {
+                Point pt = dtde.getLocation();
+                DefaultMutableTreeTableNode target = (DefaultMutableTreeTableNode) getTree().getPathForLocation(pt.x, pt.y).getLastPathComponent();
+                TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
+                DefaultMutableTreeTableNode source = (DefaultMutableTreeTableNode) pathSource.getLastPathComponent();
 
-            getTreeModel().removeNodeFromParent(source);
-            getTreeModel().insertNodeInto(source, target, 0);
+                getTreeModel().removeNodeFromParent(source);
+                getTreeModel().insertNodeInto(source, target, 0);
 
-            TreePath pathNewChild = TreeUtil.createPath((TreeNode) pathSource.getLastPathComponent());
+                TreePath pathNewChild = TreeUtil.createPath((TreeNode) pathSource.getLastPathComponent());
 
-            // Mark this as the selected path in the tree
-            getTree().getTreeSelectionModel().setSelectionPath(pathNewChild);
+                // Mark this as the selected path in the tree
+                getTree().getTreeSelectionModel().setSelectionPath(pathNewChild);
 
-            expandRefresh(source);
+                expandRefresh(source);
 
-            forwardScheduling();
+                forwardScheduling();
 
-            area.repaint();
+                area.repaint();
 
-            myProject.setAskForSave(true);
+                myProject.setAskForSave(true);
 
-            break; // No need to check remaining flavors
-          } catch (UnsupportedFlavorException ufe) {
-            System.out.println(ufe);
-            dtde.dropComplete(false);
-            return;
-          } catch (IOException ioe) {
-            System.out.println(ioe);
-            dtde.dropComplete(false);
-            return;
+                break; // No need to check remaining flavors
+              } catch (UnsupportedFlavorException ufe) {
+                System.out.println(ufe);
+                dtde.dropComplete(false);
+                return;
+              } catch (IOException ioe) {
+                System.out.println(ioe);
+                dtde.dropComplete(false);
+                return;
+              }
+            }
           }
+          dtde.dropComplete(true);
         }
-      }
-      dtde.dropComplete(true);
+      });
     }
 
     @Override
