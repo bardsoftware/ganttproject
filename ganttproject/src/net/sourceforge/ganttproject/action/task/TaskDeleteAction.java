@@ -18,11 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
+import java.util.Comparator;
 import java.util.List;
-
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import java.util.Map;
 
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
@@ -30,6 +31,11 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class TaskDeleteAction extends TaskActionBase {
 
@@ -62,12 +68,31 @@ public class TaskDeleteAction extends TaskActionBase {
   @Override
   protected void run(List<Task> selection) throws Exception {
     final DefaultMutableTreeTableNode[] cdmtn = getTree().getSelectedNodes();
-    getTree().stopEditing();
+    Map<Integer, List<DefaultMutableTreeTableNode>> levelMap = Maps.newTreeMap(new Comparator<Integer>() {
+      @Override
+      public int compare(Integer o1, Integer o2) {
+        // descending order
+        return o2.compareTo(o1);
+      }
+    });
     for (DefaultMutableTreeTableNode node : cdmtn) {
-      if (node != null && node instanceof TaskNode) {
-        Task task = (Task) node.getUserObject();
-        getTree().removeCurrentNode(node);
-        task.delete();
+      int level = TreeUtil.getLevel(node);
+      List<DefaultMutableTreeTableNode> levelList = levelMap.get(level);
+      if (levelList == null) {
+        levelList = Lists.newArrayList();
+        levelMap.put(level, levelList);
+      }
+      levelList.add(node);
+    }
+    getTree().stopEditing();
+
+    for (List<DefaultMutableTreeTableNode> levelList : levelMap.values()) {
+      for (DefaultMutableTreeTableNode node : levelList) {
+        if (node != null && node instanceof TaskNode) {
+          Task task = (Task) node.getUserObject();
+          getTree().removeCurrentNode(node);
+          task.delete();
+        }
       }
     }
     forwardScheduling();
