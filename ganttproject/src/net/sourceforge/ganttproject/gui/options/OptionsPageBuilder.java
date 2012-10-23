@@ -389,11 +389,11 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private Component createBooleanComponent(GPOptionGroup group, BooleanOption option) {
+  private Component createBooleanComponent(GPOptionGroup group, final BooleanOption option) {
     if (!isCheckboxOption(group, option)) {
       return createRadioButtonBooleanComponent(group, option);
     }
-    JCheckBox result = new JCheckBox(new BooleanOptionAction(option));
+    final JCheckBox result = new JCheckBox(new BooleanOptionAction(option));
     String trailingLabel = getTrailingLabel(option);
     if (trailingLabel != null) {
       result.setText(trailingLabel);
@@ -403,6 +403,12 @@ public class OptionsPageBuilder {
     result.setSelected(option.isChecked());
     ComponentOrientation componentOrientation = GanttLanguage.getInstance().getComponentOrientation();
     result.setComponentOrientation(componentOrientation);
+    option.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        result.setSelected(option.getValue());
+      }
+    });
     return result;
   }
 

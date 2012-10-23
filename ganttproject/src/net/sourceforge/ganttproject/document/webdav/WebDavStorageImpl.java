@@ -124,6 +124,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           }
           if (parts.length >= 4) {
             server.password = parts[3];
+            server.savePassword = true;
           }
           myServers.add(server);
         }
