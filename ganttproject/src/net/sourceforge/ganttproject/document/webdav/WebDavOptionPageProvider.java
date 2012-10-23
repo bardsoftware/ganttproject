@@ -129,6 +129,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
           urlOption.setValue(selected.rootUrl);
           usernameOption.setValue(selected.username);
           passwordOption.setValue(selected.password);
+          savePasswordOption.setValue(selected.savePassword);
         }
       }
     });
