@@ -47,6 +47,7 @@ import javax.swing.SpringLayout;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
@@ -66,6 +67,7 @@ import net.sourceforge.ganttproject.util.BrowserControl;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
 
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
@@ -82,6 +84,12 @@ import com.google.common.base.Objects;
 public class GanttTaskPropertiesBean extends JPanel {
 
   private ColorOption myTaskColorOption = new DefaultColorOption("");
+  private final GPAction mySetDefaultColorAction = new GPAction("defaultColor") {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      myTaskColorOption.setValue(myUIfacade.getGanttChart().getTaskDefaultColorOption().getValue());
+    }
+  };
   private JXDatePicker myThirdDatePicker;
 
   protected GanttTask[] selectedTasks;
@@ -260,8 +268,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     propertiesPanel.add(shapeComboBox);
 
     OptionsPageBuilder builder = new OptionsPageBuilder(GanttTaskPropertiesBean.this, OptionsPageBuilder.TWO_COLUMN_LAYOUT);
-    Box colorBox = Box.createHorizontalBox();
-    colorBox.add(builder.createColorComponent(myTaskColorOption));
+    JPanel colorBox = new JPanel(new BorderLayout(5, 0));
+    colorBox.add(builder.createColorComponent(myTaskColorOption), BorderLayout.WEST);
+    //colorBox.add(Box.createHorizontalStrut(5));
+    colorBox.add(new JXHyperlink(mySetDefaultColorAction), BorderLayout.CENTER);
+    //colorBox.add(Box.createHorizontalGlue());
+    //colorBox.add(Box.createHorizontalGlue());
+    //colorBox.add(Box.createHorizontalGlue());
 
     propertiesPanel.add(new JLabel(language.getText("colors")));
     propertiesPanel.add(colorBox);
@@ -290,20 +303,14 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount() / 2, 2, 1, 1, 5, 5);
 
+    JPanel propertiesWrapper = new JPanel(new BorderLayout());
+    propertiesWrapper.add(propertiesPanel, BorderLayout.NORTH);
     generalPanel = new JPanel(new SpringLayout());
     //generalPanel.add(new JLayer<JPanel>(propertiesPanel, layerUi));
-    generalPanel.add(propertiesPanel);
+    generalPanel.add(propertiesWrapper);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
     generalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-  }
-
-  /** Change the name of the task on all text fields containing task name */
-  private void changeNameOfTask() {
-    if (nameField1 != null) {
-      String nameOfTask = nameField1.getText().trim();
-      nameField1.setText(nameOfTask);
-    }
   }
 
   private void constructCustomColumnPanel() {
