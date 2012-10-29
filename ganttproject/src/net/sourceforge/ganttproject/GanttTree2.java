@@ -742,6 +742,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       // Do not accept dropping on the source node
       Point pt = e.getLocation();
       TreePath path = getTree().getPathForLocation(pt.x, pt.y);
+      if (path == null) {
+        return false;
+      }
       if (dragPath.isDescendant(path)) {
         return false;
       }
@@ -772,6 +775,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       // prohibit dropping onto the drag source
       Point pt = e.getLocation();
       TreePath path = getTree().getPathForLocation(pt.x, pt.y);
+      if (path == null) {
+        return false;
+      }
       if (path.equals(dragPath)) {
         return false;
       }
