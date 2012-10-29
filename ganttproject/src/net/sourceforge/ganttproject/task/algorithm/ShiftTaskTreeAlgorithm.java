@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -43,13 +43,19 @@ public class ShiftTaskTreeAlgorithm {
 
   public void run(List<Task> tasks, TimeDuration shift, boolean deep) throws AlgorithmException {
     myTaskManager.setEventsEnabled(false);
-    for (Task t : tasks) {
-      shiftTask(t, shift, deep);
-    }
     try {
-      myRescheduleAlgorithm.run(new HashSet<Task>(tasks));
-    } catch (TaskDependencyException e) {
-      throw new AlgorithmException("Failed to reschedule the following tasks tasks after move:\n" + tasks, e);
+      for (Task t : tasks) {
+        shiftTask(t, shift, deep);
+      }
+      try {
+        if (myRescheduleAlgorithm != null) {
+          myRescheduleAlgorithm.run(new HashSet<Task>(tasks));
+        }
+      } catch (TaskDependencyException e) {
+        throw new AlgorithmException("Failed to reschedule the following tasks tasks after move:\n" + tasks, e);
+      }
+    } finally {
+      myTaskManager.setEventsEnabled(true);
     }
   }
 
