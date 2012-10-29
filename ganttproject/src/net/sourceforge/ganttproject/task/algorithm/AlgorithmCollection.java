@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -39,12 +39,15 @@ public class AlgorithmCollection {
 
   private final CriticalPathAlgorithm myCriticalPathAlgorithm;
 
+  private final SchedulerImpl myScheduler;
+
   public AlgorithmCollection(TaskManagerImpl taskManager,
       FindPossibleDependeesAlgorithm myFindPossibleDependeesAlgorithm,
       RecalculateTaskScheduleAlgorithm recalculateTaskScheduleAlgorithm,
       AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
       RecalculateTaskCompletionPercentageAlgorithm completionPercentageAlgorithm,
-      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm) {
+      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm, SchedulerImpl scheduler) {
+    myScheduler = scheduler;
     this.myFindPossibleDependeesAlgorithm = myFindPossibleDependeesAlgorithm;
     myRecalculateTaskScheduleAlgorithm = recalculateTaskScheduleAlgorithm;
     myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;
@@ -82,4 +85,7 @@ public class AlgorithmCollection {
     return myCriticalPathAlgorithm;
   }
 
+  public AlgorithmBase getScheduler() {
+    return myScheduler;
+  }
 }

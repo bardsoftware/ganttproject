@@ -44,6 +44,12 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
     run(Arrays.asList(tasks));
   }
 
+
+  @Override
+  protected boolean isEnabled() {
+    return false;
+  }
+
   public void run(Collection<Task> tasks) {
     if (!isEnabled()) {
       return;
@@ -53,6 +59,9 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
   }
 
   public void adjustNestedTasks(Task supertask) throws TaskDependencyException {
+    if (!isEnabled()) {
+      return;
+    }
     TaskContainmentHierarchyFacade containmentFacade = createContainmentFacade();
     List<Task> nestedTasks = new ArrayList<Task>(Arrays.asList(containmentFacade.getNestedTasks(supertask)));
     if (nestedTasks.size() == 0) {

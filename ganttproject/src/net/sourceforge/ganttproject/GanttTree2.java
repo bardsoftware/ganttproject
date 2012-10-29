@@ -53,9 +53,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
@@ -83,9 +85,11 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import biz.ganttproject.core.table.ColumnList;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
@@ -109,6 +113,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
+import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
@@ -815,7 +820,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         @Override
         public void run() {
           cpNodesArrayList = new ArrayList<DefaultMutableTreeTableNode>();
-          cpAllDependencies(selection);
+          cpAllDependencies(Arrays.asList(selection));
           GanttTask taskFather = null;
           MutableTreeTableNode parent = null;
           DefaultMutableTreeTableNode current = null;
@@ -844,32 +849,28 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
   }
 
+  private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = new Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode>() {
+    @Override
+    public DefaultMutableTreeTableNode apply(DefaultMutableTreeTableNode node) {
+      return (DefaultMutableTreeTableNode) node.getParent();
+    }
+  };
+  private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
+
   /** Copy the current selected tree node */
   public void copySelectedNode() {
     DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes != null) {
-      DefaultMutableTreeTableNode[] selectedRoots = findSelectedSubtreeRoots(selectedNodes);
+      List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
+      myRetainRootsAlgorithm.run(selectedNodes, getParentNode, selectedRoots);
       cpNodesArrayList = new ArrayList<DefaultMutableTreeTableNode>();
       cpAllDependencies(selectedRoots);
-      for (int i = 0; i < selectedRoots.length; i++) {
-        cpNodesArrayList.add(selectedNodes[i]);
+      for (DefaultMutableTreeTableNode node : selectedRoots) {
+        cpNodesArrayList.add(node);
       }
     }
   }
 
-  private DefaultMutableTreeTableNode[] findSelectedSubtreeRoots(DefaultMutableTreeTableNode[] selectedNodes) {
-    final HashSet<DefaultMutableTreeTableNode> set = new HashSet<DefaultMutableTreeTableNode>(
-        Arrays.asList(selectedNodes));
-    for (int i = 0; i < selectedNodes.length; i++) {
-      for (TreeNode parent = selectedNodes[i].getParent(); parent != null; parent = parent.getParent()) {
-        if (set.contains(parent)) {
-          set.remove(selectedNodes[i]);
-          break;
-        }
-      }
-    }
-    return set.toArray(new DefaultMutableTreeTableNode[set.size()]);
-  }
 
   /** Paste the node and its child node to current selected position */
   public void pasteNode() {
@@ -999,7 +1000,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     dge.startDrag(null, ghostImage, new Point(5, 5), transferable, this);
   }
 
-  private void cpAllDependencies(DefaultMutableTreeTableNode[] nodes) {
+  private void cpAllDependencies(Collection<DefaultMutableTreeTableNode> nodes) {
     // to get all the dependencies who need to be paste.
     cpDependencies = new ArrayList<TaskDependency>();
     allNodes = Lists.newArrayList();

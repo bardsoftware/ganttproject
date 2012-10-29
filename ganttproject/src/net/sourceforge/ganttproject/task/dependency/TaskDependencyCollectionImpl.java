@@ -230,8 +230,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   }
 
   private TaskDependency auxCreateDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint) {
-    TaskDependency result = new TaskDependencyImpl(dependant, dependee, this);
-    result.setConstraint(constraint);
+    TaskDependency result = new TaskDependencyImpl(dependant, dependee, this, constraint);
     result.setDifference(0);
     return result;
   }
