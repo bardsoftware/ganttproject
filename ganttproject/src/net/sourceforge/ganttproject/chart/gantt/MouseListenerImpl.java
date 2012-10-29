@@ -23,6 +23,9 @@ import java.util.List;
 
 import javax.swing.Action;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -35,9 +38,18 @@ import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.util.MouseUtil;
 
 class MouseListenerImpl extends MouseListenerBase {
+  private static final Function<Task, Task> getParentTask = new Function<Task, Task>() {
+    @Override
+    public Task apply(Task task) {
+      return task.getManager().getTaskHierarchy().getContainer(task);
+    }
+  };
+  private static final RetainRootsAlgorithm<Task> ourRetainRootsAlgorithm = new RetainRootsAlgorithm<Task>();
+
   private final GanttTree2 myTree;
   private final GanttChartController myChartImplementation;
   private final UIFacade myUiFacade;
@@ -138,8 +150,9 @@ class MouseListenerImpl extends MouseListenerBase {
       getTaskSelectionManager().clear();
       getTaskSelectionManager().addTask(taskUnderPointer);
     }
-    List<Task> l = getTaskSelectionManager().getSelectedTasks();
-    myChartImplementation.beginMoveTaskInteractions(e, l);
+    List<Task> roots = Lists.newArrayList();
+    ourRetainRootsAlgorithm.run(getTaskSelectionManager().getSelectedTasks().toArray(new Task[0]), getParentTask, roots);
+    myChartImplementation.beginMoveTaskInteractions(e, roots);
   }
 
   private void handleEvent(ChartItem itemUnderPoint, MouseEvent e) {
