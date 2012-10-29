@@ -38,6 +38,7 @@ import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
@@ -218,6 +219,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
       myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);
     }
 
+    ((TaskManagerImpl)getTaskManager()).getDependencyGraph().move(whatMove, whereMove == getTaskManager().getRootTask() ? null : whereMove);
     getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);
     try {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();

@@ -191,6 +191,7 @@ class ProjectFileImporter {
 
     getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
     getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
+    getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
     importTasks(pf, foreignId2nativeTask);
     hideCustomProperties();
     try {
@@ -202,9 +203,15 @@ class ProjectFileImporter {
         }
       }
       myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
+    } catch (TaskDependencyException e) {
+      throw new MPXJException("Failed to import dependencies", e);
+    } finally {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);
-      getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+      getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(true);
+    }
+    try {
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
     } catch (TaskDependencyException e) {
       throw new MPXJException("Failed to import dependencies", e);
