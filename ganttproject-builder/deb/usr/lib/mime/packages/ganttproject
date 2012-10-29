@@ -1,0 +1,1 @@
+application/ganttproject+xml; ganttproject '%s'; description="GanttProject file"; test=test -n "$DISPLAY"; nametemplate=%s.gan
