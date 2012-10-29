@@ -40,6 +40,8 @@ import org.eclipse.core.runtime.Status;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.GPCalendar.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -973,9 +975,15 @@ public class TaskImpl implements Task {
         TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
         // clone.setDuration(length);
         newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
+        if (getManager().getCalendar().isNonWorkingDay(newStart)) {
+          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.FORWARD, DayType.WORKING);
+        }
       } else {
         newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
             getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
+        if (getManager().getCalendar().isNonWorkingDay(newStart)) {
+          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.BACKWARD, DayType.WORKING);
+        }
       }
       clone.setStart(CalendarFactory.createGanttCalendar(newStart));
       clone.setDuration(myLength);
