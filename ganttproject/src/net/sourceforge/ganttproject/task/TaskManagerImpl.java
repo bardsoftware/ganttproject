@@ -32,6 +32,7 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -48,10 +49,12 @@ import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithmImpl;
+import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
 import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
+import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
@@ -99,6 +102,15 @@ public class TaskManagerImpl implements TaskManager {
   };
 
   private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
+
+  private final Supplier<TaskContainmentHierarchyFacade> myHierarchySupplier = new Supplier<TaskContainmentHierarchyFacade>() {
+    @Override
+    public TaskContainmentHierarchyFacade get() {
+      return getTaskHierarchy();
+    }
+  };
+  private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier);
+  private final SchedulerImpl myScheduler = new SchedulerImpl(myDependencyGraph, myHierarchySupplier);
 
   private boolean areEventsEnabled = true;
 
@@ -222,7 +234,7 @@ public class TaskManagerImpl implements TaskManager {
     };
     ChartBoundsAlgorithm alg5 = new ChartBoundsAlgorithm();
     CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
-    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6);
+    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6, myScheduler);
   }
 
   private CustomPropertyListener getCustomPropertyListener() {
@@ -257,6 +269,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public void projectClosed() {
+    myDependencyGraph.clear();
     myTaskMap.clear();
     myMaxID.set(0);
     myDependencyCollection.clear();
@@ -368,6 +381,7 @@ public class TaskManagerImpl implements TaskManager {
     assert myTaskMap.getTask(taskID) == null : "There is a task that already has the ID " + taskID;
     myTaskMap.addTask(task);
     myMaxID.set(Math.max(taskID + 1, myMaxID.get()));
+    myDependencyGraph.addTask(task);
   }
 
   boolean isRegistered(TaskImpl task) {
@@ -622,6 +636,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   void fireTaskScheduleChanged(Task changedTask, GanttCalendar oldStartDate, GanttCalendar oldFinishDate) {
+    myScheduler.run();
     if (areEventsEnabled) {
       TaskScheduleEvent e = new TaskScheduleEvent(changedTask, oldStartDate, oldFinishDate, changedTask.getStart(),
           changedTask.getEnd());
@@ -635,6 +650,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private void fireDependencyAdded(TaskDependency newDependency) {
+    myDependencyGraph.addDependency(newDependency);
     if (areEventsEnabled) {
       TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), newDependency);
       for (int i = 0; i < myListeners.size(); i++) {
@@ -645,6 +661,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private void fireDependencyRemoved(TaskDependency dep) {
+    myDependencyGraph.removeDependency(dep);
     TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), dep);
     for (int i = 0; i < myListeners.size(); i++) {
       TaskListener next = myListeners.get(i);
@@ -663,6 +680,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private void fireTaskRemoved(Task container, Task task) {
+    myDependencyGraph.removeTask(task);
     if (areEventsEnabled) {
       TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, container, null);
       for (TaskListener l : myListeners) {
@@ -1071,4 +1089,7 @@ public class TaskManagerImpl implements TaskManager {
     return isZeroMilestones;
   }
 
+  public DependencyGraph getDependencyGraph() {
+    return myDependencyGraph;
+  }
 }
