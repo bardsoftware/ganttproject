@@ -229,6 +229,6 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
   }
 
   private int getRowHeight() {
-    return myLabelsRenderer.calculateRowHeight();
+    return myChartApi.getRowHeight();
   }
 }
