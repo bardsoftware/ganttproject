@@ -154,7 +154,7 @@
            homepage="http://ganttproject.biz/"
            section="editors"
            priority="optional"
-           depends="sun-java5-jre | sun-java6-jre | openjdk-6-jre"
+           depends="sun-java5-jre | sun-java6-jre | openjdk-6-jre | openjdk-7-jre"
            conflicts="ganttproject-praha"
       	   replaces="ganttproject-praha"
            postrm="deb/postrm"
@@ -191,7 +191,7 @@
             homepage="http://ganttproject.biz/"
             section="editors"
             priority="optional"
-            depends="${package.name}-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre"
+            depends="${package.name}-minimal (= ${dist.version.number}-1), sun-java5-jre | sun-java6-jre | openjdk-6-jre | openjdk-7-jre"
         >
       <version upstream="${dist.version.number}"/>
       <maintainer name="GanttProject Developers" email="contribution@ganttproject.biz"/>
