@@ -30,7 +30,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.core.time.TimeDuration;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -57,6 +59,13 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
   public RecalculateTaskScheduleAlgorithm(AdjustTaskBoundsAlgorithm adjuster) {
     myAdjuster = adjuster;
   }
+
+
+  @Override
+  protected boolean isEnabled() {
+    return false;
+  }
+
 
   public void run(Task changedTask) throws TaskDependencyException {
     if (!isEnabled()) {
@@ -205,8 +214,16 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
   }
 
   private void modifyTaskStart(Task task, GanttCalendar newStart) {
-    TaskMutator mutator = task.createMutatorFixingDuration();
-    mutator.setStart(newStart);
+    TaskMutator mutator = task.createMutator();
+    WorkingUnitCounter counter = new WorkingUnitCounter(task.getManager().getCalendar(), task.getDuration().getTimeUnit());
+    TimeDuration shift;
+    if (task.getStart().getTime().before(newStart.getTime())) {
+      shift = counter.run(task.getStart().getTime(), newStart.getTime());
+    } else {
+      shift = counter.run(newStart.getTime(), task.getStart().getTime()).reverse();
+    }
+    System.err.println("task=" + task + " newstart=" + newStart + " shift=" + shift);
+    mutator.shift(shift);
     mutator.commit();
     myModifiedTasks.add(task);
   }

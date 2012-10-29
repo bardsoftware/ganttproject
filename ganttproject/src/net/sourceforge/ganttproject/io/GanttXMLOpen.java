@@ -91,9 +91,20 @@ public class GanttXMLOpen implements GPParser {
 
   @Override
   public boolean load(InputStream inStream) throws IOException {
+    try {
+      myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(false);
+      myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+      myTaskManager.getAlgorithmCollection().getScheduler().setEnabled(false);
+      return doLoad(inStream);
+    } finally {
+      myTaskManager.getAlgorithmCollection().getScheduler().setEnabled(true);
+      myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+      myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(true);
+    }
+  }
+
+  public boolean doLoad(InputStream inStream) throws IOException {
     // Use an instance of ourselves as the SAX event handler
-    myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(false);
-    myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
     DefaultHandler handler = new GanttXMLParser();
 
     // Use the default (non-validating) parser
@@ -119,9 +130,6 @@ public class GanttXMLOpen implements GPParser {
       }
       throw new IOException(e.getMessage());
     }
-    myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
-    myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(true);
-
     myUIFacade.setViewIndex(viewIndex);
     myUIFacade.setGanttDividerLocation(ganttDividerLocation);
     if (resourceDividerLocation != 0) {

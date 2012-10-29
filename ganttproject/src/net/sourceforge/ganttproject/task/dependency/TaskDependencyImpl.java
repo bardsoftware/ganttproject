@@ -44,6 +44,10 @@ public class TaskDependencyImpl implements TaskDependency {
   private TaskActivity myEndActivity;
 
   public TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection) {
+    this(dependant, dependee, collection, null);
+  }
+
+  TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection, TaskDependencyConstraint constraint) {
     myDependant = dependant;
     myDependee = dependee;
     myCollection = collection;
@@ -52,6 +56,10 @@ public class TaskDependencyImpl implements TaskDependency {
           + dependant);
     }
     myHardness = Hardness.STRONG;
+    myConstraint = constraint;
+    if (constraint != null) {
+      constraint.setTaskDependency(this);
+    }
   }
 
   @Override
