@@ -508,6 +508,12 @@ public class OptionsPageBuilder {
     label.setPreferredSize(new Dimension(16, 16));
     label.setBackground(option.getValue());
 
+    option.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        label.setBackground(option.getValue());
+      }
+    });
     Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
       @Override
       public void actionPerformed(ActionEvent e) {

@@ -201,14 +201,14 @@ public class TaskScheduleDatesPanel {
       }
     });
     box.add(myLockHyperlink);
-    box.add(Box.createHorizontalStrut(15));
-    mySchedulingHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.automated.label") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        showPopup(createSchedulingMenu(), box, mySchedulingHyperlink);
-      }
-    });
-    box.add(mySchedulingHyperlink);
+//    box.add(Box.createHorizontalStrut(15));
+//    mySchedulingHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.automated.label") {
+//      @Override
+//      public void actionPerformed(ActionEvent e) {
+//        showPopup(createSchedulingMenu(), box, mySchedulingHyperlink);
+//      }
+//    });
+//    box.add(mySchedulingHyperlink);
     propertiesPanel.add(box);
 
     propertiesPanel.add(startDateLabel);
