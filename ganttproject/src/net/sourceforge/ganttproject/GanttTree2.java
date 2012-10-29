@@ -54,10 +54,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
@@ -77,19 +77,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
-
-import biz.ganttproject.core.table.ColumnList;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
@@ -119,6 +106,18 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import biz.ganttproject.core.table.ColumnList;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Class that generate the JTree
@@ -285,6 +284,16 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         selectedTasks.add((Task) node.getUserObject());
       }
     }
+    // selection paths in Swing are stored in a hashtable
+    // and thus come to selection listeners in pretty random order.
+    // For correct indent/outdent operations with need
+    // to order them the way they are ordered in the tree.
+    Collections.sort(selectedTasks, new Comparator<Task>() {
+      @Override
+      public int compare(Task o1, Task o2) {
+        return myTaskManager.getTaskHierarchy().compareDocumentOrder(o1, o2);
+      }
+    });
     getTaskSelectionManager().clear();
     for (Task t : selectedTasks) {
       getTaskSelectionManager().addTask(t);
