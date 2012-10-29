@@ -52,6 +52,8 @@ import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
+import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependant;
@@ -154,7 +156,7 @@ public class TaskImpl implements Task {
     if (!isUnplugged) {
       myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
     } else {
-      myTaskHierarchyItem = null;
+      myTaskHierarchyItem = copy.myTaskHierarchyItem;
     }
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
     myAssignments.importData(copy.getAssignmentCollection());
@@ -849,7 +851,12 @@ public class TaskImpl implements Task {
 
     @Override
     public void shift(TimeDuration shift) {
-      TaskImpl.this.shift(shift);
+      ShiftTaskTreeAlgorithm shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager, null);
+      try {
+        shiftAlgorithm.run(TaskImpl.this, shift, ShiftTaskTreeAlgorithm.DEEP);
+      } catch (AlgorithmException e) {
+        GPLogger.log(e);
+      }
     }
 
     @Override
@@ -967,7 +974,7 @@ public class TaskImpl implements Task {
         // clone.setDuration(length);
         newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
       } else {
-        newStart = shiftDate(clone.getStart().getTime(),
+        newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
             getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
       }
       clone.setStart(CalendarFactory.createGanttCalendar(newStart));
