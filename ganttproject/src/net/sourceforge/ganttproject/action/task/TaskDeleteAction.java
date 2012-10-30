@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.task;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.TreeUtil;
@@ -68,7 +69,7 @@ public class TaskDeleteAction extends TaskActionBase {
   @Override
   protected void run(List<Task> selection) throws Exception {
     final DefaultMutableTreeTableNode[] cdmtn = getTree().getSelectedNodes();
-    Map<Integer, List<DefaultMutableTreeTableNode>> levelMap = Maps.newTreeMap(new Comparator<Integer>() {
+    Map<Integer, List<DefaultMutableTreeTableNode>> levelMap = new TreeMap<Integer, List<DefaultMutableTreeTableNode>>(new Comparator<Integer>() {
       @Override
       public int compare(Integer o1, Integer o2) {
         // descending order
