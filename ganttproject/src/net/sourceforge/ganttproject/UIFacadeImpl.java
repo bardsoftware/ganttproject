@@ -294,7 +294,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showErrorDialog(Throwable e) {
     GPLogger.logToLogger(e);
-    showErrorNotification(buildMessage(e));
+    showNotificationDialog(NotificationChannel.ERROR, buildMessage(e));
   }
 
   private static String buildMessage(Throwable e) {
@@ -313,14 +313,16 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showErrorDialog(String errorMessage) {
     GPLogger.log(errorMessage);
-    showErrorNotification(errorMessage);
+    showNotificationDialog(NotificationChannel.ERROR, errorMessage);
   }
 
-  private void showErrorNotification(String message) {
+  @Override
+  public void showNotificationDialog(NotificationChannel channel, String message) {
+    String i18nPrefix = channel.name().toLowerCase() + ".channel.";
     getNotificationManager().addNotifications(
-        NotificationChannel.ERROR,
-        Collections.singletonList(new NotificationItem(i18n("error.channel.itemTitle"),
-            GanttLanguage.getInstance().formatText("error.channel.itemBody", message), new HyperlinkListener() {
+        channel,
+        Collections.singletonList(new NotificationItem(i18n(i18nPrefix + "itemTitle"),
+            GanttLanguage.getInstance().formatText(i18nPrefix + "itemBody", message), new HyperlinkListener() {
               @Override
               public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() != EventType.ACTIVATED) {

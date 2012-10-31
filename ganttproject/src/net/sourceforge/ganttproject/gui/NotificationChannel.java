@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
 
 public enum NotificationChannel {
-  RSS(Color.YELLOW.brighter()), ERROR(UIUtil.ERROR_BACKGROUND);
+  RSS(Color.GREEN.brighter()), ERROR(UIUtil.ERROR_BACKGROUND), WARNING(Color.YELLOW);
 
   public interface Listener {
     void notificationAdded();

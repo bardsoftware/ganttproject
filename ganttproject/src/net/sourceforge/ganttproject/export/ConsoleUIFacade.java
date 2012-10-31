@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
@@ -97,6 +98,11 @@ public class ConsoleUIFacade implements UIFacade {
   @Override
   public void showErrorDialog(String errorMessage) {
     System.err.println("[ConsoleUIFacade] ERROR: " + errorMessage);
+  }
+
+  @Override
+  public void showNotificationDialog(NotificationChannel channel, String message) {
+    System.err.println("[ConsoleUIFacade] " + channel.toString() + ": " + message);
   }
 
   @Override
