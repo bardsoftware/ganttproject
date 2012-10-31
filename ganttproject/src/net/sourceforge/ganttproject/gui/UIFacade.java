@@ -90,6 +90,7 @@ public interface UIFacade {
 
   void showErrorDialog(String errorMessage);
 
+  void showNotificationDialog(NotificationChannel channel, String message);
   /**
    * Shows the given exception in an error dialog and also puts it into the log
    * file

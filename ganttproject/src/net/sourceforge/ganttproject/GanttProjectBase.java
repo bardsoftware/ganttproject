@@ -49,6 +49,7 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
@@ -283,6 +284,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public void showErrorDialog(Throwable e) {
     myUIFacade.showErrorDialog(e);
+  }
+
+  @Override
+  public void showNotificationDialog(NotificationChannel channel, String message) {
+    myUIFacade.showNotificationDialog(channel, message);
   }
 
   @Override

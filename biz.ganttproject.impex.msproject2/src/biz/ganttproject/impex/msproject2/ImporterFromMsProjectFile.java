@@ -23,6 +23,7 @@ import java.util.List;
 
 import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -47,7 +48,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
           GPLogger.log(message);
           builder.append("<li>").append(message);
         }
-        getUiFacade().showErrorDialog(
+        getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
             GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
       }
     } catch (MPXJException e) {

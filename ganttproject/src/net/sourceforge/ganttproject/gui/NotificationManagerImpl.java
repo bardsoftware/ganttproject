@@ -80,10 +80,16 @@ public class NotificationManagerImpl implements NotificationManager {
     NotificationChannel.RSS.setButton(rssButton);
     result.add(rssButton);
 
+    TestGanttRolloverButton warningButton = new TestGanttRolloverButton(new ShowChannelAction(this, NotificationChannel.WARNING));
+    result.add(warningButton);
+    NotificationChannel.WARNING.setButton(warningButton);
+
     TestGanttRolloverButton errorButton = new TestGanttRolloverButton(new ShowChannelAction(this,
         NotificationChannel.ERROR));
     NotificationChannel.ERROR.setButton(errorButton);
     result.add(errorButton);
+
+
     result.addComponentListener(new ComponentListener() {
       @Override
       public void componentShown(ComponentEvent e) {
