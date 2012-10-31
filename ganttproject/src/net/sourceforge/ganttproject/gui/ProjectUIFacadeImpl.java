@@ -56,6 +56,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;
@@ -63,6 +64,7 @@ import net.sourceforge.ganttproject.util.FileUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -271,7 +273,20 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     beforeClose();
     project.close();
 
-    project.open(document);
+    class DiagnosticImpl implements AlgorithmBase.Diagnostic {
+      List<String> myMessages = Lists.newArrayList();
+      @Override
+      public void info(String message) {
+        myMessages.add(message);
+      }
+    }
+    final DiagnosticImpl d = new DiagnosticImpl();
+    try {
+      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
+      project.open(document);
+    } finally {
+      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(null);
+    }
     if (document.getPortfolio() != null) {
       Document defaultDocument = document.getPortfolio().getDefaultDocument();
       project.open(defaultDocument);
@@ -287,14 +302,22 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         break;
       }
     }
+
+    List<Runnable> tasks = Lists.newArrayList();
+
     if (hasLegacyMilestones && taskManager.isZeroMilestones() == null) {
       ConvertMilestones option = myConvertMilestonesOption.getSelectedValue() == null ? ConvertMilestones.UNKNOWN : myConvertMilestonesOption.getSelectedValue();
       switch (option) {
       case UNKNOWN:
-        SwingUtilities.invokeLater(new Runnable() {
+        tasks.add(new Runnable() {
           @Override
           public void run() {
-            tryPatchMilestones(project, taskManager);
+            try {
+              project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
+              tryPatchMilestones(project, taskManager);
+            } finally {
+              project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(null);
+            }
           }
         });
         break;
@@ -308,35 +331,60 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       }
     }
 
-    SwingUtilities.invokeLater(new Runnable() {
+    tasks.add(new Runnable() {
       @Override
       public void run() {
-        adjustTasks(taskManager);
+        if (!d.myMessages.isEmpty()) {
+          GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
+          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, "Some of the tasks have been modified. See the log for details");
+        }
       }
     });
     if (resetModified) {
-      SwingUtilities.invokeLater(new Runnable() {
+      tasks.add(new Runnable() {
         @Override
         public void run() {
           project.setModified(false);
         }
       });
     }
+    processTasks(tasks);
+  }
+
+  private void processTasks(final List<Runnable> tasks) {
+    if (tasks.isEmpty()) {
+      return;
+    }
+    final Runnable task = tasks.get(0);
+    Runnable wrapper = new Runnable() {
+      @Override
+      public void run() {
+        task.run();
+        tasks.remove(0);
+        processTasks(tasks);
+      }
+    };
+    SwingUtilities.invokeLater(wrapper);
   }
 
   private void adjustTasks(TaskManager taskManager) {
+//    try {
+//      taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+//    } catch (TaskDependencyException e) {
+//      GPLogger.logToLogger(e);
+//    }
+//    List<Task> leafTasks = Lists.newArrayList();
+//    for (Task t : taskManager.getTasks()) {
+//      if (taskManager.getTaskHierarchy().getNestedTasks(t).length == 0) {
+//        leafTasks.add(t);
+//      }
+//    }
+//    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
     try {
-      taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-    } catch (TaskDependencyException e) {
+      taskManager.getAlgorithmCollection().getScheduler().run();
+    } catch (Exception e) {
       GPLogger.logToLogger(e);
     }
-    List<Task> leafTasks = Lists.newArrayList();
-    for (Task t : taskManager.getTasks()) {
-      if (taskManager.getTaskHierarchy().getNestedTasks(t).length == 0) {
-        leafTasks.add(t);
-      }
-    }
-    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
   }
 
   private void tryPatchMilestones(final IGanttProject project, final TaskManager taskManager) {

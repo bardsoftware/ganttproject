@@ -20,7 +20,12 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 public class AlgorithmBase {
 
+  public static interface Diagnostic {
+    void info(String message);
+  }
+
   private boolean isEnabled = true;
+  private Diagnostic myDiagnostic;
 
   public void setEnabled(boolean enabled) {
     isEnabled = enabled;
@@ -30,4 +35,14 @@ public class AlgorithmBase {
     return isEnabled;
   }
 
+  public void setDiagnostic(Diagnostic d) {
+    myDiagnostic = d;
+  }
+
+  protected Diagnostic getDiagnostic() {
+    return myDiagnostic;
+  }
+
+  public void run() throws Exception {
+  }
 }
