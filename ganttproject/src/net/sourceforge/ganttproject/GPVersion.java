@@ -31,6 +31,6 @@ public interface GPVersion {
   String V2_0_10 = "2.0.10";
   String V2_0_X = V2_0_10;
   String PRAHA = "2.5.5 Praha (build 1256)";
-  String BRNO = "2.6 Brno RC II (build 1419)";
+  String BRNO = "2.6 Brno RC III (build 1440)";
   String CURRENT = BRNO;
 }
