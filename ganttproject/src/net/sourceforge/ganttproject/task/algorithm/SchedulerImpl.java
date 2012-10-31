@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
 import com.google.common.base.Supplier;
@@ -68,7 +69,7 @@ public class SchedulerImpl extends AlgorithmBase {
     }
   }
 
-
+  @Override
   public void run() {
     if (!isEnabled() || isRunning) {
       return;
@@ -113,32 +114,39 @@ public class SchedulerImpl extends AlgorithmBase {
           endRange = endRange.intersection(subtasks);
         }
         if (startRange.hasLowerBound()) {
-          Date newStart = startRange.lowerEndpoint();
-          if (!node.getTask().getStart().getTime().equals(newStart)) {
-            modifyTaskStart(node.getTask(), newStart);
-          }
+          modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
         }
-
         if (endRange.hasUpperBound()) {
-          Date newEnd = endRange.upperEndpoint();
-          if (!node.getTask().getEnd().getTime().equals(newEnd)) {
-            modifyTaskEnd(node.getTask(), newEnd);
-          }
+          modifyTaskEnd(node.getTask(), endRange.upperEndpoint());
         }
       }
     }
   }
 
   private void modifyTaskEnd(Task task, Date newEnd) {
+    if (task.getEnd().getTime().equals(newEnd)) {
+      return;
+    }
+    GanttCalendar newEndCalendar = CalendarFactory.createGanttCalendar(newEnd);
+    if (getDiagnostic() != null) {
+      getDiagnostic().info("changing end date of the task #" + task.getTaskID() + " " + task.getName() + ". Was:" + task.getStart() + " Now:" + newEndCalendar);
+    }
     TaskMutator mutator = task.createMutator();
-    mutator.setEnd(CalendarFactory.createGanttCalendar(newEnd));
+    mutator.setEnd(newEndCalendar);
     mutator.commit();
   }
 
   private void modifyTaskStart(Task task, Date newStart) {
+    if (task.getStart().getTime().equals(newStart)) {
+      return;
+    }
+    GanttCalendar newStartCalendar = CalendarFactory.createGanttCalendar(newStart);
+    if (getDiagnostic() != null) {
+      getDiagnostic().info("changing start date of the task #" + task.getTaskID() + " " + task.getName() + ". Was:" + task.getStart() + " Now:" + newStartCalendar);
+    }
     TaskMutator mutator = task.createMutator();
     if (myTaskHierarchy.get().hasNestedTasks(task)) {
-      mutator.setStart(CalendarFactory.createGanttCalendar(newStart));
+      mutator.setStart(newStartCalendar);
       mutator.commit();
     } else {
       TimeDuration shift = task.getManager().createLength(task.getDuration().getTimeUnit(), task.getStart().getTime(), newStart);

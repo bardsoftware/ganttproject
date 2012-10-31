@@ -32,6 +32,8 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.base.Objects;
@@ -119,17 +121,26 @@ public class DependencyGraph {
 
     @Override
     public boolean refresh() {
+      GPCalendar calendar = myDstNode.myTask.getManager().getCalendar();
       TaskDependencyConstraint.Collision nextCollision = myDep.getConstraint().getCollision();
-      GanttCalendar acceptableStart = nextCollision.getAcceptableStart();
+      Date acceptableStart = nextCollision.getAcceptableStart().getTime();
       switch (nextCollision.getVariation()) {
       case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
-        myStartRange = Ranges.upTo(acceptableStart.getTime(), BoundType.CLOSED);
+        if (calendar.isNonWorkingDay(acceptableStart)) {
+          acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
+              GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
+        }
+        myStartRange = Ranges.upTo(acceptableStart, BoundType.CLOSED);
         break;
       case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
-        myStartRange = Ranges.downTo(acceptableStart.getTime(), BoundType.CLOSED);
+        if (calendar.isNonWorkingDay(acceptableStart)) {
+          acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
+              GPCalendar.MoveDirection.FORWARD, GPCalendar.DayType.WORKING);
+        }
+        myStartRange = Ranges.downTo(acceptableStart, BoundType.CLOSED);
         break;
       case TaskDependencyConstraint.Collision.NO_VARIATION:
-        myStartRange = Ranges.singleton(acceptableStart.getTime());
+        myStartRange = Ranges.singleton(acceptableStart);
         break;
       }
       myEndRange = Ranges.all();
