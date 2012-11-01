@@ -306,8 +306,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
     int rowNum = 0;
     for (Task t : visibleTasks) {
-      List<TaskActivity> activities = /*t.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          t)) :*/ Arrays.asList(t.getActivities());
+      List<TaskActivity> activities = Arrays.asList(t.getActivities());
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
       renderLabels(rectangles);
       renderBaseline(t, rowNum, defaultUnitOffsets);

@@ -382,7 +382,7 @@ public class TaskImpl implements Task {
 
   @Override
   public TaskActivity[] getActivities() {
-    if (isMilestone()) {
+    if (isMilestone) {
       return new TaskActivity[] { myMilestoneActivity };
     }
     List<TaskActivity> activities = myMutator == null ? null : myMutator.getActivities();
