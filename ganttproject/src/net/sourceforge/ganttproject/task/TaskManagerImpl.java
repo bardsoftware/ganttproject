@@ -94,6 +94,8 @@ public class TaskManagerImpl implements TaskManager {
 
   private final TaskNamePrefixOption myTaskNamePrefixOption = new TaskNamePrefixOption();
 
+  private final StringOption myTaskCopyNamePrefixOption = new DefaultStringOption("taskCopyNamePrefix", GanttLanguage.getInstance().getText("task.copy.prefix"));
+
   private final EnumerationOption myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
       "dependencyDefaultHardness", new String[] { "Strong", "Rubber" }) {
     {
@@ -1057,6 +1059,11 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public StringOption getTaskNamePrefixOption() {
     return myTaskNamePrefixOption;
+  }
+
+  @Override
+  public StringOption getTaskCopyNamePrefixOption() {
+    return myTaskCopyNamePrefixOption;
   }
 
   @Override

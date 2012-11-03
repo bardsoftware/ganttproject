@@ -88,7 +88,7 @@ public class ChartModelImpl extends ChartModelBase {
 
     myTaskDefaultColorOption = new NewTaskColorOption();
     myTaskDefaultsOptions = new GPOptionGroup("ganttChartDefaults",
-        new GPOption[] { taskManager.getTaskNamePrefixOption(), myTaskDefaultColorOption,
+        new GPOption[] { taskManager.getTaskNamePrefixOption(), taskManager.getTaskCopyNamePrefixOption(), myTaskDefaultColorOption,
             getTaskManager().getDependencyHardnessOption() });
     myTaskDefaultsOptions.setI18Nkey(
         new OptionsPageBuilder.I18N().getCanonicalOptionLabelKey(getTaskManager().getDependencyHardnessOption()),
