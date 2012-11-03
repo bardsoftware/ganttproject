@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task.dependency.constraint;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -88,10 +89,10 @@ public class StartFinishConstraintImpl extends ConstraintImpl implements TaskDep
 
   @Override
   public ActivityBinding getActivityBinding() {
-    TaskActivity[] dependantActivities = getDependency().getDependant().getActivities();
-    TaskActivity[] dependeeActivities = getDependency().getDependee().getActivities();
-    TaskActivity theDependant = dependantActivities[dependantActivities.length - 1];
-    TaskActivity theDependee = dependeeActivities[0];
+    List<TaskActivity> dependantActivities = getDependency().getDependant().getActivities();
+    List<TaskActivity> dependeeActivities = getDependency().getDependee().getActivities();
+    TaskActivity theDependant = dependantActivities.get(dependantActivities.size()- 1);
+    TaskActivity theDependee = dependeeActivities.get(0);
     return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getEnd(),
         theDependee.getStart() });
   }

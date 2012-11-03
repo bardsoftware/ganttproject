@@ -38,6 +38,8 @@ import java.net.URLEncoder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import com.google.common.collect.ImmutableList;
+
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
@@ -123,7 +125,7 @@ public class TaskImpl implements Task {
 
   private boolean critical;
 
-  private MilestoneTaskFakeActivity myMilestoneActivity;
+  private List<TaskActivity> myMilestoneActivity;
 
   public final static int NONE = 0;
 
@@ -381,15 +383,15 @@ public class TaskImpl implements Task {
   }
 
   @Override
-  public TaskActivity[] getActivities() {
+  public List<TaskActivity> getActivities() {
     if (isMilestone) {
-      return new TaskActivity[] { myMilestoneActivity };
+      return myMilestoneActivity;
     }
     List<TaskActivity> activities = myMutator == null ? null : myMutator.getActivities();
     if (activities == null) {
       activities = myActivities;
     }
-    return activities.toArray(new TaskActivity[activities.size()]);
+    return activities;
   }
 
   @Override
@@ -1027,7 +1029,7 @@ public class TaskImpl implements Task {
       return;
     }
     if (isMilestone) {
-      myMilestoneActivity = new MilestoneTaskFakeActivity(this);
+      myMilestoneActivity = ImmutableList.<TaskActivity>of(new MilestoneTaskFakeActivity(this));
       return;
     }
 

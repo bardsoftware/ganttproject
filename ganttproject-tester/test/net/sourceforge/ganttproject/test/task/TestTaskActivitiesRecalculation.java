@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.test.task;
 
+import java.util.List;
+
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.Task;
@@ -15,23 +17,21 @@ public class TestTaskActivitiesRecalculation extends TaskTestCase {
         {
             task.setStart(CalendarFactory.createGanttCalendar(2000, 0, 3));
             task.setDuration(getTaskManager().createLength(1));
-            TaskActivity[] activities = task.getActivities();
+            List<TaskActivity> activities = task.getActivities();
             assertEquals("Unexpected length of activities", 1,
-                    activities.length);
+                    activities.size());
             assertEquals("Unexpected end of the las activity",
-                    CalendarFactory.createGanttCalendar(2000, 0, 4).getTime(), activities[0]
-                            .getEnd());
+                    CalendarFactory.createGanttCalendar(2000, 0, 4).getTime(), activities.get(0).getEnd());
         }
         //
         {
             TaskMutator mutator = task.createMutator();
             mutator.setDuration(getTaskManager().createLength(2));
-            TaskActivity[] activities = task.getActivities();
+            List<TaskActivity> activities = task.getActivities();
             assertEquals("Unexpected length of activities", 1,
-                    activities.length);
+                    activities.size());
             assertEquals("Unexpected end of the last activity",
-                    CalendarFactory.createGanttCalendar(2000, 0, 5).getTime(), activities[0]
-                            .getEnd());
+                    CalendarFactory.createGanttCalendar(2000, 0, 5).getTime(), activities.get(0).getEnd());
         }
     }
 
@@ -45,12 +45,11 @@ public class TestTaskActivitiesRecalculation extends TaskTestCase {
             TaskMutator mutator = task.createMutatorFixingDuration();
             mutator.setStart(CalendarFactory.createGanttCalendar(2000, 0, 4));
             mutator.commit();
-            TaskActivity[] activities = task.getActivities();
+            List<TaskActivity> activities = task.getActivities();
             assertEquals("Unexpected length of activities", 1,
-                    activities.length);
+                    activities.size());
             assertEquals("Unexpected end of the last activity",
-                    CalendarFactory.createGanttCalendar(2000, 0, 7).getTime(), activities[0]
-                            .getEnd());
+                    CalendarFactory.createGanttCalendar(2000, 0, 7).getTime(), activities.get(0).getEnd());
         }
     }
 }

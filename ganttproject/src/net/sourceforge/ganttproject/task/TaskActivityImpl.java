@@ -4,6 +4,7 @@
 package net.sourceforge.ganttproject.task;
 
 import java.util.Date;
+import java.util.List;
 
 import biz.ganttproject.core.time.TimeDuration;
 
@@ -63,12 +64,12 @@ class TaskActivityImpl implements TaskActivity {
 
   @Override
   public boolean isFirst() {
-    return this == getOwner().getActivities()[0];
+    return this == getOwner().getActivities().get(0);
   }
 
   @Override
   public boolean isLast() {
-    TaskActivity[] all = getOwner().getActivities();
-    return this == all[all.length - 1];
+    List<TaskActivity> all = getOwner().getActivities();
+    return this == all.get(all.size() - 1);
   }
 }

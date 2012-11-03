@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task.dependency.constraint;
 
 import java.util.Date;
+import java.util.List;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -82,12 +83,12 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDep
 
   @Override
   public ActivityBinding getActivityBinding() {
-    TaskActivity[] dependantActivities = getDependency().getDependant().getActivities();
-    TaskActivity[] dependeeActivities = getDependency().getDependee().getActivities();
-    assert dependantActivities.length > 0 : "Task " + getDependency().getDependant() + " has no activities";
-    assert dependeeActivities.length > 0 : "Task " + getDependency().getDependee() + " has no activities";
-    TaskActivity theDependant = dependantActivities[0];
-    TaskActivity theDependee = dependeeActivities[dependeeActivities.length - 1];
+    List<TaskActivity> dependantActivities = getDependency().getDependant().getActivities();
+    List<TaskActivity> dependeeActivities = getDependency().getDependee().getActivities();
+    assert dependantActivities.size() > 0 : "Task " + getDependency().getDependant() + " has no activities";
+    assert dependeeActivities.size() > 0 : "Task " + getDependency().getDependee() + " has no activities";
+    TaskActivity theDependant = dependantActivities.get(0);
+    TaskActivity theDependee = dependeeActivities.get(dependeeActivities.size()- 1);
     return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getStart(),
         theDependee.getEnd() });
   }
