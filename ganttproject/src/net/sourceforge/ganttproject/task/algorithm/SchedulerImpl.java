@@ -27,6 +27,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
@@ -34,6 +35,7 @@ import com.google.common.collect.Ranges;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.DependencyEdge;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.ImplicitSubSuperTaskDependency;
@@ -108,6 +110,9 @@ public class SchedulerImpl extends AlgorithmBase {
           }
         }
 
+        if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
+          startRange = startRange.intersection(Ranges.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
+        }
         if (!subtaskRanges.isEmpty()) {
           Range<Date> subtasks = Ranges.encloseAll(subtaskRanges);
           startRange = startRange.intersection(subtasks);
