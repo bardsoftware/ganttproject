@@ -103,8 +103,8 @@ public class TestDependencyActivityBinding extends TaskTestCase {
                         new FinishStartConstraintImpl());
         TaskDependency.ActivityBinding binding = dep.getActivityBinding();
         assertEquals(binding.getDependantActivity(),
-                dependant.getActivities()[0]);
-        assertEquals(binding.getDependeeActivity(), dependee.getActivities()[0]);
+                dependant.getActivities().get(0));
+        assertEquals(binding.getDependeeActivity(), dependee.getActivities().get(0));
 
         dependant.setStart(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 4));
         dependant.setEnd(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 5));
@@ -112,7 +112,7 @@ public class TestDependencyActivityBinding extends TaskTestCase {
         dependee.setEnd(CalendarFactory.createGanttCalendar(2000, Calendar.JANUARY, 3));
         binding = dep.getActivityBinding();
         assertEquals(binding.getDependantActivity(),
-                dependant.getActivities()[0]);
-        assertEquals(binding.getDependeeActivity(), dependee.getActivities()[0]);
+                dependant.getActivities().get(0));
+        assertEquals(binding.getDependeeActivity(), dependee.getActivities().get(0));
     }
 }

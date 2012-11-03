@@ -85,9 +85,8 @@ public class LoadDistribution {
 
   private void processAssignment(ResourceAssignment assignment) {
     Task task = assignment.getTask();
-    TaskActivity[] activities = task.getActivities();
-    for (int i = 0; i < activities.length; i++) {
-      processActivity(activities[i], assignment.getLoad());
+    for (TaskActivity ta : task.getActivities()) {
+      processActivity(ta, assignment.getLoad());
     }
   }
 

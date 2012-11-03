@@ -287,14 +287,14 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       OffsetList defaultUnitOffsets) {
     for (Task nextAbove : tasksAboveViewport) {
       List<TaskActivity> activities = /*nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          nextAbove)) : */Arrays.asList(nextAbove.getActivities());
+          nextAbove)) : */nextAbove.getActivities();
       for (Canvas.Shape s : renderActivities(-1, nextAbove, activities, defaultUnitOffsets)) {
         s.setVisible(false);
       }
     }
     for (Task nextBelow : tasksBelowViewport) {
       List<TaskActivity> activities = /*nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
-          nextBelow)) : */Arrays.asList(nextBelow.getActivities());
+          nextBelow)) : */nextBelow.getActivities();
       List<Polygon> rectangles = renderActivities(getVisibleTasks().size() + 1, nextBelow, activities,
           defaultUnitOffsets);
       for (Polygon nextRectangle : rectangles) {
@@ -306,7 +306,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
     int rowNum = 0;
     for (Task t : visibleTasks) {
-      List<TaskActivity> activities = Arrays.asList(t.getActivities());
+      List<TaskActivity> activities = t.getActivities();
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
       renderLabels(rectangles);
       renderBaseline(t, rowNum, defaultUnitOffsets);

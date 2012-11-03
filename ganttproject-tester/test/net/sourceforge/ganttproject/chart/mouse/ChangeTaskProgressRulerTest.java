@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.chart.mouse;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
@@ -59,8 +60,8 @@ public class ChangeTaskProgressRulerTest extends TestCase {
         Canvas primitives = new Canvas();
         Rectangle r = primitives.createRectangle(0, 0, 100, 10);
 
-        assertEquals(1, task.getActivities().length);
-        primitives.bind(r, task.getActivities()[0]);
+        assertEquals(1, task.getActivities().size());
+        primitives.bind(r, task.getActivities().get(0));
 
         EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Collections.singletonList(r));
         EasyMock.replay(mockChartModel);
@@ -83,18 +84,18 @@ public class ChangeTaskProgressRulerTest extends TestCase {
         task.setStart(TestSetupHelper.newFriday());
         task.setDuration(taskManager.createLength(2));
 
-        TaskActivity[] activities = task.getActivities();
-        assertEquals(3, activities.length);
+        List<TaskActivity> activities = task.getActivities();
+        assertEquals(3, activities.size());
 
         Canvas primitives = new Canvas();
         Rectangle r0 = primitives.createRectangle(0, 0, 100, 10);
-        primitives.bind(r0, activities[0]);
+        primitives.bind(r0, activities.get(0));
 
         Rectangle r1 = primitives.createRectangle(100, 0, 10, 10);
-        primitives.bind(r1, activities[1]);
+        primitives.bind(r1, activities.get(1));
 
         Rectangle r2 = primitives.createRectangle(110, 0, 100, 10);
-        primitives.bind(r2, activities[2]);
+        primitives.bind(r2, activities.get(2));
 
         EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Arrays.asList(r0, r1, r2));
         EasyMock.replay(mockChartModel);
