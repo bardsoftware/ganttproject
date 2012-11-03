@@ -1141,14 +1141,14 @@ public class TaskImpl implements Task {
   // parts of code to be sure that constraint fulfills
   @Override
   public void applyThirdDateConstraint() {
-    if (getThird() != null)
-      switch (getThirdDateConstraint()) {
-      case EARLIESTBEGIN:
-        if (getThird().after(getStart())) {
-          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
-        }
-        break;
-      }
+//    if (getThird() != null)
+//      switch (getThirdDateConstraint()) {
+//      case EARLIESTBEGIN:
+//        if (getThird().after(getStart())) {
+//          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
+//        }
+//        break;
+//      }
   }
 
   private TaskInfo myTaskInfo;
