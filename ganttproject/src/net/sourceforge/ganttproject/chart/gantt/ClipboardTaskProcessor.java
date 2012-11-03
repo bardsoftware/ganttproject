@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -86,8 +87,7 @@ public class ClipboardTaskProcessor {
 
   private Task copyAndInsert(Task task, Task newContainer, Task prevSibling, Map<Task, Task> original2copy) {
     TaskBuilder builder = myTaskManager.newTaskBuilder().withPrototype(task).withParent(newContainer).withPrevSibling(prevSibling);
-    String newName = GanttLanguage.getInstance().formatText(
-        "task.copy.prefix", GanttLanguage.getInstance().getText("copy2"), task.getName());
+    String newName = MessageFormat.format(myTaskManager.getTaskCopyNamePrefixOption().getValue(), GanttLanguage.getInstance().getText("copy2"), task.getName());
     builder = builder.withName(newName);
     Task result = builder.build();
     original2copy.put(task, result);

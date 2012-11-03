@@ -220,6 +220,8 @@ public interface TaskManager {
 
   StringOption getTaskNamePrefixOption();
 
+  StringOption getTaskCopyNamePrefixOption();
+
   EnumerationOption getDependencyHardnessOption();
 
   void setZeroMilestones(Boolean b);
