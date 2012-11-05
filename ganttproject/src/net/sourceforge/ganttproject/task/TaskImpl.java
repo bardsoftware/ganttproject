@@ -127,6 +127,8 @@ public class TaskImpl implements Task {
 
   private List<TaskActivity> myMilestoneActivity;
 
+  private boolean isUnplugged = false;
+
   public final static int NONE = 0;
 
   public final static int EARLIESTBEGIN = 1;
@@ -153,6 +155,7 @@ public class TaskImpl implements Task {
   }
 
   protected TaskImpl(TaskImpl copy, boolean isUnplugged) {
+    this.isUnplugged = isUnplugged;
     myManager = copy.myManager;
     // Use a new (unique) ID for the cloned task
     myID = myManager.getAndIncrementId();
@@ -1117,7 +1120,7 @@ public class TaskImpl implements Task {
   }
 
   public boolean isUnplugged() {
-    return myTaskHierarchyItem == null;
+    return this.isUnplugged;
   }
 
   /** @return The CustomColumnValues. */
