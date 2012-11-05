@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -262,14 +263,33 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
     List<KeyStroke> result = new ArrayList<KeyStroke>();
     for (String ksText : text.split(",")) {
-      result.add(KeyStroke.getKeyStroke(ksText));
+      KeyStroke ks = parseKeyStroke(ksText);
+      if (ks != null) {
+        result.add(ks);
+      }
     }
     return result;
   }
 
   public static KeyStroke getKeyStroke(String keystrokeID) {
     String keystrokeText = getKeyStrokeText(keystrokeID);
-    return keystrokeText == null ? null : KeyStroke.getKeyStroke(keystrokeText);
+    if (keystrokeText == null) {
+      return null;
+    }
+    return parseKeyStroke(keystrokeText);
+  }
+
+  private static KeyStroke parseKeyStroke(String keystrokeText) {
+    KeyStroke keyStroke = KeyStroke.getKeyStroke(keystrokeText);
+    if (keyStroke == null) {
+      return null;
+    }
+    if ((keyStroke.getModifiers() & KeyEvent.CTRL_MASK) == KeyEvent.CTRL_MASK
+        || (keyStroke.getModifiers() & KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK) {
+      int modifiers = keyStroke.getModifiers() & (0xffffffff ^ KeyEvent.CTRL_MASK) & (0xffffffff ^ KeyEvent.CTRL_DOWN_MASK) | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+      keyStroke = KeyStroke.getKeyStroke(keyStroke.getKeyCode(), modifiers, keyStroke.isOnKeyRelease());
+    }
+    return keyStroke;
   }
 
   public static String getKeyStrokeText(String keystrokeID) {
