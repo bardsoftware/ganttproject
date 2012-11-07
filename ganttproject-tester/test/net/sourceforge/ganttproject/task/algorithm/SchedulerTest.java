@@ -24,6 +24,8 @@ import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
 /**
@@ -108,6 +110,46 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newTuesday(), tasks[2].getStart());
     assertEquals(TestSetupHelper.newWendesday(), tasks[2].getEnd());
     assertEquals(TestSetupHelper.newWendesday(), tasks[0].getEnd());
+  }
+
+  public void testRubberDependency() throws Exception {
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newWendesday())};
+    TaskDependency dep10 = getTaskManager().getDependencyCollection().createDependency(tasks[1], tasks[0], new FinishStartConstraintImpl(), TaskDependency.Hardness.RUBBER);
+    TaskDependency dep20 = getTaskManager().getDependencyCollection().createDependency(tasks[2], tasks[0], new FinishStartConstraintImpl(), TaskDependency.Hardness.RUBBER);
+
+    DependencyGraph graph = createGraph(tasks, new TaskDependency[] {dep10, dep20});
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newMonday(), tasks[0].getStart());
+    assertEquals(TestSetupHelper.newTuesday(), tasks[1].getStart());
+    assertEquals(TestSetupHelper.newWendesday(), tasks[2].getStart());
+  }
+
+  public void testRubberFS_StrongFF() throws Exception {
+    // task0->task1 FS rubber, task2->task1 FF strong
+    // task0 starts on Mo, task1 initially on Tu, task2 on We
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newTuesday()), createTask(TestSetupHelper.newWendesday())};
+    TaskDependency dep10 = getTaskManager().getDependencyCollection().createDependency(tasks[1], tasks[0], new FinishStartConstraintImpl(), TaskDependency.Hardness.RUBBER);
+    TaskDependency dep12 = getTaskManager().getDependencyCollection().createDependency(tasks[1], tasks[2], new FinishFinishConstraintImpl(), TaskDependency.Hardness.STRONG);
+
+    DependencyGraph graph = createGraph(tasks, new TaskDependency[] {dep10, dep12});
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    // after scheduler run task1 shoud start on We because of strong FF dep
+    assertEquals(TestSetupHelper.newMonday(), tasks[0].getStart());
+    assertEquals(TestSetupHelper.newWendesday(), tasks[1].getStart());
+    assertEquals(TestSetupHelper.newWendesday(), tasks[2].getStart());
+
+    // now shifting task2 to Tu
+    tasks[2].shift(getTaskManager().createLength(-1));
+    scheduler.run();
+
+    // task1 should follow task2
+    assertEquals(TestSetupHelper.newTuesday(), tasks[1].getStart());
+    assertEquals(TestSetupHelper.newTuesday(), tasks[2].getStart());
+    assertEquals(TestSetupHelper.newWendesday(), tasks[1].getEnd());
   }
 
   private Task createTask(GanttCalendar start) {
