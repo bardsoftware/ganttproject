@@ -92,6 +92,9 @@ public class SchedulerImpl extends AlgorithmBase {
         Range<Date> startRange = Ranges.all();
         Range<Date> endRange = Ranges.all();
 
+        Range<Date> weakStartRange = Ranges.all();
+        Range<Date> weakEndRange = Ranges.all();
+
         List<Date> subtaskRanges = Lists.newArrayList();
         List<DependencyEdge> incoming = node.getIncoming();
         for (DependencyEdge edge : incoming) {
@@ -102,14 +105,29 @@ public class SchedulerImpl extends AlgorithmBase {
             subtaskRanges.add(edge.getStartRange().upperEndpoint());
             subtaskRanges.add(edge.getEndRange().lowerEndpoint());
           } else {
-            startRange = startRange.intersection(edge.getStartRange());
-            endRange = endRange.intersection(edge.getEndRange());
+            if (edge.isWeak()) {
+              weakStartRange = weakStartRange.intersection(edge.getStartRange());
+              weakEndRange = weakEndRange.intersection(edge.getEndRange());
+            } else {
+              startRange = startRange.intersection(edge.getStartRange());
+              endRange = endRange.intersection(edge.getEndRange());
+            }
           }
           if (startRange.isEmpty() || endRange.isEmpty()) {
             GPLogger.logToLogger("both start and end ranges were calculated as empty for task=" + node.getTask() + ". Skipping it");
           }
         }
 
+        if (!startRange.equals(Ranges.all())) {
+          startRange = startRange.intersection(weakStartRange);
+        } else if (!weakStartRange.equals(Ranges.all())) {
+          startRange = weakStartRange.intersection(Ranges.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
+        }
+        if (!endRange.equals(Ranges.all())) {
+          endRange = endRange.intersection(weakEndRange);
+        } else if (!weakEndRange.equals(Ranges.all())) {
+          endRange = weakEndRange.intersection(Ranges.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
+        }
         if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
           startRange = startRange.intersection(Ranges.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
         }

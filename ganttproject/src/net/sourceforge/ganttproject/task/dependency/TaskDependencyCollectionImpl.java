@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 
@@ -91,7 +92,13 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   @Override
   public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
       throws TaskDependencyException {
-    TaskDependency result = auxCreateDependency(dependant, dependee, constraint);
+    return createDependency(dependant, dependee, constraint, TaskDependency.Hardness.STRONG);
+  }
+
+  @Override
+  public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint,
+      Hardness hardness) throws TaskDependencyException {
+    TaskDependency result = auxCreateDependency(dependant, dependee, constraint, hardness);
     addDependency(result);
     return result;
   }
@@ -186,10 +193,17 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     @Override
     public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
         throws TaskDependencyException {
-      TaskDependency result = auxCreateDependency(dependant, dependee, constraint);
+      return createDependency(dependant, dependee, constraint, TaskDependency.Hardness.STRONG);
+    }
+
+    @Override
+    public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint,
+        Hardness hardness) throws TaskDependencyException {
+      TaskDependency result = auxCreateDependency(dependant, dependee, constraint, hardness);
       myQueue.put(result, new MutationInfo(result, MutationInfo.ADD));
       return result;
     }
+
 
     @Override
     public void deleteDependency(TaskDependency dependency) {
@@ -200,7 +214,6 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
         myQueue.remove(dependency);
       }
     }
-
   }
 
   private static class MutationInfo implements Comparable<MutationInfo> {
@@ -229,8 +242,9 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
     }
   }
 
-  private TaskDependency auxCreateDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint) {
+  private TaskDependency auxCreateDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint, Hardness hardness) {
     TaskDependency result = new TaskDependencyImpl(dependant, dependee, this, constraint);
+    result.setHardness(hardness);
     result.setDifference(0);
     return result;
   }

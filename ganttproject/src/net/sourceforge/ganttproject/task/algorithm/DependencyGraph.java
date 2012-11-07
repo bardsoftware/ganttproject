@@ -31,10 +31,9 @@ import java.util.Set;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
-import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
@@ -90,6 +89,8 @@ public class DependencyGraph {
      * refreshes constraint information
      */
     boolean refresh();
+
+    boolean isWeak();
   }
 
   /**
@@ -102,6 +103,7 @@ public class DependencyGraph {
     private Range<Date> myEndRange;
     private final Node mySrcNode;
     private final Node myDstNode;
+    private boolean isWeak = false;
 
     ExplicitDependencyImpl(TaskDependency dep, Node srcNode, Node dstNode) {
       myDep = dep;
@@ -124,6 +126,7 @@ public class DependencyGraph {
       GPCalendar calendar = myDstNode.myTask.getManager().getCalendar();
       TaskDependencyConstraint.Collision nextCollision = myDep.getConstraint().getCollision();
       Date acceptableStart = nextCollision.getAcceptableStart().getTime();
+      isWeak = !nextCollision.isActive() && myDep.getHardness() == Hardness.RUBBER;
       switch (nextCollision.getVariation()) {
       case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
         if (calendar.isNonWorkingDay(acceptableStart)) {
@@ -145,6 +148,10 @@ public class DependencyGraph {
       }
       myEndRange = Ranges.all();
       return true;
+    }
+
+    public boolean isWeak() {
+      return isWeak;
     }
 
     @Override
@@ -229,6 +236,11 @@ public class DependencyGraph {
       ImplicitSubSuperTaskDependency that = (ImplicitSubSuperTaskDependency) obj;
       return this.mySubTask.myTask.equals(that.mySubTask.myTask) && this.mySuperTask.myTask.equals(that.mySuperTask.myTask);
     }
+
+    @Override
+    public boolean isWeak() {
+      return false;
+    }
   }
 
   /**
@@ -284,6 +296,11 @@ public class DependencyGraph {
       }
       ImplicitInheritedDependency that = (ImplicitInheritedDependency) obj;
       return this.mySrc.myTask.equals(that.mySrc.myTask) && this.myDst.myTask.equals(that.myDst.myTask);
+    }
+
+    @Override
+    public boolean isWeak() {
+      return myExplicitDep.isWeak();
     }
   }
 
