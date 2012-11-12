@@ -10,6 +10,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
@@ -65,6 +66,11 @@ public class TestSetupHelper {
 
         public TaskManager build() {
             return TaskManager.Access.newInstance(null, this);
+        }
+
+        @Override
+        public NotificationManager getNotificationManager() {
+          return null;
         }
     }
 
