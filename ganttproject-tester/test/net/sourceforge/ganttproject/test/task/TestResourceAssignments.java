@@ -5,6 +5,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -146,6 +147,11 @@ public class TestResourceAssignments extends TestCase {
             @Override
             public URL getProjectDocumentURL() {
                 return null;
+            }
+
+            @Override
+            public NotificationManager getNotificationManager() {
+              return null;
             }
         });
     }
