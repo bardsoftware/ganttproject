@@ -8,7 +8,7 @@ Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
 !define VERSION "2.6"
-!define VERSION_BUILD "2.6-rc3-r1440"
+!define VERSION_BUILD "2.6-rc4-r1455"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
