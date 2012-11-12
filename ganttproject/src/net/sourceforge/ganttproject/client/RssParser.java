@@ -18,14 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
+import net.sourceforge.ganttproject.GPVersion;
+
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 import org.xml.sax.InputSource;
 
+import com.google.common.base.Strings;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
+
 import java.io.*;
 import java.util.Date;
 import java.util.Iterator;
@@ -64,14 +70,44 @@ class RssParser {
       XPathExpression xpath = getXPath("//atom:entry");
       NodeList items = (NodeList) xpath.evaluate(new InputSource(new InputStreamReader(inputStream)),
           XPathConstants.NODESET);
+      final String currentVersion = GPVersion.getCurrentVersionNumber();
       for (int i = 0; i < items.getLength(); i++) {
-        addItem(result, items.item(i), lastCheckDate);
+        if (isApplicableToVersion(items.item(i), currentVersion)) {
+          addItem(result, items.item(i), lastCheckDate);
+        }
       }
 
     } catch (XPathExpressionException e) {
       e.printStackTrace();
     }
     return result;
+  }
+
+  private boolean isApplicableToVersion(Node item, String version) throws XPathExpressionException {
+    NodeList categories = (NodeList) getXPath("atom:category").evaluate(item, XPathConstants.NODESET);
+    for (int i = 0; i < categories.getLength(); i++) {
+      Element elCategory = (Element) categories.item(i);
+      String category = elCategory.getAttribute("term");
+      if (!Strings.isNullOrEmpty(category) && category.startsWith("__version")) {
+        if (category.startsWith("__version_lt_")) {
+          String versionRequired = category.substring("__version_lt_".length());
+          if (version.compareTo(versionRequired) < 0) {
+            return true;
+          }
+        } else if (category.startsWith("__version_gt_")) {
+          String versionRequired = category.substring("__version_gt_".length());
+          if (version.compareTo(versionRequired) > 0) {
+            return true;
+          }
+        } else if (category.startsWith("__version_eq_")) {
+          String versionRequired = category.substring("__version_eq_".length());
+          if (version.equals(versionRequired)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {

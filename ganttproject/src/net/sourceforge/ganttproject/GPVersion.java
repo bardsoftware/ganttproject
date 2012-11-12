@@ -18,19 +18,23 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-public interface GPVersion {
-  String V2_0_1 = "2.0.1";
-  String V2_0_2 = "2.0.2";
-  String V2_0_3 = "2.0.3";
-  String V2_0_4 = "2.0.4";
-  String V2_0_5 = "2.0.5";
-  String V2_0_6 = "2.0.6";
-  String V2_0_7 = "2.0.7";
-  String V2_0_8 = "2.0.8";
-  String V2_0_9 = "2.0.9";
-  String V2_0_10 = "2.0.10";
-  String V2_0_X = V2_0_10;
-  String PRAHA = "2.5.5 Praha (build 1256)";
-  String BRNO = "2.6 Brno RC IV (build 1455)";
-  String CURRENT = BRNO;
+public abstract class GPVersion {
+  public static String V2_0_1 = "2.0.1";
+  public static String V2_0_2 = "2.0.2";
+  public static String V2_0_3 = "2.0.3";
+  public static String V2_0_4 = "2.0.4";
+  public static String V2_0_5 = "2.0.5";
+  public static String V2_0_6 = "2.0.6";
+  public static String V2_0_7 = "2.0.7";
+  public static String V2_0_8 = "2.0.8";
+  public static String V2_0_9 = "2.0.9";
+  public static String V2_0_10 = "2.0.10";
+  public static String V2_0_X = V2_0_10;
+  public static String PRAHA = "2.5.5 Praha (build 1256)";
+  public static String BRNO = "2.6 Brno RC IV (build 1455)";
+  public static String CURRENT = BRNO;
+
+  public static String getCurrentVersionNumber() {
+    return CURRENT.split("\\s")[0];
+  }
 }
