@@ -133,7 +133,7 @@ public class TaskDependencyImpl implements TaskDependency {
 
   @Override
   public String toString() {
-    return myDependant + "->" + myDependee;
+    return myDependee + "->" + myDependant;
   }
 
   public BarChartActivity<Task> getStart() {

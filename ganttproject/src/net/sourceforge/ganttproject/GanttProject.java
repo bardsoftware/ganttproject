@@ -77,6 +77,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -221,6 +222,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           e.printStackTrace();
           return null;
         }
+      }
+
+      @Override
+      public NotificationManager getNotificationManager() {
+        return getUIFacade().getNotificationManager();
       }
 
     }
