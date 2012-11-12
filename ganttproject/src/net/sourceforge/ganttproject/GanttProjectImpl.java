@@ -32,6 +32,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.font.Fonts;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -241,6 +242,11 @@ public class GanttProjectImpl implements IGanttProject {
 
     @Override
     public URL getProjectDocumentURL() {
+      return null;
+    }
+
+    @Override
+    public NotificationManager getNotificationManager() {
       return null;
     }
   }

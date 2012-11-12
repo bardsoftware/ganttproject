@@ -33,6 +33,7 @@ import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -41,6 +42,9 @@ import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationItem;
+import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -111,7 +115,17 @@ public class TaskManagerImpl implements TaskManager {
       return getTaskHierarchy();
     }
   };
-  private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier);
+  private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier, new DependencyGraph.Logger() {
+    @Override
+    public void log(String title, String message) {
+      if (myConfig.getNotificationManager() != null) {
+        myConfig.getNotificationManager().addNotifications(NotificationChannel.WARNING,
+            ImmutableList.of(new NotificationItem("Dependency loop detected", message, NotificationManager.DEFAULT_HYPERLINK_LISTENER)));
+      }
+      GPLogger.log(title + "\n" + message);
+    }
+  });
+
   private final SchedulerImpl myScheduler = new SchedulerImpl(myDependencyGraph, myHierarchySupplier);
 
   private boolean areEventsEnabled = true;

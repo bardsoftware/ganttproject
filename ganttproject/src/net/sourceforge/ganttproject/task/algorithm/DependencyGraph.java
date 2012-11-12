@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Deque;
@@ -26,8 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -35,6 +36,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.calendar.GPCalendar;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
@@ -43,7 +45,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
-import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
 /**
@@ -60,6 +61,9 @@ public class DependencyGraph {
     void onChange();
   }
 
+  public static interface Logger {
+    void log(String title, String message);
+  }
   /**
    * Dependency defines a constraint on its target task start and end dates. Constraints
    * are normally either points or semi-open intervals on the date axis.
@@ -150,6 +154,7 @@ public class DependencyGraph {
       return true;
     }
 
+    @Override
     public boolean isWeak() {
       return isWeak;
     }
@@ -176,6 +181,11 @@ public class DependencyGraph {
       }
       ExplicitDependencyImpl that = (ExplicitDependencyImpl) obj;
       return this.myDep.equals(that.myDep);
+    }
+
+    @Override
+    public String toString() {
+      return myDep.toString();
     }
   }
 
@@ -241,6 +251,11 @@ public class DependencyGraph {
     public boolean isWeak() {
       return false;
     }
+
+    @Override
+    public String toString() {
+      return mySubTask.toString() + " is a subtask of " + mySuperTask.toString();
+    }
   }
 
   /**
@@ -301,6 +316,11 @@ public class DependencyGraph {
     @Override
     public boolean isWeak() {
       return myExplicitDep.isWeak();
+    }
+
+    @Override
+    public String toString() {
+      return "Dependency inherited from supertask:" + myExplicitDep.toString();
     }
   }
 
@@ -374,6 +394,11 @@ public class DependencyGraph {
     public Task getTask() {
       return myTask;
     }
+
+    @Override
+    public String toString() {
+      return myTask.toString();
+    }
   }
 
   private final Multimap<Integer, Node> myLayers = TreeMultimap.<Integer, Node>create(new Comparator<Integer>() {
@@ -394,8 +419,20 @@ public class DependencyGraph {
 
   private final List<Listener> myListeners = Lists.newArrayList();
 
+  private final Logger myLogger;
+
   public DependencyGraph(Supplier<TaskContainmentHierarchyFacade> taskHierarchy) {
+    this(taskHierarchy, new Logger() {
+      @Override
+      public void log(String title, String message) {
+        GPLogger.log(title + "\n" + message);
+      }
+    });
+  }
+
+  public DependencyGraph(Supplier<TaskContainmentHierarchyFacade> taskHierarchy, Logger logger) {
     myTaskHierarchy = taskHierarchy;
+    myLogger = logger;
   }
 
   /**
@@ -479,30 +516,46 @@ public class DependencyGraph {
     edge.getSrc().addOutgoing(edge);
     edge.getDst().addIncoming(edge);
     PriorityQueue<Node> queue = new PriorityQueue<DependencyGraph.Node>(11, new Comparator<Node>() {
+      @Override
       public int compare(Node o1, Node o2) {
         return o1.getLevel() - o2.getLevel();
       }
     });
     queue.add(edge.getDst());
-    Set<Task> queuedTasks = Sets.newHashSet();
-    Set<Task> pastTasks = Sets.newHashSet();
-    queuedTasks.add(edge.getDst().getTask());
+    Map<Task, DependencyEdge> queuedTasks = Maps.newHashMap();
+    Map<Task, DependencyEdge> pastTasks = Maps.newHashMap();
+
+    pastTasks.put(edge.getSrc().getTask(), null);
+    queuedTasks.put(edge.getDst().getTask(), edge);
 
     while (!queue.isEmpty()) {
       Node node = queue.poll();
-      queuedTasks.remove(node.getTask());
-      pastTasks.add(node.getTask());
+      pastTasks.put(node.getTask(), queuedTasks.remove(node.getTask()));
 
       if (node.promoteLayer(myLayers)) {
         for (DependencyEdge outEdge : node.getOutgoing()) {
-          if (!queuedTasks.contains(outEdge.getDst().getTask())) {
-            assert !pastTasks.contains(outEdge.getDst().getTask());
+          if (!queuedTasks.containsKey(outEdge.getDst().getTask())) {
+            if (pastTasks.containsKey(outEdge.getDst().getTask())) {
+              myLogger.log("Dependency loop detected", buildLoop(pastTasks, outEdge) + "\n\nLast dependency has been ignored");
+              continue;
+            }
             queue.add(outEdge.getDst());
-            queuedTasks.add(outEdge.getDst().getTask());
+            queuedTasks.put(outEdge.getDst().getTask(), outEdge);
           }
         }
       }
     }
+  }
+
+  private static String buildLoop(Map<Task, DependencyEdge> pastTasks, DependencyEdge closingEdge) {
+    List<String> trace = Lists.newArrayList();
+    trace.add(closingEdge.toString());
+    for (DependencyEdge prevEdge = pastTasks.get(closingEdge.getSrc().getTask());
+        prevEdge != null; prevEdge = pastTasks.get(prevEdge.getSrc().getTask())) {
+      trace.add(prevEdge.toString());
+    }
+    Collections.reverse(trace);
+    return Joiner.on("<br>").join(trace);
   }
 
   /**
