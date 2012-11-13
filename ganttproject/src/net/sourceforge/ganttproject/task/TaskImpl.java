@@ -1036,8 +1036,16 @@ public class TaskImpl implements Task {
       return;
     }
 
-    recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, myStart.getTime(),
-        getEnd().getTime());
+    final Date startDate = myStart.getTime();
+    final Date endDate = getEnd().getTime();
+
+    myActivities.clear();
+    if (startDate.equals(endDate)) {
+      myActivities.add(new MilestoneTaskFakeActivity(this));
+      return;
+    }
+
+    recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, startDate, endDate);
     int length = 0;
     for (TaskActivity activity : myActivities) {
       if (activity.getIntensity() > 0) {
