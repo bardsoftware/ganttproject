@@ -139,7 +139,7 @@ public class TaskDependencyImpl implements TaskDependency {
   public BarChartActivity<Task> getStart() {
 //    if (myStartActivity == null) {
       ActivityBinding activityBinding = getConstraint().getActivityBinding();
-      return activityBinding.getDependeeActivity();
+      return activityBinding == null ? null : activityBinding.getDependeeActivity();
       //myStartActivity = dependeeActivity.getOwner().isMilestone() ? new MilestoneTaskFakeActivity(dependeeActivity.getOwner()) : dependeeActivity;
 //    }
 //    return myStartActivity;
@@ -148,7 +148,7 @@ public class TaskDependencyImpl implements TaskDependency {
   public BarChartActivity<Task> getEnd() {
 //    if (myEndActivity == null) {
       ActivityBinding activityBinding = getConstraint().getActivityBinding();
-      return activityBinding.getDependantActivity();
+      return activityBinding == null ? null : activityBinding.getDependantActivity();
       //myEndActivity = dependantActivity.getOwner().isMilestone() ? new MilestoneTaskFakeActivity(dependantActivity.getOwner()) : dependantActivity;
 //    }
 //    return myEndActivity;

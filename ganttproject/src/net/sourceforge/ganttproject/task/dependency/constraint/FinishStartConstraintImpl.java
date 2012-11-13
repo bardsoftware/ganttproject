@@ -24,6 +24,7 @@ import java.util.List;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -85,10 +86,16 @@ public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDep
   public ActivityBinding getActivityBinding() {
     List<TaskActivity> dependantActivities = getDependency().getDependant().getActivities();
     List<TaskActivity> dependeeActivities = getDependency().getDependee().getActivities();
-    assert dependantActivities.size() > 0 : "Task " + getDependency().getDependant() + " has no activities";
-    assert dependeeActivities.size() > 0 : "Task " + getDependency().getDependee() + " has no activities";
+    if (dependantActivities.isEmpty()) {
+      GPLogger.logToLogger("Task " + getDependency().getDependant() + " has no activities");
+      return null;
+    }
+    if (dependeeActivities.isEmpty()) {
+      GPLogger.logToLogger("Task " + getDependency().getDependee() + " has no activities");
+      return null;
+    }
     TaskActivity theDependant = dependantActivities.get(0);
-    TaskActivity theDependee = dependeeActivities.get(dependeeActivities.size()- 1);
+    TaskActivity theDependee = dependeeActivities.get(dependeeActivities.size() - 1);
     return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getStart(),
         theDependee.getEnd() });
   }
