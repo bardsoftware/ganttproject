@@ -251,9 +251,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     dragSource.addDragSourceListener(this);
     DropTarget dropTarget = new DropTarget(getTreeTable(), new GanttTreeDropListener());
     dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
-
-    getTreeTable().setToolTipText("aze");
-    getTreeTable().getTreeTable().setToolTipText("rty");
   }
 
   @Override
