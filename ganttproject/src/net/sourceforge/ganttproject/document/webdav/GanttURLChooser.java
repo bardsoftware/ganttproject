@@ -375,8 +375,8 @@ class GanttURLChooser {
     if (server == null) {
       return null;
     }
-    String host = server.rootUrl;
-    if (host.endsWith("/")) {
+    String host = server.rootUrl.trim();
+    while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
     String path = Objects.firstNonNull(myPath.getValue(), "");
