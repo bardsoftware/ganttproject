@@ -17,6 +17,10 @@ public abstract class TaskTestCase extends TestCase {
         return myTaskManager;
     }
 
+    protected void setTaskManager(TaskManager taskManager) {
+      myTaskManager = taskManager;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

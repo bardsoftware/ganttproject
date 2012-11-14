@@ -102,6 +102,7 @@ public interface GPCalendar {
 
   Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType);
 
+  Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType, Date limit);
   GPCalendar PLAIN = new AlwaysWorkingTimeCalendarImpl();
   String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
 

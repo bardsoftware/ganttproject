@@ -20,10 +20,12 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 import com.google.common.base.Suppliers;
 
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
@@ -150,6 +152,23 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newTuesday(), tasks[1].getStart());
     assertEquals(TestSetupHelper.newTuesday(), tasks[2].getStart());
     assertEquals(TestSetupHelper.newWendesday(), tasks[1].getEnd());
+  }
+
+  public void testTailHolidayTimeIsIgnored() throws Exception {
+    setTaskManager(TestSetupHelper.newTaskManagerBuilder().withCalendar(new WeekendCalendarImpl()).build());
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newFriday()), createTask(TestSetupHelper.newFriday()), createTask(TestSetupHelper.newMonday())};
+    tasks[2].setMilestone(true);
+    DependencyGraph graph = createGraph(tasks, new TaskDependency[] {createDependency(tasks[2], tasks[1])});
+    DependencyGraphTest.move(tasks[1], tasks[0], graph);
+    DependencyGraphTest.move(tasks[2], tasks[0], graph);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newSaturday(), tasks[0].getEnd());
+    assertEquals(TestSetupHelper.newSaturday(), tasks[1].getEnd());
+    assertEquals(TestSetupHelper.newMonday(), tasks[2].getStart());
+    assertEquals(TestSetupHelper.newMonday(), tasks[2].getEnd());
   }
 
   private Task createTask(GanttCalendar start) {

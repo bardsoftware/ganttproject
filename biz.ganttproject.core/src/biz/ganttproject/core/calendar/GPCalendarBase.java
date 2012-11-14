@@ -69,7 +69,11 @@ abstract class GPCalendarBase {
     return findClosest(time, timeUnit, direction, dayType, null);
   }
 
-  protected Date findClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
+  public Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType, Date limit) {
+    return doFindClosest(time, timeUnit, direction, dayType, limit);
+  }
+  
+  protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
     Date nextUnitStart = direction == GPCalendar.MoveDirection.FORWARD ? framer.adjustRight(time)
         : framer.jumpLeft(time);
     switch (dayType) {
@@ -92,7 +96,7 @@ abstract class GPCalendarBase {
         return null;
       }
     }
-    return findClosest(nextUnitStart, framer, direction, dayType, limit);
+    return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
   }
 
   public abstract boolean isNonWorkingDay(Date date);

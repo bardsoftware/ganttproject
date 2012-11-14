@@ -69,6 +69,7 @@ import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.TimeDuration;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private final UIFacade myWorkbenchFacade;
@@ -292,6 +293,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       project.open(defaultDocument);
     }
 
+    final TimeDuration oldDuration = project.getTaskManager().getProjectLength();
     boolean resetModified = true;
 
     final TaskManager taskManager = project.getTaskManager();
@@ -335,8 +337,14 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       @Override
       public void run() {
         if (!d.myMessages.isEmpty()) {
+          TimeDuration newDuration = project.getTaskManager().getProjectLength();
           GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
-          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, "Some of the tasks have been modified. See the log for details");
+          String part0 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part0");
+          String part1 = (newDuration.getLength() == oldDuration.getLength())
+              ? "": GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
+          String part2 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part2");
+          String msg = GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2);
+          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, msg);
         }
       }
     });

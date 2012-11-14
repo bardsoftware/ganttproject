@@ -82,7 +82,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     Date curDayStart = myFramer.adjustLeft(startDate);
     boolean isWeekendState = isNonWorkingDay(curDayStart);
     while (curDayStart.before(endDate)) {
-      Date changeStateDayStart = findClosest(curDayStart, myFramer, MoveDirection.FORWARD,
+      Date changeStateDayStart = doFindClosest(curDayStart, myFramer, MoveDirection.FORWARD,
           isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
       if (changeStateDayStart == null) {
         changeStateDayStart = endDate;
@@ -190,7 +190,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     if (!isNonWorkingDay(time)) {
       return time;
     }
-    return findClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
+    return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
   }
 
   @Override
