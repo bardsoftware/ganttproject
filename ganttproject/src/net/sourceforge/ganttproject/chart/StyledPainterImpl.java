@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
@@ -78,13 +77,6 @@ public class StyledPainterImpl implements Painter {
     myConfig = config;
     margin = myConfig.getMargin();
 
-//    myStyle2painter.put("task.milestone", myMilestonePainter);
-//    myStyle2painter.put("task.holiday", myTaskHolidayRectanglePainter);
-//    myStyle2painter.put("task.supertask.start", mySupertaskStartPainter);
-//    myStyle2painter.put("task.supertask.end", mySupertaskEndPainter);
-    myStyle2painter.put("task.projectTask", myTaskProjectTaskRectanglePainter);
-    myStyle2painter.put("task.projectTask.start", myProjectTaskStartPainter);
-    myStyle2painter.put("task.projectTask.end", myProjectTaskEndPainter);
     myStyle2painter.put("task.progress", new ColouredRectanglePainter(Color.BLACK));
     myStyle2painter.put("task.progress.end", new ColouredRectanglePainter(Color.BLACK));
     myStyle2painter.put("load.normal", myResourceLoadPainter);
@@ -162,159 +154,6 @@ public class StyledPainterImpl implements Painter {
     public void paint(Canvas.Rectangle next);
   }
 
-//  private final RectanglePainter myTaskHolidayRectanglePainter = new RectanglePainter() {
-//    float myAlphaValue = 0;
-//    Composite myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
-//
-//    @Override
-//    public void paint(Canvas.Rectangle next) {
-//      if (myAlphaValue != myConfig.getWeekendAlphaValue()) {
-//        myAlphaValue = myConfig.getWeekendAlphaValue();
-//        myAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, myAlphaValue);
-//      }
-//      Object modelObject = next.getModelObject();
-//      if (modelObject instanceof TaskActivity == false) {
-//        throw new RuntimeException("Model object is expected to be TaskActivity ");
-//      }
-//      Task task = ((TaskActivity) modelObject).getOwner();
-//      myGraphics.setColor(task.getColor());
-//      Composite oldComposite = myGraphics.getComposite();
-//      myGraphics.setComposite(myAlphaComposite);
-//      myGraphics.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
-//      myGraphics.setColor(Color.black);
-//      myGraphics.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
-//      myGraphics.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
-//      // g.drawRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
-//
-//      myGraphics.setComposite(oldComposite);
-//    }
-//  };
-
-//  private final RectanglePainter myTaskSupertaskRectanglePainter = new RectanglePainter() {
-//    @Override
-//    public void paint(Rectangle next) {
-//      Color c = next.getBackgroundColor();
-//      if (c == null) {
-//        c = getDefaultColor();
-//      }
-//      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
-//        c = Color.RED;
-//      }
-//      myGraphics.setColor(c);
-//      myGraphics.fillRect(next.getLeftX(), next.getBottomY() - 6, next.getWidth(), 3);
-//    }
-//
-//    private Color getDefaultColor() {
-//      return Color.BLACK;
-//    }
-//
-//  };
-//
-//  private final RectanglePainter mySupertaskStartPainter = new RectanglePainter() {
-//    @Override
-//    public void paint(Rectangle next) {
-//      int bottomy = next.getBottomY() - 3;
-//      myXPoints[0] = next.getLeftX();
-//      myYPoints[0] = bottomy;
-//      myXPoints[1] = next.getLeftX() + 3;
-//      myYPoints[1] = bottomy;
-//      myXPoints[2] = next.getLeftX();
-//      myYPoints[2] = bottomy + 3;
-//      myGraphics.setColor(Color.BLACK);
-//      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-//    }
-//  };
-//
-//  private final RectanglePainter mySupertaskEndPainter = new RectanglePainter() {
-//    @Override
-//    public void paint(Rectangle next) {
-//      int bottomy = next.getBottomY() - 3;
-//      int rightx = next.getRightX();
-//      myXPoints[0] = rightx - 3;
-//      myYPoints[0] = bottomy;
-//      myXPoints[1] = rightx;
-//      myYPoints[1] = bottomy;
-//      myXPoints[2] = rightx;
-//      myYPoints[2] = bottomy + 3;
-//      myGraphics.setColor(Color.BLACK);
-//      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-//    }
-//  };
-
-  private final RectanglePainter myTaskProjectTaskRectanglePainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      Color c = getDefaultColor();
-      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
-        c = Color.RED;
-      }
-      myGraphics.setColor(c);
-      myGraphics.fillRect(next.getLeftX(), next.getTopY() + next.getHeight() - 9, next.getWidth(), 6);
-    }
-
-    private Color getDefaultColor() {
-      return Color.BLACK;
-    }
-  };
-
-  private final RectanglePainter myProjectTaskStartPainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      int bottomy = next.getBottomY() - 3;
-      myXPoints[0] = next.getLeftX();
-      myYPoints[0] = bottomy;
-      myXPoints[1] = next.getLeftX() + 3;
-      myYPoints[1] = bottomy;
-      myXPoints[2] = next.getLeftX();
-      myYPoints[2] = bottomy + 3;
-      myGraphics.setColor(Color.BLACK);
-      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-    }
-  };
-
-  private final RectanglePainter myProjectTaskEndPainter = new RectanglePainter() {
-    @Override
-    public void paint(Rectangle next) {
-      int bottomy = next.getBottomY() - 3;
-      int rightx = next.getRightX();
-      myXPoints[0] = rightx - 3;
-      myYPoints[0] = bottomy;
-      myXPoints[1] = rightx;
-      myYPoints[1] = bottomy;
-      myXPoints[2] = rightx;
-      myYPoints[2] = bottomy + 3;
-      myGraphics.setColor(Color.BLACK);
-      myGraphics.fillPolygon(myXPoints, myYPoints, 3);
-    }
-  };
-
-//  private final RectanglePainter myMilestonePainter = new RectanglePainter() {
-//    @Override
-//    public void paint(Rectangle next) {
-//      Object modelObject = next.getModelObject();
-//      if (modelObject instanceof TaskActivity == false) {
-//        throw new RuntimeException("Model object is expected to be TaskActivity ");
-//      }
-//      Task task = ((TaskActivity) modelObject).getOwner();
-//      Color c = task.getColor();
-//      if (myConfig.isCriticalPathOn() && ((TaskActivity) next.getModelObject()).getOwner().isCritical()) {
-//        c = Color.RED;
-//      }
-//
-//      int middleX = next.getMiddleX();
-//      int middleY = next.getMiddleY();
-//      myXPoints[0] = middleX - next.getHeight() / 2;
-//      myYPoints[0] = middleY;
-//      myXPoints[1] = middleX;
-//      myYPoints[1] = next.getTopY();
-//      myXPoints[2] = middleX + next.getHeight() / 2;
-//      myYPoints[2] = middleY;
-//      myXPoints[3] = middleX;
-//      myYPoints[3] = next.getBottomY();
-//      myGraphics.setColor(c);
-//      myGraphics.fillPolygon(myXPoints, myYPoints, 4);
-//    }
-//  };
 
   private final RectanglePainter myArrowDownPainter = new RectanglePainter() {
     @Override
