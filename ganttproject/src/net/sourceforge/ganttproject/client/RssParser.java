@@ -71,8 +71,9 @@ class RssParser {
       NodeList items = (NodeList) xpath.evaluate(new InputSource(new InputStreamReader(inputStream)),
           XPathConstants.NODESET);
       final String currentVersion = GPVersion.getCurrentVersionNumber();
+      final String currentBuild = GPVersion.getCurrentBuildNumber();
       for (int i = 0; i < items.getLength(); i++) {
-        if (isApplicableToVersion(items.item(i), currentVersion)) {
+        if (isApplicableToVersion(items.item(i), currentVersion, currentBuild)) {
           addItem(result, items.item(i), lastCheckDate);
         }
       }
@@ -83,33 +84,49 @@ class RssParser {
     return result;
   }
 
-  private boolean isApplicableToVersion(Node item, String version) throws XPathExpressionException {
+  private boolean isApplicableToVersion(Node item, String version, String build) throws XPathExpressionException {
+    boolean hasRestriction = false;
     NodeList categories = (NodeList) getXPath("atom:category").evaluate(item, XPathConstants.NODESET);
     for (int i = 0; i < categories.getLength(); i++) {
       Element elCategory = (Element) categories.item(i);
       String category = elCategory.getAttribute("term");
-      if (!Strings.isNullOrEmpty(category) && category.startsWith("__version")) {
-        if (category.startsWith("__version_lt_")) {
-          String versionRequired = category.substring("__version_lt_".length());
-          if (version.compareTo(versionRequired) < 0) {
+      if (!Strings.isNullOrEmpty(category)) {
+        if (category.startsWith("__version")) {
+          hasRestriction = true;
+          if (compareCategory(category, "version", version)) {
             return true;
           }
-        } else if (category.startsWith("__version_gt_")) {
-          String versionRequired = category.substring("__version_gt_".length());
-          if (version.compareTo(versionRequired) > 0) {
-            return true;
-          }
-        } else if (category.startsWith("__version_eq_")) {
-          String versionRequired = category.substring("__version_eq_".length());
-          if (version.equals(versionRequired)) {
+        }
+        if (category.startsWith("__build")) {
+          hasRestriction = true;
+          if (compareCategory(category, "build", build)) {
             return true;
           }
         }
       }
     }
-    return false;
+    return !hasRestriction;
   }
 
+  private boolean compareCategory(String category, String type, String value) {
+    if (category.startsWith("__" + type + "_lt_")) {
+      String valueRequired = category.substring(("__" + type + "_lt_").length());
+      if (value.compareTo(valueRequired) < 0) {
+        return true;
+      }
+    } else if (category.startsWith("__" + type + "_gt_")) {
+      String valueRequired = category.substring(("__" + type + "_gt_").length());
+      if (value.compareTo(valueRequired) > 0) {
+        return true;
+      }
+    } else if (category.startsWith("__" + type + "_eq_")) {
+      String valueRequired = category.substring(("__" + type + "_eq_").length());
+      if (value.equals(valueRequired)) {
+        return true;
+      }
+    }
+    return false;
+  }
   private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
     if (lastCheckDate != null) {
       String updateString = getXPath("atom:updated/text()").evaluate(item);
