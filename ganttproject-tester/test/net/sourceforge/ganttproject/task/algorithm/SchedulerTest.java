@@ -171,6 +171,37 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newMonday(), tasks[2].getEnd());
   }
 
+  public void testInheritedDependenciesAreWeak() throws Exception {
+    // The problem is that if subtasks are not linked with each other then strong
+    // dependency drawn to their supertask will create implicit inherited dependencies
+    // to subtasks and they will be forced to move to fulfill the dependency.
+    //
+    // See http://code.google.com/p/ganttproject/issues/detail?id=670
+    // for the details, discussion and examples.
+    //
+    // The solution is to make inherited dependencies weak. This test creates the following structure:
+    //
+    //    su mo tu
+    // t0 ==          t0->t1 FS
+    // t1    =====    t1 is a supertask of t2 and t3
+    // t2    ==
+    // t3       ==
+    //
+    // and expects that t3 will keep its start date
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newSunday()), createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newTuesday())};
+    DependencyGraph graph = createGraph(tasks, new TaskDependency[] {createDependency(tasks[1], tasks[0])});
+    DependencyGraphTest.move(tasks[2], tasks[1], graph);
+    DependencyGraphTest.move(tasks[3], tasks[1], graph);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newMonday(), tasks[1].getStart());
+    assertEquals(TestSetupHelper.newWendesday(), tasks[1].getEnd());
+    assertEquals(TestSetupHelper.newMonday(), tasks[2].getStart());
+    assertEquals(TestSetupHelper.newTuesday(), tasks[3].getStart());
+  }
+
   private Task createTask(GanttCalendar start) {
     Task result = createTask();
     result.setStart(start);

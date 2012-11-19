@@ -315,7 +315,7 @@ public class DependencyGraph {
 
     @Override
     public boolean isWeak() {
-      return myExplicitDep.isWeak();
+      return true;
     }
 
     @Override
