@@ -31,10 +31,19 @@ public abstract class GPVersion {
   public static String V2_0_10 = "2.0.10";
   public static String V2_0_X = V2_0_10;
   public static String PRAHA = "2.5.5 Praha (build 1256)";
-  public static String BRNO = "2.6 Brno RC IV (build 1455)";
+  public static String BRNO = "2.6 Brno (build 1465)";
   public static String CURRENT = BRNO;
 
   public static String getCurrentVersionNumber() {
     return CURRENT.split("\\s")[0];
+  }
+
+  public static String getCurrentBuildNumber() {
+    int posBuild = CURRENT.indexOf("(build ");
+    if (posBuild == -1) {
+      return null;
+    }
+    int posClosingBrace = CURRENT.indexOf(')', posBuild);
+    return CURRENT.substring(posBuild + "(build ".length(), posClosingBrace);
   }
 }
