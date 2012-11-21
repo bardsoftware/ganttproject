@@ -95,7 +95,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     result.add(new JLabel(language.getText("separatedFields")));
     myFieldSeparatorCombo = new JComboBox(new String[] { language.getText("fixedWidth"), language.getText("doubledot"),
         language.getText("dotComa"), language.getText("coma") });
-    myFieldSeparatorCombo.setEditable(true);
+    myFieldSeparatorCombo.setEditable(false);
     result.add(myFieldSeparatorCombo);
     SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
     return result;
@@ -156,44 +156,25 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 
   @Override
   public boolean applyChanges(boolean askForApply) {
-    boolean hasChange;
     CSVOptions csvOptions = getCsvOptions();
-
-    if (getFixed() == csvOptions.bFixedSize && getTaskID() == csvOptions.bExportTaskID
-        && getTaskName() == csvOptions.bExportTaskName && getTaskSD() == csvOptions.bExportTaskStartDate
-        && getTaskED() == csvOptions.bExportTaskEndDate && getTaskDuration() == csvOptions.bExportTaskDuration
-        && getTaskPercent() == csvOptions.bExportTaskPercent && getTaskWebLink() == csvOptions.bExportTaskWebLink
-        && getTaskResources() == csvOptions.bExportTaskResources && getTaskNotes() == csvOptions.bExportTaskNotes
-        && getResourceID() == csvOptions.bExportResourceID && getResourceName() == csvOptions.bExportResourceName
-        && getResourceMail() == csvOptions.bExportResourceMail && getResourcePhone() == csvOptions.bExportResourcePhone
-        && getResourceRole() == csvOptions.bExportResourceRole
-        && getTextSeparat().equals(csvOptions.sSeparatedTextChar)) {
-      hasChange = false;
-    } else {
-      // apply changes if user clicked apply (or warn about pending changes and
-      // ask whether to apply or not)
-      if (!askForApply || (askForApply && askForApplyChanges())) {
-        csvOptions.sSeparatedTextChar = getTextSeparat();
-        csvOptions.sSeparatedChar = getSeparat();
-        csvOptions.bFixedSize = getFixed();
-        csvOptions.bExportTaskID = getTaskID();
-        csvOptions.bExportTaskName = getTaskName();
-        csvOptions.bExportTaskStartDate = getTaskSD();
-        csvOptions.bExportTaskEndDate = getTaskED();
-        csvOptions.bExportTaskDuration = getTaskDuration();
-        csvOptions.bExportTaskPercent = getTaskPercent();
-        csvOptions.bExportTaskWebLink = getTaskWebLink();
-        csvOptions.bExportTaskResources = getTaskResources();
-        csvOptions.bExportTaskNotes = getTaskNotes();
-        csvOptions.bExportResourceID = getResourceID();
-        csvOptions.bExportResourceName = getResourceName();
-        csvOptions.bExportResourceMail = getResourceMail();
-        csvOptions.bExportResourcePhone = getResourcePhone();
-        csvOptions.bExportResourceRole = getResourceRole();
-      }
-      hasChange = true;
-    }
-    return hasChange;
+    csvOptions.sSeparatedTextChar = getTextSeparat();
+    csvOptions.sSeparatedChar = getSeparat();
+    csvOptions.bFixedSize = getFixed();
+    csvOptions.bExportTaskID = getTaskID();
+    csvOptions.bExportTaskName = getTaskName();
+    csvOptions.bExportTaskStartDate = getTaskSD();
+    csvOptions.bExportTaskEndDate = getTaskED();
+    csvOptions.bExportTaskDuration = getTaskDuration();
+    csvOptions.bExportTaskPercent = getTaskPercent();
+    csvOptions.bExportTaskWebLink = getTaskWebLink();
+    csvOptions.bExportTaskResources = getTaskResources();
+    csvOptions.bExportTaskNotes = getTaskNotes();
+    csvOptions.bExportResourceID = getResourceID();
+    csvOptions.bExportResourceName = getResourceName();
+    csvOptions.bExportResourceMail = getResourceMail();
+    csvOptions.bExportResourcePhone = getResourcePhone();
+    csvOptions.bExportResourceRole = getResourceRole();
+    return true;
   }
 
   @Override

@@ -71,7 +71,11 @@ public class GanttCSVExport {
    */
   public void save(OutputStream stream) throws IOException {
     OutputStreamWriter writer = new OutputStreamWriter(stream);
-    CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+    CSVFormat format = CSVFormat.DEFAULT;
+    if (csvOptions.sSeparatedChar.length() == 1) {
+      format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
+    }
+    CSVPrinter csvPrinter = new CSVPrinter(writer, format);
 
     if (csvOptions.bFixedSize) {
       // TODO The CVS library we use is lacking support for fixed size
