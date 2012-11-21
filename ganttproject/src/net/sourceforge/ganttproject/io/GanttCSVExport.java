@@ -71,10 +71,14 @@ public class GanttCSVExport {
    */
   public void save(OutputStream stream) throws IOException {
     OutputStreamWriter writer = new OutputStreamWriter(stream);
-    CSVFormat format = CSVFormat.DEFAULT;
+    CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (csvOptions.sSeparatedChar.length() == 1) {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
     }
+    if (csvOptions.sSeparatedTextChar.length() == 1) {
+      format = format.withEncapsulator(csvOptions.sSeparatedTextChar.charAt(0));
+    }
+    
     CSVPrinter csvPrinter = new CSVPrinter(writer, format);
 
     if (csvOptions.bFixedSize) {
