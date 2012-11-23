@@ -92,13 +92,13 @@ public class HtmlSerializer extends XmlSerializer {
     emptyElement("chart", attrs, handler);
     endElement("resources", handler);
 
-    addAttribute("name", i18n("name"), attrs);
-    addAttribute("begin", i18n("start"), attrs);
-    addAttribute("end", i18n("end"), attrs);
-    addAttribute("milestone", i18n("meetingPoint"), attrs);
-    addAttribute("progress", i18n("advancement"), attrs);
-    addAttribute("assigned-to", i18n("assignTo"), attrs);
-    addAttribute("notes", i18n("notesTask"), attrs);
+//    addAttribute("name", i18n("name"), attrs);
+//    addAttribute("begin", i18n("start"), attrs);
+//    addAttribute("end", i18n("end"), attrs);
+//    addAttribute("milestone", i18n("meetingPoint"), attrs);
+//    addAttribute("progress", i18n("advancement"), attrs);
+//    addAttribute("assigned-to", i18n("assignTo"), attrs);
+//    addAttribute("notes", i18n("notesTask"), attrs);
     try {
       writeTasks(getProject().getTaskManager(), handler);
     } catch (Exception e) {
