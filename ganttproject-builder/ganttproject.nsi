@@ -8,12 +8,12 @@ Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
 !define VERSION "2.6"
-!define VERSION_BUILD "2.6-rc4-r1455"
+!define VERSION_BUILD "2.6-r1473"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-Brno
+InstallDir $PROGRAMFILES\GanttProject-2.6
 
 
 !define MUI_ABORTWARNING
