@@ -64,6 +64,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependa
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
  * @author bard
@@ -574,6 +575,8 @@ public class TaskImpl implements Task {
 
     private List<TaskActivity> myActivities;
 
+    private Pair<FieldChange, FieldChange> myShiftChange;
+
     private final List<Runnable> myCommands = new ArrayList<Runnable>();
 
     private int myIsolationLevel;
@@ -617,10 +620,23 @@ public class TaskImpl implements Task {
       if (myStartChange != null && TaskImpl.this.isSupertask()) {
         TaskImpl.this.adjustNestedTasks();
       }
-      if ((myStartChange != null || myEndChange != null || myDurationChange != null) && areEventsEnabled()) {
-        GanttCalendar oldStart = (GanttCalendar) (myStartChange == null ? TaskImpl.this.getStart()
-            : myStartChange.myOldValue);
-        GanttCalendar oldEnd = (GanttCalendar) (myEndChange == null ? TaskImpl.this.getEnd() : myEndChange.myOldValue);
+      if ((myStartChange != null || myEndChange != null || myDurationChange != null || myShiftChange != null) && areEventsEnabled()) {
+        GanttCalendar oldStart;
+        if (myStartChange != null) {
+          oldStart = (GanttCalendar) myStartChange.myOldValue;
+        } else if (myShiftChange != null) {
+          oldStart = (GanttCalendar) myShiftChange.first().myOldValue;
+        } else {
+          oldStart = TaskImpl.this.getStart();
+        }
+        GanttCalendar oldEnd;
+        if (myEndChange != null) {
+          oldEnd = (GanttCalendar) myEndChange.myOldValue;
+        } else if (myShiftChange != null){
+          oldEnd = (GanttCalendar) myShiftChange.second().myOldValue;
+        } else {
+          oldEnd = TaskImpl.this.getEnd();
+        }
         myManager.fireTaskScheduleChanged(TaskImpl.this, oldStart, oldEnd);
       }
     }
@@ -858,6 +874,11 @@ public class TaskImpl implements Task {
 
     @Override
     public void shift(TimeDuration shift) {
+      if (myShiftChange == null) {
+        myShiftChange = Pair.create(new FieldChange(), new FieldChange());
+        myShiftChange.first().setOldValue(TaskImpl.this.myStart);
+        myShiftChange.second().setOldValue(TaskImpl.this.myEnd);
+      }
       ShiftTaskTreeAlgorithm shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager, null);
       try {
         shiftAlgorithm.run(TaskImpl.this, shift, ShiftTaskTreeAlgorithm.DEEP);
