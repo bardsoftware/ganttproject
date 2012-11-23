@@ -33,6 +33,10 @@
       <library name="lib/core/endrick-cache-1.7.9.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/ganttproject-jxbusycomponent-1.2.2.jar">
+         <export name="*"/>
+      </library>
+      
       <library name="lib/core/httpclient-4.2.1.jar">
          <export name="*"/>
       </library>
@@ -49,6 +53,9 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jgoodies-looks-2.4.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jxlayer.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/milton-api-2.0.1.jar">
