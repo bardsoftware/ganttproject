@@ -22,7 +22,6 @@ package net.sourceforge.ganttproject.document.webdav;
 import io.milton.http.exceptions.NotAuthorizedException;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -45,7 +44,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
@@ -67,6 +65,7 @@ import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
+import org.divxdede.swing.busy.JBusyComponent;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
 
@@ -144,6 +143,7 @@ class GanttURLChooser {
       try {
         if (!resource.isLocked()) {
           resource.lock(myTimeout.getValue());
+          reloadFilesTable();
         }
       } catch (WebDavException e) {
         showError(e);
@@ -161,6 +161,7 @@ class GanttURLChooser {
       try {
         if (resource.isLocked()) {
           resource.unlock();
+          reloadFilesTable();
         }
       } catch (WebDavException e) {
         showError(e);
@@ -192,8 +193,6 @@ class GanttURLChooser {
 
   private final FilesTableModel tableModel = new FilesTableModel();
 
-  private final BooleanOption myReleaseLockOption;
-
   private JXList table;
 
   private JButton myLockButton;
@@ -204,10 +203,6 @@ class GanttURLChooser {
 
   private JScrollPane myFilesComponent;
 
-  private JProgressBar myProgressBar;
-
-  private JPanel myProgressComponent;
-
   private WebDavUri myInitialUri;
 
   private JLabel myPasswordLabel;
@@ -215,6 +210,8 @@ class GanttURLChooser {
   private OkAction myOkAction;
 
   private final List<Runnable> myListenerRemovers = Lists.newArrayList();
+
+  private JBusyComponent<JComponent> myBusyComponent;
 
   static interface SelectionListener {
     public void setSelection(WebDavResource resource);
@@ -231,7 +228,6 @@ class GanttURLChooser {
     myUsername = username;
     myPassword = password;
     myTimeout = lockTimeoutOption;
-    myReleaseLockOption = releaseLockOption;
     myInitialUri = currentUri;
 
     myListenerRemovers.add(myServers.addChangeValueListener(new ChangeValueListener() {
@@ -399,8 +395,7 @@ class GanttURLChooser {
     panel.add(builder.createOptionComponent(null, serverChoiceOption));
     panel.add(new JLabel());
     panel.add(createUsernamePasswordPanel());
-    //Box serverBox = Box.createHorizontalBox();
-    //serverBox.add(new ServerListEditor(myServers).getComponent());
+
     panel.add(new JLabel(language.getCorrectedLabel("fileFromServer")));
     panel.add(builder.createOptionComponent(null, myPath));
     myPath.addChangeValueListener(new ChangeValueListener() {
@@ -418,11 +413,6 @@ class GanttURLChooser {
         }
       }
     });
-    //panel.add(serverBox);
-//    panel.add(new JLabel(language.getText("userName")));
-//    panel.add(builder.createOptionComponent(null, myUsername));
-//    panel.add(new JLabel(language.getText("password")));
-//    panel.add(builder.createOptionComponent(null, myPassword));
 
     addEmptyRow(panel);
 
@@ -439,8 +429,6 @@ class GanttURLChooser {
       upButton.setText("");
       refreshButton.setText("");
       Box filesHeaderBox = Box.createVerticalBox();
-      //filesHeaderBox.add();
-      //filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(upButton);
       filesHeaderBox.add(Box.createVerticalStrut(5));
       filesHeaderBox.add(refreshButton);
@@ -451,7 +439,6 @@ class GanttURLChooser {
 
       filesTablePanel.add(filesHeaderBox, BorderLayout.EAST);
       filesHeaderBox.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
-      //panel.add(filesActionsPanel);
       table = new JXList(tableModel);
       table.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
       table.setCellRenderer(new FilesCellRenderer());
@@ -482,55 +469,34 @@ class GanttURLChooser {
         }
       });
 
-      myProgressBar = new JProgressBar();
-      myProgressBar.setIndeterminate(true);
-      myProgressComponent = new JPanel(new CardLayout());
-      myProgressComponent.add(myProgressBar, "ProgressOn");
-      myProgressComponent.add(new JLabel(""), "ProgressOff");
-      setProgressBar(false);
-
       myFilesComponent = new JScrollPane(table);
+      myFilesComponent.setMaximumSize(table.getPreferredScrollableViewportSize());
 
-      //filesTablePanel.add(myFilesComponent, BorderLayout.CENTER);
       filesTablePanel.add(myFilesComponent, BorderLayout.CENTER);
-      myProgressComponent.setPreferredSize(new Dimension(100, 20));
-      filesTablePanel.add(myProgressComponent, BorderLayout.SOUTH);
+
       panel.add(new JLabel(language.getText("fileChooser.fileList")));
       panel.add(filesTablePanel);
     }
 
     addEmptyRow(panel);
-//    panel.add(new JLabel(language.getText("webdav.lockResource.label")));
-//    panel.add(lockComponent);
-//    panel.add(new JLabel(language.getText("webdav.lockTimeout.label")));
-//    final JComponent timeoutComponent = (JComponent) builder.createOptionComponent(null, myTimeout);
-//    panel.add(timeoutComponent);
-//
-//    panel.add(new JLabel(language.getText("webdav.lockRelease.label")));
-//    final JComponent lockReleaseComponent = (JComponent) builder.createOptionComponent(null, myReleaseLockOption);
-//    panel.add(lockReleaseComponent);
-//
-//    myLock.addChangeValueListener(new ChangeValueListener() {
-//      @Override
-//      public void changeValue(ChangeValueEvent event) {
-//        timeoutComponent.setEnabled(myLock.isChecked());
-//        lockReleaseComponent.setEnabled(myLock.isChecked());
-//      }
-//    });
     SpringUtilities.makeCompactGrid(panel, 6, 2, 0, 0, 10, 5);
+    panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
 
-    JPanel properties = new JPanel(new BorderLayout());
-    properties.add(panel, BorderLayout.NORTH);
-    properties.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
+    Box properties = Box.createVerticalBox();
+    properties.add(panel);
+    properties.add(Box.createVerticalGlue());
 
     if (myInitialUri != null) {
       tryApplyUrl(myInitialUri);
     }
-    return properties;
+
+    myBusyComponent = new JBusyComponent<JComponent>(properties);
+    return myBusyComponent;
   }
 
   private void setProgressBar(boolean b) {
-    ((CardLayout)myProgressComponent.getLayout()).show(myProgressComponent, b ? "ProgressOn" : "ProgressOff");
+    myBusyComponent.setBusy(b);
   }
 
   private Component createUsernamePasswordPanel() {
