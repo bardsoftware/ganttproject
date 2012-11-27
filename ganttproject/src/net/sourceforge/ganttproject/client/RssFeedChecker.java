@@ -78,6 +78,7 @@ public class RssFeedChecker {
       myLastCheckOption });
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
+  protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",
       GanttLanguage.getInstance().formatText("updateRss.question",
@@ -155,10 +156,10 @@ public class RssFeedChecker {
     return new Runnable() {
       @Override
       public void run() {
+        HttpClient httpClient = new DefaultHttpClient();
+        String url = RSS_URL;
         try {
-          HttpClient httpClient = new DefaultHttpClient();
-          String url = RSS_URL;
-          while (true) {
+          for (int i = 0; i < MAX_ATTEMPTS; i++) {
             HttpGet getRssUrl = new HttpGet(url);
             getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
             HttpResponse result = httpClient.execute(getRssUrl);
@@ -173,6 +174,8 @@ public class RssFeedChecker {
           e.printStackTrace();
         } catch (IOException e) {
           e.printStackTrace();
+        } finally {
+          httpClient.getConnectionManager().shutdown();
         }
       }
 
