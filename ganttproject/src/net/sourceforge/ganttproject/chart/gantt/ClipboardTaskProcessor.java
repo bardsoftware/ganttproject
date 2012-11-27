@@ -49,17 +49,16 @@ public class ClipboardTaskProcessor {
   }
 
   public List<Task> paste(
-      Task selectedTask, List<DefaultMutableTreeTableNode> nodes, List<TaskDependency> deps) {
+      Task selectedTask, List<Task> copiedTasks, List<TaskDependency> deps) {
     Task pasteRoot = myTaskManager.getTaskHierarchy().getContainer(selectedTask);
     if (pasteRoot == null) {
       pasteRoot = myTaskManager.getRootTask();
       selectedTask = null;
     }
 
-    List<Task> result = Lists.newArrayListWithExpectedSize(nodes.size());
+    List<Task> result = Lists.newArrayListWithExpectedSize(copiedTasks.size());
     Map<Task, Task> original2copy = Maps.newHashMap();
-    for (DefaultMutableTreeTableNode taskNode : nodes) {
-      Task task = (Task) taskNode.getUserObject();
+    for (Task task : copiedTasks) {
       Task copy = copyAndInsert(task, pasteRoot, selectedTask, original2copy);
       result.add(copy);
     }

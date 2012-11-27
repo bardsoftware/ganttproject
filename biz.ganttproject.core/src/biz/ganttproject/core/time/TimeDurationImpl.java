@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.time;
 
+import com.google.common.base.Objects;
+
 
 /**
  * @author bard
@@ -90,4 +92,20 @@ public class TimeDurationImpl implements TimeDuration {
   public String toString() {
     return "" + myCount + " " + myUnit.getName();
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(myCount, myUnit);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof TimeDurationImpl == false) {
+      return false;
+    }
+    TimeDurationImpl that = (TimeDurationImpl) obj;
+    return myCount == that.myCount && myUnit.equals(that.myUnit);
+  }
+  
+  
 }
