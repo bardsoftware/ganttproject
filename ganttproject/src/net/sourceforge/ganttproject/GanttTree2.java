@@ -894,7 +894,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
           if (pasteRoot == null) {
             pasteRoot = getRootNode();
           }
-          List<Task> pasted = myClipboardProcessor.paste((Task)pasteRoot.getUserObject(), cpNodesArrayList, cpDependencies);
+          List<Task> copiedTasks = Lists.transform(cpNodesArrayList, new Function<DefaultMutableTreeTableNode, Task>() {
+            @Override
+            public Task apply(DefaultMutableTreeTableNode value) {
+              return (Task) value.getUserObject();
+            }
+          });
+          List<Task> pasted = myClipboardProcessor.paste((Task)pasteRoot.getUserObject(), copiedTasks, cpDependencies);
           mySelectionManager.clear();
           for (Task t : pasted) {
             mySelectionManager.addTask(t);
