@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.test.task;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
@@ -42,6 +43,17 @@ public abstract class TaskTestCase extends TestCase {
         result.move(getTaskManager().getRootTask());
         result.setName(String.valueOf(result.getTaskID()));
         return result;
+    }
+
+    protected Task createTask(GanttCalendar start) {
+      return createTask(start, 1);
+    }
+
+    protected Task createTask(GanttCalendar start, int duration) {
+      Task result = createTask();
+      result.setStart(start);
+      result.setDuration(getTaskManager().createLength(duration));
+      return result;
     }
 
     protected TaskDependency createDependency(Task dependant, Task dependee) throws TaskDependencyException {

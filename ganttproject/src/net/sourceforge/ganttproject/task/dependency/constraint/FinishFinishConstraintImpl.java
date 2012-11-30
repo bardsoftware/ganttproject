@@ -18,21 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.dependency.constraint;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * Dependent task finishes not earlier than dependee finishes
@@ -46,34 +43,20 @@ public class FinishFinishConstraintImpl extends ConstraintImpl implements TaskDe
 
   @Override
   public TaskDependencyConstraint.Collision getCollision() {
-    TaskDependencyConstraint.Collision result = null;
     Task dependee = getDependency().getDependee();
     Task dependant = getDependency().getDependant();
-    GanttCalendar dependeeEnd = dependee.getEnd();
-    GanttCalendar dependantEnd = dependant.getEnd();
+    final GanttCalendar dependeeEnd = dependee.getEnd();
+    final GanttCalendar dependantEnd = dependant.getEnd();
 
-    int difference = getDependency().getDifference();
+    GanttCalendar acceptableEnd = CalendarFactory.createGanttCalendar(dependant.getManager().getCalendar().shiftDate(
+        dependeeEnd.getTime(), dependant.getManager().createLength(getDependency().getDifference())));
 
-    GanttCalendar comparisonDate = dependeeEnd.clone();
-    comparisonDate.add(Calendar.DATE, difference);
+    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependantEnd.compareTo(acceptableEnd) < 0
+        : dependantEnd.compareTo(acceptableEnd) != 0;
 
-    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependantEnd.compareTo(comparisonDate) < 0
-        : dependantEnd.compareTo(comparisonDate) != 0;
-
-    GanttCalendar acceptableStart = dependant.getStart().clone();
-
-    // GanttCalendar acceptableStart = dependant.getStart();
-    if (isActive) {
-      Task clone = dependee.unpluggedClone();
-      TaskMutator mutator = clone.createMutator();
-      mutator.shift(-dependant.getDuration().getLength());
-      acceptableStart = clone.getEnd();
-    }
-    addDelay(acceptableStart);
-    result = new TaskDependencyConstraint.DefaultCollision(acceptableStart,
-        TaskDependencyConstraint.Collision.START_LATER_VARIATION, isActive);
-
-    return result;
+    GanttCalendar acceptableStart = isActive ? CalendarFactory.createGanttCalendar(
+          dependant.getManager().getCalendar().shiftDate(acceptableEnd.getTime(), dependant.getDuration().reverse())) : dependant.getStart();
+    return new TaskDependencyConstraint.DefaultCollision(acceptableStart, TaskDependencyConstraint.Collision.START_LATER_VARIATION, isActive);
   }
 
   @Override
