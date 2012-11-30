@@ -1034,6 +1034,7 @@ public class TaskManagerImpl implements TaskManager {
     if (!isRegistered(task)) {
       registerTask(task);
     }
+    myDependencyGraph.move(task, getTaskHierarchy().getContainer(task));
     myTaskMap.setDirty();
   }
 

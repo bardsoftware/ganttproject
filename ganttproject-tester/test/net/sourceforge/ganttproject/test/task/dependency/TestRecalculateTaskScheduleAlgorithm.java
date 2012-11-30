@@ -1,15 +1,12 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 
@@ -18,7 +15,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
  */
 public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
     public void testFinishStartDependenciesOnMovingEndDateForward()
-            throws TaskDependencyException {
+            throws Exception {
         TaskManager taskManager = getTaskManager();
         Task task1 = taskManager.createTask();
         task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
@@ -42,16 +39,14 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
                 new FinishStartConstraintImpl());
         task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 03));
 
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
 
         assertEquals("Unexpected value of end of task=" + task3,
                 CalendarFactory.createGanttCalendar(2000, 01, 05), task3.getEnd());
     }
 
     public void testFinishStartConstraintOnMovingEndDateBackward()
-            throws TaskDependencyException {
+            throws Exception {
         TaskManager taskManager = getTaskManager();
         Task task1 = taskManager.createTask();
         task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 01));
@@ -83,9 +78,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         // task1 xx
         // task3   x
         // task2 xx
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
         assertEquals("Unexpected value of start of task=" + task3,
                 CalendarFactory.createGanttCalendar(2000, 01, 03), task3.getStart());
 
@@ -96,15 +89,13 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         // task3   x
         // task2 xx
         // because task3 also depends on task2 with "finish-start" constraint
-        alg = taskManager.getAlgorithmCollection()
-                .getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
         assertEquals("Unexpected value of start of task=" + task3,
                 CalendarFactory.createGanttCalendar(2000, 01, 03), task3.getStart());
     }
 
     public void testFinishFinishConstraintOnMovingEndDateForward()
-            throws TaskDependencyException {
+            throws Exception {
         TaskManager taskManager = getTaskManager();
         Task task1 = taskManager.createTask();
         task1.setStart((CalendarFactory.createGanttCalendar(2000, 01, 01)));
@@ -129,9 +120,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
 
         // Increase the length of task1.
         task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 05));
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
         // We expect that task2 will be shifted forward in time:
         // task1 xxxxx
         // task2   xxx
@@ -139,7 +128,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
     }
 
     public void testStartStartConstraintOnMovingStartDateForward()
-            throws TaskDependencyException {
+            throws Exception {
         TaskManager taskManager = getTaskManager();
         Task task1 = taskManager.createTask();
         task1.setStart((CalendarFactory.createGanttCalendar(2000, 01, 01)));
@@ -167,9 +156,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 04));
         task1.setDuration(task1Duration);
 
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
 
         // We expect that task2 will also be shifted forward in time:
         // task1 ___xxx___
@@ -179,7 +166,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
     }
 
     public void testStartFinishConstraintOnMovingStartDateForward()
-            throws TaskDependencyException {
+            throws Exception {
         TaskManager taskManager = getTaskManager();
         Task task1 = taskManager.createTask();
         task1.setStart((CalendarFactory.createGanttCalendar(2000, 01, 01)));
@@ -212,9 +199,7 @@ public class TestRecalculateTaskScheduleAlgorithm extends TaskTestCase {
         task1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 04));
         task1.setDuration(task1Duration);
         //
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
         assertEquals("Unexpected end of task=" + task2, CalendarFactory.createGanttCalendar(2000, 01, 04), task2.getEnd());
 
     }

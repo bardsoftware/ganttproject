@@ -36,7 +36,6 @@ public class TestStartFinishDepedency extends TaskTestCase {
         TaskDependency dep = createDependency(t2, t1);
         dep.setConstraint(new StartFinishConstraintImpl());
 
-        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         assertEquals(dependeeStart, t2.getEnd());
     }
 
@@ -50,7 +49,6 @@ public class TestStartFinishDepedency extends TaskTestCase {
         dep.setDifference(3);
         dep.setConstraint(new StartFinishConstraintImpl());
 
-        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         assertEquals(TestSetupHelper.newMonday(), t2.getEnd());
     }
 
@@ -65,7 +63,6 @@ public class TestStartFinishDepedency extends TaskTestCase {
 
         TaskDependency dep_t3_t2 = createDependency(t3, t2);
         dep_t3_t2.setConstraint(new StartFinishConstraintImpl());
-        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
 
         assertEquals(TestSetupHelper.newSunday(), t2.getStart());
         assertEquals(TestSetupHelper.newSaturday(), t3.getStart());
