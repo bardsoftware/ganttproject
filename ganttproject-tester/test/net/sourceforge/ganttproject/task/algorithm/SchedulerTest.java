@@ -202,13 +202,6 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newTuesday(), tasks[3].getStart());
   }
 
-  private Task createTask(GanttCalendar start) {
-    Task result = createTask();
-    result.setStart(start);
-    result.setDuration(getTaskManager().createLength(1));
-    return result;
-  }
-
   private DependencyGraph createGraph(Task[] tasks, TaskDependency[] deps) {
     DependencyGraph graph = new DependencyGraph(Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
     initGraph(graph, tasks, deps);
