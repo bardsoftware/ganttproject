@@ -18,20 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.test.task.dependency;
 
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
-import net.sourceforge.ganttproject.test.task.TaskTestCase;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.TestSetupHelper;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
+import net.sourceforge.ganttproject.test.task.TaskTestCase;
+import biz.ganttproject.core.time.CalendarFactory;
 
 public class TestSupertaskAdjustment extends TaskTestCase {
-    public void testSupetaskDurationGrowsWhenNestedTasksGrow()
-            throws TaskDependencyException {
+    public void testSupetaskDurationGrowsWhenNestedTasksGrow() throws Exception {
         TaskManager taskManager = getTaskManager();
         Task supertask = taskManager.createTask();
         Task task1 = taskManager.createTask();
@@ -51,9 +46,7 @@ public class TestSupertaskAdjustment extends TaskTestCase {
                 task2, task1, new FinishStartConstraintImpl());
 
         task1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 04));
-        RecalculateTaskScheduleAlgorithm alg = taskManager
-                .getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        alg.run(task1);
+        taskManager.getAlgorithmCollection().getScheduler().run();
 
         assertEquals("Unexpected start of supertask=" + supertask,
                 CalendarFactory.createGanttCalendar(2000, 01, 01), supertask.getStart());
@@ -61,7 +54,7 @@ public class TestSupertaskAdjustment extends TaskTestCase {
                 CalendarFactory.createGanttCalendar(2000, 01, 05), supertask.getEnd());
     }
 
-    public void testSupertaskDurationShrinksWhenNestedTasksShrink() {
+    public void testSupertaskDurationShrinksWhenNestedTasksShrink() throws Exception {
         TaskManager taskManager = getTaskManager();
         Task supertask = taskManager.createTask();
         Task task1 = taskManager.createTask();
@@ -81,9 +74,7 @@ public class TestSupertaskAdjustment extends TaskTestCase {
         task2.setStart(CalendarFactory.createGanttCalendar(2000, 01, 02));
         task2.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 03));
 
-        AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection()
-                .getAdjustTaskBoundsAlgorithm();
-        alg.run(new Task[] { task1, task2 });
+        taskManager.getAlgorithmCollection().getScheduler().run();
 
         assertEquals("Unexpected start of supertask=" + supertask,
                 CalendarFactory.createGanttCalendar(2000, 01, 02), supertask.getStart());
@@ -91,7 +82,7 @@ public class TestSupertaskAdjustment extends TaskTestCase {
                 CalendarFactory.createGanttCalendar(2000, 01, 03), supertask.getEnd());
     }
 
-    public void testTaskDurationChangeIsPropagatedTwoLevelsUp() {
+    public void testTaskDurationChangeIsPropagatedTwoLevelsUp() throws Exception {
         TaskManager taskManager = getTaskManager();
         Task supertask = taskManager.createTask();
         supertask.move(taskManager.getRootTask());
@@ -115,8 +106,7 @@ public class TestSupertaskAdjustment extends TaskTestCase {
 
         level2task1.setEnd(TestSetupHelper.newWendesday());
 
-        AdjustTaskBoundsAlgorithm alg = taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm();
-        alg.run(new Task[] { level2task1 });
+        taskManager.getAlgorithmCollection().getScheduler().run();
 
         assertEquals("Unexpected end of the topleveltask="+supertask, TestSetupHelper.newWendesday(), supertask.getEnd());
     }
