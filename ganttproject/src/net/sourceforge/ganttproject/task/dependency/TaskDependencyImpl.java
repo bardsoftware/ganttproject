@@ -114,6 +114,7 @@ public class TaskDependencyImpl implements TaskDependency {
   @Override
   public void setDifference(int difference) {
     myDifference = difference;
+    myCollection.fireChanged(this);
   }
 
   @Override
