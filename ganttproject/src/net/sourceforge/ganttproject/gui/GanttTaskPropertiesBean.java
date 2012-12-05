@@ -562,7 +562,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   private void storeOriginalValues(GanttTask task) {
     originalName = task.getName();
     originalWebLink = task.getWebLink();
-    originalIsMilestone = task.isMilestone();
+    originalIsMilestone = task.isLegacyMilestone();
     originalStartDate = task.getStart();
     originalEndDate = task.getEnd();
     originalNotes = task.getNotes();

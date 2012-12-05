@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
@@ -90,7 +91,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
     @Override
     public boolean isMilestone(Task task) {
-      return task.isMilestone();
+      return ((TaskImpl)task).isLegacyMilestone();
     }
     @Override
     public boolean hasNestedTasks(Task task) {
