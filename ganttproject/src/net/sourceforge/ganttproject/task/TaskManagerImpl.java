@@ -1059,6 +1059,10 @@ public class TaskManagerImpl implements TaskManager {
     areEventsEnabled = enabled;
   }
 
+  boolean areEventsEnabled() {
+    return areEventsEnabled;
+  }
+
   @Override
   public CustomPropertyManager getCustomPropertyManager() {
     return myCustomColumnsManager;

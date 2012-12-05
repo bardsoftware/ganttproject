@@ -48,9 +48,7 @@ public class ShiftTaskTreeAlgorithm {
         shiftTask(t, shift, deep);
       }
       try {
-        if (myRescheduleAlgorithm != null) {
-          myRescheduleAlgorithm.run(new HashSet<Task>(tasks));
-        }
+        myTaskManager.getAlgorithmCollection().getScheduler().run();
       } catch (TaskDependencyException e) {
         throw new AlgorithmException("Failed to reschedule the following tasks tasks after move:\n" + tasks, e);
       }
