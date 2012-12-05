@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.action.task;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttTree2;
@@ -28,6 +30,7 @@ import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
@@ -64,6 +67,13 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
   @Override
   public void actionPerformed(ActionEvent e) {
     final List<Task> selection = new ArrayList<Task>(mySelection);
+    Collections.sort(selection, new Comparator<Task>() {
+      private final TaskContainmentHierarchyFacade myTaskHierarchy = getTaskManager().getTaskHierarchy();
+      @Override
+      public int compare(Task o1, Task o2) {
+        return myTaskHierarchy.compareDocumentOrder(o1, o2);
+      }
+    });
     if (isEnabled() && askUserPermission(selection)) {
       myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
         @Override

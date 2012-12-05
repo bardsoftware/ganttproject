@@ -104,7 +104,7 @@ public class DependencyGraphTest extends TaskTestCase {
     assertEquals(0, graph.getNode(tasks[2]).getLevel());
   }
 
-  static void move(Task what, Task where, DependencyGraph graph) {
+  public static void move(Task what, Task where, DependencyGraph graph) {
     where.getManager().getTaskHierarchy().move(what, where);
     graph.move(what, where);
   }
