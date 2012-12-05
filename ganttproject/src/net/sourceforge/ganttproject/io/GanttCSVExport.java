@@ -78,7 +78,7 @@ public class GanttCSVExport {
     if (csvOptions.sSeparatedTextChar.length() == 1) {
       format = format.withEncapsulator(csvOptions.sSeparatedTextChar.charAt(0));
     }
-    
+
     CSVPrinter csvPrinter = new CSVPrinter(writer, format);
 
     if (csvOptions.bFixedSize) {
@@ -157,7 +157,7 @@ public class GanttCSVExport {
       }
       // End Date
       if (csvOptions.bExportTaskEndDate) {
-        writer.print(task.getEnd().toString());
+        writer.print(task.getEnd().getDisplayValue().toString());
       }
       // Duration
       if (csvOptions.bExportTaskDuration) {
