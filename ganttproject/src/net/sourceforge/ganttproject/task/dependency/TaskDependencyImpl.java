@@ -18,10 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.dependency;
 
-import biz.ganttproject.core.chart.scene.BarChartActivity;
-import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
+import biz.ganttproject.core.chart.scene.BarChartActivity;
 
 /**
  * @author bard
@@ -48,6 +47,10 @@ public class TaskDependencyImpl implements TaskDependency {
   }
 
   TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection, TaskDependencyConstraint constraint) {
+    this(dependant, dependee, collection, constraint, Hardness.STRONG, 0);
+  }
+
+  public TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection, TaskDependencyConstraint constraint, Hardness hardness, int lag) {
     myDependant = dependant;
     myDependee = dependee;
     myCollection = collection;
@@ -55,7 +58,8 @@ public class TaskDependencyImpl implements TaskDependency {
       throw new IllegalArgumentException("invalid participants of dependency: dependee=" + dependee + " dependant="
           + dependant);
     }
-    myHardness = Hardness.STRONG;
+    myDifference = lag;
+    myHardness = hardness;
     myConstraint = constraint;
     if (constraint != null) {
       constraint.setTaskDependency(this);

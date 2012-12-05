@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.event.TaskListener;
@@ -227,4 +228,6 @@ public interface TaskManager {
   void setZeroMilestones(Boolean b);
 
   Boolean isZeroMilestones();
+
+  DependencyGraph getDependencyGraph();
 }
