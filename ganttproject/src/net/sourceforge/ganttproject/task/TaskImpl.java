@@ -1122,7 +1122,7 @@ public class TaskImpl implements Task {
   }
 
   protected boolean areEventsEnabled() {
-    return myEventsEnabled;
+    return myEventsEnabled && myManager.areEventsEnabled();
   }
 
   /**

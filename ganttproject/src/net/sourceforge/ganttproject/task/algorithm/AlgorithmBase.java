@@ -43,6 +43,6 @@ public class AlgorithmBase {
     return myDiagnostic;
   }
 
-  public void run() throws Exception {
+  public void run() {
   }
 }
