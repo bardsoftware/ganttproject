@@ -44,19 +44,7 @@ public class TaskUnindentAction extends TaskActionBase {
 
   @Override
   protected boolean isEnabled(List<Task> selection) {
-    if (selection.size() == 0) {
-      return false;
-    }
-
-    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-    Task rootTask = taskHierarchy.getRootTask();
-    for (Task task : selection) {
-      if (rootTask.equals(taskHierarchy.getContainer(task))) {
-        // Found a task which cannot get unindented
-        return false;
-      }
-    }
-    return true;
+    return new TaskMoveEnabledPredicate(getTaskManager(), new OutdentTargetFunctionFactory(getTaskManager())).apply(selection);
   }
 
   @Override
@@ -70,9 +58,8 @@ public class TaskUnindentAction extends TaskActionBase {
       int index = taskHierarchy.getTaskIndex(parent) + 1;
       taskHierarchy.move(task, ancestor, index);
     }
-    forwardScheduling();
     // TODO Ideally this should get done by the move method as it modifies the
     // document
-    getUIFacade().getGanttChart().getProject().setModified();
+    //getUIFacade().getGanttChart().getProject().setModified();
   }
 }

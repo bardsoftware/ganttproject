@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -34,11 +35,15 @@ import com.google.common.collect.Sets;
  */
 public class RetainRootsAlgorithm<T> {
   public void run(T[] nodes, Function<T, T> getParent, Collection<T> output) {
+    run(Arrays.asList(nodes), getParent, output);
+  }
+
+  public void run(Collection<T> nodes, Function<T, T> getParent, Collection<T> output) {
     final Set<T> set = Sets.newHashSet(nodes);
-    for (int i = 0; i < nodes.length; i++) {
-      for (T parent = getParent.apply(nodes[i]); parent != null; parent = getParent.apply(parent)) {
+    for (T node : nodes) {
+      for (T parent = getParent.apply(node); parent != null; parent = getParent.apply(parent)) {
         if (set.contains(parent)) {
-          set.remove(nodes[i]);
+          set.remove(node);
           break;
         }
       }

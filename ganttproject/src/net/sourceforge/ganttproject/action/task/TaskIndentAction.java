@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 
 /**
  * Indent several nodes that are selected
@@ -45,18 +44,8 @@ public class TaskIndentAction extends TaskActionBase {
 
   @Override
   protected boolean isEnabled(List<Task> selection) {
-    if (selection.size() == 0) {
-      return false;
-    }
-    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-    TaskDependencyCollection dependencyCollection = getTaskManager().getDependencyCollection();
-    for (Task task : selection) {
-      Task newParent = taskHierarchy.getPreviousSibling(task);
-      if (newParent == null || dependencyCollection.canCreateDependency(newParent, task) == false) {
-        return false;
-      }
-    }
-    return true;
+    TaskMoveEnabledPredicate predicate = new TaskMoveEnabledPredicate(getTaskManager(), new IndentTargetFunctionFactory(getTaskManager()));
+    return predicate.apply(selection);
   }
 
   @Override
@@ -68,7 +57,6 @@ public class TaskIndentAction extends TaskActionBase {
     }
     // TODO Ideally this should get done by the move method as it modifies the
     // document
-    getUIFacade().getGanttChart().getProject().setModified();
-
+    //getUIFacade().getGanttChart().getProject().setModified();
   }
 }
