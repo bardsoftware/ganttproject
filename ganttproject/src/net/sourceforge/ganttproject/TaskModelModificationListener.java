@@ -50,6 +50,11 @@ public class TaskModelModificationListener extends TaskListenerAdapter {
   }
 
   @Override
+  public void dependencyChanged(TaskDependencyEvent e) {
+    myGanttProject.setModified();
+  }
+
+  @Override
   public void taskAdded(TaskHierarchyEvent e) {
     myGanttProject.setModified();
     myUiFacade.setViewIndex(UIFacade.GANTT_INDEX);

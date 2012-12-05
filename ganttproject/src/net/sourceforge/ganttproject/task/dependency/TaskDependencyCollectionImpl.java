@@ -128,8 +128,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   }
 
   void fireChanged(TaskDependency dependency) {
-    myEventDispatcher.fireDependencyRemoved(dependency);
-    myEventDispatcher.fireDependencyAdded(dependency);
+    myEventDispatcher.fireDependencyChanged(dependency);
   }
 
   @Override
@@ -243,9 +242,7 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   }
 
   private TaskDependency auxCreateDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint, Hardness hardness) {
-    TaskDependency result = new TaskDependencyImpl(dependant, dependee, this, constraint);
-    result.setHardness(hardness);
-    result.setDifference(0);
+    TaskDependency result = new TaskDependencyImpl(dependant, dependee, this, constraint, hardness, 0);
     return result;
   }
 

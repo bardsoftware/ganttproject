@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import biz.ganttproject.core.calendar.GPCalendar;
 
 import com.google.common.base.Joiner;
@@ -65,8 +66,15 @@ public class DependencyGraph {
   }
 
   public static interface Logger {
-    void log(String title, String message);
+    void logDependencyLoop(String title, String message);
   }
+
+  public static final Logger THROWING_LOGGER = new Logger() {
+    @Override
+    public void logDependencyLoop(String title, String message) {
+      throw new TaskDependencyException(message);
+    }
+  };
   /**
    * Dependency defines a constraint on its target task start and end dates. Constraints
    * are normally either points or semi-open intervals on the date axis.
@@ -271,7 +279,7 @@ public class DependencyGraph {
     private final Node myDst;
 
     private ImplicitInheritedDependency(DependencyEdge explicitIncoming, Node supertaskNode, Node subtaskNode) {
-      assert explicitIncoming.getDst() == supertaskNode;
+      assert isAncestor(explicitIncoming.getDst(), supertaskNode);
       myExplicitDep = explicitIncoming;
       mySrc = explicitIncoming.getSrc();
       myDst = subtaskNode;
@@ -620,7 +628,7 @@ public class DependencyGraph {
 
   private final List<Listener> myListeners = Lists.newArrayList();
 
-  private final Logger myLogger;
+  private Logger myLogger;
 
   private final Transaction myTxn = new Transaction();
 
@@ -629,7 +637,7 @@ public class DependencyGraph {
   public DependencyGraph(Supplier<TaskContainmentHierarchyFacade> taskHierarchy) {
     this(taskHierarchy, new Logger() {
       @Override
-      public void log(String title, String message) {
+      public void logDependencyLoop(String title, String message) {
         GPLogger.log(title + "\n" + message);
       }
     });
@@ -741,7 +749,7 @@ public class DependencyGraph {
         for (DependencyEdge outEdge : node.getOutgoing()) {
           if (!queuedTasks.containsKey(outEdge.getDst().getTask())) {
             if (pastTasks.containsKey(outEdge.getDst().getTask())) {
-              myLogger.log("Dependency loop detected", buildLoop(pastTasks, outEdge) + "\n\nLast dependency has been ignored");
+              myLogger.logDependencyLoop("Dependency loop detected", buildLoop(pastTasks, outEdge) + "\n\nLast dependency has been ignored");
               continue;
             }
             queue.add(outEdge.getDst());
@@ -753,10 +761,15 @@ public class DependencyGraph {
   }
 
   private static String buildLoop(Map<Task, DependencyEdge> pastTasks, DependencyEdge closingEdge) {
+    Set<DependencyEdge> visitedEdges = Sets.newHashSet();
     List<String> trace = Lists.newArrayList();
     trace.add(closingEdge.toString());
     for (DependencyEdge prevEdge = pastTasks.get(closingEdge.getSrc().getTask());
         prevEdge != null; prevEdge = pastTasks.get(prevEdge.getSrc().getTask())) {
+      if (visitedEdges.contains(prevEdge)) {
+        break;
+      }
+      visitedEdges.add(prevEdge);
       trace.add(prevEdge.toString());
     }
     Collections.reverse(trace);
@@ -891,6 +904,9 @@ public class DependencyGraph {
   }
 
   private void fireGraphChanged() {
+    if (myTxn.isRunning()) {
+      return;
+    }
     for (Listener l : myListeners) {
       l.onChange();
     }
@@ -915,5 +931,23 @@ public class DependencyGraph {
     }
     myData = myData.rollback();
     myTxn.rollback();
+  }
+
+  public void setLogger(Logger logger) {
+    myLogger = logger;
+  }
+
+  public Logger getLogger() {
+    return myLogger;
+  }
+
+  private static boolean isAncestor(Node ancestor, Node descendant) {
+    TaskContainmentHierarchyFacade taskHierarchy = descendant.getTask().getManager().getTaskHierarchy();
+    for (Task parent = descendant.getTask(); parent != null; parent = taskHierarchy.getContainer(parent)) {
+      if (parent == ancestor.getTask()) {
+        return true;
+      }
+    }
+    return false;
   }
 }
