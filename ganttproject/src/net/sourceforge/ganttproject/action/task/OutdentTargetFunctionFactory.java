@@ -35,15 +35,13 @@ import com.google.common.base.Function;
 class OutdentTargetFunctionFactory implements Function<Collection<Task>, Function<Task, Task>> {
   private final TaskManager myTaskManager;
   private final Function<Task, Task> myGetMoveTargetFxn = new Function<Task, Task>() {
-    private final TaskContainmentHierarchyFacade myTaskHierarchy = getTaskManager().getTaskHierarchy();
-
     @Override
     public Task apply(Task whatMove) {
-      Task currentParent = myTaskHierarchy.getContainer(whatMove);
+      Task currentParent = getTaskHierarchy().getContainer(whatMove);
       if (currentParent == myTaskManager.getRootTask()) {
         return null;
       }
-      return myTaskHierarchy.getContainer(currentParent);
+      return getTaskHierarchy().getContainer(currentParent);
     }
   };
 
@@ -51,8 +49,8 @@ class OutdentTargetFunctionFactory implements Function<Collection<Task>, Functio
     myTaskManager = taskManager;
   }
 
-  protected TaskManager getTaskManager() {
-    return myTaskManager;
+  protected TaskContainmentHierarchyFacade getTaskHierarchy() {
+    return myTaskManager.getTaskHierarchy();
   }
 
   @Override
