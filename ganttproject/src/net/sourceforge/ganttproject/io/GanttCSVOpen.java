@@ -189,9 +189,11 @@ public class GanttCSVOpen {
         TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
             .withName(record.get(TaskFields.NAME.toString()))
             .withStartDate(language.parseDate(record.get(TaskFields.BEGIN_DATE.toString())))
-            .withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())))
             .withWebLink(record.get(TaskFields.WEB_LINK.toString()))
             .withNotes(record.get(TaskFields.NOTES.toString()));
+        if (record.get(TaskDefaultColumn.DURATION.getName()) != null) {
+          builder = builder.withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())));
+        }
         if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
             && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
           builder = builder.withLegacyMilestone();
