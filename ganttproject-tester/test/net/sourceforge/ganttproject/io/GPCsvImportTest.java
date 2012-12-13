@@ -27,11 +27,14 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.TestSetupHelper.TaskManagerBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -65,6 +68,16 @@ public class GPCsvImportTest extends TestCase {
       }
     }
     fail("Can't find " + dependee + " in the list of predecessors of " + dependant);
+  }
+
+  @Override
+  protected void setUp() throws Exception {
+    TaskDefaultColumn.setLocaleApi(new TaskDefaultColumn.LocaleApi() {
+      @Override
+      public String i18n(String key) {
+        return GanttLanguage.getInstance().getText(key);
+      }
+    });
   }
 
   public void testImportAssignments() throws Exception {
