@@ -422,6 +422,7 @@ class ProjectFileExporter {
     DefaultListModel daysOff = hr.getDaysOff();
     if (!daysOff.isEmpty()) {
       ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
+      resourceCalendar.addDefaultCalendarHours();
       exportWeekends(resourceCalendar);
       resourceCalendar.setBaseCalendar(myOutputProject.getCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
