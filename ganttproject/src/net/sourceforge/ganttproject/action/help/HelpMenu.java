@@ -38,13 +38,14 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Collection of actions from Help menu.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class HelpMenu {
@@ -60,7 +61,7 @@ public class HelpMenu {
   }
 
   public JMenu createMenu() {
-    JMenu result = new JMenu(GPAction.createVoidAction("help"));
+    JMenu result = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("help"));
     result.add(myAboutAction);
     result.add(myViewLogAction);
     result.add(myRecoverAction);
