@@ -67,6 +67,8 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     boolean hasNestedTasks(T task);
     boolean hasNotes(T task);
     Color getColor(T task);
+    ShapePaint getShapePaint(T task);
+
   }
 
   public static interface ChartApi {
@@ -100,20 +102,31 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     void setTask(T task) {
       myTask = task;
     }
+    
+    /**
+     * Depending on the context of the associated task, paint the color and
+     * striping of a shape.
+     * 
+     * @param shape the graphic component to paint
+     */
     void applyStyle(Canvas.Shape shape) {
-      
+      if (shape instanceof Canvas.Rectangle) {
+        ((Canvas.Rectangle) shape).setBackgroundPaint(new ShapePaint(
+            myTaskApi.getShapePaint(myTask), Color.BLACK, myTaskApi.getColor(myTask)));
+      }
       if (myTaskApi.isCriticalTask(myTask)) {
         if (myTaskApi.hasNestedTasks(myTask)) {
           shape.setBackgroundColor(Color.RED);
-        } else if (shape instanceof Canvas.Rectangle){
-          ((Canvas.Rectangle)shape).setBackgroundPaint(
-              new ShapePaint(ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi.getColor(myTask)));
+        } else if (shape instanceof Canvas.Rectangle) {
+          ((Canvas.Rectangle) shape).setBackgroundPaint(new ShapePaint(
+              ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi
+                  .getColor(myTask)));
         }
-      } else if (!"task.holiday".equals(shape.getStyle()) 
-          && !shape.getStyle().startsWith("task.supertask") 
+      } else if (!"task.holiday".equals(shape.getStyle())
+          && !shape.getStyle().startsWith("task.supertask")
           && !shape.getStyle().startsWith("task.projectTask")) {
         shape.setBackgroundColor(myTaskApi.getColor(myTask));
-      } 
+      }
     }
   }
   
