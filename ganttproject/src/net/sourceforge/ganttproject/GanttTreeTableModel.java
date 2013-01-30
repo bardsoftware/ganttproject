@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,11 @@ import com.google.common.collect.Sets;
  * @author bbaranne (Benoit Baranne)
  */
 public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, GanttLanguage.Listener {
+  private static class Icons {
+    static ImageIcon ALERT_TASK_INPROGRESS = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert1_16.gif"));
+    static ImageIcon ALERT_TASK_OUTDATED = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert2_16.gif"));
+  }
+
   static Predicate<Task> NOT_MILESTONE = new Predicate<Task>() {
     @Override
     public boolean apply(Task input) {
@@ -235,10 +241,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         break;
       case INFO:
         // TODO(dbarashev): implement alerts some other way
-        /**
-              res = new ImageIcon(getClass().getResource("/icons/alert1_16.gif"));
-              res = new ImageIcon(getClass().getResource("/icons/alert2_16.gif"));
-              */
+        if (t.getCompletionPercentage() < 100) {
+          Calendar c = GanttCalendar.getInstance();
+          if (t.getStart().before(c)) {
+            res = Icons.ALERT_TASK_INPROGRESS;
+          }
+          if (t.getEnd().before(GanttCalendar.getInstance())) {
+            res = Icons.ALERT_TASK_OUTDATED;
+          }
+        }
         break;
       case NAME:
         res = tn.getName();
