@@ -46,9 +46,9 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -162,7 +162,7 @@ public class GanttCSVOpen {
       @Override
       public Reader get() {
         try {
-          return new InputStreamReader(new FileInputStream(file));
+          return new InputStreamReader(new FileInputStream(file), Charsets.UTF_8);
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
         }
