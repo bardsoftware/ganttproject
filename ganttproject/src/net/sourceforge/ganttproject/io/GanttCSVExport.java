@@ -30,6 +30,7 @@ import org.apache.commons.csv.CSVPrinter;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -70,7 +71,7 @@ public class GanttCSVExport {
    * @throws IOException
    */
   public void save(OutputStream stream) throws IOException {
-    OutputStreamWriter writer = new OutputStreamWriter(stream);
+    OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (csvOptions.sSeparatedChar.length() == 1) {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
