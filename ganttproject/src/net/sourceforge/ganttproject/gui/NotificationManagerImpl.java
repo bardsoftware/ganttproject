@@ -151,9 +151,10 @@ public class NotificationManagerImpl implements NotificationManager {
     myAnimationView.close();
   }
 
+  @Override
   public AnimationView setAnimationView(AnimationView view) {
-    AnimationView result = myAnimationView;
+    AnimationView oldView = myAnimationView;
     myAnimationView = view;
-    return result;
+    return oldView;
   }
 }

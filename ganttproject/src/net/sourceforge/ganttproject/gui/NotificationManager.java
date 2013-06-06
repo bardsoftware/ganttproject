@@ -27,6 +27,10 @@ import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 import net.sourceforge.ganttproject.util.BrowserControl;
 
 public interface NotificationManager {
+  /**
+   * Sets the animation view of the manager to the given view.
+   * @return the old view
+   */
   AnimationView setAnimationView(AnimationView view);
   void addNotifications(NotificationChannel channel, Collection<NotificationItem> notifications);
 
