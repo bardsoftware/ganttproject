@@ -137,14 +137,6 @@ public class TaskScheduleDatesPanel {
       }
     };
   }
-  protected List<Action> createSchedulingMenu() {
-    return Arrays.asList(new Action[] {
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.start"),
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.duration"),
-        null,
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.hint")
-    });
-  }
 
   protected void showPopup(List<Action> actions, JComponent owner, JComponent anchor) {
     myUiFacade.showPopupMenu(owner, actions, anchor.getLocation().x, anchor.getLocation().y);
@@ -246,7 +238,7 @@ public class TaskScheduleDatesPanel {
       adjustLength();
     } else {
       setStart(CalendarFactory.createGanttCalendar(
-          getCalendar().shiftDate(myStart.getTime(), myUnpluggedClone.getDuration().reverse())), false);
+          getCalendar().shiftDate(myEnd.getTime(), myUnpluggedClone.getDuration().reverse())), false);
     }
   }
 
