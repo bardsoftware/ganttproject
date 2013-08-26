@@ -108,6 +108,7 @@ public interface Task extends MutableTask {
 
   GanttCalendar getStart();
 
+  GanttCalendar getDisplayEnd();
   GanttCalendar getEnd();
 
   TimeDuration getDuration();

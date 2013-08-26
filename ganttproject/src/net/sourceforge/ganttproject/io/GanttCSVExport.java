@@ -158,7 +158,7 @@ public class GanttCSVExport {
       }
       // End Date
       if (csvOptions.bExportTaskEndDate) {
-        writer.print(task.getEnd().getDisplayValue().toString());
+        writer.print(task.getDisplayEnd().toString());
       }
       // Duration
       if (csvOptions.bExportTaskDuration) {
