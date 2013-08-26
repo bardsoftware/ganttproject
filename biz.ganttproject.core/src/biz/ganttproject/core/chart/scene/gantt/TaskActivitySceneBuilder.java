@@ -122,9 +122,8 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
               ShapeConstants.THICK_BACKSLASH, Color.BLACK, myTaskApi
                   .getColor(myTask)));
         }
-      } else if (!"task.holiday".equals(shape.getStyle())
-          && !shape.getStyle().startsWith("task.supertask")
-          && !shape.getStyle().startsWith("task.projectTask")) {
+      } else if (!"task.holiday".equals(shape.getStyle())) {
+        System.err.println("style=" + shape.getStyle());
         shape.setBackgroundColor(myTaskApi.getColor(myTask));
       }
     }
@@ -187,6 +186,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
 
     Canvas.Polygon resultShape;
     
+    System.err.println("task=" + nextTask + " hasNested=" + nextHasNested);
     if (myTaskApi.isMilestone(nextTask)) {
       //nextRectangle.setVisible(false);
       //System.err.println("milestone rect=" + nextRectangle);
