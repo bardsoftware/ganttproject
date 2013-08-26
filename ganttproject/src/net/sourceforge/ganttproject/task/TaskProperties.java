@@ -75,7 +75,7 @@ public class TaskProperties {
         sb.append(" [ ");
         formatDate(task.getStart(), sb);
         sb.append(" - ");
-        formatDate(task.getEnd().getDisplayValue(), sb);
+        formatDate(task.getDisplayEnd(), sb);
         sb.append(" ] ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_NAME)) {

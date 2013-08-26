@@ -366,6 +366,12 @@ public class TaskImpl implements Task {
     return result;
   }
 
+  @Override
+  public GanttCalendar getDisplayEnd() {
+    GanttCalendar modelEnd = getEnd();
+    return (isMilestone) ? modelEnd : modelEnd.getDisplayValue();
+  }
+
   GanttCalendar calculateEnd() {
     GanttCalendar result = getStart().clone();
     Date newEnd = shiftDate(result.getTime(), getDuration());

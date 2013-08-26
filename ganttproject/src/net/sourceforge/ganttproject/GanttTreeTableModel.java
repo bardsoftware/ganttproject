@@ -258,7 +258,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = tn.getStart();
         break;
       case END_DATE:
-        res = t.isMilestone() ? tn.getEnd() : tn.getEnd().getDisplayValue();
+        res = t.getDisplayEnd();
         break;
       case DURATION:
         res = new Integer(tn.getDuration());
