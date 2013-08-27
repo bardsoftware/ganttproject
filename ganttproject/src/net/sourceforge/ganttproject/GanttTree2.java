@@ -380,11 +380,37 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       parent = (DefaultMutableTreeTableNode) (parent.getParent());
     }
 
-    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(childNode));
     if (!res && parent != null) {
       getTreeTable().getTree().collapsePath(TreeUtil.createPath(parent));
     }
     myProject.refreshProjectInformation();
+
+//-------------
+    Task task = (Task) (childNode.getUserObject());
+  	TreePath tp = TreeUtil.createPath(childNode);
+    if (task.getExpand()) {
+//        res = false;
+        getTreeTable().getTree().expandPath(tp);	    
+        getTreeTable().getTree().scrollPathToVisible(tp);
+    }
+    	
+    int row = 0;
+    while (row < getTreeTable().getTree().getRowCount()) {
+
+	  tp = getTreeTable().getTree().getPathForRow(row);
+      getTreeTable().getTree().expandPath(tp);	    
+      getTreeTable().getTree().scrollPathToVisible(tp);
+
+	  DefaultMutableTreeTableNode tn = (DefaultMutableTreeTableNode)(tp.getLastPathComponent());
+	  Task ta = (Task)(tn.getUserObject());
+
+	  if (task.getExpand()) {
+	      getTreeTable().getTree().expandRow(row);
+	  }
+
+      row++;
+    }
+//--------      
 
     return childNode;
   }

@@ -142,9 +142,22 @@ public class ExporterToImage extends ExporterBase {
       @Override
       protected IStatus run() {
         Chart chart = getUIFacade().getActiveChart();
+
+		// Test if there is an active chart	
         if (chart == null) {
-          chart = getGanttChart();
+			// If not, it means we are running CLI
+			String chartToExport = getPreferences().get("chart", null);
+
+			// Default is to print Gantt chart
+			chart = getGanttChart();
+			
+			// Test if chart to export is defined on the command line and equals
+			// to "resource". If true, override chart value with getResourceChart
+			if ((chartToExport != null) && ( chartToExport.compareTo("resource") == 0 )) {
+				chart = getResourceChart();
+			} 
         }
+
         RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
         try {
           ImageIO.write(renderedImage, myFileTypeOption.proposeFileExtension(), outputFile);

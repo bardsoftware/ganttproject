@@ -72,6 +72,28 @@ public class ExporterToHTML extends StylesheetExporterBase {
 
   @Override
   protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+
+	// Check if we are running from command line, if yes then we need to define the
+	// stylesheet we are using
+	if (getPreferences().getBoolean("commandLine", false) == true) {
+		// Get the list of stylesheets
+		List<Stylesheet> stylesheets = getStylesheets();
+
+		// Set the first entry of list as default
+		setSelectedStylesheet(stylesheets.get(0));			
+
+		// Test if a style is present in the arguments from command line
+		// Iterate the list of style sheets to find it
+		if (getPreferences().get("stylesheet", null) != null) {
+			for (int i = 0 ; i < stylesheets.size() ; i++) {
+				if ( stylesheets.get(i).getLocalizedName().compareTo(getPreferences().get("stylesheet", null)) == 0) {
+					setSelectedStylesheet(stylesheets.get(i));			
+					break;				
+				}
+			}
+		}
+	}
+
     ExporterJob generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
     ExporterJob generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
     ExporterJob generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
@@ -85,7 +107,8 @@ public class ExporterToHTML extends StylesheetExporterBase {
       protected IStatus run() {
         try {
           RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
-              new GanttExportSettings(true, true, true, true));
+				createExportSettings());
+
           File ganttChartImageFile;
           ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
           ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
@@ -109,7 +132,7 @@ public class ExporterToHTML extends StylesheetExporterBase {
       protected IStatus run() {
         try {
           RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
-              new GanttExportSettings(true, true, true, true));
+				createExportSettings());
           File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
           ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
           resultFiles.add(resourceChartImageFile);
@@ -133,10 +156,10 @@ public class ExporterToHTML extends StylesheetExporterBase {
       protected IStatus run() {
         try {
           {
-            TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
-            handler.setResult(new StreamResult(outputFile));
-            mySerializer.serialize(handler, outputFile);
-            resultFiles.add(outputFile);
+	        TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
+	        handler.setResult(new StreamResult(outputFile));
+	        mySerializer.serialize(handler, outputFile);
+	        resultFiles.add(outputFile);
           }
           {
             TransformerHandler handler = mySelectedStylesheet.createTasksPageHandler();
