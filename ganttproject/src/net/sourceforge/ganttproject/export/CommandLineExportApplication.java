@@ -41,6 +41,12 @@ public class CommandLineExportApplication {
     @Parameter(names = "-export", description = "Export format")
     public String exporter;
 
+    @Parameter(names = "-stylesheet", description = "Stylesheet used for HTML export")
+    public String stylesheet;
+
+    @Parameter(names = "-chart", description = "Chart to export")
+    public String chart;
+
     @Parameter(names = "-zoom", description = "Zoom scale to use in the exported charts")
     public Integer zooming = 3;
 
@@ -103,6 +109,17 @@ public class CommandLineExportApplication {
         DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
     prefs.putBoolean("commandLine", true);
+	
+	// If chart to export is defined, then add a string to prefs
+	if ( myArgs.chart != null) {
+		prefs.put("chart", myArgs.chart);
+	}
+
+	// If stylesheet is defined, then add a string to prefs
+	if ( myArgs.stylesheet != null) {
+		prefs.put("stylesheet", myArgs.stylesheet);
+	}
+
     exporter.setContext(project, consoleUI, prefs);
     try {
       ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
