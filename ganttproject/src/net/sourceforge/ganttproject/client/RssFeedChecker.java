@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -170,6 +172,18 @@ public class RssFeedChecker {
               return;
             }
           }
+		}
+        catch (UnknownHostException e){
+        	System.err.println("Checking for GanttProject news and updates...");
+        	System.err.println("Failed to reach the host: " + e.getMessage() + " (" + e.toString() + "). Name resolution reports an unknown host.");
+        	System.err.println("Only RSS feeds are impacted by this error. GanttProject is fully functionnal to manage your projects locally.");
+        	System.err.println("Depending on the network error, you may be unable to publish to remote ftp or web servers.");
+        }
+        catch (SocketException e){
+        	System.err.println("Checking for GanttProject news and updates...");
+        	System.err.println("Failed to connect to host: " + e.getMessage() + " (" + e.toString() + ')');
+        	System.err.println("Only RSS feeds are impacted by this error. GanttProject is fully functionnal to manage your projects locally.");
+        	System.err.println("Depending on the network error, you may be unable to publish to remote ftp or web servers.");
         } catch (MalformedURLException e) {
           e.printStackTrace();
         } catch (IOException e) {
