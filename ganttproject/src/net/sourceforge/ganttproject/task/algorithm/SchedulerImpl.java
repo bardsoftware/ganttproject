@@ -32,7 +32,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
@@ -105,11 +104,11 @@ public class SchedulerImpl extends AlgorithmBase {
     for (int i = 1; i < layers; i++) {
       Collection<Node> layer = myGraph.getLayer(i);
       for (Node node : layer) {
-        Range<Date> startRange = Ranges.all();
-        Range<Date> endRange = Ranges.all();
+        Range<Date> startRange = Range.all();
+        Range<Date> endRange = Range.all();
 
-        Range<Date> weakStartRange = Ranges.all();
-        Range<Date> weakEndRange = Ranges.all();
+        Range<Date> weakStartRange = Range.all();
+        Range<Date> weakEndRange = Range.all();
 
         List<Date> subtaskRanges = Lists.newArrayList();
         List<DependencyEdge> incoming = node.getIncoming();
@@ -134,21 +133,21 @@ public class SchedulerImpl extends AlgorithmBase {
           }
         }
 
-        if (!startRange.equals(Ranges.all())) {
+        if (!startRange.equals(Range.all())) {
           startRange = startRange.intersection(weakStartRange);
-        } else if (!weakStartRange.equals(Ranges.all())) {
-          startRange = weakStartRange.intersection(Ranges.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
+        } else if (!weakStartRange.equals(Range.all())) {
+          startRange = weakStartRange.intersection(Range.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
         }
-        if (!endRange.equals(Ranges.all())) {
+        if (!endRange.equals(Range.all())) {
           endRange = endRange.intersection(weakEndRange);
-        } else if (!weakEndRange.equals(Ranges.all())) {
-          endRange = weakEndRange.intersection(Ranges.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
+        } else if (!weakEndRange.equals(Range.all())) {
+          endRange = weakEndRange.intersection(Range.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
         }
         if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
-          startRange = startRange.intersection(Ranges.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
+          startRange = startRange.intersection(Range.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
         }
         if (!subtaskRanges.isEmpty()) {
-          Range<Date> subtasks = Ranges.encloseAll(subtaskRanges);
+          Range<Date> subtasks = Range.encloseAll(subtaskRanges);
           startRange = startRange.intersection(subtasks);
           endRange = endRange.intersection(subtasks);
         }
