@@ -254,8 +254,13 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   /** Create a new Human */
   public void newHuman(HumanResource people) {
     if (people != null) {
-      DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
-      getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
+      try {
+        DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
+        getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
+      } catch (Exception e) {
+        System.err.println("when adding this guy: " + people);
+        e.printStackTrace();
+      }
     }
   }
 
