@@ -47,7 +47,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
@@ -148,20 +147,20 @@ public class DependencyGraph {
           acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
               GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
         }
-        myStartRange = Ranges.upTo(acceptableStart, BoundType.CLOSED);
+        myStartRange = Range.upTo(acceptableStart, BoundType.CLOSED);
         break;
       case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
         if (calendar.isNonWorkingDay(acceptableStart)) {
           acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
               GPCalendar.MoveDirection.FORWARD, GPCalendar.DayType.WORKING);
         }
-        myStartRange = Ranges.downTo(acceptableStart, BoundType.CLOSED);
+        myStartRange = Range.downTo(acceptableStart, BoundType.CLOSED);
         break;
       case TaskDependencyConstraint.Collision.NO_VARIATION:
-        myStartRange = Ranges.singleton(acceptableStart);
+        myStartRange = Range.singleton(acceptableStart);
         break;
       }
-      myEndRange = Ranges.all();
+      myEndRange = Range.all();
       return true;
     }
 
@@ -239,8 +238,8 @@ public class DependencyGraph {
 
     @Override
     public boolean refresh() {
-      myStartRange = Ranges.upTo(mySubTask.myTask.getStart().getTime(), BoundType.CLOSED);
-      myEndRange = Ranges.downTo(mySubTask.myTask.getEnd().getTime(), BoundType.CLOSED);
+      myStartRange = Range.upTo(mySubTask.myTask.getStart().getTime(), BoundType.CLOSED);
+      myEndRange = Range.downTo(mySubTask.myTask.getEnd().getTime(), BoundType.CLOSED);
       return true;
     }
 
