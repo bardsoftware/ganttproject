@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -36,6 +37,8 @@ import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.w3c.util.DateParser;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import com.google.common.base.Charsets;
 
 import biz.ganttproject.core.time.GanttCalendar;
 
@@ -88,7 +91,7 @@ class TaskSaver extends SaverBase {
     }
     final String sWebLink = task.getWebLink();
     if (sWebLink != null && !sWebLink.equals("") && !sWebLink.equals("http://")) {
-      addAttribute("webLink", URLEncoder.encode(sWebLink, "ISO-8859-1"), attrs);
+      addAttribute("webLink", URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs);
     }
     addAttribute("expand", String.valueOf(task.getExpand()), attrs);
 
