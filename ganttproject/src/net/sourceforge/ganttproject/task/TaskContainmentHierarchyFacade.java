@@ -66,6 +66,8 @@ public interface TaskContainmentHierarchyFacade {
 
   List<Task> getTasksInDocumentOrder();
 
+  List<Task> breadthFirstSearch(Task root, boolean includeRoot);
+
   boolean contains(Task task);
 
   interface Factory {
@@ -149,6 +151,11 @@ public interface TaskContainmentHierarchyFacade {
 
     @Override
     public List<Task> getTasksInDocumentOrder() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
       throw new UnsupportedOperationException();
     }
   };

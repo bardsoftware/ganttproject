@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -129,6 +130,10 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
   }
 
   protected GanttTree2 getTree() {
+    return myTree;
+  }
+
+  protected TaskTreeUIFacade getTreeFacade() {
     return myTree;
   }
 

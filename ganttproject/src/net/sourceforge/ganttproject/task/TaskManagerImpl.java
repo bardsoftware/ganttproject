@@ -905,6 +905,11 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     @Override
+    public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<Integer> getOutlinePath(Task task) {
       throw new UnsupportedOperationException();
     }

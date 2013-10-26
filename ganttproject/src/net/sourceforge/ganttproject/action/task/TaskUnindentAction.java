@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
 
+import com.google.common.base.Predicate;
+
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -49,17 +51,20 @@ public class TaskUnindentAction extends TaskActionBase {
 
   @Override
   protected void run(List<Task> selection) throws Exception {
-    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     for (int i = selection.size() - 1; i >= 0; i--) {
       // Place task at ancestor children right after parent
       Task task = selection.get(i);
       Task parent = taskHierarchy.getContainer(task);
-      Task ancestor = taskHierarchy.getContainer(parent);
-      int index = taskHierarchy.getTaskIndex(parent) + 1;
-      taskHierarchy.move(task, ancestor, index);
+      final Task ancestor = taskHierarchy.getContainer(parent);
+      final int index = taskHierarchy.getTaskIndex(parent) + 1;
+      getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
+        @Override
+        public boolean apply(Task t) {
+          taskHierarchy.move(t, ancestor, index);
+          return false;
+        }
+      });
     }
-    // TODO Ideally this should get done by the move method as it modifies the
-    // document
-    //getUIFacade().getGanttChart().getProject().setModified();
   }
 }

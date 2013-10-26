@@ -21,24 +21,33 @@ package net.sourceforge.ganttproject.parser;
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
 import org.xml.sax.Attributes;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 
-public class TaskTagHandler implements TagHandler {
+public class TaskTagHandler implements TagHandler, ParsingListener {
   private final ParsingContext myContext;
   private final TaskManager myManager;
-
-  public TaskTagHandler(TaskManager mgr, ParsingContext context) {
+  private final TaskTreeUIFacade myTreeFacade;
+  private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
+  public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
     myManager = mgr;
     myContext = context;
+    myTreeFacade = treeFacade;
   }
 
   @Override
@@ -102,6 +111,7 @@ public class TaskTagHandler implements TagHandler {
     }
     Task task = builder.build();
 
+    myTaskIdToExpansionState.put(task.getTaskID(), task.getExpand());
 //    String newMilestone = attrs.getValue("milestone");
 //    if ("1".equals(newMilestone)) {
 //      task.setMilestone(true);
@@ -183,5 +193,18 @@ public class TaskTagHandler implements TagHandler {
 
   private TaskManager getManager() {
     return myManager;
+  }
+
+  @Override
+  public void parsingStarted() {
+  }
+
+  @Override
+  public void parsingFinished() {
+    List<Task> tasksBottomUp = Lists.reverse(myManager.getTaskHierarchy().breadthFirstSearch(null, false));
+
+    for (Task t : tasksBottomUp) {
+      myTreeFacade.setExpanded(t, Objects.firstNonNull(myTaskIdToExpansionState.get(t.getTaskID()), Boolean.TRUE));
+    }
   }
 }
