@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 
 import org.xml.sax.Attributes;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -164,7 +165,7 @@ public class TaskTagHandler implements TagHandler, ParsingListener {
     String webLink = webLink_enc;
     if (webLink_enc != null)
       try {
-        webLink = URLDecoder.decode(webLink_enc, "ISO-8859-1");
+        webLink = URLDecoder.decode(webLink_enc, Charsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         if (!GPLogger.log(e)) {
           e.printStackTrace(System.err);
