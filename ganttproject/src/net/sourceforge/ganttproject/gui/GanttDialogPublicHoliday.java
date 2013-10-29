@@ -21,11 +21,13 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
 
@@ -39,9 +41,19 @@ public class GanttDialogPublicHoliday {
   private DateIntervalListEditor.DateIntervalModel publicHolidays;
 
   public GanttDialogPublicHoliday(IGanttProject project) {
-    publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel();
+    final Set<DateInterval> recurringHolidays = Sets.newHashSet();
+    publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel() {
+      @Override
+      public boolean canRemove(DateInterval interval) {
+        return super.canRemove(interval) && !recurringHolidays.contains(interval);
+      }
+    };
     for (GPCalendar.Holiday h : project.getActiveCalendar().getPublicHolidays()) {
-      publicHolidays.add(DateIntervalListEditor.DateInterval.createFromVisibleDates(h.date, h.date));
+      DateInterval interval = DateIntervalListEditor.DateInterval.createFromVisibleDates(h.date, h.date);
+      publicHolidays.add(interval);
+      if (h.isRepeating) {
+        recurringHolidays.add(interval);
+      }
     }
 
     publicHolidayBean = new DateIntervalListEditor(publicHolidays);

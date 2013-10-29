@@ -195,7 +195,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public void setPublicHoliDayType(int month, int date) {
-    setPublicHoliDayType(CalendarFactory.createGanttCalendar(1, month - 1, date).getTime());
     myStableHolidays.add(CalendarFactory.createGanttCalendar(1, month - 1, date).getTime());
   }
 
@@ -204,8 +203,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     publicHolidaysArray.add(curDayStart);
   }
 
-  @Override
-  public boolean isPublicHoliDay(Date curDayStart) {
+  private boolean isPublicHoliDay(Date curDayStart) {
     boolean result = publicHolidaysArray.contains(curDayStart);
     if (!result) {
       result = myStableHolidays.contains(CalendarFactory.createGanttCalendar(1, curDayStart.getMonth(), curDayStart.getDate()).getTime());
@@ -232,6 +230,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public void setPublicHolidays(Collection<Holiday> holidays) {
+    System.err.println("holidays=" + holidays);
     publicHolidaysArray.clear();
     for (Holiday h : holidays) {
       if (h.isRepeating) {

@@ -98,10 +98,12 @@ public class DateIntervalListEditor extends JPanel {
     void add(DateInterval interval);
 
     int getMaxIntervalLength();
+
+    boolean canRemove(DateInterval interval);
   }
 
   public static class DefaultDateIntervalModel implements DateIntervalModel {
-    List/* <DatInterval> */<DateInterval> myIntervals = new ArrayList<DateInterval>();
+    private List<DateInterval> myIntervals = new ArrayList<DateInterval>();
 
     @Override
     public DateInterval[] getIntervals() {
@@ -121,6 +123,10 @@ public class DateIntervalListEditor extends JPanel {
     @Override
     public int getMaxIntervalLength() {
       return 1;
+    }
+
+    public boolean canRemove(DateInterval interval) {
+      return true;
     }
 
   }
@@ -236,6 +242,14 @@ public class DateIntervalListEditor extends JPanel {
     } else {
       myAddAction.setEnabled(false);
     }
-    myDeleteAction.setEnabled(false == myListSelectionModel.isSelectionEmpty());
+    if (myListSelectionModel.isSelectionEmpty()) {
+      myDeleteAction.setEnabled(false);
+    } else {
+      int idxSelected = myListSelectionModel.getMinSelectionIndex();
+      if (idxSelected >= 0 && idxSelected < myIntervalsModel.getIntervals().length) {
+        myDeleteAction.setEnabled(myIntervalsModel.canRemove(myIntervalsModel.getIntervals()[idxSelected]));
+      }
+    }
+
   }
 }

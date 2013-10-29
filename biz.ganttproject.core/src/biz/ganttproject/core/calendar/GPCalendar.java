@@ -38,6 +38,13 @@ public interface GPCalendar {
       this.date = date;
       this.isRepeating = isRepeating;
     }
+
+    @Override
+    public String toString() {
+      return "Date=" + date + " repeating=" + isRepeating;
+    }
+    
+    
   }
   
   public enum MoveDirection {
@@ -68,8 +75,6 @@ public interface GPCalendar {
   void setPublicHoliDayType(int month, int date);
 
   public void setPublicHoliDayType(Date curDayStart);
-
-  public boolean isPublicHoliDay(Date curDayStart);
 
   public boolean isNonWorkingDay(Date curDayStart);
 
