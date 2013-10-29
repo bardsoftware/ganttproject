@@ -81,12 +81,6 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public boolean isPublicHoliDay(Date curDayStart) {
-    // Always return false, as this calendar does not support holidays
-    return false;
-  }
-
-  @Override
   public boolean isNonWorkingDay(Date curDayStart) {
     // Always return false, as this calendar only has working days
     return false;

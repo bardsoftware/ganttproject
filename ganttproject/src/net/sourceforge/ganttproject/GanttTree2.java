@@ -369,7 +369,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       Task t = (Task)node.getUserObject();
       states.put(t, t.getExpand());
     }
-    System.err.println("Subtree states:\n" + states);
     callable.apply(rootTask);
     for (Map.Entry<Task, Boolean> state : states.entrySet()) {
       setExpanded(state.getKey(), state.getValue());
