@@ -42,7 +42,6 @@ import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -100,6 +99,8 @@ public class DateIntervalListEditor extends JPanel {
     int getMaxIntervalLength();
 
     boolean canRemove(DateInterval interval);
+
+    String format(DateInterval interval);
   }
 
   public static class DefaultDateIntervalModel implements DateIntervalModel {
@@ -125,10 +126,20 @@ public class DateIntervalListEditor extends JPanel {
       return 1;
     }
 
+    @Override
     public boolean canRemove(DateInterval interval) {
       return true;
     }
 
+    @Override
+    public String format(DateInterval interval) {
+      StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));
+      if (!interval.getEnd().equals(interval.start)) {
+        result.append("...");
+        result.append(GanttLanguage.getInstance().getDateFormat().format(interval.getVisibleEnd()));
+      }
+      return result.toString();
+    }
   }
 
   private final DateIntervalModel myIntervalsModel;
@@ -146,12 +157,7 @@ public class DateIntervalListEditor extends JPanel {
     @Override
     public Object getElementAt(int index) {
       DateInterval interval = myIntervalsModel.getIntervals()[index];
-      StringBuffer result = new StringBuffer(GanttLanguage.getInstance().getDateFormat().format(interval.start));
-      if (!interval.getEnd().equals(interval.start)) {
-        result.append("...");
-        result.append(GanttLanguage.getInstance().getDateFormat().format(interval.getVisibleEnd()));
-      }
-      return result.toString();
+      return myIntervalsModel.format(interval);
     }
 
     public void update() {
