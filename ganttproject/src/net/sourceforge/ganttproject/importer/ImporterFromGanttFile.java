@@ -31,31 +31,22 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttProjectImpl;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentCreator;
-import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.io.GPSaver;
-import net.sourceforge.ganttproject.io.GanttXMLOpen;
-import net.sourceforge.ganttproject.parser.GPParser;
-import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.resource.OverwritingMerger;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 public class ImporterFromGanttFile extends ImporterBase {
-  private final DefaultEnumerationOption<Object> myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+  private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
 
   private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption };
 
@@ -105,9 +96,16 @@ public class ImporterFromGanttFile extends ImporterBase {
   }
 
   private void run(File selectedFile, IGanttProject targetProject, BufferProject bufferProject) {
-    openDocument(targetProject, bufferProject, getUiFacade(), selectedFile);
-    getUiFacade().getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
-    getUiFacade().getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
+    try {
+      Document document = bufferProject.getDocumentManager().getDocument(selectedFile.getAbsolutePath());
+      document.read();
+
+      importBufferProject(targetProject, bufferProject, getUiFacade(), myMergeResourcesOption);
+    } catch (DocumentException e) {
+      getUiFacade().showErrorDialog(e);
+    } catch (IOException e) {
+      getUiFacade().showErrorDialog(e);
+    }
   }
 
   private static class TaskFieldImpl implements ColumnList.Column {
@@ -159,7 +157,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
   }
 
-  private static class VisibleFieldsImpl implements ColumnList {
+  static class VisibleFieldsImpl implements ColumnList {
     private final List<Column> myFields = new ArrayList<Column>();
 
     @Override
@@ -191,59 +189,6 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
   }
 
-  class BufferProject extends GanttProjectImpl implements ParserFactory {
-    PrjInfos myProjectInfo = new PrjInfos();
-    final DocumentManager myDocumentManager;
-    final TaskManager myTaskManager;
-    final UIFacade myUIfacade;
-    private final ColumnList myVisibleFields = new VisibleFieldsImpl();
-    private final ColumnList myResourceVisibleFields = new VisibleFieldsImpl();
-
-    BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
-      myDocumentManager = new DocumentCreator(this, uiFacade, this) {
-        @Override
-        protected ColumnList getVisibleFields() {
-          return myVisibleFields;
-        }
-        @Override
-        protected ColumnList getResourceVisibleFields() {
-          return myResourceVisibleFields;
-        }
-      };
-      myTaskManager = targetProject.getTaskManager().emptyClone();
-      myUIfacade = uiFacade;
-    }
-
-    public ColumnList getVisibleFields() {
-      return myVisibleFields;
-    }
-
-    @Override
-    public GPParser newParser() {
-      return new GanttXMLOpen(myProjectInfo, getUIConfiguration(), getTaskManager(), myUIfacade);
-    }
-
-    @Override
-    public GPSaver newSaver() {
-      return null;
-    }
-
-    @Override
-    public DocumentManager getDocumentManager() {
-      return myDocumentManager;
-    }
-
-    @Override
-    public TaskManager getTaskManager() {
-      return myTaskManager;
-    }
-
-    @Override
-    public CustomPropertyManager getTaskCustomColumnManager() {
-      return myTaskManager.getCustomPropertyManager();
-    }
-  }
-
   private BufferProject createBufferProject(final IGanttProject targetProject, final UIFacade uiFacade) {
     return new BufferProject(targetProject, uiFacade);
   }
@@ -252,38 +197,31 @@ public class ImporterFromGanttFile extends ImporterBase {
     return new FileDocument(selectedFile);
   }
 
-  protected void openDocument(IGanttProject targetProject, IGanttProject bufferProject, UIFacade uiFacade,
-      File selectedFile) {
-    try {
-      Document document = bufferProject.getDocumentManager().getDocument(selectedFile.getAbsolutePath());
-      document.read();
-      targetProject.getRoleManager().importData(bufferProject.getRoleManager());
-      {
-        CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
-        targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
-      }
-      Map<HumanResource, HumanResource> original2ImportedResource = targetProject.getHumanResourceManager().importData(
-          bufferProject.getHumanResourceManager(), new OverwritingMerger(myMergeResourcesOption));
-
-      {
-        CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
-        Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs = targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
-        TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
-        try {
-          origTaskManager.setEventsEnabled(false);
-          Map<Task, Task> original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager(),
-              that2thisCustomDefs);
-          origTaskManager.importAssignments(bufferProject.getTaskManager(), targetProject.getHumanResourceManager(),
-              original2ImportedTask, original2ImportedResource);
-        } finally {
-          origTaskManager.setEventsEnabled(true);
-        }
-      }
-      uiFacade.refresh();
-    } catch (DocumentException e) {
-      uiFacade.showErrorDialog(e);
-    } catch (IOException e) {
-      uiFacade.showErrorDialog(e);
+  public static void importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption) {
+    targetProject.getRoleManager().importData(bufferProject.getRoleManager());
+    {
+      CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
+      targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
     }
+    Map<HumanResource, HumanResource> original2ImportedResource = targetProject.getHumanResourceManager().importData(
+        bufferProject.getHumanResourceManager(), new OverwritingMerger(mergeOption));
+
+    {
+      CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
+      Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs = targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
+      TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
+      try {
+        origTaskManager.setEventsEnabled(false);
+        Map<Task, Task> original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager(),
+            that2thisCustomDefs);
+        origTaskManager.importAssignments(bufferProject.getTaskManager(), targetProject.getHumanResourceManager(),
+            original2ImportedTask, original2ImportedResource);
+      } finally {
+        origTaskManager.setEventsEnabled(true);
+      }
+    }
+    uiFacade.refresh();
+    uiFacade.getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
+    uiFacade.getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
   }
 }
