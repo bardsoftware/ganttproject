@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
@@ -140,5 +141,9 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
 
   @Override
   public void setBaseCalendarID(String id) {
+  }
+
+  @Override  
+  public void importCalendar(GPCalendar calendar, ImportCalendarOption importOption) {
   }
 }
