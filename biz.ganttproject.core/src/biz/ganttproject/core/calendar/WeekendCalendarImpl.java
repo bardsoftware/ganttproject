@@ -29,6 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -45,17 +49,17 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   private final FramerImpl myFramer = new FramerImpl(Calendar.DAY_OF_WEEK);
 
-  private DayType[] myTypes = new DayType[7];
+  private final DayType[] myTypes = new DayType[7];
 
   private boolean myOnlyShowWeekends = false;
 
   private int myWeekendDaysCount;
 
-  private Set<Date> publicHolidaysArray = new LinkedHashSet<Date>();
+  private final Set<Date> publicHolidaysArray = new LinkedHashSet<Date>();
 
   private final Set<Date> myStableHolidays = new LinkedHashSet<Date>();
 
-  private AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
+  private final AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
   private String myBaseCalendarID;
 //  private URL myCalendarUrl;
@@ -230,7 +234,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public void setPublicHolidays(Collection<Holiday> holidays) {
-    System.err.println("holidays=" + holidays);
     publicHolidaysArray.clear();
     for (Holiday h : holidays) {
       if (h.isRepeating) {
@@ -300,6 +303,38 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     myBaseCalendarID = id;
   }
 
+  @Override
+  public void importCalendar(GPCalendar calendar, ImportCalendarOption importOption) {
+    if (ImportCalendarOption.NO.equals(importOption.getSelectedValue())) {
+      return;
+    }
+    if (ImportCalendarOption.REPLACE.equals(importOption.getSelectedValue())) {
+      clearAll();
+      setPublicHolidays(calendar.getPublicHolidays());
+      for (int i = 1; i <= 7; i++) {
+        setWeekDayType(i, calendar.getWeekDayType(i));
+      }
+      return;
+    }
+    if (ImportCalendarOption.MERGE.equals(importOption.getSelectedValue())) {
+      LinkedHashSet<Holiday> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
+      mergedHolidays.addAll(calendar.getPublicHolidays());
+      setPublicHolidays(mergedHolidays);      
+    }
+    for (int i = 1; i <= 7; i++) {
+      if (calendar.getWeekDayType(i) == DayType.WEEKEND) {        
+        setWeekDayType(i, DayType.WEEKEND);
+      }
+    }
+  }
+
+  private void clearAll() {
+    clearPublicHolidays();
+    myStableHolidays.clear();    
+    for (int i = 0; i < myTypes.length; i++) {
+      myTypes[i] = GPCalendar.DayType.WORKING;
+    }
+  }
   
   
 //  @Override

@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.base.Objects;
+
+import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
@@ -38,6 +41,22 @@ public interface GPCalendar {
       this.date = date;
       this.isRepeating = isRepeating;
     }
+
+    
+    @Override
+    public int hashCode() {
+      return this.date.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (false == obj instanceof Holiday) {
+        return false;
+      }
+      Holiday that = (Holiday) obj;
+      return Objects.equal(this.date, that.date) && Objects.equal(this.isRepeating, that.isRepeating);
+    }
+
 
     @Override
     public String toString() {
@@ -114,4 +133,17 @@ public interface GPCalendar {
   String getBaseCalendarID();
   
   void setBaseCalendarID(String id);
+  
+  public static class ImportCalendarOption extends DefaultEnumerationOption<Object> {
+    public static final String NO = "importCalendar_no";
+    public static final String REPLACE = "importCalendar_replace";
+    public static final String MERGE = "importCalendar_merge";
+
+    public ImportCalendarOption() {
+      super("impex.importCalendar", new String[] { NO, REPLACE, MERGE });
+    }
+  }
+
+  void importCalendar(GPCalendar calendar, ImportCalendarOption importOption);
+  
 }

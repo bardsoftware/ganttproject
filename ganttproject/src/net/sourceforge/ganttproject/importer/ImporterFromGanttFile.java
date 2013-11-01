@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.osgi.service.prefs.Preferences;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -47,14 +49,14 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+  private final GPCalendar.ImportCalendarOption myImportCalendarOption = new GPCalendar.ImportCalendarOption();
 
-  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption };
+  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
 
   public ImporterFromGanttFile() {
     super("ganttprojectFiles");
-    myMergeResourcesOption.lock();
     myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
-    myMergeResourcesOption.commit();
+    myImportCalendarOption.loadPersistentValue(GPCalendar.ImportCalendarOption.NO);
   }
 
   @Override
@@ -100,7 +102,7 @@ public class ImporterFromGanttFile extends ImporterBase {
       Document document = bufferProject.getDocumentManager().getDocument(selectedFile.getAbsolutePath());
       document.read();
 
-      importBufferProject(targetProject, bufferProject, getUiFacade(), myMergeResourcesOption);
+      importBufferProject(targetProject, bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
     } catch (DocumentException e) {
       getUiFacade().showErrorDialog(e);
     } catch (IOException e) {
@@ -197,8 +199,9 @@ public class ImporterFromGanttFile extends ImporterBase {
     return new FileDocument(selectedFile);
   }
 
-  public static void importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption) {
+  public static void importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption, ImportCalendarOption importCalendarOption) {
     targetProject.getRoleManager().importData(bufferProject.getRoleManager());
+    targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
     {
       CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
       targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
