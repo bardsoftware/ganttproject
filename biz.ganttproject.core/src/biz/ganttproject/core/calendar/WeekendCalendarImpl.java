@@ -305,10 +305,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public void importCalendar(GPCalendar calendar, ImportCalendarOption importOption) {
-    if (ImportCalendarOption.NO.equals(importOption.getSelectedValue())) {
+    if (ImportCalendarOption.Values.NO.equals(importOption.getSelectedValue())) {
       return;
     }
-    if (ImportCalendarOption.REPLACE.equals(importOption.getSelectedValue())) {
+    if (ImportCalendarOption.Values.REPLACE.equals(importOption.getSelectedValue())) {
       clearAll();
       setPublicHolidays(calendar.getPublicHolidays());
       for (int i = 1; i <= 7; i++) {
@@ -316,7 +316,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
       }
       return;
     }
-    if (ImportCalendarOption.MERGE.equals(importOption.getSelectedValue())) {
+    if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
       LinkedHashSet<Holiday> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
       mergedHolidays.addAll(calendar.getPublicHolidays());
       setPublicHolidays(mergedHolidays);      

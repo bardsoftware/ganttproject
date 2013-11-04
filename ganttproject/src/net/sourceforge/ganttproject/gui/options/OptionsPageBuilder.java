@@ -568,7 +568,7 @@ public class OptionsPageBuilder {
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        assert event.getNewValue() instanceof Date : "value=" + event.getNewValue();
+        assert event.getNewValue() == null || event.getNewValue() instanceof Date : "value=" + event.getNewValue();
         result.setDate((Date) event.getNewValue());
       }
     });
