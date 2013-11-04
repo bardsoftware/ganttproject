@@ -134,13 +134,18 @@ public interface GPCalendar {
   
   void setBaseCalendarID(String id);
   
-  public static class ImportCalendarOption extends DefaultEnumerationOption<Object> {
-    public static final String NO = "importCalendar_no";
-    public static final String REPLACE = "importCalendar_replace";
-    public static final String MERGE = "importCalendar_merge";
+  public static class ImportCalendarOption extends DefaultEnumerationOption<ImportCalendarOption.Values> {
+    public static enum Values {
+      NO, REPLACE, MERGE;
 
+      @Override
+      public String toString() {
+        return "importCalendar_" + name().toLowerCase();
+      }
+    }
+    
     public ImportCalendarOption() {
-      super("impex.importCalendar", new String[] { NO, REPLACE, MERGE });
+      super("impex.importCalendar", Values.values());
     }
   }
 
