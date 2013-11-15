@@ -114,6 +114,32 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newWendesday(), tasks[0].getEnd());
   }
 
+  public void test_issue830() throws Exception {
+    // The reason of exception being throws was the following task configuration
+    //    su mo tu we
+    // t0 ==             t0 -> t1 FS
+    // t1    ========    t1 is a supertask of t2
+    // t2       =====    t2 is a supertask of t3 and t4
+    // t3    ==          bounds of t3 and t4 for some reasons are not aligned with t2 bounds
+    // t4    ==
+    //
+    // Scheduler tried to calculate an intersection of t2 dates range and t3+t4 dates range and failed.
+    getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newSunday()), createTask(TestSetupHelper.newMonday(), 3), createTask(TestSetupHelper.newWendesday()), createTask(TestSetupHelper.newMonday())};
+    TaskDependency[] deps = new TaskDependency[] { createDependency(tasks[1], tasks[0]) };
+
+    DependencyGraph graph = createGraph(tasks, deps);
+    DependencyGraphTest.move(tasks[2], tasks[1], graph);
+    graph.move(tasks[3], tasks[2]);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+    assertEquals(TestSetupHelper.newMonday(), tasks[2].getStart());
+    assertEquals(TestSetupHelper.newMonday(), tasks[3].getStart());
+    assertEquals(TestSetupHelper.newTuesday(), tasks[2].getEnd());
+    assertEquals(TestSetupHelper.newTuesday(), tasks[3].getEnd());
+  }
+
   public void testRubberDependency() throws Exception {
     Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newWendesday())};
     TaskDependency dep10 = getTaskManager().getDependencyCollection().createDependency(tasks[1], tasks[0], new FinishStartConstraintImpl(), TaskDependency.Hardness.RUBBER);
