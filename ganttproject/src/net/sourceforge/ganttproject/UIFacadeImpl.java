@@ -655,7 +655,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     try {
       File imageFile = new File(myLogoOption.getValue());
       if (imageFile.exists() && imageFile.canRead()) {
-        return ImageIO.read(imageFile);
+        return Objects.firstNonNull(ImageIO.read(imageFile), LOGO.getImage());
       }
       GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
     } catch (IOException e) {
