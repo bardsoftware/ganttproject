@@ -285,7 +285,7 @@ class ProxyDocument implements Document {
       VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
       RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext());
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext(), myUIFacade.getTaskTree());
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
       ViewTagHandler viewHandler = new ViewTagHandler(getUIFacade());
@@ -304,6 +304,7 @@ class ProxyDocument implements Document {
       opener.addParsingListener(resourceViewHandler);
 
       opener.addTagHandler(taskHandler);
+      opener.addParsingListener(taskHandler);
 
       opener.addParsingListener(taskPropHandler);
       opener.addParsingListener(taskDisplayHandler);

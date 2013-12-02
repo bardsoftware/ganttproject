@@ -40,16 +40,26 @@ public class AlphaRenderingOption extends DefaultEnumerationOption<Object> {
   @Override
   public void commit() {
     super.commit();
+    updateIndex();
+  }
+
+  @Override
+  public void loadPersistentValue(String value) {
+    super.loadPersistentValue(value);
+    updateIndex();
+  }
+
+  public float getValueAsFloat() {
+    return FLOATS[myIndex];
+  }
+  
+  private void updateIndex() {
     String value = getValue();
     for (int i = 0; i < VALUES.length; i++) {
       if (VALUES[i].equals(value)) {
         myIndex = i;
         break;
       }
-    }
-  }
-
-  public float getValueAsFloat() {
-    return FLOATS[myIndex];
+    }    
   }
 }

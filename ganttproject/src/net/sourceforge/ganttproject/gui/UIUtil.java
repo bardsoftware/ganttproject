@@ -30,11 +30,15 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
 import java.util.Arrays;
+
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -245,5 +249,18 @@ public abstract class UIUtil {
     result.add(planePageWrapper, BorderLayout.CENTER);
     return result;
 
+  }
+
+  public static JMenu createTooltiplessJMenu(Action action) {
+    JMenu result = new JMenu(action) {
+      @Override
+      public JMenuItem add(Action a) {
+        JMenuItem result = super.add(a);
+        result.setToolTipText(null);
+        return result;
+      }
+    };
+    result.setToolTipText(null);
+    return result;
   }
 }

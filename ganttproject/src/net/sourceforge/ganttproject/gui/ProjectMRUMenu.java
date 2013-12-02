@@ -49,6 +49,14 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
     myProject = project;
     myUIFacade = uiFacade;
     myProjectUIFacade = projectUIFacade;
+    setToolTipText(null);
+  }
+
+  @Override
+  public JMenuItem add(Action a) {
+    JMenuItem result = super.add(a);
+    result.setToolTipText(null);
+    return result;
   }
 
   @Override
@@ -57,8 +65,7 @@ public class ProjectMRUMenu extends JMenu implements DocumentMRUListener {
     int index = 0;
     for (String doc : newMRUList) {
       index++;
-      Action a = new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade);
-      add(new JMenuItem(a));
+      add(new OpenMRUDocumentAction(index, doc, myProject, myUIFacade, myProjectUIFacade));
     }
   }
 }

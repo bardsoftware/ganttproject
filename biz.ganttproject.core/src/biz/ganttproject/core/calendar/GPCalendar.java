@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.base.Objects;
+
+import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
@@ -38,6 +41,29 @@ public interface GPCalendar {
       this.date = date;
       this.isRepeating = isRepeating;
     }
+
+    
+    @Override
+    public int hashCode() {
+      return this.date.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (false == obj instanceof Holiday) {
+        return false;
+      }
+      Holiday that = (Holiday) obj;
+      return Objects.equal(this.date, that.date) && Objects.equal(this.isRepeating, that.isRepeating);
+    }
+
+
+    @Override
+    public String toString() {
+      return "Date=" + date + " repeating=" + isRepeating;
+    }
+    
+    
   }
   
   public enum MoveDirection {
@@ -68,8 +94,6 @@ public interface GPCalendar {
   void setPublicHoliDayType(int month, int date);
 
   public void setPublicHoliDayType(Date curDayStart);
-
-  public boolean isPublicHoliDay(Date curDayStart);
 
   public boolean isNonWorkingDay(Date curDayStart);
 
@@ -109,4 +133,22 @@ public interface GPCalendar {
   String getBaseCalendarID();
   
   void setBaseCalendarID(String id);
+  
+  public static class ImportCalendarOption extends DefaultEnumerationOption<ImportCalendarOption.Values> {
+    public static enum Values {
+      NO, REPLACE, MERGE;
+
+      @Override
+      public String toString() {
+        return "importCalendar_" + name().toLowerCase();
+      }
+    }
+    
+    public ImportCalendarOption() {
+      super("impex.importCalendar", Values.values());
+    }
+  }
+
+  void importCalendar(GPCalendar calendar, ImportCalendarOption importOption);
+  
 }

@@ -59,7 +59,6 @@ public class TaskNewAction extends GPAction {
 
         Task selectedTask = selection.isEmpty() ? null : selection.get(0);
         Task newTask = getTaskManager().newTaskBuilder()
-            .withColor(getUIFacade().getGanttChart().getTaskDefaultColorOption().getValue())
             .withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
         myUiFacade.getTaskTree().startDefaultEditing(newTask);
       }

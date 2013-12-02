@@ -163,7 +163,7 @@ public class XmlSerializer extends SaverBase {
         textElement("begin", myAttrs, t.getStart().toString(), handler);
 
         addAttribute("id", "tpd5", myAttrs);
-        textElement("end", myAttrs, t.getEnd().getDisplayValue().toString(), handler);
+        textElement("end", myAttrs, t.getDisplayEnd().toString(), handler);
         textElement("milestone", myAttrs, Boolean.valueOf(t.isMilestone()).toString(), handler);
 
         addAttribute("id", "tpd7", myAttrs);

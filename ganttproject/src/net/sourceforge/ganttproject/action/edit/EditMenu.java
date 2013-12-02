@@ -18,7 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -48,7 +50,15 @@ public class EditMenu extends JMenu {
     add(viewManager.getPasteAction());
     addSeparator();
     add(new SettingsDialogAction(project, uiFacade));
+    setToolTipText(null);
   }
+
+  @Override
+  public JMenuItem add(Action a) {
+    a.putValue(Action.SHORT_DESCRIPTION, null);
+    return super.add(a);
+  }
+
 
   public GPAction getUndoAction() {
     return myUndoAction;

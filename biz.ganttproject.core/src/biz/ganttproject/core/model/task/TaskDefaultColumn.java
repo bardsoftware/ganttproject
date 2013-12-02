@@ -86,6 +86,15 @@ public enum TaskDefaultColumn {
     return result;
   }
 
+  public static TaskDefaultColumn find(String id) {
+    for (TaskDefaultColumn column : values()) {
+      if (column.getStub().getID().equals(id)) {
+        return column;
+      }
+    }
+    return null;
+  }
+  
   public Class<?> getValueClass() {
     return myValueClass;
   }

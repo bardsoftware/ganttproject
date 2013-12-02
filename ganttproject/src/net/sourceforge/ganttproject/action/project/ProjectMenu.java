@@ -19,9 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.project;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil;
 
 /**
  * Collection of actions present in the project menu
@@ -65,7 +69,7 @@ public class ProjectMenu extends JMenu {
     add(projectExportAction);
     addSeparator();
 
-    JMenu mServer = new JMenu(GPAction.createVoidAction("webServer"));
+    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
     mServer.add(openURLAction);
     mServer.add(saveURLAction);
     add(mServer);
@@ -75,6 +79,13 @@ public class ProjectMenu extends JMenu {
     add(new ProjectPreviewAction(project));
     addSeparator();
     add(exitAction);
+    setToolTipText(null);
+  }
+
+  @Override
+  public JMenuItem add(Action a) {
+    a.putValue(Action.SHORT_DESCRIPTION, null);
+    return super.add(a);
   }
 
   public AbstractAction getNewProjectAction() {
