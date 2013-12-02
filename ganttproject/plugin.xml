@@ -135,6 +135,7 @@
       <calendar resource-url="calendar/i18n_pt_brazil.calendar"/>
       <calendar resource-url="calendar/i18n_pt_portugal.calendar"/>
       <calendar resource-url="calendar/i18n_sk.calendar"/>
+      <calendar resource-url="calendar/i18n_tg_non_working_days.calendar"/>
       <calendar resource-url="calendar/i18n_us.calendar"/>
    </extension>
    <extension

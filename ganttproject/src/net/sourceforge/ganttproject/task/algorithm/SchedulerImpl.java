@@ -32,7 +32,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
@@ -105,82 +104,94 @@ public class SchedulerImpl extends AlgorithmBase {
     for (int i = 1; i < layers; i++) {
       Collection<Node> layer = myGraph.getLayer(i);
       for (Node node : layer) {
-        Range<Date> startRange = Ranges.all();
-        Range<Date> endRange = Ranges.all();
-
-        Range<Date> weakStartRange = Ranges.all();
-        Range<Date> weakEndRange = Ranges.all();
-
-        List<Date> subtaskRanges = Lists.newArrayList();
-        List<DependencyEdge> incoming = node.getIncoming();
-        for (DependencyEdge edge : incoming) {
-          if (!edge.refresh()) {
-            continue;
-          }
-          if (edge instanceof ImplicitSubSuperTaskDependency) {
-            subtaskRanges.add(edge.getStartRange().upperEndpoint());
-            subtaskRanges.add(edge.getEndRange().lowerEndpoint());
-          } else {
-            if (edge.isWeak()) {
-              weakStartRange = weakStartRange.intersection(edge.getStartRange());
-              weakEndRange = weakEndRange.intersection(edge.getEndRange());
-            } else {
-              startRange = startRange.intersection(edge.getStartRange());
-              endRange = endRange.intersection(edge.getEndRange());
-            }
-          }
-          if (startRange.isEmpty() || endRange.isEmpty()) {
-            GPLogger.logToLogger("both start and end ranges were calculated as empty for task=" + node.getTask() + ". Skipping it");
-          }
-        }
-
-        if (!startRange.equals(Ranges.all())) {
-          startRange = startRange.intersection(weakStartRange);
-        } else if (!weakStartRange.equals(Ranges.all())) {
-          startRange = weakStartRange.intersection(Ranges.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
-        }
-        if (!endRange.equals(Ranges.all())) {
-          endRange = endRange.intersection(weakEndRange);
-        } else if (!weakEndRange.equals(Ranges.all())) {
-          endRange = weakEndRange.intersection(Ranges.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
-        }
-        if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
-          startRange = startRange.intersection(Ranges.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
-        }
-        if (!subtaskRanges.isEmpty()) {
-          Range<Date> subtasks = Ranges.encloseAll(subtaskRanges);
-          startRange = startRange.intersection(subtasks);
-          endRange = endRange.intersection(subtasks);
-        }
-        if (startRange.hasLowerBound()) {
-          modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
-        }
-        if (endRange.hasUpperBound()) {
-          GPCalendar cal = node.getTask().getManager().getCalendar();
-          Date endDate = endRange.upperEndpoint();
-          TimeUnit timeUnit = node.getTask().getDuration().getTimeUnit();
-          if (!cal.isNonWorkingDay(endDate)) {
-            // in case if calculated end date falls on first day after holidays (say, on Monday)
-            // we'll want to modify it a little bit, so that it falls on that holidays start
-            // If we don't do this, it will be done automatically the next time task activities are recalculated,
-            // and thus task end date will keep changing
-            Date closestWorkingEndDate = cal.findClosest(
-                endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
-            Date closestNonWorkingEndDate = cal.findClosest(
-                endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.NON_WORKING, closestWorkingEndDate);
-            // If there is a non-working date between current task end and closest working date
-            // then we're really just after holidays
-            if (closestNonWorkingEndDate != null && closestWorkingEndDate.before(closestNonWorkingEndDate)) {
-              // we need to adjust-right closest working date to position to the very beginning of the holidays interval
-              Date nonWorkingPeriodStart = timeUnit.adjustRight(closestWorkingEndDate);
-              if (nonWorkingPeriodStart.after(node.getTask().getStart().getTime())) {
-                endDate = nonWorkingPeriodStart;
-              }
-            }
-          }
-          modifyTaskEnd(node.getTask(), endDate);
+        try {
+          schedule(node);
+        } catch (IllegalArgumentException e) {
+          GPLogger.log(e);
         }
       }
+    }
+  }
+
+  private void schedule(Node node) {
+    Range<Date> startRange = Range.all();
+    Range<Date> endRange = Range.all();
+
+    Range<Date> weakStartRange = Range.all();
+    Range<Date> weakEndRange = Range.all();
+
+    List<Date> subtaskRanges = Lists.newArrayList();
+    List<DependencyEdge> incoming = node.getIncoming();
+    for (DependencyEdge edge : incoming) {
+      if (!edge.refresh()) {
+        continue;
+      }
+      if (edge instanceof ImplicitSubSuperTaskDependency) {
+        subtaskRanges.add(edge.getStartRange().upperEndpoint());
+        subtaskRanges.add(edge.getEndRange().lowerEndpoint());
+      } else {
+        if (edge.isWeak()) {
+          weakStartRange = weakStartRange.intersection(edge.getStartRange());
+          weakEndRange = weakEndRange.intersection(edge.getEndRange());
+        } else {
+          startRange = startRange.intersection(edge.getStartRange());
+          endRange = endRange.intersection(edge.getEndRange());
+        }
+      }
+      if (startRange.isEmpty() || endRange.isEmpty()) {
+        GPLogger.logToLogger("both start and end ranges were calculated as empty for task=" + node.getTask() + ". Skipping it");
+      }
+    }
+
+    Range<Date> subtasksSpan = subtaskRanges.isEmpty() ?
+        Range.closed(node.getTask().getStart().getTime(), node.getTask().getEnd().getTime()) : Range.encloseAll(subtaskRanges);
+    Range<Date> subtreeStartUpwards = subtasksSpan.span(Range.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
+    Range<Date> subtreeEndDownwards = subtasksSpan.span(Range.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
+
+    if (!startRange.equals(Range.all())) {
+      startRange = startRange.intersection(weakStartRange);
+    } else if (!weakStartRange.equals(Range.all())) {
+      startRange = weakStartRange.intersection(subtreeStartUpwards);
+    }
+    if (!endRange.equals(Range.all())) {
+      endRange = endRange.intersection(weakEndRange);
+    } else if (!weakEndRange.equals(Range.all())) {
+      endRange = weakEndRange.intersection(subtreeEndDownwards);
+    }
+    if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
+      startRange = startRange.intersection(Range.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
+    }
+    if (!subtaskRanges.isEmpty()) {
+      startRange = startRange.intersection(subtasksSpan);
+      endRange = endRange.intersection(subtasksSpan);
+    }
+    if (startRange.hasLowerBound()) {
+      modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
+    }
+    if (endRange.hasUpperBound()) {
+      GPCalendar cal = node.getTask().getManager().getCalendar();
+      Date endDate = endRange.upperEndpoint();
+      TimeUnit timeUnit = node.getTask().getDuration().getTimeUnit();
+      if (!cal.isNonWorkingDay(endDate)) {
+        // in case if calculated end date falls on first day after holidays (say, on Monday)
+        // we'll want to modify it a little bit, so that it falls on that holidays start
+        // If we don't do this, it will be done automatically the next time task activities are recalculated,
+        // and thus task end date will keep changing
+        Date closestWorkingEndDate = cal.findClosest(
+            endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
+        Date closestNonWorkingEndDate = cal.findClosest(
+            endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.NON_WORKING, closestWorkingEndDate);
+        // If there is a non-working date between current task end and closest working date
+        // then we're really just after holidays
+        if (closestNonWorkingEndDate != null && closestWorkingEndDate.before(closestNonWorkingEndDate)) {
+          // we need to adjust-right closest working date to position to the very beginning of the holidays interval
+          Date nonWorkingPeriodStart = timeUnit.adjustRight(closestWorkingEndDate);
+          if (nonWorkingPeriodStart.after(node.getTask().getStart().getTime())) {
+            endDate = nonWorkingPeriodStart;
+          }
+        }
+      }
+      modifyTaskEnd(node.getTask(), endDate);
     }
   }
 

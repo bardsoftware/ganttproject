@@ -1,6 +1,7 @@
 package net.sourceforge.ganttproject;
 
 import java.util.List;
+import java.util.Queue;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -9,6 +10,7 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 
 public class TreeUtil {
   static int getPrevSibling(TreeNode node, TreeNode child) {
@@ -49,6 +51,20 @@ public class TreeUtil {
     return new TreePath(descendingPath);
   }
 
+  public static List<MutableTreeTableNode> breadthFirstSearch(MutableTreeTableNode rootNode) {
+    final List<MutableTreeTableNode> result = Lists.newArrayList();
+    final Queue<MutableTreeTableNode> queue = Queues.newArrayDeque();
+    queue.add(rootNode);
+    while (!queue.isEmpty()) {
+      MutableTreeTableNode head = queue.poll();
+      result.add(head);
+      for (int i = 0; i < head.getChildCount(); i++) {
+        queue.add((MutableTreeTableNode) head.getChildAt(i));
+      }
+    }
+    return result;
+  }
+
   public static List<MutableTreeTableNode> collectSubtree(MutableTreeTableNode root) {
     final List<MutableTreeTableNode> result = Lists.newArrayList();
     collectSubtree(root, result);
@@ -80,5 +96,4 @@ public class TreeUtil {
     }
     return level - 1;
   }
-
 }

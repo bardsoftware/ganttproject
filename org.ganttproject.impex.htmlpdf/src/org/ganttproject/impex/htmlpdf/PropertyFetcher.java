@@ -52,7 +52,7 @@ public class PropertyFetcher {
     DateFormat dateFormat = language.getShortDateFormat();
     id2value.put("tpd3", t.getName());
     id2value.put("tpd4", dateFormat.format(t.getStart().getTime()));
-    id2value.put("tpd5", dateFormat.format(t.getEnd().getDisplayValue().getTime()));
+    id2value.put("tpd5", dateFormat.format(t.getDisplayEnd().getTime()));
     id2value.put("tpd6", String.valueOf(t.getDuration().getLength()));
     id2value.put("tpd7", String.valueOf(t.getCompletionPercentage()));
     id2value.put(TaskDefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t));

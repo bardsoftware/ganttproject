@@ -7,8 +7,8 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.6.1"
-!define VERSION_BUILD "2.6.1-r1499"
+!define VERSION "2.6.2"
+!define VERSION_BUILD "2.6.2-r1544"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -49,6 +49,9 @@ InstallDir $PROGRAMFILES\GanttProject-2.6
 !insertmacro MUI_LANGUAGE "Portuguese"
 !insertmacro MUI_LANGUAGE "Catalan"
 !insertmacro MUI_LANGUAGE "Swedish"
+!insertmacro MUI_LANGUAGE "Galician"
+!insertmacro MUI_LANGUAGE "Serbian"
+
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 

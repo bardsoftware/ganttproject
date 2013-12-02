@@ -18,17 +18,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
+import java.awt.BorderLayout;
+import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
+import org.jdesktop.swingx.JXTable;
+
+import com.google.common.collect.Lists;
+
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Panel to edit the text export parameters
@@ -40,23 +53,23 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 
   private JComboBox cbTextSeparator;
 
-  private JCheckBox cbTaskID;
-
-  private JCheckBox cbTaskName;
-
-  private JCheckBox cbStartDate;
-
-  private JCheckBox cbEndDate;
-
-  private JCheckBox cbTaskPercent;
-
-  private JCheckBox cbTaskDuration;
-
-  private JCheckBox cbTaskWebLink;
-
-  private JCheckBox cbTaskResources;
-
-  private JCheckBox cbTaskNotes;
+//  private JCheckBox cbTaskID;
+//
+//  private JCheckBox cbTaskName;
+//
+//  private JCheckBox cbStartDate;
+//
+//  private JCheckBox cbEndDate;
+//
+//  private JCheckBox cbTaskPercent;
+//
+//  private JCheckBox cbTaskDuration;
+//
+//  private JCheckBox cbTaskWebLink;
+//
+//  private JCheckBox cbTaskResources;
+//
+//  private JCheckBox cbTaskNotes;
 
   private JCheckBox cbResID;
 
@@ -102,32 +115,89 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
   }
 
   JComponent createTaskExportFieldsPanel() {
-    JPanel panel = new JPanel(new SpringLayout());
-    cbTaskID = new JCheckBox(language.getText("id"));
-    panel.add(cbTaskID);
-    cbTaskName = new JCheckBox(language.getText("name"));
-    panel.add(cbTaskName);
-    cbTaskDuration = new JCheckBox(language.getText("length"));
-    panel.add(cbTaskDuration);
-    cbStartDate = new JCheckBox(language.getText("dateOfBegining"));
-    panel.add(cbStartDate);
-    cbEndDate = new JCheckBox(language.getText("dateOfEnd"));
-    panel.add(cbEndDate);
-    cbTaskPercent = new JCheckBox(language.getText("advancement"));
-    panel.add(cbTaskPercent);
-    cbTaskWebLink = new JCheckBox(language.getText("webLink"));
-    panel.add(cbTaskWebLink);
-    cbTaskResources = new JCheckBox(language.getText("resources"));
-    panel.add(cbTaskResources);
-    cbTaskNotes = new JCheckBox(language.getText("notes"));
-    panel.add(cbTaskNotes);
-    SpringUtilities.makeCompactGrid(panel, 3, 3, 0, 0, 3, 3);
-    UIUtil.createTitle(panel, language.getText("taskFields"));
+    JXTable table = new JXTable(createTaskPropertiesTableModel());
+    table.setTableHeader(null);
+    table.setVisibleRowCount(10);
+    JScrollPane scrollPane = new JScrollPane(table);
 
-    Box result = Box.createHorizontalBox();
-    result.add(panel);
-    result.add(Box.createHorizontalGlue());
-    return result;
+//    JPanel panel = new JPanel(new SpringLayout());
+//    cbTaskID = new JCheckBox(language.getText("id"));
+//    panel.add(cbTaskID);
+//    cbTaskName = new JCheckBox(language.getText("name"));
+//    panel.add(cbTaskName);
+//    cbTaskDuration = new JCheckBox(language.getText("length"));
+//    panel.add(cbTaskDuration);
+//    cbStartDate = new JCheckBox(language.getText("dateOfBegining"));
+//    panel.add(cbStartDate);
+//    cbEndDate = new JCheckBox(language.getText("dateOfEnd"));
+//    panel.add(cbEndDate);
+//    cbTaskPercent = new JCheckBox(language.getText("advancement"));
+//    panel.add(cbTaskPercent);
+//    cbTaskWebLink = new JCheckBox(language.getText("webLink"));
+//    panel.add(cbTaskWebLink);
+//    cbTaskResources = new JCheckBox(language.getText("resources"));
+//    panel.add(cbTaskResources);
+//    cbTaskNotes = new JCheckBox(language.getText("notes"));
+//    panel.add(cbTaskNotes);
+//    SpringUtilities.makeCompactGrid(panel, 3, 3, 0, 0, 3, 3);
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(BorderLayout.CENTER, scrollPane);
+    UIUtil.createTitle(panel, language.getText("taskFields"));
+    return panel;
+  }
+
+  private TableModel createTaskPropertiesTableModel() {
+    final List<BooleanOption> taskOptions = Lists.newArrayList(getCsvOptions().getTaskOptions().values());
+    return new AbstractTableModel() {
+      @Override
+      public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+        case 0:
+          return String.class;
+        case 1:
+          return Boolean.class;
+        }
+        return null;
+      }
+
+      @Override
+      public boolean isCellEditable(int row, int col) {
+        return col == 1;
+      }
+
+      @Override
+      public int getColumnCount() {
+        return 2;
+      }
+
+      @Override
+      public int getRowCount() {
+        return taskOptions.size();
+      }
+
+
+      @Override
+      public Object getValueAt(int row, int column) {
+        if (row >= 0 && row < getRowCount()) {
+          switch (column) {
+          case 0:
+            String id = taskOptions.get(row).getID();
+            TaskDefaultColumn taskColumn = TaskDefaultColumn.find(id);
+            return taskColumn == null ? GanttLanguage.getInstance().getText(id) : taskColumn.getName();
+          case 1:
+            return taskOptions.get(row).getValue();
+          }
+        }
+        return null;
+      }
+
+      @Override
+      public void setValueAt(Object aValue, int row, int column) {
+        if (row >= 0 && row < getRowCount()) {
+          taskOptions.get(row).setValue((Boolean)aValue);
+        }
+      }
+    };
   }
 
   JComponent createResourceExportFieldsPanel() {
@@ -160,15 +230,15 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     csvOptions.sSeparatedTextChar = getTextSeparat();
     csvOptions.sSeparatedChar = getSeparat();
     csvOptions.bFixedSize = getFixed();
-    csvOptions.bExportTaskID = getTaskID();
-    csvOptions.bExportTaskName = getTaskName();
-    csvOptions.bExportTaskStartDate = getTaskSD();
-    csvOptions.bExportTaskEndDate = getTaskED();
-    csvOptions.bExportTaskDuration = getTaskDuration();
-    csvOptions.bExportTaskPercent = getTaskPercent();
-    csvOptions.bExportTaskWebLink = getTaskWebLink();
-    csvOptions.bExportTaskResources = getTaskResources();
-    csvOptions.bExportTaskNotes = getTaskNotes();
+//    csvOptions.bExportTaskID = getTaskID();
+//    csvOptions.bExportTaskName = getTaskName();
+//    csvOptions.bExportTaskStartDate = getTaskSD();
+//    csvOptions.bExportTaskEndDate = getTaskED();
+//    csvOptions.bExportTaskDuration = getTaskDuration();
+//    csvOptions.bExportTaskPercent = getTaskPercent();
+//    csvOptions.bExportTaskWebLink = getTaskWebLink();
+//    csvOptions.bExportTaskResources = getTaskResources();
+//    csvOptions.bExportTaskNotes = getTaskNotes();
     csvOptions.bExportResourceID = getResourceID();
     csvOptions.bExportResourceName = getResourceName();
     csvOptions.bExportResourceMail = getResourceMail();
@@ -179,15 +249,15 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 
   @Override
   public void initialize() {
-    cbTaskID.setSelected(getCsvOptions().bExportTaskID);
-    cbTaskName.setSelected(getCsvOptions().bExportTaskName);
-    cbStartDate.setSelected(getCsvOptions().bExportTaskStartDate);
-    cbEndDate.setSelected(getCsvOptions().bExportTaskEndDate);
-    cbTaskPercent.setSelected(getCsvOptions().bExportTaskPercent);
-    cbTaskDuration.setSelected(getCsvOptions().bExportTaskDuration);
-    cbTaskWebLink.setSelected(getCsvOptions().bExportTaskWebLink);
-    cbTaskResources.setSelected(getCsvOptions().bExportTaskResources);
-    cbTaskNotes.setSelected(getCsvOptions().bExportTaskNotes);
+//    cbTaskID.setSelected(getCsvOptions().bExportTaskID);
+//    cbTaskName.setSelected(getCsvOptions().bExportTaskName);
+//    cbStartDate.setSelected(getCsvOptions().bExportTaskStartDate);
+//    cbEndDate.setSelected(getCsvOptions().bExportTaskEndDate);
+//    cbTaskPercent.setSelected(getCsvOptions().bExportTaskPercent);
+//    cbTaskDuration.setSelected(getCsvOptions().bExportTaskDuration);
+//    cbTaskWebLink.setSelected(getCsvOptions().bExportTaskWebLink);
+//    cbTaskResources.setSelected(getCsvOptions().bExportTaskResources);
+//    cbTaskNotes.setSelected(getCsvOptions().bExportTaskNotes);
 
     cbResID.setSelected(getCsvOptions().bExportResourceID);
     cbResName.setSelected(getCsvOptions().bExportResourceName);
@@ -221,41 +291,41 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     return language.getText("fixedWidth").equals(myFieldSeparatorCombo.getSelectedItem());
   }
 
-  private boolean getTaskID() {
-    return cbTaskID.isSelected();
-  }
-
-  private boolean getTaskName() {
-    return cbTaskName.isSelected();
-  }
-
-  private boolean getTaskSD() {
-    return cbStartDate.isSelected();
-  }
-
-  private boolean getTaskED() {
-    return cbEndDate.isSelected();
-  }
-
-  private boolean getTaskPercent() {
-    return cbTaskPercent.isSelected();
-  }
-
-  private boolean getTaskDuration() {
-    return cbTaskDuration.isSelected();
-  }
-
-  private boolean getTaskWebLink() {
-    return cbTaskWebLink.isSelected();
-  }
-
-  private boolean getTaskResources() {
-    return cbTaskResources.isSelected();
-  }
-
-  private boolean getTaskNotes() {
-    return cbTaskNotes.isSelected();
-  }
+//  private boolean getTaskID() {
+//    return cbTaskID.isSelected();
+//  }
+//
+//  private boolean getTaskName() {
+//    return cbTaskName.isSelected();
+//  }
+//
+//  private boolean getTaskSD() {
+//    return cbStartDate.isSelected();
+//  }
+//
+//  private boolean getTaskED() {
+//    return cbEndDate.isSelected();
+//  }
+//
+//  private boolean getTaskPercent() {
+//    return cbTaskPercent.isSelected();
+//  }
+//
+//  private boolean getTaskDuration() {
+//    return cbTaskDuration.isSelected();
+//  }
+//
+//  private boolean getTaskWebLink() {
+//    return cbTaskWebLink.isSelected();
+//  }
+//
+//  private boolean getTaskResources() {
+//    return cbTaskResources.isSelected();
+//  }
+//
+//  private boolean getTaskNotes() {
+//    return cbTaskNotes.isSelected();
+//  }
 
   private boolean getResourceID() {
     return cbResID.isSelected();

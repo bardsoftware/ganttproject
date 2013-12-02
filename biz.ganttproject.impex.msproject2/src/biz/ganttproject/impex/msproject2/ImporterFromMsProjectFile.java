@@ -21,16 +21,34 @@ package biz.ganttproject.impex.msproject2;
 import java.io.File;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.GPOption;
 import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.importer.ImporterBase;
+import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
+  private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+  private final GPCalendar.ImportCalendarOption myImportCalendarOption = new GPCalendar.ImportCalendarOption();
+
+  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
   public ImporterFromMsProjectFile() {
     super("impex.msproject2");
+    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
+    myImportCalendarOption.setSelectedValue(GPCalendar.ImportCalendarOption.Values.NO);
+  }
+
+  @Override
+  protected GPOption[] getOptions() {
+    return myOptions;
   }
 
   @Override
@@ -41,7 +59,18 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
   @Override
   public void run(File selectedFile) {
     try {
-      List<String> errors = new ProjectFileImporter(getProject(), getUiFacade().getTaskTree(), selectedFile).run();
+      BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
+      List<String> errors = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile).run();
+
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
+      getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
+
+      try {
+        ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
+      } finally {
+
+      }
       if (!errors.isEmpty()) {
         StringBuilder builder = new StringBuilder();
         for (String message : errors) {
@@ -53,6 +82,20 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       }
     } catch (MPXJException e) {
       getUiFacade().showErrorDialog(e);
+    } finally {
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+      getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(true);
     }
+    try {
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
+      getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+    } catch (TaskDependencyException e) {
+      getUiFacade().showErrorDialog(e);
+    }
+  }
+
+  private TaskManager getTaskManager() {
+    return getProject().getTaskManager();
   }
 }

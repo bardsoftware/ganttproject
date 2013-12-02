@@ -32,6 +32,8 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavExcepti
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.option.StringOption;
+
 /**
  * This class implements the interface Document for file access on HTTP-servers
  * and WebDAV-enabled-servers.
@@ -56,8 +58,8 @@ public class HttpDocument extends AbstractURLDocument {
 
   private final int myTimeout;
 
-  public HttpDocument(String url, String username, String password) throws IOException, WebDavException {
-    this(new MiltonResourceFactory(username, password).createResource(new WebDavUri(url)), username, password, -1);
+  public HttpDocument(String url, String username, String password, StringOption proxyOption) throws IOException, WebDavException {
+    this(new MiltonResourceFactory(username, password, proxyOption).createResource(new WebDavUri(url)), username, password, -1);
   }
 
   public HttpDocument(WebDavResource webdavResource, String username, String password, int lockTimeout) throws IOException {

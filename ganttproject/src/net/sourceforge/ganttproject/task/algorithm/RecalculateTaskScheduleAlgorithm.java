@@ -106,6 +106,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     isRunning = false;
   }
 
+  @Override
   public void run() throws TaskDependencyException {
     if (!isEnabled()) {
       return;
@@ -222,7 +223,6 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     } else {
       shift = counter.run(newStart.getTime(), task.getStart().getTime()).reverse();
     }
-    System.err.println("task=" + task + " newstart=" + newStart + " shift=" + shift);
     mutator.shift(shift);
     mutator.commit();
     myModifiedTasks.add(task);

@@ -116,7 +116,8 @@ class DialogBuilder {
   }
 
   private static class DialogImpl implements Dialog {
-    private AnimationView myAnimationView;
+    /** Original animation view, used to set it back when the dialog is closed again */
+    private AnimationView myOriginalAnimationView;
     private final JDialog myDlg;
     private final JFrame myMainFrame;
     private final NotificationManager myNotificationManager;
@@ -133,12 +134,12 @@ class DialogBuilder {
         myDlg.setVisible(false);
         myDlg.dispose();
       }
-      myNotificationManager.setAnimationView(myAnimationView);
+      myNotificationManager.setAnimationView(myOriginalAnimationView);
     }
 
     @Override
     public void show() {
-      myAnimationView = myNotificationManager.setAnimationView(new NotificationViewImpl(myDlg, myButton));
+      myOriginalAnimationView = myNotificationManager.setAnimationView(new NotificationViewImpl(myDlg, myButton));
       center(Centering.WINDOW);
       myDlg.setVisible(true);
     }

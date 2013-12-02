@@ -366,6 +366,12 @@ public class TaskImpl implements Task {
     return result;
   }
 
+  @Override
+  public GanttCalendar getDisplayEnd() {
+    GanttCalendar modelEnd = getEnd();
+    return (isMilestone) ? modelEnd : modelEnd.getDisplayValue();
+  }
+
   GanttCalendar calculateEnd() {
     GanttCalendar result = getStart().clone();
     Date newEnd = shiftDate(result.getTime(), getDuration());
@@ -427,7 +433,7 @@ public class TaskImpl implements Task {
   public Color getColor() {
     Color result = myColor;
     if (result == null) {
-      if (isMilestone() || getNestedTasks().length > 0) {
+      if (isMilestone() || myManager.getTaskHierarchy().hasNestedTasks(this)) {
         result = Color.BLACK;
       } else {
         result = myManager.getConfig().getDefaultColor();

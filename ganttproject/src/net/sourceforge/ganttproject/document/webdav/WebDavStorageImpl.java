@@ -36,7 +36,6 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.gui.UIFacade;
-
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -46,6 +45,7 @@ import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
@@ -188,6 +188,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   private final BooleanOption myReleaseLockOption = new DefaultBooleanOption("lockRelease", true);
   private final StringOption myUsername = new DefaultStringOption("username", "");
   private final StringOption myPassword = new DefaultStringOption("password", "");
+  private final StringOption myProxy = new DefaultStringOption("proxy", "");
   private final MiltonResourceFactory myWebDavFactory = new MiltonResourceFactory();
   private final UIFacade myUiFacade;
   private final IGanttProject myProject;
@@ -342,4 +343,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     return null;
   }
 
+  public StringOption getProxyOption () {
+    return myProxy;
+  }
 }

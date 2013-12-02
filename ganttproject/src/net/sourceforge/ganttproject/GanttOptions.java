@@ -24,6 +24,7 @@ import java.io.File;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JToolBar;
@@ -58,11 +59,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.xml.XmlEscapers;
 
 /**
  * This class is able to load and save options on the file
@@ -276,17 +282,6 @@ public class GanttOptions extends SaverBase {
       addAttribute("separatedTextChar", "" + csvOptions.sSeparatedTextChar, attrs);
       emptyElement("csv-general", attrs, handler);
 
-      addAttribute("id", "" + csvOptions.bExportTaskID, attrs);
-      addAttribute("name", "" + csvOptions.bExportTaskName, attrs);
-      addAttribute("start-date", "" + csvOptions.bExportTaskStartDate, attrs);
-      addAttribute("end-date", "" + csvOptions.bExportTaskEndDate, attrs);
-      addAttribute("percent", "" + csvOptions.bExportTaskPercent, attrs);
-      addAttribute("duration", "" + csvOptions.bExportTaskDuration, attrs);
-      addAttribute("webLink", "" + csvOptions.bExportTaskWebLink, attrs);
-      addAttribute("resources", "" + csvOptions.bExportTaskResources, attrs);
-      addAttribute("notes", "" + csvOptions.bExportTaskNotes, attrs);
-      emptyElement("csv-tasks", attrs, handler);
-
       addAttribute("id", "" + csvOptions.bExportResourceID, attrs);
       addAttribute("name", "" + csvOptions.bExportResourceName, attrs);
       addAttribute("mail", "" + csvOptions.bExportResourceMail, attrs);
@@ -295,6 +290,16 @@ public class GanttOptions extends SaverBase {
       emptyElement("csv-resources", attrs, handler);
 
       endElement("csv-export", handler);
+
+      addAttribute("id", "csv-export", attrs);
+      startElement("view", attrs, handler);
+      for (Map.Entry<String, BooleanOption> entry: csvOptions.getTaskOptions().entrySet()) {
+        if (entry.getValue().isChecked()) {
+          addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
+          emptyElement("field", attrs, handler);
+        }
+      }
+      endElement("view", handler);
 
       // automatic popup launch
       addAttribute("value", "" + automatic, attrs);
@@ -501,6 +506,7 @@ public class GanttOptions extends SaverBase {
     private PluginOptionsHandler myPluginOptionsHandler;
     private ListOption myContextOption;
     private StringBuilder myCdataBuffer = new StringBuilder();
+    private Map<String, BooleanOption> myContextViewOptions = null;
 
     @Override
     public void startElement(String namespaceURI, String sName, // simple name
@@ -528,6 +534,18 @@ public class GanttOptions extends SaverBase {
         return;
       }
 
+      if ("view".equals(qName)) {
+        String viewId = attrs.getValue("id");
+        if ("csv-export".equals(viewId)) {
+          myContextViewOptions = csvOptions.getTaskOptions();
+        }
+      }
+      if ("field".equals(qName) && myContextViewOptions != null) {
+        BooleanOption option = myContextViewOptions.get(attrs.getValue("id"));
+        if (option != null) {
+          option.setValue(true);
+        }
+      }
       if (attrs != null) {
         for (int i = 0; i < attrs.getLength(); i++) {
           /** Attribute name */
@@ -637,23 +655,23 @@ public class GanttOptions extends SaverBase {
               csvOptions.sSeparatedTextChar = value;
           } else if (qName.equals("csv-tasks")) {
             if (aName.equals("id")) {
-              csvOptions.bExportTaskID = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.ID.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("name")) {
-              csvOptions.bExportTaskName = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.NAME.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("start-date")) {
-              csvOptions.bExportTaskStartDate = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.BEGIN_DATE.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("end-date")) {
-              csvOptions.bExportTaskEndDate = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.END_DATE.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("percent")) {
-              csvOptions.bExportTaskPercent = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.COMPLETION.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("duration")) {
-              csvOptions.bExportTaskDuration = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.DURATION.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("webLink")) {
-              csvOptions.bExportTaskWebLink = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get("webLink").setValue(Boolean.valueOf(value));
             } else if (aName.equals("resources")) {
-              csvOptions.bExportTaskResources = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get("resources").setValue(Boolean.valueOf(value));
             } else if (aName.equals("notes")) {
-              csvOptions.bExportTaskNotes = (new Boolean(value)).booleanValue();
+              csvOptions.getTaskOptions().get("notes").setValue(Boolean.valueOf(value));
             }
           } else if (qName.equals("csv-resources")) {
             if (aName.equals("id")) {
@@ -693,6 +711,9 @@ public class GanttOptions extends SaverBase {
         myContextOption.loadPersistentValue(myCdataBuffer.toString());
         myContextOption = null;
         myCdataBuffer = new StringBuilder();
+      }
+      if ("view".equals(name)) {
+        myContextViewOptions = null;
       }
     }
 

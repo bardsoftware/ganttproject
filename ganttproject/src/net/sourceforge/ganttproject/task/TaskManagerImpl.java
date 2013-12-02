@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
@@ -36,6 +37,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
@@ -902,6 +904,26 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public List<Task> getTasksInDocumentOrder() {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
+      if (root == null) {
+        root = getRootTask();
+      }
+      List<Task> result = Lists.newArrayList();
+      Queue<Task> queue = Queues.newArrayDeque();
+      if (includeRoot) {
+        queue.add(root);
+      } else {
+        queue.addAll(Lists.newArrayList(root.getNestedTasks()));
+      }
+      while (!queue.isEmpty()) {
+        Task head = queue.poll();
+        result.add(head);
+        queue.addAll(Lists.newArrayList(head.getNestedTasks()));
+      }
+      return result;
     }
 
     @Override

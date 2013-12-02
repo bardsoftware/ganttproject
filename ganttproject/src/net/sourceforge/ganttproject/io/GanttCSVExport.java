@@ -23,15 +23,21 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.CustomProperty;
@@ -53,6 +59,12 @@ import net.sourceforge.ganttproject.util.StringUtils;
  * @author athomas
  */
 public class GanttCSVExport {
+  private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = new Predicate<ResourceAssignment>() {
+    public boolean apply(ResourceAssignment arg) {
+      return arg.isCoordinator();
+    }
+  };
+
   private final IGanttProject myProject;
 
   private final CSVOptions csvOptions;
@@ -70,7 +82,7 @@ public class GanttCSVExport {
    * @throws IOException
    */
   public void save(OutputStream stream) throws IOException {
-    OutputStreamWriter writer = new OutputStreamWriter(stream);
+    OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (csvOptions.sSeparatedChar.length() == 1) {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
@@ -81,10 +93,10 @@ public class GanttCSVExport {
 
     CSVPrinter csvPrinter = new CSVPrinter(writer, format);
 
-    if (csvOptions.bFixedSize) {
-      // TODO The CVS library we use is lacking support for fixed size
-      getMaxSize();
-    }
+//    if (csvOptions.bFixedSize) {
+//      // TODO The CVS library we use is lacking support for fixed size
+//      getMaxSize();
+//    }
 
     writeTasks(csvPrinter);
 
@@ -98,34 +110,17 @@ public class GanttCSVExport {
   }
 
   private void writeTaskHeaders(CSVPrinter writer) throws IOException {
-    if (csvOptions.bExportTaskID) {
-      writer.print(TaskDefaultColumn.ID.getName());
+    for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+      TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
+      if (!entry.getValue().isChecked()) {
+        continue;
+      }
+      if (defaultColumn == null) {
+        writer.print(i18n(entry.getKey()));
+      } else {
+        writer.print(defaultColumn.getName());
+      }
     }
-    if (csvOptions.bExportTaskName) {
-      writer.print(TaskDefaultColumn.NAME.getName());
-    }
-    if (csvOptions.bExportTaskStartDate) {
-      writer.print(TaskDefaultColumn.BEGIN_DATE.getName());
-    }
-    if (csvOptions.bExportTaskEndDate) {
-      writer.print(TaskDefaultColumn.END_DATE.getName());
-    }
-    if (csvOptions.bExportTaskDuration) {
-      writer.print(TaskDefaultColumn.DURATION.getName());
-    }
-    if (csvOptions.bExportTaskPercent) {
-      writer.print(TaskDefaultColumn.COMPLETION.getName());
-    }
-    if (csvOptions.bExportTaskWebLink) {
-      writer.print(i18n("webLink"));
-    }
-    if (csvOptions.bExportTaskResources) {
-      writer.print(i18n("resources"));
-    }
-    if (csvOptions.bExportTaskNotes) {
-      writer.print(i18n("notes"));
-    }
-    writer.print(TaskDefaultColumn.PREDECESSORS.getName());
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
       writer.print(def.getName());
     }
@@ -141,56 +136,76 @@ public class GanttCSVExport {
    * @throws IOException */
   private void writeTasks(CSVPrinter writer) throws IOException {
     writeTaskHeaders(writer);
+    Map<String, BooleanOption> options = csvOptions.getTaskOptions();
     List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
     for (Task task : myProject.getTaskManager().getTasks()) {
-      // ID
-      if (csvOptions.bExportTaskID) {
-        writer.print(String.valueOf(task.getTaskID()));
+      for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+        if (!entry.getValue().isChecked()) {
+          continue;
+        }
+        TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
+        if (defaultColumn == null) {
+          if ("webLink".equals(entry.getKey())) {
+            writer.print(getWebLink((GanttTask) task));
+            continue;
+          }
+          if ("resources".equals(entry.getKey())) {
+            writer.print(getAssignments(task));
+            continue;
+          }
+          if ("notes".equals(entry.getKey())) {
+            writer.print(task.getNotes());
+            continue;
+          }
+        } else {
+          switch (defaultColumn) {
+          case ID:
+            writer.print(String.valueOf(task.getTaskID()));
+            break;
+          case NAME:
+            writer.print(getName(task));
+            break;
+          case BEGIN_DATE:
+            writer.print(task.getStart().toString());
+            break;
+          case END_DATE:
+            writer.print(task.getDisplayEnd().toString());
+            break;
+          case DURATION:
+            writer.print(String.valueOf(task.getDuration().getLength()));
+            break;
+          case COMPLETION:
+            writer.print(String.valueOf(task.getCompletionPercentage()));
+            break;
+          case OUTLINE_NUMBER:
+            List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
+            writer.print(Joiner.on('.').join(outlinePath));
+            break;
+          case COORDINATOR:
+            ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
+            writer.print(coordinator == null ? "" : coordinator.getResource().getName());
+            break;
+          case PREDECESSORS:
+            writer.print(Joiner.on(';').join(Lists.transform(
+                Arrays.asList(task.getDependenciesAsDependant().toArray()),
+                new Function<TaskDependency, String>() {
+                  @Override
+                  public String apply(TaskDependency input) {
+                    return "" + input.getDependee().getTaskID();
+                  }
+                })));
+            break;
+          case INFO:
+          case PRIORITY:
+          case TYPE:
+            break;
+          }
+        }
       }
-      // Name
-      if (csvOptions.bExportTaskName) {
-        writer.print(getName(task));
-      }
-      // Start Date
-      if (csvOptions.bExportTaskStartDate) {
-        writer.print(task.getStart().toString());
-      }
-      // End Date
-      if (csvOptions.bExportTaskEndDate) {
-        writer.print(task.getEnd().getDisplayValue().toString());
-      }
-      // Duration
-      if (csvOptions.bExportTaskDuration) {
-        writer.print(String.valueOf(task.getDuration().getLength()));
-      }
-      // Percent complete
-      if (csvOptions.bExportTaskPercent) {
-        writer.print(String.valueOf(task.getCompletionPercentage()));
-      }
-      // Web Link
-      if (csvOptions.bExportTaskWebLink) {
-        writer.print(getWebLink((GanttTask) task));
-      }
-      // associated resources
-      if (csvOptions.bExportTaskResources) {
-        writer.print(getAssignments(task));
-      }
-      // Notes
-      if (csvOptions.bExportTaskNotes) {
-        writer.print(task.getNotes());
-      }
-      writer.print(Joiner.on(';').join(Lists.transform(
-          Arrays.asList(task.getDependenciesAsDependant().toArray()),
-          new Function<TaskDependency, String>() {
-            @Override
-            public String apply(TaskDependency input) {
-              return "" + input.getDependee().getTaskID();
-            }
-          })));
       CustomColumnsValues customValues = task.getCustomValues();
       for (int j = 0; j < customFields.size(); j++) {
         Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
-        writer.print(String.valueOf(nextCustomFieldValue));
+        writer.print(nextCustomFieldValue == null ? "" : String.valueOf(nextCustomFieldValue));
       }
       writer.println();
     }
@@ -259,131 +274,131 @@ public class GanttCSVExport {
   }
 
   /** set the maximum size for all strings. */
-  private void getMaxSize() {
-    List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
-    iMaxSize = 0;
-    // Check widths of the tasks fields
-    for (Task task : myProject.getTaskManager().getTasks()) {
-
-      if (csvOptions.bExportTaskID) {
-        String s = String.valueOf(task.getTaskID());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskName) {
-        String s = getName(task);
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskStartDate) {
-        String s = String.valueOf(task.getStart());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskEndDate) {
-        String s = String.valueOf(task.getEnd());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskDuration) {
-        String s = String.valueOf(task.getDuration().getLength());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskPercent) {
-        String s = String.valueOf(task.getCompletionPercentage());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskWebLink) {
-        String s = getWebLink((GanttTask) task);
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskResources) {
-        String s = getAssignments(task);
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      if (csvOptions.bExportTaskNotes) {
-        String s = task.getNotes();
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-
-      CustomColumnsValues customValues = task.getCustomValues();
-      for (int j = 0; j < customFields.size(); j++) {
-        Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
-        String nextValueAsString = String.valueOf(nextCustomFieldValue);
-        if (nextValueAsString.length() > iMaxSize) {
-          iMaxSize = nextValueAsString.length();
-        }
-      }
-    }
-
-    // Check widths of the resources fields
-    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
-      if (csvOptions.bExportResourceID) {
-        String s = String.valueOf(p.getId());
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-      if (csvOptions.bExportResourceName) {
-        String s = p.getName();
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-      if (csvOptions.bExportResourceMail) {
-        String s = p.getMail();
-        if (s.length() > iMaxSize)
-          iMaxSize = s.length();
-      }
-      if (csvOptions.bExportResourcePhone) {
-        String s = p.getPhone();
-        if (s.length() > iMaxSize) {
-          iMaxSize = s.length();
-        }
-      }
-      if (csvOptions.bExportResourceRole) {
-        Role role = p.getRole();
-        String sRoleID;
-        if (role != null) {
-          sRoleID = role.getPersistentID();
-        } else {
-          sRoleID = "0";
-        }
-        if (sRoleID.length() > iMaxSize) {
-          iMaxSize = sRoleID.length();
-        }
-      }
-      List<CustomProperty> customProps = p.getCustomProperties();
-      for (int j = 0; j < customProps.size(); j++) {
-        CustomProperty nextProperty = customProps.get(j);
-        if (nextProperty.getValueAsString().length() > iMaxSize) {
-          iMaxSize = nextProperty.getValueAsString().length();
-        }
-      }
-    }
-  }
+//  private void getMaxSize() {
+//    List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
+//    iMaxSize = 0;
+//    // Check widths of the tasks fields
+//    for (Task task : myProject.getTaskManager().getTasks()) {
+//
+//      if (csvOptions.bExportTaskID) {
+//        String s = String.valueOf(task.getTaskID());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskName) {
+//        String s = getName(task);
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskStartDate) {
+//        String s = String.valueOf(task.getStart());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskEndDate) {
+//        String s = String.valueOf(task.getEnd());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskDuration) {
+//        String s = String.valueOf(task.getDuration().getLength());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskPercent) {
+//        String s = String.valueOf(task.getCompletionPercentage());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskWebLink) {
+//        String s = getWebLink((GanttTask) task);
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskResources) {
+//        String s = getAssignments(task);
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      if (csvOptions.bExportTaskNotes) {
+//        String s = task.getNotes();
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//
+//      CustomColumnsValues customValues = task.getCustomValues();
+//      for (int j = 0; j < customFields.size(); j++) {
+//        Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
+//        String nextValueAsString = String.valueOf(nextCustomFieldValue);
+//        if (nextValueAsString.length() > iMaxSize) {
+//          iMaxSize = nextValueAsString.length();
+//        }
+//      }
+//    }
+//
+//    // Check widths of the resources fields
+//    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
+//      if (csvOptions.bExportResourceID) {
+//        String s = String.valueOf(p.getId());
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//      if (csvOptions.bExportResourceName) {
+//        String s = p.getName();
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//      if (csvOptions.bExportResourceMail) {
+//        String s = p.getMail();
+//        if (s.length() > iMaxSize)
+//          iMaxSize = s.length();
+//      }
+//      if (csvOptions.bExportResourcePhone) {
+//        String s = p.getPhone();
+//        if (s.length() > iMaxSize) {
+//          iMaxSize = s.length();
+//        }
+//      }
+//      if (csvOptions.bExportResourceRole) {
+//        Role role = p.getRole();
+//        String sRoleID;
+//        if (role != null) {
+//          sRoleID = role.getPersistentID();
+//        } else {
+//          sRoleID = "0";
+//        }
+//        if (sRoleID.length() > iMaxSize) {
+//          iMaxSize = sRoleID.length();
+//        }
+//      }
+//      List<CustomProperty> customProps = p.getCustomProperties();
+//      for (int j = 0; j < customProps.size(); j++) {
+//        CustomProperty nextProperty = customProps.get(j);
+//        if (nextProperty.getValueAsString().length() > iMaxSize) {
+//          iMaxSize = nextProperty.getValueAsString().length();
+//        }
+//      }
+//    }
+//  }
 
   /** @return the name of task with the correct level. */
   private String getName(Task task) {
