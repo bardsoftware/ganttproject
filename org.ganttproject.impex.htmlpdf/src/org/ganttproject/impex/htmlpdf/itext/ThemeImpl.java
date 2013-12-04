@@ -37,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -332,7 +331,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     writeColontitle(getProject().getProjectName(),
         GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),
         GanttLanguage.getInstance().getText("resourcesChart"), String.valueOf(myWriter.getPageNumber()));
-    ChartWriter resourceChartWriter = new ChartWriter((TimelineChart) myUIFacade.getResourceChart(), myWriter, myDoc,
+    ChartWriter resourceChartWriter = new ChartWriter(myUIFacade.getResourceChart(), myWriter, myDoc,
         myExporter.createExportSettings(), myFontCache, mySubstitutionModel, getCharset());
     resourceChartWriter.write();
   }

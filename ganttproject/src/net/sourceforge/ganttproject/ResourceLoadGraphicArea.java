@@ -66,7 +66,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     myTreeUi = treeUi;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
-        getUIConfiguration(), (ResourceChart) this);
+        getUIConfiguration(), this);
     myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);

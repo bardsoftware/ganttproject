@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.dependency;
 
-import com.google.common.base.Function;
-
 import net.sourceforge.ganttproject.task.Task;
 
 /**
