@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
@@ -31,7 +30,7 @@ import biz.ganttproject.core.time.TimeUnit;
 /**
  * @author bard
  */
-public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPCalendar {
+public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPCalendarCalc {
   @Override
   public List<GPCalendarActivity> getActivities(Date startDate, Date endDate) {
     return Collections.singletonList((GPCalendarActivity) new CalendarActivityImpl(startDate, endDate, true));

@@ -32,7 +32,6 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -43,7 +42,7 @@ import biz.ganttproject.core.time.impl.FramerImpl;
 /**
  * @author bard
  */
-public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
+public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCalc {
 
   private final Calendar myCalendar = CalendarFactory.newCalendar();
 
