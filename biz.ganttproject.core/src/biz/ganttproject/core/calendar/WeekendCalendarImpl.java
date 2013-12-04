@@ -230,9 +230,9 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public void setPublicHolidays(Collection<Holiday> holidays) {
+  public void setPublicHolidays(Collection<CalendarEvent> holidays) {
     publicHolidaysArray.clear();
-    for (Holiday h : holidays) {
+    for (CalendarEvent h : holidays) {
       if (h.isRepeating) {
         myStableHolidays.add(h.date);
       } else {
@@ -257,13 +257,13 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public Collection<Holiday> getPublicHolidays() {
-    List<Holiday> result = new ArrayList<Holiday>();
+  public Collection<CalendarEvent> getPublicHolidays() {
+    List<CalendarEvent> result = new ArrayList<CalendarEvent>();
     for (Date d : publicHolidaysArray) {
-      result.add(new Holiday(d, false));
+      result.add(new CalendarEvent(d, false));
     }
     for (Date d : myStableHolidays) {
-      result.add(new Holiday(d, true));
+      result.add(new CalendarEvent(d, true));
     }
     return Collections.unmodifiableCollection(result);
   }
@@ -314,7 +314,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       return;
     }
     if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
-      LinkedHashSet<Holiday> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
+      LinkedHashSet<CalendarEvent> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
       mergedHolidays.addAll(calendar.getPublicHolidays());
       setPublicHolidays(mergedHolidays);      
     }
