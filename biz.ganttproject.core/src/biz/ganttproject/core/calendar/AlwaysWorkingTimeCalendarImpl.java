@@ -109,7 +109,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public Collection<Holiday> getPublicHolidays() {
+  public Collection<CalendarEvent> getPublicHolidays() {
     // Return an empty collection, as there are no holidays in this calendar
     return Collections.emptyList();
   }
@@ -130,7 +130,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public void setPublicHolidays(Collection<Holiday> holidays) {
+  public void setPublicHolidays(Collection<CalendarEvent> holidays) {
   }
 
   @Override

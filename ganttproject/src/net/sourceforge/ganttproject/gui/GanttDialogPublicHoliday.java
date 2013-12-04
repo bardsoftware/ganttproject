@@ -27,7 +27,7 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import biz.ganttproject.core.calendar.Holiday;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -64,7 +64,7 @@ public class GanttDialogPublicHoliday {
       }
 
     };
-    for (Holiday h : project.getActiveCalendar().getPublicHolidays()) {
+    for (CalendarEvent h : project.getActiveCalendar().getPublicHolidays()) {
       DateInterval interval = DateIntervalListEditor.DateInterval.createFromVisibleDates(h.date, h.date);
       publicHolidays.add(interval);
       if (h.isRepeating) {

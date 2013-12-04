@@ -4,11 +4,11 @@ import java.util.Date;
 
 import com.google.common.base.Objects;
 
-public class Holiday {
+public class CalendarEvent {
   public final Date date;
   public final boolean isRepeating;
   
-  Holiday(Date date, boolean isRepeating) {
+  CalendarEvent(Date date, boolean isRepeating) {
     this.date = date;
     this.isRepeating = isRepeating;
   }
@@ -21,10 +21,10 @@ public class Holiday {
 
   @Override
   public boolean equals(Object obj) {
-    if (false == obj instanceof Holiday) {
+    if (false == obj instanceof CalendarEvent) {
       return false;
     }
-    Holiday that = (Holiday) obj;
+    CalendarEvent that = (CalendarEvent) obj;
     return Objects.equal(this.date, that.date) && Objects.equal(this.isRepeating, that.isRepeating);
   }
 

@@ -42,13 +42,13 @@ public interface GPCalendar {
 
   public DayType getDayTypeDate(Date curDayStart);
 
-  public void setPublicHolidays(Collection<Holiday> holidays);
+  public void setPublicHolidays(Collection<CalendarEvent> holidays);
 
   /** Clears all defined public holidays */
   public void clearPublicHolidays();
 
   /** @return an unmodifiable collection of (public) holidays */
-  public Collection<Holiday> getPublicHolidays();
+  public Collection<CalendarEvent> getPublicHolidays();
 
   void importCalendar(GPCalendar calendar, ImportCalendarOption importOption);
 
