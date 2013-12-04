@@ -34,7 +34,6 @@ import org.w3c.util.InvalidDateException;
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author bbaranne Mar 10, 2005

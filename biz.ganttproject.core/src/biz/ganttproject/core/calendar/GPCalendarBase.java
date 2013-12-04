@@ -21,8 +21,6 @@ package biz.ganttproject.core.calendar;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.GPCalendar.MoveDirection;
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -31,7 +29,7 @@ import biz.ganttproject.core.time.TimeUnit;
 /**
  * @author bard
  */
-abstract class GPCalendarBase {
+abstract class GPCalendarBase implements GPCalendarCalc {
   public Date shiftDate(Date input, TimeDuration shift) {
     if (shift.getLength() == 0) {
       return input;
@@ -74,7 +72,7 @@ abstract class GPCalendarBase {
   }
   
   protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
-    Date nextUnitStart = direction == GPCalendar.MoveDirection.FORWARD ? framer.adjustRight(time)
+    Date nextUnitStart = direction == GPCalendarCalc.MoveDirection.FORWARD ? framer.adjustRight(time)
         : framer.jumpLeft(time);
     switch (dayType) {
     case WORKING:
@@ -91,8 +89,8 @@ abstract class GPCalendarBase {
       break;
     }
     if (limit != null) {
-      if (direction == GPCalendar.MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
-          || direction == GPCalendar.MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
+      if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
+          || direction == MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
         return null;
       }
     }

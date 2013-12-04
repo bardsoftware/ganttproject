@@ -125,7 +125,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public GPCalendar copy() {
+  public GPCalendarCalc copy() {
     return new AlwaysWorkingTimeCalendarImpl();
   }
 

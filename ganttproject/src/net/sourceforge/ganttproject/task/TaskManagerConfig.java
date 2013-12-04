@@ -13,9 +13,8 @@ package net.sourceforge.ganttproject.task;
 import java.awt.Color;
 import java.net.URL;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
@@ -25,7 +24,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 public interface TaskManagerConfig {
   Color getDefaultColor();
 
-  GPCalendar getCalendar();
+  GPCalendarCalc getCalendar();
 
   TimeUnitStack getTimeUnitStack();
 

@@ -12,6 +12,7 @@ import com.google.common.base.Function;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
@@ -159,7 +160,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
           Offset ubOffset = bottomOffsetLowerBound <= -2 ? bottomOffsets.get(-bottomOffsetLowerBound - 2) : null;
           Date ubEndDate = ubOffset == null ? myStartDate : ubOffset.getOffsetEnd();
           int ubEndPixel = ubOffset == null ? 0 : ubOffset.getOffsetPixels();
-          WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendar.PLAIN, baseUnit);
+          WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendarCalc.PLAIN, baseUnit);
           offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
         }
       }

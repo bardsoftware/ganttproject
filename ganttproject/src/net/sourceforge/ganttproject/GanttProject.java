@@ -105,7 +105,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -200,7 +199,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
 
       @Override
-      public GPCalendar getCalendar() {
+      public GPCalendarCalc getCalendar() {
         return GanttProject.this.getActiveCalendar();
       }
 

@@ -34,7 +34,6 @@ import com.google.common.collect.Sets;
 
 import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.FramerImpl;
@@ -281,7 +280,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public GPCalendar copy() {
+  public GPCalendarCalc copy() {
     WeekendCalendarImpl result = new WeekendCalendarImpl(myBaseCalendarID);
     for (int i = 1; i < 8; i++) {
       result.setWeekDayType(i, getWeekDayType(i));
