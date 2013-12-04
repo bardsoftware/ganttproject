@@ -32,6 +32,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.Holiday;
 
 public class CalendarSaver extends SaverBase {
   private SimpleDateFormat myShortFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
@@ -63,7 +64,7 @@ public class CalendarSaver extends SaverBase {
     endElement("calendar", handler);
 
     endElement("day-types", handler);
-    for (GPCalendar.Holiday holiday : project.getActiveCalendar().getPublicHolidays()) {
+    for (Holiday holiday : project.getActiveCalendar().getPublicHolidays()) {
       Date d = holiday.date;
       if (holiday.isRepeating) {
         addAttribute("year", "", attrs);

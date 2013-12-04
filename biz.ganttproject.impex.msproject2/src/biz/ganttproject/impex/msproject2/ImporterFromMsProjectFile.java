@@ -21,7 +21,7 @@ package biz.ganttproject.impex.msproject2;
 import java.io.File;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
 import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.GPLogger;
@@ -37,13 +37,13 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
-  private final GPCalendar.ImportCalendarOption myImportCalendarOption = new GPCalendar.ImportCalendarOption();
+  private final ImportCalendarOption myImportCalendarOption = new ImportCalendarOption();
 
   private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
   public ImporterFromMsProjectFile() {
     super("impex.msproject2");
     myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
-    myImportCalendarOption.setSelectedValue(GPCalendar.ImportCalendarOption.Values.NO);
+    myImportCalendarOption.setSelectedValue(ImportCalendarOption.Values.NO);
   }
 
   @Override
