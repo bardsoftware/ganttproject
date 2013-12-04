@@ -21,7 +21,6 @@ package biz.ganttproject.core.chart.canvas;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**

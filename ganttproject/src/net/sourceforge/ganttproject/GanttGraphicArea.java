@@ -65,8 +65,6 @@ import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 
-import com.google.common.collect.ObjectArrays;
-
 /**
  * Class for the graphic part of the soft
  */
