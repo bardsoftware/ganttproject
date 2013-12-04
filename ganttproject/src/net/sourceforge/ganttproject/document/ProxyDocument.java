@@ -27,9 +27,8 @@ import java.net.URI;
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -211,7 +210,7 @@ class ProxyDocument implements Document {
     return myProject.getHumanResourceManager();
   }
 
-  private GPCalendar getActiveCalendar() {
+  private GPCalendarCalc getActiveCalendar() {
     return myProject.getActiveCalendar();
   }
 
@@ -434,9 +433,9 @@ class ProxyDocument implements Document {
 
   private static class OnlyShowWeekendsTagHandler implements TagHandler {
 
-    private final GPCalendar calendar;
+    private final GPCalendarCalc calendar;
 
-    public OnlyShowWeekendsTagHandler(GPCalendar calendar) {
+    public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
       this.calendar = calendar;
     }
 

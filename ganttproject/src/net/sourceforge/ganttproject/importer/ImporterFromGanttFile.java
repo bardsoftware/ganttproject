@@ -29,7 +29,6 @@ import org.osgi.service.prefs.Preferences;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;

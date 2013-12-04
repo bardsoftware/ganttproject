@@ -23,7 +23,6 @@ import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author nbohn

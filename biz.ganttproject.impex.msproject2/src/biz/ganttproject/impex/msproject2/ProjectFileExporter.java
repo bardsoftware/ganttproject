@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.Holiday;
@@ -463,7 +463,7 @@ class ProjectFileExporter {
     return myNativeProject.getHumanResourceManager();
   }
 
-  private GPCalendar getCalendar() {
+  private GPCalendarCalc getCalendar() {
     return getTaskManager().getCalendar();
   }
 }

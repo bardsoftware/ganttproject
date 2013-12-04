@@ -17,7 +17,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
@@ -82,7 +82,7 @@ import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
  * @author bard
  */
 public class TaskManagerImpl implements TaskManager {
-  private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private final TaskHierarchyManagerImpl myHierarchyManager;
 
@@ -599,7 +599,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public Date shift(Date original, TimeDuration duration) {
-    GPCalendar calendar = RESTLESS_CALENDAR;
+    GPCalendarCalc calendar = RESTLESS_CALENDAR;
     return calendar.shiftDate(original, duration);
   }
 
@@ -645,7 +645,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public GPCalendar getCalendar() {
+  public GPCalendarCalc getCalendar() {
     return getConfig().getCalendar();
   }
 

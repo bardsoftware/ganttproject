@@ -45,7 +45,6 @@ import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPAbstractOption;
-import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;

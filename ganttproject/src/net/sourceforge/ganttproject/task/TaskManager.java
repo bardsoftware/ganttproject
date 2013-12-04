@@ -22,12 +22,11 @@ import java.awt.Color;
 import java.util.Date;
 import java.util.Map;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
@@ -176,7 +175,7 @@ public interface TaskManager {
 
   TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
 
-  GPCalendar getCalendar();
+  GPCalendarCalc getCalendar();
 
   TaskContainmentHierarchyFacade getTaskHierarchy();
 
