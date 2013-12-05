@@ -65,8 +65,8 @@ public class CalendarSaver extends SaverBase {
 
     endElement("day-types", handler);
     for (CalendarEvent holiday : project.getActiveCalendar().getPublicHolidays()) {
-      Date d = holiday.date;
-      if (holiday.isRepeating) {
+      Date d = holiday.myDate;
+      if (holiday.isRecurring) {
         addAttribute("year", "", attrs);
       } else {
         addAttribute("year", String.valueOf(d.getYear() + 1900), attrs);

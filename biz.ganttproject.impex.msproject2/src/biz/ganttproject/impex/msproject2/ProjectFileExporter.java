@@ -132,8 +132,8 @@ class ProjectFileExporter {
 
   private void exportHolidays(ProjectCalendar calendar) {
     for (CalendarEvent h : getCalendar().getPublicHolidays()) {
-      if (!h.isRepeating) {
-        Date d = h.date;
+      if (!h.isRecurring) {
+        Date d = h.myDate;
         ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
         calendarException.addRange(new DateRange(d, d));
       }

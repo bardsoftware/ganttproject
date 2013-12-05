@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import biz.ganttproject.core.calendar.CalendarEvent;
@@ -39,16 +40,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class GanttDialogPublicHoliday {
 
-  private DateIntervalListEditor publicHolidayBean;
+  private final DateIntervalListEditor myIntervalEditor;
 
-  private DateIntervalListEditor.DateIntervalModel publicHolidays;
+  private final DateIntervalListEditor.DateIntervalModel myIntervalModel;
+
+  private final Set<DateInterval> myRecurringHolidays = Sets.newHashSet();
 
   public GanttDialogPublicHoliday(IGanttProject project) {
-    final Set<DateInterval> recurringHolidays = Sets.newHashSet();
-    publicHolidays = new DateIntervalListEditor.DefaultDateIntervalModel() {
+    myIntervalModel = new DateIntervalListEditor.DefaultDateIntervalModel() {
       @Override
       public boolean canRemove(DateInterval interval) {
-        return super.canRemove(interval) && !recurringHolidays.contains(interval);
+        return super.canRemove(interval) && !myRecurringHolidays.contains(interval);
       }
 
       @Override
@@ -56,7 +58,7 @@ public class GanttDialogPublicHoliday {
         StringBuffer buffer = new StringBuffer();
         FieldPosition posYear = new FieldPosition(DateFormat.YEAR_FIELD);
         GanttLanguage.getInstance().getDateFormat().format(interval.start, buffer, posYear);
-        if (recurringHolidays.contains(interval)) {
+        if (myRecurringHolidays.contains(interval)) {
           buffer.replace(posYear.getBeginIndex(), posYear.getEndIndex(), "--");
           return GanttLanguage.getInstance().formatText("holiday.list.item.recurring", buffer.toString());
         }
@@ -65,24 +67,25 @@ public class GanttDialogPublicHoliday {
 
     };
     for (CalendarEvent h : project.getActiveCalendar().getPublicHolidays()) {
-      DateInterval interval = DateIntervalListEditor.DateInterval.createFromVisibleDates(h.date, h.date);
-      publicHolidays.add(interval);
-      if (h.isRepeating) {
-        recurringHolidays.add(interval);
+      DateInterval interval = DateIntervalListEditor.DateInterval.createFromVisibleDates(h.myDate, h.myDate);
+      myIntervalModel.add(interval);
+      if (h.isRecurring) {
+        myRecurringHolidays.add(interval);
       }
     }
 
-    publicHolidayBean = new DateIntervalListEditor(publicHolidays);
+    myIntervalEditor = new DateIntervalListEditor(myIntervalModel);
   }
 
   public Component getContentPane() {
-    return publicHolidayBean;
+    return myIntervalEditor;
   }
 
-  public List<GanttCalendar> getHolidays() {
-    List<GanttCalendar> result = new ArrayList<GanttCalendar>();
-    for (DateInterval interval : publicHolidays.getIntervals()) {
-      result.add(CalendarFactory.createGanttCalendar(interval.start));
+  public List<CalendarEvent> getHolidays() {
+    List<CalendarEvent> result = Lists.newArrayList();
+    for (DateInterval interval : myIntervalModel.getIntervals()) {
+      boolean isRecurring = myRecurringHolidays.contains(interval);
+      result.add(CalendarEvent.newEvent(interval.start, isRecurring, CalendarEvent.Type.HOLIDAY, null));
     }
     return result;
   }

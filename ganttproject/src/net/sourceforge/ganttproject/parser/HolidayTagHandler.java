@@ -19,8 +19,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.parser;
 
 
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.io.GanttXMLOpen;
+
 import org.xml.sax.Attributes;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.CalendarFactory;
 
@@ -29,6 +40,7 @@ import biz.ganttproject.core.time.CalendarFactory;
  */
 public class HolidayTagHandler implements TagHandler, ParsingListener {
   private final GPCalendar myCalendar;
+  private final List<CalendarEvent> myEvents = Lists.newArrayList();
 
   public HolidayTagHandler(GPCalendar calendar) {
     myCalendar = calendar;
@@ -58,17 +70,19 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
     try {
       String yearAsString = atts.getValue("year");
       String monthAsString = atts.getValue("month");
-      String dateAsString = atts.getValue("date");
+      String dayAsString = atts.getValue("date");
       int month = Integer.parseInt(monthAsString);
-      int date = Integer.parseInt(dateAsString);
-      if (yearAsString.equals("")) {
-        myCalendar.setPublicHoliDayType(month, date);
+      int day = Integer.parseInt(dayAsString);
+      if (Strings.isNullOrEmpty(yearAsString)) {
+        Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
+        myEvents.add(CalendarEvent.newEvent(date, true, CalendarEvent.Type.HOLIDAY, null));
       } else {
         int year = Integer.parseInt(yearAsString);
-        myCalendar.setPublicHoliDayType(CalendarFactory.createGanttCalendar(year, month - 1, date).getTime());
+        Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
+        myEvents.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
       }
     } catch (NumberFormatException e) {
-      System.out.println("ERROR in parsing XML File year is not numeric: " + e.toString());
+      GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);
       return;
     }
 
@@ -81,6 +95,6 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
 
   @Override
   public void parsingFinished() {
-    // TODO Auto-generated method stub
+    myCalendar.setPublicHolidays(myEvents);
   }
 }

@@ -83,6 +83,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
@@ -232,12 +233,14 @@ class ProjectFileImporter {
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
     for (ProjectCalendarException e : exceptions) {
       if (!e.getWorking()) {
+        final List<CalendarEvent> holidays = Lists.newArrayList();
         importHolidays(e, new HolidayAdder() {
           @Override
           public void addHoliday(Date date) {
-            getNativeCalendar().setPublicHoliDayType(date);
+            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
           }
         });
+        getNativeCalendar().setPublicHolidays(holidays);
       }
     }
   }

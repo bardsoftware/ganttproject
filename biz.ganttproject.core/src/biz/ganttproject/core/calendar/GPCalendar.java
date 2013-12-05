@@ -34,10 +34,6 @@ public interface GPCalendar {
 
   DayType getWeekDayType(int day);
 
-  void setPublicHoliDayType(int month, int date);
-
-  public void setPublicHoliDayType(Date curDayStart);
-
   public boolean isNonWorkingDay(Date curDayStart);
 
   public DayType getDayTypeDate(Date curDayStart);
