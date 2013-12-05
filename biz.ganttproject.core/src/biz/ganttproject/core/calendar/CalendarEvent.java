@@ -5,18 +5,36 @@ import java.util.Date;
 import com.google.common.base.Objects;
 
 public class CalendarEvent {
-  public final Date date;
-  public final boolean isRepeating;
+  public static enum Type {
+    HOLIDAY, WORKING_DAY, NEUTRAL
+  }
+  public final Date myDate;
+  public final boolean isRecurring;
+  private final Type myType;
+  private final String myTitle;
   
-  CalendarEvent(Date date, boolean isRepeating) {
-    this.date = date;
-    this.isRepeating = isRepeating;
+  public static CalendarEvent newEvent(Date date, boolean isRecurring, Type type, String title) {
+    return new CalendarEvent(date, isRecurring, type, title);
+  }
+  
+  CalendarEvent(Date date, boolean recurring, Type type, String title) {
+    myDate = date;
+    isRecurring = recurring;
+    myType = type;
+    myTitle = title;
   }
 
+  public String getTitle() {
+    return myTitle;
+  }
+
+  public Type getType() {
+    return myType;
+  }
   
   @Override
   public int hashCode() {
-    return this.date.hashCode();
+    return this.myDate.hashCode();
   }
 
   @Override
@@ -25,13 +43,13 @@ public class CalendarEvent {
       return false;
     }
     CalendarEvent that = (CalendarEvent) obj;
-    return Objects.equal(this.date, that.date) && Objects.equal(this.isRepeating, that.isRepeating);
+    return Objects.equal(this.myDate, that.myDate) && Objects.equal(this.isRecurring, that.isRecurring);
   }
 
 
   @Override
   public String toString() {
-    return "Date=" + date + " repeating=" + isRepeating;
+    return "Date=" + myDate + " repeating=" + isRecurring;
   }
   
   

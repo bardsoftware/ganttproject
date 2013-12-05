@@ -194,16 +194,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
   }
 
-  @Override
-  public void setPublicHoliDayType(int month, int date) {
-    myStableHolidays.add(CalendarFactory.createGanttCalendar(1, month - 1, date).getTime());
-  }
-
-  @Override
-  public void setPublicHoliDayType(Date curDayStart) {
-    publicHolidaysArray.add(curDayStart);
-  }
-
   private boolean isPublicHoliDay(Date curDayStart) {
     boolean result = publicHolidaysArray.contains(curDayStart);
     if (!result) {
@@ -232,11 +222,12 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   @Override
   public void setPublicHolidays(Collection<CalendarEvent> holidays) {
     publicHolidaysArray.clear();
+    myStableHolidays.clear();
     for (CalendarEvent h : holidays) {
-      if (h.isRepeating) {
-        myStableHolidays.add(h.date);
+      if (h.isRecurring) {
+        myStableHolidays.add(h.myDate);
       } else {
-        publicHolidaysArray.add(h.date);
+        publicHolidaysArray.add(h.myDate);
       }
     }
 //    myCalendarUrl = calendarUrl;
@@ -260,10 +251,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   public Collection<CalendarEvent> getPublicHolidays() {
     List<CalendarEvent> result = new ArrayList<CalendarEvent>();
     for (Date d : publicHolidaysArray) {
-      result.add(new CalendarEvent(d, false));
+      result.add(CalendarEvent.newEvent(d, false, CalendarEvent.Type.HOLIDAY, null));
     }
     for (Date d : myStableHolidays) {
-      result.add(new CalendarEvent(d, true));
+      result.add(CalendarEvent.newEvent(d, true, CalendarEvent.Type.HOLIDAY, null));
     }
     return Collections.unmodifiableCollection(result);
   }

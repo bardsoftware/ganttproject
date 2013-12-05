@@ -27,8 +27,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
-import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -63,7 +66,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
     myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        updateHolidays(dialog.getHolidays());
+        myProject.getActiveCalendar().setPublicHolidays(dialog.getHolidays());
         myProject.setModified();
         try {
           myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
@@ -73,12 +76,5 @@ public class PublicHolidayDialogAction extends AbstractAction {
         myUIFacade.getActiveChart().reset();
       }
     }, CancelAction.EMPTY }, "").show();
-  }
-
-  private void updateHolidays(List<GanttCalendar> holidays) {
-    myProject.getActiveCalendar().clearPublicHolidays();
-    for (GanttCalendar holiday : holidays) {
-      myProject.getActiveCalendar().setPublicHoliDayType(holiday.getTime());
-    }
   }
 }
