@@ -42,7 +42,7 @@ public interface GPCalendar {
 
   public int getDayMask(Date date);
   
-  public boolean isNonWorkingDay(Date curDayStart);
+  //public boolean isNonWorkingDay(Date curDayStart);
 
   public void setPublicHolidays(Collection<CalendarEvent> holidays);
 

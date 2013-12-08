@@ -86,7 +86,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     }
     List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
     Date curDayStart = myFramer.adjustLeft(startDate);
-    boolean isWeekendState = isNonWorkingDay(curDayStart);
+    boolean isWeekendState = (getDayMask(curDayStart) & DayMask.WORKING) == 0;
     while (curDayStart.before(endDate)) {
       Date changeStateDayStart = doFindClosest(curDayStart, myFramer, MoveDirection.FORWARD,
           isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
@@ -145,7 +145,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     Date unitStart = timeUnit.adjustLeft(startDate);
     while (unitCount > 0) {
       Date prevUnitStart = timeUnit.jumpLeft(unitStart);
-      boolean isWeekendState = isNonWorkingDay(prevUnitStart);
+      boolean isWeekendState = (getDayMask(prevUnitStart) & DayMask.WORKING) == 0;
       if (isWeekendState) {
         Date lastWorkingUnitStart = findClosest(prevUnitStart, timeUnit, MoveDirection.BACKWARD, DayType.WORKING);
         Date firstWeekendUnitStart = timeUnit.adjustRight(lastWorkingUnitStart);
@@ -193,7 +193,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     if (getWeekendDaysCount() == 0 && myStableHolidays.isEmpty() && publicHolidaysArray.isEmpty()) {
       return time;
     }
-    if (!isNonWorkingDay(time)) {
+    int dayMask = getDayMask(time);
+    if ((dayMask & DayMask.WORKING) == DayMask.WORKING) {
       return time;
     }
     return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
@@ -227,10 +228,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     return result;
   }
 
-  @Override
-  public boolean isNonWorkingDay(Date curDayStart) {
-    return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
-  }
+//  @Override
+//  public boolean isNonWorkingDay(Date curDayStart) {
+//    return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
+//  }
 
   @Override
   public void setPublicHolidays(Collection<CalendarEvent> holidays) {

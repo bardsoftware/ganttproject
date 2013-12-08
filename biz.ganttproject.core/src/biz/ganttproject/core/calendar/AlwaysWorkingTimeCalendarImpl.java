@@ -80,11 +80,11 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
     return date;
   }
 
-  @Override
-  public boolean isNonWorkingDay(Date curDayStart) {
-    // Always return false, as this calendar only has working days
-    return false;
-  }
+//  @Override
+//  public boolean isNonWorkingDay(Date curDayStart) {
+//    // Always return false, as this calendar only has working days
+//    return false;
+//  }
 
   @Override
   public boolean getOnlyShowWeekends() {
