@@ -74,19 +74,22 @@ abstract class GPCalendarBase implements GPCalendarCalc {
   protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
     Date nextUnitStart = direction == GPCalendarCalc.MoveDirection.FORWARD ? framer.adjustRight(time)
         : framer.jumpLeft(time);
+    int nextUnitMask = getDayMask(nextUnitStart);
     switch (dayType) {
     case WORKING:
-      if (!isNonWorkingDay(nextUnitStart)) {
+      if ((nextUnitMask & DayMask.WORKING) == DayMask.WORKING) {
         return nextUnitStart;
       }
       break;
     case WEEKEND:
     case HOLIDAY:
     case NON_WORKING:
-      if (isNonWorkingDay(nextUnitStart)) {
+      if ((nextUnitMask & DayMask.WORKING) == 0) {
         return nextUnitStart;
       }
       break;
+    default:
+      assert false : "Should not be here";
     }
     if (limit != null) {
       if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
@@ -97,7 +100,7 @@ abstract class GPCalendarBase implements GPCalendarCalc {
     return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
   }
 
-  public abstract boolean isNonWorkingDay(Date date);
+  //public abstract boolean isNonWorkingDay(Date date);
 
   public abstract int getDayMask(Date date);
 }
