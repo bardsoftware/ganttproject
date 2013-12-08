@@ -1,5 +1,9 @@
 package net.sourceforge.ganttproject.test.task;
 
+import java.text.DateFormat;
+import java.util.Locale;
+
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
@@ -12,6 +16,20 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  * Created by IntelliJ IDEA. User: bard
  */
 public abstract class TaskTestCase extends TestCase {
+  static {
+    new CalendarFactory() {
+      {
+        setLocaleApi(new LocaleApi() {
+          public Locale getLocale() {
+            return Locale.US;
+          }
+          public DateFormat getShortDateFormat() {
+            return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+          }
+        });
+      }
+    };
+  }
     private TaskManager myTaskManager;
 
     protected TaskManager getTaskManager() {
