@@ -236,6 +236,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return GanttProject.this.getTaskContainment();
       }
     }, taskConfig);
+    addProjectEventListener(myTaskManager.getProjectListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
@@ -612,7 +613,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    getTaskManager().projectOpened();
     fireProjectOpened();
   }
 
@@ -865,7 +865,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
 
-  private GPCalendarCalc myFakeCalendar = new WeekendCalendarImpl();
+  private WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   private ParserFactory myParserFactory;
 
@@ -956,7 +956,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public GPCalendarCalc getActiveCalendar() {
-    return myFakeCalendar;
+    return myCalendar;
   }
 
   @Override
@@ -986,7 +986,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
     projectDocument = null;
-    getTaskManager().projectClosed();
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 
@@ -994,7 +993,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       myPreviousStates.get(i).remove();
     }
     myPreviousStates = new ArrayList<GanttPreviousState>();
-    getTaskManager().getCalendar().clearPublicHolidays();
+    myCalendar.reset();
     myFacadeInvalidator.projectClosed();
   }
 

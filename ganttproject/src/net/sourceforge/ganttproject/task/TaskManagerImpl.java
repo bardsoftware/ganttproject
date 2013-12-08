@@ -44,6 +44,7 @@ import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -289,8 +290,7 @@ public class TaskManagerImpl implements TaskManager {
     return root;
   }
 
-  @Override
-  public void projectClosed() {
+  private void projectClosed() {
     myDependencyGraph.clear();
     myTaskMap.clear();
     myMaxID.set(0);
@@ -299,8 +299,7 @@ public class TaskManagerImpl implements TaskManager {
     fireTaskModelReset();
   }
 
-  @Override
-  public void projectOpened() {
+  private void projectOpened() {
     processCriticalPath(getRootTask());
     myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
   }
@@ -647,6 +646,20 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public GPCalendarCalc getCalendar() {
     return getConfig().getCalendar();
+  }
+
+  public ProjectEventListener getProjectListener() {
+    return new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        TaskManagerImpl.this.projectClosed();
+      }
+
+      @Override
+      public void projectOpened() {
+        TaskManagerImpl.this.projectOpened();
+      }
+    };
   }
 
   public void fireTaskProgressChanged(Task changedTask) {

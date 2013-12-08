@@ -67,13 +67,18 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   
   public WeekendCalendarImpl(String baseCalendarID) {
     myBaseCalendarID = baseCalendarID;
+    reset();
+  }
+
+  public void reset() {
+    publicHolidaysArray.clear();
+    myStableHolidays.clear();    
     for (int i = 0; i < myTypes.length; i++) {
       myTypes[i] = GPCalendar.DayType.WORKING;
     }
     setWeekDayType(GregorianCalendar.SATURDAY, GPCalendar.DayType.WEEKEND);
-    setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
+    setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);    
   }
-
   @Override
   public List<GPCalendarActivity> getActivities(Date startDate, final Date endDate) {
     if (getWeekendDaysCount() == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
@@ -260,11 +265,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public void clearPublicHolidays() {
-    publicHolidaysArray.clear();
-  }
-
-  @Override
   public List<GPCalendarActivity> getActivities(Date startingFrom, TimeDuration period) {
     return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
   }
@@ -297,7 +297,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       return;
     }
     if (ImportCalendarOption.Values.REPLACE.equals(importOption.getSelectedValue())) {
-      clearAll();
+      reset();
       setPublicHolidays(calendar.getPublicHolidays());
       for (int i = 1; i <= 7; i++) {
         setWeekDayType(i, calendar.getWeekDayType(i));
@@ -315,18 +315,4 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       }
     }
   }
-
-  private void clearAll() {
-    clearPublicHolidays();
-    myStableHolidays.clear();    
-    for (int i = 0; i < myTypes.length; i++) {
-      myTypes[i] = GPCalendar.DayType.WORKING;
-    }
-  }
-  
-  
-//  @Override
-//  public URL getPublicHolidaysUrl() {
-//    return myCalendarUrl;
-//  }
 }

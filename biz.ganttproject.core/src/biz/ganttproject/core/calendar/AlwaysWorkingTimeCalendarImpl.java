@@ -105,11 +105,6 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public void clearPublicHolidays() {
-    // Nothing needs to be done
-  }
-
-  @Override
   public List<GPCalendarActivity> getActivities(Date startingFrom, TimeDuration period) {
     return getActivities(startingFrom, period.getTimeUnit(), period.getLength());
   }

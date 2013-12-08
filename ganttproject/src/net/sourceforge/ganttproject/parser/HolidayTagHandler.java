@@ -44,7 +44,6 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
 
   public HolidayTagHandler(GPCalendar calendar) {
     myCalendar = calendar;
-    myCalendar.clearPublicHolidays();
   }
 
   /**
