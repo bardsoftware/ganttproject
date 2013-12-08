@@ -40,9 +40,6 @@ public interface GPCalendar {
 
   public void setPublicHolidays(Collection<CalendarEvent> holidays);
 
-  /** Clears all defined public holidays */
-  public void clearPublicHolidays();
-
   /** @return an unmodifiable collection of (public) holidays */
   public Collection<CalendarEvent> getPublicHolidays();
 

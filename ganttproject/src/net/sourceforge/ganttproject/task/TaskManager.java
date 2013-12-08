@@ -30,6 +30,7 @@ import biz.ganttproject.core.time.TimeUnit;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
@@ -143,10 +144,6 @@ public interface TaskManager {
 
   public Task getRootTask();
 
-  void projectOpened();
-
-  public void projectClosed();
-
   public GanttTask getTask(int taskId);
 
   public void registerTask(Task task);
@@ -229,4 +226,6 @@ public interface TaskManager {
   Boolean isZeroMilestones();
 
   DependencyGraph getDependencyGraph();
+
+  ProjectEventListener getProjectListener();
 }
