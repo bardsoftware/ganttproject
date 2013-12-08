@@ -70,6 +70,11 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
+  public int getDayMask(Date date) {
+    return GPCalendar.DayMask.WORKING;
+  }
+
+  @Override
   public Date findClosestWorkingTime(Date date) {
     // No days off, so given date is good
     return date;
@@ -79,11 +84,6 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   public boolean isNonWorkingDay(Date curDayStart) {
     // Always return false, as this calendar only has working days
     return false;
-  }
-
-  @Override
-  public DayType getDayTypeDate(Date curDayStart) {
-    return GPCalendar.DayType.WORKING;
   }
 
   @Override

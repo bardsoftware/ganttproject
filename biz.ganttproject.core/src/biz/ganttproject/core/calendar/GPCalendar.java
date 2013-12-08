@@ -26,6 +26,12 @@ import java.util.Date;
  * @author bard
  */
 public interface GPCalendar {
+  public static interface DayMask {
+    int WORKING = 1;
+    int WEEKEND = 2;
+    int HOLIDAY = 4;
+  }
+
   public enum DayType {
     WORKING, NON_WORKING, WEEKEND, HOLIDAY
   }
@@ -34,11 +40,12 @@ public interface GPCalendar {
 
   DayType getWeekDayType(int day);
 
+  public int getDayMask(Date date);
+  
   public boolean isNonWorkingDay(Date curDayStart);
 
-  public DayType getDayTypeDate(Date curDayStart);
-
   public void setPublicHolidays(Collection<CalendarEvent> holidays);
+
 
   /** @return an unmodifiable collection of (public) holidays */
   public Collection<CalendarEvent> getPublicHolidays();

@@ -21,27 +21,25 @@ package biz.ganttproject.core.chart.grid;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.TimeUnit;
 
 
 public class Offset {
-  private Date myOffsetAnchor;
-  private Date myOffsetEnd;
+  private final Date myOffsetAnchor;
+  private final Date myOffsetEnd;
   private int myOffsetPixels;
-  private TimeUnit myOffsetUnit;
-  private GPCalendar.DayType myDayType;
-  private Date myOffsetStart;
+  private final TimeUnit myOffsetUnit;
+  private final int myDayMask;
+  private final Date myOffsetStart;
 
   public Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels,
-      GPCalendar.DayType dayType) {
+      int dayMask) {
     myOffsetAnchor = offsetAnchor;
     myOffsetStart = offsetStart;
     myOffsetEnd = offsetEnd;
     myOffsetPixels = offsetPixels;
     myOffsetUnit = offsetUnit;
-    myDayType = dayType;
+    myDayMask = dayMask;
   }
 
   Date getOffsetAnchor() {
@@ -68,8 +66,8 @@ public class Offset {
     return myOffsetUnit;
   }
 
-  public DayType getDayType() {
-    return myDayType;
+  public int getDayMask() {
+    return myDayMask;
   }
 
   @Override
@@ -103,8 +101,8 @@ public class Offset {
    * @return
    */
   public static Offset createFullyClosed(TimeUnit timeUnit, Date anchor, Date closedStartDate, Date closedEndDate,
-      int pixels, DayType dayType) {
-    return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, pixels, dayType);
+      int pixels, int dayMask) {
+    return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, pixels, dayMask);
   }
 
   public static String debugPrint(List<Offset> offsets) {

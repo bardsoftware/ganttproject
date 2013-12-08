@@ -98,4 +98,6 @@ abstract class GPCalendarBase implements GPCalendarCalc {
   }
 
   public abstract boolean isNonWorkingDay(Date date);
+
+  public abstract int getDayMask(Date date);
 }
