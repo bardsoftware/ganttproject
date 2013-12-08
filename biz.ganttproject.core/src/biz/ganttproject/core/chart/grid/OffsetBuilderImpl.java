@@ -11,6 +11,7 @@ import java.util.List;
 import com.google.common.base.Function;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
@@ -25,7 +26,7 @@ import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
 public class OffsetBuilderImpl implements OffsetBuilder {
   protected static class OffsetStep {
     public float parrots;
-    public GPCalendar.DayType dayType;
+    public int dayMask;
   }
 
   // We want weekend units to be less wide than working ones. This constant
@@ -124,7 +125,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
       }
       int offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
       Offset offset = Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd
-          + offsetEnd, step.dayType);
+          + offsetEnd, step.dayMask);
       offsets.add(offset);
       currentDate = endDate;
 
@@ -165,7 +166,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
         }
       }
       topOffsets.add(Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd
-          + offsetEnd, DayType.WORKING));
+          + offsetEnd, DayMask.WORKING));
       currentDate = endDate;
 
     } while (offsetEnd <= lastBottomOffset && (myEndDate == null || currentDate.before(myEndDate)));
@@ -173,8 +174,8 @@ public class OffsetBuilderImpl implements OffsetBuilder {
 
   protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
     float offsetStep = getOffsetStep(timeUnit);
-    step.dayType = getCalendar().getDayTypeDate(startDate);
-    if (step.dayType != DayType.WORKING) {
+    step.dayMask = getCalendar().getDayMask(startDate);
+    if ((step.dayMask & DayMask.WORKING) == 0) {
       offsetStep = offsetStep / myWeekendDecreaseFactor;
     }
     step.parrots += offsetStep;

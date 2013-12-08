@@ -208,15 +208,23 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public DayType getDayTypeDate(Date curDayStart) {
-    myCalendar.setTime(curDayStart);
+  public int getDayMask(Date date) {
+    int result = 0;
+    myCalendar.setTime(date);
     int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
-    if (isPublicHoliDay(curDayStart))
-      return GPCalendar.DayType.HOLIDAY;
-    else if (getWeekDayType(dayOfWeek) == GPCalendar.DayType.WORKING)
-      return GPCalendar.DayType.WORKING;
-    else
-      return GPCalendar.DayType.WEEKEND;
+    boolean isHoliday = isPublicHoliDay(date);
+    boolean isWeekend = myTypes[dayOfWeek - 1] == DayType.WEEKEND;
+    if (isWeekend) {
+      result |= DayMask.WEEKEND;
+    }
+    if (isHoliday) {
+      result |= DayMask.HOLIDAY;
+      return result;
+    }
+    if (!isWeekend || myOnlyShowWeekends) {
+      result |= DayMask.WORKING;
+    }
+    return result;
   }
 
   @Override
