@@ -239,7 +239,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     myStableHolidays.clear();
     for (CalendarEvent h : holidays) {
       if (h.isRecurring) {
-        myStableHolidays.add(h.myDate);
+        myStableHolidays.add(CalendarFactory.createGanttCalendar(1, h.myDate.getMonth(), h.myDate.getDate()).getTime());
       } else {
         publicHolidaysArray.add(h.myDate);
       }
