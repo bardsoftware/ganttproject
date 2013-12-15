@@ -57,8 +57,9 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
   }
 
   @Override
-  public void run(File selectedFile) {
+  public void run() {
     try {
+      File selectedFile = getFile();
       BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
       List<String> errors = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile).run();
 

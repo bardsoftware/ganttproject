@@ -62,13 +62,13 @@ class FileChooserPage extends FileChooserPageBase {
 
   @Override
   protected FileFilter createFileFilter() {
-    return new ExtensionBasedFileFilter(myState.myImporter.getFileNamePattern(),
-        myState.myImporter.getFileTypeDescription());
+    return new ExtensionBasedFileFilter(myState.getImporter().getFileNamePattern(),
+        myState.getImporter().getFileTypeDescription());
   }
 
   @Override
   protected GPOptionGroup[] getOptionGroups() {
-    return myState.myImporter == null ? new GPOptionGroup[0] : myState.myImporter.getSecondaryOptions();
+    return myState.getImporter() == null ? new GPOptionGroup[0] : myState.getImporter().getSecondaryOptions();
   }
 
   @Override

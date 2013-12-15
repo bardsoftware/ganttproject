@@ -649,7 +649,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         try {
           ((TaskManagerImpl)getTaskManager()).setEventsEnabled(false);
           importer.setContext(getProject(), getUIFacade(), getGanttOptions().getPluginPreferences());
-          importer.run(new File(document.getFilePath()));
+          importer.setFile(new File(document.getFilePath()));
+          importer.run();
           success = true;
           break;
         } catch (Throwable e) {
