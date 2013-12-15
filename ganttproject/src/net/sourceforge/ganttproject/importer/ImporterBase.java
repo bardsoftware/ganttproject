@@ -18,13 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.importer;
 
+import java.io.File;
+
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class ImporterBase implements Importer {
@@ -38,6 +40,7 @@ public abstract class ImporterBase implements Importer {
    * preferences
    */
   private Preferences myPrefs;
+  private File myFile;
 
   protected ImporterBase() {
     myID = "";
@@ -86,5 +89,23 @@ public abstract class ImporterBase implements Importer {
 
   protected IGanttProject getProject() {
     return myProject;
+  }
+
+  public WizardPage[] getMorePages() {
+    return new WizardPage[0];
+  }
+
+  public boolean isReady() {
+    return myFile != null && myFile.exists() && myFile.canRead();
+  }
+
+  public abstract void run();
+
+  public void setFile(File file) {
+    myFile = file;
+  }
+
+  protected File getFile() {
+    return myFile;
   }
 }

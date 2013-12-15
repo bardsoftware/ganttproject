@@ -84,7 +84,8 @@ public class ImporterFromGanttFile extends ImporterBase {
   }
 
   @Override
-  public void run(final File selectedFile) {
+  public void run() {
+    final File selectedFile = getFile();
     final IGanttProject targetProject = getProject();
     final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
     getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {

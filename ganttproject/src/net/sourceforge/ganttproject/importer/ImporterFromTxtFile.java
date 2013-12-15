@@ -35,7 +35,8 @@ public class ImporterFromTxtFile extends ImporterBase {
   }
 
   @Override
-  public void run(File selectedFile) {
+  public void run() {
+    File selectedFile = getFile();
     GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
     opener.load(selectedFile);
   }

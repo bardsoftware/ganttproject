@@ -59,14 +59,11 @@ class ImporterChooserPage implements WizardPage {
       Action nextAction = new AbstractAction(nextImporter.getFileTypeDescription()) {
         @Override
         public void actionPerformed(ActionEvent e) {
-          ImporterChooserPage.this.myState.myImporter = nextImporter;
+          ImporterChooserPage.this.myState.setImporter(nextImporter);
         }
       };
       choiceChangeActions[i] = nextAction;
       choiceOptions[i] = null;
-      if (i == 0) {
-        myState.myImporter = nextImporter;
-      }
     }
     GPOptionChoicePanel panel = new GPOptionChoicePanel();
     return panel.getComponent(choiceChangeActions, choiceOptions, 0);
@@ -74,6 +71,9 @@ class ImporterChooserPage implements WizardPage {
 
   @Override
   public void setActive(boolean b) {
+    if (b == false) {
+      myState.setImporter(myImporters.get(0));
+    }
   }
 
 }

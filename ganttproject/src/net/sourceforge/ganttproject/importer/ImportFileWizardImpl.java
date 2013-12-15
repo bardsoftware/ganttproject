@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
+import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
@@ -36,6 +37,8 @@ import net.sourceforge.ganttproject.plugins.PluginManager;
  */
 public class ImportFileWizardImpl extends WizardImpl {
   private final State myState;
+
+  private WizardPage[] myImporterPages = new WizardPage[0];
 
   private static List<Importer> ourImporters;
 
@@ -60,34 +63,66 @@ public class ImportFileWizardImpl extends WizardImpl {
   @Override
   protected void onOkPressed() {
     super.onOkPressed();
-    if ("file".equals(myState.getUrl().getProtocol())) {
-      try {
-        String path = URLDecoder.decode(myState.getUrl().getPath(), "utf-8");
-        myState.myImporter.run(new File(path));
-      } catch (UnsupportedEncodingException e) {
-        GPLogger.log(e);
-      }
-    } else {
-      getUIFacade().showErrorDialog(new Exception("You are not supposed to see this. Please report this bug."));
+    try {
+      myState.getImporter().run();
+    } catch (Throwable e) {
+      GPLogger.log(e);
     }
   }
 
   @Override
   protected boolean canFinish() {
-    return myState.myImporter != null && myState.getUrl() != null && "file".equals(myState.getUrl().getProtocol());
+    //return myState.getImporter() != null && myState.getUrl() != null && "file".equals(myState.getUrl().getProtocol());
+    return myState.getImporter() != null && myState.getImporter().isReady();
   }
 
-  static class State {
-    Importer myImporter;
+  private void addImporterPages(Importer importer) {
+    int count = 0;
+    for (WizardPage page : myImporterPages) {
+      removePageComponent(page);
+      removePage(page);
+    }
+    myImporterPages = importer.getMorePages();
+    for (WizardPage page : myImporterPages) {
+      addPage(page);
+      addPageComponent(page, 2 + count++);
+    }
+    adjustButtonState();
+  }
+
+  class State {
+    private Importer myImporter;
 
     private URL myUrl;
 
     public void setUrl(URL url) {
+      if (url == null) {
+        return;
+      }
       myUrl = url;
+      if ("file".equals(url.getProtocol())) {
+        try {
+          String path = URLDecoder.decode(url.getPath(), "utf-8");
+          myState.getImporter().setFile(new File(path));
+        } catch (UnsupportedEncodingException e) {
+          GPLogger.log(e);
+        }
+      } else {
+        GPLogger.logToLogger(new Exception(String.format("URL=%s is not a file", url.toString())));
+      }
     }
 
     public URL getUrl() {
       return myUrl;
+    }
+
+    Importer getImporter() {
+      return myImporter;
+    }
+
+    void setImporter(Importer importer) {
+      myImporter = importer;
+      addImporterPages(importer);
     }
   }
 }
