@@ -24,6 +24,9 @@ import net.sourceforge.ganttproject.io.GanttTXTOpen;
 
 public class ImporterFromTxtFile extends ImporterBase {
 
+  public ImporterFromTxtFile() {
+    super("txt");
+  }
   @Override
   public String getFileNamePattern() {
     return "txt";

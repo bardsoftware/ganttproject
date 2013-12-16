@@ -23,8 +23,8 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.importer.ImportFileWizardImpl;
+import net.sourceforge.ganttproject.wizard.AbstractWizard;
 
 /**
  * @author bard
@@ -43,7 +43,7 @@ public class ProjectImportAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    WizardImpl wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
+    AbstractWizard wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
     wizard.show();
   }
 

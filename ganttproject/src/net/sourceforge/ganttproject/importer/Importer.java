@@ -25,9 +25,10 @@ import org.osgi.service.prefs.Preferences;
 import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+import net.sourceforge.ganttproject.wizard.WizardPage;
 
 public interface Importer {
+  String getID();
   String getFileTypeDescription();
 
   String getFileNamePattern();
@@ -38,10 +39,10 @@ public interface Importer {
 
   void setContext(IGanttProject project, UIFacade uiFacade, Preferences pluginPreferences);
 
-  WizardPage[] getMorePages();
-
   boolean isReady();
   void run();
 
   void setFile(File file);
+
+  WizardPage getCustomPage();
 }

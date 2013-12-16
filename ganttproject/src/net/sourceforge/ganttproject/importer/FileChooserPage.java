@@ -18,62 +18,70 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.net.URL;
+import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.osgi.service.prefs.Preferences;
 
-import biz.ganttproject.core.option.GPOptionGroup;
+import com.google.common.base.Objects;
 
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
-import net.sourceforge.ganttproject.gui.FileChooserPageBase;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
-import net.sourceforge.ganttproject.importer.ImportFileWizardImpl.State;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.wizard.AbstractFileChooserPage;
+import net.sourceforge.ganttproject.wizard.WizardPage;
 
 /**
  * @author bard
  */
-class FileChooserPage extends FileChooserPageBase {
+class FileChooserPage extends AbstractFileChooserPage {
 
-  private final State myState;
+  private final Importer myImporter;
+  private File myFile;
 
-  public FileChooserPage(WizardImpl wizardImpl, Preferences prefs, State state) {
-    super(wizardImpl, prefs, false);
-    myState = state;
+  public FileChooserPage(UIFacade uiFacade, Importer importer, Preferences prefs) {
+    super(uiFacade, prefs, GanttLanguage.getInstance().getText("importerFileChooserPageTitle"), createFileFilter(importer), createOptions(importer), false);
+    myImporter = importer;
   }
 
-  @Override
-  protected String getFileChooserTitle() {
-    return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
-  }
 
   @Override
   protected int getFileChooserSelectionMode() {
     return JFileChooser.FILES_ONLY;
   }
 
-  @Override
+  private static FileFilter createFileFilter(Importer importer) {
+    return new ExtensionBasedFileFilter(importer.getFileNamePattern(), importer.getFileTypeDescription());
+  }
+
+  private static GPOptionGroup[] createOptions(Importer importer) {
+    return importer.getSecondaryOptions();
+  }
+
   public String getTitle() {
     return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
   }
 
   @Override
-  protected FileFilter createFileFilter() {
-    return new ExtensionBasedFileFilter(myState.getImporter().getFileNamePattern(),
-        myState.getImporter().getFileTypeDescription());
-  }
-
-  @Override
-  protected GPOptionGroup[] getOptionGroups() {
-    return myState.getImporter() == null ? new GPOptionGroup[0] : myState.getImporter().getSecondaryOptions();
-  }
-
-  @Override
-  protected void onSelectedUrlChange(URL selectedUrl) {
-    myState.setUrl(selectedUrl);
-    super.onSelectedUrlChange(selectedUrl);
+  protected void setFile(File file) {
+    if (Objects.equal(file, myFile)) {
+      return;
+    }
+    myImporter.setFile(file);
+    WizardPage importerPage = myImporter.getCustomPage();
+    if (importerPage != null) {
+      getWizard().setNextPage(importerPage);
+    }
+    if (myImporter.isReady()) {
+      getWizard().setOkAction(new Runnable() {
+        public void run() {
+          myImporter.run();
+        }
+      });
+    }
+    myFile = file;
   }
 }
