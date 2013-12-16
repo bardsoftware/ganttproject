@@ -26,6 +26,10 @@ import net.sourceforge.ganttproject.io.GanttCSVOpen;
 
 public class ImporterFromCsvFile extends ImporterBase {
 
+  public ImporterFromCsvFile() {
+    super("csv");
+  }
+
   @Override
   public String getFileNamePattern() {
     return "csv";
