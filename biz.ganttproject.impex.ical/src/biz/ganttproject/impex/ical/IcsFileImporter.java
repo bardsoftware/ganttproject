@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -33,8 +34,9 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import net.sourceforge.ganttproject.importer.ImporterBase;
+import net.sourceforge.ganttproject.wizard.AbstractWizard;
+import net.sourceforge.ganttproject.wizard.WizardPage;
 
 public class IcsFileImporter extends ImporterBase {
   private final CalendarEditorPage myEditorPage;
@@ -64,11 +66,12 @@ public class IcsFileImporter extends ImporterBase {
     });
   }
 
-  @Override
-  public WizardPage[] getMorePages() {
-    return new WizardPage[] {myEditorPage};
-  }
   
+  @Override
+  public net.sourceforge.ganttproject.wizard.WizardPage getCustomPage() {
+    return myEditorPage;
+  }
+
   @Override
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
     super.setContext(project, uiFacade, preferences);
@@ -96,19 +99,21 @@ public class IcsFileImporter extends ImporterBase {
     public String getTitle() {
       return "Edit calendar";
     }
-    public java.awt.Component getComponent() {
+    public JComponent getComponent() {
       return myPanel;
     }
     
-    public void setActive(boolean b) {
-      myPanel.removeAll();
-      if (myFile != null && myFile.exists() && myFile.canRead()) {
-        List<CalendarEvent> events = readEvents(myFile);
-        GPCalendarCalc copyCalendar = myCalendar.copy();
-        copyCalendar.setPublicHolidays(events);
-        myPanel.add(new CalendarEditorPanel(copyCalendar).createComponent());        
-      } else {
-        myPanel.add(new JLabel(String.format("File %s is not readable", myFile.getAbsolutePath())));
+    public void setActive(AbstractWizard wizard) {
+      if (wizard != null) {
+        myPanel.removeAll();
+        if (myFile != null && myFile.exists() && myFile.canRead()) {
+          List<CalendarEvent> events = readEvents(myFile);
+          GPCalendarCalc copyCalendar = myCalendar.copy();
+          copyCalendar.setPublicHolidays(events);
+          myPanel.add(new CalendarEditorPanel(copyCalendar).createComponent());        
+        } else {
+          myPanel.add(new JLabel(String.format("File %s is not readable", myFile.getAbsolutePath())));
+        }
       }
     }    
   }
