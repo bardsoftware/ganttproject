@@ -1,7 +1,24 @@
+/*
+Copyright 2013 BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.impex.ical;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -10,16 +27,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.jdesktop.swingx.plaf.basic.CalendarState;
-import org.osgi.service.prefs.Preferences;
-
-import com.google.common.collect.Lists;
-
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.data.UnfoldingReader;
@@ -38,9 +45,23 @@ import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.wizard.AbstractWizard;
 import net.sourceforge.ganttproject.wizard.WizardPage;
 
+import org.osgi.service.prefs.Preferences;
+
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+
+import com.google.common.collect.Lists;
+
+/**
+ * Implements an import wizard plugin responsible for importing ICS files. 
+ * This plugin adds file chooser page (2nd in the wizard) and calendar editor page (3rd in the wizard)
+ *   
+ * @author dbarashev
+ */
 public class IcsFileImporter extends ImporterBase {
   private final CalendarEditorPage myEditorPage;
-
 
   public IcsFileImporter() {
     super("impex.ics");
@@ -68,7 +89,7 @@ public class IcsFileImporter extends ImporterBase {
 
   
   @Override
-  public net.sourceforge.ganttproject.wizard.WizardPage getCustomPage() {
+  public WizardPage getCustomPage() {
     return myEditorPage;
   }
 
@@ -84,8 +105,9 @@ public class IcsFileImporter extends ImporterBase {
     myEditorPage.setFile(file);
   }
 
-
-
+  /**
+   * Calendar editor page which wraps a {@link CalendarEditorPanel} instance
+   */
   static class CalendarEditorPage implements WizardPage {
     private File myFile;
     private GPCalendarCalc myCalendar;
@@ -118,6 +140,10 @@ public class IcsFileImporter extends ImporterBase {
     }    
   }
   
+  /**
+   * Reads calendar events from file
+   * @return a list of events if file was parsed successfully or null otherwise
+   */
   private static List<CalendarEvent> readEvents(File f) {
     try {
       CalendarBuilder builder = new CalendarBuilder();

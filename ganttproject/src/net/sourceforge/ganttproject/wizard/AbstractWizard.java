@@ -1,6 +1,5 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject team
+Copyright (C) 2013 BarD Software s.r.o
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,7 +40,13 @@ import net.sourceforge.ganttproject.gui.UIFacade.Centering;
 import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
 
-public abstract class AbstractWizard {
+/**
+ * A wizard abstraction capable of managing wizard pages and showing them in the UI
+ * according to the user actions.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
+public class AbstractWizard {
   private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
 
   private final Map<String, JComponent> myTitle2component = Maps.newHashMap();
@@ -102,7 +107,7 @@ public abstract class AbstractWizard {
     adjustButtonState();
   }
 
-  public void nextPage() {
+  private void nextPage() {
     assert myCurrentPage + 1 < myPages.size() : "It is a bug: we have no next page while Next button is enabled and has been pressed";
     WizardPage nextPage = myPages.get(myCurrentPage + 1);
     if (myTitle2component.get(nextPage.getTitle()) == null) {
@@ -133,7 +138,7 @@ public abstract class AbstractWizard {
     return pagePanel;
   }
 
-  public void backPage() {
+  private void backPage() {
     if (myCurrentPage > 0) {
       getCurrentPage().setActive(null);
       myCurrentPage--;
@@ -152,7 +157,7 @@ public abstract class AbstractWizard {
     myDialog.show();
   }
 
-  public void adjustButtonState() {
+  private void adjustButtonState() {
     myBackAction.setEnabled(myCurrentPage > 0);
     myNextAction.setEnabled(myCurrentPage < myPages.size() - 1);
     myOkAction.setEnabled(canFinish());
@@ -174,6 +179,11 @@ public abstract class AbstractWizard {
     return (idxPage != -1 && myCurrentPage == idxPage - 1);
   }
 
+  /**
+   * Active wizard page can call this method to set a next page.
+   *
+   * @param page next page
+   */
   public void setNextPage(WizardPage page) {
     boolean isExisting = isExistingNextPage(page);
     if (!isExisting) {
@@ -192,6 +202,12 @@ public abstract class AbstractWizard {
     adjustButtonState();
   }
 
+  /**
+   * Wizard pages or specific wizard implementations can call this method to set an
+   * action to be called when user clicks OK. This makes OK button enabled.
+   *
+   * @param action action to be called on OK
+   */
   public void setOkAction(Runnable action) {
     myOkRunnable = action;
   }
