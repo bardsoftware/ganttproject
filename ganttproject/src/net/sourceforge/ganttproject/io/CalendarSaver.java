@@ -31,6 +31,8 @@ import net.sourceforge.ganttproject.IGanttProject;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.google.common.base.Strings;
+
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.CalendarEvent;
 
@@ -73,7 +75,12 @@ public class CalendarSaver extends SaverBase {
       }
       addAttribute("month", String.valueOf(d.getMonth() + 1), attrs);
       addAttribute("date", String.valueOf(d.getDate()), attrs);
-      emptyElement("date", attrs, handler);
+      addAttribute("type", holiday.getType().name(), attrs);
+      if (Strings.isNullOrEmpty(holiday.getTitle())) {
+        emptyElement("date", attrs, handler);
+      } else {
+        cdataElement("date", holiday.getTitle(), attrs, handler);
+      }
     }
 
     endElement("calendars", handler);

@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -23,12 +23,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 
-public class DefaultWeekTagHandler implements TagHandler {
+public class DefaultWeekTagHandler extends AbstractTagHandler {
 
   private GPCalendar myGPCalendar;
 
@@ -37,6 +36,7 @@ public class DefaultWeekTagHandler implements TagHandler {
   private SimpleDateFormat myShortFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
 
   public DefaultWeekTagHandler(GPCalendar calendar) {
+    super("default-week");
     myGPCalendar = calendar;
     for (int i = 1; i <= 7; i++) {
       myGPCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);

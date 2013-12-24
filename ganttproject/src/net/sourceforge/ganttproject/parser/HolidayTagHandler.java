@@ -38,12 +38,15 @@ import biz.ganttproject.core.time.CalendarFactory;
 /**
  * @author nbohn
  */
-public class HolidayTagHandler implements TagHandler, ParsingListener {
+public class HolidayTagHandler extends AbstractTagHandler implements ParsingListener {
   private final GPCalendar myCalendar;
   private final List<CalendarEvent> myEvents = Lists.newArrayList();
+  private Attributes myAttrs;
 
   public HolidayTagHandler(GPCalendar calendar) {
+    super("date", true);
     myCalendar = calendar;
+    myAttrs = null;
   }
 
   /**
@@ -52,6 +55,9 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
    */
   @Override
   public void endElement(String namespaceURI, String sName, String qName) {
+    if ("date".equals(qName)) {
+      loadHoliday(myAttrs);
+    }
   }
 
   /**
@@ -61,24 +67,27 @@ public class HolidayTagHandler implements TagHandler, ParsingListener {
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
     if (qName.equals("date")) {
-      loadHoliday(attrs);
+      myAttrs = attrs;
     }
   }
+
 
   private void loadHoliday(Attributes atts) {
     try {
       String yearAsString = atts.getValue("year");
       String monthAsString = atts.getValue("month");
       String dayAsString = atts.getValue("date");
+      String typeAsString = atts.getValue("type");
       int month = Integer.parseInt(monthAsString);
       int day = Integer.parseInt(dayAsString);
+      CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
-        myEvents.add(CalendarEvent.newEvent(date, true, CalendarEvent.Type.HOLIDAY, null));
+        myEvents.add(CalendarEvent.newEvent(date, true, type, getCdata()));
       } else {
         int year = Integer.parseInt(yearAsString);
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
-        myEvents.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
+        myEvents.add(CalendarEvent.newEvent(date, false, type, getCdata()));
       }
     } catch (NumberFormatException e) {
       GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);

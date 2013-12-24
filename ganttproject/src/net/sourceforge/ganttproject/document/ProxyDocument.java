@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.AllocationTagHandler;
 import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
@@ -400,7 +401,7 @@ class ProxyDocument implements Document {
     }
   }
 
-  private class PortfolioTagHandler implements TagHandler {
+  private class PortfolioTagHandler extends AbstractTagHandler {
     private static final String PORTFOLIO_TAG = "portfolio";
     private static final String PROJECT_TAG = "project";
     private static final String LOCATION_ATTR = "location";
@@ -431,7 +432,7 @@ class ProxyDocument implements Document {
     }
   }
 
-  private static class OnlyShowWeekendsTagHandler implements TagHandler {
+  private static class OnlyShowWeekendsTagHandler extends AbstractTagHandler {
 
     private final GPCalendarCalc calendar;
 
