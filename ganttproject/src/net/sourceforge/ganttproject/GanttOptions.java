@@ -44,7 +44,6 @@ import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.io.OptionSaver;
 import net.sourceforge.ganttproject.io.SaverBase;
-import net.sourceforge.ganttproject.parser.IconPositionTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -444,8 +443,6 @@ public class GanttOptions extends SaverBase {
 
   private void loadRoleSets(File optionsFile) {
     GanttXMLOpen loader = new GanttXMLOpen(null);
-    IconPositionTagHandler iconHandler = new IconPositionTagHandler();
-    loader.addTagHandler(iconHandler);
 
     loader.addTagHandler(new RoleTagHandler(getRoleManager()));
     loader.load(optionsFile);

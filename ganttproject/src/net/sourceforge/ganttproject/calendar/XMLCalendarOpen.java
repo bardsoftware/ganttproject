@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
@@ -91,7 +92,7 @@ public class XMLCalendarOpen {
     return new DefaultTagHandler();
   }
 
-  private class DefaultTagHandler implements TagHandler {
+  private class DefaultTagHandler extends AbstractTagHandler {
     private String name;
 
     @Override

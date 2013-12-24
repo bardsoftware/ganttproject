@@ -38,7 +38,7 @@ import biz.ganttproject.core.time.CalendarFactory;
 /**
  * @author bbaranne Mar 10, 2005
  */
-public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
+public class CustomPropertiesTagHandler extends AbstractTagHandler implements ParsingListener {
   private TaskManager taskManager = null;
 
   private ParsingContext parsingContext = null;
@@ -46,6 +46,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
   private List<CustomPropertiesStructure> listStructure = null;
 
   public CustomPropertiesTagHandler(ParsingContext context, TaskManager taskManager) {
+    super("customproperty");
     this.taskManager = taskManager;
     this.parsingContext = context;
     this.listStructure = new ArrayList<CustomPropertiesStructure>();
