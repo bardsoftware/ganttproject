@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
  * Implements a calendar editor component which consists of a table with calendar events (three columns: date, title, type)
  * and Add/Delete buttons
  *
- * @author dbarashev
+ * @author dbarashev (Dmitry Barashev)
  */
 public class CalendarEditorPanel {
   private static String getI18NedEventType(CalendarEvent.Type type) {
@@ -57,14 +57,14 @@ public class CalendarEditorPanel {
       return getI18NedEventType(eventType);
     }
   });
-  private final GPCalendar myCalendar;
+  private final List<CalendarEvent> myEvents;
 
   public CalendarEditorPanel(GPCalendar calendar) {
-    myCalendar = calendar;
+    myEvents = Lists.newArrayList(calendar.getPublicHolidays());
   }
 
   public JPanel createComponent() {
-    final TableModelImpl model = new TableModelImpl(myCalendar);
+    final TableModelImpl model = new TableModelImpl(myEvents);
     final JTable table = new JTable(model);
     UIUtil.setupTableUI(table);
     CommonPanel.setupComboBoxEditor(
@@ -88,14 +88,18 @@ public class CalendarEditorPanel {
     return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, tableAndActions.getActionsComponent());
   }
 
+  public List<CalendarEvent> getEvents() {
+    return myEvents;
+  }
+
   private static class TableModelImpl extends AbstractTableModel {
     private static enum Column {
       DATES(String.class), SUMMARY(String.class), TYPE(String.class);
 
       private String myTitle;
-      private Class myClazz;
+      private Class<?> myClazz;
 
-      Column(Class clazz) {
+      Column(Class<?> clazz) {
         myTitle = GanttLanguage.getInstance().getText("calendar.editor.column." + name().toLowerCase() + ".title");
         myClazz = clazz;
       }
@@ -110,8 +114,8 @@ public class CalendarEditorPanel {
     }
     private final List<CalendarEvent> myEvents;
 
-    public TableModelImpl(GPCalendar calendar) {
-      myEvents = Lists.newArrayList(calendar.getPublicHolidays());
+    public TableModelImpl(List<CalendarEvent> events) {
+      myEvents = events;
     }
 
     @Override
