@@ -1,59 +1,54 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2011 GanttProject Team
+Copyright 2014 BarD Software s.r.o
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.gui.GanttDialogPublicHoliday;
+import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
- * @author nbohn
+ * This action shows a dialog for the project holidays editing.
+ *
+ * @author dbarashev (Dmitry Barashev)
  */
 public class PublicHolidayDialogAction extends AbstractAction {
 
-  private IGanttProject myProject;
+  private final IGanttProject myProject;
 
-  private UIFacade myUIFacade;
-
-  static GanttLanguage language = GanttLanguage.getInstance();
+  private final UIFacade myUIFacade;
 
   public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
-    super(language.getCorrectedLabel("editPublicHolidays"));
+    super(GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays"));
     myProject = project;
     myUIFacade = uiFacade;
     this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource("/icons/holidays_16.gif")));
@@ -61,12 +56,14 @@ public class PublicHolidayDialogAction extends AbstractAction {
 
   @Override
   public void actionPerformed(ActionEvent arg0) {
-    final GanttDialogPublicHoliday dialog = new GanttDialogPublicHoliday(myProject);
-    Component dialogContent = dialog.getContentPane();
-    myUIFacade.createDialog(dialogContent, new Action[] { new OkAction() {
+    final CalendarEditorPanel calendarPanel = new CalendarEditorPanel(myProject.getActiveCalendar());
+    JPanel panel = new JPanel();
+    panel.add(calendarPanel.createComponent());
+    panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    myUIFacade.createDialog(panel, new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        myProject.getActiveCalendar().setPublicHolidays(dialog.getHolidays());
+        myProject.getActiveCalendar().setPublicHolidays(calendarPanel.getEvents());
         myProject.setModified();
         try {
           myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
@@ -75,6 +72,6 @@ public class PublicHolidayDialogAction extends AbstractAction {
         }
         myUIFacade.getActiveChart().reset();
       }
-    }, CancelAction.EMPTY }, "").show();
+    }, CancelAction.EMPTY }, GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays")).show();
   }
 }
