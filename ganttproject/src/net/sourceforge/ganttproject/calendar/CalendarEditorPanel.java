@@ -59,6 +59,10 @@ public class CalendarEditorPanel {
   });
   private final List<CalendarEvent> myEvents;
 
+  public CalendarEditorPanel(List<CalendarEvent> events) {
+    myEvents = events;
+  }
+
   public CalendarEditorPanel(GPCalendar calendar) {
     myEvents = Lists.newArrayList(calendar.getPublicHolidays());
   }
@@ -78,7 +82,7 @@ public class CalendarEditorPanel {
 
       @Override
       protected void onDeleteEvent() {
-        //model.delete(table.getSelectedRows());
+        model.delete(table.getSelectedRow());
       }
 
       @Override
@@ -116,6 +120,11 @@ public class CalendarEditorPanel {
 
     public TableModelImpl(List<CalendarEvent> events) {
       myEvents = events;
+    }
+
+    void delete(int row) {
+      myEvents.remove(row);
+      fireTableRowsDeleted(row, row);
     }
 
     @Override
