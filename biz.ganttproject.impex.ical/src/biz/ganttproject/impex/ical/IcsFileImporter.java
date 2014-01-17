@@ -38,15 +38,10 @@ import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RRule;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.wizard.AbstractWizard;
 import net.sourceforge.ganttproject.wizard.WizardPage;
-
-import org.osgi.service.prefs.Preferences;
-
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeDuration;
@@ -75,11 +70,10 @@ public class IcsFileImporter extends ImporterBase {
 
   @Override
   public void run() {
-    final File selectedFile = getFile();
     getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {
       @Override
       public void run() {
-        List<CalendarEvent> events = readEvents(selectedFile);
+        List<CalendarEvent> events = myEditorPage.getEvents();
         if (events != null) {
           getProject().getActiveCalendar().setPublicHolidays(events);
         }
@@ -94,15 +88,17 @@ public class IcsFileImporter extends ImporterBase {
   }
 
   @Override
-  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
-    super.setContext(project, uiFacade, preferences);
-    myEditorPage.setProjectCalendar(project.getActiveCalendar());
+  public boolean isReady() {
+    return super.isReady() && myEditorPage.getEvents() != null;
   }
 
   @Override
   public void setFile(File file) {
     super.setFile(file);
-    myEditorPage.setFile(file);
+    myEditorPage.setFile(file);    
+    if (file != null && file.exists() && file.canRead()) {
+      myEditorPage.setEvents(readEvents(file));
+    }
   }
 
   /**
@@ -110,14 +106,18 @@ public class IcsFileImporter extends ImporterBase {
    */
   static class CalendarEditorPage implements WizardPage {
     private File myFile;
-    private GPCalendarCalc myCalendar;
     private JPanel myPanel = new JPanel();
+    private List<CalendarEvent> myEvents;
     private void setFile(File f) {
       myFile = f;
     }
-    public void setProjectCalendar(GPCalendarCalc calendar) {
-      myCalendar = calendar;
+    void setEvents(List<CalendarEvent> events) {
+      myEvents = events;
     }
+    List<CalendarEvent> getEvents() {
+      return myEvents;
+    }
+    
     public String getTitle() {
       return "Edit calendar";
     }
@@ -129,13 +129,12 @@ public class IcsFileImporter extends ImporterBase {
       if (wizard != null) {
         myPanel.removeAll();
         if (myFile != null && myFile.exists() && myFile.canRead()) {
-          List<CalendarEvent> events = readEvents(myFile);
-          GPCalendarCalc copyCalendar = myCalendar.copy();
-          copyCalendar.setPublicHolidays(events);
-          myPanel.add(new CalendarEditorPanel(copyCalendar).createComponent());        
-        } else {
-          myPanel.add(new JLabel(String.format("File %s is not readable", myFile.getAbsolutePath())));
+          if (myEvents != null) {
+            myPanel.add(new CalendarEditorPanel(myEvents).createComponent());
+            return;
+          }
         }
+        myPanel.add(new JLabel(String.format("File %s is not readable", myFile.getAbsolutePath())));
       }
     }    
   }

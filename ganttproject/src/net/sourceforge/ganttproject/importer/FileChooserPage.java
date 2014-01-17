@@ -61,6 +61,7 @@ class FileChooserPage extends AbstractFileChooserPage {
     return importer.getSecondaryOptions();
   }
 
+  @Override
   public String getTitle() {
     return GanttLanguage.getInstance().getText("importerFileChooserPageTitle");
   }
@@ -77,10 +78,13 @@ class FileChooserPage extends AbstractFileChooserPage {
     }
     if (myImporter.isReady()) {
       getWizard().setOkAction(new Runnable() {
+        @Override
         public void run() {
           myImporter.run();
         }
       });
+    } else {
+      getWizard().setOkAction(null);
     }
     myFile = file;
   }

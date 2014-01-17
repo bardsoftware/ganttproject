@@ -109,6 +109,7 @@ public class AbstractWizard {
 
   private void nextPage() {
     assert myCurrentPage + 1 < myPages.size() : "It is a bug: we have no next page while Next button is enabled and has been pressed";
+    getCurrentPage().setActive(null);
     WizardPage nextPage = myPages.get(myCurrentPage + 1);
     if (myTitle2component.get(nextPage.getTitle()) == null) {
       addPageComponent(nextPage);
