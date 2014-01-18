@@ -30,10 +30,12 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -41,12 +43,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
@@ -55,6 +60,9 @@ import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+
+import biz.ganttproject.core.time.CalendarFactory;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
@@ -70,6 +78,7 @@ public abstract class UIUtil {
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
 
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
@@ -262,5 +271,43 @@ public abstract class UIUtil {
     };
     result.setToolTipText(null);
     return result;
+  }
+
+  public static TableCellEditor newDateCellEditor() {
+    return new DateCellEditor();
+  }
+
+  private static class DateCellEditor extends DefaultCellEditor {
+    private Date myDate;
+
+    public DateCellEditor() {
+      super(new JTextField());
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
+      JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
+      result.selectAll();
+      return result;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+      final String dateString = ((JTextComponent) getComponent()).getText();
+      Date parsedDate = GanttLanguage.getInstance().parseDate(dateString);
+      if (parsedDate == null) {
+        getComponent().setBackground(INVALID_VALUE_BACKGROUND);
+        return false;
+      }
+      myDate = parsedDate;
+      getComponent().setBackground(null);
+      super.fireEditingStopped();
+      return true;
+    }
   }
 }
