@@ -211,6 +211,7 @@ public class AbstractWizard {
    */
   public void setOkAction(Runnable action) {
     myOkRunnable = action;
+    adjustButtonState();
   }
 
   private WizardPage getCurrentPage() {

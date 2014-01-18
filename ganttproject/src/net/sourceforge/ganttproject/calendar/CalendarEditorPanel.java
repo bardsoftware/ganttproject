@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.calendar;
 
+import java.awt.Rectangle;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
@@ -27,6 +28,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -74,10 +76,18 @@ public class CalendarEditorPanel {
     CommonPanel.setupComboBoxEditor(
         table.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
+    TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
+    dateColumn.setCellEditor(UIUtil.newDateCellEditor());
+
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
       @Override
       protected void onAddEvent() {
-        table.editCellAt(model.getRowCount() - 1, 0);
+        int lastRow = model.getRowCount() - 1;
+        Rectangle cellRect = table.getCellRect(lastRow, 0, true);
+        table.scrollRectToVisible(cellRect);
+        table.getSelectionModel().setSelectionInterval(lastRow, lastRow);
+        table.editCellAt(lastRow, 0);
+        table.getEditorComponent().requestFocus();
       }
 
       @Override
@@ -134,7 +144,7 @@ public class CalendarEditorPanel {
 
     @Override
     public int getRowCount() {
-      return myEvents.size();
+      return myEvents.size() + 1;
     }
 
     @Override
@@ -151,6 +161,9 @@ public class CalendarEditorPanel {
     public Object getValueAt(int row, int col) {
       if (row < 0 || row >= getRowCount()) {
         return null;
+      }
+      if (row == getRowCount() - 1) {
+        return "";
       }
       CalendarEvent e = myEvents.get(row);
       switch (Column.values()[col]) {
@@ -175,6 +188,9 @@ public class CalendarEditorPanel {
         return;
       }
       String value = String.valueOf(aValue);
+      if (row == getRowCount() - 1) {
+        myEvents.add(CalendarEvent.newEvent(null, false, CalendarEvent.Type.HOLIDAY, ""));
+      }
       CalendarEvent e = myEvents.get(row);
       CalendarEvent newEvent = null;
       switch (Column.values()[col]) {
