@@ -96,7 +96,8 @@ public class TTFontCache {
         registerFonts(f);
         continue;
       }
-      if (!f.getName().toLowerCase().trim().endsWith(".ttf")) {
+      String filename = f.getName().toLowerCase().trim();
+      if (!filename.endsWith(".ttf") && !filename.endsWith(".ttc")) {
         continue;
       }
       try {
@@ -154,12 +155,23 @@ public class TTFontCache {
 
   private Function<String, BaseFont> createFontSupplier(final File fontFile, final boolean isEmbedded)
       throws DocumentException, IOException {
-    BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), isEmbedded);
+    try {
+      BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), isEmbedded);
+    } catch (DocumentException e) {
+      if (!e.getMessage().contains("is not recognized")
+          || !e.getMessage().contains(GanttLanguage.getInstance().getCharSet())) {
+        throw e;
+      }
+    }
     return new Function<String, BaseFont>() {
       @Override
       public BaseFont apply(String charset) {
         try {
-          return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);
+          if (fontFile.getName().toLowerCase().endsWith(".ttc")) {
+            return BaseFont.createFont(fontFile.getAbsolutePath() + ",0", charset, isEmbedded);
+          } else {
+            return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);
+          }
         } catch (DocumentException e) {
           GPLogger.log(e);
         } catch (IOException e) {
