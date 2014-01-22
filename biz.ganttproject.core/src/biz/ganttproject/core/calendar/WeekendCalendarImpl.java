@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
@@ -251,6 +252,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     boolean isWeekend = myTypes[dayOfWeek - 1] == DayType.WEEKEND;
     if (isWeekend) {
       result |= DayMask.WEEKEND;
+      CalendarEvent oneOff = myOneOffEvents.get(date);
+      if (oneOff != null && oneOff.getType() == Type.WORKING_DAY) {
+        result |= DayMask.WORKING;
+      }
     }
     if (isHoliday) {
       result |= DayMask.HOLIDAY;
