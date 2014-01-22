@@ -48,9 +48,10 @@ LOCAL_CLASSPATH=${GP_HOME}/eclipsito.jar:${GP_HOME}
 CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 
+JAVA_ARGS="-Djava.ext.dirs=${GP_HOME}/jre_ext -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
-  $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE "$@"
+  $JAVA_COMMAND $JAVA_ARGS "$@"
 else
-  exec $JAVA_COMMAND -Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE "$@" &
+  exec $JAVA_COMMAND $JAVA_ARGS "$@" &
 fi
 
