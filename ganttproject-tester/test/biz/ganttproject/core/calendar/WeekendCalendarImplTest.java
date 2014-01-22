@@ -118,4 +118,14 @@ public class WeekendCalendarImplTest extends TestCase {
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime()) & DayMask.WORKING);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2015, 2, 8).getTime()) & DayMask.HOLIDAY);
   }
+
+  public void testOneOffWorkingWeekend() {
+    WeekendCalendarImpl calendar = new WeekendCalendarImpl();
+    calendar.setPublicHolidays(ImmutableList.of(
+        CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Jan 4, Saturday")
+    ));
+    assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime()) & DayMask.WORKING);
+    assertEquals(0, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 11).getTime()) & DayMask.WORKING);
+    assertEquals(DayMask.WEEKEND, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 11).getTime()) & DayMask.WEEKEND);
+  }
 }
