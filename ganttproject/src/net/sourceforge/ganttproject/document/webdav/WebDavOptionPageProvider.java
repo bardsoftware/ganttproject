@@ -53,7 +53,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
           protected WebDavServerDescriptor updateValue(WebDavServerDescriptor newValue, WebDavServerDescriptor curValue) {
             newValue.username = curValue.username;
             newValue.password = curValue.password;
-            newValue.rootUrl = curValue.rootUrl;
+            newValue.setRootUrl(curValue.getRootUrl());
             serversOption.updateValue(curValue, newValue);
             return newValue;
           }
@@ -90,7 +90,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     urlOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().rootUrl = urlOption.getValue();
+        serverList.getSelectedObject().setRootUrl(urlOption.getValue());
       }
     });
 
@@ -126,7 +126,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       public void selectionChanged(List<WebDavServerDescriptor> selection) {
         if (selection.size() == 1) {
           WebDavServerDescriptor selected = selection.get(0);
-          urlOption.setValue(selected.rootUrl);
+          urlOption.setValue(selected.getRootUrl());
           usernameOption.setValue(selected.username);
           passwordOption.setValue(selected.password);
           savePasswordOption.setValue(selected.savePassword);

@@ -99,7 +99,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     public String getPersistentValue() {
       StringBuilder result = new StringBuilder();
       for (WebDavServerDescriptor server : myServers) {
-        result.append("\n").append(server.name).append("\t").append(server.rootUrl).append("\t").append(server.username);
+        result.append("\n").append(server.name).append("\t").append(server.getRootUrl()).append("\t").append(server.username);
         if (server.savePassword) {
           result.append("\t").append(server.password);
         }
@@ -117,7 +117,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
             server.name = parts[0];
           }
           if (parts.length >= 2) {
-            server.rootUrl = parts[1];
+            server.setRootUrl(parts[1]);
           }
           if (parts.length >= 3) {
             server.username = parts[2];
@@ -336,7 +336,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
   public WebDavServerDescriptor findServer(String path) {
     WebDavUri uri = new WebDavUri(path);
     for (WebDavServerDescriptor server : myServers.getValues()) {
-      if (server.rootUrl.equals(uri.buildRootUrl())) {
+      if (server.getRootUrl().equals(uri.buildRootUrl())) {
         return server;
       }
     }

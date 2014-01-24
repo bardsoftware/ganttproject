@@ -342,7 +342,7 @@ class GanttURLChooser {
 
   private WebDavServerDescriptor findSavedServer(String domainUrl) {
     for (WebDavServerDescriptor server : myServers.getValues()) {
-      if (server.rootUrl.equals(domainUrl)) {
+      if (server.getRootUrl().equals(domainUrl)) {
         return server;
       }
     }
@@ -364,7 +364,7 @@ class GanttURLChooser {
     if (server == null) {
       return null;
     }
-    String host = server.rootUrl.trim();
+    String host = server.getRootUrl().trim();
     while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
