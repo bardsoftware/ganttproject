@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -185,6 +186,16 @@ public class GanttCSVOpen {
       @Override
       protected void process(CSVRecord record) {
         assert record.size() > 0;
+        boolean allEmpty = true;
+        for (Iterator<String> it = record.iterator(); it.hasNext();) {
+          if (!Strings.isNullOrEmpty(it.next())) {
+            allEmpty = false;
+            break;
+          }
+        }
+        if (allEmpty) {
+          return;
+        }
         // Create the task
         TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
             .withName(record.get(TaskFields.NAME.toString()))
