@@ -568,18 +568,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     @Override
     protected String objectToString(Locale locale) {
-      String englishName = locale.getDisplayLanguage(Locale.US);
-      String localName = locale.getDisplayLanguage(locale);
-      if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage())) {
-        if (!locale.getCountry().isEmpty()) {
-          englishName += " - " + locale.getDisplayCountry(Locale.US);
-          localName += " - " + locale.getDisplayCountry(locale);
-        }
-      }
-      if (localName.equals(englishName)) {
-        return englishName;
-      }
-      return englishName + " (" + localName + ")";
+      return GanttLanguage.getInstance().formatLanguageAndCountry(locale);
     }
 
     @Override

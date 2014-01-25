@@ -228,6 +228,21 @@ public class GanttLanguage {
     return result1;
   }
 
+  public static String formatLanguageAndCountry(Locale locale) {
+    String englishName = locale.getDisplayLanguage(Locale.US);
+    String localName = locale.getDisplayLanguage(locale);
+    if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage())) {
+      if (!locale.getCountry().isEmpty()) {
+        englishName += " - " + locale.getDisplayCountry(Locale.US);
+        localName += " - " + locale.getDisplayCountry(locale);
+      }
+    }
+    if (localName.equals(englishName)) {
+      return englishName;
+    }
+    return englishName + " (" + localName + ")";
+  }
+
   /** @return The current Locale */
   public Locale getLocale() {
     return currentLocale;

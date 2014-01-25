@@ -25,6 +25,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -32,6 +34,9 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.AbstractPagesDialog;
@@ -52,7 +57,7 @@ public class AboutDialog2 extends AbstractPagesDialog {
     List<ListItem> result = new ArrayList<AbstractPagesDialog.ListItem>();
     result.add(createSummaryPage());
     result.add(createHtmlPage("authors"));
-    result.add(createHtmlPage("translations"));
+    result.add(createTranslationsPage());
     result.add(createHtmlPage("license"));
     result.add(createHtmlPage("library"));
     return result;
@@ -76,20 +81,39 @@ public class AboutDialog2 extends AbstractPagesDialog {
     return new ListItem(false, "summary", i18n("summary"), result);
   }
 
+  private static ListItem createTranslationsPage() {
+    StringBuilder builder = new StringBuilder();
+    for (Locale l : GanttLanguage.getInstance().getAvailableLocales()) {
+      String language = GanttLanguage.formatLanguageAndCountry(l);
+      String translatorsKey = "about.translations."
+          + (Strings.isNullOrEmpty(l.getCountry()) ? l.getLanguage() : l.getLanguage() + "_" + l.getCountry());
+      String translators = GanttLanguage.getInstance().getText(translatorsKey);
+      if (translators == null) {
+        continue;
+      }
+      builder.append(GanttLanguage.getInstance().formatText("about.translations.entry", language, translators));
+    }
+    return createHtmlPage("translations", i18n("translations"), GanttLanguage.getInstance().formatText("about.translations", builder.toString()));
+  }
+
   private static ListItem createHtmlPage(String key) {
+    return createHtmlPage(key, i18n(key), i18n("about." + key));
+  }
+
+  private static ListItem createHtmlPage(String key, String title, String body) {
     JPanel result = new JPanel(new BorderLayout());
-    JComponent topPanel = TopPanel.create(i18n(key), null);
+    JComponent topPanel = TopPanel.create(title, null);
     topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
     result.add(topPanel, BorderLayout.NORTH);
 
     JPanel planePageWrapper = new JPanel(new BorderLayout());
     planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-    JComponent planePage = createHtml(i18n("about." + key));
+    JComponent planePage = createHtml(body);
     planePage.setAlignmentX(Component.LEFT_ALIGNMENT);
     planePageWrapper.add(planePage, BorderLayout.NORTH);
     result.add(planePageWrapper, BorderLayout.CENTER);
 
-    return new ListItem(false, key, i18n(key), result);
+    return new ListItem(false, key, title, result);
   }
 
   private static JEditorPane createHtml(String html) {
