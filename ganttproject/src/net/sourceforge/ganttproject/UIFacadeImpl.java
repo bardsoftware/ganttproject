@@ -73,6 +73,8 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.language.GanttLanguage.Listener;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -560,6 +562,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   static class LanguageOption extends DefaultEnumerationOption<Locale> implements GP1XOptionConverter {
     public LanguageOption() {
       this("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
+      GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+        public void languageChanged(Event event) {
+          Locale selected = getSelectedValue();
+          LanguageOption.this.reloadValues(GanttLanguage.getInstance().getAvailableLocales());
+          setSelectedValue(selected);
+        }
+      });
     }
 
     private LanguageOption(String id, Locale[] locales) {

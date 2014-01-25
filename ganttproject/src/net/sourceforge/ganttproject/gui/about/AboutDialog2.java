@@ -84,7 +84,7 @@ public class AboutDialog2 extends AbstractPagesDialog {
   private static ListItem createTranslationsPage() {
     StringBuilder builder = new StringBuilder();
     for (Locale l : GanttLanguage.getInstance().getAvailableLocales()) {
-      String language = GanttLanguage.formatLanguageAndCountry(l);
+      String language = GanttLanguage.getInstance().formatLanguageAndCountry(l);
       String translatorsKey = "about.translations."
           + (Strings.isNullOrEmpty(l.getCountry()) ? l.getLanguage() : l.getLanguage() + "_" + l.getCountry());
       String translators = GanttLanguage.getInstance().getText(translatorsKey);
