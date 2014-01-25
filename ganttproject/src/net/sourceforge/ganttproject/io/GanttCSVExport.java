@@ -125,7 +125,6 @@ public class GanttCSVExport {
       writer.print(def.getName());
     }
     writer.println();
-    writer.println();
   }
 
   private String i18n(String key) {
@@ -232,7 +231,6 @@ public class GanttCSVExport {
       CustomPropertyDefinition nextDef = customFieldDefs.get(i);
       writer.print(nextDef.getName());
     }
-    writer.println();
     writer.println();
   }
 
