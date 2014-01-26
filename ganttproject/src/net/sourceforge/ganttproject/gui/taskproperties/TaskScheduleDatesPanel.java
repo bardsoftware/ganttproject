@@ -23,8 +23,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.Action;
@@ -147,7 +149,10 @@ public class TaskScheduleDatesPanel {
     myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        setStart(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), true);
+        Date date = ((JXDatePicker) e.getSource()).getDate();
+        if (date != null) {
+          setStart(CalendarFactory.createGanttCalendar(date), true);
+        }
       }
     });
     final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", ourStartDateLock);

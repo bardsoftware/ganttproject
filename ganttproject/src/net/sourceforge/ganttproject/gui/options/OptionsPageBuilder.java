@@ -71,7 +71,6 @@ import com.google.common.base.Function;
  * @author bard
  */
 public class OptionsPageBuilder {
-  private static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
   I18N myi18n = new I18N();
   private Component myParentComponent;
   private final LayoutApi myLayoutApi;
@@ -271,14 +270,14 @@ public class OptionsPageBuilder {
     } else if (option instanceof StringOption) {
       result = createStringComponent((StringOption) option);
     } else if (option instanceof IntegerOption) {
-      result = createNumericComponent((IntegerOption) option, new NumericParser<Integer>() {
+      result = createValidatingComponent((IntegerOption) option, new ValueValidator<Integer>() {
         @Override
         public Integer parse(String text) {
           return Integer.valueOf(text);
         }
       });
     } else if (option instanceof DoubleOption) {
-      result = createNumericComponent((DoubleOption) option, new NumericParser<Double>() {
+      result = createValidatingComponent((DoubleOption) option, new ValueValidator<Double>() {
         @Override
         public Double parse(String text) {
           return Double.valueOf(text);
@@ -302,8 +301,8 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private Color getValidFieldColor() {
-    return UIManager.getColor("TextField.background");
+  private static Color getValidFieldColor() {
+    return UIUtil.getValidFieldColor();
   }
 
   private static void updateTextField(final JTextField textField, final DocumentListener listener,
@@ -348,7 +347,7 @@ public class OptionsPageBuilder {
           option.setValue(result.getText());
           result.setBackground(getValidFieldColor());
         } catch (ValidationException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
+          result.setBackground(UIUtil.INVALID_FIELD_COLOR);
         }
       }
 
@@ -576,8 +575,8 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private interface NumericParser<T extends Number> {
-    T parse(String text) throws NumberFormatException;
+  public interface ValueValidator<T> {
+    T parse(String text) throws ValidationException;
   }
 
   /**
@@ -587,39 +586,9 @@ public class OptionsPageBuilder {
    * @param option
    * @return
    */
-  private <T extends Number> Component createNumericComponent(final GPOption<T> option, final NumericParser<T> parser) {
+  public static <T extends Number> Component createValidatingComponent(final GPOption<T> option, final ValueValidator<T> parser) {
     final JTextField result = new JTextField(String.valueOf(option.getValue()));
-    final DocumentListener listener = new DocumentListener() {
-      private void saveValue() {
-        try {
-          T value = parser.parse(result.getText());
-          option.setValue(value);
-          result.setBackground(getValidFieldColor());
-        }
-        /* If value in text filed is not integer change field color */
-        catch (NumberFormatException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
-        } catch (ValidationException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
-        }
-      }
-
-      @Override
-      public void insertUpdate(DocumentEvent e) {
-        saveValue();
-      }
-
-      @Override
-      public void removeUpdate(DocumentEvent e) {
-        saveValue();
-      }
-
-      @Override
-      public void changedUpdate(DocumentEvent e) {
-        saveValue();
-      }
-    };
-    result.getDocument().addDocumentListener(listener);
+    final DocumentListener listener = UIUtil.attachValidator(result, parser, option);
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(final ChangeValueEvent event) {

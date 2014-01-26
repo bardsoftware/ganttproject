@@ -30,6 +30,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -37,14 +38,18 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -55,10 +60,17 @@ import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.ValidationException;
+
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 public abstract class UIUtil {
@@ -70,6 +82,7 @@ public abstract class UIUtil {
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+  public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
 
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
@@ -160,6 +173,42 @@ public abstract class UIUtil {
     setupTableUI(table, 10);
   }
 
+  public static <T> DocumentListener attachValidator(final JTextField textField, final OptionsPageBuilder.ValueValidator<T> validator, final GPOption<T> option) {
+    final DocumentListener listener = new DocumentListener() {
+      private void saveValue() {
+        try {
+          T value = validator.parse(textField.getText());
+          if (option != null) {
+            option.setValue(value);
+          }
+          textField.setBackground(getValidFieldColor());
+        }
+        /* If value in text filed is not integer change field color */
+        catch (NumberFormatException ex) {
+          textField.setBackground(INVALID_FIELD_COLOR);
+        } catch (ValidationException ex) {
+          textField.setBackground(INVALID_FIELD_COLOR);
+        }
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent e) {
+        saveValue();
+      }
+
+      @Override
+      public void removeUpdate(DocumentEvent e) {
+        saveValue();
+      }
+
+      @Override
+      public void changedUpdate(DocumentEvent e) {
+        saveValue();
+      }
+    };
+    textField.getDocument().addDocumentListener(listener);
+    return listener;
+  }
   /**
    * @return a {@link JXDatePicker} component with the default locale, images
    *         and date formats.
@@ -168,19 +217,41 @@ public abstract class UIUtil {
     final JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
     result.addActionListener(listener);
-
-    result.getEditor().addFocusListener(new FocusAdapter() {
+    final JFormattedTextField editor = result.getEditor();
+    final ValueValidator<Boolean> validator = new ValueValidator<Boolean>() {
+      @Override
+      public Boolean parse(String text) throws ValidationException {
+        if (Strings.isNullOrEmpty(text)) {
+          throw new ValidationException();
+        }
+        try {
+          if (GanttLanguage.getInstance().getLongDateFormat().parse(text) == null
+              && GanttLanguage.getInstance().getShortDateFormat().parse(text) == null) {
+            throw new ValidationException("Can't parse value=" + text + "as date");
+          }
+          return true;
+        } catch (ParseException e) {
+          throw new ValidationException("Can't parse value=" + text + "as date", e);
+        }
+      }
+    };
+    UIUtil.attachValidator(editor, validator, null);
+    editor.addFocusListener(new FocusAdapter() {
       @Override
       public void focusLost(FocusEvent e) {
         try {
-          if (result.getEditor().getValue() != null) {
+          if ((editor.getValue() instanceof Date) || validator.parse(String.valueOf(editor.getValue()))) {
+            editor.setBackground(getValidFieldColor());
             result.commitEdit();
             listener.actionPerformed(new ActionEvent(result, ActionEvent.ACTION_PERFORMED, ""));
+            return;
           }
-        } catch (ParseException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
+        } catch (ValidationException e1) {
+          // We probably don't want to log parse/validation exceptions
+        } catch (ParseException e2) {
+          // We probably don't want to log parse/validation exceptions
         }
+        editor.setBackground(INVALID_FIELD_COLOR);
       }
     });
     result.setFormats(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
@@ -263,4 +334,9 @@ public abstract class UIUtil {
     result.setToolTipText(null);
     return result;
   }
+
+  public static Color getValidFieldColor() {
+    return UIManager.getColor("TextField.background");
+  }
+
 }
