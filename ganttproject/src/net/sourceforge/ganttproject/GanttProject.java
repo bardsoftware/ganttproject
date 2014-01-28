@@ -119,9 +119,6 @@ import com.beust.jcommander.Parameter;
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
-  /** The current version of ganttproject */
-  public static final String version = GPVersion.V2_0_X;
-
   /** The JTree part. */
   private GanttTree2 tree;
 

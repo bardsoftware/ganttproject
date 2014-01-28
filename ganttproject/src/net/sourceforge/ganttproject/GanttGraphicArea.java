@@ -182,12 +182,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return myChartModel;
   }
 
-  public void drawGPVersion(Graphics g) {
-    g.setColor(Color.black);
-    g.setFont(Fonts.GP_VERSION_FONT);
-    g.drawString("GanttProject (" + GanttProject.version + ")", 3, getHeight() + 18);
-  }
-
   @Override
   public String getName() {
     return GanttLanguage.getInstance().getText("gantt");
