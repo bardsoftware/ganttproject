@@ -55,6 +55,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -312,11 +313,18 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
+    List<Polygon> boundPolygons = Lists.newArrayList();
     int rowNum = 0;
     for (Task t : visibleTasks) {
+      boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
-      renderLabels(rectangles);
+      for (Polygon p : rectangles) {
+        if (p.getModelObject() != null) {
+          boundPolygons.add(p);
+        }
+      }
+      renderLabels(boundPolygons);
       renderBaseline(t, rowNum, defaultUnitOffsets);
       rowNum++;
       Canvas.Line nextLine = getPrimitiveContainer().createLine(0, rowNum * getRowHeight(),
