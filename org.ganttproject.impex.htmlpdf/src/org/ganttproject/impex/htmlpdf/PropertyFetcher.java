@@ -22,9 +22,9 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Joiner;
+
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
-
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -47,16 +47,20 @@ public class PropertyFetcher {
   }
 
   public void getTaskAttributes(Task t, Map<String, String> id2value) {
-    id2value.put("tpd1", i18n(t.getPriority().getI18nKey()));
+    id2value.put(TaskDefaultColumn.PRIORITY.getStub().getID(), i18n(t.getPriority().getI18nKey()));
 
     DateFormat dateFormat = language.getShortDateFormat();
-    id2value.put("tpd3", t.getName());
-    id2value.put("tpd4", dateFormat.format(t.getStart().getTime()));
-    id2value.put("tpd5", dateFormat.format(t.getDisplayEnd().getTime()));
-    id2value.put("tpd6", String.valueOf(t.getDuration().getLength()));
-    id2value.put("tpd7", String.valueOf(t.getCompletionPercentage()));
-    id2value.put(TaskDefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t));
+    id2value.put(TaskDefaultColumn.NAME.getStub().getID(), t.getName());
+    id2value.put(TaskDefaultColumn.BEGIN_DATE.getStub().getID(), dateFormat.format(t.getStart().getTime()));
+    id2value.put(TaskDefaultColumn.END_DATE.getStub().getID(), dateFormat.format(t.getDisplayEnd().getTime()));
+    id2value.put(TaskDefaultColumn.DURATION.getStub().getID(), String.valueOf(t.getDuration().getLength()));
+    id2value.put(TaskDefaultColumn.COMPLETION.getStub().getID(), String.valueOf(t.getCompletionPercentage()));
+    id2value.put(TaskDefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t, ", "));
     id2value.put(TaskDefaultColumn.COORDINATOR.getStub().getID(), TaskProperties.formatCoordinators(t));
+    List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
+    id2value.put(TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), Joiner.on('.').join(outlinePath));
+    id2value.put(TaskDefaultColumn.ID.getStub().getID(), String.valueOf(t.getTaskID()));
+
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
