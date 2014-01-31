@@ -192,6 +192,14 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     return myProperties.getProperty("charset", GanttLanguage.getInstance().getCharSet());
   }
 
+  private String i18n(String key) {
+    String value = myProperties.getProperty(key);
+    if (value == null) {
+      value = GanttLanguage.getInstance().getText("impex.pdf.theme.sortavala." + key);
+    }
+    return value == null ? key : value;
+  }
+
   void run(IGanttProject project, UIFacade facade, OutputStream out) throws ExportException {
     myProject = project;
     myUIFacade = facade;
@@ -217,10 +225,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     writeTitlePage();
     myDoc.newPage();
     isColontitleEnabled = true;
-    myLeftSubcolontitle = "Tasks";
+    myLeftSubcolontitle = i18n("title.tasks");
     writeTasks();
     myDoc.newPage();
-    myLeftSubcolontitle = "Resources";
+    myLeftSubcolontitle = i18n("title.resources");
     writeResources();
     myDoc.newPage();
     writeGanttChart();
@@ -261,12 +269,12 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
     addEmptyRow(head, 20);
     LinkedHashMap<String, String> attrs = new LinkedHashMap<String, String>();
-    attrs.put("Project managers: ", buildManagerString());
-    attrs.put("Dates: ", buildProjectDatesString());
+    attrs.put(i18n("label.project_manager"), buildManagerString());
+    attrs.put(i18n("label.dates"), buildProjectDatesString());
     attrs.put(" ", " ");
-    attrs.put("Complete:", buildProjectCompletionString());
-    attrs.put("Tasks:", String.valueOf(getProject().getTaskManager().getTaskCount()));
-    attrs.put("People:", String.valueOf(getProject().getHumanResourceManager().getResources().size()));
+    attrs.put(i18n("label.completion"), buildProjectCompletionString());
+    attrs.put(i18n("label.tasks"), String.valueOf(getProject().getTaskManager().getTaskCount()));
+    attrs.put(i18n("label.resources"), String.valueOf(getProject().getHumanResourceManager().getResources().size()));
     PdfPTable attrsTable = new PdfPTable(2);
     writeAttributes(attrsTable, attrs);
     PdfPCell attrsCell = new PdfPCell(attrsTable);
