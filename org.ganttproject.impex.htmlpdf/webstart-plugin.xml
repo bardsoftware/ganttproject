@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.ganttproject.impex.htmlpdf"
+   name="Export to HTML and PDF"
+   version="2.0.0"
+   provider-name="ganttproject.org team">
+
+   <runtime>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/ganttproject-htmlpdf.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/lib/fop.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/lib/fop-font-metrics.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/lib/ganttproject-avalon.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/lib/ganttproject-batik.jar">
+         <export name="*"/>
+      </library>
+      <library name="org.bardsoftware.eclipsito.packedjar://org.ganttproject.impex.htmlpdf.WebStartIDClass/org.ganttproject.impex.htmlpdf_resources.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+   <requires>
+      <import plugin="net.sourceforge.ganttproject"/>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+   <extension-point id="HTMLStylesheet" name="HTML Stylesheet" schema="schema/HTMLStylesheet.exsd"/>
+   <extension-point id="PDFStylesheet" name="PDF Stylesheet"/>
+   <extension
+         point="net.sourceforge.ganttproject.exporter">
+         <exporter class="org.ganttproject.impex.htmlpdf.ExporterToHTML"/>
+         <exporter class="org.ganttproject.impex.htmlpdf.ExporterToPDF"/>
+   </extension>
+   <extension point="org.ganttproject.impex.htmlpdf.HTMLStylesheet">
+       <theme name="Default theme" url="html-export-themes/default/"/>
+       <theme name="Striped Blue" url="html-export-themes/striped_blue/"/>
+   </extension>
+   <extension point="org.ganttproject.impex.htmlpdf.PDFStylesheet">
+       <theme name="Default theme" url="pdf-export-themes/ganttproject.xsl"/>
+       <theme name="Landscape theme" url="pdf-export-themes/basic_landscape/ganttproject.xsl"/>
+   </extension>
+
+</plugin>

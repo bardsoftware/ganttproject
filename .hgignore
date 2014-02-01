@@ -1,0 +1,6 @@
+syntax: glob
+bin
+dist-bin
+dist-deb
+build-deb
+translations
