@@ -38,6 +38,7 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFormattedTextField;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -50,8 +51,10 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.html.HTMLEditorKit;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
@@ -339,4 +342,14 @@ public abstract class UIUtil {
     return UIManager.getColor("TextField.background");
   }
 
+  public static JEditorPane createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
+    JEditorPane htmlPane = new JEditorPane();
+    htmlPane.setEditorKit(new HTMLEditorKit());
+    htmlPane.setEditable(false);
+    // htmlPane.setPreferredSize(new Dimension(400, 290));
+    htmlPane.addHyperlinkListener(hyperlinkListener);
+    //htmlPane.setBackground(Color.YELLOW);
+    htmlPane.setText(html);
+    return htmlPane;
+  }
 }
