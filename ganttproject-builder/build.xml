@@ -85,13 +85,9 @@
 				<include name="ganttproject_32_2.ico"/>
 				<include name="GanttProject.app/**"/>
 				<include name="HouseBuildingSample.gan"/>
+				<include name="lib/javagalician.jar"/>
 			</fileset>
 		</copy>
-    <copy todir="${install.dir}/jre_ext">
-      <fileset dir="lib/">
-        <include name="javagalician-java6-1.1.jar"/>
-      </fileset>
-    </copy>
 		<jar destfile="${install.dir}/eclipsito.jar" update="true">
 			<fileset dir="." includes="ganttproject-eclipsito-config.xml"/>
 		</jar>
