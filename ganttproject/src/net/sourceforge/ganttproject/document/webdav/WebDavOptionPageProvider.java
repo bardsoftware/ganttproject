@@ -13,7 +13,7 @@ import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.Selecti
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -84,7 +84,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
           }
     };
     serverList.getTableComponent().setPreferredSize(new Dimension(150, 300));
-    serverList.setUndefinedValueLabel("<type server name here>");
+    serverList.setUndefinedValueLabel(GanttLanguage.getInstance().getText("webdav.serverNamePrompt"));
 
     final DefaultStringOption urlOption = new DefaultStringOption("webdav.server.url");
     urlOption.addChangeValueListener(new ChangeValueListener() {
