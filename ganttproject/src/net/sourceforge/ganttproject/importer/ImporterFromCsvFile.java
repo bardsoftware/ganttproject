@@ -21,10 +21,29 @@ package net.sourceforge.ganttproject.importer;
 import java.io.File;
 import java.io.IOException;
 
+import biz.ganttproject.core.option.GPOption;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.io.GanttCSVOpen;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 
+/**
+ * Controls the process of importing CSV file.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class ImporterFromCsvFile extends ImporterBase {
+  private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
+  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption };
+
+  public ImporterFromCsvFile() {
+    super("csvFiles");
+    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
+  }
+
+  @Override
+  protected GPOption[] getOptions() {
+    return myOptions;
+  }
 
   @Override
   public String getFileNamePattern() {
@@ -38,9 +57,11 @@ public class ImporterFromCsvFile extends ImporterBase {
 
   @Override
   public void run(File selectedFile) {
-    GanttCSVOpen opener = new GanttCSVOpen(selectedFile, getProject().getTaskManager(), getProject().getHumanResourceManager());
+    BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
+    GanttCSVOpen opener = new GanttCSVOpen(selectedFile, bufferProject.getTaskManager(), bufferProject.getHumanResourceManager());
     try {
       opener.load();
+      ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, null);
     } catch (IOException e) {
       GPLogger.log(e);
     }
