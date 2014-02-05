@@ -237,7 +237,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
   protected void updateTooltip() {
     String description = getLocalizedDescription();
-    putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : "<html><body bgcolor=#EAEAEA>" + description + "</body></html>");
+    putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);
   }
 
   public void isIconVisible(boolean isNull) {

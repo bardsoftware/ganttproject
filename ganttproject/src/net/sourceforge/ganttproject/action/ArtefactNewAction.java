@@ -22,7 +22,7 @@ import javax.swing.Action;
 
 public class ArtefactNewAction extends ArtefactAction {
 
-  public ArtefactNewAction(ActiveActionProvider provider) {
-    super("artefact.new", IconSize.NO_ICON, provider, new Action[0]);
+  public ArtefactNewAction(ActiveActionProvider provider, Action[] delegates) {
+    super("artefact.new", IconSize.NO_ICON, provider,  delegates);
   }
 }
