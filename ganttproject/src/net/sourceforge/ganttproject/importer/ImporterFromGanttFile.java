@@ -201,7 +201,9 @@ public class ImporterFromGanttFile extends ImporterBase {
 
   public static void importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption, ImportCalendarOption importCalendarOption) {
     targetProject.getRoleManager().importData(bufferProject.getRoleManager());
-    targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
+    if (importCalendarOption != null) {
+      targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
+    }
     {
       CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
       targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
