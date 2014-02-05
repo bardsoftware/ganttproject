@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.io;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,12 +46,13 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
     final AtomicBoolean wasCalled = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup(ImmutableSet.<String> of("A", "B")) {
+    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
-      protected void process(CSVRecord record) {
+      protected boolean doProcess(CSVRecord record) {
         wasCalled.set(true);
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
+        return true;
       }
     };
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data)), recordGroup);
@@ -68,30 +70,97 @@ public class CsvImportTest extends TestCase {
     String header1 = "A, B";
     String data1 = "a1, b1";
     final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup1 = new GanttCSVOpen.RecordGroup(ImmutableSet.<String> of("A", "B")) {
+    GanttCSVOpen.RecordGroup recordGroup1 = new GanttCSVOpen.RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
-      protected void process(CSVRecord record) {
+      protected boolean doProcess(CSVRecord record) {
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
         wasCalled1.set(true);
+        return true;
       }
     };
 
     String header2 = "C, D, E";
     String data2 = "c1, d1, e1";
     final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup2 = new GanttCSVOpen.RecordGroup(ImmutableSet.<String> of("C", "D", "E")) {
+    GanttCSVOpen.RecordGroup recordGroup2 = new GanttCSVOpen.RecordGroup("CDE", ImmutableSet.<String> of("C", "D", "E")) {
       @Override
-      protected void process(CSVRecord record) {
+      protected boolean doProcess(CSVRecord record) {
         assertEquals("c1", record.get("C"));
         assertEquals("d1", record.get("D"));
         assertEquals("e1", record.get("E"));
         wasCalled2.set(true);
+        return true;
       }
     };
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
         recordGroup1, recordGroup2);
     importer.load();
     assertTrue(wasCalled1.get() && wasCalled2.get());
+  }
+
+  public void testIncompleteHeader() throws IOException {
+    String header = "A, B";
+    String data = "a1, b1";
+    final AtomicBoolean wasCalled = new AtomicBoolean(false);
+    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC",
+        ImmutableSet.<String> of("A", "B", "C"), // all fields
+        ImmutableSet.<String> of("A", "B")) { // mandatory fields
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        wasCalled.set(true);
+        assertEquals("a1", record.get("A"));
+        assertEquals("b1", record.get("B"));
+        return true;
+      }
+    };
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data)), recordGroup);
+    importer.load();
+    assertTrue(wasCalled.get());
+  }
+
+  public void testSkipUntilFirstHeader() throws IOException {
+    String notHeader = "FOO, BAR, A";
+    String header = "A, B";
+    String data = "a1, b1";
+    final AtomicBoolean wasCalled = new AtomicBoolean(false);
+    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC", ImmutableSet.<String> of("A", "B")) {
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        wasCalled.set(true);
+        assertEquals("a1", record.get("A"));
+        assertEquals("b1", record.get("B"));
+        return true;
+      }
+    };
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(notHeader, header, data)), recordGroup);
+    importer.load();
+    assertTrue(wasCalled.get());
+    assertEquals(1, importer.getSkippedLineCount());
+  }
+
+  public void testSkipLinesWithEmptyMandatoryFields() throws IOException {
+    String header = "A, B, C";
+    String data1 = "a1,,c1";
+    String data2 = "a2,b2,c2";
+    String data3 = ",b3,c3";
+    final AtomicBoolean wasCalled = new AtomicBoolean(false);
+    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC",
+        ImmutableSet.<String> of("A", "B", "C"), ImmutableSet.<String> of("A", "B")) {
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        if (!hasMandatoryFields(record)) {
+          return false;
+        }
+        wasCalled.set(true);
+        assertEquals("a2", record.get("A"));
+        assertEquals("b2", record.get("B"));
+        return true;
+      }
+    };
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data1, data2, data3)), recordGroup);
+    importer.load();
+    assertTrue(wasCalled.get());
+    assertEquals(2, importer.getSkippedLineCount());
   }
 }
