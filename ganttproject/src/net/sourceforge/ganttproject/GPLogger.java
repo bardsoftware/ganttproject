@@ -105,6 +105,12 @@ public class GPLogger {
     ourUIFacade = uifacade;
   }
 
+  public static void debug(Logger logger, String format, Object... args) {
+    if (logger.isLoggable(Level.FINE)) {
+      logger.fine(String.format(format, args));
+    }
+  }
+
   public static void setLogFile(String logFileName) {
     try {
       Handler fileHandler = new FileHandler(logFileName, true);
