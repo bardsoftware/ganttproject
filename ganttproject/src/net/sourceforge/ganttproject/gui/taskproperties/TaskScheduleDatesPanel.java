@@ -23,8 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -39,8 +37,10 @@ import javax.swing.JTextField;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
@@ -77,7 +77,6 @@ public class TaskScheduleDatesPanel {
   private static BooleanOption ourPrevLock = ourStartDateLock;
   private final UIFacade myUiFacade;
   private JXHyperlink myLockHyperlink;
-  private JXHyperlink mySchedulingHyperlink;
   private boolean isMilestone;
 
   public TaskScheduleDatesPanel(UIFacade uiFacade) {
@@ -87,6 +86,29 @@ public class TaskScheduleDatesPanel {
   public void setUnpluggedClone(Task unpluggedClone) {
     myUnpluggedClone = unpluggedClone;
     isMilestone = unpluggedClone.isMilestone();
+    DateValidator validator = new UIUtil.DateValidator() {
+      @Override
+      public Pair<Boolean, String> apply(Date value) {
+        return DateValidator.Default.aroundProjectStart(myUnpluggedClone.getManager().getProjectStart()).apply(value);
+      }
+    };
+    UIUtil.setupDatePicker(myStartDatePicker, myUnpluggedClone.getStart().getTime(), validator, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        Date date = ((JXDatePicker) e.getSource()).getDate();
+        if (date != null) {
+          setStart(CalendarFactory.createGanttCalendar(date), true);
+        }
+      }
+    });
+    UIUtil.setupDatePicker(myEndDatePicker, myUnpluggedClone.getEnd().getTime(), validator, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
+        c.add(Calendar.DATE, 1);
+        setEnd(c, true);
+      }
+    });
     setStart(myUnpluggedClone.getStart(), false);
     setEnd(myUnpluggedClone.getEnd(), false);
     adjustLength();
@@ -129,45 +151,19 @@ public class TaskScheduleDatesPanel {
     };
   }
 
-  private static Action createDisabledAction(String key) {
-    return new GPAction(key) {
-      {
-        setEnabled(false);
-      }
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    };
-  }
-
   protected void showPopup(List<Action> actions, JComponent owner, JComponent anchor) {
     myUiFacade.showPopupMenu(owner, actions, anchor.getLocation().x, anchor.getLocation().y);
   }
 
   public void insertInto(final JPanel propertiesPanel) {
     // Begin date
-    myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        Date date = ((JXDatePicker) e.getSource()).getDate();
-        if (date != null) {
-          setStart(CalendarFactory.createGanttCalendar(date), true);
-        }
-      }
-    });
+    myStartDatePicker = UIUtil.createDatePicker();
     final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", ourStartDateLock);
     JComponent startDateLabel = createLabel(language.getText("dateOfBegining"), ourStartDateLock, myStartDatePicker, startDateLockAction);
 
 
     // End date
-    myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
-        c.add(Calendar.DATE, 1);
-        setEnd(c, true);
-      }
-    });
+    myEndDatePicker = UIUtil.createDatePicker();
     final GPAction endDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.end", ourEndDateLock);
     JComponent endDateLabel = createLabel(language.getText("dateOfEnd"), ourEndDateLock, myEndDatePicker, endDateLockAction);
 

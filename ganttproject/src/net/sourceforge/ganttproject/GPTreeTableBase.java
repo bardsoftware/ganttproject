@@ -74,6 +74,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
@@ -691,7 +692,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   protected TableCellEditor newDateCellEditor() {
-    return new DateCellEditor();
+    return new DateCellEditor(myProject);
   }
 
   public JXTreeTable getTree() {
@@ -733,9 +734,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   private static class DateCellEditor extends DefaultCellEditor {
     private Date myDate;
+    private final IGanttProject myProject;
 
-    public DateCellEditor() {
+    public DateCellEditor(IGanttProject project) {
       super(new JTextField());
+      myProject = project;
     }
 
     @Override
@@ -753,7 +756,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     @Override
     public boolean stopCellEditing() {
       final String dateString = ((JTextComponent) getComponent()).getText();
-      Date parsedDate = GanttLanguage.getInstance().parseDate(dateString);
+      ValueValidator<Date> validator = UIUtil.createStringDateValidator(UIUtil.DateValidator.Default.aroundProjectStart(
+          myProject.getTaskManager().getProjectStart()), GanttLanguage.getInstance().getShortDateFormat());
+      Date parsedDate = validator.parse(dateString);
       if (parsedDate == null) {
         getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
         return false;
