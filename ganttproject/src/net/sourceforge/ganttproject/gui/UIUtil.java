@@ -36,6 +36,7 @@ import java.util.Date;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -53,10 +54,13 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTMLEditorKit;
 
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
@@ -71,6 +75,7 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.ValidationException;
 
@@ -88,6 +93,7 @@ public abstract class UIUtil {
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
   public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
 
   static {
@@ -435,5 +441,47 @@ public abstract class UIUtil {
     //htmlPane.setBackground(Color.YELLOW);
     htmlPane.setText(html);
     return htmlPane;
+  }
+
+  public static TableCellEditor newDateCellEditor(IGanttProject project) {
+    return new DateCellEditor(project);
+  }
+
+  private static class DateCellEditor extends DefaultCellEditor {
+    private Date myDate;
+    private final IGanttProject myProject;
+
+    public DateCellEditor(IGanttProject project) {
+      super(new JTextField());
+      myProject = project;
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
+      JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
+      result.selectAll();
+      return result;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+      final String dateString = ((JTextComponent) getComponent()).getText();
+      ValueValidator<Date> validator = UIUtil.createStringDateValidator(UIUtil.DateValidator.Default.aroundProjectStart(
+          myProject.getTaskManager().getProjectStart()), GanttLanguage.getInstance().getShortDateFormat());
+      Date parsedDate = validator.parse(dateString);
+      if (parsedDate == null) {
+        getComponent().setBackground(INVALID_VALUE_BACKGROUND);
+        return false;
+      }
+      myDate = parsedDate;
+      getComponent().setBackground(null);
+      super.fireEditingStopped();
+      return true;
+    }
   }
 }

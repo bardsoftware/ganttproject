@@ -239,7 +239,8 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
   public void tryFile() {
     myProcessTextEventEnabled = false;
-    onFileChosen(new File(myTextField.getText()));
+    myFile = new File(myTextField.getText());
+    onFileChosen(myFile);
     myProcessTextEventEnabled = true;
   }
 

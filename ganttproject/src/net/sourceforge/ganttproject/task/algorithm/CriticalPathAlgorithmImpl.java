@@ -31,8 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import biz.ganttproject.core.calendar.GPCalendar;
-
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -43,9 +42,9 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
   private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);
 
   private final TaskManager myTaskManager;
-  private final GPCalendar myCalendar;
+  private final GPCalendarCalc myCalendar;
 
-  public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendar calendar) {
+  public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendarCalc calendar) {
     myTaskManager = taskManager;
     myCalendar = calendar;
   }

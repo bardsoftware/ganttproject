@@ -21,6 +21,10 @@ package net.sourceforge.ganttproject.parser;
 import org.xml.sax.Attributes;
 
 public interface TagHandler {
+  public boolean hasCdata();
+
+  public void appendCdata(String cdata);
+
   /** Method when start to parse an attribute */
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
       throws FileFormatException;

@@ -24,7 +24,6 @@ import java.io.File;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JToolBar;
@@ -45,7 +44,6 @@ import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.io.OptionSaver;
 import net.sourceforge.ganttproject.io.SaverBase;
-import net.sourceforge.ganttproject.parser.IconPositionTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -65,8 +63,6 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.xml.XmlEscapers;
 
@@ -447,8 +443,6 @@ public class GanttOptions extends SaverBase {
 
   private void loadRoleSets(File optionsFile) {
     GanttXMLOpen loader = new GanttXMLOpen(null);
-    IconPositionTagHandler iconHandler = new IconPositionTagHandler();
-    loader.addTagHandler(iconHandler);
 
     loader.addTagHandler(new RoleTagHandler(getRoleManager()));
     loader.load(optionsFile);

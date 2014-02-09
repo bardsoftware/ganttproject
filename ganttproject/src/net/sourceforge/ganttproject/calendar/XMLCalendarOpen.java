@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
@@ -40,7 +41,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 
 /**
  * @author nbohn
@@ -91,7 +92,7 @@ public class XMLCalendarOpen {
     return new DefaultTagHandler();
   }
 
-  private class DefaultTagHandler implements TagHandler {
+  private class DefaultTagHandler extends AbstractTagHandler {
     private String name;
 
     @Override
@@ -164,7 +165,7 @@ public class XMLCalendarOpen {
     DefaultTagHandler th = (DefaultTagHandler) getDefaultTagHandler();
     addTagHandler(th);
     IConfigurationElement[] calendarExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor(
-        GPCalendar.EXTENSION_POINT_ID);
+        GPCalendarCalc.EXTENSION_POINT_ID);
     myCalendarLabels = new String[calendarExtensions.length];
     for (int i = 0; i < calendarExtensions.length; i++) {
       Bundle nextBundle = Platform.getBundle(calendarExtensions[i].getDeclaringExtension().getNamespaceIdentifier());

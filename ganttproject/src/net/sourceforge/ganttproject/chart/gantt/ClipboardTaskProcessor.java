@@ -31,8 +31,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 

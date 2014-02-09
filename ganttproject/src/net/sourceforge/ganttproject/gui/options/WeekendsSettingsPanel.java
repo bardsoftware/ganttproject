@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -40,7 +40,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
   private WeekendConfigurationPage weekendConfigurationPanel;
 
-  private GPCalendar calendar;
+  private GPCalendarCalc calendar;
 
   public WeekendsSettingsPanel(IGanttProject project, UIFacade uiFacade) {
     super(uiFacade, language.getCorrectedLabel("weekends"), language.getText("settingsWeekends"));
@@ -54,7 +54,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
   @Override
   public boolean applyChanges(boolean askForApply) {
     weekendConfigurationPanel.setActive(false);
-    GPCalendar projectCalendar = project.getActiveCalendar();
+    GPCalendarCalc projectCalendar = project.getActiveCalendar();
     boolean hasChange = weekendConfigurationPanel.isChanged();
     for (int i = 1; !hasChange && i < 8; i++) {
       if (calendar.getWeekDayType(i) != projectCalendar.getWeekDayType(i)) {
