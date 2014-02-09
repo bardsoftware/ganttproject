@@ -471,8 +471,10 @@ public abstract class UIUtil {
     @Override
     public boolean stopCellEditing() {
       final String dateString = ((JTextComponent) getComponent()).getText();
-      ValueValidator<Date> validator = UIUtil.createStringDateValidator(UIUtil.DateValidator.Default.aroundProjectStart(
-          myProject.getTaskManager().getProjectStart()), GanttLanguage.getInstance().getShortDateFormat());
+      DateValidator dateValidator = myProject == null
+          ? null
+          : UIUtil.DateValidator.Default.aroundProjectStart(myProject.getTaskManager().getProjectStart());
+      ValueValidator<Date> validator = UIUtil.createStringDateValidator(dateValidator, GanttLanguage.getInstance().getShortDateFormat());
       Date parsedDate = validator.parse(dateString);
       if (parsedDate == null) {
         getComponent().setBackground(INVALID_VALUE_BACKGROUND);
