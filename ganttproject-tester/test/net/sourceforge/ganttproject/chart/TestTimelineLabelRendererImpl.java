@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.grid.Offset;
@@ -93,11 +94,11 @@ public class TestTimelineLabelRendererImpl extends TestCase {
     testApi.getTaskManager().getTaskHierarchy().move(task, testApi.getTaskManager().getRootTask());
 
     testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), SUNDAY.getTime(), MONDAY.getTime(), 50,
-        DayType.WEEKEND));
+        DayMask.WEEKEND));
     testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), MONDAY.getTime(), TUESDAY.getTime(), 100,
-        DayType.WORKING));
+        DayMask.WORKING));
     testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), TUESDAY.getTime(), WEDNESDAY.getTime(),
-        150, DayType.WORKING));
+        150, DayMask.WORKING));
 
     TimelineLabelRendererImpl renderer = new TimelineLabelRendererImpl(testApi);
     renderer.render();

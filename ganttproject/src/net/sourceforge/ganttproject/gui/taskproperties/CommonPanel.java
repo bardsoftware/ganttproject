@@ -33,13 +33,13 @@ import org.jdesktop.swingx.JXTable;
 /**
  * @author dbarashev (Dmitry Barashev)
  */
-abstract class CommonPanel {
+public abstract class CommonPanel {
   static void setupTableUI(JXTable table) {
     UIUtil.setupTableUI(table, 10);
     UIUtil.setupHighlighters(table);
   }
 
-  static void setupComboBoxEditor(TableColumn column, Object[] values) {
+  public static void setupComboBoxEditor(TableColumn column, Object[] values) {
     DefaultComboBoxModel model = new DefaultComboBoxModel(values);
     JComboBox comboBox = new JComboBox(model);
     comboBox.setEditable(false);

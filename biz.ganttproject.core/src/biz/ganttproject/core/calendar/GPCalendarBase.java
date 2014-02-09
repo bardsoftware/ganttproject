@@ -21,8 +21,6 @@ package biz.ganttproject.core.calendar;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.GPCalendar.MoveDirection;
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -31,7 +29,7 @@ import biz.ganttproject.core.time.TimeUnit;
 /**
  * @author bard
  */
-abstract class GPCalendarBase {
+abstract class GPCalendarBase implements GPCalendarCalc {
   public Date shiftDate(Date input, TimeDuration shift) {
     if (shift.getLength() == 0) {
       return input;
@@ -74,30 +72,35 @@ abstract class GPCalendarBase {
   }
   
   protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
-    Date nextUnitStart = direction == GPCalendar.MoveDirection.FORWARD ? framer.adjustRight(time)
+    Date nextUnitStart = direction == GPCalendarCalc.MoveDirection.FORWARD ? framer.adjustRight(time)
         : framer.jumpLeft(time);
+    int nextUnitMask = getDayMask(nextUnitStart);
     switch (dayType) {
     case WORKING:
-      if (!isNonWorkingDay(nextUnitStart)) {
+      if ((nextUnitMask & DayMask.WORKING) == DayMask.WORKING) {
         return nextUnitStart;
       }
       break;
     case WEEKEND:
     case HOLIDAY:
     case NON_WORKING:
-      if (isNonWorkingDay(nextUnitStart)) {
+      if ((nextUnitMask & DayMask.WORKING) == 0) {
         return nextUnitStart;
       }
       break;
+    default:
+      assert false : "Should not be here";
     }
     if (limit != null) {
-      if (direction == GPCalendar.MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
-          || direction == GPCalendar.MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
+      if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
+          || direction == MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
         return null;
       }
     }
     return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
   }
 
-  public abstract boolean isNonWorkingDay(Date date);
+  //public abstract boolean isNonWorkingDay(Date date);
+
+  public abstract int getDayMask(Date date);
 }

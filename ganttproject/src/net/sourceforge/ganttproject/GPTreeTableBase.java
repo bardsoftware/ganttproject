@@ -498,7 +498,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         try {
           return super.stopCellEditing();
         } catch (ValidationException e) {
-          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
           return false;
         }
       }
@@ -509,7 +509,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         try {
           return super.stopCellEditing();
         } catch (ValidationException e) {
-          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
           return false;
         }
       }
@@ -682,17 +682,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   TableCellEditor createCellEditor(Class<?> columnClass) {
-    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? newDateCellEditor()
+    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? UIUtil.newDateCellEditor(myProject)
         : getTreeTable().getDefaultEditor(columnClass);
     return editor == null ? null : wrapEditor(editor);
   }
 
   private TableCellEditor wrapEditor(TableCellEditor editor) {
     return new TreeTableCellEditorImpl((DefaultCellEditor) editor, getTable());
-  }
-
-  protected TableCellEditor newDateCellEditor() {
-    return new DateCellEditor(myProject);
   }
 
   public JXTreeTable getTree() {
@@ -730,44 +726,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     super.addKeyListener(keyListener);
     // getTable().addKeyListener(keyListener);
     // getTree().addKeyListener(keyListener);
-  }
-
-  private static class DateCellEditor extends DefaultCellEditor {
-    private Date myDate;
-    private final IGanttProject myProject;
-
-    public DateCellEditor(IGanttProject project) {
-      super(new JTextField());
-      myProject = project;
-    }
-
-    @Override
-    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-      JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-      result.selectAll();
-      return result;
-    }
-
-    @Override
-    public Object getCellEditorValue() {
-      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
-    }
-
-    @Override
-    public boolean stopCellEditing() {
-      final String dateString = ((JTextComponent) getComponent()).getText();
-      ValueValidator<Date> validator = UIUtil.createStringDateValidator(UIUtil.DateValidator.Default.aroundProjectStart(
-          myProject.getTaskManager().getProjectStart()), GanttLanguage.getInstance().getShortDateFormat());
-      Date parsedDate = validator.parse(dateString);
-      if (parsedDate == null) {
-        getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
-        return false;
-      }
-      myDate = parsedDate;
-      getComponent().setBackground(null);
-      super.fireEditingStopped();
-      return true;
-    }
   }
 
   protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {

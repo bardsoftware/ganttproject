@@ -253,7 +253,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
       return currentLength;
     }
   
-  private TimeDuration createLength(TimeUnit unit, float length) {
+  public static TimeDuration createLength(TimeUnit unit, float length) {
     return new TimeDurationImpl(unit, length);
   }
 

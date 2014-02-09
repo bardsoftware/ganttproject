@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -32,10 +31,10 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 
+import net.sourceforge.ganttproject.gui.UIUtil;
 import biz.ganttproject.core.option.ValidationException;
 
 class TreeTableCellEditorImpl implements TableCellEditor {
-  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
   private final DefaultCellEditor myProxiedEditor;
   private Runnable myFocusCommand;
   private final JTable myTable;
@@ -87,7 +86,7 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     try {
       return myProxiedEditor.stopCellEditing();
     } catch (ValidationException e) {
-      myProxiedEditor.getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+      myProxiedEditor.getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
       return false;
     }
   }

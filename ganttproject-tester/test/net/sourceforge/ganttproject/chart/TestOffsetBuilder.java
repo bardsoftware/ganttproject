@@ -22,13 +22,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.TestSetupHelper;
 import junit.framework.TestCase;
 
@@ -39,7 +38,7 @@ import junit.framework.TestCase;
  */
 public class TestOffsetBuilder extends TestCase {
     public void testBasicOffsets() {
-        GPCalendar calendar = GPCalendar.PLAIN;
+        GPCalendarCalc calendar = GPCalendarCalc.PLAIN;
         Date start = TestSetupHelper.newMonday().getTime();
 
         OffsetBuilder builder = new OffsetBuilderImpl.FactoryImpl()

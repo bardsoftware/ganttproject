@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
 import com.google.common.base.Suppliers;

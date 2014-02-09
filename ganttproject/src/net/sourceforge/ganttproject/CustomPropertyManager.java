@@ -32,7 +32,6 @@ import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 public interface CustomPropertyManager {
   List<CustomPropertyDefinition> getDefinitions();

@@ -33,12 +33,13 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 
 import org.xml.sax.Attributes;
 
-public class DependencyTagHandler implements TagHandler, ParsingListener {
+public class DependencyTagHandler extends AbstractTagHandler implements ParsingListener {
   private final TaskManager myTaskManager;
 
   private final UIFacade myUIFacade;
 
   public DependencyTagHandler(ParsingContext context, TaskManager taskManager, UIFacade uiFacade) {
+    super("depend");
     myContext = context;
     myTaskManager = taskManager;
     myUIFacade = uiFacade;

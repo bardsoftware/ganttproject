@@ -26,11 +26,9 @@ import java.util.Map;
 
 import org.osgi.service.prefs.Preferences;
 
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendar.ImportCalendarOption;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -49,14 +47,14 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
-  private final GPCalendar.ImportCalendarOption myImportCalendarOption = new GPCalendar.ImportCalendarOption();
+  private final ImportCalendarOption myImportCalendarOption = new ImportCalendarOption();
 
   private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
 
   public ImporterFromGanttFile() {
     super("ganttprojectFiles");
     myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
-    myImportCalendarOption.setSelectedValue(GPCalendar.ImportCalendarOption.Values.NO);
+    myImportCalendarOption.setSelectedValue(ImportCalendarOption.Values.NO);
   }
 
   @Override
@@ -86,7 +84,8 @@ public class ImporterFromGanttFile extends ImporterBase {
   }
 
   @Override
-  public void run(final File selectedFile) {
+  public void run() {
+    final File selectedFile = getFile();
     final IGanttProject targetProject = getProject();
     final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
     getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {

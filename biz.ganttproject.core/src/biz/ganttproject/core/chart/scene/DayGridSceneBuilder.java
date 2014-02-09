@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
@@ -99,14 +100,14 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
       curX = 0;
     }
     for (Offset offset : defaultOffsets) {
-      if (offset.getDayType() != GPCalendar.DayType.WORKING) {
+      if ((offset.getDayMask() & DayMask.WORKING) == 0) {
         // Create a non-working day bar in the main area
         renderNonWorkingDay(curX, offset);
         // And expand it to the timeline area.
         Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
             - curX, getLineBottomPosition() - getLineTopPosition() + 1);
         // System.err.println(offset.getDayType()+": " + r);
-        applyRectangleStyle(r, offset.getDayType());
+        applyRectangleStyle(r, offset.getDayMask());
       }
       curX = offset.getOffsetPixels();
     }
@@ -115,15 +116,16 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
   private void renderNonWorkingDay(int curX, Offset curOffset) {
     Canvas.Rectangle r = getCanvas().createRectangle(curX, getLineBottomPosition(),
         curOffset.getOffsetPixels() - curX, getHeight());
-    applyRectangleStyle(r, curOffset.getDayType());
-    getCanvas().bind(r, curOffset.getDayType());
+    applyRectangleStyle(r, curOffset.getDayMask());
   }
 
-  private void applyRectangleStyle(Rectangle r, GPCalendar.DayType dayType) {
-    if (dayType == GPCalendar.DayType.WEEKEND) {
-      r.setStyle("calendar.weekend");
-    } else if (dayType == GPCalendar.DayType.HOLIDAY) {
+  private static void applyRectangleStyle(Rectangle r, int dayMask) {
+    if ((dayMask & DayMask.HOLIDAY) == DayMask.HOLIDAY) {
       r.setStyle("calendar.holiday");
+      return;
+    }
+    if ((dayMask & DayMask.WEEKEND) == DayMask.WEEKEND) {
+      r.setStyle("calendar.weekend");
     }
   }
 
