@@ -34,7 +34,8 @@ public abstract class GPVersion {
   public static String BRNO = "2.6 Brno (build 1473)";
   public static String BRNO_2_6_1 = "2.6.1 Brno (build 1499)";
   public static String BRNO_2_6_2 = "2.6.2 Brno (build 1544)";
-  public static String CURRENT = BRNO_2_6_2;
+  public static String BRNO_2_6_3 = "2.6.3 Brno (build 1610)";
+  public static String CURRENT = BRNO_2_6_3;
 
   public static String getCurrentVersionNumber() {
     return CURRENT.split("\\s")[0];
