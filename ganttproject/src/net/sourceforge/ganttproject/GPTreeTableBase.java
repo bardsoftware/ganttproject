@@ -682,7 +682,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   TableCellEditor createCellEditor(Class<?> columnClass) {
-    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? UIUtil.newDateCellEditor(myProject)
+    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? UIUtil.newDateCellEditor(myProject, false)
         : getTreeTable().getDefaultEditor(columnClass);
     return editor == null ? null : wrapEditor(editor);
   }
