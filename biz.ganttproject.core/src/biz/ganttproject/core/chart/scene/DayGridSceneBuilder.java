@@ -93,6 +93,9 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     line.setStyle(style);
   }
 
+  // This method creates colored vertical stripes on the chart which correspond 
+  // to weekend days and holidays. It is not necessary that colored stripe is 
+  // a non-working day, though: e.g. we may show weekends but count them as working days.
   private void renderNonWorkingDayColumns() {
     List<Offset> defaultOffsets = myInputApi.getAtomUnitOffsets();
     int curX = defaultOffsets.get(0).getOffsetPixels();
@@ -100,13 +103,13 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
       curX = 0;
     }
     for (Offset offset : defaultOffsets) {
-      if ((offset.getDayMask() & DayMask.WORKING) == 0) {
-        // Create a non-working day bar in the main area
+      int dayMask = offset.getDayMask();
+      if ((dayMask & (DayMask.HOLIDAY | DayMask.WEEKEND)) != 0) {
+        // Create a holiday/weekend day bar in the main area
         renderNonWorkingDay(curX, offset);
         // And expand it to the timeline area.
         Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
             - curX, getLineBottomPosition() - getLineTopPosition() + 1);
-        // System.err.println(offset.getDayType()+": " + r);
         applyRectangleStyle(r, offset.getDayMask());
       }
       curX = offset.getOffsetPixels();
