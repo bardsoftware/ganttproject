@@ -77,7 +77,7 @@ public class CalendarEditorPanel {
         table.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
     TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
-    dateColumn.setCellEditor(UIUtil.newDateCellEditor(null));
+    dateColumn.setCellEditor(UIUtil.newDateCellEditor(null, true));
 
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
       @Override

@@ -57,7 +57,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTMLEditorKit;
 
 import net.sourceforge.ganttproject.IGanttProject;
@@ -75,9 +74,9 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
-import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -443,24 +442,33 @@ public abstract class UIUtil {
     return htmlPane;
   }
 
-  public static TableCellEditor newDateCellEditor(IGanttProject project) {
-    return new DateCellEditor(project);
+  public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
+    return new DateCellEditor(project, showDatePicker);
   }
 
-  private static class DateCellEditor extends DefaultCellEditor {
+  private static class DateCellEditor extends DefaultCellEditor implements ActionListener {
     private Date myDate;
     private final IGanttProject myProject;
+    private final JXDatePicker myDatePicker;
+    private final boolean myShowDatePicker;
 
-    public DateCellEditor(IGanttProject project) {
+    public DateCellEditor(IGanttProject project, boolean showDatePicker) {
       super(new JTextField());
       myProject = project;
+      myDatePicker = UIUtil.createDatePicker();
+      myShowDatePicker = showDatePicker;
+      UIUtil.setupDatePicker(myDatePicker, null, null, getActionListener());
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-      JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-      result.selectAll();
-      return result;
+      JFormattedTextField editor = myDatePicker.getEditor();
+      editor.selectAll();
+      return myShowDatePicker ? myDatePicker : editor;
+    }
+
+    private ActionListener getActionListener() {
+      return this;
     }
 
     @Override
@@ -470,20 +478,15 @@ public abstract class UIUtil {
 
     @Override
     public boolean stopCellEditing() {
-      final String dateString = ((JTextComponent) getComponent()).getText();
-      DateValidator dateValidator = myProject == null
-          ? null
-          : UIUtil.DateValidator.Default.aroundProjectStart(myProject.getTaskManager().getProjectStart());
-      ValueValidator<Date> validator = UIUtil.createStringDateValidator(dateValidator, GanttLanguage.getInstance().getShortDateFormat());
-      Date parsedDate = validator.parse(dateString);
-      if (parsedDate == null) {
-        getComponent().setBackground(INVALID_VALUE_BACKGROUND);
-        return false;
-      }
-      myDate = parsedDate;
+      myDate = myDatePicker.getDate();
       getComponent().setBackground(null);
       super.fireEditingStopped();
       return true;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      stopCellEditing();
     }
   }
 }
