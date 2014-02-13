@@ -173,7 +173,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
   protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
     float offsetStep = getOffsetStep(timeUnit);
     step.dayType = getCalendar().getDayTypeDate(startDate);
-    if (step.dayType != DayType.WORKING) {
+    if (getCalendar().isNonWorkingDay(startDate)) {
       offsetStep = offsetStep / myWeekendDecreaseFactor;
     }
     step.parrots += offsetStep;
