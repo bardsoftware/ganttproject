@@ -76,7 +76,9 @@ public class TaskDependenciesPanel {
 
       @Override
       protected void onDeleteEvent() {
-        myTable.getCellEditor().stopCellEditing();
+        if (myTable.isEditing()) {
+          myTable.getCellEditor().stopCellEditing();
+        }
         myModel.delete(getTable().getSelectedRows());
       }
 
