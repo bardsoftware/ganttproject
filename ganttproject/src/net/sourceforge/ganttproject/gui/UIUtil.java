@@ -277,10 +277,16 @@ public abstract class UIUtil {
         return parsed;
       }
     };
-
   }
+
   public static void setupDatePicker(
       final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ActionListener listener) {
+    ValueValidator<Date> parseValidator = createStringDateValidator(
+        dv, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    setupDatePicker(picker, initialDate, dv, parseValidator, listener);
+  }
+
+  public static void setupDatePicker(final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ValueValidator<Date> parseValidator, final ActionListener listener) {
     if (dv == null) {
       picker.addActionListener(listener);
     } else {
@@ -296,9 +302,7 @@ public abstract class UIUtil {
       });
     }
     final JFormattedTextField editor = picker.getEditor();
-    final ValueValidator<Date> validator = createStringDateValidator(
-        dv, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
-    UIUtil.attachValidator(editor, validator, null);
+    UIUtil.attachValidator(editor, parseValidator, null);
     editor.addFocusListener(new FocusAdapter() {
       @Override
       public void focusLost(FocusEvent e) {
@@ -311,7 +315,7 @@ public abstract class UIUtil {
               }
             }
           } else {
-            if (validator.parse(String.valueOf(editor.getValue())) == null) {
+            if (parseValidator.parse(String.valueOf(editor.getValue())) == null) {
               throw new ValidationException();
             }
           }
@@ -443,21 +447,25 @@ public abstract class UIUtil {
   }
 
   public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
-    return new DateCellEditor(project, showDatePicker);
+    return new GPDateCellEditor(project, showDatePicker, null);
   }
 
-  private static class DateCellEditor extends DefaultCellEditor implements ActionListener {
+  public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener {
     private Date myDate;
     private final IGanttProject myProject;
     private final JXDatePicker myDatePicker;
     private final boolean myShowDatePicker;
 
-    public DateCellEditor(IGanttProject project, boolean showDatePicker) {
+    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator) {
       super(new JTextField());
       myProject = project;
       myDatePicker = UIUtil.createDatePicker();
       myShowDatePicker = showDatePicker;
-      UIUtil.setupDatePicker(myDatePicker, null, null, getActionListener());
+      if (parseValidator == null) {
+        parseValidator = UIUtil.createStringDateValidator(
+            null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+      }
+      UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
     }
 
     @Override
