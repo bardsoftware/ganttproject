@@ -21,6 +21,8 @@ package biz.ganttproject.core.calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -30,6 +32,8 @@ import biz.ganttproject.core.time.TimeUnit;
  * @author bard
  */
 abstract class GPCalendarBase implements GPCalendarCalc {
+  private final List<GPCalendarListener> myListeners = Lists.newArrayList();
+
   public Date shiftDate(Date input, TimeDuration shift) {
     if (shift.getLength() == 0) {
       return input;
@@ -100,7 +104,20 @@ abstract class GPCalendarBase implements GPCalendarCalc {
     return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
   }
 
-  //public abstract boolean isNonWorkingDay(Date date);
+  
+  @Override
+  public void addListener(GPCalendarListener listener) {
+    myListeners.add(listener);
+  }
 
+  protected void fireCalendarChanged() {
+    for (GPCalendarListener l : myListeners) {
+      try {
+        l.onCalendarChange();
+      } catch (Throwable e) {
+        e.printStackTrace();
+      }
+    }
+  }
   public abstract int getDayMask(Date date);
 }

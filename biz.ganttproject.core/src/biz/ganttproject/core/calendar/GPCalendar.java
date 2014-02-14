@@ -1,21 +1,21 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 GanttProject Team
+Copyright 2013 BarD Software s.r.o
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.core.calendar;
 
 import java.util.Collection;
@@ -23,9 +23,19 @@ import java.util.Date;
 
 
 /**
- * @author bard
+ * Represents a project calendar in GanttProject. Allows for managing weekend days
+ * and public holidays.
+ *  
+ * @author dbarashev (Dmitry Barashev)
  */
 public interface GPCalendar {
+  /**
+   * Flags corresponding to particular features of a calendar day. 
+   * A day can be working, in the sense that tasks can run at this day,
+   * or not working. At the same time, it may or may not be a weekend.
+   * Weekend is normally a non-working day, however, it can be made working
+   * if project owner decides to. 
+   */
   public static interface DayMask {
     int WORKING = 1;
     int WEEKEND = 2;
@@ -56,5 +66,6 @@ public interface GPCalendar {
 
   public void setBaseCalendarID(String id);
 
+  public void addListener(GPCalendarListener listener);
 
 }

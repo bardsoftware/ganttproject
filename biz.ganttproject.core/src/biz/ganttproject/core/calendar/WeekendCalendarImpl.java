@@ -90,8 +90,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       myTypes[i] = GPCalendar.DayType.WORKING;
     }
     setWeekDayType(GregorianCalendar.SATURDAY, GPCalendar.DayType.WEEKEND);
-    setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);    
+    setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
+    fireCalendarChanged();
   }
+  
   @Override
   public List<GPCalendarActivity> getActivities(Date startDate, final Date endDate) {
     if (getWeekendDaysCount() == 0 && myOneOffEvents.isEmpty() && myRecurringEvents.isEmpty()) {
@@ -180,6 +182,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       myWeekendDaysCount += (type == DayType.WEEKEND ? 1 : -1);
     }
     myTypes[day - 1] = type;
+    fireCalendarChanged();
   }
 
   @Override
@@ -195,6 +198,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   @Override
   public void setOnlyShowWeekends(boolean onlyShowWeekends) {
     myOnlyShowWeekends = onlyShowWeekends;
+    fireCalendarChanged();
   }
 
   private int getWeekendDaysCount() {
@@ -285,6 +289,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         myOneOffEvents.put(h.myDate, h);
       }
     }
+    fireCalendarChanged();
 //    myCalendarUrl = calendarUrl;
 //    clearPublicHolidays();
 //    if (calendarUrl != null) {
