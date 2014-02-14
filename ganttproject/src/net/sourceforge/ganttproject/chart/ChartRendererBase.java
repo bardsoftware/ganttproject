@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.scene.AbstractSceneBuilder;
 
@@ -59,7 +59,7 @@ public class ChartRendererBase extends AbstractSceneBuilder {
     return myChartModel;
   }
 
-  protected GPCalendar getCalendar() {
+  protected GPCalendarCalc getCalendar() {
     return myChartModel.getTaskManager().getCalendar();
   }
 

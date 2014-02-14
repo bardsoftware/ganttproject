@@ -23,7 +23,12 @@
       </library>
    </runtime>
    <requires>
+      <import plugin="biz.ganttproject.core"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="net.sourceforge.ganttproject"/>
    </requires>
+   <extension
+         point="net.sourceforge.ganttproject.importer">
+         <importer class="biz.ganttproject.impex.ical.IcsFileImporter"/>
+   </extension>
 </plugin>

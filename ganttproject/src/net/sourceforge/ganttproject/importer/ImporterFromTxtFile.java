@@ -24,6 +24,9 @@ import net.sourceforge.ganttproject.io.GanttTXTOpen;
 
 public class ImporterFromTxtFile extends ImporterBase {
 
+  public ImporterFromTxtFile() {
+    super("txt");
+  }
   @Override
   public String getFileNamePattern() {
     return "txt";
@@ -35,7 +38,8 @@ public class ImporterFromTxtFile extends ImporterBase {
   }
 
   @Override
-  public void run(File selectedFile) {
+  public void run() {
+    File selectedFile = getFile();
     GanttTXTOpen opener = new GanttTXTOpen(getProject().getTaskManager());
     opener.load(selectedFile);
   }

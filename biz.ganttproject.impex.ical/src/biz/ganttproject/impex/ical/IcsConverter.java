@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.util.List;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.UnfoldingReader;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 
@@ -52,7 +53,7 @@ public class IcsConverter {
       return;
     }
     CalendarBuilder builder = new CalendarBuilder();
-    Calendar c = builder.build(new FileReader(mainArgs.file.get(0)));
+    Calendar c = builder.build(new UnfoldingReader(new FileReader(mainArgs.file.get(0))));
     for (Component comp : (List<Component>)c.getComponents()) {
       System.err.println(comp);
     }

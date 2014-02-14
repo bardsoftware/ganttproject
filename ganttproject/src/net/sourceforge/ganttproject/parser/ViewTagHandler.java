@@ -10,10 +10,11 @@ import org.xml.sax.Attributes;
 /**
  * @author bard
  */
-public class ViewTagHandler implements TagHandler {
+public class ViewTagHandler extends AbstractTagHandler {
   private final UIFacade myUIFacade;
 
   public ViewTagHandler(UIFacade uiFacade) {
+    super("view");
     myUIFacade = uiFacade;
   }
 

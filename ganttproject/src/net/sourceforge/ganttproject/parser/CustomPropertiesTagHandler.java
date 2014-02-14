@@ -34,12 +34,11 @@ import org.w3c.util.InvalidDateException;
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 
 /**
  * @author bbaranne Mar 10, 2005
  */
-public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
+public class CustomPropertiesTagHandler extends AbstractTagHandler implements ParsingListener {
   private TaskManager taskManager = null;
 
   private ParsingContext parsingContext = null;
@@ -47,6 +46,7 @@ public class CustomPropertiesTagHandler implements TagHandler, ParsingListener {
   private List<CustomPropertiesStructure> listStructure = null;
 
   public CustomPropertiesTagHandler(ParsingContext context, TaskManager taskManager) {
+    super("customproperty");
     this.taskManager = taskManager;
     this.parsingContext = context;
     this.listStructure = new ArrayList<CustomPropertiesStructure>();

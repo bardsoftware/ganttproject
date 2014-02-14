@@ -36,6 +36,7 @@ import java.util.Date;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -53,10 +54,12 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.html.HTMLEditorKit;
 
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
@@ -73,6 +76,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -88,6 +92,7 @@ public abstract class UIUtil {
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
   public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
 
   static {
@@ -435,5 +440,53 @@ public abstract class UIUtil {
     //htmlPane.setBackground(Color.YELLOW);
     htmlPane.setText(html);
     return htmlPane;
+  }
+
+  public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
+    return new DateCellEditor(project, showDatePicker);
+  }
+
+  private static class DateCellEditor extends DefaultCellEditor implements ActionListener {
+    private Date myDate;
+    private final IGanttProject myProject;
+    private final JXDatePicker myDatePicker;
+    private final boolean myShowDatePicker;
+
+    public DateCellEditor(IGanttProject project, boolean showDatePicker) {
+      super(new JTextField());
+      myProject = project;
+      myDatePicker = UIUtil.createDatePicker();
+      myShowDatePicker = showDatePicker;
+      UIUtil.setupDatePicker(myDatePicker, null, null, getActionListener());
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
+      JFormattedTextField editor = myDatePicker.getEditor();
+      editor.selectAll();
+      return myShowDatePicker ? myDatePicker : editor;
+    }
+
+    private ActionListener getActionListener() {
+      return this;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+      myDate = myDatePicker.getDate();
+      getComponent().setBackground(null);
+      super.fireEditingStopped();
+      return true;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      stopCellEditing();
+    }
   }
 }

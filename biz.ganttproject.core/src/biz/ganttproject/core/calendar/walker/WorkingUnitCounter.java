@@ -20,7 +20,7 @@ package biz.ganttproject.core.calendar.walker;
 
 import java.util.Date;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
@@ -38,7 +38,7 @@ public class WorkingUnitCounter extends ForwardTimeWalker {
   private int myWorkingUnitCounter;
   private int myNonWorkingUnitCounter;
 
-  public WorkingUnitCounter(GPCalendar calendar, TimeUnit timeUnit) {
+  public WorkingUnitCounter(GPCalendarCalc calendar, TimeUnit timeUnit) {
     super(calendar, timeUnit);
   }
 

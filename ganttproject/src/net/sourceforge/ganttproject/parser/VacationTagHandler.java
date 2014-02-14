@@ -29,10 +29,11 @@ import biz.ganttproject.core.time.GanttCalendar;
 /**
  * @author nbohn
  */
-public class VacationTagHandler implements TagHandler, ParsingListener {
+public class VacationTagHandler extends AbstractTagHandler implements ParsingListener {
   private HumanResourceManager myResourceManager;
 
   public VacationTagHandler(HumanResourceManager resourceManager) {
+    super("vacation");
     myResourceManager = resourceManager;
   }
 
