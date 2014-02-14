@@ -19,12 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.calendar;
 
+import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -32,11 +34,15 @@ import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.UIUtil.GPDateCellEditor;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -77,7 +83,29 @@ public class CalendarEditorPanel {
         table.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
     TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
-    dateColumn.setCellEditor(UIUtil.newDateCellEditor(null, true));
+
+    // We'll show a hint label under the table if user types something which we can't parse
+    Date today = CalendarFactory.newCalendar().getTime();
+    final String hint = GanttLanguage.getInstance().formatText("calendar.editor.dateHint",
+        GanttLanguage.getInstance().getMediumDateFormat().format(today), GanttLanguage.getInstance().getShortDateFormat().format(today));
+    final JLabel hintLabel = new JLabel(" "); // non-empty label to occupy some vertical space
+    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(
+        null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    ValueValidator<Date> decorator = new ValueValidator<Date>() {
+      @Override
+      public Date parse(String text) throws ValidationException {
+        try {
+          Date result = realValidator.parse(text);
+          hintLabel.setText("");
+          return result;
+        } catch (ValidationException e) {
+          hintLabel.setText(hint);
+          throw e;
+        }
+      }
+    };
+    GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator);
+    dateColumn.setCellEditor(dateEditor);
 
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
       @Override
@@ -99,7 +127,9 @@ public class CalendarEditorPanel {
       protected void onSelectionChanged() {
       }
     };
-    return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, tableAndActions.getActionsComponent());
+    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(table, tableAndActions.getActionsComponent());
+    result.add(hintLabel, BorderLayout.SOUTH);
+    return result;
   }
 
   public List<CalendarEvent> getEvents() {
