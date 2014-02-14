@@ -32,7 +32,6 @@ import biz.ganttproject.core.table.ColumnList.Column;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.TaskNode;
 
 /**
  * Task tree table.

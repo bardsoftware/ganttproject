@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Stack;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -31,6 +32,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParsingContext;
@@ -38,6 +40,7 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -177,24 +180,16 @@ public class GanttXMLOpen implements GPParser {
     return new DefaultTagHandler();
   }
 
-  private class DefaultTagHandler implements TagHandler {
+  private class DefaultTagHandler extends AbstractTagHandler {
+    public DefaultTagHandler() {
+      super(null, true);
+    }
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
       indent += "    ";
       String eName = sName; // element name
       if ("".equals(eName)) {
         eName = qName; // not namespace aware
-      }
-      if (eName.equals("description")) {
-        myCharacterBuffer = new StringBuffer();
-        typeChar = 0;
-      }
-      if (eName.equals("notes")) {
-        myCharacterBuffer = new StringBuffer();
-        typeChar = 1;
-        // barmeier: we know that this tag has only attributes no nested
-        // tags
-        // we can do we need here.
       }
       if (eName.equals("tasks")) {
         myTaskManager.setZeroMilestones(null);
@@ -237,18 +232,17 @@ public class GanttXMLOpen implements GPParser {
     public void endElement(String namespaceURI, String sName, String qName) {
       indent = indent.substring(0, indent.length() - 4);
       if ("description".equals(qName)) {
-        myProjectInfo.setDescription(myCharacterBuffer.toString());
+        myProjectInfo.setDescription(getCdata());
       } else if ("notes".equals(qName)) {
         Task currentTask = getContext().peekTask();
-        currentTask.setNotes(myCharacterBuffer.toString());
+        currentTask.setNotes(getCdata());
       }
     }
 
   }
 
-  private StringBuffer myCharacterBuffer = new StringBuffer();
-
   class GanttXMLParser extends DefaultHandler {
+    private StringBuffer myCharacterBuffer = new StringBuffer();
     private final Stack<String> myTagStack = new Stack<String>();
 
     @Override
@@ -269,6 +263,7 @@ public class GanttXMLOpen implements GPParser {
         // name
         String qName, // qualified name
         Attributes attrs) throws SAXException {
+      myCharacterBuffer = new StringBuffer();
       myTagStack.push(qName);
       for (TagHandler next : myTagHandlers) {
         try {
@@ -290,8 +285,10 @@ public class GanttXMLOpen implements GPParser {
     @Override
     public void characters(char buf[], int offset, int len) throws SAXException {
       String s = new String(buf, offset, len);
-      if (typeChar >= 0) {
-        myCharacterBuffer.append(s);
+      for (TagHandler tagHandler : myTagHandlers) {
+        if (tagHandler.hasCdata()) {
+          tagHandler.appendCdata(s);
+        }
       }
     }
   }

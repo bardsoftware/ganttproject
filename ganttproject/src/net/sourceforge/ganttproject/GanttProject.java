@@ -105,8 +105,7 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
-
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -197,7 +196,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
 
       @Override
-      public GPCalendar getCalendar() {
+      public GPCalendarCalc getCalendar() {
         return GanttProject.this.getActiveCalendar();
       }
 
@@ -234,6 +233,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return GanttProject.this.getTaskContainment();
       }
     }, taskConfig);
+    addProjectEventListener(myTaskManager.getProjectListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
@@ -611,7 +611,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    getTaskManager().projectOpened();
     fireProjectOpened();
   }
 
@@ -648,7 +647,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         try {
           ((TaskManagerImpl)getTaskManager()).setEventsEnabled(false);
           importer.setContext(getProject(), getUIFacade(), getGanttOptions().getPluginPreferences());
-          importer.run(new File(document.getFilePath()));
+          importer.setFile(new File(document.getFilePath()));
+          importer.run();
           success = true;
           break;
         } catch (Throwable e) {
@@ -864,7 +864,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
 
-  private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
+  private WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   private ParserFactory myParserFactory;
 
@@ -954,8 +954,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public GPCalendar getActiveCalendar() {
-    return myFakeCalendar;
+  public GPCalendarCalc getActiveCalendar() {
+    return myCalendar;
   }
 
   @Override
@@ -985,7 +985,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
     projectDocument = null;
-    getTaskManager().projectClosed();
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 
@@ -993,7 +992,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       myPreviousStates.get(i).remove();
     }
     myPreviousStates = new ArrayList<GanttPreviousState>();
-    getTaskManager().getCalendar().clearPublicHolidays();
+    myCalendar.reset();
     myFacadeInvalidator.projectClosed();
   }
 

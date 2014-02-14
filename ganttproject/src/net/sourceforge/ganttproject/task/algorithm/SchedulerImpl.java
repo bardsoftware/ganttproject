@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
@@ -169,18 +171,18 @@ public class SchedulerImpl extends AlgorithmBase {
       modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
     }
     if (endRange.hasUpperBound()) {
-      GPCalendar cal = node.getTask().getManager().getCalendar();
+      GPCalendarCalc cal = node.getTask().getManager().getCalendar();
       Date endDate = endRange.upperEndpoint();
       TimeUnit timeUnit = node.getTask().getDuration().getTimeUnit();
-      if (!cal.isNonWorkingDay(endDate)) {
+      if (DayMask.WORKING == (cal.getDayMask(endDate) & DayMask.WORKING)) {
         // in case if calculated end date falls on first day after holidays (say, on Monday)
         // we'll want to modify it a little bit, so that it falls on that holidays start
         // If we don't do this, it will be done automatically the next time task activities are recalculated,
         // and thus task end date will keep changing
         Date closestWorkingEndDate = cal.findClosest(
-            endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
+            endDate, timeUnit, GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
         Date closestNonWorkingEndDate = cal.findClosest(
-            endDate, timeUnit, GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.NON_WORKING, closestWorkingEndDate);
+            endDate, timeUnit, GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.NON_WORKING, closestWorkingEndDate);
         // If there is a non-working date between current task end and closest working date
         // then we're really just after holidays
         if (closestNonWorkingEndDate != null && closestWorkingEndDate.before(closestNonWorkingEndDate)) {

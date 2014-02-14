@@ -4,12 +4,11 @@ import java.awt.Color;
 import java.net.URL;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -19,7 +18,7 @@ import net.sourceforge.ganttproject.task.TaskManagerConfig;
 
 public class TestSetupHelper {
     public static class TaskManagerBuilder implements TaskManagerConfig {
-        private GPCalendar myGPCalendar = new AlwaysWorkingTimeCalendarImpl();
+        private GPCalendarCalc myGPCalendar = new AlwaysWorkingTimeCalendarImpl();
 
         private TimeUnitStack myTimeUnitStack;
 
@@ -40,7 +39,7 @@ public class TestSetupHelper {
         }
 
         @Override
-        public GPCalendar getCalendar() {
+        public GPCalendarCalc getCalendar() {
             return myGPCalendar;
         }
 
@@ -59,7 +58,7 @@ public class TestSetupHelper {
             return null;
         }
 
-        public TaskManagerBuilder withCalendar(GPCalendar calendar) {
+        public TaskManagerBuilder withCalendar(GPCalendarCalc calendar) {
             myGPCalendar = calendar;
             return this;
         }

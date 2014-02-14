@@ -13,10 +13,11 @@ import org.xml.sax.Attributes;
 /**
  * @author bbaranne Mar 10, 2005
  */
-public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
+public class TaskPropertiesTagHandler extends AbstractTagHandler implements ParsingListener {
   private final CustomPropertyManager myCustomPropertyManager;
 
   public TaskPropertiesTagHandler(CustomPropertyManager customPropertyManager) {
+    super("taskproperty");
     myCustomPropertyManager = customPropertyManager;
   }
 
@@ -61,7 +62,7 @@ public class TaskPropertiesTagHandler implements TagHandler, ParsingListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
    */
   @Override

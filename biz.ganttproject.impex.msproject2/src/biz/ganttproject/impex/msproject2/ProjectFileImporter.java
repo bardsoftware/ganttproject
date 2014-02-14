@@ -83,8 +83,8 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
@@ -233,12 +233,14 @@ class ProjectFileImporter {
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
     for (ProjectCalendarException e : exceptions) {
       if (!e.getWorking()) {
+        final List<CalendarEvent> holidays = Lists.newArrayList();
         importHolidays(e, new HolidayAdder() {
           @Override
           public void addHoliday(Date date) {
-            getNativeCalendar().setPublicHoliDayType(date);
+            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
           }
         });
+        getNativeCalendar().setPublicHolidays(holidays);
       }
     }
   }
@@ -258,7 +260,7 @@ class ProjectFileImporter {
         foreignCalendar.isWorkingDay(foreignDay) ? DayType.WORKING : DayType.WEEKEND);
   }
 
-  private GPCalendar getNativeCalendar() {
+  private GPCalendarCalc getNativeCalendar() {
     return myNativeProject.getActiveCalendar();
   }
 
@@ -277,7 +279,7 @@ class ProjectFileImporter {
     for (Date dayStart = start; !dayStart.after(end);) {
       // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
       adder.addHoliday(dayStart);
-      dayStart = GPCalendar.PLAIN.shiftDate(dayStart, oneDay);
+      dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
   }
 

@@ -40,12 +40,13 @@ import com.google.common.collect.Maps;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 
-public class TaskTagHandler implements TagHandler, ParsingListener {
+public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
   private final ParsingContext myContext;
   private final TaskManager myManager;
   private final TaskTreeUIFacade myTreeFacade;
   private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
   public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
+    super("task");
     myManager = mgr;
     myContext = context;
     myTreeFacade = treeFacade;

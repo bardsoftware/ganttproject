@@ -20,7 +20,8 @@ package biz.ganttproject.core.calendar.walker;
 
 import java.util.Date;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.time.TimeUnit;
 
 
@@ -32,10 +33,10 @@ import biz.ganttproject.core.time.TimeUnit;
  * @author dbarashev (Dmitry Barashev)
  */
 public abstract class ForwardTimeWalker {
-  private final GPCalendar myCalendar;
+  private final GPCalendarCalc myCalendar;
   private final TimeUnit myTimeUnit;
 
-  protected ForwardTimeWalker(GPCalendar calendar, TimeUnit timeUnit) {
+  protected ForwardTimeWalker(GPCalendarCalc calendar, TimeUnit timeUnit) {
     myCalendar = calendar;
     myTimeUnit = timeUnit;
   }
@@ -49,7 +50,7 @@ public abstract class ForwardTimeWalker {
   public void walk(Date startDate) {
     Date unitStart = myTimeUnit.adjustLeft(startDate);
     while (isMoving()) {
-      boolean isWeekendState = myCalendar.isNonWorkingDay(unitStart);
+      boolean isWeekendState = (myCalendar.getDayMask(unitStart) & DayMask.WORKING) == 0;
       if (isWeekendState) {
         Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);
         assert workingUnitStart.after(unitStart);

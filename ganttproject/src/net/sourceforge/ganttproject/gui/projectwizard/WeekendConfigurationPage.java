@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 
 import com.google.common.base.Functions;
@@ -139,7 +140,7 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
-  public WeekendConfigurationPage(final GPCalendar calendar, I18N i18n, IGanttProject project,
+  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, IGanttProject project,
       boolean showPublicHolidays) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 

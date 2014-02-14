@@ -38,7 +38,7 @@ import org.xml.sax.Attributes;
 /**
  * @author bard
  */
-public class AllocationTagHandler implements TagHandler, ParsingListener {
+public class AllocationTagHandler extends AbstractTagHandler implements  ParsingListener {
   private HumanResourceManager myResourceManager;
 
   private TaskManager myTaskManager;
@@ -48,6 +48,7 @@ public class AllocationTagHandler implements TagHandler, ParsingListener {
   private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
 
   public AllocationTagHandler(HumanResourceManager resourceMgr, TaskManager taskMgr, RoleManager roleMgr) {
+    super("allocation");
     myResourceManager = resourceMgr;
     myTaskManager = taskMgr;
     myRoleManager = roleMgr;

@@ -3,6 +3,9 @@
  */
 package net.sourceforge.ganttproject.test.task.calendar;
 
+import com.google.common.collect.ImmutableList;
+
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
@@ -36,7 +39,8 @@ public class TestWeekendCalendar extends TaskTestCase {
         for (int i=1; i<=7; i++) {
             noWeekendsOneHolidayCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);
         }
-        noWeekendsOneHolidayCalendar.setPublicHoliDayType(TestSetupHelper.newMonday().getTime());
+        noWeekendsOneHolidayCalendar.setPublicHolidays(ImmutableList.of(
+            CalendarEvent.newEvent(TestSetupHelper.newMonday().getTime(), false, CalendarEvent.Type.HOLIDAY, null)));
         TaskManager mgr = TestSetupHelper.newTaskManagerBuilder().withCalendar(noWeekendsOneHolidayCalendar).build();
         Task t = mgr.createTask();
         t.setStart(TestSetupHelper.newFriday());
