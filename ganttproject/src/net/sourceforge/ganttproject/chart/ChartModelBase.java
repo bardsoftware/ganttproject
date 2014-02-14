@@ -341,6 +341,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   });
 
   @Override
+  public void resetOffsets() {
+    myOffsetManager.reset();
+  }
+
+  @Override
   public OffsetList getTopUnitOffsets() {
     return myOffsetManager.getTopUnitOffsets();
   }

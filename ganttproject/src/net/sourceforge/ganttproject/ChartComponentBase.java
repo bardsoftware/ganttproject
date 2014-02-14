@@ -54,6 +54,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.eclipse.core.runtime.IStatus;
 
+import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -102,6 +103,13 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
 
     myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
+    myProject.getActiveCalendar().addListener(new GPCalendarListener() {
+      @Override
+      public void onCalendarChange() {
+        getChartModel().resetOffsets();
+        reset();
+      }
+    });
   }
 
   @Override

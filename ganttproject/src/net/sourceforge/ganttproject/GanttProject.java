@@ -864,7 +864,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
 
-  private WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
+  private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   private ParserFactory myParserFactory;
 
