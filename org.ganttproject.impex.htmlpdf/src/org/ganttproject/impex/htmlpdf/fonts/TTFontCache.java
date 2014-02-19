@@ -199,6 +199,8 @@ public class TTFontCache {
           || !e.getMessage().contains(GanttLanguage.getInstance().getCharSet())) {
         throw e;
       }
+    } finally {
+      BaseFontPublicMorozov.clearCache();
     }
     return new Function<String, BaseFont>() {
       @Override
@@ -342,5 +344,17 @@ public class TTFontCache {
 
   public void setProperties(Properties properties) {
     myProperties = properties;
+  }
+
+  // BaseFont.fontCache is a static map which caches font objects. Since we scan all
+  // fonts in this code, we may cache a few hundreds of objects, and retained size of each object
+  // can be up to a few megabytes. Here we use so-called "Public Morozov" anti-pattern
+  // which discloses protected fields of its parent class
+  // See description of this pattern in English here:
+  // http://jamesdolan.blogspot.com/2011/05/pavlik-morozov-anti-pattern.html
+  private static abstract class BaseFontPublicMorozov extends BaseFont {
+    static void clearCache() {
+      BaseFont.fontCache.clear();
+    }
   }
 }
