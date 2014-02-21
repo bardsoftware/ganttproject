@@ -182,10 +182,13 @@ public class GanttLanguage {
     TimeZone.setDefault(utc);
 
     applyDateFormatLocale(getDateFormatLocale(locale));
-    String resourceBase = System.getProperty("org.ganttproject.resourcebase", "language/i18n");
-    i18n = ResourceBundle.getBundle(resourceBase, currentLocale);
-
+    i18n = getResourceBundle(locale);
     fireLanguageChanged();
+  }
+
+  private static ResourceBundle getResourceBundle(Locale locale) {
+    String resourceBase = System.getProperty("org.ganttproject.resourcebase", "language/i18n");
+    return ResourceBundle.getBundle(resourceBase, locale);
   }
 
   private Locale getDateFormatLocale(Locale baseLocale) {
@@ -331,6 +334,14 @@ public class GanttLanguage {
       return i18n.getString(key);
     } catch (MissingResourceException e) {
       return null;
+    }
+  }
+
+  public String getText(String key, Locale locale) {
+    try {
+      return getResourceBundle(locale).getString(key);
+    } catch (MissingResourceException e) {
+      return getText(key);
     }
   }
 
