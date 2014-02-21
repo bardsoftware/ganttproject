@@ -73,7 +73,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.GanttLanguage.Listener;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -134,7 +134,26 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     dateSampleOption.setWritable(false);
     final DefaultBooleanOption dateFormatSwitchOption = new DefaultBooleanOption("ui.dateFormat.switch", true);
 
-    myLanguageOption = new LanguageOption();
+    myLanguageOption = new LanguageOption() {
+      {
+        GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+          @Override
+          public void languageChanged(GanttLanguage.Event event) {
+            Locale selected = getSelectedValue();
+            reloadValues(GanttLanguage.getInstance().getAvailableLocales());
+            setSelectedValue(selected);
+          }
+        });
+      }
+      @Override
+      protected void applyLocale(Locale locale) {
+        if (locale == null) {
+          // Selected Locale was not available, so use default Locale
+          locale = Locale.getDefault();
+        }
+        GanttLanguage.getInstance().setLocale(locale);
+      }
+    };
     myLanguageOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -557,87 +576,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     public void loadValue(String legacyValue) {
       setValue(legacyValue, true);
       myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
-    }
-  }
-
-  static class LanguageOption extends DefaultEnumerationOption<Locale> implements GP1XOptionConverter {
-    public LanguageOption() {
-      this("language", GanttLanguage.getInstance().getAvailableLocales().toArray(new Locale[0]));
-      GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-        public void languageChanged(Event event) {
-          Locale selected = getSelectedValue();
-          LanguageOption.this.reloadValues(GanttLanguage.getInstance().getAvailableLocales());
-          setSelectedValue(selected);
-        }
-      });
-    }
-
-    private LanguageOption(String id, Locale[] locales) {
-      super(id, locales);
-    }
-
-    @Override
-    protected String objectToString(Locale locale) {
-      return GanttLanguage.getInstance().formatLanguageAndCountry(locale);
-    }
-
-    @Override
-    public void commit() {
-      super.commit();
-      applyLocale(stringToObject(getValue()));
-    }
-
-    protected void applyLocale(Locale locale) {
-      if (locale == null) {
-        // Selected Locale was not available, so use default Locale
-        locale = Locale.getDefault();
-      }
-      GanttLanguage.getInstance().setLocale(locale);
-    }
-
-    @Override
-    public String getTagName() {
-      return "language";
-    }
-
-    @Override
-    public String getAttributeName() {
-      return "selection";
-    }
-
-    @Override
-    public void loadValue(String legacyValue) {
-      loadPersistentValue(legacyValue);
-    }
-
-    @Override
-    public String getPersistentValue() {
-      Locale l = stringToObject(getValue());
-      if (l == null) {
-        l = GanttLanguage.getInstance().getLocale();
-      }
-      assert l != null;
-      String result = l.getLanguage();
-      if (!l.getCountry().isEmpty()) {
-        result += "_" + l.getCountry();
-      }
-      return result;
-    }
-
-    @Override
-    public void loadPersistentValue(String value) {
-      String[] lang_country = value.split("_");
-      Locale l;
-      if (lang_country.length == 2) {
-        l = new Locale(lang_country[0], lang_country[1]);
-      } else {
-        l = new Locale(lang_country[0]);
-      }
-      value = objectToString(l);
-      if (value != null) {
-        setValue(value, true);
-        applyLocale(l);
-      }
     }
   }
 
