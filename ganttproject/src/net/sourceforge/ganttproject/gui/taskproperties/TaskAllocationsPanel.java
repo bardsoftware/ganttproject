@@ -18,11 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.math.BigDecimal;
+
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import org.jdesktop.swingx.JXMultiSplitPane;
+import org.jdesktop.swingx.MultiSplitLayout;
+
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultDoubleOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -31,7 +42,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 /**
  * UI component in a task properties dialog: a table with resources assigned to
  * a task.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
@@ -39,6 +50,17 @@ public class TaskAllocationsPanel {
   private final HumanResourceManager myHRManager;
   private final RoleManager myRoleManager;
   private final Task myTask;
+  private final DefaultBooleanOption myCostIsCalculated = new DefaultBooleanOption("taskProperties.cost.calculated");
+  private final DefaultDoubleOption myCostValue = new DefaultDoubleOption("taskProperties.cost.value") {
+
+    @Override
+    public void setValue(Double value) {
+      // TODO Auto-generated method stub
+      super.setValue(value);
+    }
+
+  };
+  private final GPOptionGroup myCostGroup = new GPOptionGroup("task.cost", myCostIsCalculated, myCostValue);
 
   private JTable myTable;
 
@@ -75,7 +97,23 @@ public class TaskAllocationsPanel {
       protected void onSelectionChanged() {
       }
     };
-    return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+    JPanel tablePanel = CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+    String layoutDef = "(ROW weight=1.0 (LEAF name=resources weight=0.5) (LEAF name=cost weight=0.5))";
+
+    JXMultiSplitPane result = new JXMultiSplitPane();
+    result.setDividerSize(0);
+
+    MultiSplitLayout.Node modelRoot = MultiSplitLayout.parseModel(layoutDef);
+    result.getMultiSplitLayout().setModel(modelRoot);
+    result.add(tablePanel, "resources");
+    result.add(createCostPanel(), "cost");
+    return result;
+  }
+
+  private Component createCostPanel() {
+    myCostValue.setValue(myTask.getCost().getValue().doubleValue());
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+    return builder.createGroupComponent(myCostGroup);
   }
 
   public void commit() {
@@ -83,5 +121,6 @@ public class TaskAllocationsPanel {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
+    myTask.getCost().setValue(BigDecimal.valueOf(myCostValue.getValue()));
   }
 }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -126,6 +127,8 @@ public class TaskImpl implements Task {
   private boolean critical;
 
   private List<TaskActivity> myMilestoneActivity;
+
+  private final CostImpl myCost = new CostImpl();
 
   private boolean isUnplugged = false;
 
@@ -1210,5 +1213,36 @@ public class TaskImpl implements Task {
   @Override
   public void setProjectTask(boolean projectTask) {
     isProjectTask = projectTask;
+  }
+
+  private class CostImpl implements Cost {
+    private BigDecimal myValue = BigDecimal.ZERO;
+    private boolean isCalculated = false;
+
+    @Override
+    public BigDecimal getValue() {
+      return myValue;
+    }
+
+    @Override
+    public void setValue(BigDecimal value) {
+      assert !isCalculated : "This task cost is calculated. You can't set value manually";
+      myValue = value;
+    }
+
+    @Override
+    public boolean isCalculated() {
+      return isCalculated;
+    }
+
+    @Override
+    public void setCalculated(boolean calculated) {
+      isCalculated = calculated;
+    }
+  }
+
+  @Override
+  public Cost getCost() {
+    return myCost;
   }
 }
