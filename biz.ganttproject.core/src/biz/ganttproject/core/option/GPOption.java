@@ -12,6 +12,7 @@ public interface GPOption<T> {
   T getValue();
 
   void setValue(T value);
+  void setValue(T value, Object clientId);
 
   String getID();
 

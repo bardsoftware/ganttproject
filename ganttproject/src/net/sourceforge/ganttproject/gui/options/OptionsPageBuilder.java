@@ -17,6 +17,7 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -30,6 +31,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -66,6 +68,7 @@ import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 
 /**
  * @author bard
@@ -310,9 +313,11 @@ public class OptionsPageBuilder {
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
+        int caret = textField.getCaretPosition();
         textField.getDocument().removeDocumentListener(listener);
         if (!textField.getText().equals(event.getNewValue())) {
           textField.setText(String.valueOf(event.getNewValue()));
+          textField.setCaretPosition(caret);
         }
         textField.getDocument().addDocumentListener(listener);
       }
@@ -593,7 +598,9 @@ public class OptionsPageBuilder {
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(final ChangeValueEvent event) {
-        updateTextField(result, listener, event);
+        if (!Objects.equal(parser, event.getTriggerID())) {
+          updateTextField(result, listener, event);
+        }
       }
     });
     return result;

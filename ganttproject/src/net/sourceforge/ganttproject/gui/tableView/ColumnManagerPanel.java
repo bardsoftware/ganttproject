@@ -390,7 +390,7 @@ public class ColumnManagerPanel {
     }
 
     @Override
-    protected void setValue(String value, boolean resetInitial) {
+    protected void setValue(String value, boolean resetInitial, Object triggerId) {
       CustomPropertyClass propertyClass = getCustomPropertyClass(value);
       myDefinition.setPropertyClass(propertyClass);
       // Component defaultValueEditor =
@@ -409,7 +409,7 @@ public class ColumnManagerPanel {
 
       myCardLayout.show(myCardPanel, value);
 
-      super.setValue(value, resetInitial);
+      super.setValue(value, resetInitial, triggerId);
     }
 
     @Override
