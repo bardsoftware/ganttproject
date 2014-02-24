@@ -636,6 +636,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     copy.setStartDate(getStartDate());
     copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
     copy.setBounds(getBounds());
+    copy.setTimelineTasks(myTimelineTasks);
+    copy.myTimelineMilestonesOption.setValue(myTimelineMilestonesOption.getValue());
     GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
     GPOptionGroup[] thisOptions = getChartOptionGroups();
     assert copyOptions.length == thisOptions.length;
