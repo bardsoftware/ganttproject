@@ -67,7 +67,7 @@ public abstract class LanguageOption extends DefaultEnumerationOption<Locale> im
     }
     value = objectToString(l);
     if (value != null) {
-      setValue(value, true);
+      resetValue(value, true);
       applyLocale(l);
     }
   }

@@ -574,7 +574,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     @Override
     public void loadValue(String legacyValue) {
-      setValue(legacyValue, true);
+      resetValue(legacyValue, true);
       myUiFacade.setLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getInfoByName(legacyValue));
     }
   }

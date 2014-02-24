@@ -77,7 +77,7 @@ public class WeekendConfigurationPage implements WizardPage {
 
     public CalendarOption(GPCalendar calendar, List<URL> urls, List<String> labels) {
       super("project.calendar", append(labels, i18n("none")));
-      setValue(i18n("none"), true);
+      resetValue(i18n("none"), true);
       myUrls = urls;
       myLabels = labels;
       myCalendar = calendar;
@@ -130,7 +130,7 @@ public class WeekendConfigurationPage implements WizardPage {
   static class WeekendSchedulingOption extends DefaultEnumerationOption<SchedulingEnum> {
     WeekendSchedulingOption(SchedulingEnum initialValue) {
       super("project.weekendScheduling", SchedulingEnum.values());
-      setValue(objectToString(initialValue), true);
+      resetValue(objectToString(initialValue), true);
     }
 
     @Override

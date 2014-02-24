@@ -105,7 +105,7 @@ public class TaskManagerImpl implements TaskManager {
   private final EnumerationOption myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
       "dependencyDefaultHardness", new String[] { "Strong", "Rubber" }) {
     {
-      setValue("Strong", true);
+      resetValue("Strong", true);
     }
   };
 
@@ -1097,7 +1097,7 @@ public class TaskManagerImpl implements TaskManager {
   private static class TaskNamePrefixOption extends DefaultStringOption implements GP1XOptionConverter {
     public TaskNamePrefixOption() {
       super("taskNamePrefix");
-      setValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
+      resetValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
     }
 
     @Override
@@ -1112,7 +1112,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public void loadValue(String legacyValue) {
-      setValue(legacyValue, true);
+      resetValue(legacyValue, true);
     }
   }
 

@@ -50,7 +50,7 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
 
   @Override
   public void loadPersistentValue(String value) {
-    setValue(Boolean.valueOf(value).booleanValue(), true);
+    resetValue(Boolean.valueOf(value).booleanValue(), true);
   }
 
 }
