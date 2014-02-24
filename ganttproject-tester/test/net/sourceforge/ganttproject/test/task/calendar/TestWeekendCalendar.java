@@ -3,8 +3,12 @@
  */
 package net.sourceforge.ganttproject.test.task.calendar;
 
+import java.text.DateFormat;
+import java.util.Locale;
+
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
@@ -15,6 +19,22 @@ import net.sourceforge.ganttproject.test.task.TaskTestCase;
  * @author bard
  */
 public class TestWeekendCalendar extends TaskTestCase {
+  static {
+    new CalendarFactory() {
+      {
+        setLocaleApi(new LocaleApi() {
+          @Override
+          public Locale getLocale() {
+            return Locale.US;
+          }
+          @Override
+          public DateFormat getShortDateFormat() {
+            return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+          }
+        });
+      }
+    };
+  }
     public void testTaskOverlappingWeekendIsTwoDaysShorter() {
         Task t = getTaskManager().createTask();
         t.setStart(TestSetupHelper.newFriday());// Friday
