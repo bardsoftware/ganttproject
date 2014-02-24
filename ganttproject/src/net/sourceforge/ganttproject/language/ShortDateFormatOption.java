@@ -65,7 +65,7 @@ public class ShortDateFormatOption extends DefaultStringOption {
       locale = GanttLanguage.getInstance().getLocale();
     }
     myDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-    super.setValue(myDateFormat.toPattern(), true);
+    super.resetValue(myDateFormat.toPattern(), true);
   }
 
   public DateFormat getSelectedValue() {

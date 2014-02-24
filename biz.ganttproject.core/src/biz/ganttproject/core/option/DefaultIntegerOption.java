@@ -36,6 +36,6 @@ public class DefaultIntegerOption extends GPAbstractOption<Integer> implements I
   @Override
   public void loadPersistentValue(String value) {
     int intValue = Integer.parseInt(value);
-    setValue(intValue, true);
+    resetValue(intValue, true);
   }
 }
