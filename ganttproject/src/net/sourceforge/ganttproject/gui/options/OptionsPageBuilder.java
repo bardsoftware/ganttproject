@@ -313,11 +313,10 @@ public class OptionsPageBuilder {
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
-        int caret = textField.getCaretPosition();
         textField.getDocument().removeDocumentListener(listener);
         if (!textField.getText().equals(event.getNewValue())) {
-          textField.setText(String.valueOf(event.getNewValue()));
-          textField.setCaretPosition(caret);
+          String newText = String.valueOf(event.getNewValue());
+          textField.setText(newText);
         }
         textField.getDocument().addDocumentListener(listener);
       }
