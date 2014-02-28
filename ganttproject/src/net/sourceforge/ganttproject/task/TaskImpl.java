@@ -57,6 +57,7 @@ import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
+import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
@@ -1221,7 +1222,11 @@ public class TaskImpl implements Task {
 
     @Override
     public BigDecimal getValue() {
-      return myValue;
+      if (isCalculated) {
+        return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
+      } else {
+        return myValue;
+      }
     }
 
     @Override

@@ -111,6 +111,7 @@ public class TaskAllocationsPanel {
   }
 
   private Component createCostPanel() {
+    myCostIsCalculated.setValue(myTask.getCost().isCalculated());
     myCostValue.setValue(myTask.getCost().getValue().doubleValue());
     OptionsPageBuilder builder = new OptionsPageBuilder();
     return builder.createGroupComponent(myCostGroup);
@@ -121,6 +122,10 @@ public class TaskAllocationsPanel {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
-    myTask.getCost().setValue(BigDecimal.valueOf(myCostValue.getValue()));
+    Task.Cost cost = myTask.getCost();
+    cost.setCalculated(myCostIsCalculated.getValue());
+    if (!cost.isCalculated()) {
+      cost.setValue(BigDecimal.valueOf(myCostValue.getValue()));
+    }
   }
 }
