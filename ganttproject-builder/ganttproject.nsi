@@ -7,8 +7,8 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.6.4"
-!define VERSION_BUILD "2.6.4-r1622"
+!define VERSION "2.6.5"
+!define VERSION_BUILD "2.6.5-r1638"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 

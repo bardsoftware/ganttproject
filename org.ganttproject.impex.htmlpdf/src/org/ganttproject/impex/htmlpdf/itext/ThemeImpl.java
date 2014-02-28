@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -44,6 +45,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.Task;
@@ -98,6 +100,16 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private final BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
   private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption<String>("export.itext.pageSize",
       ourSizes);
+  private final LanguageOption myLanguageOption = new LanguageOption() {
+    {
+      setSelectedValue(GanttLanguage.getInstance().getLocale());
+    }
+
+    @Override
+    protected void applyLocale(Locale locale) {
+    }
+  };
+  private final GPOptionGroup myLanguageOptions = new GPOptionGroup("export.itext.language", new GPOption[] {myLanguageOption});
   private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", new GPOption[] { myPageSizeOption,
       myLandscapeOption });
   private final GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data",
@@ -120,6 +132,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
     myFontCache.setProperties(myProperties);
     I18N i18n = new OptionsPageBuilder.I18N();
+    myLanguageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myLanguageOptions), "language");
+    myLanguageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
+
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + ".yes", "yes");
@@ -193,9 +208,17 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
   private String i18n(String key) {
     String value = myProperties.getProperty(key);
-    if (value == null) {
-      value = GanttLanguage.getInstance().getText("impex.pdf.theme.sortavala." + key);
+    if (value != null) {
+      return value;
     }
+//    Locale selectedLocale = myLanguageOption.getSelectedValue();
+//    if (selectedLocale != null) {
+//      value = GanttLanguage.getInstance().getText("impex.pdf.theme.sortavala." + key, selectedLocale);
+//    }
+//    if (value != null) {
+//      return value;
+//    }
+    value = GanttLanguage.getInstance().getText("impex.pdf.theme.sortavala." + key);
     return value == null ? key : value;
   }
 

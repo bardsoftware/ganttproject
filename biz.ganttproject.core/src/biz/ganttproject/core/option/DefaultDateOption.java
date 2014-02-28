@@ -41,7 +41,7 @@ public class DefaultDateOption extends GPAbstractOption<Date> implements DateOpt
   @Override
   public void loadPersistentValue(String value) {
     try {
-      setValue(DateParser.parse(value), true);
+      resetValue(DateParser.parse(value), true);
     } catch (InvalidDateException e) {
       e.printStackTrace(); // To change body of catch statement use File |
                            // Settings | File Templates.
