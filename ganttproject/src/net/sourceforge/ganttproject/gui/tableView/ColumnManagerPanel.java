@@ -62,12 +62,18 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.CustomPropertyDefaultValueAdapter;
 
+/**
+ * UI component inside  "Custom Fields Manager" dialog which allows for showing/hiding
+ * table columns and for the management of custom fields.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class ColumnManagerPanel {
   private IsVisibleOption myIsVisibleOption = new IsVisibleOption();
   private NameOption myNameOption = new NameOption();
   private DefaultValueOption myEnableDefaultValueOption = new DefaultValueOption();
   private PropertyClassOption myType = new PropertyClassOption();
-  private GPOption myDefaultValueOption;
+  private GPOption<?> myDefaultValueOption;
 
   private JPanel panelDefaultValue = null;
 
@@ -222,8 +228,6 @@ public class ColumnManagerPanel {
     myNameOption.reloadValue(selected);
     myType.reloadValue(selected);
     myEnableDefaultValueOption.reloadValue(selected);
-    myIsVisibleOption.reloadValue(selected);
-
   }
 
   /**
@@ -280,7 +284,6 @@ public class ColumnManagerPanel {
 
   class IsVisibleOption extends DefaultBooleanOption {
     private ColumnList myVisibleFields;
-    private Column myColumn;
 
     IsVisibleOption() {
       super("customPropertyDialog.isVisible");
@@ -290,17 +293,10 @@ public class ColumnManagerPanel {
       myVisibleFields = visibleFields;
     }
 
-    public void reloadValue(CustomPropertyDefinition selectedElement) {
-      myColumn = findColumn(selectedElement);
-      assert myColumn != null;
-      setValue(myColumn.isVisible(), true);
-    }
-
     @Override
     public void commit() {
       if (isChanged()) {
         super.commit();
-        myColumn.setVisible(isChecked());
       }
     }
 
@@ -322,7 +318,10 @@ public class ColumnManagerPanel {
     }
   }
 
-  class NameOption extends DefaultStringOption {
+  /**
+   * Option class controlling changes of a custom field name
+   */
+  static class NameOption extends DefaultStringOption {
     CustomPropertyDefinition myDefinition;
 
     NameOption() {
@@ -331,7 +330,7 @@ public class ColumnManagerPanel {
 
     public void reloadValue(CustomPropertyDefinition selectedElement) {
       myDefinition = selectedElement;
-      setValue(myDefinition.getName(), true);
+      resetValue(myDefinition.getName(), true);
     }
 
     @Override
@@ -343,6 +342,9 @@ public class ColumnManagerPanel {
     }
   }
 
+  /**
+   * Option class controlling changes of a custom field default value
+   */
   class DefaultValueOption extends DefaultBooleanOption {
     CustomPropertyDefinition myDefinition;
 
@@ -368,10 +370,13 @@ public class ColumnManagerPanel {
 
     public void reloadValue(CustomPropertyDefinition selectedElement) {
       myDefinition = selectedElement;
-      setValue(myDefinition.getDefaultValue() != null, true);
+      resetValue(myDefinition.getDefaultValue() != null, true);
     }
   }
 
+  /**
+   * Option class controlling changes of a custom field type
+   */
   class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClass> {
     private CardLayout myCardLayout;
     private JPanel myCardPanel;
@@ -390,7 +395,7 @@ public class ColumnManagerPanel {
     }
 
     @Override
-    protected void setValue(String value, boolean resetInitial) {
+    protected void resetValue(String value, boolean resetInitial, Object triggerId) {
       CustomPropertyClass propertyClass = getCustomPropertyClass(value);
       myDefinition.setPropertyClass(propertyClass);
       // Component defaultValueEditor =
@@ -409,7 +414,7 @@ public class ColumnManagerPanel {
 
       myCardLayout.show(myCardPanel, value);
 
-      super.setValue(value, resetInitial);
+      super.resetValue(value, resetInitial, triggerId);
     }
 
     @Override
@@ -444,7 +449,7 @@ public class ColumnManagerPanel {
     public void reloadValue(CustomPropertyDefinition def) {
       myDefinitionRO = def;
       myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
-      setValue(def.getPropertyClass().getDisplayName(), true);
+      resetValue(def.getPropertyClass().getDisplayName(), true);
     }
   }
 

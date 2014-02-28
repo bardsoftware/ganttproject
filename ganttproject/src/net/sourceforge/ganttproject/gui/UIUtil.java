@@ -79,6 +79,7 @@ import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -188,9 +189,10 @@ public abstract class UIUtil {
     final DocumentListener listener = new DocumentListener() {
       private void saveValue() {
         try {
+          T oldValue = option == null ? null : option.getValue();
           T value = validator.parse(textField.getText());
-          if (option != null) {
-            option.setValue(value);
+          if (option != null && !Objects.equal(oldValue, value)) {
+            option.setValue(value, validator);
           }
           textField.setBackground(getValidFieldColor());
         }
