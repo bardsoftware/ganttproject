@@ -94,7 +94,9 @@ class TaskSaver extends SaverBase {
       addAttribute("webLink", URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs);
     }
     addAttribute("expand", String.valueOf(task.getExpand()), attrs);
-
+    if (!task.getCost().isCalculated()) {
+      addAttribute("cost-manual", task.getCost().getValue().toPlainString(), attrs);
+    }
     startElement("task", attrs, handler);
 
     if (task.getNotes() != null && task.getNotes().length() > 0) {

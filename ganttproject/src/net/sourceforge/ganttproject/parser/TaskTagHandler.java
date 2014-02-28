@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.parser;
 
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
@@ -190,6 +191,13 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
+    String cost = attrs.getValue("cost-manual");
+    if (cost != null) {
+      task.getCost().setCalculated(false);
+      task.getCost().setValue(new BigDecimal(cost));
+    } else {
+      task.getCost().setCalculated(true);
+    }
     myContext.pushTask(task);
   }
 
