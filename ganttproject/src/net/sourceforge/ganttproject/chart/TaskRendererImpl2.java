@@ -20,10 +20,8 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -42,10 +40,12 @@ import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
+import biz.ganttproject.core.chart.render.ShapeConstants;
+import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.Connector;
-import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
+import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -55,6 +55,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -100,6 +101,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public Color getColor(Task task) {
       return task.getColor();
+    }
+    @Override
+    public ShapePaint getShapePaint(Task task) {
+      if (task.getShape() == null) {
+        return ShapeConstants.TRANSPARENT;
+      }
+      return task.getShape();
     }
     @Override
     public boolean hasNotes(Task task) {
@@ -305,11 +313,18 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
+    List<Polygon> boundPolygons = Lists.newArrayList();
     int rowNum = 0;
     for (Task t : visibleTasks) {
+      boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
-      renderLabels(rectangles);
+      for (Polygon p : rectangles) {
+        if (p.getModelObject() != null) {
+          boundPolygons.add(p);
+        }
+      }
+      renderLabels(boundPolygons);
       renderBaseline(t, rowNum, defaultUnitOffsets);
       rowNum++;
       Canvas.Line nextLine = getPrimitiveContainer().createLine(0, rowNum * getRowHeight(),

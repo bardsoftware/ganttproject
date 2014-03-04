@@ -13,7 +13,7 @@ import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.Selecti
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -53,7 +53,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
           protected WebDavServerDescriptor updateValue(WebDavServerDescriptor newValue, WebDavServerDescriptor curValue) {
             newValue.username = curValue.username;
             newValue.password = curValue.password;
-            newValue.rootUrl = curValue.rootUrl;
+            newValue.setRootUrl(curValue.getRootUrl());
             serversOption.updateValue(curValue, newValue);
             return newValue;
           }
@@ -84,13 +84,13 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
           }
     };
     serverList.getTableComponent().setPreferredSize(new Dimension(150, 300));
-    serverList.setUndefinedValueLabel("<type server name here>");
+    serverList.setUndefinedValueLabel(GanttLanguage.getInstance().getText("webdav.serverNamePrompt"));
 
     final DefaultStringOption urlOption = new DefaultStringOption("webdav.server.url");
     urlOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().rootUrl = urlOption.getValue();
+        serverList.getSelectedObject().setRootUrl(urlOption.getValue());
       }
     });
 
@@ -126,7 +126,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       public void selectionChanged(List<WebDavServerDescriptor> selection) {
         if (selection.size() == 1) {
           WebDavServerDescriptor selected = selection.get(0);
-          urlOption.setValue(selected.rootUrl);
+          urlOption.setValue(selected.getRootUrl());
           usernameOption.setValue(selected.username);
           passwordOption.setValue(selected.password);
           savePasswordOption.setValue(selected.savePassword);

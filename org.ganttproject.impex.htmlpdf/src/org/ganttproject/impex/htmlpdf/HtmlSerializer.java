@@ -24,6 +24,7 @@ import java.util.Calendar;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -105,7 +106,7 @@ public class HtmlSerializer extends XmlSerializer {
       throw new ExportException("Failed to write tasks", e);
     }
 
-    addAttribute("version", "Ganttproject (" + GanttProject.version + ")", attrs);
+    addAttribute("version", "Ganttproject (" + GPVersion.CURRENT + ")", attrs);
     Calendar c = CalendarFactory.newCalendar();
     String dateAndTime = GanttLanguage.getInstance().formatShortDate(c) + " - " + GanttLanguage.getInstance().formatTime(c);
 

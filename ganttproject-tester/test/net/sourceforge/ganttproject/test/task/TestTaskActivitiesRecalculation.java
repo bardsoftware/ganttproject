@@ -3,7 +3,6 @@ package net.sourceforge.ganttproject.test.task;
 import java.util.List;
 
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskMutator;

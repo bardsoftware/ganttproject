@@ -17,6 +17,7 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -30,6 +31,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -66,12 +68,12 @@ import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 
 /**
  * @author bard
  */
 public class OptionsPageBuilder {
-  private static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
   I18N myi18n = new I18N();
   private Component myParentComponent;
   private final LayoutApi myLayoutApi;
@@ -271,14 +273,14 @@ public class OptionsPageBuilder {
     } else if (option instanceof StringOption) {
       result = createStringComponent((StringOption) option);
     } else if (option instanceof IntegerOption) {
-      result = createNumericComponent((IntegerOption) option, new NumericParser<Integer>() {
+      result = createValidatingComponent((IntegerOption) option, new ValueValidator<Integer>() {
         @Override
         public Integer parse(String text) {
           return Integer.valueOf(text);
         }
       });
     } else if (option instanceof DoubleOption) {
-      result = createNumericComponent((DoubleOption) option, new NumericParser<Double>() {
+      result = createValidatingComponent((DoubleOption) option, new ValueValidator<Double>() {
         @Override
         public Double parse(String text) {
           return Double.valueOf(text);
@@ -302,8 +304,8 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private Color getValidFieldColor() {
-    return UIManager.getColor("TextField.background");
+  private static Color getValidFieldColor() {
+    return UIUtil.getValidFieldColor();
   }
 
   private static void updateTextField(final JTextField textField, final DocumentListener listener,
@@ -313,7 +315,8 @@ public class OptionsPageBuilder {
       public void run() {
         textField.getDocument().removeDocumentListener(listener);
         if (!textField.getText().equals(event.getNewValue())) {
-          textField.setText(String.valueOf(event.getNewValue()));
+          String newText = String.valueOf(event.getNewValue());
+          textField.setText(newText);
         }
         textField.getDocument().addDocumentListener(listener);
       }
@@ -348,7 +351,7 @@ public class OptionsPageBuilder {
           option.setValue(result.getText());
           result.setBackground(getValidFieldColor());
         } catch (ValidationException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
+          result.setBackground(UIUtil.INVALID_FIELD_COLOR);
         }
       }
 
@@ -561,14 +564,15 @@ public class OptionsPageBuilder {
       }
     }
     OptionValueUpdater valueUpdater = new OptionValueUpdater();
-    final JXDatePicker result = UIUtil.createDatePicker(valueUpdater);
+    final JXDatePicker result = UIUtil.createDatePicker();
+    UIUtil.setupDatePicker(result, option.getValue(), null, valueUpdater);
     result.setDate(option.getValue());
     result.getEditor().addPropertyChangeListener("value", valueUpdater);
 
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        assert event.getNewValue() instanceof Date : "value=" + event.getNewValue();
+        assert event.getNewValue() == null || event.getNewValue() instanceof Date : "value=" + event.getNewValue();
         result.setDate((Date) event.getNewValue());
       }
     });
@@ -576,8 +580,8 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private interface NumericParser<T extends Number> {
-    T parse(String text) throws NumberFormatException;
+  public interface ValueValidator<T> {
+    T parse(String text) throws ValidationException;
   }
 
   /**
@@ -587,43 +591,15 @@ public class OptionsPageBuilder {
    * @param option
    * @return
    */
-  private <T extends Number> Component createNumericComponent(final GPOption<T> option, final NumericParser<T> parser) {
+  public static <T extends Number> Component createValidatingComponent(final GPOption<T> option, final ValueValidator<T> parser) {
     final JTextField result = new JTextField(String.valueOf(option.getValue()));
-    final DocumentListener listener = new DocumentListener() {
-      private void saveValue() {
-        try {
-          T value = parser.parse(result.getText());
-          option.setValue(value);
-          result.setBackground(getValidFieldColor());
-        }
-        /* If value in text filed is not integer change field color */
-        catch (NumberFormatException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
-        } catch (ValidationException ex) {
-          result.setBackground(INVALID_FIELD_COLOR);
-        }
-      }
-
-      @Override
-      public void insertUpdate(DocumentEvent e) {
-        saveValue();
-      }
-
-      @Override
-      public void removeUpdate(DocumentEvent e) {
-        saveValue();
-      }
-
-      @Override
-      public void changedUpdate(DocumentEvent e) {
-        saveValue();
-      }
-    };
-    result.getDocument().addDocumentListener(listener);
+    final DocumentListener listener = UIUtil.attachValidator(result, parser, option);
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(final ChangeValueEvent event) {
-        updateTextField(result, listener, event);
+        if (!Objects.equal(parser, event.getTriggerID())) {
+          updateTextField(result, listener, event);
+        }
       }
     });
     return result;

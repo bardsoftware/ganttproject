@@ -105,6 +105,12 @@ public class GPLogger {
     ourUIFacade = uifacade;
   }
 
+  public static void debug(Logger logger, String format, Object... args) {
+    if (logger.isLoggable(Level.FINE)) {
+      logger.fine(String.format(format, args));
+    }
+  }
+
   public static void setLogFile(String logFileName) {
     try {
       Handler fileHandler = new FileHandler(logFileName, true);
@@ -156,7 +162,7 @@ public class GPLogger {
     return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
   }
 
-  private static String[] SYSTEM_PROPERTIES = new String[] { "java.class.path", "java.home", "java.io.tmpdir",
+  private static String[] SYSTEM_PROPERTIES = new String[] { "java.class.path", "java.home", "java.ext.dirs", "java.io.tmpdir",
       "java.runtime.version", "java.vendor", "java.vm.name", "java.vm.vendor", "java.vm.version", "os.arch", "os.name",
       "os.version", "sun.java.command", "user.country", "user.dir", "user.home", "user.language", "user.timezone" };
 

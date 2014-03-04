@@ -29,11 +29,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
+
+import com.google.common.base.Strings;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -233,7 +236,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   }
 
   protected void updateTooltip() {
-    putValue(Action.SHORT_DESCRIPTION, "<html><body bgcolor=#EAEAEA>" + getLocalizedDescription() + "</body></html>");
+    String description = getLocalizedDescription();
+    putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);
   }
 
   public void isIconVisible(boolean isNull) {

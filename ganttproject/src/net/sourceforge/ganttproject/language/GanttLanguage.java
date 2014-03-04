@@ -44,11 +44,10 @@ import java.util.TimeZone;
 
 import javax.swing.UIManager;
 
-import biz.ganttproject.core.option.GPAbstractOption;
-import biz.ganttproject.core.time.CalendarFactory;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.time.CalendarFactory;
 
 /**
  * Class for the language
@@ -114,6 +113,8 @@ public class GanttLanguage {
 
   private Locale myDateFormatLocale;
 
+  private Properties myExtraLocales = new Properties();
+
   private GanttLanguage() {
     new GPAbstractOption.I18N() {
       {
@@ -128,6 +129,7 @@ public class GanttLanguage {
     PropertiesUtil.loadProperties(charsets, "/charsets.properties");
     myCharSetMap = new CharSetMap(charsets);
     setLocale(Locale.getDefault());
+    PropertiesUtil.loadProperties(myExtraLocales, "/language/extra.properties");
   }
 
   public static GanttLanguage getInstance() {
@@ -150,7 +152,7 @@ public class GanttLanguage {
     return myDateFormatLocale;
   }
 
-  private void setDateFormatLocale(Locale locale) {
+  private void applyDateFormatLocale(Locale locale) {
     myDateFormatLocale = locale;
     setShortDateFormat((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale));
     currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
@@ -179,11 +181,22 @@ public class GanttLanguage {
     utc.setRawOffset(defaultTimezoneOffset);
     TimeZone.setDefault(utc);
 
-    setDateFormatLocale(locale);
-    String resourceBase = System.getProperty("org.ganttproject.resourcebase", "language/i18n");
-    i18n = ResourceBundle.getBundle(resourceBase, currentLocale);
-
+    applyDateFormatLocale(getDateFormatLocale(locale));
+    i18n = getResourceBundle(locale);
     fireLanguageChanged();
+  }
+
+  private static ResourceBundle getResourceBundle(Locale locale) {
+    String resourceBase = System.getProperty("org.ganttproject.resourcebase", "language/i18n");
+    return ResourceBundle.getBundle(resourceBase, locale);
+  }
+
+  private Locale getDateFormatLocale(Locale baseLocale) {
+    String dateFormatLocale = myExtraLocales.getProperty(baseLocale.getLanguage() + ".dateFormatLocale", null);
+    if (dateFormatLocale == null) {
+      return baseLocale;
+    }
+    return new Locale(dateFormatLocale);
   }
 
   public List<Locale> getAvailableLocales() {
@@ -197,12 +210,55 @@ public class GanttLanguage {
         result.add(new Locale(l.getLanguage()));
       }
     }
+
+    String[] locales = myExtraLocales.getProperty("_").split(",");
+    for (String l : locales) {
+      if (!myExtraLocales.containsKey(l + ".lang")) {
+        continue;
+      }
+      String langCode = myExtraLocales.getProperty(l + ".lang");
+      String countryCode = myExtraLocales.getProperty(l + ".country", "");
+      String regionCode = myExtraLocales.getProperty(l + ".region", "");
+      Locale locale = new Locale(langCode, countryCode, regionCode);
+      result.add(locale);
+    }
+
     result.removeAll(removeLangOnly);
     result.add(Locale.ENGLISH);
 
     List<Locale> result1 = new ArrayList<Locale>(result);
     Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR);
     return result1;
+  }
+
+  public String formatLanguageAndCountry(Locale locale) {
+    String englishName = locale.getDisplayLanguage(Locale.US);
+    String localName = locale.getDisplayLanguage(locale);
+    String currentLocaleName = locale.getDisplayLanguage(getLocale());
+    if ("en".equals(locale.getLanguage()) || "zh".equals(locale.getLanguage()) || "pt".equals(locale.getLanguage())) {
+      if (!locale.getCountry().isEmpty()) {
+        englishName += " - " + locale.getDisplayCountry(Locale.US);
+        localName += " - " + locale.getDisplayCountry(locale);
+      }
+    }
+    if (localName.equals(englishName) && currentLocaleName.equals(englishName)) {
+      return englishName;
+    }
+    StringBuilder builder = new StringBuilder(englishName);
+    builder.append(" (");
+    boolean hasLocal = false;
+    if (!localName.equals(englishName)) {
+      builder.append(localName);
+      hasLocal = true;
+    }
+    if (!currentLocaleName.equals(localName) && !currentLocaleName.equals(englishName)) {
+      if (hasLocal) {
+        builder.append(", ");
+      }
+      builder.append(currentLocaleName);
+    }
+    builder.append(")");
+    return builder.toString();
   }
 
   /** @return The current Locale */
@@ -278,6 +334,14 @@ public class GanttLanguage {
       return i18n.getString(key);
     } catch (MissingResourceException e) {
       return null;
+    }
+  }
+
+  public String getText(String key, Locale locale) {
+    try {
+      return getResourceBundle(locale).getString(key);
+    } catch (MissingResourceException e) {
+      return getText(key);
     }
   }
 

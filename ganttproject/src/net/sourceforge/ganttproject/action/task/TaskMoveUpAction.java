@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.action.task;
 
 import java.util.List;
 
+import com.google.common.base.Predicate;
+
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -60,11 +62,16 @@ public class TaskMoveUpAction extends TaskActionBase {
   @Override
   protected void run(List<Task> selection) throws Exception {
     getTree().commitIfEditing();
-    TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
+    final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     for (Task task : selection) {
-      Task parent = taskHierarchy.getContainer(task);
-      int index = taskHierarchy.getTaskIndex(task) - 1;
-      taskHierarchy.move(task, parent, index);
+      final Task parent = taskHierarchy.getContainer(task);
+      final int index = taskHierarchy.getTaskIndex(task) - 1;
+      getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
+        public boolean apply(Task t) {
+          taskHierarchy.move(t, parent, index);
+          return true;
+        }
+      });
     }
     forwardScheduling();
     // TODO Ideally this should get done by the move method as it modifies the

@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -34,18 +33,19 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -71,13 +71,12 @@ public class TaskScheduleDatesPanel {
   private GanttCalendar myEnd;
 
   private Task myUnpluggedClone;
-  private final BooleanOption myStartDateLock = new DefaultBooleanOption("", true);
-  private final BooleanOption myEndDateLock = new DefaultBooleanOption("", false);
-  private final BooleanOption myDurationLock = new DefaultBooleanOption("", false);
-  protected BooleanOption myPrevLock = myStartDateLock;
+  private static final BooleanOption ourStartDateLock = new DefaultBooleanOption("", true);
+  private static final BooleanOption ourEndDateLock = new DefaultBooleanOption("", false);
+  private static final BooleanOption ourDurationLock = new DefaultBooleanOption("", false);
+  private static BooleanOption ourPrevLock = ourStartDateLock;
   private final UIFacade myUiFacade;
   private JXHyperlink myLockHyperlink;
-  private JXHyperlink mySchedulingHyperlink;
   private boolean isMilestone;
 
   public TaskScheduleDatesPanel(UIFacade uiFacade) {
@@ -87,6 +86,29 @@ public class TaskScheduleDatesPanel {
   public void setUnpluggedClone(Task unpluggedClone) {
     myUnpluggedClone = unpluggedClone;
     isMilestone = unpluggedClone.isMilestone();
+    DateValidator validator = new UIUtil.DateValidator() {
+      @Override
+      public Pair<Boolean, String> apply(Date value) {
+        return DateValidator.Default.aroundProjectStart(myUnpluggedClone.getManager().getProjectStart()).apply(value);
+      }
+    };
+    UIUtil.setupDatePicker(myStartDatePicker, myUnpluggedClone.getStart().getTime(), validator, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        Date date = ((JXDatePicker) e.getSource()).getDate();
+        if (date != null) {
+          setStart(CalendarFactory.createGanttCalendar(date), true);
+        }
+      }
+    });
+    UIUtil.setupDatePicker(myEndDatePicker, myUnpluggedClone.getEnd().getTime(), validator, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
+        c.add(Calendar.DATE, 1);
+        setEnd(c, true);
+      }
+    });
     setStart(myUnpluggedClone.getStart(), false);
     setEnd(myUnpluggedClone.getEnd(), false);
     adjustLength();
@@ -114,8 +136,8 @@ public class TaskScheduleDatesPanel {
 
   private void swapLocks(BooleanOption newLock) {
     newLock.setValue(true);
-    myPrevLock.setValue(false);
-    myPrevLock = newLock;
+    ourPrevLock.setValue(false);
+    ourPrevLock = newLock;
   }
   private GPAction createLockAction(String key, final BooleanOption lock) {
     return new GPAction(key) {
@@ -129,52 +151,21 @@ public class TaskScheduleDatesPanel {
     };
   }
 
-  private static Action createDisabledAction(String key) {
-    return new GPAction(key) {
-      {
-        setEnabled(false);
-      }
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    };
-  }
-  protected List<Action> createSchedulingMenu() {
-    return Arrays.asList(new Action[] {
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.start"),
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.duration"),
-        null,
-        createDisabledAction("option.taskProperties.main.scheduling.automated.value.hint")
-    });
-  }
-
   protected void showPopup(List<Action> actions, JComponent owner, JComponent anchor) {
     myUiFacade.showPopupMenu(owner, actions, anchor.getLocation().x, anchor.getLocation().y);
   }
 
   public void insertInto(final JPanel propertiesPanel) {
     // Begin date
-    myStartDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setStart(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), true);
-      }
-    });
-    final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", myStartDateLock);
-    JComponent startDateLabel = createLabel(language.getText("dateOfBegining"), myStartDateLock, myStartDatePicker, startDateLockAction);
+    myStartDatePicker = UIUtil.createDatePicker();
+    final GPAction startDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.start", ourStartDateLock);
+    JComponent startDateLabel = createLabel(language.getText("dateOfBegining"), ourStartDateLock, myStartDatePicker, startDateLockAction);
 
 
     // End date
-    myEndDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
-        c.add(Calendar.DATE, 1);
-        setEnd(c, true);
-      }
-    });
-    final GPAction endDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.end", myEndDateLock);
-    JComponent endDateLabel = createLabel(language.getText("dateOfEnd"), myEndDateLock, myEndDatePicker, endDateLockAction);
+    myEndDatePicker = UIUtil.createDatePicker();
+    final GPAction endDateLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.end", ourEndDateLock);
+    JComponent endDateLabel = createLabel(language.getText("dateOfEnd"), ourEndDateLock, myEndDatePicker, endDateLockAction);
 
     // Duration
     durationField1 = new JTextField(8);
@@ -189,8 +180,8 @@ public class TaskScheduleDatesPanel {
       public void focusGained(FocusEvent e) {
       }
     });
-    final GPAction durationLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.duration", myDurationLock);
-    JComponent durationLabel = createLabel(language.getText("length"), myDurationLock, durationField1, durationLockAction);
+    final GPAction durationLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.duration", ourDurationLock);
+    JComponent durationLabel = createLabel(language.getText("length"), ourDurationLock, durationField1, durationLockAction);
 
     propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.scheduling.label")));
     final Box box = Box.createHorizontalBox();
@@ -217,15 +208,9 @@ public class TaskScheduleDatesPanel {
     propertiesPanel.add(myEndDatePicker);
     propertiesPanel.add(durationLabel);
     propertiesPanel.add(durationField1);
-
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        swapLocks(myEndDateLock);
-      }
-    });
   }
 
-  private GPCalendar getCalendar() {
+  private GPCalendarCalc getCalendar() {
     return myUnpluggedClone.getManager().getCalendar();
   }
 
@@ -235,7 +220,7 @@ public class TaskScheduleDatesPanel {
     if (!recalculateEnd) {
       return;
     }
-    if (!isMilestone && myDurationLock.isChecked()) {
+    if (!isMilestone && ourDurationLock.isChecked()) {
       adjustLength();
     } else {
       GanttCalendar endDate = isMilestone ? myStart : CalendarFactory.createGanttCalendar(
@@ -250,11 +235,11 @@ public class TaskScheduleDatesPanel {
     if (!recalculateStart) {
       return;
     }
-    if (!isMilestone && myDurationLock.isChecked()) {
+    if (!isMilestone && ourDurationLock.isChecked()) {
       adjustLength();
     } else {
       setStart(CalendarFactory.createGanttCalendar(
-          getCalendar().shiftDate(myStart.getTime(), myUnpluggedClone.getDuration().reverse())), false);
+          getCalendar().shiftDate(myEnd.getTime(), myUnpluggedClone.getDuration().reverse())), false);
     }
   }
 
@@ -282,7 +267,7 @@ public class TaskScheduleDatesPanel {
     }
     durationField1.setText(String.valueOf(length));
     myUnpluggedClone.setDuration(myUnpluggedClone.getManager().createLength(length));
-    if (myStartDateLock.isChecked()) {
+    if (ourStartDateLock.isChecked()) {
       // Calculate the start date for the given length
       setStart(CalendarFactory.createGanttCalendar(
           getCalendar().shiftDate(myEnd.getTime(), myUnpluggedClone.getDuration().reverse())), false);
@@ -318,15 +303,15 @@ public class TaskScheduleDatesPanel {
 
   public void setMilestone(boolean isMilestone) {
     if (isMilestone) {
-      myStartDateLock.setValue(false);
-      myDurationLock.setValue(true);
-      myEndDateLock.setValue(true);
+      ourStartDateLock.setValue(false);
+      ourDurationLock.setValue(true);
+      ourEndDateLock.setValue(true);
       myLockHyperlink.setEnabled(false);
     } else {
-      myDurationLock.setValue(false);
-      myEndDateLock.setValue(false);
+      ourDurationLock.setValue(false);
+      ourEndDateLock.setValue(false);
       myLockHyperlink.setEnabled(true);
-      myPrevLock.setValue(true);
+      ourPrevLock.setValue(true);
     }
     this.isMilestone = isMilestone;
   }

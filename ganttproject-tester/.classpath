@@ -3,7 +3,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/cglib-2.2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/objenesis-1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="bin/"/>
+	<classpathentry exported="true" kind="lib" path="bin/" sourcepath="test"/>
 	<classpathentry exported="true" kind="lib" path="lib/easymock-3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>

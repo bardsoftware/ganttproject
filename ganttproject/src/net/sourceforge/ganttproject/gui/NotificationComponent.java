@@ -179,13 +179,8 @@ public class NotificationComponent implements NotificationChannel.Listener {
   }
 
   static JScrollPane createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
-    JEditorPane htmlPane = new JEditorPane();
-    htmlPane.setEditorKit(new HTMLEditorKit());
-    htmlPane.setEditable(false);
-    // htmlPane.setPreferredSize(new Dimension(400, 290));
-    htmlPane.addHyperlinkListener(hyperlinkListener);
+    JEditorPane htmlPane = UIUtil.createHtmlPane(html, hyperlinkListener);
     htmlPane.setBackground(Color.YELLOW);
-    htmlPane.setText(html);
     htmlPane.setBorder(BorderFactory.createEmptyBorder());
     Dimension htmlSize = htmlPane.getPreferredSize();
 

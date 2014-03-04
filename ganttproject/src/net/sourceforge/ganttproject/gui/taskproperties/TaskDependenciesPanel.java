@@ -40,7 +40,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstra
 
 /**
  * UI component in a task properties dialog: a table with task predecessors
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskDependenciesPanel {
@@ -76,6 +76,9 @@ public class TaskDependenciesPanel {
 
       @Override
       protected void onDeleteEvent() {
+        if (myTable.isEditing()) {
+          myTable.getCellEditor().stopCellEditing();
+        }
         myModel.delete(getTable().getSelectedRows());
       }
 

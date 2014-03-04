@@ -59,7 +59,8 @@ public class DocumentCreator implements DocumentManager {
     myWebDavOptionGroup = new GPOptionGroup("webdav", new GPOption[] {
         myWebDavStorage.getServersOption(),
         myWebDavStorage.getLastWebDavDocumentOption(),
-        myWebDavStorage.getWebDavReleaseLockOption()
+        myWebDavStorage.getWebDavReleaseLockOption(),
+        myWebDavStorage.getProxyOption()
     });
   }
 
@@ -102,7 +103,7 @@ public class DocumentCreator implements DocumentManager {
             pass = server.getPassword();
           }
         }
-        return new HttpDocument(path, user, pass);
+        return new HttpDocument(path, user, pass, myWebDavStorage.getProxyOption());
       } catch (IOException e) {
         GPLogger.log(e);
         return null;

@@ -35,9 +35,9 @@ public class DefaultDoubleOption extends GPAbstractOption<Double> implements Dou
   @Override
   public void loadPersistentValue(String value) {
     try {
-      setValue(Double.parseDouble(value), true);
+      resetValue(Double.parseDouble(value), true);
     } catch (NumberFormatException e) {
-      setValue(null, true);
+      resetValue(null, true);
     }
   }
 }

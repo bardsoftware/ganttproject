@@ -66,7 +66,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     myTreeUi = treeUi;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
-        getUIConfiguration(), (ResourceChart) this);
+        getUIConfiguration(), this);
     myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
@@ -82,12 +82,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   protected int getRowHeight() {
     return appli.getResourcePanel().getRowHeight();
-  }
-
-  public void drawGPVersion(Graphics g) {
-    g.setColor(Color.black);
-    g.setFont(Fonts.GP_VERSION_FONT);
-    g.drawString("GanttProject (" + GanttProject.version + ")", 3, getHeight() - 8);
   }
 
   @Override

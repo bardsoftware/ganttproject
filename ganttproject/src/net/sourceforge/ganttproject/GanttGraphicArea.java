@@ -65,8 +65,6 @@ import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 
-import com.google.common.collect.ObjectArrays;
-
 /**
  * Class for the graphic part of the soft
  */
@@ -180,12 +178,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   public ChartModelImpl getMyChartModel() {
     return myChartModel;
-  }
-
-  public void drawGPVersion(Graphics g) {
-    g.setColor(Color.black);
-    g.setFont(Fonts.GP_VERSION_FONT);
-    g.drawString("GanttProject (" + GanttProject.version + ")", 3, getHeight() + 18);
   }
 
   @Override

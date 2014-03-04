@@ -27,13 +27,13 @@ import java.net.URI;
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.AllocationTagHandler;
 import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
@@ -211,7 +211,7 @@ class ProxyDocument implements Document {
     return myProject.getHumanResourceManager();
   }
 
-  private GPCalendar getActiveCalendar() {
+  private GPCalendarCalc getActiveCalendar() {
     return myProject.getActiveCalendar();
   }
 
@@ -285,7 +285,7 @@ class ProxyDocument implements Document {
       VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
       RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext());
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext(), myUIFacade.getTaskTree());
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
       ViewTagHandler viewHandler = new ViewTagHandler(getUIFacade());
@@ -304,6 +304,7 @@ class ProxyDocument implements Document {
       opener.addParsingListener(resourceViewHandler);
 
       opener.addTagHandler(taskHandler);
+      opener.addParsingListener(taskHandler);
 
       opener.addParsingListener(taskPropHandler);
       opener.addParsingListener(taskDisplayHandler);
@@ -400,7 +401,7 @@ class ProxyDocument implements Document {
     }
   }
 
-  private class PortfolioTagHandler implements TagHandler {
+  private class PortfolioTagHandler extends AbstractTagHandler {
     private static final String PORTFOLIO_TAG = "portfolio";
     private static final String PROJECT_TAG = "project";
     private static final String LOCATION_ATTR = "location";
@@ -431,11 +432,11 @@ class ProxyDocument implements Document {
     }
   }
 
-  private static class OnlyShowWeekendsTagHandler implements TagHandler {
+  private static class OnlyShowWeekendsTagHandler extends AbstractTagHandler {
 
-    private final GPCalendar calendar;
+    private final GPCalendarCalc calendar;
 
-    public OnlyShowWeekendsTagHandler(GPCalendar calendar) {
+    public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
       this.calendar = calendar;
     }
 

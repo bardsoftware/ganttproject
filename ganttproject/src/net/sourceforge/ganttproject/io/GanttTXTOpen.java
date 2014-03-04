@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import net.sourceforge.ganttproject.GanttTask;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+
 import net.sourceforge.ganttproject.task.TaskManager;
 
 public class GanttTXTOpen {
@@ -37,24 +39,16 @@ public class GanttTXTOpen {
   public boolean load(File f) {
     try {
       // Open a stream
-      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-
-      while (br.ready()) {
-        // Read each lines
-        String sTaskName = br.readLine();
-
+      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f), Charsets.UTF_8));
+      for (String taskName = br.readLine(); taskName != null; taskName = br.readLine()) {
         // The test is used to skip the white line (with no text)
-        if (!sTaskName.equals("")) {
+        if (!Strings.isNullOrEmpty(taskName)) {
           // Create the task
-          GanttTask task = myTaskManager.createTask();
-          task.setName(sTaskName);
-          task.setLength(1);
-          myTaskManager.registerTask(task);
-          myTaskManager.getTaskHierarchy().move(task, myTaskManager.getRootTask());
+          myTaskManager.newTaskBuilder().withName(taskName).build();
         }
       }
-
     } catch (Exception e) {
+      e.printStackTrace();
       return false;
     }
     return true;

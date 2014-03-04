@@ -36,7 +36,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 import org.xml.sax.Attributes;
 
 /** Class to parse the attribute of resources handler */
-public class ResourceTagHandler implements TagHandler, ParsingListener {
+public class ResourceTagHandler extends AbstractTagHandler implements ParsingListener {
   private final CustomPropertyManager myCustomPropertyManager;
 
   private HumanResource myCurrentResource;
@@ -49,6 +49,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
 
   public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
       CustomPropertyManager resourceCustomPropertyManager) {
+    super(null);
     myResourceManager = resourceManager;
     myCustomPropertyManager = resourceCustomPropertyManager;
     // myResourceManager.clear(); //CleanUP the old stuff

@@ -64,11 +64,11 @@ public class DependencyInteractionRenderer {
       int yPoints[] = new int[3];
       int vx = x2 - x1;
       int vy = y2 - y1;
-      int px = (int) (0.08f * (float) vx);
-      int py = (int) (0.08f * (float) vy);
+      int px = (int) (0.08f * vx);
+      int py = (int) (0.08f * vy);
       int total = ((px < 0) ? -px : px) + ((py < 0) ? -py : py);
-      px = (int) ((float) px * 10.f / (float) total);
-      py = (int) ((float) py * 10.f / (float) total);
+      px = (int) (px * 10.f / total);
+      py = (int) (py * 10.f / total);
       xPoints[0] = x2;
       yPoints[0] = y2;
       xPoints[1] = x2 - px + py / 2;

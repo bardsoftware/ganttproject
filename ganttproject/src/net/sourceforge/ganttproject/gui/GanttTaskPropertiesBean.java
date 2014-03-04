@@ -48,6 +48,7 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
@@ -92,7 +93,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   };
   private JXDatePicker myThirdDatePicker;
 
-  protected GanttTask[] selectedTasks;
+  private GanttTask[] selectedTasks;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
 
@@ -231,12 +232,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
     });
     extraConstraintBox.add(thirdDateComboBox);
-    myThirdDatePicker = UIUtil.createDatePicker(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setThird(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
-      }
-    });
+    myThirdDatePicker = UIUtil.createDatePicker();
     extraConstraintBox.add(Box.createHorizontalStrut(5));
     extraConstraintBox.add(myThirdDatePicker);
     propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.extraConstraint.label")));
@@ -470,9 +466,14 @@ public class GanttTaskPropertiesBean extends JPanel {
     priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
     myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
-    if (originalThirdDate != null) {
-      setThird(originalThirdDate.clone(), true);
-    }
+    DateValidator validator = UIUtil.DateValidator.Default.aroundProjectStart(myProject.getTaskManager().getProjectStart());
+    ActionListener listener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        setThird(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
+      }
+    };
+    UIUtil.setupDatePicker(myThirdDatePicker, originalThirdDate == null ? null : originalThirdDate.getTime(), validator, listener);
     thirdDateComboBox.setSelectedIndex(originalThirdDateConstraint);
 
     if (mileStoneCheckBox1 != null) {

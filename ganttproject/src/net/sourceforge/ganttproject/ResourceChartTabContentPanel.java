@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -24,7 +23,7 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
 
   ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, ResourceTreeUIFacade resourceTree,
       Component resourceChart) {
-    super(project, workbenchFacade, (TimelineChart) workbenchFacade.getResourceChart());
+    super(project, workbenchFacade, workbenchFacade.getResourceChart());
     myTreeFacade = resourceTree;
     myResourceChart = resourceChart;
   }

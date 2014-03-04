@@ -256,13 +256,6 @@ class GanttURLChooser {
         }
       }
     }));
-
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        reloadFilesTable();
-      }
-    });
   }
 
   class ReloadWorker extends SwingWorker<Pair<WebDavResource, List<WebDavResource>>, Object> {
@@ -349,7 +342,7 @@ class GanttURLChooser {
 
   private WebDavServerDescriptor findSavedServer(String domainUrl) {
     for (WebDavServerDescriptor server : myServers.getValues()) {
-      if (server.rootUrl.equals(domainUrl)) {
+      if (server.getRootUrl().equals(domainUrl)) {
         return server;
       }
     }
@@ -371,7 +364,7 @@ class GanttURLChooser {
     if (server == null) {
       return null;
     }
-    String host = server.rootUrl.trim();
+    String host = server.getRootUrl().trim();
     while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
@@ -487,11 +480,16 @@ class GanttURLChooser {
     properties.add(panel);
     properties.add(Box.createVerticalGlue());
 
-    if (myInitialUri != null) {
-      tryApplyUrl(myInitialUri);
-    }
-
     myBusyComponent = new JBusyComponent<JComponent>(properties);
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (myInitialUri != null) {
+          tryApplyUrl(myInitialUri);
+        }
+        reloadFilesTable();
+      }
+    });
     return myBusyComponent;
   }
 

@@ -57,7 +57,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
@@ -118,6 +120,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Class that generate the JTree
@@ -356,6 +359,22 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     this.area = area;
   }
 
+  @Override
+  public void applyPreservingExpansionState(Task rootTask, Predicate<Task> callable) {
+    MutableTreeTableNode rootNode = getNode(rootTask);
+    List<MutableTreeTableNode> subtree = TreeUtil.collectSubtree(rootNode);
+    Collections.reverse(subtree);
+    LinkedHashMap<Task, Boolean> states = Maps.newLinkedHashMap();
+    for (MutableTreeTableNode node : subtree) {
+      Task t = (Task)node.getUserObject();
+      states.put(t, t.getExpand());
+    }
+    callable.apply(rootTask);
+    for (Map.Entry<Task, Boolean> state : states.entrySet()) {
+      setExpanded(state.getKey(), state.getValue());
+    }
+  }
+
   /** add an object with the expand information */
   DefaultMutableTreeTableNode addObjectWithExpand(Object child, MutableTreeTableNode parent) {
     DefaultMutableTreeTableNode childNode = new TaskNode((Task) child);
@@ -368,22 +387,22 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     // forwardScheduling();
 
     // Task task = (Task) (childNode.getUserObject());
-    boolean res = true;
+//    boolean res = true;
+//
+//    // test for expansion
+//    while (parent != null) {
+//      Task taskFather = (Task) (parent.getUserObject());
+//      if (!taskFather.getExpand()) {
+//        res = false;
+//        break;
+//      }
+//      parent = (DefaultMutableTreeTableNode) (parent.getParent());
+//    }
 
-    // test for expansion
-    while (parent != null) {
-      Task taskFather = (Task) (parent.getUserObject());
-      if (!taskFather.getExpand()) {
-        res = false;
-        break;
-      }
-      parent = (DefaultMutableTreeTableNode) (parent.getParent());
-    }
-
-    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(childNode));
-    if (!res && parent != null) {
-      getTreeTable().getTree().collapsePath(TreeUtil.createPath(parent));
-    }
+//    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(childNode));
+//    if (!res && parent != null) {
+//      getTreeTable().getTree().collapsePath(TreeUtil.createPath(parent));
+//    }
     myProject.refreshProjectInformation();
 
     return childNode;

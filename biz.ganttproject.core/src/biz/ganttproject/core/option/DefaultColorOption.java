@@ -37,7 +37,7 @@ public class DefaultColorOption extends GPAbstractOption<Color> implements Color
   @Override
   public void loadPersistentValue(String value) {
     if (value != null) {
-      setValue(Util.determineColor(value), true);
+      resetValue(Util.determineColor(value), true);
     }
   }
 }

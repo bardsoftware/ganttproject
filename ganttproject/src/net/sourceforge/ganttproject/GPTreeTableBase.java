@@ -47,10 +47,12 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -65,17 +67,21 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
+import org.jdesktop.swingx.JXTree;
+import org.jdesktop.swingx.JXTree.DelegatingRenderer;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -470,6 +476,16 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         onProjectCreated();
       }
     });
+//    JXTree.DelegatingRenderer treeCellRenderer = (DelegatingRenderer) getTreeCellRenderer();
+//    treeCellRenderer.setDelegateRenderer(new DefaultTreeCellRenderer() {
+//      @Override
+//      public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+//          boolean leaf, int row, boolean hasFocus) {
+//        JLabel result = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+//        result.setIcon(new ImageIcon(getClass().getResource("/icons/alert1_16.gif")));
+//        return result;
+//      }
+//    });
   }
 
   @Override
@@ -482,7 +498,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         try {
           return super.stopCellEditing();
         } catch (ValidationException e) {
-          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
           return false;
         }
       }
@@ -493,7 +509,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         try {
           return super.stopCellEditing();
         } catch (ValidationException e) {
-          getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
+          getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
           return false;
         }
       }
@@ -666,17 +682,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   TableCellEditor createCellEditor(Class<?> columnClass) {
-    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? newDateCellEditor()
+    TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? UIUtil.newDateCellEditor(myProject, false)
         : getTreeTable().getDefaultEditor(columnClass);
     return editor == null ? null : wrapEditor(editor);
   }
 
   private TableCellEditor wrapEditor(TableCellEditor editor) {
     return new TreeTableCellEditorImpl((DefaultCellEditor) editor, getTable());
-  }
-
-  protected TableCellEditor newDateCellEditor() {
-    return new DateCellEditor();
   }
 
   public JXTreeTable getTree() {
@@ -714,40 +726,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     super.addKeyListener(keyListener);
     // getTable().addKeyListener(keyListener);
     // getTree().addKeyListener(keyListener);
-  }
-
-  private static class DateCellEditor extends DefaultCellEditor {
-    private Date myDate;
-
-    public DateCellEditor() {
-      super(new JTextField());
-    }
-
-    @Override
-    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
-      JTextField result = (JTextField) super.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
-      result.selectAll();
-      return result;
-    }
-
-    @Override
-    public Object getCellEditorValue() {
-      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
-    }
-
-    @Override
-    public boolean stopCellEditing() {
-      final String dateString = ((JTextComponent) getComponent()).getText();
-      Date parsedDate = GanttLanguage.getInstance().parseDate(dateString);
-      if (parsedDate == null) {
-        getComponent().setBackground(TreeTableCellEditorImpl.INVALID_VALUE_BACKGROUND);
-        return false;
-      }
-      myDate = parsedDate;
-      getComponent().setBackground(null);
-      super.fireEditingStopped();
-      return true;
-    }
   }
 
   protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {

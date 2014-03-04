@@ -1,64 +1,78 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2004-2011 GanttProject Team
+Copyright 2004-2013 BarD Software s.r.o
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.core.calendar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
+import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.FramerImpl;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 /**
- * @author bard
+ * Implements a calendar which is aware of weekend days and recurring/one-off holidays and working days.
+ * 
+ * By default, this calendar assumes that any day D is a working day. Then it applies weekend check,
+ * recurring event check and one-off event check in this specified order. Each check can override the result of the previous
+ * one. For instance, if D is a weekend day then it is a holiday, unless one of the following is the case:
+ * -- only show weekends option is on
+ * -- there is one-off event at date D with type WORKING
+ * -- there is a recurring event at date D with type WORKING and no one-off event at date D with type HOLIDAY
+ * 
+ * If D is a non-weekend day then it is a working day, unless one of the following is the case:
+ * -- there is one-off event at date D with type HOLIDAY
+ * -- there is a recurring event at date D with type HOLIDAY and no one-off event at date D with type WORKING
+ * 
+ * @author dbarashev (Dmitry Barashev)
  */
-public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
+public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCalc {
 
   private final Calendar myCalendar = CalendarFactory.newCalendar();
 
   private final FramerImpl myFramer = new FramerImpl(Calendar.DAY_OF_WEEK);
 
-  private DayType[] myTypes = new DayType[7];
+  private final DayType[] myTypes = new DayType[7];
 
   private boolean myOnlyShowWeekends = false;
 
   private int myWeekendDaysCount;
 
-  private Set<Date> publicHolidaysArray = new LinkedHashSet<Date>();
+  private final Map<Date, CalendarEvent> myRecurringEvents = Maps.newLinkedHashMap();
+  private final Map<Date, CalendarEvent> myOneOffEvents = Maps.newLinkedHashMap();
 
-  private final Set<Date> myStableHolidays = new LinkedHashSet<Date>();
-
-  private AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
+  private final AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
   private String myBaseCalendarID;
-//  private URL myCalendarUrl;
 
   public WeekendCalendarImpl() {
     this(null);
@@ -66,21 +80,28 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   
   public WeekendCalendarImpl(String baseCalendarID) {
     myBaseCalendarID = baseCalendarID;
+    reset();
+  }
+
+  public void reset() {
+    myRecurringEvents.clear();
+    myOneOffEvents.clear();
     for (int i = 0; i < myTypes.length; i++) {
       myTypes[i] = GPCalendar.DayType.WORKING;
     }
     setWeekDayType(GregorianCalendar.SATURDAY, GPCalendar.DayType.WEEKEND);
     setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
+    fireCalendarChanged();
   }
-
+  
   @Override
   public List<GPCalendarActivity> getActivities(Date startDate, final Date endDate) {
-    if (getWeekendDaysCount() == 0 && publicHolidaysArray.isEmpty() && myStableHolidays.isEmpty()) {
+    if (getWeekendDaysCount() == 0 && myOneOffEvents.isEmpty() && myRecurringEvents.isEmpty()) {
       return myRestlessCalendar.getActivities(startDate, endDate);
     }
     List<GPCalendarActivity> result = new ArrayList<GPCalendarActivity>();
     Date curDayStart = myFramer.adjustLeft(startDate);
-    boolean isWeekendState = isNonWorkingDay(curDayStart);
+    boolean isWeekendState = (getDayMask(curDayStart) & DayMask.WORKING) == 0;
     while (curDayStart.before(endDate)) {
       Date changeStateDayStart = doFindClosest(curDayStart, myFramer, MoveDirection.FORWARD,
           isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
@@ -139,7 +160,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     Date unitStart = timeUnit.adjustLeft(startDate);
     while (unitCount > 0) {
       Date prevUnitStart = timeUnit.jumpLeft(unitStart);
-      boolean isWeekendState = isNonWorkingDay(prevUnitStart);
+      boolean isWeekendState = (getDayMask(prevUnitStart) & DayMask.WORKING) == 0;
       if (isWeekendState) {
         Date lastWorkingUnitStart = findClosest(prevUnitStart, timeUnit, MoveDirection.BACKWARD, DayType.WORKING);
         Date firstWeekendUnitStart = timeUnit.adjustRight(lastWorkingUnitStart);
@@ -161,6 +182,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
       myWeekendDaysCount += (type == DayType.WEEKEND ? 1 : -1);
     }
     myTypes[day - 1] = type;
+    fireCalendarChanged();
   }
 
   @Override
@@ -176,6 +198,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   @Override
   public void setOnlyShowWeekends(boolean onlyShowWeekends) {
     myOnlyShowWeekends = onlyShowWeekends;
+    fireCalendarChanged();
   }
 
   private int getWeekendDaysCount() {
@@ -184,62 +207,89 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
 
   @Override
   public Date findClosestWorkingTime(Date time) {
-    if (getWeekendDaysCount() == 0 && myStableHolidays.isEmpty() && publicHolidaysArray.isEmpty()) {
+    if (getWeekendDaysCount() == 0 && myRecurringEvents.isEmpty() && myOneOffEvents.isEmpty()) {
       return time;
     }
-    if (!isNonWorkingDay(time)) {
+    int dayMask = getDayMask(time);
+    if ((dayMask & DayMask.WORKING) == DayMask.WORKING) {
       return time;
     }
     return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
   }
 
-  @Override
-  public void setPublicHoliDayType(int month, int date) {
-    setPublicHoliDayType(CalendarFactory.createGanttCalendar(1, month - 1, date).getTime());
-    myStableHolidays.add(CalendarFactory.createGanttCalendar(1, month - 1, date).getTime());
+  private boolean isPublicHoliDay(Date curDayStart) {
+    CalendarEvent oneOff = myOneOffEvents.get(curDayStart);
+    if (oneOff != null) {
+      switch (oneOff.getType()) {
+      case HOLIDAY:
+        return true;
+      case WORKING_DAY:
+        return false;
+      case NEUTRAL:
+      default:
+        // intentionally fall-through, consult recurring holidays in this case 
+      }
+    }
+    myCalendar.setTime(curDayStart);
+    myCalendar.set(Calendar.YEAR, 1);
+    CalendarEvent recurring = myRecurringEvents.get(myCalendar.getTime());
+    if (recurring != null) {
+      switch (recurring.getType()) {
+      case HOLIDAY:
+        return true;
+      case WORKING_DAY:
+        return false;
+      case NEUTRAL:
+      default:
+        // intentionally fall-through, use default answer 
+      }            
+    }
+    return false;
   }
 
   @Override
-  public void setPublicHoliDayType(Date curDayStart) {
-    publicHolidaysArray.add(curDayStart);
-  }
-
-  @Override
-  public boolean isPublicHoliDay(Date curDayStart) {
-    boolean result = publicHolidaysArray.contains(curDayStart);
-    if (!result) {
-      result = myStableHolidays.contains(CalendarFactory.createGanttCalendar(1, curDayStart.getMonth(), curDayStart.getDate()).getTime());
+  public int getDayMask(Date date) {
+    int result = 0;
+    myCalendar.setTime(date);
+    int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+    boolean isHoliday = isPublicHoliDay(date);
+    boolean isWeekend = myTypes[dayOfWeek - 1] == DayType.WEEKEND;
+    if (isWeekend) {
+      result |= DayMask.WEEKEND;
+      CalendarEvent oneOff = myOneOffEvents.get(date);
+      if (oneOff != null && oneOff.getType() == Type.WORKING_DAY) {
+        result |= DayMask.WORKING;
+      }
+    }
+    if (isHoliday) {
+      result |= DayMask.HOLIDAY;
+      return result;
+    }
+    if (!isWeekend || myOnlyShowWeekends) {
+      result |= DayMask.WORKING;
     }
     return result;
   }
 
-  @Override
-  public DayType getDayTypeDate(Date curDayStart) {
-    myCalendar.setTime(curDayStart);
-    int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
-    if (isPublicHoliDay(curDayStart))
-      return GPCalendar.DayType.HOLIDAY;
-    else if (getWeekDayType(dayOfWeek) == GPCalendar.DayType.WORKING)
-      return GPCalendar.DayType.WORKING;
-    else
-      return GPCalendar.DayType.WEEKEND;
-  }
+//  @Override
+//  public boolean isNonWorkingDay(Date curDayStart) {
+//    return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
+//  }
 
   @Override
-  public boolean isNonWorkingDay(Date curDayStart) {
-    return isWeekend(curDayStart) || isPublicHoliDay(curDayStart);
-  }
-
-  @Override
-  public void setPublicHolidays(Collection<Holiday> holidays) {
-    publicHolidaysArray.clear();
-    for (Holiday h : holidays) {
-      if (h.isRepeating) {
-        myStableHolidays.add(h.date);
+  public void setPublicHolidays(Collection<CalendarEvent> holidays) {
+    myRecurringEvents.clear();
+    myOneOffEvents.clear();
+    for (CalendarEvent h : holidays) {
+      if (h.isRecurring) {
+        myCalendar.setTime(h.myDate);
+        myCalendar.set(Calendar.YEAR, 1);
+        myRecurringEvents.put(myCalendar.getTime(), h);
       } else {
-        publicHolidaysArray.add(h.date);
+        myOneOffEvents.put(h.myDate, h);
       }
     }
+    fireCalendarChanged();
 //    myCalendarUrl = calendarUrl;
 //    clearPublicHolidays();
 //    if (calendarUrl != null) {
@@ -258,20 +308,11 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   }
 
   @Override
-  public Collection<Holiday> getPublicHolidays() {
-    List<Holiday> result = new ArrayList<Holiday>();
-    for (Date d : publicHolidaysArray) {
-      result.add(new Holiday(d, false));
-    }
-    for (Date d : myStableHolidays) {
-      result.add(new Holiday(d, true));
-    }
-    return Collections.unmodifiableCollection(result);
-  }
-
-  @Override
-  public void clearPublicHolidays() {
-    publicHolidaysArray.clear();
+  public Collection<CalendarEvent> getPublicHolidays() {
+    List<CalendarEvent> result = Lists.newArrayListWithExpectedSize(myRecurringEvents.size() + myOneOffEvents.size());
+    result.addAll(myRecurringEvents.values());
+    result.addAll(myOneOffEvents.values());
+    return result;
   }
 
   @Override
@@ -280,7 +321,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
   }
 
   @Override
-  public GPCalendar copy() {
+  public GPCalendarCalc copy() {
     WeekendCalendarImpl result = new WeekendCalendarImpl(myBaseCalendarID);
     for (int i = 1; i < 8; i++) {
       result.setWeekDayType(i, getWeekDayType(i));
@@ -301,10 +342,28 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendar {
     myBaseCalendarID = id;
   }
 
-  
-  
-//  @Override
-//  public URL getPublicHolidaysUrl() {
-//    return myCalendarUrl;
-//  }
+  @Override
+  public void importCalendar(GPCalendar calendar, ImportCalendarOption importOption) {
+    if (ImportCalendarOption.Values.NO.equals(importOption.getSelectedValue())) {
+      return;
+    }
+    if (ImportCalendarOption.Values.REPLACE.equals(importOption.getSelectedValue())) {
+      reset();
+      setPublicHolidays(calendar.getPublicHolidays());
+      for (int i = 1; i <= 7; i++) {
+        setWeekDayType(i, calendar.getWeekDayType(i));
+      }
+      return;
+    }
+    if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
+      LinkedHashSet<CalendarEvent> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
+      mergedHolidays.addAll(calendar.getPublicHolidays());
+      setPublicHolidays(mergedHolidays);      
+    }
+    for (int i = 1; i <= 7; i++) {
+      if (calendar.getWeekDayType(i) == DayType.WEEKEND) {        
+        setWeekDayType(i, DayType.WEEKEND);
+      }
+    }
+  }
 }

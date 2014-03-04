@@ -23,20 +23,26 @@ import java.io.File;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.wizard.WizardPage;
 
 public interface Importer {
+  String getID();
   String getFileTypeDescription();
 
   String getFileNamePattern();
 
   GPOptionGroup[] getSecondaryOptions();
 
-  void run(File selectedFile);
-
   String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.importer";
 
   void setContext(IGanttProject project, UIFacade uiFacade, Preferences pluginPreferences);
+
+  boolean isReady();
+  void run();
+
+  void setFile(File file);
+
+  WizardPage getCustomPage();
 }

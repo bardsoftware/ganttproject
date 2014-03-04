@@ -69,6 +69,7 @@
 	
 	<target name="init">
 		<mkdir dir="${install.dir}"/>
+		<mkdir dir="${install.dir}/jre_ext"/>
 	</target>
 	
 	<target name="copy-launchers">
@@ -84,6 +85,7 @@
 				<include name="ganttproject_32_2.ico"/>
 				<include name="GanttProject.app/**"/>
 				<include name="HouseBuildingSample.gan"/>
+				<include name="lib/javagalician.jar"/>
 			</fileset>
 		</copy>
 		<jar destfile="${install.dir}/eclipsito.jar" update="true">

@@ -18,24 +18,77 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+
 public class CSVOptions {
-  public boolean bExportTaskID = true;
+//  public boolean bExportTaskID = true;
+//
+//  public boolean bExportTaskName = true;
+//
+//  public boolean bExportTaskStartDate = true;
+//
+//  public boolean bExportTaskEndDate = true;
+//
+//  public boolean bExportTaskPercent = true;
+//
+//  public boolean bExportTaskDuration = true;
+//
+//  public boolean bExportTaskWebLink = true;
+//
+//  public boolean bExportTaskResources = true;
+//
+//  public boolean bExportTaskNotes = true;
 
-  public boolean bExportTaskName = true;
+  private static final Set<TaskDefaultColumn> ourIgnoredTaskColumns = ImmutableSet.of(
+      TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
+  private final Map<String, BooleanOption> myTaskOptions = Maps.newLinkedHashMap();
 
-  public boolean bExportTaskStartDate = true;
+  public CSVOptions() {
+    List<TaskDefaultColumn> orderedColumns = ImmutableList.of(
+        TaskDefaultColumn.ID, TaskDefaultColumn.NAME, TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE, TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION);
+    LinkedHashSet<TaskDefaultColumn> columns = Sets.newLinkedHashSet(Arrays.asList(TaskDefaultColumn.values()));
+    columns.removeAll(orderedColumns);
+    for (TaskDefaultColumn taskColumn : orderedColumns) {
+      createTaskExportOption(taskColumn);
+    }
+    for (TaskDefaultColumn taskColumn : columns) {
+      if (!ourIgnoredTaskColumns.contains(taskColumn)) {
+        createTaskExportOption(taskColumn);
+      }
+    }
+    createTaskExportOption("webLink");
+    createTaskExportOption("resources");
+    createTaskExportOption("notes");
+  }
 
-  public boolean bExportTaskEndDate = true;
+  public BooleanOption createTaskExportOption(TaskDefaultColumn taskColumn) {
+    DefaultBooleanOption result = new DefaultBooleanOption(taskColumn.getStub().getID(), true);
+    myTaskOptions.put(taskColumn.getStub().getID(), result);
+    return result;
+  }
 
-  public boolean bExportTaskPercent = true;
+  public BooleanOption createTaskExportOption(String id) {
+    DefaultBooleanOption result = new DefaultBooleanOption(id, true);
+    myTaskOptions.put(id, result);
+    return result;
+  }
 
-  public boolean bExportTaskDuration = true;
-
-  public boolean bExportTaskWebLink = true;
-
-  public boolean bExportTaskResources = true;
-
-  public boolean bExportTaskNotes = true;
+  public Map<String, BooleanOption> getTaskOptions() {
+    return myTaskOptions;
+  }
 
   public boolean bExportResourceID = true;
 
@@ -52,48 +105,6 @@ public class CSVOptions {
   public String sSeparatedChar = ",";
 
   public String sSeparatedTextChar = "\"";
-
-  /** @return the csv settings as an xml schema. */
-  public String getXml() {
-    String res = "    <csv-export>\n";
-    // general options
-    res += "      <csv-general \n";
-    res += "        fixed=\"" + bFixedSize + "\"\n";
-    res += "        separatedChar=\"" + correct(sSeparatedChar) + "\"\n";
-    res += "        separatedTextChar=\"" + correct(sSeparatedTextChar) + "\"/>\n";
-
-    // tasks export options
-    res += "      <csv-tasks\n";
-    res += "        id=\"" + bExportTaskID + "\"\n";
-    res += "        name=\"" + bExportTaskName + "\"\n";
-    res += "        start-date=\"" + bExportTaskStartDate + "\"\n";
-    res += "        end-date=\"" + bExportTaskEndDate + "\"\n";
-    res += "        percent=\"" + bExportTaskPercent + "\"\n";
-    res += "        duration=\"" + bExportTaskDuration + "\"\n";
-    res += "        webLink=\"" + bExportTaskWebLink + "\"\n";
-    res += "        resources=\"" + bExportTaskResources + "\"\n";
-    res += "        notes=\"" + bExportTaskNotes + "\"/>\n";
-
-    // resources export options
-    res += "      <csv-resources\n";
-    res += "        id=\"" + bExportResourceID + "\"\n";
-    res += "        name=\"" + bExportResourceName + "\"\n";
-    res += "        mail=\"" + bExportResourceMail + "\"\n";
-    res += "        phone=\"" + bExportResourcePhone + "\"\n";
-    res += "        role=\"" + bExportResourceRole + "\"/>\n";
-
-    return res += "    </csv-export>\n";
-  }
-
-  public String correct(String s) {
-    String res;
-    res = s.replaceAll("&", "&#38;");
-    res = res.replaceAll("<", "&#60;");
-    res = res.replaceAll(">", "&#62;");
-    res = res.replaceAll("/", "&#47;");
-    res = res.replaceAll("\"", "&#34;");
-    return res;
-  }
 
   /** @return a list of the possible separated char. */
   public String[] getSeparatedTextChars() {

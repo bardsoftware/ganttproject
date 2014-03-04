@@ -22,12 +22,16 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
+import com.google.common.collect.Maps;
+
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -41,6 +45,8 @@ public abstract class WizardImpl {
   protected final static GanttLanguage language = GanttLanguage.getInstance();
 
   private final ArrayList<WizardPage> myPages = new ArrayList<WizardPage>();
+
+  private final Map<String, JComponent> myTitle2component = Maps.newHashMap();
 
   private int myCurrentPage;
 
@@ -118,25 +124,39 @@ public abstract class WizardImpl {
 
   public void show() {
     for (int i = 0; i < myPages.size(); i++) {
-      WizardPage nextPage = myPages.get(i);
-
-      JPanel pagePanel = new JPanel(new BorderLayout());
-      JComponent titlePanel = TopPanel.create(nextPage.getTitle() + "   (" + language.getText("step") + " " + (i + 1)
-          + " " + language.getText("of") + " " + (myPages.size()) + ")", null);
-      pagePanel.add(titlePanel, BorderLayout.NORTH);
-      JComponent component = (JComponent) nextPage.getComponent();
-      component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-      pagePanel.add(component, BorderLayout.CENTER);
-
-      myPagesContainer.add(pagePanel, nextPage.getTitle());
+      WizardPage page = myPages.get(i);
+      addPageComponent(page, i);
     }
     myCardLayout.first(myPagesContainer);
+    getCurrentPage().setActive(true);
     myPagesContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     adjustButtonState();
     myDialog = myUIFacade.createDialog(myPagesContainer, new Action[] { myBackAction, myNextAction, myOkAction,
         myCancelAction }, myTitle);
     myDialog.center(Centering.SCREEN);
     myDialog.show();
+  }
+
+  protected void addPageComponent(WizardPage page, int index) {
+    String currentTitle = getCurrentPage().getTitle();
+    JPanel pagePanel = new JPanel(new BorderLayout());
+    JComponent titlePanel = TopPanel.create(page.getTitle() + "   (" + language.getText("step") + " " + (index + 1)
+        + " " + language.getText("of") + " " + (myPages.size()) + ")", null);
+    pagePanel.add(titlePanel, BorderLayout.NORTH);
+    JComponent component = (JComponent) page.getComponent();
+    component.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+    pagePanel.add(component, BorderLayout.CENTER);
+
+    myPagesContainer.add(pagePanel, page.getTitle());
+    myCardLayout.show(myPagesContainer, currentTitle);
+    myTitle2component.put(page.getTitle(), pagePanel);
+  }
+
+  protected void removePageComponent(WizardPage page) {
+    JComponent component = myTitle2component.get(page.getTitle());
+    if (component != null) {
+      myPagesContainer.remove(component);
+    }
   }
 
   public void adjustButtonState() {
@@ -151,6 +171,10 @@ public abstract class WizardImpl {
 
   protected void addPage(WizardPage page) {
     myPages.add(page);
+  }
+
+  protected void removePage(WizardPage page) {
+    myPages.remove(page);
   }
 
   protected void onOkPressed() {
