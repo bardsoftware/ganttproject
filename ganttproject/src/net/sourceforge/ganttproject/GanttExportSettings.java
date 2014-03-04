@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 
 /** Class to store 3 boolean values */
@@ -46,6 +47,8 @@ public class GanttExportSettings {
   private boolean isCommandLineMode;
 
   private Image myLogo;
+
+  private String myExpandedResources;
 
   public GanttExportSettings() {
     name = percent = depend = ok = true;
@@ -134,5 +137,13 @@ public class GanttExportSettings {
 
   public void setLogo(Image logo) {
     myLogo = logo;
+  }
+
+  public void setExpandedResources(String list) {
+    myExpandedResources = list;
+  }
+
+  public boolean isExpanded(HumanResource hr) {
+    return "".equals(myExpandedResources);
   }
 }

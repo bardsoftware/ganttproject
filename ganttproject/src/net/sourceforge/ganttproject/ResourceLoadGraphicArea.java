@@ -212,6 +212,9 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
       int rowCount = getResourceManager().getResources().size();
       for (HumanResource hr : getResourceManager().getResources()) {
+        if (settings.isExpanded(hr)) {
+          myTreeUi.setExpanded(hr, true);
+        }
         if (myTreeUi.isExpanded(hr)) {
           rowCount += hr.getAssignments().length;
         }
