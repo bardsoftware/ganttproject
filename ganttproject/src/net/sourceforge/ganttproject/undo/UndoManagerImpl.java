@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.undo;
 
 import java.io.IOException;
 
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -29,11 +31,13 @@ import javax.swing.undo.UndoableEditSupport;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 
 /**
  * UndoManager implementation, it manages the undoable edits in GanttProject
- * 
+ *
  * @author bard
  */
 public class UndoManagerImpl implements GPUndoManager {
@@ -55,6 +59,12 @@ public class UndoManagerImpl implements GPUndoManager {
     myDocumentManager = documentManager;
     mySwingUndoManager = new UndoManager();
     myUndoEventDispatcher = new UndoableEditSupport();
+    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
+      public void languageChanged(Event event) {
+        UIManager.getDefaults().put("AbstractUndoableEdit.undoText", GanttLanguage.getInstance().getText("undo"));
+        UIManager.getDefaults().put("AbstractUndoableEdit.redoText", GanttLanguage.getInstance().getText("redo"));
+      }
+    });
   }
 
   @Override

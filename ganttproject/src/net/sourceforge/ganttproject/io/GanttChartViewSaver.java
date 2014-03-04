@@ -23,6 +23,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 
@@ -31,13 +32,25 @@ class GanttChartViewSaver extends SaverBase {
 
   void save(ColumnList tableHeader, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
+    boolean allHidden = true;
+    for (int i = 0; i < tableHeader.getSize(); i++) {
+      Column column = tableHeader.getField(i);
+      if (column.isVisible()) {
+        allHidden = false;
+        break;
+      }
+    }
     startElement("taskdisplaycolumns", handler);
     for (int i = 0; i < tableHeader.getSize(); i++) {
       Column column = tableHeader.getField(i);
       addAttribute("property-id", column.getID(), attrs);
       addAttribute("order", column.getOrder(), attrs);
       addAttribute("width", column.getWidth(), attrs);
-      addAttribute("visible", column.isVisible(), attrs);
+      if (allHidden && column.getID().equals(TaskDefaultColumn.NAME.getStub().getID())) {
+        addAttribute("visible", true, attrs);
+      } else {
+        addAttribute("visible", column.isVisible(), attrs);
+      }
       emptyElement("displaycolumn", attrs, handler);
     }
     endElement("taskdisplaycolumns", handler);

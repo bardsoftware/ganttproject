@@ -50,6 +50,7 @@ public class ViewMenu extends JMenu {
       viewManager.createView(view, null);
       add(new JCheckBoxMenuItem(new ViewToggleAction(chart, viewManager, view)));
     }
+    setToolTipText(null);
   }
 
   private static class GPViewImpl implements GPView {

@@ -31,7 +31,10 @@ import net.sourceforge.ganttproject.IGanttProject;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.google.common.base.Strings;
+
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.CalendarEvent;
 
 public class CalendarSaver extends SaverBase {
   private SimpleDateFormat myShortFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
@@ -63,16 +66,21 @@ public class CalendarSaver extends SaverBase {
     endElement("calendar", handler);
 
     endElement("day-types", handler);
-    for (GPCalendar.Holiday holiday : project.getActiveCalendar().getPublicHolidays()) {
-      Date d = holiday.date;
-      if (holiday.isRepeating) {
+    for (CalendarEvent holiday : project.getActiveCalendar().getPublicHolidays()) {
+      Date d = holiday.myDate;
+      if (holiday.isRecurring) {
         addAttribute("year", "", attrs);
       } else {
         addAttribute("year", String.valueOf(d.getYear() + 1900), attrs);
       }
       addAttribute("month", String.valueOf(d.getMonth() + 1), attrs);
       addAttribute("date", String.valueOf(d.getDate()), attrs);
-      emptyElement("date", attrs, handler);
+      addAttribute("type", holiday.getType().name(), attrs);
+      if (Strings.isNullOrEmpty(holiday.getTitle())) {
+        emptyElement("date", attrs, handler);
+      } else {
+        cdataElement("date", holiday.getTitle(), attrs, handler);
+      }
     }
 
     endElement("calendars", handler);

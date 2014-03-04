@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 
 import com.google.common.base.Functions;
@@ -77,7 +78,7 @@ public class WeekendConfigurationPage implements WizardPage {
 
     public CalendarOption(GPCalendar calendar, List<URL> urls, List<String> labels) {
       super("project.calendar", append(labels, i18n("none")));
-      setValue(i18n("none"), true);
+      resetValue(i18n("none"), true);
       myUrls = urls;
       myLabels = labels;
       myCalendar = calendar;
@@ -130,7 +131,7 @@ public class WeekendConfigurationPage implements WizardPage {
   static class WeekendSchedulingOption extends DefaultEnumerationOption<SchedulingEnum> {
     WeekendSchedulingOption(SchedulingEnum initialValue) {
       super("project.weekendScheduling", SchedulingEnum.values());
-      setValue(objectToString(initialValue), true);
+      resetValue(objectToString(initialValue), true);
     }
 
     @Override
@@ -139,7 +140,7 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
-  public WeekendConfigurationPage(final GPCalendar calendar, I18N i18n, IGanttProject project,
+  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, IGanttProject project,
       boolean showPublicHolidays) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 

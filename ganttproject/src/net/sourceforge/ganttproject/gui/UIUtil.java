@@ -28,21 +28,43 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
+
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JFormattedTextField;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.html.HTMLEditorKit;
+
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
@@ -51,11 +73,16 @@ import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
+
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public abstract class UIUtil {
   public static final Highlighter ZEBRA_HIGHLIGHTER = new ColorHighlighter(new HighlightPredicate() {
@@ -66,6 +93,8 @@ public abstract class UIUtil {
   }, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
+  public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
+  public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
 
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
@@ -156,29 +185,173 @@ public abstract class UIUtil {
     setupTableUI(table, 10);
   }
 
+  public static <T> DocumentListener attachValidator(final JTextField textField, final OptionsPageBuilder.ValueValidator<T> validator, final GPOption<T> option) {
+    final DocumentListener listener = new DocumentListener() {
+      private void saveValue() {
+        try {
+          T oldValue = option == null ? null : option.getValue();
+          T value = validator.parse(textField.getText());
+          if (option != null && !Objects.equal(oldValue, value)) {
+            option.setValue(value, validator);
+          }
+          textField.setBackground(getValidFieldColor());
+        }
+        /* If value in text filed is not integer change field color */
+        catch (NumberFormatException ex) {
+          textField.setBackground(INVALID_FIELD_COLOR);
+        } catch (ValidationException ex) {
+          textField.setBackground(INVALID_FIELD_COLOR);
+        }
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent e) {
+        saveValue();
+      }
+
+      @Override
+      public void removeUpdate(DocumentEvent e) {
+        saveValue();
+      }
+
+      @Override
+      public void changedUpdate(DocumentEvent e) {
+        saveValue();
+      }
+    };
+    textField.getDocument().addDocumentListener(listener);
+    return listener;
+  }
+
+  public static interface DateValidator extends Function<Date, Pair<Boolean, String>> {
+    class Default {
+      public static DateValidator aroundProjectStart(final Date projectStart) {
+        return dateInRange(projectStart, 1000);
+      }
+
+      public static DateValidator dateInRange(final Date center, final int yearDiff) {
+        return new DateValidator() {
+          @Override
+          public Pair<Boolean, String> apply(Date value) {
+            int diff = Math.abs(value.getYear() - center.getYear());
+            if (diff > yearDiff) {
+              return Pair.create(Boolean.FALSE, String.format(
+                    "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center));
+            }
+            return Pair.create(Boolean.TRUE, null);
+          }
+        };
+      }
+    }
+  }
+
+  private static Date tryParse(DateFormat dateFormat, String text) {
+    try {
+      return dateFormat.parse(text);
+    } catch (ParseException e) {
+      return null;
+    }
+  }
+
+  public static ValueValidator<Date> createStringDateValidator(final DateValidator dv, final DateFormat... formats) {
+    return new ValueValidator<Date>() {
+      @Override
+      public Date parse(String text) throws ValidationException {
+        if (Strings.isNullOrEmpty(text)) {
+          throw new ValidationException();
+        }
+        Date parsed = null;
+        for (DateFormat df : formats) {
+          parsed = tryParse(df, text);
+          if (parsed != null) {
+            break;
+          }
+        }
+        if (parsed == null) {
+          throw new ValidationException("Can't parse value=" + text + "as date");
+        }
+        if (dv != null) {
+          Pair<Boolean, String> validationResult = dv.apply(parsed);
+          if (!validationResult.first()) {
+            throw new ValidationException(validationResult.second());
+          }
+        }
+        return parsed;
+      }
+    };
+  }
+
+  public static void setupDatePicker(
+      final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ActionListener listener) {
+    ValueValidator<Date> parseValidator = createStringDateValidator(
+        dv, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    setupDatePicker(picker, initialDate, dv, parseValidator, listener);
+  }
+
+  public static void setupDatePicker(final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ValueValidator<Date> parseValidator, final ActionListener listener) {
+    if (dv == null) {
+      picker.addActionListener(listener);
+    } else {
+      picker.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          Date date = ((JXDatePicker) e.getSource()).getDate();
+          Pair<Boolean, String> validation = dv.apply(date);
+          if (!validation.first()) {
+            throw new ValidationException(validation.second());
+          }
+        }
+      });
+    }
+    final JFormattedTextField editor = picker.getEditor();
+    UIUtil.attachValidator(editor, parseValidator, null);
+    editor.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusLost(FocusEvent e) {
+        try {
+          if (editor.getValue() instanceof Date) {
+            if (dv != null) {
+              Pair<Boolean, String> validation = dv.apply((Date)editor.getValue());
+              if (!validation.first()) {
+                throw new ValidationException(validation.second());
+              }
+            }
+          } else {
+            if (parseValidator.parse(String.valueOf(editor.getValue())) == null) {
+              throw new ValidationException();
+            }
+          }
+          editor.setBackground(getValidFieldColor());
+          picker.commitEdit();
+          listener.actionPerformed(new ActionEvent(picker, ActionEvent.ACTION_PERFORMED, ""));
+          return;
+        } catch (ValidationException e1) {
+          // We probably don't want to log parse/validation exceptions
+        } catch (ParseException e2) {
+          // We probably don't want to log parse/validation exceptions
+        }
+        editor.setBackground(getValidFieldColor());
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            if (initialDate != null) {
+              picker.setDate(initialDate);
+            }
+          }
+        });
+      }
+    });
+    if (initialDate != null) {
+      picker.setDate(initialDate);
+    }
+  }
   /**
    * @return a {@link JXDatePicker} component with the default locale, images
    *         and date formats.
    */
-  public static JXDatePicker createDatePicker(final ActionListener listener) {
+  public static JXDatePicker createDatePicker() {
     final JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
-    result.addActionListener(listener);
-
-    result.getEditor().addFocusListener(new FocusAdapter() {
-      @Override
-      public void focusLost(FocusEvent e) {
-        try {
-          if (result.getEditor().getValue() != null) {
-            result.commitEdit();
-            listener.actionPerformed(new ActionEvent(result, ActionEvent.ACTION_PERFORMED, ""));
-          }
-        } catch (ParseException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
-        }
-      }
-    });
     result.setFormats(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
     return result;
   }
@@ -245,5 +418,85 @@ public abstract class UIUtil {
     result.add(planePageWrapper, BorderLayout.CENTER);
     return result;
 
+  }
+
+  public static JMenu createTooltiplessJMenu(Action action) {
+    JMenu result = new JMenu(action) {
+      @Override
+      public JMenuItem add(Action a) {
+        JMenuItem result = super.add(a);
+        result.setToolTipText(null);
+        return result;
+      }
+    };
+    result.setToolTipText(null);
+    return result;
+  }
+
+  public static Color getValidFieldColor() {
+    return UIManager.getColor("TextField.background");
+  }
+
+  public static JEditorPane createHtmlPane(String html, HyperlinkListener hyperlinkListener) {
+    JEditorPane htmlPane = new JEditorPane();
+    htmlPane.setEditorKit(new HTMLEditorKit());
+    htmlPane.setEditable(false);
+    // htmlPane.setPreferredSize(new Dimension(400, 290));
+    htmlPane.addHyperlinkListener(hyperlinkListener);
+    //htmlPane.setBackground(Color.YELLOW);
+    htmlPane.setText(html);
+    return htmlPane;
+  }
+
+  public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
+    return new GPDateCellEditor(project, showDatePicker, null);
+  }
+
+  public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener {
+    private Date myDate;
+    private final IGanttProject myProject;
+    private final JXDatePicker myDatePicker;
+    private final boolean myShowDatePicker;
+
+    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator) {
+      super(new JTextField());
+      myProject = project;
+      myDatePicker = UIUtil.createDatePicker();
+      myShowDatePicker = showDatePicker;
+      if (parseValidator == null) {
+        parseValidator = UIUtil.createStringDateValidator(
+            null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+      }
+      UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
+      JFormattedTextField editor = myDatePicker.getEditor();
+      editor.selectAll();
+      return myShowDatePicker ? myDatePicker : editor;
+    }
+
+    private ActionListener getActionListener() {
+      return this;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return CalendarFactory.createGanttCalendar(myDate == null ? new Date() : myDate);
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+      myDate = myDatePicker.getDate();
+      getComponent().setBackground(null);
+      super.fireEditingStopped();
+      return true;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      stopCellEditing();
+    }
   }
 }

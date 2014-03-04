@@ -75,7 +75,7 @@ public class TaskProperties {
         sb.append(" [ ");
         formatDate(task.getStart(), sb);
         sb.append(" - ");
-        formatDate(task.getEnd().getDisplayValue(), sb);
+        formatDate(task.getDisplayEnd(), sb);
         sb.append(" ] ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_NAME)) {
@@ -83,7 +83,7 @@ public class TaskProperties {
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_LENGTH)) {
         sb.append(" [ ");
-        sb.append((int) task.getDuration().getLength() + " " + GanttLanguage.getInstance().getText("days"));
+        sb.append(task.getDuration().getLength() + " " + GanttLanguage.getInstance().getText("days"));
         sb.append(" ] ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_ADVANCEMENT)) {
@@ -133,17 +133,17 @@ public class TaskProperties {
         sb.append("# ").append(task.getTaskID());
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_PREDECESSORS)) {
-        return formatPredecessors(task);
+        return formatPredecessors(task, ", ");
       }
     }
     return res;
 
   }
 
-  public static String formatPredecessors(Task task) {
+  public static String formatPredecessors(Task task, String separator) {
     TaskDependency[] dep = task.getDependenciesAsDependant().toArray();
     if (dep != null && dep.length > 0) {
-      return Joiner.on(", ").join(Lists.transform(Arrays.asList(dep), new Function<TaskDependency, String>() {
+      return Joiner.on(separator).join(Lists.transform(Arrays.asList(dep), new Function<TaskDependency, String>() {
         @Override
         public String apply(TaskDependency input) {
           return String.valueOf(input.getDependee().getTaskID());

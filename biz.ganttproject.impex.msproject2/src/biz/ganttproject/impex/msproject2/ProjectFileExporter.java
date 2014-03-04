@@ -26,12 +26,12 @@ import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
-
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
@@ -131,11 +131,10 @@ class ProjectFileExporter {
   }
 
   private void exportHolidays(ProjectCalendar calendar) {
-    for (GPCalendar.Holiday h : getCalendar().getPublicHolidays()) {
-      if (!h.isRepeating) {
-        Date d = h.date;
+    for (CalendarEvent h : getCalendar().getPublicHolidays()) {
+      if (!h.isRecurring) {
+        Date d = h.myDate;
         ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
-        calendarException.addRange(new DateRange(d, d));
       }
     }
   }
@@ -422,6 +421,7 @@ class ProjectFileExporter {
     DefaultListModel daysOff = hr.getDaysOff();
     if (!daysOff.isEmpty()) {
       ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
+      resourceCalendar.addDefaultCalendarHours();
       exportWeekends(resourceCalendar);
       resourceCalendar.setBaseCalendar(myOutputProject.getCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
@@ -462,7 +462,7 @@ class ProjectFileExporter {
     return myNativeProject.getHumanResourceManager();
   }
 
-  private GPCalendar getCalendar() {
+  private GPCalendarCalc getCalendar() {
     return getTaskManager().getCalendar();
   }
 }

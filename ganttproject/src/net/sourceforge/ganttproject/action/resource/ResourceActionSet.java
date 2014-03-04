@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.resource;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ResourceTreeTable;
@@ -64,6 +65,10 @@ public class ResourceActionSet {
 
   public AbstractAction[] getActions() {
     if (myActions == null) {
+      myResourceNewAction.putValue(Action.SHORT_DESCRIPTION, null);
+      myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);
+      myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);
+      myResourceImportAction.putValue(Action.SHORT_DESCRIPTION, null);
       myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
     }
     return myActions;

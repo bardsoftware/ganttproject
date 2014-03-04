@@ -89,6 +89,7 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
     } else {
 	    setEnabled(activeAction.isEnabled());
 	    putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+	    updateTooltip();
     }
   }
 }

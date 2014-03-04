@@ -22,11 +22,13 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Image;
 import java.util.Collection;
+import java.util.Locale;
 
 import javax.swing.Action;
 
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -139,6 +141,8 @@ public interface UIFacade {
   TaskSelectionManager getTaskSelectionManager();
 
   TaskSelectionContext getTaskSelectionContext();
+
+  DefaultEnumerationOption<Locale> getLanguageOption();
 
   GPOptionGroup[] getOptions();
 }

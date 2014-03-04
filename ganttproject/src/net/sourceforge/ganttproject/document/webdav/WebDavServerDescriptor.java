@@ -27,7 +27,7 @@ import com.google.common.base.Objects;
  */
 public class WebDavServerDescriptor {
   public String name;
-  public String rootUrl;
+  private WebDavUri rootUri;
   public String username;
   String password = "";
   boolean savePassword = false;
@@ -37,7 +37,7 @@ public class WebDavServerDescriptor {
 
   WebDavServerDescriptor(String name, String rootUrl, String username) {
     this.name = name;
-    this.rootUrl = rootUrl;
+    setRootUrl(rootUrl);
     this.username = username;
   }
 
@@ -47,7 +47,7 @@ public class WebDavServerDescriptor {
       return false;
     }
     WebDavServerDescriptor that = (WebDavServerDescriptor) obj;
-    return Objects.equal(this.rootUrl, that.rootUrl);
+    return Objects.equal(this.getRootUrl(), that.getRootUrl());
   }
 
   public String getUsername() {
@@ -60,6 +60,17 @@ public class WebDavServerDescriptor {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(this.rootUrl);
+    return Objects.hashCode(this.getRootUrl());
+  }
+
+  public String getRootUrl() {
+    return rootUri.buildRootUrl();
+  }
+
+  public void setRootUrl(String rootUrl) {
+    while (rootUrl.endsWith("/")) {
+      rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
+    }
+    this.rootUri = new WebDavUri(this.name, rootUrl, "");
   }
 }

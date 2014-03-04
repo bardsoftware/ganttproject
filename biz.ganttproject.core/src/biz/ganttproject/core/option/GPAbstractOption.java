@@ -71,18 +71,25 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
 
   @Override
   public void setValue(T value) {
-    setValue(value, false);
+    resetValue(value, false, null);
   }
 
+  public void setValue(T value, Object clientId) {
+    resetValue(value, false, clientId);
+  }
+  
   protected T getInitialValue() {
     return myInitialValue;
   }
 
-  protected void setValue(T value, boolean resetInitial) {
+  protected void resetValue(T value, boolean resetInitial) {
+    resetValue(value, resetInitial, null);
+  }
+  protected void resetValue(T value, boolean resetInitial, Object triggerId) {
     if (resetInitial) {
       myInitialValue = value;
     }
-    ChangeValueEvent event = new ChangeValueEvent(getID(), myValue, value);
+    ChangeValueEvent event = new ChangeValueEvent(getID(), myValue, value, triggerId);
     myValue = value;
     fireChangeValueEvent(event);
   }

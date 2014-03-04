@@ -26,6 +26,7 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -33,13 +34,13 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
@@ -234,6 +235,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public GanttLookAndFeelInfo getLookAndFeel() {
     return myUIFacade.getLookAndFeel();
+  }
+
+  @Override
+  public DefaultEnumerationOption<Locale> getLanguageOption() {
+    return myUIFacade.getLanguageOption();
   }
 
   @Override
@@ -447,7 +453,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
   @Override
-  public abstract GPCalendar getActiveCalendar();
+  public abstract GPCalendarCalc getActiveCalendar();
 
   @Override
   public abstract void setModified();

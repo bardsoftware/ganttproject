@@ -26,16 +26,19 @@ package biz.ganttproject.core.option;
  */
 public class ChangeValueEvent {
 
-  private Object myID;
+  private final Object myID;
 
-  private Object myOldValue;
+  private final Object myOldValue;
 
-  private Object myNewValue;
+  private final Object myNewValue;
 
-  public ChangeValueEvent(Object id, Object oldValue, Object newValue) {
+  private final Object myTriggerID;
+
+  public ChangeValueEvent(Object id, Object oldValue, Object newValue, Object triggerId) {
     myID = id;
     myOldValue = oldValue;
     myNewValue = newValue;
+    myTriggerID = triggerId;
   }
 
   public Object getID() {
@@ -50,6 +53,9 @@ public class ChangeValueEvent {
     return myNewValue;
   }
 
+  public Object getTriggerID() {
+    return myTriggerID;
+  }
   @Override
   public String toString() {
     return "[id:" + myID + ", old:" + myOldValue + ", new: " + myNewValue + "]";

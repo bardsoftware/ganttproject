@@ -13,10 +13,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
@@ -36,12 +37,14 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -80,7 +83,7 @@ import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
  * @author bard
  */
 public class TaskManagerImpl implements TaskManager {
-  private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private final TaskHierarchyManagerImpl myHierarchyManager;
 
@@ -103,7 +106,7 @@ public class TaskManagerImpl implements TaskManager {
   private final EnumerationOption myDependencyHardnessOption = new DefaultEnumerationOption<Object>(
       "dependencyDefaultHardness", new String[] { "Strong", "Rubber" }) {
     {
-      setValue("Strong", true);
+      resetValue("Strong", true);
     }
   };
 
@@ -287,8 +290,7 @@ public class TaskManagerImpl implements TaskManager {
     return root;
   }
 
-  @Override
-  public void projectClosed() {
+  private void projectClosed() {
     myDependencyGraph.clear();
     myTaskMap.clear();
     myMaxID.set(0);
@@ -297,8 +299,7 @@ public class TaskManagerImpl implements TaskManager {
     fireTaskModelReset();
   }
 
-  @Override
-  public void projectOpened() {
+  private void projectOpened() {
     processCriticalPath(getRootTask());
     myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
   }
@@ -597,7 +598,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public Date shift(Date original, TimeDuration duration) {
-    GPCalendar calendar = RESTLESS_CALENDAR;
+    GPCalendarCalc calendar = RESTLESS_CALENDAR;
     return calendar.shiftDate(original, duration);
   }
 
@@ -643,8 +644,22 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public GPCalendar getCalendar() {
+  public GPCalendarCalc getCalendar() {
     return getConfig().getCalendar();
+  }
+
+  public ProjectEventListener getProjectListener() {
+    return new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        TaskManagerImpl.this.projectClosed();
+      }
+
+      @Override
+      public void projectOpened() {
+        TaskManagerImpl.this.projectOpened();
+      }
+    };
   }
 
   public void fireTaskProgressChanged(Task changedTask) {
@@ -905,6 +920,26 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     @Override
+    public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
+      if (root == null) {
+        root = getRootTask();
+      }
+      List<Task> result = Lists.newArrayList();
+      Queue<Task> queue = Queues.newArrayDeque();
+      if (includeRoot) {
+        queue.add(root);
+      } else {
+        queue.addAll(Lists.newArrayList(root.getNestedTasks()));
+      }
+      while (!queue.isEmpty()) {
+        Task head = queue.poll();
+        result.add(head);
+        queue.addAll(Lists.newArrayList(head.getNestedTasks()));
+      }
+      return result;
+    }
+
+    @Override
     public List<Integer> getOutlinePath(Task task) {
       throw new UnsupportedOperationException();
     }
@@ -1075,7 +1110,7 @@ public class TaskManagerImpl implements TaskManager {
   private static class TaskNamePrefixOption extends DefaultStringOption implements GP1XOptionConverter {
     public TaskNamePrefixOption() {
       super("taskNamePrefix");
-      setValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
+      resetValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
     }
 
     @Override
@@ -1090,7 +1125,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public void loadValue(String legacyValue) {
-      setValue(legacyValue, true);
+      resetValue(legacyValue, true);
     }
   }
 

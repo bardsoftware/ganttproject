@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
@@ -130,7 +130,7 @@ public class TestResourceAssignments extends TestCase {
             }
 
             @Override
-            public GPCalendar getCalendar() {
+            public GPCalendarCalc getCalendar() {
                 return new AlwaysWorkingTimeCalendarImpl();
             }
 

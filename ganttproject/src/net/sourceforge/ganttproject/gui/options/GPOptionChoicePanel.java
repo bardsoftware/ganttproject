@@ -53,7 +53,7 @@ public class GPOptionChoicePanel {
 
   private OptionsPageBuilder myOptionPageBuilder = new OptionsPageBuilder();
 
-  public Component getComponent(Action[] choiceChangeActions, GPOptionGroup[] choiceOptions, int selectedGroupIndex) {
+  public JComponent getComponent(Action[] choiceChangeActions, GPOptionGroup[] choiceOptions, int selectedGroupIndex) {
     JComponent[] choiceComponents = new JComponent[choiceOptions.length];
     for (int i = 0; i < choiceChangeActions.length; i++) {
       GPOptionGroup nextOptions = choiceOptions[i];

@@ -203,6 +203,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   public void move(Task whatMove, Task whereMove, int index) {
     MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);
     MutableTreeTableNode movedNode = myTask2treeNode.get(whatMove);
+
     if (movedNode == null) {
       movedNode = myTree.addObjectWithExpand(whatMove, targetNode);
     }
@@ -218,7 +219,6 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
       movedPath = TreeUtil.createPath(movedNode);
       myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);
     }
-
     ((TaskManagerImpl)getTaskManager()).getDependencyGraph().move(whatMove, whereMove == getTaskManager().getRootTask() ? null : whereMove);
     getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);
     try {
@@ -251,16 +251,30 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     return myTask2treeNode.containsKey(task);
   }
 
+  private static final Function<MutableTreeTableNode, Task> ourNodeToTaskFxn = new Function<MutableTreeTableNode, Task>() {
+    @Override
+    public Task apply(MutableTreeTableNode input) {
+      return (Task) input.getUserObject();
+    }
+  };
+
   @Override
   public List<Task> getTasksInDocumentOrder() {
     MutableTreeTableNode rootNode = myTask2treeNode.get(getRootTask());
     List<MutableTreeTableNode> subtree = TreeUtil.collectSubtree(rootNode);
 
-    return Lists.transform(subtree.subList(1, subtree.size()), new Function<MutableTreeTableNode, Task>() {
-      @Override
-      public Task apply(MutableTreeTableNode input) {
-        return (Task) input.getUserObject();
-      }
-    });
+    return Lists.transform(subtree.subList(1, subtree.size()), ourNodeToTaskFxn);
+  }
+
+  public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
+    if (root == null) {
+      root = getRootTask();
+    }
+    MutableTreeTableNode rootNode = myTask2treeNode.get(root);
+    List<MutableTreeTableNode> subtree = TreeUtil.breadthFirstSearch(rootNode);
+    if (!includeRoot) {
+      subtree = subtree.subList(1, subtree.size());
+    }
+    return Lists.transform(subtree, ourNodeToTaskFxn);
   }
 }

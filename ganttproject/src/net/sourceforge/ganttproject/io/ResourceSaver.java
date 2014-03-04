@@ -85,7 +85,7 @@ class ResourceSaver extends SaverBase {
     // startElement("custom-properties-definition", handler);
     for (int i = 0; i < definitions.size(); i++) {
       // ResourceColumn nextField = (ResourceColumn) fields.next();
-      CustomPropertyDefinition nextDefinition = (CustomPropertyDefinition) definitions.get(i);
+      CustomPropertyDefinition nextDefinition = definitions.get(i);
       addAttribute("id", nextDefinition.getID(), attrs);
       addAttribute("name", nextDefinition.getName(), attrs);
       addAttribute("type", nextDefinition.getTypeAsString(), attrs);

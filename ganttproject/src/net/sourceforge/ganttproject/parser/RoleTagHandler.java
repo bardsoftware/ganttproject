@@ -26,7 +26,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 import org.xml.sax.Attributes;
 
 /** Class to parse the attributes of resources handler */
-public class RoleTagHandler implements TagHandler {
+public class RoleTagHandler  extends AbstractTagHandler {
   private RoleSet myRoleSet;
   private final RoleManager myRoleManager;
 

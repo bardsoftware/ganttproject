@@ -105,8 +105,7 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
-
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -118,9 +117,6 @@ import com.beust.jcommander.Parameter;
  * Main frame of the project
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
-
-  /** The current version of ganttproject */
-  public static final String version = GPVersion.V2_0_X;
 
   /** The JTree part. */
   private GanttTree2 tree;
@@ -200,7 +196,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
 
       @Override
-      public GPCalendar getCalendar() {
+      public GPCalendarCalc getCalendar() {
         return GanttProject.this.getActiveCalendar();
       }
 
@@ -237,6 +233,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return GanttProject.this.getTaskContainment();
       }
     }, taskConfig);
+    addProjectEventListener(myTaskManager.getProjectListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
@@ -287,14 +284,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     {
       TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
-      JMenu mTask = new JMenu(GPAction.createVoidAction("task"));
+      JMenu mTask = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("task"));
       mTask.add(taskTree.getNewAction());
       mTask.add(taskTree.getPropertiesAction());
       mTask.add(taskTree.getDeleteAction());
       getResourcePanel().setTaskPropertiesAction(taskTree.getPropertiesAction());
       bar.add(mTask);
     }
-    JMenu mHuman = new JMenu(GPAction.createVoidAction("human"));
+    JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));
     for (AbstractAction a : myResourceActions.getActions()) {
       mHuman.add(a);
     }
@@ -473,13 +470,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction newAction;
     {
+      final GPAction taskNewAction = getTaskTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction resourceNewAction = getResourceTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
       newAction = new ArtefactNewAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
-          return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? getTaskTree().getNewAction().withIcon(
-              IconSize.TOOLBAR_SMALL) : getResourceTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+          return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
         }
-      });
+      }, new Action[] {taskNewAction, resourceNewAction});
     }
 
     final ArtefactAction deleteAction;
@@ -613,7 +611,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    getTaskManager().projectOpened();
     fireProjectOpened();
   }
 
@@ -650,7 +647,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         try {
           ((TaskManagerImpl)getTaskManager()).setEventsEnabled(false);
           importer.setContext(getProject(), getUIFacade(), getGanttOptions().getPluginPreferences());
-          importer.run(new File(document.getFilePath()));
+          importer.setFile(new File(document.getFilePath()));
+          importer.run();
           success = true;
           break;
         } catch (Throwable e) {
@@ -866,7 +864,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
 
-  private GPCalendar myFakeCalendar = new WeekendCalendarImpl();
+  private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   private ParserFactory myParserFactory;
 
@@ -956,8 +954,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public GPCalendar getActiveCalendar() {
-    return myFakeCalendar;
+  public GPCalendarCalc getActiveCalendar() {
+    return myCalendar;
   }
 
   @Override
@@ -987,7 +985,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
     projectDocument = null;
-    getTaskManager().projectClosed();
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 
@@ -995,7 +992,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       myPreviousStates.get(i).remove();
     }
     myPreviousStates = new ArrayList<GanttPreviousState>();
-    getTaskManager().getCalendar().clearPublicHolidays();
+    myCalendar.reset();
     myFacadeInvalidator.projectClosed();
   }
 

@@ -39,6 +39,7 @@ import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import com.itextpdf.awt.FontMapper;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.BaseFont;
@@ -55,7 +56,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  */
 public class TTFontCache {
   private static String FALLBACK_FONT_PATH = "/fonts/LiberationSans-Regular.ttf";
-  private Map<String, Supplier<Font>> myMap_Family_RegularFont = new TreeMap<String, Supplier<Font>>();
+  private Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<String, AwtFontSupplier>();
   private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<FontKey, com.itextpdf.text.Font>();
   private Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<String, Function<String, BaseFont>>();
   private Properties myProperties;
@@ -96,7 +97,8 @@ public class TTFontCache {
         registerFonts(f);
         continue;
       }
-      if (!f.getName().toLowerCase().trim().endsWith(".ttf")) {
+      String filename = f.getName().toLowerCase().trim();
+      if (!filename.endsWith(".ttf") && !filename.endsWith(".ttc")) {
         continue;
       }
       try {
@@ -112,15 +114,59 @@ public class TTFontCache {
         new FileInputStream(fontFile));
   }
 
+  private static class AwtFontSupplier implements Supplier<Font> {
+    private final boolean isJava6;
+    private final List<File> myFiles = Lists.newArrayList();
+    private Font myFont;
+
+    AwtFontSupplier(boolean isJava6) {
+      this.isJava6 = isJava6;
+    }
+
+    void addFile(File f) {
+      myFiles.add(f);
+    }
+
+    @Override
+    public Font get() {
+      if (myFont == null) {
+        myFont = createFont();
+      }
+      return myFont;
+    }
+
+    private Font createFont() {
+      Font result = null;
+      for (File f : myFiles) {
+        Font font = createFont(f);
+        System.err.println("trying font=" + font);
+        if (result == null || result.getStyle() > font.getStyle()) {
+          result = font;
+        }
+      }
+      System.err.println("result="+result);
+      return result;
+    }
+
+    private Font createFont(File fontFile) {
+      try {
+        return createAwtFont(fontFile, isJava6);
+      } catch (IOException e) {
+        GPLogger.log(e);
+      } catch (FontFormatException e) {
+        GPLogger.log(e);
+      }
+      return null;
+    }
+  }
+
   private void registerFontFile(final File fontFile, final boolean runningUnderJava6) throws FontFormatException,
       IOException {
     // FontFactory.register(fontFile.getAbsolutePath());
     Font awtFont = createAwtFont(fontFile, runningUnderJava6);
 
-    final String family = awtFont.getFamily().toLowerCase();
-    if (myMap_Family_RegularFont.containsKey(family)) {
-      return;
-    }
+    final String family = awtFont.getFontName().toLowerCase();
+    AwtFontSupplier awtSupplier = myMap_Family_RegularFont.get(family);
 
     try {
       myMap_Family_ItextFont.put(family, createFontSupplier(fontFile, BaseFont.EMBEDDED));
@@ -137,29 +183,34 @@ public class TTFontCache {
       return;
     }
     GPLogger.getLogger(getClass()).fine("registering font: " + family);
-    myMap_Family_RegularFont.put(family, Suppliers.<Font> memoize(new Supplier<Font>() {
-      @Override
-      public Font get() {
-        try {
-          return createAwtFont(fontFile, runningUnderJava6);
-        } catch (IOException e) {
-          GPLogger.log(e);
-        } catch (FontFormatException e) {
-          GPLogger.log(e);
-        }
-        return null;
-      }
-    }));
+    if (awtSupplier == null) {
+      awtSupplier = new AwtFontSupplier(runningUnderJava6);
+      myMap_Family_RegularFont.put(family, awtSupplier);
+    }
+    awtSupplier.addFile(fontFile);
   }
 
   private Function<String, BaseFont> createFontSupplier(final File fontFile, final boolean isEmbedded)
       throws DocumentException, IOException {
-    BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), isEmbedded);
+    try {
+      BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), isEmbedded);
+    } catch (DocumentException e) {
+      if (!e.getMessage().contains("is not recognized")
+          || !e.getMessage().contains(GanttLanguage.getInstance().getCharSet())) {
+        throw e;
+      }
+    } finally {
+      BaseFontPublicMorozov.clearCache();
+    }
     return new Function<String, BaseFont>() {
       @Override
       public BaseFont apply(String charset) {
         try {
-          return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);
+          if (fontFile.getName().toLowerCase().endsWith(".ttc")) {
+            return BaseFont.createFont(fontFile.getAbsolutePath() + ",0", charset, isEmbedded);
+          } else {
+            return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);
+          }
         } catch (DocumentException e) {
           GPLogger.log(e);
         } catch (IOException e) {
@@ -228,7 +279,7 @@ public class TTFontCache {
       Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
       BaseFont bf = f == null ? getFallbackFont(charset) : f.apply(charset);
       if (bf != null) {
-        result = new com.itextpdf.text.Font(bf, size);
+        result = new com.itextpdf.text.Font(bf, size, style);
         myFontCache.put(key, result);
       } else {
         GPLogger.log(new RuntimeException("Font with family=" + family + " not found. Also tried fallback font"));
@@ -293,5 +344,17 @@ public class TTFontCache {
 
   public void setProperties(Properties properties) {
     myProperties = properties;
+  }
+
+  // BaseFont.fontCache is a static map which caches font objects. Since we scan all
+  // fonts in this code, we may cache a few hundreds of objects, and retained size of each object
+  // can be up to a few megabytes. Here we use so-called "Public Morozov" anti-pattern
+  // which discloses protected fields of its parent class
+  // See description of this pattern in English here:
+  // http://jamesdolan.blogspot.com/2011/05/pavlik-morozov-anti-pattern.html
+  private static abstract class BaseFontPublicMorozov extends BaseFont {
+    static void clearCache() {
+      BaseFont.fontCache.clear();
+    }
   }
 }

@@ -28,7 +28,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -51,6 +54,9 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 
 import biz.ganttproject.core.table.ColumnList;
 
@@ -227,10 +233,30 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
   }
 
   @Override
-  public void setExpanded(ModelObject modelObject) {
+  public void setExpanded(ModelObject modelObject, boolean value) {
     MutableTreeTableNode treeNode = getNode(modelObject);
     if (treeNode != null) {
-      myTreeTable.getTree().expandPath(TreeUtil.createPath(treeNode));
+      if (value) {
+        myTreeTable.getTree().expandPath(TreeUtil.createPath(treeNode));
+      } else {
+        myTreeTable.getTree().collapsePath(TreeUtil.createPath(treeNode));
+      }
+    }
+  }
+
+  @Override
+  public void applyPreservingExpansionState(ModelObject rootObject, Predicate<ModelObject> callable) {
+    MutableTreeTableNode rootNode = getNode(rootObject);
+    List<MutableTreeTableNode> subtree = TreeUtil.collectSubtree(rootNode);
+    Collections.reverse(subtree);
+    LinkedHashMap<ModelObject, Boolean> states = Maps.newLinkedHashMap();
+    for (MutableTreeTableNode node : subtree) {
+      int row = myTreeTable.getTree().getRowForPath(TreeUtil.createPath(node));
+      states.put((ModelObject)node.getUserObject(), myTreeTable.getTree().isExpanded(row));
+    }
+    callable.apply(rootObject);
+    for (Map.Entry<ModelObject, Boolean> state : states.entrySet()) {
+      setExpanded(state.getKey(), state.getValue());
     }
   }
 

@@ -20,12 +20,14 @@ package net.sourceforge.ganttproject.test.task.calendar;
 
 import java.util.Calendar;
 
+import com.google.common.collect.ImmutableList;
+
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
-
 import junit.framework.Assert;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
@@ -59,7 +61,7 @@ public class TestWorkingUnitCounter extends TaskTestCase {
         WeekendCalendarImpl calendar = new WeekendCalendarImpl();
         calendar.setWeekDayType(Calendar.SATURDAY, GPCalendar.DayType.WEEKEND);
         calendar.setWeekDayType(Calendar.SUNDAY, GPCalendar.DayType.WEEKEND);
-        calendar.setPublicHoliDayType(TestSetupHelper.newTuesday().getTime());
+        calendar.setPublicHolidays(ImmutableList.of(CalendarEvent.newEvent(TestSetupHelper.newTuesday().getTime(), false, CalendarEvent.Type.HOLIDAY, null)));
 
         WorkingUnitCounter counter = new WorkingUnitCounter(
                 calendar, GregorianTimeUnitStack.DAY);
