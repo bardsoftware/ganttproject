@@ -130,6 +130,9 @@ public abstract class ExporterBase implements Exporter {
         result.setWidth(-1);
       }
       result.setCommandLineMode(myRootPreferences.getBoolean("commandLine", false));
+      if (myRootPreferences.getBoolean("expandResources", false)) {
+        result.setExpandedResources("");
+      }
     }
     return result;
   }
