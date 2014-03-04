@@ -37,6 +37,8 @@ public class ExporterToPDF extends StylesheetExporterBase {
 
   @Override
   protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+    super.setCommandLineStylesheet();
+
     if (mySelectedStylesheet instanceof PDFStylesheet) {
       return myFopEngine.createJobs(outputFile, resultFiles);
     }

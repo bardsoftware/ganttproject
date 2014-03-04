@@ -142,8 +142,14 @@ public class ExporterToImage extends ExporterBase {
       @Override
       protected IStatus run() {
         Chart chart = getUIFacade().getActiveChart();
+
+        // Test if there is an active chart
         if (chart == null) {
-          chart = getGanttChart();
+          // If not, it means we are running CLI
+          String chartToExport = getPreferences().get("chart", null);
+
+          // Default is to print Gantt chart
+          chart = "resource".equals(chartToExport) ? getResourceChart() : getGanttChart();
         }
         RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
         try {
