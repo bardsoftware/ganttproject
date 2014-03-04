@@ -72,6 +72,8 @@ public class ExporterToHTML extends StylesheetExporterBase {
 
   @Override
   protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+    super.setCommandLineStylesheet();
+
     ExporterJob generateGanttChartJob = createGenerateGanttChartJob(outputFile, resultFiles);
     ExporterJob generateResourceChartJob = createGenerateResourceChartJob(outputFile, resultFiles);
     ExporterJob generatePagesJob = createGeneratePagesJob(outputFile, resultFiles);
@@ -85,7 +87,7 @@ public class ExporterToHTML extends StylesheetExporterBase {
       protected IStatus run() {
         try {
           RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
-              new GanttExportSettings(true, true, true, true));
+              createExportSettings());
           File ganttChartImageFile;
           ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
           ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
@@ -109,7 +111,7 @@ public class ExporterToHTML extends StylesheetExporterBase {
       protected IStatus run() {
         try {
           RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
-              new GanttExportSettings(true, true, true, true));
+              createExportSettings());
           File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
           ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
           resultFiles.add(resourceChartImageFile);

@@ -86,6 +86,29 @@ public abstract class StylesheetExporterBase extends ExporterBase {
     myOptions.setTitled(false);
   }
 
+  protected void setCommandLineStylesheet() {
+    // Check if we are running from command line, if yes then we need to define the
+    // stylesheet we are using
+    if (getPreferences().getBoolean("commandLine", false) == true) {
+      // Get the list of stylesheets
+      List<Stylesheet> stylesheets = getStylesheets();
+
+      // Set the first entry of list as default
+      setSelectedStylesheet(stylesheets.get(0));                      
+
+      // Test if a style is present in the arguments from command line
+      // Iterate the list of style sheets to find it
+      if (getPreferences().get("stylesheet", null) != null) {
+        for (Stylesheet sheet : stylesheets) {
+          if (sheet.getLocalizedName().compareTo(getPreferences().get("stylesheet", null)) == 0) {
+            setSelectedStylesheet(sheet);                      
+            break;                          
+          }
+        }
+      }
+    }
+  }
+
   @Override
   public GPOptionGroup getOptions() {
     return myOptions;
