@@ -33,12 +33,13 @@ import javax.swing.JTabbedPane;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultMoneyOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
-
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -63,10 +64,13 @@ public class GanttDialogPerson {
   private final StringOption myNameField = new DefaultStringOption("name");
   private final StringOption myPhoneField = new DefaultStringOption("colPhone");
   private final StringOption myMailField = new DefaultStringOption("colMail");
+  private final MoneyOption myStandardRateField = new DefaultMoneyOption("standardRate");
   private final EnumerationOption myRoleField;
   private final GPOptionGroup myGroup;
+  private GPOptionGroup myRateGroup;
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
+
 
   public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
@@ -80,6 +84,8 @@ public class GanttDialogPerson {
     myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
     myGroup = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myRoleField });
     myGroup.setTitled(false);
+
+    myRateGroup = new GPOptionGroup("resourceRate", myStandardRateField);
   }
 
   public boolean result() {
@@ -109,7 +115,6 @@ public class GanttDialogPerson {
   }
 
   private void loadFields() {
-    myGroup.lock();
     myNameField.setValue(person.getName());
     myPhoneField.setValue(person.getPhone());
     myMailField.setValue(person.getMail());
@@ -117,8 +122,7 @@ public class GanttDialogPerson {
     if (role != null) {
       myRoleField.setValue(role.getName());
     }
-    myGroup.commit();
-    myGroup.lock();
+    myStandardRateField.setValue(person.getStandardPayRate());
   }
 
   private Component getComponent() {
@@ -130,7 +134,7 @@ public class GanttDialogPerson {
       }
     };
     builder.setI18N(i18n);
-    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup });
+    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup });
     mainPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     tabbedPane = new JTabbedPane();
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
@@ -213,6 +217,7 @@ public class GanttDialogPerson {
     for (DateInterval interval : myDaysOffModel.getIntervals()) {
       person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));
     }
+    person.setStandardPayRate(myStandardRateField.getValue());
     // FIXME change = false;? (after applying changed they are not changes
     // anymore...)
   }
