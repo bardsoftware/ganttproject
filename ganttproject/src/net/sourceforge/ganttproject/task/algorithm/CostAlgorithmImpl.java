@@ -20,7 +20,10 @@ package net.sourceforge.ganttproject.task.algorithm;
 
 import java.math.BigDecimal;
 
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 
 /**
  * Algorithm for calculating task cost
@@ -30,8 +33,18 @@ import net.sourceforge.ganttproject.task.Task;
 public class CostAlgorithmImpl {
   public BigDecimal getCalculatedCost(Task t) {
     BigDecimal total = BigDecimal.ZERO;
-    for (Task child : t.getManager().getTaskHierarchy().getNestedTasks(t)) {
-      total = total.add(child.getCost().getValue());
+    TaskContainmentHierarchyFacade taskHierarchy = t.getManager().getTaskHierarchy();
+    if (taskHierarchy.hasNestedTasks(t)) {
+      for (Task child : taskHierarchy.getNestedTasks(t)) {
+        total = total.add(child.getCost().getValue());
+      }
+    }
+    for (ResourceAssignment assignment : t.getAssignments()) {
+      HumanResource resource = assignment.getResource();
+      total = total.add(resource.getStandardPayRate()
+          .multiply(BigDecimal.valueOf(assignment.getLoad()))
+          .divide(BigDecimal.valueOf(100))
+          .multiply(BigDecimal.valueOf(t.getDuration().getLength())));
     }
     return total;
   }
