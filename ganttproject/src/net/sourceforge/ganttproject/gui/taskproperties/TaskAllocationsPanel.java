@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.gui.taskproperties;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 
 import javax.swing.JPanel;
@@ -28,6 +30,8 @@ import javax.swing.JTable;
 import org.jdesktop.swingx.JXMultiSplitPane;
 import org.jdesktop.swingx.MultiSplitLayout;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultDoubleOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -112,7 +116,15 @@ public class TaskAllocationsPanel {
 
   private Component createCostPanel() {
     myCostIsCalculated.setValue(myTask.getCost().isCalculated());
+    myCostIsCalculated.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        myCostValue.setWritable(!myCostIsCalculated.isChecked());
+        myCostValue.setValue(myTask.getCost().getValue().doubleValue());
+      }
+    });
     myCostValue.setValue(myTask.getCost().getValue().doubleValue());
+    myCostValue.setWritable(!myCostIsCalculated.isChecked());
     OptionsPageBuilder builder = new OptionsPageBuilder();
     return builder.createGroupComponent(myCostGroup);
   }
