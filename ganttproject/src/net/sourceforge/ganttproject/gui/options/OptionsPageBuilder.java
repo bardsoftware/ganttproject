@@ -17,7 +17,10 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -64,6 +67,7 @@ import biz.ganttproject.core.option.FileOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
@@ -78,6 +82,7 @@ public class OptionsPageBuilder {
   private Component myParentComponent;
   private final LayoutApi myLayoutApi;
   private UIFacade myUiFacade;
+  private DecimalFormat myFormat;
 
   public static interface LayoutApi {
     void layout(JPanel panel, int componentsCount);
@@ -284,6 +289,24 @@ public class OptionsPageBuilder {
         @Override
         public Double parse(String text) {
           return Double.valueOf(text);
+        }
+      });
+    } else if (option instanceof MoneyOption) {
+      result = createValidatingComponent((MoneyOption) option, new ValueValidator<BigDecimal>() {
+        private NumberFormat myFormat;
+        {
+          DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(GanttLanguage.getInstance().getLocale());
+          format.setParseBigDecimal(true);
+          myFormat = format;
+        }
+        @Override
+        public BigDecimal parse(String text) throws ValidationException {
+          try {
+            return (BigDecimal) myFormat.parse(text);
+          } catch (ParseException e) {
+            e.printStackTrace();
+            throw new ValidationException(e);
+          }
         }
       });
     }
