@@ -18,7 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import java.math.BigDecimal;
 import java.util.List;
+
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
@@ -45,11 +47,21 @@ class ResourceSaver extends SaverBase {
       addAttribute("phone", p.getPhone(), attrs);
       startElement("resource", attrs, handler);
       {
+        saveRates(p, handler);
         saveCustomProperties(project, p, handler);
       }
       endElement("resource", handler);
     }
     endElement("resources", handler);
+  }
+
+  private void saveRates(HumanResource p, TransformerHandler handler) throws SAXException {
+    if (!BigDecimal.ZERO.equals(p.getStandardPayRate())) {
+      AttributesImpl attrs = new AttributesImpl();
+      addAttribute("name", "standard", attrs);
+      addAttribute("value", p.getStandardPayRate().toPlainString(), attrs);
+      emptyElement("rate", attrs, handler);
+    }
   }
 
   private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler)
