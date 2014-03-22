@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -295,6 +296,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
         res = Joiner.on('.').join(outlinePath);
         break;
+      case COST:
+        res = t.getCost().getValue();
+        break;
       default:
         break;
       }
@@ -405,6 +409,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         } catch (TaskDependencyException e) {
           throw new ValidationException(MessageFormat.format("Can't create dependency between task {0} and {1}", task.getName(), predecessorCandidate.getName()));
         }
+      }
+      break;
+    case COST:
+      try {
+        BigDecimal cost = new BigDecimal(String.valueOf(value));
+        task.getCost().setCalculated(false);
+        task.getCost().setValue(cost);
+      } catch (NumberFormatException e) {
+        throw new ValidationException(MessageFormat.format("Can't parse {0} as number", value));
       }
       break;
     default:
