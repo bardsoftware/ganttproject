@@ -18,19 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.roles.Role;
 
-public class ResourceNode extends DefaultMutableTreeTableNode {
-
+public class ResourceNode extends ResourceTableNode {
+  private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.complementOf(
+      EnumSet.of(ResourceDefaultColumn.ROLE_IN_TASK));
   private static final long serialVersionUID = 3834033541318392117L;
 
   private final HumanResource resource;
 
   public ResourceNode(HumanResource res) {
-    super(res);
+    super(res, ourApplicableColumns);
     assert res != null;
     resource = res;
   }

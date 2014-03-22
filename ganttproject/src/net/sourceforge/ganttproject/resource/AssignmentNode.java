@@ -18,18 +18,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.resource;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
-public class AssignmentNode extends DefaultMutableTreeTableNode {
-
+public class AssignmentNode extends ResourceTableNode {
+  private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.of(ResourceDefaultColumn.ROLE_IN_TASK);
   private final ResourceAssignment resourceAssignment;
 
   public AssignmentNode(ResourceAssignment res) {
-    super(res);
+    super(res, ourApplicableColumns);
     resourceAssignment = res;
   }
 

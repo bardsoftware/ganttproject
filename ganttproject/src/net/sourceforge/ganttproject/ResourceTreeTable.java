@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
@@ -33,9 +32,7 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
-import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
@@ -52,31 +49,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   private final UIFacade myUiFacade;
 
-  private static enum DefaultColumn {
-    NAME(new ColumnList.ColumnStub("0", null, true, 0, 200)), ROLE(new ColumnList.ColumnStub("1",
-        null, true, 1, 75)), EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75)), PHONE(
-        new ColumnList.ColumnStub("3", null, false, -1, 50)), ROLE_IN_TASK(new ColumnList.ColumnStub(
-        "4", null, false, -1, 75));
-
-    private final Column myDelegate;
-
-    private DefaultColumn(ColumnList.Column delegate) {
-      myDelegate = delegate;
-    }
-
-    Column getStub() {
-      return myDelegate;
-    }
-
-    static List<Column> getColumnStubs() {
-      List<Column> result = new ArrayList<Column>();
-      for (DefaultColumn dc : values()) {
-        result.add(dc.myDelegate);
-      }
-      return result;
-    }
-  }
-
   public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
     super(project, uiFacade, project.getResourceCustomPropertyManager(), model);
     myUiFacade = uiFacade;
@@ -84,8 +56,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
     myRoleManager.addRoleListener(new RoleManager.Listener() {
       @Override
       public void rolesChanged(RoleEvent e) {
-        setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE.getStub().getID()));
-        setEditor(getTableHeaderUiFacade().findColumnByID(DefaultColumn.ROLE_IN_TASK.getStub().getID()));
+        setEditor(getTableHeaderUiFacade().findColumnByID(ResourceDefaultColumn.ROLE.getStub().getID()));
+        setEditor(getTableHeaderUiFacade().findColumnByID(ResourceDefaultColumn.ROLE_IN_TASK.getStub().getID()));
       }
 
       private void setEditor(ColumnImpl column) {
@@ -98,7 +70,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
       }
     });
     myResourceTreeModel = model;
-    getTableHeaderUiFacade().createDefaultColumns(DefaultColumn.getColumnStubs());
+    getTableHeaderUiFacade().createDefaultColumns(ResourceDefaultColumn.getColumnStubs());
     setTreeTableModel(model);
     myResourceTreeModel.setSelectionModel(getTreeSelectionModel());
   }
@@ -109,7 +81,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   @Override
   protected List<Column> getDefaultColumns() {
-    return DefaultColumn.getColumnStubs();
+    return ResourceDefaultColumn.getColumnStubs();
   }
 
   @Override
@@ -138,7 +110,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
   @Override
   protected TableColumnExt newTableColumnExt(int modelIndex) {
     TableColumnExt tableColumn = super.newTableColumnExt(modelIndex);
-    if (modelIndex == DefaultColumn.ROLE.ordinal() || modelIndex == DefaultColumn.ROLE_IN_TASK.ordinal()) {
+    if (modelIndex == ResourceDefaultColumn.ROLE.ordinal() || modelIndex == ResourceDefaultColumn.ROLE_IN_TASK.ordinal()) {
       JComboBox comboBox = new JComboBox(getRoleManager().getEnabledRoles());
       comboBox.setEditable(false);
       tableColumn.setCellEditor(new DefaultCellEditor(comboBox));

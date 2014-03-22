@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceNode;
+import net.sourceforge.ganttproject.resource.ResourceTableNode;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
@@ -49,16 +50,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
-  public static final int INDEX_RESOURCE_NAME = 0;
+//  public static final int INDEX_RESOURCE_NAME = 0;
+//
+//  public static final int INDEX_RESOURCE_ROLE = 1;
+//
+//  public static final int INDEX_RESOURCE_EMAIL = 2;
+//
+//  public static final int INDEX_RESOURCE_PHONE = 3;
+//
+//  public static final int INDEX_RESOURCE_ROLE_TASK = 4;
 
-  public static final int INDEX_RESOURCE_ROLE = 1;
-
-  public static final int INDEX_RESOURCE_EMAIL = 2;
-
-  public static final int INDEX_RESOURCE_PHONE = 3;
-
-  public static final int INDEX_RESOURCE_ROLE_TASK = 4;
-
+  private static final int STANDARD_COLUMN_COUNT = ResourceDefaultColumn.values().length;
   /** all the columns */
   // private final Map<Integer, ResourceColumn> columns = new
   // LinkedHashMap<Integer, ResourceColumn>();
@@ -295,11 +297,15 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   @Override
   public boolean isCellEditable(Object node, int column) {
-    return (node instanceof ResourceNode && (column == INDEX_RESOURCE_EMAIL || column == INDEX_RESOURCE_NAME
-        || column == INDEX_RESOURCE_PHONE || column == INDEX_RESOURCE_ROLE))
-        || (node instanceof AssignmentNode && (column == INDEX_RESOURCE_ROLE_TASK)
-        /* assumes the INDEX_RESOURCE_ROLE_TASK is the last mandatory column */
-        || column > INDEX_RESOURCE_ROLE_TASK);
+    if (false == node instanceof ResourceTableNode) {
+      return false;
+    }
+    if (column >= STANDARD_COLUMN_COUNT) {
+      return true;
+    }
+    ResourceDefaultColumn standardColumn = ResourceDefaultColumn.values()[column];
+    ResourceTableNode resourceNode = (ResourceTableNode) node;
+    return resourceNode.isEditable(standardColumn);
   }
 
   @Override
@@ -366,27 +372,30 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   @Override
   public void setValueAt(Object value, Object node, int column) {
-    if (isCellEditable(node, column))
-      switch (column) {
-      case INDEX_RESOURCE_NAME:
+    if (isCellEditable(node, column)) {
+      if (column >= STANDARD_COLUMN_COUNT) {
+        ((ResourceNode) node).setCustomField(getCustomProperty(column), value);
+        return;
+      }
+      ResourceDefaultColumn standardColumn = ResourceDefaultColumn.values()[column];
+      switch (standardColumn) {
+      case NAME:
         ((ResourceNode) node).setName(value.toString());
         break;
-      case INDEX_RESOURCE_EMAIL:
+      case EMAIL:
         ((ResourceNode) node).setEMail(value.toString());
         break;
-      case INDEX_RESOURCE_PHONE:
+      case PHONE:
         ((ResourceNode) node).setPhone(value.toString());
         break;
-      case INDEX_RESOURCE_ROLE:
+      case ROLE:
         ((ResourceNode) node).setDefaultRole((Role) value);
         break;
-      case INDEX_RESOURCE_ROLE_TASK:
+      case ROLE_IN_TASK:
         ((AssignmentNode) node).setRoleForAssigment((Role) value);
         break;
-      default:
-        ((ResourceNode) node).setCustomField(getCustomProperty(column), value);
-        break;
       }
+    }
   }
 
 
