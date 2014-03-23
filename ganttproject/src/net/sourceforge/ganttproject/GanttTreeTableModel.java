@@ -66,7 +66,7 @@ import com.google.common.collect.Sets;
  *
  * @author bbaranne (Benoit Baranne)
  */
-public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, GanttLanguage.Listener {
+public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener {
   private static class Icons {
     static ImageIcon ALERT_TASK_INPROGRESS = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert1_16.gif"));
     static ImageIcon ALERT_TASK_OUTDATED = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert2_16.gif"));
@@ -107,23 +107,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     TaskDefaultColumn.END_DATE.setIsEditablePredicate(NOT_MILESTONE);
     TaskDefaultColumn.DURATION.setIsEditablePredicate(NOT_MILESTONE);
     myUiFacade = uiFacade;
-    GanttLanguage.getInstance().addListener(this);
-    changeLanguage(language);
     myCustomColumnsManager = customColumnsManager;
   }
 
   @Override
   public int getColumnCount() {
     return STANDARD_COLUMN_COUNT + myCustomColumnsManager.getDefinitions().size();
-  }
-
-  /**
-   * Changes the language.
-   *
-   * @param ganttLanguage
-   *          New language to use.
-   */
-  public void changeLanguage(GanttLanguage ganttLanguage) {
   }
 
   /**
@@ -519,11 +508,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
   // // TODO Auto-generated method stub
   // return 0;
   // }
-
-  @Override
-  public void languageChanged(Event event) {
-    changeLanguage(event.getLanguage());
-  }
 
   public int compareDocumentOrder(Task next, Task dependeeTask) {
     throw new UnsupportedOperationException();
