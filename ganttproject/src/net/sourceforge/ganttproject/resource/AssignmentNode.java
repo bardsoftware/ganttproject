@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -58,4 +59,17 @@ public class AssignmentNode extends ResourceTableNode {
     return resourceAssignment.getTask().getName();
   }
 
+  @Override
+  public Object getCustomField(CustomPropertyDefinition def) {
+    return null;
+  }
+
+  @Override
+  public Object getStandardField(ResourceDefaultColumn def) {
+    switch (def) {
+    case NAME: return getTask().getName();
+    case ROLE_IN_TASK: return getRoleForAssigment();
+    default: return "";
+    }
+  }
 }

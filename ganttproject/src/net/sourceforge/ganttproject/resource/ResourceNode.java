@@ -73,7 +73,20 @@ public class ResourceNode extends ResourceTableNode {
     return resource.getRole();
   }
 
+  @Override
+  public Object getStandardField(ResourceDefaultColumn def) {
+    switch (def) {
+    case NAME: return getName();
+    case ROLE: return getDefaultRole();
+    case EMAIL: return getEMail();
+    case PHONE: return getPhone();
+    case STANDARD_RATE: return getResource().getStandardPayRate();
+    default: return "";
+    }
+  }
+
   /** @return the value of a custom field referenced by its title */
+  @Override
   public Object getCustomField(CustomPropertyDefinition def) {
     return resource.getCustomField(def);
   }
