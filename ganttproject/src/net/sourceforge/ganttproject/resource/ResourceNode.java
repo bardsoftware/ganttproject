@@ -85,6 +85,24 @@ public class ResourceNode extends ResourceTableNode {
     }
   }
 
+  @Override
+  public void setStandardField(ResourceDefaultColumn def, Object value) {
+    switch (def) {
+    case NAME:
+      setName(value.toString());
+      return;
+    case EMAIL:
+      setEMail(value.toString());
+      return;
+    case PHONE:
+      setPhone(value.toString());
+      return;
+    case ROLE:
+      setDefaultRole((Role) value);
+      return;
+    }
+  }
+
   /** @return the value of a custom field referenced by its title */
   @Override
   public Object getCustomField(CustomPropertyDefinition def) {
@@ -92,6 +110,7 @@ public class ResourceNode extends ResourceTableNode {
   }
 
   /** sets the new value to the custom field referenced by its title */
+  @Override
   public void setCustomField(CustomPropertyDefinition def, Object val) {
     resource.setCustomField(def, val);
   }

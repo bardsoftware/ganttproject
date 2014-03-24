@@ -285,30 +285,17 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   @Override
-  public void setValueAt(Object value, Object node, int column) {
+  public void setValueAt(Object value, Object obj, int column) {
+    if (false == obj instanceof ResourceTableNode) {
+      return;
+    }
+    ResourceTableNode node = (ResourceTableNode)obj;
+    if (column >= STANDARD_COLUMN_COUNT) {
+      node.setCustomField(getCustomProperty(column), value);
+      return;
+    }
     if (isCellEditable(node, column)) {
-      if (column >= STANDARD_COLUMN_COUNT) {
-        ((ResourceNode) node).setCustomField(getCustomProperty(column), value);
-        return;
-      }
-      ResourceDefaultColumn standardColumn = ResourceDefaultColumn.values()[column];
-      switch (standardColumn) {
-      case NAME:
-        ((ResourceNode) node).setName(value.toString());
-        break;
-      case EMAIL:
-        ((ResourceNode) node).setEMail(value.toString());
-        break;
-      case PHONE:
-        ((ResourceNode) node).setPhone(value.toString());
-        break;
-      case ROLE:
-        ((ResourceNode) node).setDefaultRole((Role) value);
-        break;
-      case ROLE_IN_TASK:
-        ((AssignmentNode) node).setRoleForAssigment((Role) value);
-        break;
-      }
+      node.setStandardField(ResourceDefaultColumn.values()[column], value);
     }
   }
 
