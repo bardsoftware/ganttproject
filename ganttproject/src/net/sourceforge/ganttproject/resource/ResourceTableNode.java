@@ -42,7 +42,9 @@ public abstract class ResourceTableNode extends DefaultMutableTreeTableNode {
     return myColumns.contains(column) && column.isEditable();
   }
 
+  public abstract void setCustomField(CustomPropertyDefinition def, Object val);
   public abstract Object getCustomField(CustomPropertyDefinition def);
 
   public abstract Object getStandardField(ResourceDefaultColumn def);
+  public abstract void setStandardField(ResourceDefaultColumn resourceDefaultColumn, Object value);
 }

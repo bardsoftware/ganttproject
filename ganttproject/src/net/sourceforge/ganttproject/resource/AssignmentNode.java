@@ -60,6 +60,10 @@ public class AssignmentNode extends ResourceTableNode {
   }
 
   @Override
+  public void setCustomField(CustomPropertyDefinition def, Object val) {
+  }
+
+  @Override
   public Object getCustomField(CustomPropertyDefinition def) {
     return null;
   }
@@ -70,6 +74,15 @@ public class AssignmentNode extends ResourceTableNode {
     case NAME: return getTask().getName();
     case ROLE_IN_TASK: return getRoleForAssigment();
     default: return "";
+    }
+  }
+
+  @Override
+  public void setStandardField(ResourceDefaultColumn def, Object value) {
+    switch (def) {
+    case ROLE_IN_TASK:
+      setRoleForAssigment((Role) value);
+      return;
     }
   }
 }
