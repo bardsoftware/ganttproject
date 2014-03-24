@@ -31,7 +31,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceTableNode;
-import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -298,7 +297,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
       node.setStandardField(ResourceDefaultColumn.values()[column], value);
     }
   }
-
 
   public void resourceChanged(HumanResource resource) {
     ResourceNode node = getNodeForResource(resource);
