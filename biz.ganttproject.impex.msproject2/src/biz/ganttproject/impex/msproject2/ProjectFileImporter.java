@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -290,6 +291,10 @@ class ProjectFileImporter {
       nativeResource.setId(r.getUniqueID());
       nativeResource.setName(r.getName());
       nativeResource.setMail(r.getEmailAddress());
+      Rate standardRate = r.getStandardRate();
+      if (standardRate != null && standardRate.getAmount() != 0.0 && r.getStandardRateUnits() == TimeUnit.DAYS) {
+        nativeResource.setStandardPayRate(new BigDecimal(standardRate.getAmount()));
+      }
       myNativeProject.getHumanResourceManager().add(nativeResource);
       importDaysOff(r, nativeResource);
       importCustomProperties(r, nativeResource);
