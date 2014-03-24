@@ -186,6 +186,9 @@ public class GanttCSVExport {
           case PREDECESSORS:
             writer.print(TaskProperties.formatPredecessors(task, ";"));
             break;
+          case COST:
+            writer.print(task.getCost().getValue().toPlainString());
+            break;
           case INFO:
           case PRIORITY:
           case TYPE:
@@ -262,133 +265,6 @@ public class GanttCSVExport {
       writer.println();
     }
   }
-
-  /** set the maximum size for all strings. */
-//  private void getMaxSize() {
-//    List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
-//    iMaxSize = 0;
-//    // Check widths of the tasks fields
-//    for (Task task : myProject.getTaskManager().getTasks()) {
-//
-//      if (csvOptions.bExportTaskID) {
-//        String s = String.valueOf(task.getTaskID());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskName) {
-//        String s = getName(task);
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskStartDate) {
-//        String s = String.valueOf(task.getStart());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskEndDate) {
-//        String s = String.valueOf(task.getEnd());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskDuration) {
-//        String s = String.valueOf(task.getDuration().getLength());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskPercent) {
-//        String s = String.valueOf(task.getCompletionPercentage());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskWebLink) {
-//        String s = getWebLink((GanttTask) task);
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskResources) {
-//        String s = getAssignments(task);
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      if (csvOptions.bExportTaskNotes) {
-//        String s = task.getNotes();
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//
-//      CustomColumnsValues customValues = task.getCustomValues();
-//      for (int j = 0; j < customFields.size(); j++) {
-//        Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
-//        String nextValueAsString = String.valueOf(nextCustomFieldValue);
-//        if (nextValueAsString.length() > iMaxSize) {
-//          iMaxSize = nextValueAsString.length();
-//        }
-//      }
-//    }
-//
-//    // Check widths of the resources fields
-//    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
-//      if (csvOptions.bExportResourceID) {
-//        String s = String.valueOf(p.getId());
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//      if (csvOptions.bExportResourceName) {
-//        String s = p.getName();
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//      if (csvOptions.bExportResourceMail) {
-//        String s = p.getMail();
-//        if (s.length() > iMaxSize)
-//          iMaxSize = s.length();
-//      }
-//      if (csvOptions.bExportResourcePhone) {
-//        String s = p.getPhone();
-//        if (s.length() > iMaxSize) {
-//          iMaxSize = s.length();
-//        }
-//      }
-//      if (csvOptions.bExportResourceRole) {
-//        Role role = p.getRole();
-//        String sRoleID;
-//        if (role != null) {
-//          sRoleID = role.getPersistentID();
-//        } else {
-//          sRoleID = "0";
-//        }
-//        if (sRoleID.length() > iMaxSize) {
-//          iMaxSize = sRoleID.length();
-//        }
-//      }
-//      List<CustomProperty> customProps = p.getCustomProperties();
-//      for (int j = 0; j < customProps.size(); j++) {
-//        CustomProperty nextProperty = customProps.get(j);
-//        if (nextProperty.getValueAsString().length() > iMaxSize) {
-//          iMaxSize = nextProperty.getValueAsString().length();
-//        }
-//      }
-//    }
-//  }
 
   /** @return the name of task with the correct level. */
   private String getName(Task task) {
