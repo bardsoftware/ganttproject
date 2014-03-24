@@ -18,10 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
+import java.math.BigDecimal;
 import java.util.EnumSet;
 import java.util.Set;
-
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
@@ -100,6 +99,9 @@ public class ResourceNode extends ResourceTableNode {
     case ROLE:
       setDefaultRole((Role) value);
       return;
+    case STANDARD_RATE:
+      assert value instanceof Double : "Rate accepts numeric values";
+      getResource().setStandardPayRate(BigDecimal.valueOf((Double)value));
     }
   }
 

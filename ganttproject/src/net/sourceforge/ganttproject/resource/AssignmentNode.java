@@ -21,8 +21,6 @@ package net.sourceforge.ganttproject.resource;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.roles.Role;
