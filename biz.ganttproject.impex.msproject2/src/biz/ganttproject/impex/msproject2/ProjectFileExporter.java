@@ -423,7 +423,7 @@ class ProjectFileExporter {
       ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
       resourceCalendar.addDefaultCalendarHours();
       exportWeekends(resourceCalendar);
-      resourceCalendar.setBaseCalendar(myOutputProject.getCalendar());
+      resourceCalendar.setParent(myOutputProject.getCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
       for (int i = 0; i < daysOff.size(); i++) {
         GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
