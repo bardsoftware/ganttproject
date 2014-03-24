@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Rate;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceField;
@@ -340,6 +342,9 @@ class ProjectFileExporter {
     mpxjResource.setEmailAddress(hr.getMail());
     mpxjResource.setType(ResourceType.WORK);
     mpxjResource.setCanLevel(false);
+    if (hr.getStandardPayRate() != BigDecimal.ZERO) {
+      mpxjResource.setStandardRate(new Rate(hr.getStandardPayRate(), TimeUnit.DAYS));
+    }
 
     exportDaysOff(hr, mpxjResource);
     exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
