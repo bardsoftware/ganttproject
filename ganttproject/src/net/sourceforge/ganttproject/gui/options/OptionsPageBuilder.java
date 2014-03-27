@@ -455,54 +455,75 @@ public class OptionsPageBuilder {
     return false;
   }
 
+  public static class BooleanOptionRadioUi {
+    private final JRadioButton myYesButton;
+    private final JRadioButton myNoButton;
+
+    private BooleanOptionRadioUi(final BooleanOption option) {
+      myYesButton = new JRadioButton(new AbstractAction("") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (!option.isChecked()) {
+            option.setValue(true);
+          }
+        }
+      });
+      myYesButton.setVerticalAlignment(SwingConstants.CENTER);
+      myYesButton.setSelected(option.isChecked());
+
+      myNoButton = new JRadioButton(new AbstractAction("") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (option.isChecked()) {
+            option.setValue(false);
+          }
+        }
+      });
+      myNoButton.setSelected(!option.isChecked());
+
+      ButtonGroup buttonGroup = new ButtonGroup();
+      buttonGroup.add(myYesButton);
+      buttonGroup.add(myNoButton);
+
+      option.addChangeValueListener(new ChangeValueListener() {
+        @Override
+        public void changeValue(ChangeValueEvent event) {
+          if (Boolean.TRUE.equals(event.getNewValue())) {
+            myYesButton.setSelected(true);
+          } else {
+            myNoButton.setSelected(true);
+          }
+        }
+      });
+    }
+
+    public JRadioButton getYesButton() {
+      return myYesButton;
+    }
+
+    public JRadioButton getNoButton() {
+      return myNoButton;
+    }
+
+    public Component getComponent() {
+      Box result = Box.createVerticalBox();
+      result.add(myYesButton);
+      result.add(Box.createVerticalStrut(2));
+      result.add(myNoButton);
+      result.add(Box.createVerticalGlue());
+      return result;
+    }
+  }
+
+  public static BooleanOptionRadioUi createBooleanOptionRadioUi(BooleanOption option) {
+    return new BooleanOptionRadioUi(option);
+  }
+
   private Component createRadioButtonBooleanComponent(GPOptionGroup group, final BooleanOption option) {
-    final JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        if (!option.isChecked()) {
-          option.toggle();
-          option.commit();
-          option.lock();
-        }
-      }
-    });
-    yesButton.setVerticalAlignment(SwingConstants.CENTER);
-    yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
-    yesButton.setSelected(option.isChecked());
-
-    final JRadioButton noButton = new JRadioButton(new AbstractAction("") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        if (option.isChecked()) {
-          option.toggle();
-          option.commit();
-          option.lock();
-        }
-      }
-    });
-    noButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".no"));
-    noButton.setSelected(!option.isChecked());
-
-    ButtonGroup buttonGroup = new ButtonGroup();
-    buttonGroup.add(yesButton);
-    buttonGroup.add(noButton);
-
-    Box result = Box.createVerticalBox();
-    result.add(yesButton);
-    result.add(Box.createVerticalStrut(2));
-    result.add(noButton);
-    result.add(Box.createVerticalGlue());
-    option.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        if (Boolean.TRUE.equals(event.getNewValue())) {
-          yesButton.setSelected(true);
-        } else {
-          noButton.setSelected(true);
-        }
-      }
-    });
-    return result;
+    BooleanOptionRadioUi radioUi = createBooleanOptionRadioUi(option);
+    radioUi.getYesButton().setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
+    radioUi.getNoButton().setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".no"));
+    return radioUi.getComponent();
   }
 
   private JComboBox createEnumerationComponent(final EnumerationOption option, final GPOptionGroup group) {
