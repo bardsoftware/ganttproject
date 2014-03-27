@@ -1222,16 +1222,21 @@ public class TaskImpl implements Task {
 
     @Override
     public BigDecimal getValue() {
-      if (isCalculated) {
-        return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
-      } else {
-        return myValue;
-      }
+      return (isCalculated) ? getCalculatedValue() : getManualValue();
+    }
+
+    @Override
+    public BigDecimal getManualValue() {
+      return myValue;
+    }
+
+    @Override
+    public BigDecimal getCalculatedValue() {
+      return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
     }
 
     @Override
     public void setValue(BigDecimal value) {
-      assert !isCalculated : "This task cost is calculated. You can't set value manually";
       myValue = value;
     }
 
