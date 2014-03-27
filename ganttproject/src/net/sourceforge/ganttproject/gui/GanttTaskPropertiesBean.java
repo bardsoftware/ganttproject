@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,7 @@ import java.awt.event.FocusEvent;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -306,7 +308,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     generalPanel.add(propertiesWrapper);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
-    generalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
   }
 
   private void constructCustomColumnPanel() {
@@ -346,14 +347,12 @@ public class GanttTaskPropertiesBean extends JPanel {
   private void init() {
     constructNotesPanel();
 
-    tabbedPane = new JTabbedPane();
-//    tabbedPane.getModel().addChangeListener(new ChangeListener() {
-//      @Override
-//      public void stateChanged(ChangeEvent e) {
-//        changeNameOfTask();
-//        fireDurationChanged();
-//      }
-//    });
+    tabbedPane = new JTabbedPane() {
+      @Override
+      public void addTab(String title, Icon icon, Component component) {
+        super.addTab(title, icon, UIUtil.contentPaneBorder((JComponent)component));
+      }
+    };
     constructGeneralPanel();
 
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),

@@ -499,4 +499,15 @@ public abstract class UIUtil {
       stopCellEditing();
     }
   }
+
+  public static JComponent contentPaneBorder(JComponent component) {
+    return border(component, 5, TOP | LEFT | BOTTOM | RIGHT);
+  }
+
+  public static final int TOP = 1, LEFT = 1 << 1, BOTTOM = 1 << 2, RIGHT = 1 << 3;
+  public static JComponent border(JComponent component, int width, int mask) {
+    component.setBorder(BorderFactory.createEmptyBorder(
+        width * (mask & TOP), width * (mask & LEFT) >> 1, width * (mask & BOTTOM) >> 2, width * (mask & RIGHT) >> 3));
+    return component;
+  }
 }

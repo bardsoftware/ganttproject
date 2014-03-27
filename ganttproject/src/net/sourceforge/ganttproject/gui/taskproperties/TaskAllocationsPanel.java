@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -114,11 +115,11 @@ public class TaskAllocationsPanel {
     MultiSplitLayout.Node modelRoot = MultiSplitLayout.parseModel(layoutDef);
     result.getMultiSplitLayout().setModel(modelRoot);
     result.add(tablePanel, "resources");
-    result.add(createCostPanel(), "cost");
+    result.add(UIUtil.border(createCostPanel(), 10, UIUtil.LEFT), "cost");
     return result;
   }
 
-  private Component createCostPanel() {
+  private JComponent createCostPanel() {
     myCostIsCalculated.setValue(myTask.getCost().isCalculated());
     myCostIsCalculated.addChangeValueListener(new ChangeValueListener() {
       @Override
