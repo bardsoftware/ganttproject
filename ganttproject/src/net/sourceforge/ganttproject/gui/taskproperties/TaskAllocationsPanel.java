@@ -24,6 +24,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
@@ -38,6 +40,8 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.BooleanOptionRadioUi;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -125,8 +129,25 @@ public class TaskAllocationsPanel {
     });
     myCostValue.setValue(myTask.getCost().getValue().doubleValue());
     myCostValue.setWritable(!myCostIsCalculated.isChecked());
+
     OptionsPageBuilder builder = new OptionsPageBuilder();
-    return builder.createGroupComponent(myCostGroup);
+    BooleanOptionRadioUi radioUi = OptionsPageBuilder.createBooleanOptionRadioUi(myCostIsCalculated);
+
+    JPanel optionsPanel = new JPanel();
+    optionsPanel.add(radioUi.getYesButton());
+    optionsPanel.add(new JLabel(myTask.getCost().getCalculatedValue().toPlainString()));
+    optionsPanel.add(radioUi.getNoButton());
+    optionsPanel.add(builder.createOptionComponent(myCostGroup, myCostValue));
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(optionsPanel, 2);
+
+    final String yesLabelKey = builder.getI18N().getCanonicalOptionLabelKey(myCostIsCalculated) + ".yes";
+    radioUi.getYesButton().setText(GanttLanguage.getInstance().getText(yesLabelKey));
+    radioUi.getNoButton().setText(GanttLanguage.getInstance().getText(builder.getI18N().getCanonicalOptionLabelKey(myCostIsCalculated) + ".no"));
+    UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myCostGroup));
+
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(optionsPanel, BorderLayout.NORTH);
+    return result;
   }
 
   public void commit() {
