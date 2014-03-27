@@ -93,6 +93,8 @@ public interface Task extends MutableTask {
 
   public static interface Cost {
     BigDecimal getValue();
+    BigDecimal getManualValue();
+    BigDecimal getCalculatedValue();
     void setValue(BigDecimal value);
     boolean isCalculated();
     void setCalculated(boolean calculated);
