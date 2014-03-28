@@ -258,6 +258,9 @@ public class GanttCSVExport {
             String sRoleID = role == null ? "0" : role.getPersistentID();
             writer.print(sRoleID);
             break;
+          case STANDARD_RATE:
+            writer.print(p.getStandardPayRate().toPlainString());
+            break;
           }
         }
       }
