@@ -36,24 +36,6 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 
 public class CSVOptions {
-//  public boolean bExportTaskID = true;
-//
-//  public boolean bExportTaskName = true;
-//
-//  public boolean bExportTaskStartDate = true;
-//
-//  public boolean bExportTaskEndDate = true;
-//
-//  public boolean bExportTaskPercent = true;
-//
-//  public boolean bExportTaskDuration = true;
-//
-//  public boolean bExportTaskWebLink = true;
-//
-//  public boolean bExportTaskResources = true;
-//
-//  public boolean bExportTaskNotes = true;
-
   private static final Set<TaskDefaultColumn> ourIgnoredTaskColumns = ImmutableSet.of(
       TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
   private final Map<String, BooleanOption> myTaskOptions = Maps.newLinkedHashMap();
@@ -107,16 +89,6 @@ public class CSVOptions {
   public Map<String, BooleanOption> getResourceOptions() {
     return myResourceOptions;
   }
-
-//  public boolean bExportResourceID = true;
-//
-//  public boolean bExportResourceName = true;
-//
-//  public boolean bExportResourceMail = true;
-//
-//  public boolean bExportResourcePhone = true;
-//
-//  public boolean bExportResourceRole = true;
 
   public boolean bFixedSize = false;
 
