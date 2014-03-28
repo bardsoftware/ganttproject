@@ -41,7 +41,9 @@ public class CostAlgorithmTest extends TaskTestCase {
     hierarchy.move(subtask1, supertask);
     hierarchy.move(subtask2, supertask);
     supertask.getCost().setCalculated(true);
+    subtask1.getCost().setCalculated(false);
     subtask1.getCost().setValue(BigDecimal.valueOf(5));
+    subtask2.getCost().setCalculated(false);
     subtask2.getCost().setValue(BigDecimal.valueOf(15));
     assertEquals(BigDecimal.valueOf(20), supertask.getCost().getValue());
 

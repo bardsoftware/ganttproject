@@ -191,10 +191,11 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
-    String cost = attrs.getValue("cost-manual");
-    if (cost != null) {
-      task.getCost().setCalculated(false);
-      task.getCost().setValue(new BigDecimal(cost));
+    String costValue = attrs.getValue("cost-manual-value");
+    String costCalculated = attrs.getValue("cost-calculated");
+    if (costCalculated != null) {
+      task.getCost().setCalculated(Boolean.valueOf(costCalculated));
+      task.getCost().setValue(new BigDecimal(costValue));
     } else {
       task.getCost().setCalculated(true);
     }

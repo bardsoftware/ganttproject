@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.io;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -94,8 +95,10 @@ class TaskSaver extends SaverBase {
       addAttribute("webLink", URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs);
     }
     addAttribute("expand", String.valueOf(task.getExpand()), attrs);
-    if (!task.getCost().isCalculated()) {
-      addAttribute("cost-manual", task.getCost().getValue().toPlainString(), attrs);
+
+    if (!(task.getCost().isCalculated() && task.getCost().getManualValue() == BigDecimal.ZERO)) {
+      addAttribute("cost-manual-value", task.getCost().getManualValue().toPlainString(), attrs);
+      addAttribute("cost-calculated", task.getCost().isCalculated(), attrs);
     }
     startElement("task", attrs, handler);
 
