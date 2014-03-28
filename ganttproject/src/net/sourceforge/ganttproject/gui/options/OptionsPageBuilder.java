@@ -73,6 +73,7 @@ import biz.ganttproject.core.option.ValidationException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 /**
  * @author bard
@@ -302,7 +303,7 @@ public class OptionsPageBuilder {
         @Override
         public BigDecimal parse(String text) throws ValidationException {
           try {
-            return (BigDecimal) myFormat.parse(text);
+            return Strings.isNullOrEmpty(text) ? BigDecimal.ZERO : (BigDecimal) myFormat.parse(text);
           } catch (ParseException e) {
             e.printStackTrace();
             throw new ValidationException(e);
