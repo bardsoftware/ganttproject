@@ -1218,7 +1218,7 @@ public class TaskImpl implements Task {
 
   private class CostImpl implements Cost {
     private BigDecimal myValue = BigDecimal.ZERO;
-    private boolean isCalculated = false;
+    private boolean isCalculated = true;
 
     @Override
     public BigDecimal getValue() {
