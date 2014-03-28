@@ -185,8 +185,6 @@ class ProjectFileExporter {
     mpxjTask.setIgnoreResourceCalendar(true);
 
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
-    if (nestedTasks.length > 0) {
-    }
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
     Date startTime = convertStartTime(t.getStart().getTime());
     Date finishTime = convertFinishTime(t.getEnd().getTime());
@@ -195,6 +193,7 @@ class ProjectFileExporter {
     Duration duration = convertDuration(t.getDuration());
     mpxjTask.setDuration(duration);
     mpxjTask.setManualDuration(duration);
+    mpxjTask.setCost(t.getCost().getValue());
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
     mpxjTask.setActualDuration(durations[0]);

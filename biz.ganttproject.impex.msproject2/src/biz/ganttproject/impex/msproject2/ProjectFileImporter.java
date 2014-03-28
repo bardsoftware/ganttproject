@@ -423,6 +423,10 @@ class ProjectFileImporter {
       }
     }
     GanttTask nativeTask = (GanttTask) taskBuilder.build();
+    if (t.getCost() != null) {
+      nativeTask.getCost().setCalculated(false);
+      nativeTask.getCost().setValue(BigDecimal.valueOf(t.getCost().doubleValue()));
+    }
     if (!t.getChildTasks().isEmpty()) {
       for (Task child : t.getChildTasks()) {
         importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
