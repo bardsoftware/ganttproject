@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -206,20 +207,16 @@ public class GanttCSVExport {
   }
 
   private void writeResourceHeaders(CSVPrinter writer) throws IOException {
-    if (csvOptions.bExportResourceID) {
-      writer.print(i18n("tableColID"));
-    }
-    if (csvOptions.bExportResourceName) {
-      writer.print(i18n("tableColResourceName"));
-    }
-    if (csvOptions.bExportResourceMail) {
-      writer.print(i18n("tableColResourceEMail"));
-    }
-    if (csvOptions.bExportResourcePhone) {
-      writer.print(i18n("tableColResourcePhone"));
-    }
-    if (csvOptions.bExportResourceRole) {
-      writer.print(i18n("tableColResourceRole"));
+    for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+      ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
+      if (!entry.getValue().isChecked()) {
+        continue;
+      }
+      if (defaultColumn == null) {
+        writer.print(i18n(entry.getKey()));
+      } else {
+        writer.print(defaultColumn.getName());
+      }
     }
     List<CustomPropertyDefinition> customFieldDefs = myProject.getResourceCustomPropertyManager().getDefinitions();
     for (int i = 0; i < customFieldDefs.size(); i++) {
@@ -235,27 +232,34 @@ public class GanttCSVExport {
     writeResourceHeaders(writer);
     // parse all resources
     for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
-      // ID
-      if (csvOptions.bExportResourceID) {
-        writer.print(String.valueOf(p.getId()));
-      }
-      // Name
-      if (csvOptions.bExportResourceName) {
-        writer.print(p.getName());
-      }
-      // Mail
-      if (csvOptions.bExportResourceMail) {
-        writer.print(p.getMail());
-      }
-      // Phone
-      if (csvOptions.bExportResourcePhone) {
-        writer.print(p.getPhone());
-      }
-      // Role
-      if (csvOptions.bExportResourceRole) {
-        Role role = p.getRole();
-        String sRoleID = role == null ? "0" : role.getPersistentID();
-        writer.print(sRoleID);
+      for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+        if (!entry.getValue().isChecked()) {
+          continue;
+        }
+        ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
+        if (defaultColumn == null) {
+          if ("id".equals(entry.getKey())) {
+            writer.print(String.valueOf(p.getId()));
+            continue;
+          }
+        } else {
+          switch (defaultColumn) {
+          case NAME:
+            writer.print(p.getName());
+            break;
+          case EMAIL:
+            writer.print(p.getMail());
+            break;
+          case PHONE:
+            writer.print(p.getPhone());
+            break;
+          case ROLE:
+            Role role = p.getRole();
+            String sRoleID = role == null ? "0" : role.getPersistentID();
+            writer.print(sRoleID);
+            break;
+          }
+        }
       }
       List<CustomProperty> customProps = p.getCustomProperties();
       for (int j = 0; j < customProps.size(); j++) {

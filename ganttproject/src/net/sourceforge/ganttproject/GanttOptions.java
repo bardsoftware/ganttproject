@@ -278,13 +278,6 @@ public class GanttOptions extends SaverBase {
       addAttribute("separatedTextChar", "" + csvOptions.sSeparatedTextChar, attrs);
       emptyElement("csv-general", attrs, handler);
 
-      addAttribute("id", "" + csvOptions.bExportResourceID, attrs);
-      addAttribute("name", "" + csvOptions.bExportResourceName, attrs);
-      addAttribute("mail", "" + csvOptions.bExportResourceMail, attrs);
-      addAttribute("phone", "" + csvOptions.bExportResourcePhone, attrs);
-      addAttribute("role", "" + csvOptions.bExportResourceRole, attrs);
-      emptyElement("csv-resources", attrs, handler);
-
       endElement("csv-export", handler);
 
       addAttribute("id", "csv-export", attrs);
@@ -295,6 +288,14 @@ public class GanttOptions extends SaverBase {
           emptyElement("field", attrs, handler);
         }
       }
+      startElement("resources", attrs, handler);
+      for (Map.Entry<String, BooleanOption> entry: csvOptions.getResourceOptions().entrySet()) {
+        if (entry.getValue().isChecked()) {
+          addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
+          emptyElement("field", attrs, handler);
+        }
+      }
+      endElement("resources", handler);
       endElement("view", handler);
 
       // automatic popup launch
@@ -532,6 +533,15 @@ public class GanttOptions extends SaverBase {
         String viewId = attrs.getValue("id");
         if ("csv-export".equals(viewId)) {
           myContextViewOptions = csvOptions.getTaskOptions();
+          for (BooleanOption o : myContextViewOptions.values()) {
+            o.setValue(false);
+          }
+        }
+      }
+      if ("resources".equals(qName) && myContextViewOptions != null) {
+        myContextViewOptions = csvOptions.getResourceOptions();
+        for (BooleanOption o : myContextViewOptions.values()) {
+          o.setValue(false);
         }
       }
       if ("field".equals(qName) && myContextViewOptions != null) {
@@ -668,16 +678,23 @@ public class GanttOptions extends SaverBase {
               csvOptions.getTaskOptions().get("notes").setValue(Boolean.valueOf(value));
             }
           } else if (qName.equals("csv-resources")) {
-            if (aName.equals("id")) {
-              csvOptions.bExportResourceID = (new Boolean(value)).booleanValue();
-            } else if (aName.equals("name")) {
-              csvOptions.bExportResourceName = (new Boolean(value)).booleanValue();
-            } else if (aName.equals("mail")) {
-              csvOptions.bExportResourceMail = (new Boolean(value)).booleanValue();
-            } else if (aName.equals("phone")) {
-              csvOptions.bExportResourcePhone = (new Boolean(value)).booleanValue();
-            } else if (aName.equals("role")) {
-              csvOptions.bExportResourceRole = (new Boolean(value)).booleanValue();
+            Boolean bValue = Boolean.valueOf(value);
+            switch (aName) {
+            case "id":
+              csvOptions.getResourceOptions().get("id").setValue(bValue);
+              break;
+            case "name":
+              csvOptions.getResourceOptions().get(ResourceDefaultColumn.NAME.getStub().getID()).setValue(bValue);
+              break;
+            case "mail":
+              csvOptions.getResourceOptions().get(ResourceDefaultColumn.EMAIL.getStub().getID()).setValue(bValue);
+              break;
+            case "phone":
+              csvOptions.getResourceOptions().get(ResourceDefaultColumn.PHONE.getStub().getID()).setValue(bValue);
+              break;
+            case "role":
+              csvOptions.getResourceOptions().get(ResourceDefaultColumn.ROLE.getStub().getID()).setValue(bValue);
+              break;
             }
           }
         }

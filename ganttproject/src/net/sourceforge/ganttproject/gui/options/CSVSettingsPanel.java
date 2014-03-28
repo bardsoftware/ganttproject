@@ -38,6 +38,7 @@ import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.io.CSVOptions;
@@ -71,15 +72,15 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 //
 //  private JCheckBox cbTaskNotes;
 
-  private JCheckBox cbResID;
-
-  private JCheckBox cbResName;
-
-  private JCheckBox cbResMail;
-
-  private JCheckBox cbResPhone;
-
-  private JCheckBox cbResRole;
+//  private JCheckBox cbResID;
+//
+//  private JCheckBox cbResName;
+//
+//  private JCheckBox cbResMail;
+//
+//  private JCheckBox cbResPhone;
+//
+//  private JCheckBox cbResRole;
 
   private final CSVOptions myCsvOptions;
 
@@ -91,10 +92,11 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 
     vb.add(createSeparatorSettingsPanel());
     vb.add(Box.createVerticalStrut(15));
-    vb.add(createTaskExportFieldsPanel());
+    vb.add(createTaskExportFieldsPanel(createTaskPropertiesTableModel(), "taskFields"));
     vb.add(Box.createVerticalStrut(15));
-    vb.add(createResourceExportFieldsPanel());
-    vb.add(Box.createVerticalGlue());
+    vb.add(createTaskExportFieldsPanel(createResourcePropertiesTableModel(), "resFields"));
+    //vb.add(createResourceExportFieldsPanel());
+    //vb.add(Box.createVerticalGlue());
 
     applyComponentOrientation(language.getComponentOrientation());
   }
@@ -114,8 +116,8 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     return result;
   }
 
-  JComponent createTaskExportFieldsPanel() {
-    JXTable table = new JXTable(createTaskPropertiesTableModel());
+  JComponent createTaskExportFieldsPanel(TableModel tableModel, String id) {
+    JXTable table = new JXTable(tableModel);
     table.setTableHeader(null);
     table.setVisibleRowCount(10);
     JScrollPane scrollPane = new JScrollPane(table);
@@ -142,88 +144,112 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 //    SpringUtilities.makeCompactGrid(panel, 3, 3, 0, 0, 3, 3);
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(BorderLayout.CENTER, scrollPane);
-    UIUtil.createTitle(panel, language.getText("taskFields"));
+    UIUtil.createTitle(panel, language.getText(id));
     return panel;
+  }
+
+  private static abstract class ExportFieldsTableModel extends AbstractTableModel {
+    private final List<BooleanOption> myOptions;
+
+    ExportFieldsTableModel(List<BooleanOption> options) {
+      myOptions = options;
+    }
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+      switch (columnIndex) {
+      case 0:
+        return String.class;
+      case 1:
+        return Boolean.class;
+      }
+      return null;
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int col) {
+      return col == 1;
+    }
+
+    @Override
+    public int getColumnCount() {
+      return 2;
+    }
+
+    @Override
+    public int getRowCount() {
+      return myOptions.size();
+    }
+
+
+    @Override
+    public Object getValueAt(int row, int column) {
+      if (row >= 0 && row < getRowCount()) {
+        switch (column) {
+        case 0:
+          String id = myOptions.get(row).getID();
+          return getOptionName(id);
+        case 1:
+          return myOptions.get(row).getValue();
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int row, int column) {
+      if (row >= 0 && row < getRowCount()) {
+        myOptions.get(row).setValue((Boolean)aValue);
+      }
+    }
+
+    protected abstract String getOptionName(String id);
   }
 
   private TableModel createTaskPropertiesTableModel() {
     final List<BooleanOption> taskOptions = Lists.newArrayList(getCsvOptions().getTaskOptions().values());
-    return new AbstractTableModel() {
+    return new ExportFieldsTableModel(taskOptions) {
       @Override
-      public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-        case 0:
-          return String.class;
-        case 1:
-          return Boolean.class;
-        }
-        return null;
-      }
-
-      @Override
-      public boolean isCellEditable(int row, int col) {
-        return col == 1;
-      }
-
-      @Override
-      public int getColumnCount() {
-        return 2;
-      }
-
-      @Override
-      public int getRowCount() {
-        return taskOptions.size();
-      }
-
-
-      @Override
-      public Object getValueAt(int row, int column) {
-        if (row >= 0 && row < getRowCount()) {
-          switch (column) {
-          case 0:
-            String id = taskOptions.get(row).getID();
-            TaskDefaultColumn taskColumn = TaskDefaultColumn.find(id);
-            return taskColumn == null ? GanttLanguage.getInstance().getText(id) : taskColumn.getName();
-          case 1:
-            return taskOptions.get(row).getValue();
-          }
-        }
-        return null;
-      }
-
-      @Override
-      public void setValueAt(Object aValue, int row, int column) {
-        if (row >= 0 && row < getRowCount()) {
-          taskOptions.get(row).setValue((Boolean)aValue);
-        }
+      protected String getOptionName(String id) {
+        TaskDefaultColumn taskColumn = TaskDefaultColumn.find(id);
+        return taskColumn == null ? GanttLanguage.getInstance().getText(id) : taskColumn.getName();
       }
     };
   }
 
-  JComponent createResourceExportFieldsPanel() {
-    JPanel panel = new JPanel(new SpringLayout());
-    cbResID = new JCheckBox(language.getText("id"));
-    panel.add(cbResID);
-    cbResName = new JCheckBox(language.getText("colName"));
-    panel.add(cbResName);
-    cbResMail = new JCheckBox(language.getText("colMail"));
-    panel.add(cbResMail);
-    cbResPhone = new JCheckBox(language.getText("colPhone"));
-    panel.add(cbResPhone);
-    cbResRole = new JCheckBox(language.getText("colRole"));
-    panel.add(cbResRole);
-    panel.add(new JPanel());
-
-    SpringUtilities.makeCompactGrid(panel, 3, 2, 0, 0, 3, 3);
-    UIUtil.createTitle(panel, language.getText("resFields"));
-
-    Box result = Box.createHorizontalBox();
-    result.add(panel);
-    result.add(Box.createHorizontalGlue());
-    return result;
-
+  private TableModel createResourcePropertiesTableModel() {
+    return new ExportFieldsTableModel(Lists.newArrayList(getCsvOptions().getResourceOptions().values())) {
+      @Override
+      protected String getOptionName(String id) {
+        ResourceDefaultColumn column = ResourceDefaultColumn.find(id);
+        return column == null ? GanttLanguage.getInstance().getText(id) : column.getName();
+      }
+    };
   }
 
+//  JComponent createResourceExportFieldsPanel() {
+//    JPanel panel = new JPanel(new SpringLayout());
+//    cbResID = new JCheckBox(language.getText("id"));
+//    panel.add(cbResID);
+//    cbResName = new JCheckBox(language.getText("colName"));
+//    panel.add(cbResName);
+//    cbResMail = new JCheckBox(language.getText("colMail"));
+//    panel.add(cbResMail);
+//    cbResPhone = new JCheckBox(language.getText("colPhone"));
+//    panel.add(cbResPhone);
+//    cbResRole = new JCheckBox(language.getText("colRole"));
+//    panel.add(cbResRole);
+//    panel.add(new JPanel());
+//
+//    SpringUtilities.makeCompactGrid(panel, 3, 2, 0, 0, 3, 3);
+//    UIUtil.createTitle(panel, language.getText("resFields"));
+//
+//    Box result = Box.createHorizontalBox();
+//    result.add(panel);
+//    result.add(Box.createHorizontalGlue());
+//    return result;
+//
+//  }
+//
   @Override
   public boolean applyChanges(boolean askForApply) {
     CSVOptions csvOptions = getCsvOptions();
@@ -239,11 +265,11 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 //    csvOptions.bExportTaskWebLink = getTaskWebLink();
 //    csvOptions.bExportTaskResources = getTaskResources();
 //    csvOptions.bExportTaskNotes = getTaskNotes();
-    csvOptions.bExportResourceID = getResourceID();
-    csvOptions.bExportResourceName = getResourceName();
-    csvOptions.bExportResourceMail = getResourceMail();
-    csvOptions.bExportResourcePhone = getResourcePhone();
-    csvOptions.bExportResourceRole = getResourceRole();
+//    csvOptions.bExportResourceID = getResourceID();
+//    csvOptions.bExportResourceName = getResourceName();
+//    csvOptions.bExportResourceMail = getResourceMail();
+//    csvOptions.bExportResourcePhone = getResourcePhone();
+//    csvOptions.bExportResourceRole = getResourceRole();
     return true;
   }
 
@@ -259,11 +285,11 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 //    cbTaskResources.setSelected(getCsvOptions().bExportTaskResources);
 //    cbTaskNotes.setSelected(getCsvOptions().bExportTaskNotes);
 
-    cbResID.setSelected(getCsvOptions().bExportResourceID);
-    cbResName.setSelected(getCsvOptions().bExportResourceName);
-    cbResMail.setSelected(getCsvOptions().bExportResourceMail);
-    cbResPhone.setSelected(getCsvOptions().bExportResourcePhone);
-    cbResRole.setSelected(getCsvOptions().bExportResourceRole);
+//    cbResID.setSelected(getCsvOptions().bExportResourceID);
+//    cbResName.setSelected(getCsvOptions().bExportResourceName);
+//    cbResMail.setSelected(getCsvOptions().bExportResourceMail);
+//    cbResPhone.setSelected(getCsvOptions().bExportResourcePhone);
+//    cbResRole.setSelected(getCsvOptions().bExportResourceRole);
 
     String selectedSeparator;
     if (getCsvOptions().bFixedSize) {
@@ -327,25 +353,25 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
 //    return cbTaskNotes.isSelected();
 //  }
 
-  private boolean getResourceID() {
-    return cbResID.isSelected();
-  }
-
-  private boolean getResourceName() {
-    return cbResName.isSelected();
-  }
-
-  private boolean getResourcePhone() {
-    return cbResPhone.isSelected();
-  }
-
-  private boolean getResourceMail() {
-    return cbResMail.isSelected();
-  }
-
-  private boolean getResourceRole() {
-    return cbResRole.isSelected();
-  }
+//  private boolean getResourceID() {
+//    return cbResID.isSelected();
+//  }
+//
+//  private boolean getResourceName() {
+//    return cbResName.isSelected();
+//  }
+//
+//  private boolean getResourcePhone() {
+//    return cbResPhone.isSelected();
+//  }
+//
+//  private boolean getResourceMail() {
+//    return cbResMail.isSelected();
+//  }
+//
+//  private boolean getResourceRole() {
+//    return cbResRole.isSelected();
+//  }
 
   private String getTextSeparat() {
     if (cbTextSeparator.getSelectedIndex() == 0) {
