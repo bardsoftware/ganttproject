@@ -24,6 +24,7 @@ import java.util.List;
 import com.google.common.base.Objects;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 
@@ -52,7 +53,7 @@ public enum ResourceDefaultColumn {
     myValueClass = valueClass;
   }
 
-  Column getStub() {
+  public Column getStub() {
     return myDelegate;
   }
 
@@ -76,4 +77,12 @@ public enum ResourceDefaultColumn {
     return myValueClass;
   }
 
+  public static ResourceDefaultColumn find(String id) {
+    for (ResourceDefaultColumn column : values()) {
+      if (column.getStub().getID().equals(id)) {
+        return column;
+      }
+    }
+    return null;
+  }
 }
