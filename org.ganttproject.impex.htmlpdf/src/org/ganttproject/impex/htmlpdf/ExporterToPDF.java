@@ -31,7 +31,6 @@ import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ExporterToPDF extends StylesheetExporterBase {
 
-  private final FOPEngine myFopEngine = new FOPEngine(this);
   private final ITextEngine myITextEngine = new ITextEngine(this);
   private Stylesheet mySelectedStylesheet;
 
@@ -39,9 +38,6 @@ public class ExporterToPDF extends StylesheetExporterBase {
   protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
     super.setCommandLineStylesheet();
 
-    if (mySelectedStylesheet instanceof PDFStylesheet) {
-      return myFopEngine.createJobs(outputFile, resultFiles);
-    }
     if (mySelectedStylesheet instanceof ITextStylesheet) {
       return myITextEngine.createJobs(outputFile, resultFiles);
     }
@@ -58,7 +54,6 @@ public class ExporterToPDF extends StylesheetExporterBase {
   protected List<Stylesheet> getStylesheets() {
     List<Stylesheet> result = new ArrayList<Stylesheet>();
     result.addAll(myITextEngine.getStylesheets());
-    result.addAll(myFopEngine.getStylesheets());
     return result;
   }
 
@@ -69,9 +64,7 @@ public class ExporterToPDF extends StylesheetExporterBase {
   }
 
   private void initEngine() {
-    if (mySelectedStylesheet instanceof PDFStylesheet) {
-      myFopEngine.setContext(getProject(), getUIFacade(), getPreferences(), mySelectedStylesheet);
-    } else if (mySelectedStylesheet instanceof ITextStylesheet) {
+    if (mySelectedStylesheet instanceof ITextStylesheet) {
       myITextEngine.setContext(getProject(), getUIFacade(), getPreferences(), mySelectedStylesheet);
     } else {
       assert false : "Unknown stylesheet is selected: " + mySelectedStylesheet;
@@ -95,12 +88,6 @@ public class ExporterToPDF extends StylesheetExporterBase {
   public List<GPOptionGroup> getSecondaryOptions() {
     List<GPOptionGroup> result = new ArrayList<GPOptionGroup>();
     result.add(createExportRangeOptionGroup());
-    if (mySelectedStylesheet instanceof PDFStylesheet) {
-      List<GPOptionGroup> secondaryOptions = myFopEngine.getSecondaryOptions();
-      if (secondaryOptions != null) {
-        result.addAll(secondaryOptions);
-      }
-    }
     if (mySelectedStylesheet instanceof ITextStylesheet) {
       result.addAll(myITextEngine.getSecondaryOptions());
     }
