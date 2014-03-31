@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package net.sourceforge.ganttproject.io;
+package biz.ganttproject.impex.csv;
 
 import java.io.Reader;
 import java.io.StringReader;
