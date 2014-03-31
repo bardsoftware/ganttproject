@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ public interface TaskManager {
     Integer myCompletion;
     Priority myPriority;
     Task myPrototype;
+    BigDecimal myCost;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -132,6 +134,11 @@ public interface TaskManager {
 
     public TaskBuilder withWebLink(String value) {
       myWebLink = value;
+      return this;
+    }
+
+    public TaskBuilder withCost(BigDecimal value) {
+      myCost = value;
       return this;
     }
 
