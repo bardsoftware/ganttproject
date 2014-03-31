@@ -16,14 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.importer;
+package biz.ganttproject.impex.csv;
 
 import java.io.File;
 import java.io.IOException;
 
 import biz.ganttproject.core.option.GPOption;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.io.GanttCSVOpen;
+import net.sourceforge.ganttproject.importer.BufferProject;
+import net.sourceforge.ganttproject.importer.ImporterBase;
+import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 
 /**

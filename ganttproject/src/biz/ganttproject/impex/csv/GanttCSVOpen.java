@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.io;
+package biz.ganttproject.impex.csv;
 
 import static net.sourceforge.ganttproject.GPLogger.debug;
 
@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -261,6 +262,14 @@ public class GanttCSVOpen {
         if (!Strings.isNullOrEmpty(record.get(TaskFields.COMPLETION.toString()))) {
           builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
         }
+        if (!Strings.isNullOrEmpty(record.get(TaskDefaultColumn.COST.getName()))) {
+          try {
+            builder = builder.withCost(new BigDecimal(record.get(TaskDefaultColumn.COST.getName())));
+          } catch (NumberFormatException e) {
+            GPLogger.logToLogger(e);
+            GPLogger.log(String.format("Failed to parse %s as cost value", record.get(TaskDefaultColumn.COST.getName())));
+          }
+        }
         Task task = builder.build();
 
         if (record.get(TaskDefaultColumn.ID.getName()) != null) {
@@ -366,7 +375,7 @@ public class GanttCSVOpen {
   public boolean load() throws IOException {
     final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
     CSVParser parser = new CSVParser(myInputSupplier.get(),
-        CSVFormat.DEFAULT.withEmptyLinesIgnored(false).withSurroundingSpacesIgnored(true));
+        CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true));
     int numGroup = 0;
     RecordGroup currentGroup = null;
     boolean searchHeader = true;
@@ -388,7 +397,7 @@ public class GanttCSVOpen {
           // otherwise it was just an empty line in the current group
           searchHeader = false;
           currentGroup = myRecordGroups.get(numGroup);
-          parser.readHeader(record);
+          //parser.readHeader(record);
           currentGroup.setHeader(Lists.newArrayList(record.iterator()));
           numGroup++;
           continue;

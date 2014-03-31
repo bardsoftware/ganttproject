@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.io;
+package biz.ganttproject.impex.csv;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -88,7 +89,7 @@ public class GanttCSVExport {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
     }
     if (csvOptions.sSeparatedTextChar.length() == 1) {
-      format = format.withEncapsulator(csvOptions.sSeparatedTextChar.charAt(0));
+      format = format.withQuoteChar(csvOptions.sSeparatedTextChar.charAt(0));
     }
 
     CSVPrinter csvPrinter = new CSVPrinter(writer, format);
