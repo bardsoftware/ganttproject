@@ -369,6 +369,10 @@ public class TaskManagerImpl implements TaskManager {
         if (myCompletion != null) {
           task.setCompletionPercentage(myCompletion);
         }
+        if (myCost != null) {
+          task.getCost().setCalculated(false);
+          task.getCost().setValue(myCost);
+        }
         registerTask(task);
 
 
