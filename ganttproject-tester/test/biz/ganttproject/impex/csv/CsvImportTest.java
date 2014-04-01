@@ -46,7 +46,7 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
     final AtomicBoolean wasCalled = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
+    RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
         wasCalled.set(true);
@@ -70,7 +70,7 @@ public class CsvImportTest extends TestCase {
     String header1 = "A, B";
     String data1 = "a1, b1";
     final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup1 = new GanttCSVOpen.RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
+    RecordGroup recordGroup1 = new RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
         assertEquals("a1", record.get("A"));
@@ -83,7 +83,7 @@ public class CsvImportTest extends TestCase {
     String header2 = "C, D, E";
     String data2 = "c1, d1, e1";
     final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup2 = new GanttCSVOpen.RecordGroup("CDE", ImmutableSet.<String> of("C", "D", "E")) {
+    RecordGroup recordGroup2 = new RecordGroup("CDE", ImmutableSet.<String> of("C", "D", "E")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
         assertEquals("c1", record.get("C"));
@@ -103,7 +103,7 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
     final AtomicBoolean wasCalled = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC",
+    RecordGroup recordGroup = new RecordGroup("ABC",
         ImmutableSet.<String> of("A", "B", "C"), // all fields
         ImmutableSet.<String> of("A", "B")) { // mandatory fields
       @Override
@@ -124,7 +124,7 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
     final AtomicBoolean wasCalled = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC", ImmutableSet.<String> of("A", "B")) {
+    RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
         wasCalled.set(true);
@@ -145,7 +145,7 @@ public class CsvImportTest extends TestCase {
     String data2 = "a2,b2,c2";
     String data3 = ",b3,c3";
     final AtomicBoolean wasCalled = new AtomicBoolean(false);
-    GanttCSVOpen.RecordGroup recordGroup = new GanttCSVOpen.RecordGroup("ABC",
+    RecordGroup recordGroup = new RecordGroup("ABC",
         ImmutableSet.<String> of("A", "B", "C"), ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
