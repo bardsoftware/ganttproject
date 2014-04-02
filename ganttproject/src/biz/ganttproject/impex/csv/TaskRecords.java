@@ -20,7 +20,6 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -71,21 +70,23 @@ class TaskRecords extends RecordGroup {
     }
     // Create the task
     TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
-        .withName(record.get(TaskFields.NAME.toString()))
-        .withStartDate(GanttCSVOpen.language.parseDate(record.get(TaskFields.BEGIN_DATE.toString())))
-        .withWebLink(record.get(TaskFields.WEB_LINK.toString()))
-        .withNotes(record.get(TaskFields.NOTES.toString()));
-    if (record.get(TaskDefaultColumn.DURATION.getName()) != null) {
+        .withName(getOrNull(record, TaskFields.NAME.toString()))
+        .withStartDate(GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.BEGIN_DATE.toString())))
+        .withWebLink(getOrNull(record, TaskFields.WEB_LINK.toString()))
+        .withNotes(getOrNull(record, TaskFields.NOTES.toString()));
+    if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
       builder = builder.withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())));
     }
-    if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
-        && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
-      builder = builder.withLegacyMilestone();
+    if (record.isSet(TaskFields.END_DATE.toString()) && record.isSet(TaskDefaultColumn.DURATION.getName())) {
+      if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
+          && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
+        builder = builder.withLegacyMilestone();
+      }
     }
-    if (!Strings.isNullOrEmpty(record.get(TaskFields.COMPLETION.toString()))) {
+    if (record.isSet(TaskFields.COMPLETION.toString())) {
       builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
     }
-    if (!Strings.isNullOrEmpty(record.get(TaskDefaultColumn.COST.getName()))) {
+    if (record.isSet(TaskDefaultColumn.COST.getName())) {
       try {
         builder = builder.withCost(new BigDecimal(record.get(TaskDefaultColumn.COST.getName())));
       } catch (NumberFormatException e) {
@@ -95,21 +96,22 @@ class TaskRecords extends RecordGroup {
     }
     Task task = builder.build();
 
-    if (record.get(TaskDefaultColumn.ID.getName()) != null) {
+    if (record.isSet(TaskDefaultColumn.ID.getName())) {
       myTaskIdMap.put(record.get(TaskDefaultColumn.ID.getName()), task);
     }
-    myAssignmentMap.put(task, record.get(TaskFields.RESOURCES.toString()));
-    myPredecessorMap.put(task, record.get(TaskDefaultColumn.PREDECESSORS.getName()));
+    myAssignmentMap.put(task, getOrNull(record, TaskFields.RESOURCES.toString()));
+    myPredecessorMap.put(task, getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName()));
     for (String customField : getCustomFields()) {
-      String value = record.get(customField);
+      String value = getOrNull(record, customField);
+      if (value == null) {
+        continue;
+      }
       CustomPropertyDefinition def = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(customField);
       if (def == null) {
         GPLogger.logToLogger("Can't find custom field with name=" + customField + " value=" + value);
         continue;
       }
-      if (value != null) {
-        task.getCustomValues().addCustomProperty(def, value);
-      }
+      task.getCustomValues().addCustomProperty(def, value);
     }
     return true;
   }
@@ -124,6 +126,9 @@ class TaskRecords extends RecordGroup {
         }
       });
       for (Entry<Task, String> assignment : myAssignmentMap.entrySet()) {
+        if (assignment.getValue() == null) {
+          continue;
+        }
         String[] names = assignment.getValue().split(";");
         for (String name : names) {
           HumanResource resource = resourceMap.get(name);
