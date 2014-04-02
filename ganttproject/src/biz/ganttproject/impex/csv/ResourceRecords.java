@@ -2,12 +2,14 @@ package biz.ganttproject.impex.csv;
 
 import java.util.List;
 
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 
 import org.apache.commons.csv.CSVRecord;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 class ResourceRecords extends RecordGroup {
@@ -31,7 +33,9 @@ class ResourceRecords extends RecordGroup {
 
   ResourceRecords(HumanResourceManager resourceManager) {
     super("Resource group",
-      Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),
+      Sets.union(
+          Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),
+          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())),
       Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME)));
     this.resourceManager = resourceManager;
   }
@@ -53,6 +57,7 @@ class ResourceRecords extends RecordGroup {
         .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
         .withRole(getOrNull(record, ResourceFields.ROLE.toString()))
+        .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build();
     for (String customField : getCustomFields()) {
       String value = getOrNull(record, customField);
