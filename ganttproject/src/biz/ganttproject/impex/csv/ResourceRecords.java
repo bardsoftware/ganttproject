@@ -47,11 +47,15 @@ class ResourceRecords extends RecordGroup {
       return false;
     }
     assert record.size() > 0;
-    HumanResource hr = resourceManager.newResourceBuilder().withName(record.get(ResourceFields.NAME.toString())).withID(
-        record.get(ResourceFields.ID.toString())).withEmail(record.get(ResourceFields.EMAIL.toString())).withPhone(
-        record.get(ResourceFields.PHONE.toString())).withRole(record.get(ResourceFields.ROLE.toString())).build();
+    HumanResource hr = resourceManager.newResourceBuilder()
+        .withName(getOrNull(record, ResourceFields.NAME.toString()))
+        .withID(getOrNull(record, ResourceFields.ID.toString()))
+        .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
+        .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
+        .withRole(getOrNull(record, ResourceFields.ROLE.toString()))
+        .build();
     for (String customField : getCustomFields()) {
-      String value = record.get(customField);
+      String value = getOrNull(record, customField);
       if (value != null) {
         hr.addCustomProperty(resourceManager.getCustomPropertyManager().getCustomPropertyDefinition(customField), value);
       }

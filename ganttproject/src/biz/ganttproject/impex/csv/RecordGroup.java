@@ -62,11 +62,18 @@ public abstract class RecordGroup {
 
   protected boolean hasMandatoryFields(CSVRecord record) {
     for (String s : myMandatoryFields) {
-      if (Strings.isNullOrEmpty(record.get(s))) {
+      if (!record.isSet(s)) {
         return false;
       }
     }
     return true;
+  }
+
+  protected String getOrNull(CSVRecord record, String columnName) {
+    if (!record.isMapped(columnName)) {
+      return null;
+    }
+    return record.get(columnName);
   }
 
   protected abstract boolean doProcess(CSVRecord record);
