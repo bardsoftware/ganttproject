@@ -119,7 +119,7 @@ public class XmlParser extends DefaultHandler {
       }
       throw new IOException(e.getMessage());
     } catch (RuntimeException e) {
-      if (!GPLogger.log(e)) {
+      if (!GPLogger.logToLogger(e)) {
         e.printStackTrace(System.err);
       }
       throw new IOException(e.getMessage());

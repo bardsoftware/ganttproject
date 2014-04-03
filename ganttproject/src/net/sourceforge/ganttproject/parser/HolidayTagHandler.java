@@ -89,6 +89,7 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
         myEvents.add(CalendarEvent.newEvent(date, false, type, getCdata()));
       }
+      clearCdata();
     } catch (NumberFormatException e) {
       GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);
       return;

@@ -91,19 +91,6 @@ public class WeekendConfigurationPage implements WizardPage {
     protected String objectToString(GPCalendar obj) {
       return obj.getName();
     }
-
-    @Override
-    public void setValue(String value) {
-      super.setValue(value);
-      if (getSelectedValue() != null) {
-        myCalendar.setBaseCalendarID(getSelectedValue().getID());
-        loadCalendar(myCalendar, getSelectedValue());
-      }
-    }
-
-    private static void loadCalendar(GPCalendar calendar, GPCalendar baseCalendar) {
-      calendar.setPublicHolidays(baseCalendar.getPublicHolidays());
-    }
   }
 
   static enum SchedulingEnum {
@@ -167,10 +154,16 @@ public class WeekendConfigurationPage implements WizardPage {
     myCalendarOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
+        if (myCalendarOption.getSelectedValue() != null) {
+          calendar.setBaseCalendarID(myCalendarOption.getSelectedValue().getID());
+          calendar.setPublicHolidays(myCalendarOption.getSelectedValue().getPublicHolidays());
+        }
         editorPanel.reload(calendar);
       }
     });
-    myPanel.add(editorPanel.createComponent(), BorderLayout.CENTER);
+    JPanel editorComponent = editorPanel.createComponent();
+    UIUtil.setEnabledTree(editorComponent, false);
+    myPanel.add(editorComponent, BorderLayout.CENTER);
   }
 
   private CalendarOption createCalendarOption(GPCalendar calendar) {
@@ -224,7 +217,7 @@ public class WeekendConfigurationPage implements WizardPage {
   }
 
   public boolean isChanged() {
-    return myCalendarOption.isChanged() || myRenderWeekendOption.isChanged();
+    return true;
   }
 
   private static class CheckBoxAction extends AbstractAction {
