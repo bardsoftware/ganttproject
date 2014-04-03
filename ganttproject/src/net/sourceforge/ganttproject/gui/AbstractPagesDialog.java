@@ -49,6 +49,7 @@ public abstract class AbstractPagesDialog {
   private final List<ListItem> myItems;
   private final HashSet<String> myPageIds = new HashSet<String>();
   private final String myTitleKey;
+  private JList<ListItem> myPagesList;
 
   protected AbstractPagesDialog(String titleKey, UIFacade uifacade, List<ListItem> pages) {
     myTitleKey = titleKey;
@@ -64,6 +65,10 @@ public abstract class AbstractPagesDialog {
   }
 
   public void show() {
+    show(null);
+  }
+
+  public void show(String pageID) {
     OkAction okAction = new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -72,6 +77,14 @@ public abstract class AbstractPagesDialog {
     };
     myUIFacade.createDialog(getComponent(), new Action[] { okAction, CancelAction.EMPTY },
         GanttLanguage.getInstance().getCorrectedLabel(myTitleKey)).show();
+    if (pageID != null) {
+      for (int i = 0; i < myItems.size(); i++) {
+        if (pageID.equals(myItems.get(i).id)) {
+          myPagesList.setSelectedIndex(i);
+          break;
+        }
+      }
+    }
   }
 
   protected static class ListItem {
@@ -98,9 +111,9 @@ public abstract class AbstractPagesDialog {
         contentPanel.add(li.component, li.id);
       }
     }
-    final JList pagesList = new JList(new AbstractListModel() {
+    myPagesList = new JList<ListItem>(new AbstractListModel<ListItem>() {
       @Override
-      public Object getElementAt(int idx) {
+      public ListItem getElementAt(int idx) {
         return myItems.get(idx);
       }
 
@@ -109,8 +122,8 @@ public abstract class AbstractPagesDialog {
         return myItems.size();
       }
     });
-    pagesList.setVisibleRowCount(myItems.size());
-    pagesList.setCellRenderer(new DefaultListCellRenderer() {
+    myPagesList.setVisibleRowCount(myItems.size());
+    myPagesList.setCellRenderer(new DefaultListCellRenderer() {
       private final JButton EMPTY_BUTTON = new JButton();
 
       @Override
@@ -146,31 +159,31 @@ public abstract class AbstractPagesDialog {
         return wrapper;
       }
     });
-    pagesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    pagesList.addListSelectionListener(new ListSelectionListener() {
+    myPagesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    myPagesList.addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
-        ListItem listItem = (ListItem) pagesList.getSelectedValue();
+        ListItem listItem = myPagesList.getSelectedValue();
         if (listItem.isGroupHeader) {
           // Assumes that the list does not end with a GroupHeader!
-          pagesList.setSelectedIndex(pagesList.getSelectedIndex() + 1);
+          myPagesList.setSelectedIndex(myPagesList.getSelectedIndex() + 1);
         } else {
           final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
           cardLayout.show(contentPanel, listItem.id);
         }
       }
     });
-    pagesList.setBorder(BorderFactory.createEtchedBorder());
+    myPagesList.setBorder(BorderFactory.createEtchedBorder());
 
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
-        pagesList.setSelectedIndex(0);
+        myPagesList.setSelectedIndex(0);
       }
     });
 
     JPanel rootPanel = new JPanel(new BorderLayout());
-    rootPanel.add(pagesList, BorderLayout.WEST);
+    rootPanel.add(myPagesList, BorderLayout.WEST);
     JPanel contentPanelWrapper = new JPanel(new BorderLayout());
     contentPanelWrapper.add(contentPanel, BorderLayout.NORTH);
     rootPanel.add(contentPanelWrapper, BorderLayout.CENTER);
