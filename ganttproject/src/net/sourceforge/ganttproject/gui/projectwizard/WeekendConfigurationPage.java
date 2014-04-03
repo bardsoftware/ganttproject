@@ -1,32 +1,29 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+Copyright 2014 BarD Software s.r.o
+Copyright 2003-2013 GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -35,29 +32,27 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
+import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 
-import com.google.common.base.Functions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
-import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
-import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.parser.HolidayTagHandler;
-
 /**
- * @author bard
+ * This page provides UI for configuring project weekend days and public holidays
+ *
+ * @author dbarashev (Dmitry Barashev)
  */
 public class WeekendConfigurationPage implements WizardPage {
   private final Box myBox = Box.createVerticalBox();
@@ -70,63 +65,44 @@ public class WeekendConfigurationPage implements WizardPage {
 
   private final WeekendSchedulingOption myRenderWeekendOption;
 
-  static class CalendarOption extends DefaultEnumerationOption<URL> {
+  static class CalendarOption extends DefaultEnumerationOption<GPCalendar> {
 
-    private final List<URL> myUrls;
-    private final List<String> myLabels;
     private final GPCalendar myCalendar;
 
-    private static List<String> append(List<String> list, String s) {
-      ArrayList<String> result = new ArrayList<String>(list);
+    private static <T> List<T> append(List<T> list, T s) {
+      List<T> result = Lists.newArrayList(list);
       result.add(s);
       return result;
     }
 
-    public CalendarOption(GPCalendar calendar, List<URL> urls, List<String> labels) {
-      super("project.calendar", append(labels, i18n("none")));
+    public CalendarOption(GPCalendar calendar, List<GPCalendar> allCalendars, GPCalendar emptyCalendar) {
+      super("project.calendar", append(allCalendars, emptyCalendar).toArray(new GPCalendar[0]));
       resetValue(i18n("none"), true);
-      myUrls = urls;
-      myLabels = labels;
       myCalendar = calendar;
       if (calendar.getBaseCalendarID() != null) {
-        int idx = Lists.transform(urls, Functions.toStringFunction()).indexOf(calendar.getBaseCalendarID());
-        if (idx >= 0) {
-          setValue(labels.get(idx));
+        GPCalendar baseCalendar = stringToObject(calendar.getBaseCalendarID());
+        if (baseCalendar != null) {
+          setSelectedValue(baseCalendar);
         }
       }
-      assert myUrls.size() == myLabels.size();
     }
 
-    private URL getSelectedUrl() {
-      if (i18n("none").equals(getValue())) {
-        return null;
-      }
-      int idx = myLabels.indexOf(getValue());
-      assert idx >= 0 && idx < myUrls.size();
-      return myUrls.get(idx);
+    @Override
+    protected String objectToString(GPCalendar obj) {
+      return obj.getName();
     }
 
     @Override
     public void setValue(String value) {
       super.setValue(value);
-      if (getSelectedUrl() != null) {
-        myCalendar.setBaseCalendarID(getSelectedUrl().toString());
-        loadCalendar(myCalendar, getSelectedUrl());
+      if (getSelectedValue() != null) {
+        myCalendar.setBaseCalendarID(getSelectedValue().getID());
+        loadCalendar(myCalendar, getSelectedValue());
       }
     }
 
-    private static void loadCalendar(GPCalendar calendar, URL url) {
-      XMLCalendarOpen opener = new XMLCalendarOpen();
-
-      HolidayTagHandler tagHandler = new HolidayTagHandler(calendar);
-
-      opener.addTagHandler(tagHandler);
-      opener.addParsingListener(tagHandler);
-      try {
-        opener.load(url.openStream());
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+    private static void loadCalendar(GPCalendar calendar, GPCalendar baseCalendar) {
+      calendar.setPublicHolidays(baseCalendar.getPublicHolidays());
     }
   }
 
@@ -198,22 +174,9 @@ public class WeekendConfigurationPage implements WizardPage {
   }
 
   private CalendarOption createCalendarOption(GPCalendar calendar) {
-    XMLCalendarOpen open = new XMLCalendarOpen();
-    URL[] calendarUrls = null;
-    String[] calendarLabels = null;
-    try {
-      open.setCalendars();
-      calendarLabels = open.getLabels();
-      calendarUrls = open.getCalendarResources();
-    } catch (MyException e1) {
-      GPLogger.log(e1);
-    }
-
-    SortedMap<String, URL> sortedCalendars = new TreeMap<String, URL>();
-    for (int i = 0; i < calendarLabels.length; i++) {
-      sortedCalendars.put(calendarLabels[i], calendarUrls[i]);
-    }
-    return new CalendarOption(calendar, Lists.newArrayList(sortedCalendars.values()), Lists.newArrayList(sortedCalendars.keySet()));
+    AlwaysWorkingTimeCalendarImpl emptyCalendar = new AlwaysWorkingTimeCalendarImpl();
+    emptyCalendar.setName(GanttLanguage.getInstance().getText("none"));
+    return new CalendarOption(calendar, GPCalendarProvider.getInstance().getCalendars(), emptyCalendar);
   }
 
   private List<JCheckBox> createWeekendCheckBoxes(final GPCalendar calendar, String[] names) {

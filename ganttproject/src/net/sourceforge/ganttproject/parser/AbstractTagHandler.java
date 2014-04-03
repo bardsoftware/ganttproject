@@ -55,4 +55,8 @@ public abstract class AbstractTagHandler implements TagHandler {
   protected String getCdata() {
     return myCdataBuffer.toString();
   }
+
+  @Override
+  public void endElement(String namespaceURI, String sName, String qName) {
+  }
 }
