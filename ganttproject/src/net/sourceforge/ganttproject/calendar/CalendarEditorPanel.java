@@ -120,13 +120,25 @@ public class CalendarEditorPanel {
 
       @Override
       protected void onDeleteEvent() {
-        model.delete(table.getSelectedRow());
+        if (table.getSelectedRow() < model.getRowCount() - 1) {
+          model.delete(table.getSelectedRow());
+        }
       }
 
       @Override
-      protected void onSelectionChanged() {
+      protected CalendarEvent getValue(int row) {
+        return model.getValue(row);
       }
     };
+    Function<List<CalendarEvent>, Boolean> isDeleteEnabled = new Function<List<CalendarEvent>, Boolean>() {
+      public Boolean apply(List<CalendarEvent> events) {
+        if (events.size() == 1 && events.get(0) == null) {
+          return false;
+        }
+        return true;
+      }
+    };
+    tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
     JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(table, tableAndActions.getActionsComponent());
     result.add(hintLabel, BorderLayout.SOUTH);
     return result;
@@ -160,6 +172,10 @@ public class CalendarEditorPanel {
 
     public TableModelImpl(List<CalendarEvent> events) {
       myEvents = events;
+    }
+
+    CalendarEvent getValue(int row) {
+      return row < myEvents.size() ? myEvents.get(row) : null;
     }
 
     void delete(int row) {
