@@ -150,6 +150,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     };
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
+    myUIFacade.addOptions(myRssChecker.getUiOptions());
 
     mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
   }
@@ -295,6 +296,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public void showNotificationDialog(NotificationChannel channel, String message) {
     myUIFacade.showNotificationDialog(channel, message);
+  }
+
+  @Override
+  public void showSettingsDialog(String pageID) {
+    myUIFacade.showSettingsDialog(pageID);
   }
 
   @Override

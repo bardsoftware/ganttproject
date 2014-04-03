@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -67,6 +68,7 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
@@ -95,6 +97,7 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private static final ImageIcon LOGO = new ImageIcon(UIFacadeImpl.class.getResource("/icons/big.png"));
@@ -104,6 +107,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final GanttStatusBar myStatusBar;
   private final UIFacade myFallbackDelegate;
   private final TaskSelectionManager myTaskSelectionManager;
+  private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
   private final GPOptionGroup myOptions;
   private final LafOption myLafOption;
   private final GPOptionGroup myLogoOptions;
@@ -114,10 +118,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final DefaultIntegerOption myFontSizeOption;
   private Integer myLastFontSize = null;
   private final LanguageOption myLanguageOption;
+  private final IGanttProject myProject;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
       IGanttProject project, UIFacade fallbackDelegate) {
     myMainFrame = mainFrame;
+    myProject = project;
     myDialogBuilder = new DialogBuilder(mainFrame);
     myScrollingManager = new ScrollingManagerImpl();
     myZoomManager = new ZoomManager(project.getTimeUnitStack());
@@ -204,6 +210,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myLogoOption = new DefaultFileOption("ui.logo");
     myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
+    addOptions(myOptions);
+    addOptions(myLogoOptions);
   }
 
   @Override
@@ -357,6 +365,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 }
               }
             })));
+  }
+
+  @Override
+  public void showSettingsDialog(String pageID) {
+    SettingsDialog2 dialog = new SettingsDialog2(myProject, this, "settings.app.pageOrder");
+    dialog.show(pageID);
   }
 
   protected void onViewLog() {
@@ -585,7 +599,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public GPOptionGroup[] getOptions() {
-    return new GPOptionGroup[] {myOptions, myLogoOptions};
+    return myOptionGroups.toArray(new GPOptionGroup[myOptionGroups.size()]);
   }
 
   @Override
@@ -603,5 +617,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       GPLogger.logToLogger(e);
     }
     return LOGO.getImage();
+  }
+
+  void addOptions(GPOptionGroup options) {
+    myOptionGroups.add(options);
   }
 }
