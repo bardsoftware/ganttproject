@@ -12,7 +12,7 @@
       <library name="lib/core/AppleJavaExtensions.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/balloontip-1.2.1.jar">
+      <library name="lib/core/balloontip-1.2.4.1.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/commons-codec-1.4.jar">
