@@ -839,6 +839,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         OSXAdapter.registerMacOSXApplication(ganttFrame);
       }
       ganttFrame.getActiveChart().reset();
+      ganttFrame.getRssFeedChecker().run();
       return true;
     } catch (Throwable e) {
       e.printStackTrace();
