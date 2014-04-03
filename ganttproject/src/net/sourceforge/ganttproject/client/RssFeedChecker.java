@@ -76,11 +76,11 @@ public class RssFeedChecker {
       return CheckOption.valueOf(value);
     }
   };
-  private final DefaultBooleanOption myBooleanCheckRssOption = new DefaultBooleanOption("check");
+  private final DefaultBooleanOption myBooleanCheckRssOption = new DefaultBooleanOption("rss.checkUpdates");
   private final DateOption myLastCheckOption = new DefaultDateOption("lastCheck", null);
   private final GPOptionGroup myOptionGroup = new GPOptionGroup("updateRss",
       myCheckRssOption, myLastCheckOption);
-  private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("updateRss", myBooleanCheckRssOption);
+  private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
   protected static final int MAX_ATTEMPTS = 10;
