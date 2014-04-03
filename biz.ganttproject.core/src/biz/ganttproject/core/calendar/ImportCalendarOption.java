@@ -15,4 +15,9 @@ public class ImportCalendarOption extends DefaultEnumerationOption<ImportCalenda
   public ImportCalendarOption() {
     super("impex.importCalendar", Values.values());
   }
+  
+  public ImportCalendarOption(Values initialValue) {
+    super("impex.importCalendar", Values.values());
+    setSelectedValue(initialValue);
+  }
 }
