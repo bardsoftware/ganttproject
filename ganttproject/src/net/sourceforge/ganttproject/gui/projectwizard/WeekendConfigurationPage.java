@@ -37,15 +37,21 @@ import javax.swing.JPanel;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen;
 import net.sourceforge.ganttproject.calendar.XMLCalendarOpen.MyException;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
@@ -101,8 +107,8 @@ public class WeekendConfigurationPage implements WizardPage {
     }
 
     @Override
-    public void commit() {
-      super.commit();
+    public void setValue(String value) {
+      super.setValue(value);
       if (getSelectedUrl() != null) {
         myCalendar.setBaseCalendarID(getSelectedUrl().toString());
         loadCalendar(myCalendar, getSelectedUrl());
@@ -140,82 +146,100 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
-  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, IGanttProject project,
-      boolean showPublicHolidays) {
+  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, IGanttProject project) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 
     myI18N = i18n;
-    String[] dayNames = myI18N.getDayNames();
     myPanel = new JPanel(new BorderLayout());
-    if (showPublicHolidays) {
-      XMLCalendarOpen open = new XMLCalendarOpen();
-      URL[] calendarUrls = null;
-      String[] calendarLabels = null;
-      try {
-        open.setCalendars();
-        calendarLabels = open.getLabels();
-        calendarUrls = open.getCalendarResources();
-      } catch (MyException e1) {
-        GPLogger.log(e1);
+
+    JPanel panel = new JPanel();
+    {
+      panel.add(new JLabel(GanttLanguage.getInstance().getText("chooseWeekend")));
+      Box weekendBox = Box.createHorizontalBox();
+      for (JCheckBox checkBox : createWeekendCheckBoxes(calendar, i18n.getDayNames())) {
+        weekendBox.add(checkBox);
+        weekendBox.add(Box.createHorizontalStrut(10));
       }
+      weekendBox.add(Box.createHorizontalGlue());
+      panel.add(weekendBox);
 
-      SortedMap<String, URL> sortedCalendars = new TreeMap<String, URL>();
-      for (int i = 0; i < calendarLabels.length; i++) {
-    	  sortedCalendars.put(calendarLabels[i], calendarUrls[i]);
-      }
-      myCalendarOption = new CalendarOption(calendar, Lists.newArrayList(sortedCalendars.values()), Lists.newArrayList(sortedCalendars.keySet()));
-      myBox.add(builder.createLabeledComponent(myCalendarOption));
-    } else {
-      myCalendarOption = null;
-    }
-
-    Box cb = Box.createVerticalBox();
-    cb.add(Box.createVerticalStrut(15));
-    /*
-     * Table to keep all the JCheckBoxes with days of the week. It is used to
-     * check if in project creation dialog all days are marked as weekend. If
-     * they are, day selected last will be unmarked. See class CheckBoxAction.
-     *
-     * If you know better solution, do not hesitate to replace this code.
-     */
-    JCheckBox[] allCheckBoxes = new JCheckBox[7];
-    cb.add(new JLabel(GanttLanguage.getInstance().getText("chooseWeekend")));
-    cb.add(Box.createVerticalStrut(5));
-    int nextDay = Calendar.MONDAY;
-    for (int i = 0; i < 7; i++) {
-      JCheckBox nextCheckBox = new JCheckBox();
-      nextCheckBox.setSelected(calendar.getWeekDayType(nextDay) == GPCalendar.DayType.WEEKEND);
-      nextCheckBox.setAction(new CheckBoxAction(calendar, nextDay, dayNames[nextDay - 1], nextCheckBox.getModel(),
-          allCheckBoxes));
-      cb.add(nextCheckBox);
-      allCheckBoxes[i] = nextCheckBox;
-      if (++nextDay >= 8) {
-        nextDay = 1;
-      }
-    }
-
-    cb.add(Box.createVerticalStrut(15));
-    JPanel weekendPanel = new JPanel(new BorderLayout());
-    weekendPanel.add(cb, BorderLayout.WEST);
-    myBox.add(weekendPanel);
-
-    myRenderWeekendOption = new WeekendSchedulingOption(calendar.getOnlyShowWeekends() ? SchedulingEnum.SCHEDULE_ALL
-        : SchedulingEnum.SCHEDULE_NONE) {
-      @Override
-      public void commit() {
-        super.commit();
-        if (stringToObject(getValue()) == SchedulingEnum.SCHEDULE_ALL) {
-          calendar.setOnlyShowWeekends(true);
-        } else {
-          calendar.setOnlyShowWeekends(false);
+      myRenderWeekendOption = new WeekendSchedulingOption(calendar.getOnlyShowWeekends() ? SchedulingEnum.SCHEDULE_ALL
+          : SchedulingEnum.SCHEDULE_NONE) {
+        @Override
+        public void commit() {
+          super.commit();
+          if (stringToObject(getValue()) == SchedulingEnum.SCHEDULE_ALL) {
+            calendar.setOnlyShowWeekends(true);
+          } else {
+            calendar.setOnlyShowWeekends(false);
+          }
         }
+      };
+      panel.add(builder.createOptionLabel(null, myRenderWeekendOption));
+      panel.add(builder.createOptionComponent(null, myRenderWeekendOption));
+    }
+    {
+      myCalendarOption = createCalendarOption(calendar);
+      panel.add(builder.createOptionLabel(null, myCalendarOption));
+      panel.add(builder.createOptionComponent(null, myCalendarOption));
+    }
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(panel, 3);
+    UIUtil.createTitle(panel, GanttLanguage.getInstance().getText("selectProjectWeekend"));
+    myPanel.add(panel, BorderLayout.NORTH);
+
+    final CalendarEditorPanel editorPanel = new CalendarEditorPanel(calendar);
+    myCalendarOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        editorPanel.reload(calendar);
+      }
+    });
+    myPanel.add(editorPanel.createComponent(), BorderLayout.CENTER);
+  }
+
+  private CalendarOption createCalendarOption(GPCalendar calendar) {
+    XMLCalendarOpen open = new XMLCalendarOpen();
+    URL[] calendarUrls = null;
+    String[] calendarLabels = null;
+    try {
+      open.setCalendars();
+      calendarLabels = open.getLabels();
+      calendarUrls = open.getCalendarResources();
+    } catch (MyException e1) {
+      GPLogger.log(e1);
+    }
+
+    SortedMap<String, URL> sortedCalendars = new TreeMap<String, URL>();
+    for (int i = 0; i < calendarLabels.length; i++) {
+      sortedCalendars.put(calendarLabels[i], calendarUrls[i]);
+    }
+    return new CalendarOption(calendar, Lists.newArrayList(sortedCalendars.values()), Lists.newArrayList(sortedCalendars.keySet()));
+  }
+
+  private List<JCheckBox> createWeekendCheckBoxes(final GPCalendar calendar, String[] names) {
+    Supplier<Integer> counter = new Supplier<Integer>() {
+      public Integer get() {
+        int count = 0;
+        for (int i = 1; i <= 7; i++) {
+          if (calendar.getWeekDayType(i) == DayType.WEEKEND) {
+            count++;
+          }
+        }
+        return count;
       }
     };
-    myBox.add(builder.createLabeledComponent(myRenderWeekendOption));
-
-    JPanel projectPanel = new JPanel(new BorderLayout());
-    projectPanel.add(myBox, BorderLayout.NORTH);
-    myPanel.add(projectPanel);
+    List<JCheckBox> result = Lists.newArrayListWithExpectedSize(7);
+    int day = Calendar.MONDAY;
+    for (int i = 0; i < 7; i++) {
+      JCheckBox nextCheckBox = new JCheckBox();
+      nextCheckBox.setSelected(calendar.getWeekDayType(day) == GPCalendar.DayType.WEEKEND);
+      nextCheckBox.setAction(new CheckBoxAction(calendar, day, names[day - 1], nextCheckBox.getModel(), counter));
+      result.add(nextCheckBox);
+      if (++day >= 8) {
+        day = 1;
+      }
+    }
+    return result;
   }
 
   @Override
@@ -243,27 +267,20 @@ public class WeekendConfigurationPage implements WizardPage {
   private static class CheckBoxAction extends AbstractAction {
     private final int myDay;
     private final ButtonModel myModelButton;
-    private final JCheckBox[] myCheckBoxes;
     private final GPCalendar myCalendar;
+    private final Supplier<Integer> myCounter;
 
-    CheckBoxAction(GPCalendar calendar, int day, String dayName, ButtonModel model, JCheckBox[] allCheckBoxes) {
+    CheckBoxAction(GPCalendar calendar, int day, String dayName, ButtonModel model, Supplier<Integer> checkedDaysCounter) {
       super(dayName);
       myCalendar = calendar;
       myDay = day;
       myModelButton = model;
-      myCheckBoxes = allCheckBoxes;
+      myCounter = checkedDaysCounter;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      // Counting number of selected days of the week.
-      int count = 0;
-      for (int i = 0; i < myCheckBoxes.length; i++) {
-        if (myCheckBoxes[i].isSelected()) {
-          count++;
-        }
-      }
-      if (count == myCheckBoxes.length) {
+      if (myCounter.get() == 7) {
         // If all days of the week are marked as weekend unmark selected the
         // last.
         myModelButton.setSelected(false);
