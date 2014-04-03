@@ -33,11 +33,9 @@ import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 public class NotificationManagerImpl implements NotificationManager {
   private AnimationView myAnimationView;
   private NotificationChannel myFirstChannel;
-  private final Runnable myOnReadyCommand;
 
-  public NotificationManagerImpl(AnimationView animationView, Runnable onReady) {
+  public NotificationManagerImpl(AnimationView animationView) {
     myAnimationView = animationView;
-    myOnReadyCommand = onReady;
   }
 
   @Override
@@ -101,7 +99,6 @@ public class NotificationManagerImpl implements NotificationManager {
           @Override
           public void run() {
             showPending();
-            myOnReadyCommand.run();
           }
         });
         result.removeComponentListener(this);
@@ -132,7 +129,6 @@ public class NotificationManagerImpl implements NotificationManager {
         public void run() {
           channel.saveNormalColor();
           channel.getButton().setBackground(channel.getColor());
-          showNotification(channel);
         }
       });
       if (!hasVisibleChannel) {
