@@ -65,24 +65,37 @@ public class CalendarEditorPanel {
       return getI18NedEventType(eventType);
     }
   });
-  private final List<CalendarEvent> myEvents;
+  private final List<CalendarEvent> myEvents = Lists.newArrayList();
+  private JTable myTable;
+  private TableModelImpl myModel;
 
   public CalendarEditorPanel(List<CalendarEvent> events) {
-    myEvents = events;
+    myEvents.addAll(events);
   }
 
   public CalendarEditorPanel(GPCalendar calendar) {
-    myEvents = Lists.newArrayList(calendar.getPublicHolidays());
+    reload(calendar);
   }
 
+  public void reload(GPCalendar calendar) {
+    int size = myEvents.size();
+    myEvents.clear();
+    if (myModel != null) {
+      myModel.fireTableRowsDeleted(0, size);
+    }
+    myEvents.addAll(calendar.getPublicHolidays());
+    if (myModel != null) {
+      myModel.fireTableRowsInserted(0, myEvents.size());
+    }
+  }
   public JPanel createComponent() {
-    final TableModelImpl model = new TableModelImpl(myEvents);
-    final JTable table = new JTable(model);
-    UIUtil.setupTableUI(table);
+    myModel = new TableModelImpl(myEvents);
+    myTable = new JTable(myModel);
+    UIUtil.setupTableUI(myTable);
     CommonPanel.setupComboBoxEditor(
-        table.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
+        myTable.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
-    TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
+    TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
 
     // We'll show a hint label under the table if user types something which we can't parse
     Date today = CalendarFactory.newCalendar().getTime();
@@ -107,27 +120,27 @@ public class CalendarEditorPanel {
     GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator);
     dateColumn.setCellEditor(dateEditor);
 
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(myTable) {
       @Override
       protected void onAddEvent() {
-        int lastRow = model.getRowCount() - 1;
-        Rectangle cellRect = table.getCellRect(lastRow, 0, true);
-        table.scrollRectToVisible(cellRect);
-        table.getSelectionModel().setSelectionInterval(lastRow, lastRow);
-        table.editCellAt(lastRow, 0);
-        table.getEditorComponent().requestFocus();
+        int lastRow = myModel.getRowCount() - 1;
+        Rectangle cellRect = myTable.getCellRect(lastRow, 0, true);
+        myTable.scrollRectToVisible(cellRect);
+        myTable.getSelectionModel().setSelectionInterval(lastRow, lastRow);
+        myTable.editCellAt(lastRow, 0);
+        myTable.getEditorComponent().requestFocus();
       }
 
       @Override
       protected void onDeleteEvent() {
-        if (table.getSelectedRow() < model.getRowCount() - 1) {
-          model.delete(table.getSelectedRow());
+        if (myTable.getSelectedRow() < myModel.getRowCount() - 1) {
+          myModel.delete(myTable.getSelectedRow());
         }
       }
 
       @Override
       protected CalendarEvent getValue(int row) {
-        return model.getValue(row);
+        return myModel.getValue(row);
       }
     };
     Function<List<CalendarEvent>, Boolean> isDeleteEnabled = new Function<List<CalendarEvent>, Boolean>() {
@@ -139,7 +152,7 @@ public class CalendarEditorPanel {
       }
     };
     tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
-    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(table, tableAndActions.getActionsComponent());
+    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(myTable, tableAndActions.getActionsComponent());
     result.add(hintLabel, BorderLayout.SOUTH);
     return result;
   }
