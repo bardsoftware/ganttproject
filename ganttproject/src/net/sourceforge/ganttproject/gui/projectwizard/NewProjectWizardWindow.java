@@ -19,16 +19,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.projectwizard;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.roles.RoleSet;
 
 public class NewProjectWizardWindow extends WizardImpl {
   private I18N myI18n;
+  private GPCalendarCalc myCalendar;
+  private IGanttProject myProject;
 
-  public NewProjectWizardWindow(UIFacade uiFacade, I18N i18n) {
+  public NewProjectWizardWindow(IGanttProject project, UIFacade uiFacade, I18N i18n) {
     super(uiFacade, i18n.getNewProjectWizardWindowTitle());
     myI18n = i18n;
+    myProject = project;
   }
 
   public void addRoleSetPage(RoleSet[] roleSets) {
@@ -41,13 +45,22 @@ public class NewProjectWizardWindow extends WizardImpl {
     addPage(projectNamePage);
   }
 
-  public void addWeekendConfigurationPage(GPCalendarCalc calendar, IGanttProject project) {
+  public void addWeekendConfigurationPage(IGanttProject project) {
+    myCalendar = project.getActiveCalendar().copy();
     WizardPage weekendPage;
     try {
-      weekendPage = new WeekendConfigurationPage(calendar, myI18n, project, true);
+      weekendPage = new WeekendConfigurationPage(myCalendar, myI18n, project);
       addPage(weekendPage);
     } catch (Exception e) {
       getUIFacade().showErrorDialog(e);
     }
   }
+
+  @Override
+  protected void onOkPressed() {
+    super.onOkPressed();
+    myProject.getActiveCalendar().importCalendar(myCalendar, new ImportCalendarOption(ImportCalendarOption.Values.REPLACE));
+  }
+
+
 }
