@@ -36,18 +36,21 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DateOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
@@ -73,9 +76,11 @@ public class RssFeedChecker {
       return CheckOption.valueOf(value);
     }
   };
+  private final DefaultBooleanOption myBooleanCheckRssOption = new DefaultBooleanOption("check");
   private final DateOption myLastCheckOption = new DefaultDateOption("lastCheck", null);
-  private final GPOptionGroup myOptionGroup = new GPOptionGroup("updateRss", new GPOption[] { myCheckRssOption,
-      myLastCheckOption });
+  private final GPOptionGroup myOptionGroup = new GPOptionGroup("updateRss",
+      myCheckRssOption, myLastCheckOption);
+  private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("updateRss", myBooleanCheckRssOption);
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
   protected static final int MAX_ATTEMPTS = 10;
@@ -88,11 +93,8 @@ public class RssFeedChecker {
           if (e.getEventType() != EventType.ACTIVATED) {
             return;
           }
-          if ("yes".equals(e.getURL().getHost())) {
-            onYes();
-            getNotificationManager().hideNotification();
-          } else if ("no".equals(e.getURL().getHost())) {
-            onNo();
+          if ("settings".equals(e.getURL().getHost())) {
+            onSettings();
             getNotificationManager().hideNotification();
           } else {
             NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
@@ -105,6 +107,27 @@ public class RssFeedChecker {
     myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
     myUiFacade = uiFacade;
     myTimeUnitStack = timeUnitStack;
+    myBooleanCheckRssOption.setValue(CheckOption.YES.equals(myCheckRssOption.getSelectedValue()));
+    myBooleanCheckRssOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        if (event.getTriggerID() != RssFeedChecker.this) {
+          if (myBooleanCheckRssOption.isChecked()) {
+            myCheckRssOption.setValue(CheckOption.YES.name(), RssFeedChecker.this);
+          } else {
+            myCheckRssOption.setValue(CheckOption.NO.name(), RssFeedChecker.this);
+          }
+        }
+      }
+    });
+    myCheckRssOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        if (event.getID() != RssFeedChecker.this && CheckOption.UNDEFINED != myCheckRssOption.getSelectedValue()) {
+          myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue(), RssFeedChecker.this);
+        }
+      }
+    });
   }
 
   private NotificationManager getNotificationManager() {
@@ -113,6 +136,10 @@ public class RssFeedChecker {
 
   public GPOptionGroup getOptions() {
     return myOptionGroup;
+  }
+
+  public GPOptionGroup getUiOptions() {
+    return myUiOptionGroup;
   }
 
   public void run() {
@@ -198,6 +225,7 @@ public class RssFeedChecker {
     return new Runnable() {
       @Override
       public void run() {
+        onYes();
         getNotificationManager().addNotifications(NotificationChannel.RSS,
             Collections.singletonList(myRssProposalNotification));
       }
@@ -208,13 +236,12 @@ public class RssFeedChecker {
     return myTimeUnitStack.createDuration(GPTimeUnitStack.DAY, date, GPTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
   }
 
-  private void onYes() {
-    myCheckRssOption.setValue(CheckOption.YES.toString());
-    new Thread(createRssReadCommand()).start();
+  private void onSettings() {
+    myUiFacade.showSettingsDialog(InterfaceOptionPageProvider.ID);
   }
 
-  private void onNo() {
-    myCheckRssOption.setValue(CheckOption.NO.toString());
+  private void onYes() {
+    myCheckRssOption.setValue(CheckOption.YES.toString());
   }
 
   private void markLastCheck() {
