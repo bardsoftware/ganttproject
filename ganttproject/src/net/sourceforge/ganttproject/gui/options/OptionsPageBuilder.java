@@ -255,7 +255,7 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
+  public Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
     JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
     nextLabel.setVerticalAlignment(SwingConstants.TOP);
     nextLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
