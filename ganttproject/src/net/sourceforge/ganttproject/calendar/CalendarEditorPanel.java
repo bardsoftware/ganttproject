@@ -91,12 +91,13 @@ public class CalendarEditorPanel {
   public JPanel createComponent() {
     myModel = new TableModelImpl(myEvents);
     myTable = new JTable(myModel);
+
     UIUtil.setupTableUI(myTable);
     CommonPanel.setupComboBoxEditor(
         myTable.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
     TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
-
+    myTable.getColumnModel().getColumn(TableModelImpl.Column.RECURRING.ordinal()).setCellRenderer(myTable.getDefaultRenderer(TableModelImpl.Column.RECURRING.getColumnClass()));
     // We'll show a hint label under the table if user types something which we can't parse
     Date today = CalendarFactory.newCalendar().getTime();
     final String hint = GanttLanguage.getInstance().formatText("calendar.editor.dateHint",
@@ -163,7 +164,7 @@ public class CalendarEditorPanel {
 
   private static class TableModelImpl extends AbstractTableModel {
     private static enum Column {
-      DATES(String.class), SUMMARY(String.class), TYPE(String.class);
+      DATES(String.class), RECURRING(Boolean.class), SUMMARY(String.class), TYPE(String.class);
 
       private String myTitle;
       private Class<?> myClazz;
@@ -222,12 +223,14 @@ public class CalendarEditorPanel {
         return null;
       }
       if (row == getRowCount() - 1) {
-        return "";
+        return col == Column.RECURRING.ordinal() ? false : "";
       }
       CalendarEvent e = myEvents.get(row);
       switch (Column.values()[col]) {
       case DATES:
         return GanttLanguage.getInstance().getShortDateFormat().format(e.myDate);
+      case RECURRING:
+        return Boolean.valueOf(e.isRecurring);
       case SUMMARY:
         return Objects.firstNonNull(e.getTitle(), "");
       case TYPE:
@@ -272,6 +275,8 @@ public class CalendarEditorPanel {
           }
         }
         break;
+      case RECURRING:
+        newEvent = CalendarEvent.newEvent(e.myDate, Boolean.valueOf(value), e.getType(), e.getTitle());
       }
       if (newEvent != null) {
         myEvents.set(row,  newEvent);
