@@ -43,6 +43,7 @@ public class CalendarSaver extends SaverBase {
 
   void save(IGanttProject project, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
+    addAttribute("base-id", project.getActiveCalendar().getBaseCalendarID(), attrs);
     startElement("calendars", attrs, handler);
     startElement("day-types", attrs, handler);
 
@@ -53,7 +54,6 @@ public class CalendarSaver extends SaverBase {
 
     addAttribute("id", "1", attrs);
     addAttribute("name", "default", attrs);
-    startElement("calendar", attrs, handler);
     for (int i = 1; i <= 7; i++) {
       boolean holiday = project.getActiveCalendar().getWeekDayType(i) == GPCalendar.DayType.WEEKEND;
       addAttribute(getShortDayName(i), holiday ? "1" : "0", attrs);
@@ -63,7 +63,6 @@ public class CalendarSaver extends SaverBase {
     emptyElement("only-show-weekends", attrs, handler);
     emptyElement("overriden-day-types", attrs, handler);
     emptyElement("days", attrs, handler);
-    endElement("calendar", handler);
 
     endElement("day-types", handler);
     for (CalendarEvent holiday : project.getActiveCalendar().getPublicHolidays()) {
