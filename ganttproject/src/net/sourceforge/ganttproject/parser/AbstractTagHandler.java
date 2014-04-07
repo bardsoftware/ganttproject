@@ -18,6 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.parser;
 
+import org.xml.sax.Attributes;
+
+import com.google.common.base.Objects;
+
 /**
  * Base class for all tag handlers.
  *
@@ -58,6 +62,16 @@ public abstract class AbstractTagHandler implements TagHandler {
 
   protected void clearCdata() {
     myCdataBuffer.setLength(0);
+  }
+
+  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
+      throws FileFormatException {
+    if (Objects.equal(myTagName, qName)) {
+      onStartElement(attrs);
+    }
+  }
+
+  protected void onStartElement(Attributes attrs) {
   }
 
   @Override

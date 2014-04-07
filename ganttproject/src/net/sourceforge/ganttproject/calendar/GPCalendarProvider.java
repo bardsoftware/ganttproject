@@ -41,6 +41,7 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.util.FileUtil;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 
 /**
@@ -50,9 +51,9 @@ import biz.ganttproject.core.calendar.WeekendCalendarImpl;
  */
 public class GPCalendarProvider {
   private static class CalendarTagHandler extends AbstractTagHandler {
-    private WeekendCalendarImpl myCalendar;
+    private GPCalendarCalc myCalendar;
 
-    CalendarTagHandler(WeekendCalendarImpl calendar) {
+    CalendarTagHandler(GPCalendarCalc calendar) {
       super("calendar");
       myCalendar = calendar;
     }
@@ -61,6 +62,7 @@ public class GPCalendarProvider {
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
       if ("calendar".equals(qName)) {
         myCalendar.setName(attrs.getValue("name"));
+        myCalendar.setBaseCalendarID(attrs.getValue("base-id"));
       }
     }
   }

@@ -24,11 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.eclipse.core.runtime.IStatus;
-import org.xml.sax.Attributes;
-
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -45,7 +40,6 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
-import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
 import net.sourceforge.ganttproject.parser.TaskPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.TaskTagHandler;
@@ -55,6 +49,12 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
+
+import org.eclipse.core.runtime.IStatus;
+import org.xml.sax.Attributes;
+
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.table.ColumnList;
 
 /**
  * @author bard
@@ -324,7 +324,14 @@ class ProxyDocument implements Document {
       opener.addParsingListener(dependencyHandler);
       opener.addParsingListener(resourceHandler);
 
+
       HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());
+      opener.addTagHandler(new AbstractTagHandler("calendars") {
+        @Override
+        protected void onStartElement(Attributes attrs) {
+          myProject.getActiveCalendar().setBaseCalendarID(attrs.getValue("base-id"));
+        }
+      });
       opener.addTagHandler(holidayHandler);
       opener.addParsingListener(holidayHandler);
 

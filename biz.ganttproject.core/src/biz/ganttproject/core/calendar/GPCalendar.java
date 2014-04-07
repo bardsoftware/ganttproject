@@ -68,4 +68,7 @@ public interface GPCalendar {
 
   public void addListener(GPCalendarListener listener);
 
+  public String getID();
+  public String getName();
+  public void setName(String name);
 }
