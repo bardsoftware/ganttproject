@@ -6,7 +6,7 @@
    provider-name="">
 
    <runtime>
-      <library name="ical.jar">
+      <library name="ganttproject-ical.jar">
          <export name="*"/>
       </library>
       <library name="lib/backport-util-concurrent-3.1.jar">

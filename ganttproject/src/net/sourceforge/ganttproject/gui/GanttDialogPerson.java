@@ -64,7 +64,7 @@ public class GanttDialogPerson {
   private final StringOption myNameField = new DefaultStringOption("name");
   private final StringOption myPhoneField = new DefaultStringOption("colPhone");
   private final StringOption myMailField = new DefaultStringOption("colMail");
-  private final MoneyOption myStandardRateField = new DefaultMoneyOption("standardRate");
+  private final MoneyOption myStandardRateField = new DefaultMoneyOption("colStandardRate");
   private final EnumerationOption myRoleField;
   private final GPOptionGroup myGroup;
   private GPOptionGroup myRateGroup;
