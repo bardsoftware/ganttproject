@@ -297,7 +297,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     for (Task nextAbove : tasksAboveViewport) {
       List<TaskActivity> activities = /*nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
           nextAbove)) : */nextAbove.getActivities();
-      for (Canvas.Shape s : renderActivities(-1, nextAbove, activities, defaultUnitOffsets)) {
+      for (Canvas.Shape s : renderActivities(-1, nextAbove, activities, defaultUnitOffsets, false)) {
         s.setVisible(false);
       }
     }
@@ -305,7 +305,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       List<TaskActivity> activities = /*nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
           nextBelow)) : */nextBelow.getActivities();
       List<Polygon> rectangles = renderActivities(getVisibleTasks().size() + 1, nextBelow, activities,
-          defaultUnitOffsets);
+          defaultUnitOffsets, false);
       for (Polygon nextRectangle : rectangles) {
         nextRectangle.setVisible(false);
       }
@@ -318,7 +318,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     for (Task t : visibleTasks) {
       boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
-      List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets);
+      List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
         if (p.getModelObject() != null) {
           boundPolygons.add(p);
@@ -386,12 +386,12 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private List<Polygon> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
-      OffsetList defaultUnitOffsets) {
+      OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Canvas.Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
-    if (!getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
+    if (areVisible && !getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
       renderProgressBar(rectangles);
     }
-    if (myTaskApi.hasNotes(t)) {
+    if (areVisible && myTaskApi.hasNotes(t)) {
       Rectangle notes = getPrimitiveContainer().createRectangle(myModel.getBounds().width - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
       notes.setStyle("task.notesMark");
       getPrimitiveContainer().bind(notes, t);
