@@ -123,10 +123,12 @@
       <calendar resource-url="calendar/i18n_en_canada.calendar"/>
       <calendar resource-url="calendar/i18n_en_england.calendar"/>
       <calendar resource-url="calendar/i18n_es_AR.calendar"/>
+      <calendar resource-url="calendar/i18n_es_cl.calendar"/>
       <calendar resource-url="calendar/i18n_es_colombia.calendar"/>
       <calendar resource-url="calendar/i18n_es.calendar"/>
       <calendar resource-url="calendar/i18n_fr.calendar"/>
       <calendar resource-url="calendar/i18n_hr.calendar"/>
+      <calendar resource-url="calendar/i18n_hu.calendar"/>
       <calendar resource-url="calendar/i18n_it.calendar"/>
       <calendar resource-url="calendar/i18n_ja_JP.calendar"/>
       <calendar resource-url="calendar/i18n_nl.calendar"/>
