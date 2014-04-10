@@ -1,28 +1,31 @@
 /*
-GanttProject is an opensource project management tool.
+Copyright (C) 2014 BarD Software s.r.o
 Copyright (C) 2005-2011 GanttProject Team
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an opensource project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -30,8 +33,17 @@ import org.xml.sax.helpers.AttributesImpl;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
+
 /**
- * @author bard
+ * Serializes Gantt chart and resource chart view data to XML.
+ * View data is data which is required for presentation purposes but
+ * can be ignored in the logical model. Such data includes visible columns,
+ * label options, tasks shown in the timeline.
+ *
+ * @author dbarashev (Dmitry Barashev)
  */
 class ViewSaver extends SaverBase {
   public void save(UIFacade facade, TransformerHandler handler) throws SAXException {
@@ -41,6 +53,7 @@ class ViewSaver extends SaverBase {
     startElement("view", attrs, handler);
     writeColumns(facade.getTaskTree().getVisibleFields(), handler);
     new OptionSaver().saveOptionList(Arrays.<GPOption<?>>asList(facade.getGanttChart().getTaskLabelOptions().getOptions()), handler);
+    writeTimelineTasks(facade, handler);
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
@@ -49,6 +62,25 @@ class ViewSaver extends SaverBase {
 
     endElement("view", handler);
 
+  }
+
+  /**
+   * Writes tasks explicitly shown in the timeline as comma-separated list of task identifiers in CDATA section
+   * of <timeline> element.
+   */
+  private void writeTimelineTasks(UIFacade facade, TransformerHandler handler) throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    Set<Task> timelineTasks = facade.getCurrentTaskView().getTimelineTasks();
+    if (timelineTasks.isEmpty()) {
+      return;
+    }
+    Function<Task, String> getId = new Function<Task, String>() {
+      @Override
+      public String apply(Task t) {
+        return String.valueOf(t.getTaskID());
+      }
+    };
+    cdataElement("timeline", Joiner.on(',').join(Collections2.transform(timelineTasks, getId)), attrs, handler);
   }
 
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
