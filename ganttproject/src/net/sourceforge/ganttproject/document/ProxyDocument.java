@@ -29,7 +29,6 @@ import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -42,6 +41,7 @@ import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
@@ -311,6 +311,8 @@ class ProxyDocument implements Document {
       opener.addParsingListener(customPropHandler);
 
       opener.addTagHandler(opener.getDefaultTagHandler());
+      opener.addTagHandler(opener.getTimelineTagHandler());
+      opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());
       opener.addTagHandler(resourceHandler);
       opener.addTagHandler(dependencyHandler);
       opener.addTagHandler(allocationHandler);
