@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,9 +40,12 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.time.GanttCalendar;
 
@@ -72,6 +77,8 @@ public class GanttXMLOpen implements GPParser {
   private UIFacade myUIFacade = null;
 
   private UIConfiguration myUIConfig;
+
+  private TagHandler myTimelineTagHandler = new TimelineTagHandler();
 
   public GanttXMLOpen(PrjInfos info, UIConfiguration uiConfig, TaskManager taskManager, UIFacade uiFacade) {
     this(taskManager);
@@ -177,6 +184,10 @@ public class GanttXMLOpen implements GPParser {
     return new DefaultTagHandler();
   }
 
+  public TagHandler getTimelineTagHandler() {
+    return myTimelineTagHandler;
+  }
+
   private class DefaultTagHandler implements TagHandler {
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
@@ -247,6 +258,43 @@ public class GanttXMLOpen implements GPParser {
   }
 
   private StringBuffer myCharacterBuffer = new StringBuffer();
+
+  class TimelineTagHandler implements TagHandler, ParsingListener {
+    private final List<Integer> myIds = Lists.newArrayList();
+
+    @Override
+    public void parsingStarted() {
+    }
+    @Override
+    public void parsingFinished() {
+      for (Integer id : myIds) {
+        Task t = myTaskManager.getTask(id);
+        if (t != null) {
+          myUIFacade.getCurrentTaskView().getTimelineTasks().add(t);
+        }
+      }
+    }
+    @Override
+    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
+        throws FileFormatException {
+      if ("timeline".equals(qName)) {
+        myCharacterBuffer = new StringBuffer();
+      }
+    }
+    @Override
+    public void endElement(String namespaceURI, String sName, String qName) {
+      if ("timeline".equals(qName)) {
+        String[] ids = myCharacterBuffer.toString().split(",");
+        for (String id : ids) {
+          try {
+            myIds.add(Integer.valueOf(id.trim()));
+          } catch (NumberFormatException e) {
+            GPLogger.logToLogger(e);
+          }
+        }
+      }
+    }
+  }
 
   class GanttXMLParser extends DefaultHandler {
     private final Stack<String> myTagStack = new Stack<String>();
