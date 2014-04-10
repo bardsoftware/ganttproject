@@ -161,16 +161,24 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   private ClipboardTaskProcessor myClipboardProcessor;
 
-  private static Pair<GanttTreeTable, GanttTreeTableModel> createTreeTable(IGanttProject project, UIFacade uiFacade) {
+  private static Runnable createDirtyfier(final GanttProjectBase project) {
+    return new Runnable() {
+      public void run() {
+        project.setModified();
+      }
+    };
+  }
+  private static Pair<GanttTreeTable, GanttTreeTableModel> createTreeTable(
+      IGanttProject project, Runnable dirtyfier, UIFacade uiFacade) {
     GanttTreeTableModel tableModel = new GanttTreeTableModel(project.getTaskManager(),
-        project.getTaskCustomColumnManager(), uiFacade);
+        project.getTaskCustomColumnManager(), uiFacade, dirtyfier);
     return Pair.create(new GanttTreeTable(project, uiFacade, tableModel), tableModel);
   }
 
   public GanttTree2(final GanttProject project, TaskManager taskManager, TaskSelectionManager selectionManager,
       final UIFacade uiFacade) {
 
-    super(createTreeTable(project.getProject(), uiFacade));
+    super(createTreeTable(project.getProject(), createDirtyfier(project), uiFacade));
     myUIFacade = uiFacade;
     myProject = project;
     myTaskManager = taskManager;

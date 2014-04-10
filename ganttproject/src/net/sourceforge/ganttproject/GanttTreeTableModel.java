@@ -93,6 +93,8 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
 
   private final UIFacade myUiFacade;
 
+  private final Runnable myDirtyfier;
+
   private static final int STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().length;
   /**
    * Creates an instance of GanttTreeTableModel with a root.
@@ -100,12 +102,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
    * @param root
    *          The root.
    * @param customColumnsManager
+   * @param dirtyfier
    */
-  public GanttTreeTableModel(TaskManager taskManager, CustomPropertyManager customColumnsManager, UIFacade uiFacade) {
+  public GanttTreeTableModel(
+      TaskManager taskManager, CustomPropertyManager customColumnsManager, UIFacade uiFacade, Runnable dirtyfier) {
     super(new TaskNode(taskManager.getRootTask()));
     TaskDefaultColumn.END_DATE.setIsEditablePredicate(NOT_MILESTONE);
     TaskDefaultColumn.DURATION.setIsEditablePredicate(NOT_MILESTONE);
     myUiFacade = uiFacade;
+    myDirtyfier = dirtyfier;
     GanttLanguage.getInstance().addListener(this);
     changeLanguage(language);
     myCustomColumnsManager = customColumnsManager;
@@ -336,6 +341,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
    * @param column
    */
   private void setValue(final Object value, final Object node, final int column) {
+    myDirtyfier.run();
     if (column >= STANDARD_COLUMN_COUNT) {
       setCustomPropertyValue(value, node, column);
       return;
