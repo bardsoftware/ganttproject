@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 
@@ -57,8 +58,8 @@ public class PublicHolidayDialogAction extends AbstractAction {
   @Override
   public void actionPerformed(ActionEvent arg0) {
     final CalendarEditorPanel calendarPanel = new CalendarEditorPanel(myProject.getActiveCalendar());
-    JPanel panel = new JPanel();
-    panel.add(calendarPanel.createComponent());
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(calendarPanel.createComponent(), BorderLayout.CENTER);
     panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     myUIFacade.createDialog(panel, new Action[] { new OkAction() {
       @Override
