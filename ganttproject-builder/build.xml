@@ -302,6 +302,37 @@
     <copy todir="." file="${deb.dir}/${package.name.prefix}_${package.name.suffix}-1_all.deb"></copy>
 	</target>
 	
+  <taskdef name="bundleapp"
+           classname="com.oracle.appbundler.AppBundlerTask"   
+           classpath="lib/appbundler-1.0.jar" />
+
+  <target name="dist-mac" depends="dist-bin">
+    <bundleapp outputdirectory="${package.dir}"
+        name="GanttProject"
+        displayname="GanttProject"
+        identifier="net.sourceforge.ganttproject"
+        shortversion="${package.name.version}"
+        icon="ganttproject.icns"
+        copyright="Copyright 2014 BarD Software s.r.o. Distributed under GPL3"
+        applicationCategory="public.app-category.productivity"
+        mainclassname="org.bardsoftware.eclipsito.Boot">
+  
+        <classpath file="eclipsito.jar"/>
+        <argument value="-app"/>
+        <argument value="net.sourceforge.ganttproject.GanttProject"/>
+        <argument value="-plugins"/>
+        <argument value="$APP_ROOT/Contents/Java/plugins"/>
+        <option value="-Dapple.laf.useScreenMenuBar=true"/>
+        <option value="-Xdock:name=GanttProject"/>
+    </bundleapp>
+  	<copy todir="${package.dir}/GanttProject.app/Contents/Java">
+  	  <fileset dir="${package.dir}">
+  	  	<include name="eclipsito.jar"/>
+  	  	<include name="plugins/**"/>
+  	  </fileset>
+  	</copy>
+  </target>
+
 	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">
     <echo>
 =======================================================
