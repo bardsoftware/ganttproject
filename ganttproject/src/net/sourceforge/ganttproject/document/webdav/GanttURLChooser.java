@@ -142,7 +142,7 @@ class GanttURLChooser {
       }
       try {
         if (!resource.isLocked()) {
-          resource.lock(myTimeout.getValue());
+          resource.lock(myTimeout.getValue() * 60);
           reloadFilesTable();
         }
       } catch (WebDavException e) {
