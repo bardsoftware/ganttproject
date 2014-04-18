@@ -285,7 +285,7 @@ public class MiltonResourceImpl implements WebDavResource {
   public boolean isWritable() {
     try {
       if (exists()) {
-        return !isLocked();
+        return canLock();
       }
       WebDavResource parent = getParent();
       return parent.exists() && parent.isWritable();
