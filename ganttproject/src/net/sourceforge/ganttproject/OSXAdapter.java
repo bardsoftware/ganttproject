@@ -20,6 +20,9 @@ package net.sourceforge.ganttproject;
 
 import java.io.IOException;
 
+import javax.swing.SwingUtilities;
+
+import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.about.AboutDialog2;
@@ -42,22 +45,29 @@ public class OSXAdapter extends ApplicationAdapter {
    * argument contains the path of the file in either case.
    */
   @Override
-  public void handleOpenFile(ApplicationEvent event) {
-    String file;
-    Document myDocument;
-
-    if (myProj.getProjectUIFacade().ensureProjectSaved(myProj)) {
-      file = event.getFilename();
-      myDocument = myProj.getDocumentManager().getDocument(file);
-      try {
-        myProj.getProjectUIFacade().openProject(myDocument, myProj.getProject());
-      } catch (DocumentException e) {
-        myProj.getUIFacade().showErrorDialog(e);
-      } catch (IOException e) {
-        myProj.getUIFacade().showErrorDialog(e);
+  public void handleOpenFile(final ApplicationEvent event) {
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        if (myProj.getProjectUIFacade().ensureProjectSaved(myProj)) {
+          String file = event.getFilename();
+          Document myDocument = myProj.getDocumentManager().getDocument(file);
+          try {
+            myProj.getProjectUIFacade().openProject(myDocument, myProj.getProject());
+          } catch (DocumentException e) {
+            myProj.getUIFacade().showErrorDialog(e);
+          } catch (IOException e) {
+            myProj.getUIFacade().showErrorDialog(e);
+          }
+        }
       }
-    }
+    });
     event.setHandled(true);
+  }
+
+  @Override
+  public void handlePreferences(ApplicationEvent e) {
+    new SettingsDialogAction(myProj, myProj.getUIFacade()).actionPerformed(null);
+    e.setHandled(true);
   }
 
   /** Handle the Mac OSX "about" menu option. */
