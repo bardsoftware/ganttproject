@@ -331,6 +331,8 @@
   	  	<include name="plugins/**"/>
   	  </fileset>
   	</copy>
+  	<patch patchfile="Info.plist.patch" originalfile="${package.dir}/GanttProject.app/Contents/Info.plist"/>
+  	<chmod perm="ugo+rx" file="${package.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
   </target>
 
 	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">

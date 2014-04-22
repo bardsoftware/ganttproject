@@ -1,0 +1,47 @@
+--- Info.plist	2014-04-16 04:09:33.605115769 +0400
++++ Info.plist.new	2014-04-22 03:31:23.228938448 +0400
+@@ -2,6 +2,44 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
++  <key>CFBundleDocumentTypes</key>
++  <array>
++    <dict>
++      <key>CFBundleTypeName</key>
++      <string>GanttProject</string>
++      <key>CFBundleTypeRole</key>
++      <string>Editor</string>
++      <key>CFBundleTypeIconFile</key>
++      <string>ganttproject.icns</string>
++      <key>LSItemContentTypes</key>
++      <array><string>com.bardsoftware.ganttproject</string></array>
++    </dict>
++  </array>
++  <key>UTExportedTypeDeclarations</key>
++  <array>
++    <dict>
++      <key>UTTypeIdentifier</key>
++      <string>com.bardsoftware.ganttproject</string>
++      <key>UTTypeDescription</key>
++      <string>GanttProject document</string>
++      <key>UTTypeIconFile</key>
++      <string>ganttproject.icns</string>
++      <key>UTTypeConformsTo</key>
++      <array>
++        <string>public.xml</string>
++      </array>
++      <key>UTTypeTagSpecification</key>
++      <dict>
++        <key>com.apple.ostype</key>
++        <string>GAN</string>
++        <key>public.filename-extension</key>
++        <array>
++          <string>gan</string>
++          <string>GAN</string>
++        </array>
++      </dict>
++    </dict>
++  </array>
+ <key>CFBundleDevelopmentRegion</key>
+ <string>English</string>
+ <key>CFBundleExecutable</key>
