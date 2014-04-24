@@ -306,7 +306,7 @@
            classname="com.oracle.appbundler.AppBundlerTask"   
            classpath="lib/appbundler-1.0.jar" />
 
-  <target name="dist-mac" depends="dist-bin">
+  <target name="dist-mac" depends="init,make-package-name">
     <bundleapp outputdirectory="${package.dir}"
         name="GanttProject"
         displayname="GanttProject"
