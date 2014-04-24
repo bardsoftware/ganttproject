@@ -20,26 +20,19 @@ package net.sourceforge.ganttproject.gui.options;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.eclipse.core.runtime.Platform;
-
-import com.beust.jcommander.internal.Sets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
+import org.apache.commons.io.FileUtils;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -51,6 +44,9 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOptionGroup;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   private JEditorPane myLabel;
@@ -128,7 +124,7 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
             GPLogger.logToLogger("Locale extension " + galicianLocaleJar);
             if (galicianLocaleJar.exists() && !targetJar.exists()) {
               GPLogger.logToLogger("Exists. Installing now");
-              Files.copy(galicianLocaleJar.toPath(), targetJar.toPath());
+              FileUtils.copyFileToDirectory(galicianLocaleJar, extDir);
               return Pair.create(Boolean.TRUE, extDir);
             }
           } catch (IOException e) {
