@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.*;
@@ -30,6 +31,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.GPAction;
 
@@ -77,7 +79,12 @@ public abstract class AbstractTableAndActionsComponent<T> {
   private final Action myDeleteAction = new GPAction("delete") {
     @Override
     public void actionPerformed(ActionEvent e) {
+      int selectedRow = myTable.getSelectedRow();
       onDeleteEvent();
+      if (selectedRow >= myTable.getRowCount()) {
+        selectedRow = myTable.getRowCount() - 1;
+      }
+      myTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
     }
   };
 
@@ -149,6 +156,15 @@ public abstract class AbstractTableAndActionsComponent<T> {
     }
   }
 
+  protected void onSelectionChanged() {
+    int[] selectedRows = myTable.getSelectedRows();
+    List<T> result = Lists.newArrayList();
+    for (int row : selectedRows) {
+      result.add(getValue(row));
+    }
+    fireSelectionChanged(result);
+  }
+
   public JComponent getActionsComponent() {
     if (buttonBox == null) {
       buttonBox = myActionOrientation == SwingConstants.HORIZONTAL ? new JPanel(new GridLayout(1,
@@ -175,7 +191,9 @@ public abstract class AbstractTableAndActionsComponent<T> {
 
   protected abstract void onDeleteEvent();
 
-  protected abstract void onSelectionChanged();
+  protected T getValue(int row) {
+    return null;
+  }
 
   public static JPanel createDefaultTableAndActions(JComponent table, JComponent actionsComponent) {
     JPanel result = new JPanel(new BorderLayout());

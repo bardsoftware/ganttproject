@@ -6,6 +6,7 @@
 
 package net.sourceforge.ganttproject.resource;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
@@ -48,6 +48,8 @@ public class HumanResource implements CustomPropertyHolder {
 
   private LoadDistribution myLoadDistribution;
 
+  private BigDecimal myStandardPayRate;
+
   private final DefaultListModel myDaysOffList = new DefaultListModel();
 
   private final List<ResourceAssignment> myAssignments = new ArrayList<ResourceAssignment>();
@@ -78,6 +80,7 @@ public class HumanResource implements CustomPropertyHolder {
     setMail(copy.getMail());
     setPhone(copy.getPhone());
     setRole(copy.getRole());
+    setStandardPayRate(copy.getStandardPayRate());
     myManager = copy.myManager;
     DefaultListModel copyDaysOff = copy.getDaysOff();
     for (int i = 0; i < copyDaysOff.getSize(); i++) {
@@ -279,6 +282,14 @@ public class HumanResource implements CustomPropertyHolder {
     Collections.swap(myAssignments, myAssignments.indexOf(a1), myAssignments.indexOf(a2));
     resetLoads();
     fireAssignmentsChanged();
+  }
+
+  public void setStandardPayRate(BigDecimal rate) {
+    myStandardPayRate = rate;
+  }
+
+  public BigDecimal getStandardPayRate() {
+    return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
   @Override

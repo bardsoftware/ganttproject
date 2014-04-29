@@ -26,13 +26,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceNode;
-import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.resource.ResourceTableNode;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -49,20 +47,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
-  public static final int INDEX_RESOURCE_NAME = 0;
-
-  public static final int INDEX_RESOURCE_ROLE = 1;
-
-  public static final int INDEX_RESOURCE_EMAIL = 2;
-
-  public static final int INDEX_RESOURCE_PHONE = 3;
-
-  public static final int INDEX_RESOURCE_ROLE_TASK = 4;
-
-  /** all the columns */
-  // private final Map<Integer, ResourceColumn> columns = new
-  // LinkedHashMap<Integer, ResourceColumn>();
-
+  private static final int STANDARD_COLUMN_COUNT = ResourceDefaultColumn.values().length;
   /** Column indexer */
   private static int index = -1;
 
@@ -75,8 +60,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   private TreeSelectionModel mySelectionModel;
 
   private final CustomPropertyManager myCustomPropertyManager;
-
-  private String[] myDefaultColumnTitles;
 
   public ResourceTreeTableModel(HumanResourceManager resMgr, TaskManager taskManager,
       CustomPropertyManager customPropertyManager) {
@@ -105,13 +88,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     });
     root = buildTree();
     this.setRoot(root);
-    changeLanguage();
-    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-      @Override
-      public void languageChanged(Event event) {
-        changeLanguage();
-      }
-    });
   }
 
   public int useNextIndex() {
@@ -183,19 +159,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
   }
 
-  /**
-   * Changes the language.
-   *
-   * @param ganttLanguage
-   *          New language to use.
-   */
-  public void changeLanguage() {
-    GanttLanguage language = GanttLanguage.getInstance();
-    myDefaultColumnTitles = new String[] { language.getText("tableColResourceName"),
-        language.getText("tableColResourceRole"), language.getText("tableColResourceEMail"),
-        language.getText("tableColResourcePhone"), language.getText("tableColResourceRoleForTask") };
-  }
-
   public void changePeople(List<HumanResource> people) {
     Iterator<HumanResource> it = people.iterator();
     while (it.hasNext()) {
@@ -256,7 +219,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   @Override
   public int getColumnCount() {
-    return myDefaultColumnTitles.length + myCustomPropertyManager.getDefinitions().size();
+    return STANDARD_COLUMN_COUNT + myCustomPropertyManager.getDefinitions().size();
   }
 
   // public ArrayList<ResourceColumn> getColumns()
@@ -270,24 +233,26 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   // }
 
   private CustomPropertyDefinition getCustomProperty(int columnIndex) {
-    return myCustomPropertyManager.getDefinitions().get(columnIndex - myDefaultColumnTitles.length);
+    return myCustomPropertyManager.getDefinitions().get(columnIndex - STANDARD_COLUMN_COUNT);
   }
 
   @Override
-  public Class<?> getColumnClass(int colIndex) {
-    if (colIndex == 0) {
-      return TreeNode.class;
+  public Class<?> getColumnClass(int column) {
+    if (column < 0) {
+      return null;
     }
-    if (colIndex < myDefaultColumnTitles.length) {
-      return String.class;
+    if (column >= 0 && column < STANDARD_COLUMN_COUNT) {
+      return ResourceDefaultColumn.values()[column].getValueClass();
     }
-    return getCustomProperty(colIndex).getType();
+    CustomPropertyDefinition customColumn = getCustomProperty(column);
+    Class<?> result = customColumn == null ? String.class : customColumn.getType();
+    return result;
   }
 
   @Override
   public String getColumnName(int column) {
-    if (column < myDefaultColumnTitles.length) {
-      return myDefaultColumnTitles[column];
+    if (column < STANDARD_COLUMN_COUNT) {
+      return ResourceDefaultColumn.values()[column].getName();
     }
     CustomPropertyDefinition customColumn = getCustomProperty(column);
     return customColumn.getName();
@@ -295,100 +260,43 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
 
   @Override
   public boolean isCellEditable(Object node, int column) {
-    return (node instanceof ResourceNode && (column == INDEX_RESOURCE_EMAIL || column == INDEX_RESOURCE_NAME
-        || column == INDEX_RESOURCE_PHONE || column == INDEX_RESOURCE_ROLE))
-        || (node instanceof AssignmentNode && (column == INDEX_RESOURCE_ROLE_TASK)
-        /* assumes the INDEX_RESOURCE_ROLE_TASK is the last mandatory column */
-        || column > INDEX_RESOURCE_ROLE_TASK);
+    if (false == node instanceof ResourceTableNode) {
+      return false;
+    }
+    if (column >= STANDARD_COLUMN_COUNT) {
+      return true;
+    }
+    ResourceDefaultColumn standardColumn = ResourceDefaultColumn.values()[column];
+    ResourceTableNode resourceNode = (ResourceTableNode) node;
+    return resourceNode.isEditable(standardColumn);
   }
 
   @Override
-  public Object getValueAt(Object node, int column) {
-    Object res = null;
-    ResourceNode rn = null;
-    AssignmentNode an = null;
-
-    if (node instanceof ResourceNode) {
-      rn = (ResourceNode) node;
-    } else if (node instanceof AssignmentNode) {
-      an = (AssignmentNode) node;
-    } else {
+  public Object getValueAt(Object obj, int column) {
+    if (false == obj instanceof ResourceTableNode) {
       return "";
     }
-
-    boolean hasChild = rn != null;
-
-    switch (column) {
-    case 0: // name
-      if (hasChild) {
-        res = rn.getName();
-      } else {
-        res = an.getTask().getName();
-      }
-      break;
-    case 1: // def role
-      if (hasChild) {
-        res = rn.getDefaultRole();
-      } else {
-        res = "";
-      }
-      break;
-    case 2: // mail
-      if (hasChild) {
-        res = rn.getEMail();
-      } else {
-        res = "";
-      }
-      break;
-    case 3: // phone
-      if (hasChild) {
-        res = rn.getPhone();
-      } else {
-        res = "";
-      }
-      break;
-    case 4: // assign role
-      if (hasChild) {
-        res = "";
-      } else {
-        res = an.getRoleForAssigment();
-      }
-      break;
-    default: // custom column
-      if (hasChild) {
-        res = rn.getCustomField(getCustomProperty(column));
-      } else
-        res = "";
-      break;
+    ResourceTableNode node = (ResourceTableNode)obj;
+    if (column >= STANDARD_COLUMN_COUNT) {
+      return node.getCustomField(getCustomProperty(column));
     }
-    return res;
+    return node.getStandardField(ResourceDefaultColumn.values()[column]);
   }
 
   @Override
-  public void setValueAt(Object value, Object node, int column) {
-    if (isCellEditable(node, column))
-      switch (column) {
-      case INDEX_RESOURCE_NAME:
-        ((ResourceNode) node).setName(value.toString());
-        break;
-      case INDEX_RESOURCE_EMAIL:
-        ((ResourceNode) node).setEMail(value.toString());
-        break;
-      case INDEX_RESOURCE_PHONE:
-        ((ResourceNode) node).setPhone(value.toString());
-        break;
-      case INDEX_RESOURCE_ROLE:
-        ((ResourceNode) node).setDefaultRole((Role) value);
-        break;
-      case INDEX_RESOURCE_ROLE_TASK:
-        ((AssignmentNode) node).setRoleForAssigment((Role) value);
-        break;
-      default:
-        ((ResourceNode) node).setCustomField(getCustomProperty(column), value);
-        break;
-      }
+  public void setValueAt(Object value, Object obj, int column) {
+    if (false == obj instanceof ResourceTableNode) {
+      return;
+    }
+    ResourceTableNode node = (ResourceTableNode)obj;
+    if (column >= STANDARD_COLUMN_COUNT) {
+      node.setCustomField(getCustomProperty(column), value);
+      return;
+    }
+    if (isCellEditable(node, column)) {
+      node.setStandardField(ResourceDefaultColumn.values()[column], value);
+    }
   }
-
 
   public void resourceChanged(HumanResource resource) {
     ResourceNode node = getNodeForResource(resource);

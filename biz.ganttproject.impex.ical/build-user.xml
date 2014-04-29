@@ -1,0 +1,71 @@
+<property file="build-user.properties"/>
+<property name="plugin.name.versioned" value="${plugin.name}"/>
+<property name="plugin.install.dir" value="${install.dir}/plugins/${plugin.name.versioned}"/>
+
+    <path id="project.classpath">
+        <path refid="mainproject.classpath"/>
+        <path refid="deps.classpath"/>
+    </path>
+    <path id="mainproject.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="${plugin.src.dir}/lib/backport-util-concurrent-3.1.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/commons-codec-1.5.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/commons-lang-2.6.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/ical4j-1.0.3.jar"/>
+    </path>
+    <path id="deps.classpath">
+        <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
+        <fileset dir="${net.sourceforge.ganttproject.src.dir}">
+          <include name="lib/core/*.jar"/>
+        </fileset>
+        <pathelement location="${biz.ganttproject.core.src.dir}/bin"/>
+        <fileset dir="${biz.ganttproject.core.src.dir}">
+          <include name="lib/*.jar"/>
+        </fileset>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="init" name="build">
+        <ant antfile="${net.sourceforge.ganttproject.src.dir}/build.xml" inheritAll="false"/>
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac destdir="bin" source="1.7" target="1.7" debug="${debug}">
+            <src path="src"/>
+            <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+<target name="help">
+    <echo message="Please run: $ ant -v -projecthelp"/>
+</target>
+
+<target name="message">
+  <echo>
+  ================================================================
+  Installing plugin ${plugin.name.versioned} to
+  ${plugin.install.dir}
+  </echo>
+</target>
+
+<target name="init-install">
+   <mkdir dir="${plugin.install.dir}"/>
+</target>
+
+<target name="jar" depends="init-install,build">
+   <jar destfile="${plugin.install.dir}/${plugin.jar.name}" basedir="bin" compress="yes"/>
+</target>
+
+<target name="copy-libs">
+   <copy todir="${plugin.install.dir}">
+      <fileset dir=".">
+      	<include name="plugin.xml"/>
+      	<include name="lib/**"/>
+      </fileset>
+   </copy>
+</target>
+
+<target name="install" depends="message,clean,jar,copy-libs">
+</target>

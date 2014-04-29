@@ -37,6 +37,8 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -137,22 +139,22 @@ public class DependencyGraph {
 
     @Override
     public boolean refresh() {
-      GPCalendar calendar = myDstNode.myTask.getManager().getCalendar();
+      GPCalendarCalc calendar = myDstNode.myTask.getManager().getCalendar();
       TaskDependencyConstraint.Collision nextCollision = myDep.getConstraint().getCollision();
       Date acceptableStart = nextCollision.getAcceptableStart().getTime();
       isWeak = !nextCollision.isActive() && myDep.getHardness() == Hardness.RUBBER;
       switch (nextCollision.getVariation()) {
       case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
-        if (calendar.isNonWorkingDay(acceptableStart)) {
+        if (0 == (calendar.getDayMask(acceptableStart) & DayMask.WORKING)) {
           acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
-              GPCalendar.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
+              GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING);
         }
         myStartRange = Range.upTo(acceptableStart, BoundType.CLOSED);
         break;
       case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
-        if (calendar.isNonWorkingDay(acceptableStart)) {
+        if (0 == (calendar.getDayMask(acceptableStart) & DayMask.WORKING)) {
           acceptableStart = calendar.findClosest(acceptableStart, myDstNode.myTask.getDuration().getTimeUnit(),
-              GPCalendar.MoveDirection.FORWARD, GPCalendar.DayType.WORKING);
+              GPCalendarCalc.MoveDirection.FORWARD, GPCalendar.DayType.WORKING);
         }
         myStartRange = Range.downTo(acceptableStart, BoundType.CLOSED);
         break;

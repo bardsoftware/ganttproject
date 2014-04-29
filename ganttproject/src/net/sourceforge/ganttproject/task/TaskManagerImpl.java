@@ -17,7 +17,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
@@ -44,6 +44,7 @@ import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -82,7 +83,7 @@ import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
  * @author bard
  */
 public class TaskManagerImpl implements TaskManager {
-  private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private final TaskHierarchyManagerImpl myHierarchyManager;
 
@@ -289,8 +290,7 @@ public class TaskManagerImpl implements TaskManager {
     return root;
   }
 
-  @Override
-  public void projectClosed() {
+  private void projectClosed() {
     myDependencyGraph.clear();
     myTaskMap.clear();
     myMaxID.set(0);
@@ -299,8 +299,7 @@ public class TaskManagerImpl implements TaskManager {
     fireTaskModelReset();
   }
 
-  @Override
-  public void projectOpened() {
+  private void projectOpened() {
     processCriticalPath(getRootTask());
     myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
   }
@@ -369,6 +368,10 @@ public class TaskManagerImpl implements TaskManager {
         }
         if (myCompletion != null) {
           task.setCompletionPercentage(myCompletion);
+        }
+        if (myCost != null) {
+          task.getCost().setCalculated(false);
+          task.getCost().setValue(myCost);
         }
         registerTask(task);
 
@@ -599,7 +602,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public Date shift(Date original, TimeDuration duration) {
-    GPCalendar calendar = RESTLESS_CALENDAR;
+    GPCalendarCalc calendar = RESTLESS_CALENDAR;
     return calendar.shiftDate(original, duration);
   }
 
@@ -645,8 +648,22 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public GPCalendar getCalendar() {
+  public GPCalendarCalc getCalendar() {
     return getConfig().getCalendar();
+  }
+
+  public ProjectEventListener getProjectListener() {
+    return new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        TaskManagerImpl.this.projectClosed();
+      }
+
+      @Override
+      public void projectOpened() {
+        TaskManagerImpl.this.projectOpened();
+      }
+    };
   }
 
   public void fireTaskProgressChanged(Task changedTask) {

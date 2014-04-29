@@ -36,7 +36,6 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class TaskDeleteAction extends TaskActionBase {
 

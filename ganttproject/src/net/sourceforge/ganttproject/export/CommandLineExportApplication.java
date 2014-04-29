@@ -41,11 +41,20 @@ public class CommandLineExportApplication {
     @Parameter(names = "-export", description = "Export format")
     public String exporter;
 
+    @Parameter(names = "-stylesheet", description = "Stylesheet used for export")
+    public String stylesheet;
+
+    @Parameter(names = "-chart", description = "Chart to export (resource or gantt)")
+    public String chart;
+
     @Parameter(names = "-zoom", description = "Zoom scale to use in the exported charts")
     public Integer zooming = 3;
 
     @Parameter(names = { "-o", "-out" }, description = "Output file name", converter = FileConverter.class)
     public File outputFile;
+
+    @Parameter(names = "-expand-resources", description = "Expand resource nodes on the resource load chart")
+    public boolean expandResources = false;
   }
 
   private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
@@ -103,6 +112,19 @@ public class CommandLineExportApplication {
         DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
             + DateParser.getIsoDate(project.getTaskManager().getProjectEnd()));
     prefs.putBoolean("commandLine", true);
+
+    // If chart to export is defined, then add a string to prefs
+    if (myArgs.chart != null) {
+      prefs.put("chart", myArgs.chart);
+    }
+
+    // If stylesheet is defined, then add a string to prefs
+    if (myArgs.stylesheet != null) {
+      prefs.put("stylesheet", myArgs.stylesheet);
+    }
+
+    prefs.putBoolean("expandResources", myArgs.expandResources);
+
     exporter.setContext(project, consoleUI, prefs);
     try {
       ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {

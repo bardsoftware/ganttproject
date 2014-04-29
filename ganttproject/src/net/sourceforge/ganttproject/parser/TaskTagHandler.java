@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.parser;
 
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +41,13 @@ import com.google.common.collect.Maps;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 
-public class TaskTagHandler implements TagHandler, ParsingListener {
+public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
   private final ParsingContext myContext;
   private final TaskManager myManager;
   private final TaskTreeUIFacade myTreeFacade;
   private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
   public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
+    super("task");
     myManager = mgr;
     myContext = context;
     myTreeFacade = treeFacade;
@@ -189,6 +191,14 @@ public class TaskTagHandler implements TagHandler, ParsingListener {
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
+    String costValue = attrs.getValue("cost-manual-value");
+    String costCalculated = attrs.getValue("cost-calculated");
+    if (costCalculated != null) {
+      task.getCost().setCalculated(Boolean.valueOf(costCalculated));
+      task.getCost().setValue(new BigDecimal(costValue));
+    } else {
+      task.getCost().setCalculated(true);
+    }
     myContext.pushTask(task);
   }
 

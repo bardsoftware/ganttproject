@@ -17,7 +17,10 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -64,11 +67,13 @@ import biz.ganttproject.core.option.FileOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 /**
  * @author bard
@@ -78,6 +83,7 @@ public class OptionsPageBuilder {
   private Component myParentComponent;
   private final LayoutApi myLayoutApi;
   private UIFacade myUiFacade;
+  private DecimalFormat myFormat;
 
   public static interface LayoutApi {
     void layout(JPanel panel, int componentsCount);
@@ -249,7 +255,7 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  private Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
+  public Component createOptionLabel(GPOptionGroup group, GPOption<?> option) {
     JLabel nextLabel = new JLabel(myi18n.getOptionLabel(group, option));
     nextLabel.setVerticalAlignment(SwingConstants.TOP);
     nextLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
@@ -284,6 +290,24 @@ public class OptionsPageBuilder {
         @Override
         public Double parse(String text) {
           return Double.valueOf(text);
+        }
+      });
+    } else if (option instanceof MoneyOption) {
+      result = createValidatingComponent((MoneyOption) option, new ValueValidator<BigDecimal>() {
+        private NumberFormat myFormat;
+        {
+          DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(GanttLanguage.getInstance().getLocale());
+          format.setParseBigDecimal(true);
+          myFormat = format;
+        }
+        @Override
+        public BigDecimal parse(String text) throws ValidationException {
+          try {
+            return Strings.isNullOrEmpty(text) ? BigDecimal.ZERO : (BigDecimal) myFormat.parse(text);
+          } catch (ParseException e) {
+            e.printStackTrace();
+            throw new ValidationException(e);
+          }
         }
       });
     }
@@ -432,54 +456,75 @@ public class OptionsPageBuilder {
     return false;
   }
 
+  public static class BooleanOptionRadioUi {
+    private final JRadioButton myYesButton;
+    private final JRadioButton myNoButton;
+
+    private BooleanOptionRadioUi(final BooleanOption option) {
+      myYesButton = new JRadioButton(new AbstractAction("") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (!option.isChecked()) {
+            option.setValue(true);
+          }
+        }
+      });
+      myYesButton.setVerticalAlignment(SwingConstants.CENTER);
+      myYesButton.setSelected(option.isChecked());
+
+      myNoButton = new JRadioButton(new AbstractAction("") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (option.isChecked()) {
+            option.setValue(false);
+          }
+        }
+      });
+      myNoButton.setSelected(!option.isChecked());
+
+      ButtonGroup buttonGroup = new ButtonGroup();
+      buttonGroup.add(myYesButton);
+      buttonGroup.add(myNoButton);
+
+      option.addChangeValueListener(new ChangeValueListener() {
+        @Override
+        public void changeValue(ChangeValueEvent event) {
+          if (Boolean.TRUE.equals(event.getNewValue())) {
+            myYesButton.setSelected(true);
+          } else {
+            myNoButton.setSelected(true);
+          }
+        }
+      });
+    }
+
+    public JRadioButton getYesButton() {
+      return myYesButton;
+    }
+
+    public JRadioButton getNoButton() {
+      return myNoButton;
+    }
+
+    public Component getComponent() {
+      Box result = Box.createVerticalBox();
+      result.add(myYesButton);
+      result.add(Box.createVerticalStrut(2));
+      result.add(myNoButton);
+      result.add(Box.createVerticalGlue());
+      return result;
+    }
+  }
+
+  public static BooleanOptionRadioUi createBooleanOptionRadioUi(BooleanOption option) {
+    return new BooleanOptionRadioUi(option);
+  }
+
   private Component createRadioButtonBooleanComponent(GPOptionGroup group, final BooleanOption option) {
-    final JRadioButton yesButton = new JRadioButton(new AbstractAction("") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        if (!option.isChecked()) {
-          option.toggle();
-          option.commit();
-          option.lock();
-        }
-      }
-    });
-    yesButton.setVerticalAlignment(SwingConstants.CENTER);
-    yesButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
-    yesButton.setSelected(option.isChecked());
-
-    final JRadioButton noButton = new JRadioButton(new AbstractAction("") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        if (option.isChecked()) {
-          option.toggle();
-          option.commit();
-          option.lock();
-        }
-      }
-    });
-    noButton.setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".no"));
-    noButton.setSelected(!option.isChecked());
-
-    ButtonGroup buttonGroup = new ButtonGroup();
-    buttonGroup.add(yesButton);
-    buttonGroup.add(noButton);
-
-    Box result = Box.createVerticalBox();
-    result.add(yesButton);
-    result.add(Box.createVerticalStrut(2));
-    result.add(noButton);
-    result.add(Box.createVerticalGlue());
-    option.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        if (Boolean.TRUE.equals(event.getNewValue())) {
-          yesButton.setSelected(true);
-        } else {
-          noButton.setSelected(true);
-        }
-      }
-    });
-    return result;
+    BooleanOptionRadioUi radioUi = createBooleanOptionRadioUi(option);
+    radioUi.getYesButton().setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".yes"));
+    radioUi.getNoButton().setText(myi18n.getValue(group, myi18n.getCanonicalOptionLabelKey(option) + ".no"));
+    return radioUi.getComponent();
   }
 
   private JComboBox createEnumerationComponent(final EnumerationOption option, final GPOptionGroup group) {

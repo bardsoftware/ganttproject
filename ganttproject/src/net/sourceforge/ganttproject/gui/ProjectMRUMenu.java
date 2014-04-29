@@ -27,7 +27,6 @@ import javax.swing.JMenuItem;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.project.OpenMRUDocumentAction;
-import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentMRUListener;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;

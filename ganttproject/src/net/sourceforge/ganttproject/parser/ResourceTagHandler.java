@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Map.Entry;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
@@ -36,7 +38,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 import org.xml.sax.Attributes;
 
 /** Class to parse the attribute of resources handler */
-public class ResourceTagHandler implements TagHandler, ParsingListener {
+public class ResourceTagHandler extends AbstractTagHandler implements ParsingListener {
   private final CustomPropertyManager myCustomPropertyManager;
 
   private HumanResource myCurrentResource;
@@ -49,6 +51,7 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
 
   public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
       CustomPropertyManager resourceCustomPropertyManager) {
+    super(null);
     myResourceManager = resourceManager;
     myCustomPropertyManager = resourceCustomPropertyManager;
     // myResourceManager.clear(); //CleanUP the old stuff
@@ -80,6 +83,23 @@ public class ResourceTagHandler implements TagHandler, ParsingListener {
     }
     if ("custom-property-definition".equals(qName)) {
       loadCustomPropertyDefinition(attrs);
+    }
+    if ("rate".equals(qName)) {
+      loadRate(attrs);
+    }
+  }
+
+
+  private void loadRate(Attributes attrs) {
+    String name = attrs.getValue("name");
+    if (!"standard".equals(name)) {
+      return;
+    }
+    try {
+      BigDecimal value = new BigDecimal(attrs.getValue("value"));
+      myCurrentResource.setStandardPayRate(value);
+    } catch (NumberFormatException e) {
+      GPLogger.log(e);
     }
   }
 

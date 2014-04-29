@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.importer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+import biz.ganttproject.impex.csv.ImporterFromCsvFile;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 

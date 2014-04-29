@@ -18,19 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import java.math.BigDecimal;
+import java.util.EnumSet;
+import java.util.Set;
+
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.roles.Role;
 
-public class ResourceNode extends DefaultMutableTreeTableNode {
-
+public class ResourceNode extends ResourceTableNode {
+  private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.complementOf(
+      EnumSet.of(ResourceDefaultColumn.ROLE_IN_TASK));
   private static final long serialVersionUID = 3834033541318392117L;
 
   private final HumanResource resource;
 
   public ResourceNode(HumanResource res) {
-    super(res);
+    super(res, ourApplicableColumns);
     assert res != null;
     resource = res;
   }
@@ -67,12 +72,47 @@ public class ResourceNode extends DefaultMutableTreeTableNode {
     return resource.getRole();
   }
 
+  @Override
+  public Object getStandardField(ResourceDefaultColumn def) {
+    switch (def) {
+    case NAME: return getName();
+    case ROLE: return getDefaultRole();
+    case EMAIL: return getEMail();
+    case PHONE: return getPhone();
+    case STANDARD_RATE: return getResource().getStandardPayRate();
+    default: return "";
+    }
+  }
+
+  @Override
+  public void setStandardField(ResourceDefaultColumn def, Object value) {
+    switch (def) {
+    case NAME:
+      setName(value.toString());
+      return;
+    case EMAIL:
+      setEMail(value.toString());
+      return;
+    case PHONE:
+      setPhone(value.toString());
+      return;
+    case ROLE:
+      setDefaultRole((Role) value);
+      return;
+    case STANDARD_RATE:
+      assert value instanceof Double : "Rate accepts numeric values";
+      getResource().setStandardPayRate(BigDecimal.valueOf((Double)value));
+    }
+  }
+
   /** @return the value of a custom field referenced by its title */
+  @Override
   public Object getCustomField(CustomPropertyDefinition def) {
     return resource.getCustomField(def);
   }
 
   /** sets the new value to the custom field referenced by its title */
+  @Override
   public void setCustomField(CustomPropertyDefinition def, Object val) {
     resource.setCustomField(def, val);
   }

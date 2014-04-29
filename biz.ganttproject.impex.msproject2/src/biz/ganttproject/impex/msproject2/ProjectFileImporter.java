@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -83,8 +84,8 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
@@ -233,12 +234,14 @@ class ProjectFileImporter {
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
     for (ProjectCalendarException e : exceptions) {
       if (!e.getWorking()) {
+        final List<CalendarEvent> holidays = Lists.newArrayList();
         importHolidays(e, new HolidayAdder() {
           @Override
           public void addHoliday(Date date) {
-            getNativeCalendar().setPublicHoliDayType(date);
+            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
           }
         });
+        getNativeCalendar().setPublicHolidays(holidays);
       }
     }
   }
@@ -258,7 +261,7 @@ class ProjectFileImporter {
         foreignCalendar.isWorkingDay(foreignDay) ? DayType.WORKING : DayType.WEEKEND);
   }
 
-  private GPCalendar getNativeCalendar() {
+  private GPCalendarCalc getNativeCalendar() {
     return myNativeProject.getActiveCalendar();
   }
 
@@ -277,7 +280,7 @@ class ProjectFileImporter {
     for (Date dayStart = start; !dayStart.after(end);) {
       // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
       adder.addHoliday(dayStart);
-      dayStart = GPCalendar.PLAIN.shiftDate(dayStart, oneDay);
+      dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
   }
 
@@ -288,6 +291,10 @@ class ProjectFileImporter {
       nativeResource.setId(r.getUniqueID());
       nativeResource.setName(r.getName());
       nativeResource.setMail(r.getEmailAddress());
+      Rate standardRate = r.getStandardRate();
+      if (standardRate != null && standardRate.getAmount() != 0.0 && r.getStandardRateUnits() == TimeUnit.DAYS) {
+        nativeResource.setStandardPayRate(new BigDecimal(standardRate.getAmount()));
+      }
       myNativeProject.getHumanResourceManager().add(nativeResource);
       importDaysOff(r, nativeResource);
       importCustomProperties(r, nativeResource);
@@ -416,6 +423,10 @@ class ProjectFileImporter {
       }
     }
     GanttTask nativeTask = (GanttTask) taskBuilder.build();
+    if (t.getCost() != null) {
+      nativeTask.getCost().setCalculated(false);
+      nativeTask.getCost().setValue(BigDecimal.valueOf(t.getCost().doubleValue()));
+    }
     if (!t.getChildTasks().isEmpty()) {
       for (Task child : t.getChildTasks()) {
         importTask(foreignProject, child, nativeTask, foreignId2nativeTask);

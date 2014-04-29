@@ -45,7 +45,7 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -210,7 +210,7 @@ public class TaskScheduleDatesPanel {
     propertiesPanel.add(durationField1);
   }
 
-  private GPCalendar getCalendar() {
+  private GPCalendarCalc getCalendar() {
     return myUnpluggedClone.getManager().getCalendar();
   }
 

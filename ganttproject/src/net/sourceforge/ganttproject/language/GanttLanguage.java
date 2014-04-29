@@ -292,6 +292,9 @@ public class GanttLanguage {
   }
 
   public Date parseDate(String dateString) {
+    if (dateString == null) {
+      return null;
+    }
     try {
       Date parsed = getShortDateFormat().parse(dateString);
       if (getShortDateFormat().format(parsed).equals(dateString)) {

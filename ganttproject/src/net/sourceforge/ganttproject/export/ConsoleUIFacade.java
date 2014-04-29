@@ -112,6 +112,11 @@ public class ConsoleUIFacade implements UIFacade {
     e.printStackTrace();
   }
 
+  public void showSettingsDialog(String pageID) {
+    // TODO Auto-generated method stub
+
+  }
+
   @Override
   public GanttChart getGanttChart() {
     return myRealFacade.getGanttChart();

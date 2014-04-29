@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -34,27 +36,10 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 
 public class CSVOptions {
-//  public boolean bExportTaskID = true;
-//
-//  public boolean bExportTaskName = true;
-//
-//  public boolean bExportTaskStartDate = true;
-//
-//  public boolean bExportTaskEndDate = true;
-//
-//  public boolean bExportTaskPercent = true;
-//
-//  public boolean bExportTaskDuration = true;
-//
-//  public boolean bExportTaskWebLink = true;
-//
-//  public boolean bExportTaskResources = true;
-//
-//  public boolean bExportTaskNotes = true;
-
   private static final Set<TaskDefaultColumn> ourIgnoredTaskColumns = ImmutableSet.of(
       TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
   private final Map<String, BooleanOption> myTaskOptions = Maps.newLinkedHashMap();
+  private final Map<String, BooleanOption> myResourceOptions = Maps.newLinkedHashMap();
 
   public CSVOptions() {
     List<TaskDefaultColumn> orderedColumns = ImmutableList.of(
@@ -72,6 +57,17 @@ public class CSVOptions {
     createTaskExportOption("webLink");
     createTaskExportOption("resources");
     createTaskExportOption("notes");
+
+    myResourceOptions.put("id", new DefaultBooleanOption("id", true));
+    for (ResourceDefaultColumn resourceColumn : ResourceDefaultColumn.values()) {
+      createResourceExportOption(resourceColumn);
+    }
+  }
+
+  private BooleanOption createResourceExportOption(ResourceDefaultColumn resourceColumn) {
+    DefaultBooleanOption result = new DefaultBooleanOption(resourceColumn.getStub().getID(), true);
+    myResourceOptions.put(resourceColumn.getStub().getID(), result);
+    return result;
   }
 
   public BooleanOption createTaskExportOption(TaskDefaultColumn taskColumn) {
@@ -90,15 +86,9 @@ public class CSVOptions {
     return myTaskOptions;
   }
 
-  public boolean bExportResourceID = true;
-
-  public boolean bExportResourceName = true;
-
-  public boolean bExportResourceMail = true;
-
-  public boolean bExportResourcePhone = true;
-
-  public boolean bExportResourceRole = true;
+  public Map<String, BooleanOption> getResourceOptions() {
+    return myResourceOptions;
+  }
 
   public boolean bFixedSize = false;
 

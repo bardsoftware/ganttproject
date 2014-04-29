@@ -467,7 +467,7 @@ public class CharSetMap {
       for (int i = 0; i < mappers.length; i++) {
         mapper = mappers[i];
         if (mapper != null) {
-          charset = (String) mapper.get(key);
+          charset = mapper.get(key);
           if (charset != null) {
             // Update the cache.
             if (i > MAP_CACHE) {

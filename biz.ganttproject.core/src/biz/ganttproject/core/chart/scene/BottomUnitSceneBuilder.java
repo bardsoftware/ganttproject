@@ -21,7 +21,7 @@ package biz.ganttproject.core.chart.scene;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
@@ -85,12 +85,14 @@ public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
     }
   }
 
+  // This method renders short ticks separating time unit offsets in the bottom line
   private void renderScaleMark(Offset offset, Offset prevOffset) {
     if (prevOffset == null) {
       return;
     }
     if (offset.getOffsetUnit() == GPTimeUnitStack.DAY) {
-      if (offset.getDayType() != GPCalendar.DayType.WORKING || prevOffset.getDayType() != GPCalendar.DayType.WORKING) {
+      // We do not want to paint tick around non-working days
+      if ((offset.getDayMask() & DayMask.WORKING) == 0 || (prevOffset.getDayMask() & DayMask.WORKING) == 0) {
         return;
       }
     }

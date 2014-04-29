@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -65,7 +66,7 @@ import com.google.common.collect.Sets;
  *
  * @author bbaranne (Benoit Baranne)
  */
-public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener, GanttLanguage.Listener {
+public class GanttTreeTableModel extends DefaultTreeTableModel implements TableColumnModelListener {
   private static class Icons {
     static ImageIcon ALERT_TASK_INPROGRESS = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert1_16.gif"));
     static ImageIcon ALERT_TASK_OUTDATED = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert2_16.gif"));
@@ -111,23 +112,12 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     TaskDefaultColumn.DURATION.setIsEditablePredicate(NOT_MILESTONE);
     myUiFacade = uiFacade;
     myDirtyfier = dirtyfier;
-    GanttLanguage.getInstance().addListener(this);
-    changeLanguage(language);
     myCustomColumnsManager = customColumnsManager;
   }
 
   @Override
   public int getColumnCount() {
     return STANDARD_COLUMN_COUNT + myCustomColumnsManager.getDefinitions().size();
-  }
-
-  /**
-   * Changes the language.
-   *
-   * @param ganttLanguage
-   *          New language to use.
-   */
-  public void changeLanguage(GanttLanguage ganttLanguage) {
   }
 
   /**
@@ -300,6 +290,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
         res = Joiner.on('.').join(outlinePath);
         break;
+      case COST:
+        res = t.getCost().getValue();
+        break;
       default:
         break;
       }
@@ -413,6 +406,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         }
       }
       break;
+    case COST:
+      try {
+        BigDecimal cost = new BigDecimal(String.valueOf(value));
+        task.getCost().setCalculated(false);
+        task.getCost().setValue(cost);
+      } catch (NumberFormatException e) {
+        throw new ValidationException(MessageFormat.format("Can't parse {0} as number", value));
+      }
+      break;
     default:
       break;
     }
@@ -512,11 +514,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
   // // TODO Auto-generated method stub
   // return 0;
   // }
-
-  @Override
-  public void languageChanged(Event event) {
-    changeLanguage(event.getLanguage());
-  }
 
   public int compareDocumentOrder(Task next, Task dependeeTask) {
     throw new UnsupportedOperationException();

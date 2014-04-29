@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,22 +41,23 @@ import org.eclipse.core.runtime.Status;
 import com.google.common.collect.ImmutableList;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.GPCalendar.MoveDirection;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
+import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
@@ -128,13 +129,15 @@ public class TaskImpl implements Task {
 
   private List<TaskActivity> myMilestoneActivity;
 
+  private final CostImpl myCost = new CostImpl();
+
   private boolean isUnplugged = false;
 
   public final static int NONE = 0;
 
   public final static int EARLIESTBEGIN = 1;
 
-  private static final GPCalendar RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
 
@@ -1007,13 +1010,13 @@ public class TaskImpl implements Task {
         TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
         // clone.setDuration(length);
         newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-        if (getManager().getCalendar().isNonWorkingDay(newStart)) {
+        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
           newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.FORWARD, DayType.WORKING);
         }
       } else {
         newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
             getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
-        if (getManager().getCalendar().isNonWorkingDay(newStart)) {
+        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
           newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.BACKWARD, DayType.WORKING);
         }
       }
@@ -1082,7 +1085,7 @@ public class TaskImpl implements Task {
     myLength = getManager().createLength(myLength.getTimeUnit(), length);
   }
 
-  private static void recalculateActivities(GPCalendar calendar, Task task, List<TaskActivity> output, Date startDate,
+  private static void recalculateActivities(GPCalendarCalc calendar, Task task, List<TaskActivity> output, Date startDate,
       Date endDate) {
     TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(calendar);
     alg.recalculateActivities(task, output, startDate, endDate);
@@ -1211,5 +1214,45 @@ public class TaskImpl implements Task {
   @Override
   public void setProjectTask(boolean projectTask) {
     isProjectTask = projectTask;
+  }
+
+  private class CostImpl implements Cost {
+    private BigDecimal myValue = BigDecimal.ZERO;
+    private boolean isCalculated = true;
+
+    @Override
+    public BigDecimal getValue() {
+      return (isCalculated) ? getCalculatedValue() : getManualValue();
+    }
+
+    @Override
+    public BigDecimal getManualValue() {
+      return myValue;
+    }
+
+    @Override
+    public BigDecimal getCalculatedValue() {
+      return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
+    }
+
+    @Override
+    public void setValue(BigDecimal value) {
+      myValue = value;
+    }
+
+    @Override
+    public boolean isCalculated() {
+      return isCalculated;
+    }
+
+    @Override
+    public void setCalculated(boolean calculated) {
+      isCalculated = calculated;
+    }
+  }
+
+  @Override
+  public Cost getCost() {
+    return myCost;
   }
 }

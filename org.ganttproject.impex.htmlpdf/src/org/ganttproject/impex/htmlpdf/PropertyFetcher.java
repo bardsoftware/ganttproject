@@ -28,6 +28,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
@@ -60,7 +61,7 @@ public class PropertyFetcher {
     List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
     id2value.put(TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), Joiner.on('.').join(outlinePath));
     id2value.put(TaskDefaultColumn.ID.getStub().getID(), String.valueOf(t.getTaskID()));
-
+    id2value.put(TaskDefaultColumn.COST.getStub().getID(), t.getCost().getValue().toPlainString());
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
@@ -71,10 +72,11 @@ public class PropertyFetcher {
   }
 
   public void getResourceAttributes(HumanResource hr, Map<String, String> id2value) {
-    id2value.put("0", hr.getName());
-    id2value.put("1", hr.getRole().getName());
-    id2value.put("2", hr.getMail());
-    id2value.put("3", hr.getPhone());
+    id2value.put(ResourceDefaultColumn.NAME.getStub().getID(), hr.getName());
+    id2value.put(ResourceDefaultColumn.ROLE.getStub().getID(), hr.getRole().getName());
+    id2value.put(ResourceDefaultColumn.EMAIL.getStub().getID(), hr.getMail());
+    id2value.put(ResourceDefaultColumn.PHONE.getStub().getID(), hr.getPhone());
+    id2value.put(ResourceDefaultColumn.STANDARD_RATE.getStub().getID(), hr.getStandardPayRate().toPlainString());
 
     List<CustomProperty> customFields = hr.getCustomProperties();
     for (CustomProperty property : customFields) {

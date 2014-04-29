@@ -179,7 +179,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     myTimerTask = task;
   }
 
-  protected JComponent getChartComponent() {
+  protected ChartComponentBase getChartComponent() {
     return myChartComponent;
   }
 

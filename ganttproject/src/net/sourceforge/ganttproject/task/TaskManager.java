@@ -19,18 +19,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
@@ -60,6 +61,7 @@ public interface TaskManager {
     Integer myCompletion;
     Priority myPriority;
     Task myPrototype;
+    BigDecimal myCost;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -135,6 +137,11 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withCost(BigDecimal value) {
+      myCost = value;
+      return this;
+    }
+
     public abstract Task build();
   }
 
@@ -143,10 +150,6 @@ public interface TaskManager {
   Task[] getTasks();
 
   public Task getRootTask();
-
-  void projectOpened();
-
-  public void projectClosed();
 
   public GanttTask getTask(int taskId);
 
@@ -176,7 +179,7 @@ public interface TaskManager {
 
   TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
 
-  GPCalendar getCalendar();
+  GPCalendarCalc getCalendar();
 
   TaskContainmentHierarchyFacade getTaskHierarchy();
 
@@ -230,4 +233,6 @@ public interface TaskManager {
   Boolean isZeroMilestones();
 
   DependencyGraph getDependencyGraph();
+
+  ProjectEventListener getProjectListener();
 }
