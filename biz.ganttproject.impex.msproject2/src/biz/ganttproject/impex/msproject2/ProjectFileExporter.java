@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,12 @@ import java.util.Map.Entry;
 
 import javax.swing.DefaultListModel;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
-
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
@@ -42,6 +43,7 @@ import net.sf.mpxj.ProjectCalendar;
 import net.sf.mpxj.ProjectCalendarException;
 import net.sf.mpxj.ProjectCalendarHours;
 import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Rate;
 import net.sf.mpxj.RelationType;
 import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceField;
@@ -131,9 +133,9 @@ class ProjectFileExporter {
   }
 
   private void exportHolidays(ProjectCalendar calendar) {
-    for (GPCalendar.Holiday h : getCalendar().getPublicHolidays()) {
-      if (!h.isRepeating) {
-        Date d = h.date;
+    for (CalendarEvent h : getCalendar().getPublicHolidays()) {
+      if (!h.isRecurring) {
+        Date d = h.myDate;
         ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
       }
     }
@@ -183,8 +185,6 @@ class ProjectFileExporter {
     mpxjTask.setIgnoreResourceCalendar(true);
 
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
-    if (nestedTasks.length > 0) {
-    }
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
     Date startTime = convertStartTime(t.getStart().getTime());
     Date finishTime = convertFinishTime(t.getEnd().getTime());
@@ -193,6 +193,7 @@ class ProjectFileExporter {
     Duration duration = convertDuration(t.getDuration());
     mpxjTask.setDuration(duration);
     mpxjTask.setManualDuration(duration);
+    mpxjTask.setCost(t.getCost().getValue());
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
     mpxjTask.setActualDuration(durations[0]);
@@ -340,6 +341,9 @@ class ProjectFileExporter {
     mpxjResource.setEmailAddress(hr.getMail());
     mpxjResource.setType(ResourceType.WORK);
     mpxjResource.setCanLevel(false);
+    if (hr.getStandardPayRate() != BigDecimal.ZERO) {
+      mpxjResource.setStandardRate(new Rate(hr.getStandardPayRate(), TimeUnit.DAYS));
+    }
 
     exportDaysOff(hr, mpxjResource);
     exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
@@ -423,7 +427,7 @@ class ProjectFileExporter {
       ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
       resourceCalendar.addDefaultCalendarHours();
       exportWeekends(resourceCalendar);
-      resourceCalendar.setBaseCalendar(myOutputProject.getCalendar());
+      resourceCalendar.setParent(myOutputProject.getCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
       for (int i = 0; i < daysOff.size(); i++) {
         GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
@@ -462,7 +466,7 @@ class ProjectFileExporter {
     return myNativeProject.getHumanResourceManager();
   }
 
-  private GPCalendar getCalendar() {
+  private GPCalendarCalc getCalendar() {
     return getTaskManager().getCalendar();
   }
 }

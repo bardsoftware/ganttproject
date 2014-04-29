@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task.algorithm;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import biz.ganttproject.core.time.TimeDuration;

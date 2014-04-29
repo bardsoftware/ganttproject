@@ -6,7 +6,7 @@
    provider-name="">
 
    <runtime>
-      <library name="ical.jar">
+      <library name="ganttproject-ical.jar">
          <export name="*"/>
       </library>
       <library name="lib/backport-util-concurrent-3.1.jar">
@@ -23,7 +23,12 @@
       </library>
    </runtime>
    <requires>
+      <import plugin="biz.ganttproject.core"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="net.sourceforge.ganttproject"/>
    </requires>
+   <extension
+         point="net.sourceforge.ganttproject.importer">
+         <importer class="biz.ganttproject.impex.ical.IcsFileImporter"/>
+   </extension>
 </plugin>

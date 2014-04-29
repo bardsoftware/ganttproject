@@ -20,12 +20,11 @@ package net.sourceforge.ganttproject.chart.mouse;
 
 import java.util.Date;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.chart.TimelineChart.VScrollController;
@@ -61,7 +60,7 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   }
 
   @Override
-  public GPCalendar getCalendar() {
+  public GPCalendarCalc getCalendar() {
     return myTaskManager.getCalendar();
   }
 

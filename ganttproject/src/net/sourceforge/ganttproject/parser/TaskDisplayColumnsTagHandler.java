@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.table.ColumnList;
@@ -30,7 +29,7 @@ import biz.ganttproject.core.table.ColumnList.Column;
 /**
  * @author bbaranne
  */
-public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener {
+public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements ParsingListener {
 
   private final ColumnList myVisibleFields;
   private final List<Column> myBuffer = new ArrayList<Column>();
@@ -46,6 +45,7 @@ public class TaskDisplayColumnsTagHandler implements TagHandler, ParsingListener
 
   public TaskDisplayColumnsTagHandler(ColumnList visibleFields, String tagName, String idPropertyName,
       String orderPropertyName, String widthPropertyName, String visiblePropertyName) {
+    super(tagName);
     myVisibleFields = visibleFields;
     myTagName = tagName;
     myIDPropertyName = idPropertyName;

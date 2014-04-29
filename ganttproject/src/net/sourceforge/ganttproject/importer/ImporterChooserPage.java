@@ -24,25 +24,31 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+
+import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOptionGroup;
-
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
-import net.sourceforge.ganttproject.importer.ImportFileWizardImpl.State;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.wizard.AbstractWizard;
+import net.sourceforge.ganttproject.wizard.WizardPage;
 
 /**
  * @author bard
  */
 class ImporterChooserPage implements WizardPage {
   private final List<Importer> myImporters;
+  private AbstractWizard myWizard;
+  private final UIFacade myUiFacade;
+  private final Preferences myPrefs;
+  private int mySelectedIndex;
 
-  private final State myState;
-
-  ImporterChooserPage(List<Importer> importers, State state) {
+  ImporterChooserPage(List<Importer> importers, UIFacade uiFacade, Preferences preferences) {
     myImporters = importers;
-    myState = state;
+    myUiFacade = uiFacade;
+    myPrefs = preferences;
   }
 
   @Override
@@ -51,29 +57,39 @@ class ImporterChooserPage implements WizardPage {
   }
 
   @Override
-  public Component getComponent() {
+  public JComponent getComponent() {
     Action[] choiceChangeActions = new Action[myImporters.size()];
     GPOptionGroup[] choiceOptions = new GPOptionGroup[myImporters.size()];
     for (int i = 0; i < myImporters.size(); i++) {
-      final Importer nextImporter = myImporters.get(i);
-      Action nextAction = new AbstractAction(nextImporter.getFileTypeDescription()) {
+      final Importer importer = myImporters.get(i);
+      final int index = i;
+      Action nextAction = new AbstractAction(importer.getFileTypeDescription()) {
         @Override
         public void actionPerformed(ActionEvent e) {
-          ImporterChooserPage.this.myState.myImporter = nextImporter;
+          mySelectedIndex = index;
+          onSelectImporter(importer);
         }
       };
       choiceChangeActions[i] = nextAction;
       choiceOptions[i] = null;
-      if (i == 0) {
-        myState.myImporter = nextImporter;
-      }
     }
     GPOptionChoicePanel panel = new GPOptionChoicePanel();
     return panel.getComponent(choiceChangeActions, choiceOptions, 0);
   }
 
-  @Override
-  public void setActive(boolean b) {
+  protected void onSelectImporter(Importer importer) {
+    assert myWizard != null : "It is a bug: importer chooser has not been initialized properly";
+    WizardPage filePage = new FileChooserPage(myUiFacade, importer, myPrefs.node(importer.getID()));
+    myWizard.setNextPage(filePage);
   }
+
+  @Override
+  public void setActive(AbstractWizard wizard) {
+    myWizard = wizard;
+    if (wizard != null) {
+      onSelectImporter(myImporters.get(mySelectedIndex));
+    }
+  }
+
 
 }

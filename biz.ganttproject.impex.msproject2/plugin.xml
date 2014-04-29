@@ -19,7 +19,7 @@
                name="*">
          </export>
       </library>
-      <library name="lib/poi-3.7-20101029.jar">
+      <library name="lib/poi-3.10-PATCHED.jar">
          <export
                name="*">
          </export>

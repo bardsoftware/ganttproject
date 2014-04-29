@@ -18,18 +18,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.resource;
 
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import java.util.EnumSet;
+import java.util.Set;
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
-public class AssignmentNode extends DefaultMutableTreeTableNode {
-
+public class AssignmentNode extends ResourceTableNode {
+  private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.of(ResourceDefaultColumn.ROLE_IN_TASK);
   private final ResourceAssignment resourceAssignment;
 
   public AssignmentNode(ResourceAssignment res) {
-    super(res);
+    super(res, ourApplicableColumns);
     resourceAssignment = res;
   }
 
@@ -54,4 +57,30 @@ public class AssignmentNode extends DefaultMutableTreeTableNode {
     return resourceAssignment.getTask().getName();
   }
 
+  @Override
+  public void setCustomField(CustomPropertyDefinition def, Object val) {
+  }
+
+  @Override
+  public Object getCustomField(CustomPropertyDefinition def) {
+    return null;
+  }
+
+  @Override
+  public Object getStandardField(ResourceDefaultColumn def) {
+    switch (def) {
+    case NAME: return getTask().getName();
+    case ROLE_IN_TASK: return getRoleForAssigment();
+    default: return "";
+    }
+  }
+
+  @Override
+  public void setStandardField(ResourceDefaultColumn def, Object value) {
+    switch (def) {
+    case ROLE_IN_TASK:
+      setRoleForAssigment((Role) value);
+      return;
+    }
+  }
 }

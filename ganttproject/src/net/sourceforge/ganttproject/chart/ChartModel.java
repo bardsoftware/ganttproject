@@ -75,6 +75,7 @@ public interface ChartModel {
 
   void addRenderer(SceneBuilder renderer);
 
+  void resetOffsets();
   OffsetList getTopUnitOffsets();
 
   OffsetList getBottomUnitOffsets();

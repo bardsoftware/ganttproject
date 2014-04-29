@@ -18,12 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -33,6 +34,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParsingContext;
@@ -112,31 +114,8 @@ public class GanttXMLOpen implements GPParser {
 
   public boolean doLoad(InputStream inStream) throws IOException {
     // Use an instance of ourselves as the SAX event handler
-    DefaultHandler handler = new GanttXMLParser();
-
-    // Use the default (non-validating) parser
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    try {
-      // Parse the input
-      SAXParser saxParser;
-      saxParser = factory.newSAXParser();
-      saxParser.parse(inStream, handler);
-    } catch (ParserConfigurationException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-      throw new IOException(e.getMessage());
-    } catch (SAXException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-      throw new IOException(e.getMessage());
-    } catch (RuntimeException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-      throw new IOException(e.getMessage());
-    }
+    XmlParser parser = new XmlParser(myTagHandlers, myListeners);
+    parser.parse(inStream);
     myUIFacade.setViewIndex(viewIndex);
     myUIFacade.setGanttDividerLocation(ganttDividerLocation);
     if (resourceDividerLocation != 0) {
@@ -147,16 +126,9 @@ public class GanttXMLOpen implements GPParser {
   }
 
   public boolean load(File file) {
-
-    // Use an instance of ourselves as the SAX event handler
-    DefaultHandler handler = new GanttXMLParser();
-
-    // Use the default (non-validating) parser
-    SAXParserFactory factory = SAXParserFactory.newInstance();
+    XmlParser parser = new XmlParser(myTagHandlers, myListeners);
     try {
-      // Parse the input
-      SAXParser saxParser = factory.newSAXParser();
-      saxParser.parse(file, handler);
+      parser.parse(new BufferedInputStream(new FileInputStream(file)));
     } catch (Exception e) {
       myUIFacade.showErrorDialog(e);
       return false;
@@ -184,28 +156,16 @@ public class GanttXMLOpen implements GPParser {
     return new DefaultTagHandler();
   }
 
-  public TagHandler getTimelineTagHandler() {
-    return myTimelineTagHandler;
-  }
-
-  private class DefaultTagHandler implements TagHandler {
+  private class DefaultTagHandler extends AbstractTagHandler {
+    public DefaultTagHandler() {
+      super(null, true);
+    }
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
       indent += "    ";
       String eName = sName; // element name
       if ("".equals(eName)) {
         eName = qName; // not namespace aware
-      }
-      if (eName.equals("description")) {
-        myCharacterBuffer = new StringBuffer();
-        typeChar = 0;
-      }
-      if (eName.equals("notes")) {
-        myCharacterBuffer = new StringBuffer();
-        typeChar = 1;
-        // barmeier: we know that this tag has only attributes no nested
-        // tags
-        // we can do we need here.
       }
       if (eName.equals("tasks")) {
         myTaskManager.setZeroMilestones(null);
@@ -248,19 +208,25 @@ public class GanttXMLOpen implements GPParser {
     public void endElement(String namespaceURI, String sName, String qName) {
       indent = indent.substring(0, indent.length() - 4);
       if ("description".equals(qName)) {
-        myProjectInfo.setDescription(myCharacterBuffer.toString());
+        myProjectInfo.setDescription(getCdata());
       } else if ("notes".equals(qName)) {
         Task currentTask = getContext().peekTask();
-        currentTask.setNotes(myCharacterBuffer.toString());
+        currentTask.setNotes(getCdata());
       }
     }
-
   }
 
-  private StringBuffer myCharacterBuffer = new StringBuffer();
+  @Override
+  public TagHandler getTimelineTagHandler() {
+    return myTimelineTagHandler;
+  }
 
-  class TimelineTagHandler implements TagHandler, ParsingListener {
+  class TimelineTagHandler extends AbstractTagHandler implements ParsingListener {
     private final List<Integer> myIds = Lists.newArrayList();
+
+    public TimelineTagHandler() {
+      super("timeline", true);
+    }
 
     @Override
     public void parsingStarted() {
@@ -278,13 +244,13 @@ public class GanttXMLOpen implements GPParser {
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
         throws FileFormatException {
       if ("timeline".equals(qName)) {
-        myCharacterBuffer = new StringBuffer();
+        clearCdata();
       }
     }
     @Override
     public void endElement(String namespaceURI, String sName, String qName) {
       if ("timeline".equals(qName)) {
-        String[] ids = myCharacterBuffer.toString().split(",");
+        String[] ids = getCdata().split(",");
         for (String id : ids) {
           try {
             myIds.add(Integer.valueOf(id.trim()));
@@ -292,54 +258,6 @@ public class GanttXMLOpen implements GPParser {
             GPLogger.logToLogger(e);
           }
         }
-      }
-    }
-  }
-
-  class GanttXMLParser extends DefaultHandler {
-    private final Stack<String> myTagStack = new Stack<String>();
-
-    @Override
-    public void startDocument() throws SAXException {
-      super.startDocument();
-      myTagStack.clear();
-    }
-
-    @Override
-    public void endDocument() throws SAXException {
-      for (ParsingListener l : myListeners) {
-        l.parsingFinished();
-      }
-    }
-
-    @Override
-    public void startElement(String namespaceURI, String sName, // simple
-        // name
-        String qName, // qualified name
-        Attributes attrs) throws SAXException {
-      myTagStack.push(qName);
-      for (TagHandler next : myTagHandlers) {
-        try {
-          next.startElement(namespaceURI, sName, qName, attrs);
-        } catch (FileFormatException e) {
-          System.err.println(e.getMessage());
-        }
-      }
-    }
-
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
-      for (TagHandler next : myTagHandlers) {
-        next.endElement(namespaceURI, sName, qName);
-      }
-      myTagStack.pop();
-    }
-
-    @Override
-    public void characters(char buf[], int offset, int len) throws SAXException {
-      String s = new String(buf, offset, len);
-      if (typeChar >= 0) {
-        myCharacterBuffer.append(s);
       }
     }
   }

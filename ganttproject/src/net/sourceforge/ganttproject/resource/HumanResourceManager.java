@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.resource;
 
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import biz.ganttproject.core.time.GanttCalendar;
-
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -43,6 +43,7 @@ public class HumanResourceManager {
     String myEmail;
     String myPhone;
     String myRole;
+    BigDecimal myStandardRate;
 
     public ResourceBuilder withName(String name) {
       myName = name;
@@ -66,6 +67,17 @@ public class HumanResourceManager {
 
     public ResourceBuilder withRole(String role) {
       myRole = role;
+      return this;
+    }
+
+    public ResourceBuilder withStandardRate(String rate) {
+      if (rate != null) {
+        try {
+          myStandardRate = new BigDecimal(rate);
+        } catch (NumberFormatException e) {
+          myStandardRate = null;
+        }
+      }
       return this;
     }
 
@@ -119,6 +131,7 @@ public class HumanResourceManager {
         result.setRole(role);
         result.setPhone(myPhone);
         result.setMail(myEmail);
+        result.setStandardPayRate(myStandardRate);
         add(result);
         return result;
       }

@@ -18,11 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.math.BigDecimal;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import org.jdesktop.swingx.JXMultiSplitPane;
+import org.jdesktop.swingx.MultiSplitLayout;
+
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultDoubleOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.BooleanOptionRadioUi;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -31,7 +51,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 /**
  * UI component in a task properties dialog: a table with resources assigned to
  * a task.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
@@ -39,6 +59,17 @@ public class TaskAllocationsPanel {
   private final HumanResourceManager myHRManager;
   private final RoleManager myRoleManager;
   private final Task myTask;
+  private final DefaultBooleanOption myCostIsCalculated = new DefaultBooleanOption("taskProperties.cost.calculated");
+  private final DefaultDoubleOption myCostValue = new DefaultDoubleOption("taskProperties.cost.value") {
+
+    @Override
+    public void setValue(Double value) {
+      // TODO Auto-generated method stub
+      super.setValue(value);
+    }
+
+  };
+  private final GPOptionGroup myCostGroup = new GPOptionGroup("task.cost", myCostIsCalculated, myCostValue);
 
   private JTable myTable;
 
@@ -75,7 +106,49 @@ public class TaskAllocationsPanel {
       protected void onSelectionChanged() {
       }
     };
-    return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+    JPanel tablePanel = CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+    String layoutDef = "(ROW weight=1.0 (LEAF name=resources weight=0.5) (LEAF name=cost weight=0.5))";
+
+    JXMultiSplitPane result = new JXMultiSplitPane();
+    result.setDividerSize(0);
+
+    MultiSplitLayout.Node modelRoot = MultiSplitLayout.parseModel(layoutDef);
+    result.getMultiSplitLayout().setModel(modelRoot);
+    result.add(tablePanel, "resources");
+    result.add(UIUtil.border(createCostPanel(), 10, UIUtil.LEFT), "cost");
+    return result;
+  }
+
+  private JComponent createCostPanel() {
+    myCostIsCalculated.setValue(myTask.getCost().isCalculated());
+    myCostIsCalculated.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        myCostValue.setWritable(!myCostIsCalculated.isChecked());
+        myCostValue.setValue(myTask.getCost().getValue().doubleValue());
+      }
+    });
+    myCostValue.setValue(myTask.getCost().getValue().doubleValue());
+    myCostValue.setWritable(!myCostIsCalculated.isChecked());
+
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+    BooleanOptionRadioUi radioUi = OptionsPageBuilder.createBooleanOptionRadioUi(myCostIsCalculated);
+
+    JPanel optionsPanel = new JPanel();
+    optionsPanel.add(radioUi.getYesButton());
+    optionsPanel.add(new JLabel(myTask.getCost().getCalculatedValue().toPlainString()));
+    optionsPanel.add(radioUi.getNoButton());
+    optionsPanel.add(builder.createOptionComponent(myCostGroup, myCostValue));
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(optionsPanel, 2);
+
+    final String yesLabelKey = builder.getI18N().getCanonicalOptionLabelKey(myCostIsCalculated) + ".yes";
+    radioUi.getYesButton().setText(GanttLanguage.getInstance().getText(yesLabelKey));
+    radioUi.getNoButton().setText(GanttLanguage.getInstance().getText(builder.getI18N().getCanonicalOptionLabelKey(myCostIsCalculated) + ".no"));
+    UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myCostGroup));
+
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(optionsPanel, BorderLayout.NORTH);
+    return result;
   }
 
   public void commit() {
@@ -83,5 +156,10 @@ public class TaskAllocationsPanel {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
+    Task.Cost cost = myTask.getCost();
+    cost.setCalculated(myCostIsCalculated.getValue());
+    if (!cost.isCalculated()) {
+      cost.setValue(BigDecimal.valueOf(myCostValue.getValue()));
+    }
   }
 }

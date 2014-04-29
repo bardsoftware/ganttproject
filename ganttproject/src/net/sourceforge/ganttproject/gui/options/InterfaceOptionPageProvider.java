@@ -49,10 +49,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 public class InterfaceOptionPageProvider extends OptionPageProviderBase {
+  public static final String ID = "ui.general";
   private JEditorPane myLabel;
 
   public InterfaceOptionPageProvider() {
-    super("ui.general");
+    super(ID);
   }
 
   @Override

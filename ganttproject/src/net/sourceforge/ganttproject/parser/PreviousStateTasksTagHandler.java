@@ -105,4 +105,11 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements TagH
   public ArrayList<GanttPreviousStateTask> getTasks() {
     return tasks;
   }
+
+  public boolean hasCdata() {
+    return false;
+  }
+
+  public void appendCdata(String cdata) {
+  }
 }

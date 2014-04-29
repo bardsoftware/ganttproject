@@ -21,14 +21,14 @@ package net.sourceforge.ganttproject.task;
 import java.util.Date;
 import java.util.List;
 
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarActivity;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 
 
 public class TaskActivitiesAlgorithm {
-  private final GPCalendar myCalendar;
+  private final GPCalendarCalc myCalendar;
 
-  public TaskActivitiesAlgorithm(GPCalendar calendar) {
+  public TaskActivitiesAlgorithm(GPCalendarCalc calendar) {
     myCalendar = calendar;
   }
 

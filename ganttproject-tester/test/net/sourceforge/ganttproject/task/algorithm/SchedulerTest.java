@@ -21,11 +21,9 @@ package net.sourceforge.ganttproject.task.algorithm;
 import com.google.common.base.Suppliers;
 
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;

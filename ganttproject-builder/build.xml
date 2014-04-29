@@ -14,6 +14,12 @@
 			<property name="debug" value="${debug}"></property>
 		</ant>
 	</target>
+  <target name="build_biz.ganttproject.impex.ical">
+    <ant antfile="../biz.ganttproject.impex.ical/build.xml" target="install" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+      <property name="debug" value="${debug}"></property>
+    </ant>
+  </target>
 	<target name="build_org.ganttproject.impex.htmlpdf">
 		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="install" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
@@ -43,6 +49,11 @@
 			<property name="install.dir" value="${install.dir}"></property>
 		</ant>
 	</target>
+  <target name="clean_biz.ganttproject.impex.ical">
+    <ant antfile="../biz.ganttproject.impex.ical/build.xml" target="clean" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+    </ant>
+  </target>
 	<target name="clean_org.ganttproject.impex.htmlpdf">
 		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="clean" inheritall="false">
 			<property name="install.dir" value="${install.dir}"></property>
@@ -62,7 +73,7 @@
 	<target name="welcome-message">
 		<echo>
 =======================================================
-	Compiling GanttProject 2.6
+	Compiling GanttProject 2.7
 =======================================================
 		</echo>
 	</target>
@@ -96,6 +107,7 @@
 		build_biz.ganttproject.core,
 		build_net.sourceforge.ganttproject,
 		build_org.ganttproject.impex.htmlpdf,
+		build_biz.ganttproject.impex.ical,
 		build_biz.ganttproject.impex.msproject2,
 		build_org.ganttproject.chart.pert,
 		copy-launchers">
@@ -280,6 +292,7 @@
 	<target name="clean" description="Removes all intermediate building files" depends="clean_biz.ganttproject.core,
 		clean_net.sourceforge.ganttproject,
 		clean_org.ganttproject.impex.htmlpdf,
+		clean_biz.ganttproject.impex.ical,
 		clean_biz.ganttproject.impex.msproject2,
 		clean_org.ganttproject.chart.pert">
 		<delete dir="bin"/>

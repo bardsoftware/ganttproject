@@ -34,7 +34,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -117,13 +117,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myViewManager = new ViewManagerImpl(getProject(), myTabPane);
 
     myTimeUnitStack = new GPTimeUnitStack();
-    NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost(),
-        new Runnable() {
-          @Override
-          public void run() {
-            getRssFeedChecker().run();
-          }
-        });
+    NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
     GPLogger.setUIFacade(myUIFacade);
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
@@ -150,6 +144,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     };
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
+    myUIFacade.addOptions(myRssChecker.getUiOptions());
 
     mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
   }
@@ -295,6 +290,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public void showNotificationDialog(NotificationChannel channel, String message) {
     myUIFacade.showNotificationDialog(channel, message);
+  }
+
+  @Override
+  public void showSettingsDialog(String pageID) {
+    myUIFacade.showSettingsDialog(pageID);
   }
 
   @Override
@@ -453,7 +453,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
   @Override
-  public abstract GPCalendar getActiveCalendar();
+  public abstract GPCalendarCalc getActiveCalendar();
 
   @Override
   public abstract void setModified();
