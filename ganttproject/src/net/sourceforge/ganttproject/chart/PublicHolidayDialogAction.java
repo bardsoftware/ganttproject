@@ -57,7 +57,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
 
   @Override
   public void actionPerformed(ActionEvent arg0) {
-    final CalendarEditorPanel calendarPanel = new CalendarEditorPanel(myProject.getActiveCalendar());
+    final CalendarEditorPanel calendarPanel = new CalendarEditorPanel(myProject.getActiveCalendar(), null);
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(calendarPanel.createComponent(), BorderLayout.CENTER);
     panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));

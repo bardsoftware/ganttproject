@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.gui.projectwizard;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -39,9 +40,11 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -55,30 +58,36 @@ import com.google.common.collect.Lists;
  * @author dbarashev (Dmitry Barashev)
  */
 public class WeekendConfigurationPage implements WizardPage {
-  private final Box myBox = Box.createVerticalBox();
-
   private final JPanel myPanel;
 
   private final I18N myI18N;
 
   private final CalendarOption myCalendarOption;
-
-  private final WeekendSchedulingOption myRenderWeekendOption;
-
-  static class CalendarOption extends DefaultEnumerationOption<GPCalendar> {
-
-    private final GPCalendar myCalendar;
-
-    private static <T> List<T> append(List<T> list, T s) {
-      List<T> result = Lists.newArrayList(list);
-      result.add(s);
-      return result;
+  private final WeekendCalendarImpl myCustomCalendar = new WeekendCalendarImpl() {
+    {
+      setName(GanttLanguage.getInstance().getText("none"));
     }
 
-    public CalendarOption(GPCalendar calendar, List<GPCalendar> allCalendars, GPCalendar emptyCalendar) {
-      super("project.calendar", append(allCalendars, emptyCalendar).toArray(new GPCalendar[0]));
+    @Override
+    public void setName(String name) {
+      super.setName(GanttLanguage.getInstance().formatText("calendar.editor.custom.name", name));
+    }
+
+  };
+  private final WeekendSchedulingOption myRenderWeekendOption;
+
+  private CalendarEditorPanel myCalendarEditorPanel;
+
+  private static <T> List<T> append(List<T> list, T... s) {
+    List<T> result = Lists.newArrayList(list);
+    result.addAll(Arrays.asList(s));
+    return result;
+  }
+
+  static class CalendarOption extends DefaultEnumerationOption<GPCalendar> {
+    public CalendarOption(GPCalendar calendar, List<GPCalendar> allCalendars) {
+      super("project.calendar", allCalendars.toArray(new GPCalendar[0]));
       resetValue(i18n("none"), true);
-      myCalendar = calendar;
       if (calendar.getBaseCalendarID() != null) {
         GPCalendar baseCalendar = stringToObject(calendar.getBaseCalendarID());
         if (baseCalendar != null) {
@@ -150,7 +159,11 @@ public class WeekendConfigurationPage implements WizardPage {
     UIUtil.createTitle(panel, GanttLanguage.getInstance().getText("selectProjectWeekend"));
     myPanel.add(panel, BorderLayout.NORTH);
 
-    final CalendarEditorPanel editorPanel = new CalendarEditorPanel(calendar);
+    myCalendarEditorPanel = new CalendarEditorPanel(calendar, new Runnable() {
+      @Override public void run() {
+        setCustomCalendar(myCalendarEditorPanel.getEvents());
+      }
+    });
     myCalendarOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -158,22 +171,29 @@ public class WeekendConfigurationPage implements WizardPage {
           calendar.setBaseCalendarID(myCalendarOption.getSelectedValue().getID());
           calendar.setPublicHolidays(myCalendarOption.getSelectedValue().getPublicHolidays());
         }
-        editorPanel.reload(calendar);
+        myCalendarEditorPanel.reload(calendar);
       }
     });
-    JPanel editorComponent = editorPanel.createComponent();
-    UIUtil.setEnabledTree(editorComponent, false);
+    JPanel editorComponent = myCalendarEditorPanel.createComponent();
     myPanel.add(editorComponent, BorderLayout.CENTER);
+  }
+
+  protected void setCustomCalendar(List<CalendarEvent> events) {
+    myCustomCalendar.setPublicHolidays(events);
+    myCustomCalendar.setName(myCalendarOption.getSelectedValue().getName());
+    myCustomCalendar.setBaseCalendarID(myCalendarOption.getSelectedValue().getID());
+    myCalendarOption.setSelectedValue(myCustomCalendar);
   }
 
   private CalendarOption createCalendarOption(GPCalendar calendar) {
     AlwaysWorkingTimeCalendarImpl emptyCalendar = new AlwaysWorkingTimeCalendarImpl();
     emptyCalendar.setName(GanttLanguage.getInstance().getText("none"));
-    return new CalendarOption(calendar, GPCalendarProvider.getInstance().getCalendars(), emptyCalendar);
+    return new CalendarOption(calendar, append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar));
   }
 
   private List<JCheckBox> createWeekendCheckBoxes(final GPCalendar calendar, String[] names) {
     Supplier<Integer> counter = new Supplier<Integer>() {
+      @Override
       public Integer get() {
         int count = 0;
         for (int i = 1; i <= 7; i++) {

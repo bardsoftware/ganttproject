@@ -130,7 +130,7 @@ public class IcsFileImporter extends ImporterBase {
         myPanel.removeAll();
         if (myFile != null && myFile.exists() && myFile.canRead()) {
           if (myEvents != null) {
-            myPanel.add(new CalendarEditorPanel(myEvents).createComponent());
+            myPanel.add(new CalendarEditorPanel(myEvents, null).createComponent());
             return;
           }
         }

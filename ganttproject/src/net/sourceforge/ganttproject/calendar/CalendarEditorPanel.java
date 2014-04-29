@@ -65,15 +65,23 @@ public class CalendarEditorPanel {
       return getI18NedEventType(eventType);
     }
   });
+  private static final Runnable NOOP_CALLBACK = new Runnable() {
+    @Override public void run() {
+    }
+  };
   private final List<CalendarEvent> myEvents = Lists.newArrayList();
   private JTable myTable;
   private TableModelImpl myModel;
 
-  public CalendarEditorPanel(List<CalendarEvent> events) {
+  private final Runnable myOnChangeCallback;
+
+  public CalendarEditorPanel(List<CalendarEvent> events, Runnable onChange) {
     myEvents.addAll(events);
+    myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
   }
 
-  public CalendarEditorPanel(GPCalendar calendar) {
+  public CalendarEditorPanel(GPCalendar calendar, Runnable onChange) {
+    myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
     reload(calendar);
   }
 
@@ -89,7 +97,7 @@ public class CalendarEditorPanel {
     }
   }
   public JPanel createComponent() {
-    myModel = new TableModelImpl(myEvents);
+    myModel = new TableModelImpl(myEvents, myOnChangeCallback);
     myTable = new JTable(myModel);
 
     UIUtil.setupTableUI(myTable);
@@ -183,9 +191,11 @@ public class CalendarEditorPanel {
       }
     }
     private final List<CalendarEvent> myEvents;
+    private final Runnable myOnChangeCallback;
 
-    public TableModelImpl(List<CalendarEvent> events) {
+    public TableModelImpl(List<CalendarEvent> events, Runnable onChangeCallback) {
       myEvents = events;
+      myOnChangeCallback = onChangeCallback;
     }
 
     CalendarEvent getValue(int row) {
@@ -195,6 +205,7 @@ public class CalendarEditorPanel {
     void delete(int row) {
       myEvents.remove(row);
       fireTableRowsDeleted(row, row);
+      myOnChangeCallback.run();
     }
 
     @Override
@@ -277,10 +288,12 @@ public class CalendarEditorPanel {
         break;
       case RECURRING:
         newEvent = CalendarEvent.newEvent(e.myDate, Boolean.valueOf(value), e.getType(), e.getTitle());
+        break;
       }
       if (newEvent != null) {
         myEvents.set(row,  newEvent);
         fireTableRowsUpdated(row, row + 1);
+        myOnChangeCallback.run();
       }
     }
   }
