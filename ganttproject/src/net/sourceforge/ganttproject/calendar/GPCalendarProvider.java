@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
@@ -118,7 +119,13 @@ public class GPCalendarProvider {
 
   public static synchronized GPCalendarProvider getInstance() {
     if (ourInstance == null) {
-      ourInstance = new GPCalendarProvider(readCalendars());
+      List<GPCalendar> calendars = readCalendars();
+      Collections.sort(calendars, new Comparator<GPCalendar>() {
+        public int compare(GPCalendar o1, GPCalendar o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
+      ourInstance = new GPCalendarProvider(calendars);
     }
     return ourInstance;
   }
