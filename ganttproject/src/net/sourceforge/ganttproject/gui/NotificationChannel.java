@@ -117,7 +117,7 @@ public enum NotificationChannel {
   public int getUnreadCount() {
     int result = 0;
     for (NotificationItem item : myItems) {
-      if (!item.isRead()) {
+      if (item != null && !item.isRead()) {
         result++;
       }
     }
