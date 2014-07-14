@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
@@ -64,6 +65,9 @@ import com.google.common.collect.Sets;
 public class WeekendConfigurationPage implements WizardPage {
   private final JPanel myPanel;
   private final JLabel myBasedOnLabel = new JLabel();
+  {
+    myBasedOnLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+  }
 
   private final I18N myI18N;
 
