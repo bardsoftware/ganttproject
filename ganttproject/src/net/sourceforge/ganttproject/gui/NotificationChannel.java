@@ -26,6 +26,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JComponent;
 
+import com.google.common.base.Preconditions;
+
 public enum NotificationChannel {
   RSS(Color.GREEN.brighter()), ERROR(UIUtil.ERROR_BACKGROUND), WARNING(Color.YELLOW);
 
@@ -63,6 +65,9 @@ public enum NotificationChannel {
   }
 
   void addNotifications(Collection<NotificationItem> items) {
+    for (NotificationItem item : items) {
+      Preconditions.checkNotNull(item);
+    }
     myItems.addAll(items);
     for (Listener l : myListeners) {
       l.notificationAdded();
