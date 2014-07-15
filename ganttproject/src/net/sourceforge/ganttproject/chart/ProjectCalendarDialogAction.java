@@ -41,13 +41,13 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class PublicHolidayDialogAction extends AbstractAction {
+public class ProjectCalendarDialogAction extends AbstractAction {
 
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
 
-  public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
+  public ProjectCalendarDialogAction(IGanttProject project, UIFacade uiFacade) {
     super(GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays"));
     myProject = project;
     myUIFacade = uiFacade;
@@ -68,7 +68,7 @@ public class PublicHolidayDialogAction extends AbstractAction {
         try {
           myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         } catch (TaskDependencyException e1) {
-          GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
+          GPLogger.getLogger(ProjectCalendarDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
         }
         myUIFacade.getActiveChart().reset();
       }
