@@ -161,7 +161,6 @@ public class WeekendConfigurationPage implements WizardPage {
       panel.add(myBasedOnLabel);
     }
     OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(panel, 4);
-    UIUtil.createTitle(panel, GanttLanguage.getInstance().getText("selectProjectWeekend"));
     myPanel.add(panel, BorderLayout.NORTH);
 
     myCalendarEditorPanel = new CalendarEditorPanel(calendar, new Runnable() {
