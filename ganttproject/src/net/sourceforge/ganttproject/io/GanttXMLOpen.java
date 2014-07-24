@@ -162,6 +162,7 @@ public class GanttXMLOpen implements GPParser {
     }
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+      clearCdata();
       indent += "    ";
       String eName = sName; // element name
       if ("".equals(eName)) {
