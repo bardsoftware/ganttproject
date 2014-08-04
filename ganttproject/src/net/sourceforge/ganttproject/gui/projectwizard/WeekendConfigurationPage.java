@@ -38,7 +38,6 @@ import javax.swing.JPanel;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
-import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
@@ -74,14 +73,8 @@ public class WeekendConfigurationPage implements WizardPage {
   private final CalendarOption myCalendarOption;
   private final WeekendCalendarImpl myCustomCalendar = new WeekendCalendarImpl() {
     {
-      setName(GanttLanguage.getInstance().getText("none"));
+      setName(GanttLanguage.getInstance().getText("calendar.editor.custom.name"));
     }
-
-    @Override
-    public void setName(String name) {
-      super.setName(GanttLanguage.getInstance().formatText("calendar.editor.custom.name", name));
-    }
-
   };
   private final WeekendSchedulingOption myRenderWeekendOption;
 
@@ -166,11 +159,12 @@ public class WeekendConfigurationPage implements WizardPage {
     myCalendarEditorPanel = new CalendarEditorPanel(calendar, new Runnable() {
       @Override public void run() {
         fillCustomCalendar(myCalendarEditorPanel.getEvents(), myCalendarOption.getSelectedValue());
-        updateBasedOnLabel(myCalendarOption.getSelectedValue());
+        if (myCalendarOption.getSelectedValue() != myCustomCalendar) {
+          updateBasedOnLabel(myCalendarOption.getSelectedValue());
+        }
         myCalendarOption.setSelectedValue(myCustomCalendar);
       }
     });
-    fillCustomCalendar(myCalendarEditorPanel.getEvents(), calendar);
     myCalendarOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -187,6 +181,9 @@ public class WeekendConfigurationPage implements WizardPage {
       }
     });
     JPanel editorComponent = myCalendarEditorPanel.createComponent();
+    editorComponent.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createEmptyBorder(5, 0, 0, 0),
+        editorComponent.getBorder()));
     myPanel.add(editorComponent, BorderLayout.CENTER);
   }
 
@@ -199,8 +196,9 @@ public class WeekendConfigurationPage implements WizardPage {
   }
   private void fillCustomCalendar(List<CalendarEvent> events, GPCalendar base) {
     myCustomCalendar.setPublicHolidays(events);
-    myCustomCalendar.setName(base.getName());
-    myCustomCalendar.setBaseCalendarID(base.getID());
+    if (!GanttLanguage.getInstance().getText("calendar.editor.custom.name").equals(base.getID())) {
+      myCustomCalendar.setBaseCalendarID(base.getID());
+    }
   }
 
   private CalendarOption createCalendarOption(final GPCalendar calendar) {
@@ -219,7 +217,7 @@ public class WeekendConfigurationPage implements WizardPage {
         if (Sets.newHashSet(baseCalendar.getPublicHolidays()).equals(Sets.newHashSet(calendar.getPublicHolidays()))) {
           result.setSelectedValue(baseCalendar);
         } else {
-          fillCustomCalendar(Lists.newArrayList(calendar.getPublicHolidays()), calendar);
+          fillCustomCalendar(Lists.newArrayList(calendar.getPublicHolidays()), baseCalendar);
           result.setSelectedValue(myCustomCalendar);
           updateBasedOnLabel(baseCalendar);
         }
