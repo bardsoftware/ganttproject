@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 
 public abstract class RecalculateTaskCompletionPercentageAlgorithm extends AlgorithmBase {
+  @Override
   public void run() {
     if (!isEnabled()) {
       return;
@@ -56,7 +57,7 @@ public abstract class RecalculateTaskCompletionPercentageAlgorithm extends Algor
       long plannedDays = 0;
       for (int i = 0; i < nestedTasks.length; i++) {
         Task next = nestedTasks[i];
-        long nextDuration = next.getDuration().getLength();
+        long nextDuration = next.isMilestone() ? 1 : next.getDuration().getLength();
         completedDays += nextDuration * next.getCompletionPercentage();
         plannedDays += nextDuration;
       }
