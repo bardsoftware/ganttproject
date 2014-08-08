@@ -20,101 +20,92 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPerc
  * Created by IntelliJ IDEA. User: bard
  */
 public class TestTaskCompletionPercentage extends TaskTestCase {
-    public void testCompletionIs0WhenAllNestedTasksNotStarted() {
-        TaskManager taskManager = getTaskManager();
-        Task supertask = taskManager.createTask();
-        supertask.setCompletionPercentage(50);
-        Task task1 = taskManager.createTask();
-        Task task2 = taskManager.createTask();
-        Task task3 = taskManager.createTask();
-        //
-        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
-        task1.setStart(commonStart);
-        task1.setEnd(commonEnd);
-        task2.setStart(commonStart);
-        task2.setEnd(commonEnd);
-        task3.setStart(commonStart);
-        task3.setEnd(commonEnd);
-        //
-        task1.move(supertask);
-        task2.move(supertask);
-        task3.move(supertask);
-        //
-        RecalculateTaskCompletionPercentageAlgorithm alg = taskManager
-                .getAlgorithmCollection()
-                .getRecalculateTaskCompletionPercentageAlgorithm();
-        alg.run(supertask);
-        assertEquals("Unexpected completion percentage of supertask="
-                + supertask, 0, supertask.getCompletionPercentage());
+  public void testCompletionIs0WhenAllNestedTasksNotStarted() {
+    TaskManager taskManager = getTaskManager();
+    Task supertask = taskManager.createTask();
+    supertask.setCompletionPercentage(50);
+    Task task1 = taskManager.createTask();
+    Task task2 = taskManager.createTask();
+    Task task3 = taskManager.createTask();
+    //
+    GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+    GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
+    task1.setStart(commonStart);
+    task1.setEnd(commonEnd);
+    task2.setStart(commonStart);
+    task2.setEnd(commonEnd);
+    task3.setStart(commonStart);
+    task3.setEnd(commonEnd);
+    //
+    task1.move(supertask);
+    task2.move(supertask);
+    task3.move(supertask);
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run(supertask);
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 0, supertask.getCompletionPercentage());
 
-    }
+  }
 
-    public void testCompletionIs100WhenAllNestedTasksCompleted() {
-        TaskManager taskManager = getTaskManager();
-        Task supertask = taskManager.createTask();
-        supertask.setCompletionPercentage(50);
-        Task task1 = taskManager.createTask();
-        Task task2 = taskManager.createTask();
-        Task task3 = taskManager.createTask();
-        //
-        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
-        task1.setStart(commonStart);
-        task1.setEnd(commonEnd);
-        task2.setStart(commonStart);
-        task2.setEnd(commonEnd);
-        task3.setStart(commonStart);
-        task3.setEnd(commonEnd);
-        //
-        task1.move(supertask);
-        task2.move(supertask);
-        task3.move(supertask);
-        //
-        task1.setCompletionPercentage(100);
-        task2.setCompletionPercentage(100);
-        task3.setCompletionPercentage(100);
-        //
-        RecalculateTaskCompletionPercentageAlgorithm alg = taskManager
-                .getAlgorithmCollection()
-                .getRecalculateTaskCompletionPercentageAlgorithm();
-        alg.run(supertask);
-        assertEquals("Unexpected completion percentage of supertask="
-                + supertask, 100, supertask.getCompletionPercentage());
+  public void testCompletionIs100WhenAllNestedTasksCompleted() {
+    TaskManager taskManager = getTaskManager();
+    Task supertask = taskManager.createTask();
+    supertask.setCompletionPercentage(50);
+    Task task1 = taskManager.createTask();
+    Task task2 = taskManager.createTask();
+    Task task3 = taskManager.createTask();
+    //
+    GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+    GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
+    task1.setStart(commonStart);
+    task1.setEnd(commonEnd);
+    task2.setStart(commonStart);
+    task2.setEnd(commonEnd);
+    task3.setStart(commonStart);
+    task3.setEnd(commonEnd);
+    //
+    task1.move(supertask);
+    task2.move(supertask);
+    task3.move(supertask);
+    //
+    task1.setCompletionPercentage(100);
+    task2.setCompletionPercentage(100);
+    task3.setCompletionPercentage(100);
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run(supertask);
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 100, supertask.getCompletionPercentage());
 
-    }
+  }
 
-    public void testCompletionIs50WhenAllNestedTasksHalfCompleted() {
-        TaskManager taskManager = getTaskManager();
-        Task supertask = taskManager.createTask();
-        supertask.setCompletionPercentage(50);
-        Task task1 = taskManager.createTask();
-        Task task2 = taskManager.createTask();
-        Task task3 = taskManager.createTask();
-        //
-        GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
-        GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
-        task1.setStart(commonStart);
-        task1.setEnd(commonEnd);
-        task2.setStart(commonStart);
-        task2.setEnd(commonEnd);
-        task3.setStart(commonStart);
-        task3.setEnd(commonEnd);
-        //
-        task1.move(supertask);
-        task2.move(supertask);
-        task3.move(supertask);
-        //
-        task1.setCompletionPercentage(50);
-        task2.setCompletionPercentage(50);
-        task3.setCompletionPercentage(50);
-        //
-        RecalculateTaskCompletionPercentageAlgorithm alg = taskManager
-                .getAlgorithmCollection()
-                .getRecalculateTaskCompletionPercentageAlgorithm();
-        alg.run(supertask);
-        assertEquals("Unexpected completion percentage of supertask="
-                + supertask, 50, supertask.getCompletionPercentage());
+  public void testCompletionIs50WhenAllNestedTasksHalfCompleted() {
+    TaskManager taskManager = getTaskManager();
+    Task supertask = taskManager.createTask();
+    supertask.setCompletionPercentage(50);
+    Task task1 = taskManager.createTask();
+    Task task2 = taskManager.createTask();
+    Task task3 = taskManager.createTask();
+    //
+    GanttCalendar commonStart = CalendarFactory.createGanttCalendar(2000, 01, 01);
+    GanttCalendar commonEnd = CalendarFactory.createGanttCalendar(2000, 01, 05);
+    task1.setStart(commonStart);
+    task1.setEnd(commonEnd);
+    task2.setStart(commonStart);
+    task2.setEnd(commonEnd);
+    task3.setStart(commonStart);
+    task3.setEnd(commonEnd);
+    //
+    task1.move(supertask);
+    task2.move(supertask);
+    task3.move(supertask);
+    //
+    task1.setCompletionPercentage(50);
+    task2.setCompletionPercentage(50);
+    task3.setCompletionPercentage(50);
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run(supertask);
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
 
-    }
+  }
 }
