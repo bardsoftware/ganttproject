@@ -108,4 +108,22 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
 
   }
+
+  public void testCompletionWithMilestones() {
+    TaskManager taskManager = getTaskManager();
+    Task supertask = taskManager.createTask();
+    Task task1 = taskManager.createTask();
+    Task task2 = taskManager.createTask();
+    task2.setMilestone(true);
+    //
+    task1.move(supertask);
+    task2.move(supertask);
+    //
+    task1.setCompletionPercentage(50);
+    task2.setCompletionPercentage(100);
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run(supertask);
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 75, supertask.getCompletionPercentage());
+  }
 }
