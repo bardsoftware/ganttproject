@@ -81,7 +81,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
   @Override
   public Component buildPageComponent() {
     final GanttLanguage i18n = GanttLanguage.getInstance();
-    Box result = Box.createVerticalBox();
+    final Box result = Box.createVerticalBox();
 
     myWeekendsPanel = new WeekendsSettingsPanel(getProject(), getUiFacade());
     myWeekendsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -176,7 +176,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     result.add(myMoveOptionsPanel);
 
     updateMoveOptions(getProject().getTaskManager().createLength(0));
-    return OptionPageProviderBase.wrapContentComponent(result, myWeekendsPanel.getTitle(), null);
+    return OptionPageProviderBase.wrapContentComponent(result, getCanonicalPageTitle(), null);
   }
 
   protected void updateMoveOptions(TimeDuration moveDuration) {

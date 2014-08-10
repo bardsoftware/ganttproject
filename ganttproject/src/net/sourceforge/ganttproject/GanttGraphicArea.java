@@ -40,7 +40,7 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.chart.PublicHolidayDialogAction;
+import net.sourceforge.ganttproject.chart.ProjectCalendarDialogAction;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -98,7 +98,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private GanttPreviousState myBaseline;
 
-  private final PublicHolidayDialogAction myPublicHolidayDialogAction;
+  private final ProjectCalendarDialogAction myPublicHolidayDialogAction;
 
   private final ChartOptionGroup myStateDiffOptions;
 
@@ -150,7 +150,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
         }
       }
     });
-    myPublicHolidayDialogAction = new PublicHolidayDialogAction(getProject(), getUIFacade());
+    myPublicHolidayDialogAction = new ProjectCalendarDialogAction(getProject(), getUIFacade());
     getProject().getTaskCustomColumnManager().addListener(this);
     initMouseListeners();
   }

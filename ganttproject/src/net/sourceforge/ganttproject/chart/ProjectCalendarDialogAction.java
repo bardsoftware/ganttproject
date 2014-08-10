@@ -25,51 +25,50 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.ProjectCalendarOptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
- * This action shows a dialog for the project holidays editing.
+ * This action shows a project calendar settings page.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class PublicHolidayDialogAction extends AbstractAction {
+public class ProjectCalendarDialogAction extends AbstractAction {
 
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
 
-  public PublicHolidayDialogAction(IGanttProject project, UIFacade uiFacade) {
+  public ProjectCalendarDialogAction(IGanttProject project, UIFacade uiFacade) {
     super(GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays"));
     myProject = project;
     myUIFacade = uiFacade;
-    this.putValue(Action.SMALL_ICON, new ImageIcon(getClass().getResource("/icons/holidays_16.gif")));
   }
 
   @Override
   public void actionPerformed(ActionEvent arg0) {
-    final CalendarEditorPanel calendarPanel = new CalendarEditorPanel(myProject.getActiveCalendar(), null);
+    final ProjectCalendarOptionPageProvider configPage = new ProjectCalendarOptionPageProvider();
+    configPage.init(myProject, myUIFacade);
     JPanel panel = new JPanel(new BorderLayout());
-    panel.add(calendarPanel.createComponent(), BorderLayout.CENTER);
+    panel.add(configPage.buildPageComponent(), BorderLayout.CENTER);
     panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     myUIFacade.createDialog(panel, new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        myProject.getActiveCalendar().setPublicHolidays(calendarPanel.getEvents());
+        configPage.commit();
         myProject.setModified();
         try {
           myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
         } catch (TaskDependencyException e1) {
-          GPLogger.getLogger(PublicHolidayDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
+          GPLogger.getLogger(ProjectCalendarDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
         }
         myUIFacade.getActiveChart().reset();
       }

@@ -20,8 +20,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.calendar;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +33,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
@@ -104,7 +109,6 @@ public class CalendarEditorPanel {
     CommonPanel.setupComboBoxEditor(
         myTable.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
         TYPE_COLUMN_VALUES.toArray(new String[0]));
-    TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     myTable.getColumnModel().getColumn(TableModelImpl.Column.RECURRING.ordinal()).setCellRenderer(myTable.getDefaultRenderer(TableModelImpl.Column.RECURRING.getColumnClass()));
     // We'll show a hint label under the table if user types something which we can't parse
     Date today = CalendarFactory.newCalendar().getTime();
@@ -126,9 +130,37 @@ public class CalendarEditorPanel {
         }
       }
     };
+
+    TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator);
     dateColumn.setCellEditor(dateEditor);
 
+    class DateCellRendererImpl implements TableCellRenderer {
+      private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+
+      @Override
+      public Component getTableCellRendererComponent(
+          JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        assert value == null || value instanceof CalendarEvent : (value == null)
+            ? "value is null" : String.format("value=%s class=%s", value, value.getClass());
+        final String formattedDate;
+        if (value == null) {
+          formattedDate = "";
+        } else {
+          CalendarEvent e = (CalendarEvent) value;
+          if (e.isRecurring) {
+            formattedDate = new SimpleDateFormat("MMM dd").format(e.myDate);
+          } else {
+            formattedDate = GanttLanguage.getInstance().getShortDateFormat().format(e.myDate);
+          }
+        }
+        JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, formattedDate, isSelected, hasFocus,
+            row, column);
+        return result;
+      }
+    }
+
+    dateColumn.setCellRenderer(new DateCellRendererImpl());
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(myTable) {
       @Override
       protected void onAddEvent() {
@@ -172,14 +204,16 @@ public class CalendarEditorPanel {
 
   private static class TableModelImpl extends AbstractTableModel {
     private static enum Column {
-      DATES(String.class), RECURRING(Boolean.class), SUMMARY(String.class), TYPE(String.class);
+      DATES(CalendarEvent.class, null), RECURRING(Boolean.class, false), SUMMARY(String.class, ""), TYPE(String.class, "");
 
       private String myTitle;
       private Class<?> myClazz;
+      private Object myDefault;
 
-      Column(Class<?> clazz) {
+      Column(Class<?> clazz, Object defaultValue) {
         myTitle = GanttLanguage.getInstance().getText("calendar.editor.column." + name().toLowerCase() + ".title");
         myClazz = clazz;
+        myDefault = defaultValue;
       }
 
       public String getTitle() {
@@ -188,6 +222,10 @@ public class CalendarEditorPanel {
 
       public Class<?> getColumnClass() {
         return myClazz;
+      }
+
+      public Object getDefault() {
+        return myDefault;
       }
     }
     private final List<CalendarEvent> myEvents;
@@ -234,12 +272,12 @@ public class CalendarEditorPanel {
         return null;
       }
       if (row == getRowCount() - 1) {
-        return col == Column.RECURRING.ordinal() ? false : "";
+        return Column.values()[col].getDefault();
       }
       CalendarEvent e = myEvents.get(row);
       switch (Column.values()[col]) {
       case DATES:
-        return GanttLanguage.getInstance().getShortDateFormat().format(e.myDate);
+        return e;
       case RECURRING:
         return Boolean.valueOf(e.isRecurring);
       case SUMMARY:
