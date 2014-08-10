@@ -412,7 +412,7 @@ public abstract class UIUtil {
     result.add(top, BorderLayout.NORTH);
 
     JPanel planePageWrapper = new JPanel(new BorderLayout());
-    planePageWrapper.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+    planePageWrapper.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 0));
     center.setAlignmentX(Component.LEFT_ALIGNMENT);
     planePageWrapper.add(center, BorderLayout.NORTH);
     result.add(planePageWrapper, BorderLayout.CENTER);

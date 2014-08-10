@@ -42,6 +42,10 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
   private final GPCalendar myCalendar;
   private final List<CalendarEvent> myEvents = Lists.newArrayList();
   private Attributes myAttrs;
+  // We may have event titles written as comments after <date> tag.
+  // To process them properly we remember the last event created from <date> tag
+  // and "patch" it if we find any non-empty cdata afterwards.
+  private CalendarEvent myLastEvent = null;
 
   public HolidayTagHandler(GPCalendar calendar) {
     super("date", true);
@@ -67,10 +71,21 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
     if (qName.equals("date")) {
+      processLastEvent();
       myAttrs = attrs;
     }
   }
 
+  private void processLastEvent() {
+    if (myLastEvent != null) {
+      String cdata = getCdata().trim();
+      if (Strings.isNullOrEmpty(cdata)) {
+        myEvents.add(myLastEvent);
+      } else {
+        myEvents.add(CalendarEvent.newEvent(myLastEvent.myDate, myLastEvent.isRecurring, myLastEvent.getType(), cdata));
+      }
+    }
+  }
 
   private void loadHoliday(Attributes atts) {
     try {
@@ -83,11 +98,11 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
-        myEvents.add(CalendarEvent.newEvent(date, true, type, getCdata()));
+        myLastEvent = CalendarEvent.newEvent(date, true, type, null);
       } else {
         int year = Integer.parseInt(yearAsString);
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
-        myEvents.add(CalendarEvent.newEvent(date, false, type, getCdata()));
+        myLastEvent = CalendarEvent.newEvent(date, false, type, null);
       }
       clearCdata();
     } catch (NumberFormatException e) {
@@ -104,6 +119,7 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
 
   @Override
   public void parsingFinished() {
+    processLastEvent();
     myCalendar.setPublicHolidays(myEvents);
   }
 }
