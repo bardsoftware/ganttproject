@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Chile" type="country">
+	<date year="" month="01" date="01"/>
+	<date year="" month="03" date="24"/>
+    	<date year="" month="05" date="01"/>
+	<date year="" month="05" date="21"/>
+	<date year="" month="06" date="29"/>
+	<date year="" month="07" date="16"/>
+	<date year="" month="08" date="15"/>
+	<date year="" month="09" date="18"/>
+	<date year="" month="09" date="19"/>
+	<date year="" month="10" date="12"/>
+	<date year="" month="10" date="31"/>
+	<date year="" month="11" date="01"/>
+	<date year="" month="12" date="08"/>
+	<date year="" month="12" date="25"/>
+	<date year="2014" month="04" date="18"/>
+	<date year="2014" month="04" date="19"/>
+	<date year="2015" month="04" date="03"/>
+	<date year="2015" month="04" date="04"/>
+	<date year="2016" month="03" date="25"/>
+	<date year="2016" month="03" date="26"/>
+	<date year="2017" month="04" date="14"/>
+	<date year="2017" month="04" date="15"/>
+	<date year="2018" month="03" date="30"/>
+	<date year="2018" month="03" date="31"/>
+	<date year="2019" month="04" date="19"/>
+	<date year="2019" month="04" date="20"/>
+	<date year="2020" month="04" date="10"/>
+	<date year="2020" month="04" date="11"/>
+</calendar>
