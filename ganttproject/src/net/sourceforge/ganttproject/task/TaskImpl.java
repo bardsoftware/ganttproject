@@ -20,9 +20,11 @@ package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -372,7 +374,24 @@ public class TaskImpl implements Task {
   @Override
   public GanttCalendar getDisplayEnd() {
     GanttCalendar modelEnd = getEnd();
-    return (isMilestone) ? modelEnd : modelEnd.getDisplayValue();
+    if (modelEnd.equals(getStart())) {
+      boolean allMilestones = true;
+      Task[] deepNestedTasks = getManager().getTaskHierarchy().getDeepNestedTasks(this);
+      for (Task t : deepNestedTasks) {
+        if (!t.isSupertask() && !t.isMilestone()) {
+          allMilestones = false;
+          break;
+        }
+      }
+      if (!allMilestones) {
+        GPLogger.getLogger(Task.class).warning(String.format(
+            "This is probably a bug. Task #%d (%s) has end date=%s equal to start date." +
+            "It could be possible if all child tasks were milestones, however they are not. Child tasks: %s",
+            getTaskID(), getName(), modelEnd, Arrays.asList(deepNestedTasks)));
+      }
+      return modelEnd;
+    }
+    return isMilestone ? modelEnd : modelEnd.getDisplayValue();
   }
 
   GanttCalendar calculateEnd() {
