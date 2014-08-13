@@ -37,7 +37,10 @@ import net.sourceforge.ganttproject.ChartImplementation;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.GanttTreeTable;
+import net.sourceforge.ganttproject.GanttTreeTableModel;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.TreeTableContainer;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -58,18 +61,23 @@ import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Shape;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
@@ -80,6 +88,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
   protected CustomBalloonTip myTooltip;
+  private final TaskSelectionManager mySelectionManager;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
       ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState) {
@@ -90,6 +99,8 @@ public class GanttChartController extends AbstractChartImplementation implements
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
+    mySelection = new GanttChartSelection(tree, myTaskManager, project.getHumanResourceManager());
+    mySelectionManager = uiFacade.getTaskSelectionManager();
   }
 
   private TaskManager getTaskManager() {
@@ -194,32 +205,86 @@ public class GanttChartController extends AbstractChartImplementation implements
     return Status.OK_STATUS;
   }
 
-  @Override
-  public ChartSelection getSelection() {
-    ChartSelectionImpl result = new ChartSelectionImpl() {
-      @Override
-      public boolean isEmpty() {
-        return myTree.getSelectedNodes().length == 0;
-      }
+  private GanttChartSelection mySelection;
 
+  private static class GanttChartSelection extends ChartSelectionImpl {
+    private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = new Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode>() {
       @Override
-      public void startCopyClipboardTransaction() {
-        super.startCopyClipboardTransaction();
-        myTree.copySelectedNode();
-      }
-
-      @Override
-      public void startMoveClipboardTransaction() {
-        super.startMoveClipboardTransaction();
-        myTree.cutSelectedNode();
+      public DefaultMutableTreeTableNode apply(DefaultMutableTreeTableNode node) {
+        return (DefaultMutableTreeTableNode) node.getParent();
       }
     };
-    return result;
+
+
+    private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
+    private final TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> myTree;
+    private final TaskManager myTaskManager;
+    private final HumanResourceManager myResourceManager;
+
+    private ClipboardContents myClipboardContents;
+
+
+    private Function<? super DefaultMutableTreeTableNode, ? extends Task> getTaskFromNode = new Function<DefaultMutableTreeTableNode, Task>() {
+      @Override
+      public Task apply(DefaultMutableTreeTableNode node) {
+        return (Task) node.getUserObject();
+      }
+    };
+
+    private GanttChartSelection(TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager, HumanResourceManager resourceManager) {
+      myTree = treeView;
+      myTaskManager = taskManager;
+      myResourceManager = resourceManager;
+    }
+    @Override
+    public boolean isEmpty() {
+      return myTree.getSelectedNodes().length == 0;
+    }
+
+    @Override
+    public void startCopyClipboardTransaction() {
+      super.startCopyClipboardTransaction();
+      buildClipboardContents();
+    }
+
+    @Override
+    public void startMoveClipboardTransaction() {
+      super.startMoveClipboardTransaction();
+      buildClipboardContents();
+      for (Task t : myClipboardContents.getTasks()) {
+        myTaskManager.deleteTask(t);
+      }
+    }
+
+    private void buildClipboardContents() {
+      List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
+      myRetainRootsAlgorithm.run(myTree.getSelectedNodes(), getParentNode, selectedRoots);
+      myClipboardContents = new ClipboardContents(myTaskManager, myResourceManager);
+      myClipboardContents.addTasks(Lists.transform(selectedRoots, getTaskFromNode));
+      myClipboardContents.build();
+    }
+
+    List<Task> paste(Task target) {
+      ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
+      return processor.paste(target, myClipboardContents.getTasks(), myClipboardContents.getDeps());
+    }
+  }
+
+  @Override
+  public ChartSelection getSelection() {
+    return mySelection;
   }
 
   @Override
   public void paste(ChartSelection selection) {
-    myTree.pasteNode();
+    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();
+    if (selectedNodes.length > 1) {
+      return;
+    }
+    DefaultMutableTreeTableNode pasteRoot = selectedNodes.length == 0 ? myTree.getRoot() : selectedNodes[0];
+    for (Task t : mySelection.paste((Task)pasteRoot.getUserObject())) {
+      mySelectionManager.addTask(t);
+    }
   }
 
   public Task findTaskUnderPointer(int xpos, int ypos) {

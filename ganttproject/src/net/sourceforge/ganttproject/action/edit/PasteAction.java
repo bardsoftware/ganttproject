@@ -23,30 +23,39 @@ import java.awt.event.ActionEvent;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
   private final GPViewManager myViewmanager;
+  private final GPUndoManager myUndoManager;
 
-  public PasteAction(GPViewManager viewManager) {
+  public PasteAction(GPViewManager viewManager, GPUndoManager undoManager) {
     super("paste");
     myViewmanager = viewManager;
+    myUndoManager = undoManager;
   }
 
-  private PasteAction(GPViewManager viewmanager, IconSize size) {
+  private PasteAction(GPViewManager viewmanager, IconSize size, GPUndoManager undoManager) {
     super("paste", size);
     myViewmanager = viewmanager;
+    myUndoManager = undoManager;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new PasteAction(myViewmanager, size);
+    return new PasteAction(myViewmanager, size, myUndoManager);
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    ChartSelection selection = myViewmanager.getSelectedArtefacts();
-    myViewmanager.getActiveChart().paste(selection);
-    selection.commitClipboardTransaction();
+    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
+      @Override
+      public void run() {
+        ChartSelection selection = myViewmanager.getSelectedArtefacts();
+        myViewmanager.getActiveChart().paste(selection);
+        selection.commitClipboardTransaction();
+      }
+    });
   }
 }

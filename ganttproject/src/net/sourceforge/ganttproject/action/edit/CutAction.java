@@ -22,18 +22,26 @@ import java.awt.event.ActionEvent;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 //TODO Enable/Disable action on selection changes
 public class CutAction extends GPAction {
   private final GPViewManager myViewmanager;
+  private final GPUndoManager myUndoManager;
 
-  public CutAction(GPViewManager viewManager) {
+  public CutAction(GPViewManager viewManager, GPUndoManager undoManager) {
     super("cut");
     myViewmanager = viewManager;
+    myUndoManager = undoManager;
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
+    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
+      @Override
+      public void run() {
+        myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
+      }
+    });
   }
 }

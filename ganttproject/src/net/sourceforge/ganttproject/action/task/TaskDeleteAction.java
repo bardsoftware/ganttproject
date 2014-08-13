@@ -90,8 +90,7 @@ public class TaskDeleteAction extends TaskActionBase {
       for (DefaultMutableTreeTableNode node : levelList) {
         if (node != null && node instanceof TaskNode) {
           Task task = (Task) node.getUserObject();
-          getTree().removeCurrentNode(node);
-          task.delete();
+          getTaskManager().deleteTask(task);
         }
       }
     }
