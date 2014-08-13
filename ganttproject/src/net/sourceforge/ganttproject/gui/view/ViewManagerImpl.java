@@ -34,10 +34,11 @@ import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * View manager implementation based on the tab pane.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class ViewManagerImpl implements GPViewManager {
@@ -49,13 +50,13 @@ public class ViewManagerImpl implements GPViewManager {
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
 
-  public ViewManagerImpl(IGanttProject project, GanttTabbedPane tabs) {
+  public ViewManagerImpl(IGanttProject project, GanttTabbedPane tabs, GPUndoManager undoManager) {
     myTabs = tabs;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
     myCopyAction = new CopyAction(this);
-    myCutAction = new CutAction(this);
-    myPasteAction = new PasteAction(this);
+    myCutAction = new CutAction(this, undoManager);
+    myPasteAction = new PasteAction(this, undoManager);
 
     myTabs.addChangeListener(new ChangeListener() {
 

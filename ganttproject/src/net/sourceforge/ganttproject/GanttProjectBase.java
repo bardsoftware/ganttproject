@@ -114,7 +114,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
-    myViewManager = new ViewManagerImpl(getProject(), myTabPane);
 
     myTimeUnitStack = new GPTimeUnitStack();
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
@@ -142,6 +141,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return GanttProjectBase.this.getParserFactory();
       }
     };
+    myViewManager = new ViewManagerImpl(getProject(), myTabPane, getUndoManager());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
