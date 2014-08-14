@@ -24,6 +24,7 @@ import java.util.Map;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
@@ -46,26 +47,39 @@ public class ClipboardTaskProcessor {
     myTaskManager = taskManager;
   }
 
-  public List<Task> paste(
-      Task selectedTask, List<Task> copiedTasks, List<TaskDependency> deps) {
+  public List<Task> paste(Task selectedTask, ClipboardContents clipboardContents) {
     Task pasteRoot = myTaskManager.getTaskHierarchy().getContainer(selectedTask);
     if (pasteRoot == null) {
       pasteRoot = myTaskManager.getRootTask();
       selectedTask = null;
     }
 
-    List<Task> result = Lists.newArrayListWithExpectedSize(copiedTasks.size());
+    List<Task> result = Lists.newArrayListWithExpectedSize(clipboardContents.getTasks().size());
     Map<Task, Task> original2copy = Maps.newHashMap();
-    for (Task task : copiedTasks) {
+    for (Task task : clipboardContents.getTasks()) {
       Task copy = copyAndInsert(task, pasteRoot, selectedTask, original2copy);
       result.add(copy);
     }
-    copyDependencies(deps, original2copy);
+    copyDependencies(clipboardContents, original2copy);
+    copyAssignments(clipboardContents, original2copy);
     return result;
   }
 
-  private void copyDependencies(List<TaskDependency> deps, Map<Task, Task> original2copy) {
-    for (TaskDependency td : deps) {
+  private void copyAssignments(ClipboardContents clipboardContents, Map<Task, Task> original2copy) {
+    for (ResourceAssignment ra : clipboardContents.getAssignments()) {
+      Task copy = original2copy.get(ra.getTask());
+      if (copy == null) {
+        continue;
+      }
+      ResourceAssignment newAssignment = copy.getAssignmentCollection().addAssignment(ra.getResource());
+      newAssignment.setLoad(ra.getLoad());
+      newAssignment.setRoleForAssignment(ra.getRoleForAssignment());
+      newAssignment.setCoordinator(ra.isCoordinator());
+    }
+  }
+
+  private void copyDependencies(ClipboardContents clipboardContents, Map<Task, Task> original2copy) {
+    for (TaskDependency td : clipboardContents.getIntraDeps()) {
       Task dependee = td.getDependee();
       Task dependant = td.getDependant();
       TaskDependencyConstraint constraint = td.getConstraint();
@@ -79,6 +93,28 @@ public class ClipboardTaskProcessor {
       } catch (TaskDependencyException e) {
         GPLogger.log(e);
       }
+    }
+    for (TaskDependency td : clipboardContents.getIncomingDeps()) {
+      Task predecessor = td.getDependee();
+      Task newSuccessor = original2copy.get(td.getDependant());
+      if (predecessor == null || newSuccessor == null) {
+        continue;
+      }
+      TaskDependency newDep = myTaskManager.getDependencyCollection().createDependency(
+          newSuccessor, predecessor, myTaskManager.createConstraint(td.getConstraint().getType()));
+      newDep.setDifference(td.getDifference());
+      newDep.setHardness(td.getHardness());
+    }
+    for (TaskDependency td : clipboardContents.getOutgoingDeps()) {
+      Task successor = td.getDependant();
+      Task newPredecessor = original2copy.get(td.getDependee());
+      if (newPredecessor == null || successor == null) {
+        continue;
+      }
+      TaskDependency newDep = myTaskManager.getDependencyCollection().createDependency(
+          successor, newPredecessor, myTaskManager.createConstraint(td.getConstraint().getType()));
+      newDep.setDifference(td.getDifference());
+      newDep.setHardness(td.getHardness());
     }
   }
 

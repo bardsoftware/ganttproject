@@ -850,7 +850,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public void move(Task whatMove, Task whereMove, int index) {
-      throw new UnsupportedOperationException();
+      whatMove.move(whereMove);
     }
 
     @Override
