@@ -61,7 +61,6 @@ import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -99,7 +98,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
-    mySelection = new GanttChartSelection(tree, myTaskManager, project.getHumanResourceManager());
+    mySelection = new GanttChartSelection(tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
   }
 
@@ -219,7 +218,6 @@ public class GanttChartController extends AbstractChartImplementation implements
     private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
     private final TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> myTree;
     private final TaskManager myTaskManager;
-    private final HumanResourceManager myResourceManager;
 
     private ClipboardContents myClipboardContents;
 
@@ -231,10 +229,9 @@ public class GanttChartController extends AbstractChartImplementation implements
       }
     };
 
-    private GanttChartSelection(TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager, HumanResourceManager resourceManager) {
+    private GanttChartSelection(TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager) {
       myTree = treeView;
       myTaskManager = taskManager;
-      myResourceManager = resourceManager;
     }
     @Override
     public boolean isEmpty() {
@@ -244,29 +241,26 @@ public class GanttChartController extends AbstractChartImplementation implements
     @Override
     public void startCopyClipboardTransaction() {
       super.startCopyClipboardTransaction();
-      buildClipboardContents();
+      buildClipboardContents().copy();
     }
 
     @Override
     public void startMoveClipboardTransaction() {
       super.startMoveClipboardTransaction();
-      buildClipboardContents();
-      for (Task t : myClipboardContents.getTasks()) {
-        myTaskManager.deleteTask(t);
-      }
+      buildClipboardContents().cut();
     }
 
-    private void buildClipboardContents() {
+    private ClipboardContents buildClipboardContents() {
       List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
       myRetainRootsAlgorithm.run(myTree.getSelectedNodes(), getParentNode, selectedRoots);
-      myClipboardContents = new ClipboardContents(myTaskManager, myResourceManager);
+      myClipboardContents = new ClipboardContents(myTaskManager);
       myClipboardContents.addTasks(Lists.transform(selectedRoots, getTaskFromNode));
-      myClipboardContents.build();
+      return myClipboardContents;
     }
 
     List<Task> paste(Task target) {
       ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
-      return processor.paste(target, myClipboardContents.getTasks(), myClipboardContents.getDeps());
+      return processor.paste(target, myClipboardContents);
     }
   }
 
