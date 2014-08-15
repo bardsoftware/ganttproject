@@ -452,7 +452,15 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     final Task firstVisible = visibleTasks.isEmpty() ? null : visibleTasks.get(0);
     final Task lastVisible = visibleTasks.isEmpty() ? null : visibleTasks.get(visibleTasks.size() - 1);
     List<Task> addTo = tasksAboveViewport;
+    Task collapsedRoot = null;
     for (Task nextTask : tasksInDocumentOrder) {
+      if (collapsedRoot != null) {
+        if (containment.areUnrelated(nextTask, collapsedRoot)) {
+          collapsedRoot = null;
+        } else {
+          continue;
+        }
+      }
       if (addTo == null) {
         if (nextTask.equals(lastVisible)) {
           addTo = tasksBelowViewport;
@@ -463,6 +471,10 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         addTo.add(nextTask);
       } else {
         addTo = null;
+      }
+      if (!nextTask.getExpand()) {
+        assert collapsedRoot == null : "All tasks processed prior to this one must be expanded";
+        collapsedRoot = nextTask;
       }
     }
   }
