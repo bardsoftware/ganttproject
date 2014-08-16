@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -920,7 +922,14 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public List<Task> getTasksInDocumentOrder() {
-      throw new UnsupportedOperationException();
+      List<Task> result = Lists.newArrayList();
+      Deque<Task> deque = new LinkedList<Task>();
+      deque.addFirst(getRootTask());
+      while (!deque.isEmpty()) {
+        Task head = deque.poll();
+        result.addAll(0, Arrays.asList(head.getNestedTasks()));
+      }
+      return result;
     }
 
     @Override
