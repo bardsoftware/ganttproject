@@ -218,6 +218,70 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return ((ChartModelImpl) getChartModel()).getVisibleTasks();
   }
 
+  /**
+    This class splits all tasks into 4 groups. One group is pure virtual: it contains
+    tasks which are hidden under some collapsed parent and hence are just filtered out.
+    The remaining groups are: tasks which are shown in the chart viewport, tasks above the viewport
+    and tasks below the viewport. We need tasks outside the viewport because we want to show
+    dependency lines which may connect them with tasks inside the viewport.
+   */
+  static class VerticalPartitioning {
+    final List<Task> aboveViewport = Lists.newArrayList();
+    final List<Task> belowViewport = Lists.newArrayList();
+    final List<Task> insideViewport;
+
+    /**
+     * @param tasksInsideViewport partition with tasks inside viewport, with hidden tasks already filtered.
+     *        Tasks must be ordered in their document order.
+     */
+    VerticalPartitioning(List<Task> tasksInsideViewport) {
+      insideViewport = tasksInsideViewport;
+    }
+
+    /**
+     * Builds the remaining partitions.
+     *
+     * In this method we iterate through *all* the tasks in their document order. If we find some
+     * collapsed task then we filter out its children. Until we reach the first task in the vieport
+     * partition,  we're above the viewport, then we skip the viewport partition and proceed to
+     * below viewport
+     */
+    void build(TaskContainmentHierarchyFacade containment) {
+      List<Task> tasksInDocumentOrder = containment.getTasksInDocumentOrder();
+      final Task firstVisible = insideViewport.isEmpty() ? null : insideViewport.get(0);
+      final Task lastVisible = insideViewport.isEmpty() ? null : insideViewport.get(insideViewport.size() - 1);
+      List<Task> addTo = aboveViewport;
+
+      Task collapsedRoot = null;
+      for (Task nextTask : tasksInDocumentOrder) {
+        if (addTo == null) {
+          if (nextTask.equals(lastVisible)) {
+            addTo = belowViewport;
+          }
+          continue;
+        }
+        if (nextTask.equals(firstVisible)) {
+          addTo = null;
+          continue;
+        }
+
+        if (collapsedRoot != null) {
+          if (containment.areUnrelated(nextTask, collapsedRoot)) {
+            collapsedRoot = null;
+          } else {
+            continue;
+          }
+        }
+        addTo.add(nextTask);
+
+        if (!nextTask.getExpand()) {
+          assert collapsedRoot == null : "All tasks processed prior to this one must be expanded";
+          collapsedRoot = nextTask;
+        }
+      }
+    }
+  }
+
   @Override
   public void render() {
     getPrimitiveContainer().clear();
@@ -228,14 +292,13 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         myModel.getChartUIConfiguration().getHeaderHeight() - myModel.getVerticalOffset());
     getPrimitiveContainer().getLayer(2).setOffset(0,
         myModel.getChartUIConfiguration().getHeaderHeight() - myModel.getVerticalOffset());
-    List<Task> tasksAboveViewport = new ArrayList<Task>();
-    List<Task> tasksBelowViewport = new ArrayList<Task>();
 
-    collectTasksAboveAndBelowViewport(getVisibleTasks(), tasksAboveViewport, tasksBelowViewport);
+    VerticalPartitioning vp = new VerticalPartitioning(getVisibleTasks());
+    vp.build(getChartModel().getTaskManager().getTaskHierarchy());
     OffsetList defaultUnitOffsets = getChartModel().getDefaultUnitOffsets();
 
     renderVisibleTasks(getVisibleTasks(), defaultUnitOffsets);
-    renderTasksAboveAndBelowViewport(tasksAboveViewport, tasksBelowViewport, defaultUnitOffsets);
+    renderTasksAboveAndBelowViewport(vp.aboveViewport, vp.belowViewport, defaultUnitOffsets);
     renderDependencies();
   }
 
@@ -443,40 +506,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       lastProgressRectangle = rectangles.get(rectangles.size() - 1);
     }
     // createDownSideText(lastProgressRectangle);
-  }
-
-  private void collectTasksAboveAndBelowViewport(List<Task> visibleTasks, List<Task> tasksAboveViewport,
-      List<Task> tasksBelowViewport) {
-    TaskContainmentHierarchyFacade containment = getChartModel().getTaskManager().getTaskHierarchy();
-    List<Task> tasksInDocumentOrder = containment.getTasksInDocumentOrder();
-    final Task firstVisible = visibleTasks.isEmpty() ? null : visibleTasks.get(0);
-    final Task lastVisible = visibleTasks.isEmpty() ? null : visibleTasks.get(visibleTasks.size() - 1);
-    List<Task> addTo = tasksAboveViewport;
-    Task collapsedRoot = null;
-    for (Task nextTask : tasksInDocumentOrder) {
-      if (collapsedRoot != null) {
-        if (containment.areUnrelated(nextTask, collapsedRoot)) {
-          collapsedRoot = null;
-        } else {
-          continue;
-        }
-      }
-      if (addTo == null) {
-        if (nextTask.equals(lastVisible)) {
-          addTo = tasksBelowViewport;
-        }
-        continue;
-      }
-      if (!nextTask.equals(firstVisible)) {
-        addTo.add(nextTask);
-      } else {
-        addTo = null;
-      }
-      if (!nextTask.getExpand()) {
-        assert collapsedRoot == null : "All tasks processed prior to this one must be expanded";
-        collapsedRoot = nextTask;
-      }
-    }
   }
 
   public GPOptionGroup getLabelOptions() {
