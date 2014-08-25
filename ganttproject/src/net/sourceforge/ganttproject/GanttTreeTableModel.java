@@ -363,16 +363,16 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       ((TaskNode) node).setCompletionPercentage(((Integer) value).intValue());
       break;
     case PREDECESSORS:
-      List<Integer> newIds = Lists.transform(Arrays.asList(String.valueOf(value).split(",")), new Function<String, Integer>() {
-          @Override
-          public Integer apply(String value) {
-            try {
-              return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-              throw new ValidationException(MessageFormat.format("{0} is not a number", value));
-            }
+      List<Integer> newIds = Lists.newArrayList();
+      for (String s : String.valueOf(value).split(",")) {
+        if (!s.trim().isEmpty()) {
+          try {
+            newIds.add(Integer.parseInt(s));
+          } catch (NumberFormatException e) {
+            throw new ValidationException(MessageFormat.format("{0} is not a number", value));
           }
-        });
+        }
+      }
       List<Integer> oldIds = Lists.transform(Arrays.asList(task.getDependenciesAsDependant().toArray()), new Function<TaskDependency, Integer>() {
         @Override
         public Integer apply(TaskDependency value) {
