@@ -48,8 +48,12 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -71,9 +75,11 @@ import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
+import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author bard
@@ -565,24 +571,20 @@ public class OptionsPageBuilder {
     Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
       @Override
       public void actionPerformed(ActionEvent e) {
-        ActionListener onOkPressing = new ActionListener() {
+        OkAction okAction = new OkAction() {
           @Override
-          public void actionPerformed(ActionEvent e) {
+          public void actionPerformed(ActionEvent arg0) {
             Color color = ourColorChooser.getColor();
             label.setBackground(color);
             option.setValue(color);
           }
         };
-        ActionListener onCancelPressing = new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            // nothing to do for "Cancel"
-          }
-        };
-        JDialog dialog = JColorChooser.createDialog(myParentComponent, myi18n.getColorChooserTitle(option), true,
-            ourColorChooser, onOkPressing, onCancelPressing);
         ourColorChooser.setColor(colorButton.getBackground());
-        dialog.setVisible(true);
+        Dialog dialog = myUiFacade.createDialog(
+            ourColorChooser.buildComponent(),
+            new Action[] {okAction, CancelAction.EMPTY},
+            myi18n.getColorChooserTitle(option));
+        dialog.show();
       };
     };
     colorButton.setAction(action);
@@ -726,5 +728,5 @@ public class OptionsPageBuilder {
     }
   }
 
-  private static JColorChooser ourColorChooser = new JColorChooser();
+  private static GPColorChooser ourColorChooser = new GPColorChooser(ImmutableList.of(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE));
 }
