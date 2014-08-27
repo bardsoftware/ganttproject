@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -570,17 +571,24 @@ public class OptionsPageBuilder {
     Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
       @Override
       public void actionPerformed(ActionEvent e) {
+        final GPColorChooser colorChooser = new GPColorChooser();
         OkAction okAction = new OkAction() {
           @Override
           public void actionPerformed(ActionEvent arg0) {
-            Color color = ourColorChooser.getColor();
+            Color color = colorChooser.getColor();
             label.setBackground(color);
             option.setValue(color);
+            List<Color> recentColors = GPColorChooser.getRecentColors();
+            if (recentColors.size() == 10) {
+              recentColors.remove(9);
+            }
+            recentColors.add(0,  color);
+            GPColorChooser.setRecentColors(recentColors);
           }
         };
-        ourColorChooser.setColor(colorButton.getBackground());
+        colorChooser.setColor(colorButton.getBackground());
         Dialog dialog = myUiFacade.createDialog(
-            ourColorChooser.buildComponent(),
+            colorChooser.buildComponent(),
             new Action[] {okAction, CancelAction.EMPTY},
             myi18n.getColorChooserTitle(option));
         dialog.show();
@@ -727,5 +735,5 @@ public class OptionsPageBuilder {
     }
   }
 
-  private static GPColorChooser ourColorChooser = new GPColorChooser(ImmutableList.of(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE));
+  //private static GPColorChooser ourColorChooser = new GPColorChooser(ImmutableList.of(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE));
 }
