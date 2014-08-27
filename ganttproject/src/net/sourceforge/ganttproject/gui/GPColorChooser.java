@@ -21,6 +21,11 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -29,6 +34,12 @@ import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.painter.Painter;
 
 /**
  * Custom component which adds a configurable list of recently used colors to Swing standard color chooser.
@@ -38,9 +49,16 @@ import javax.swing.JPanel;
 public class GPColorChooser {
   private JColorChooser myChooserImpl;
   private List<Color> myRecentColors;
+  private Color mySelectedColor;
 
   public GPColorChooser(List<Color> recentColors) {
     myChooserImpl = new JColorChooser();
+    myChooserImpl.getSelectionModel().addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent arg0) {
+        mySelectedColor = myChooserImpl.getColor();
+      }
+    });
     myRecentColors = recentColors;
   }
 
@@ -51,12 +69,40 @@ public class GPColorChooser {
     southPanel.add(new JLabel("Recent colors"), BorderLayout.WEST);
 
     Box colorLabels = Box.createHorizontalBox();
-    for (Color c : myRecentColors) {
-      JPanel label = new JPanel();
-      label.setPreferredSize(new Dimension(16, 16));
-      label.setMaximumSize(new Dimension(16, 16));
-      label.setBackground(c);
-      label.setBorder(BorderFactory.createLineBorder(c.darker(), 1));
+    for (final Color c : myRecentColors) {
+      final JXLabel label = new JXLabel();
+      label.setBackgroundPainter(new Painter<JXLabel>() {
+        @Override
+        public void paint(Graphics2D g, JXLabel object, int width, int height) {
+          g.setColor(c);
+          g.fillRect(4, 4, width-8, height-8);
+        }
+      });
+      label.setFocusable(true);
+      label.setPreferredSize(new Dimension(20, 20));
+      label.setMaximumSize(new Dimension(20, 20));
+
+      final Border outsideFocusBorder = BorderFactory.createLineBorder(c.darker(), 2);
+      final Border outsideNoFocusBorder = BorderFactory.createEmptyBorder(2,2,2,2);
+      label.setBorder(outsideNoFocusBorder);
+      label.addFocusListener(new FocusAdapter() {
+        @Override
+        public void focusGained(FocusEvent e) {
+          label.setBorder(outsideFocusBorder);
+          myChooserImpl.setColor(c);
+          mySelectedColor = c;
+        }
+        @Override
+        public void focusLost(FocusEvent e) {
+          label.setBorder(outsideNoFocusBorder);
+        }
+      });
+      label.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+          label.requestFocus();
+        }
+      });
       colorLabels.add(label);
       colorLabels.add(Box.createHorizontalStrut(5));
     }
@@ -68,7 +114,7 @@ public class GPColorChooser {
   }
 
   public Color getColor() {
-    return myChooserImpl.getColor();
+    return mySelectedColor;
   }
 
   public void setColor(Color color) {

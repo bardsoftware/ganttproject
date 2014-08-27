@@ -75,7 +75,6 @@ import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
