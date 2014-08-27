@@ -19,18 +19,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 
 import com.google.common.base.Function;
@@ -52,8 +51,9 @@ class ViewSaver extends SaverBase {
     addAttribute("id", "gantt-chart", attrs);
     startElement("view", attrs, handler);
     writeColumns(facade.getTaskTree().getVisibleFields(), handler);
-    new OptionSaver().saveOptionList(Arrays.<GPOption<?>>asList(facade.getGanttChart().getTaskLabelOptions().getOptions()), handler);
+    new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
     writeTimelineTasks(facade, handler);
+    writeRecentColors(handler);
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
@@ -62,6 +62,10 @@ class ViewSaver extends SaverBase {
 
     endElement("view", handler);
 
+  }
+
+  private void writeRecentColors(TransformerHandler handler) throws SAXException {
+    new OptionSaver().saveOptionList(handler, GPColorChooser.getRecentColorsOption());
   }
 
   /**

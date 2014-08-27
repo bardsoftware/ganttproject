@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.io;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -37,7 +38,11 @@ import biz.ganttproject.core.option.ListOption;
  * @author dbarashev (Dmitry Barashev)
  */
 public class OptionSaver extends SaverBase {
-  public void saveOptionList(Iterable<GPOption<?>> options, TransformerHandler handler) throws SAXException {
+  public void saveOptionList(TransformerHandler handler, GPOption<?>... options) throws SAXException {
+    saveOptionList(handler,  Arrays.asList(options));
+  }
+
+  public void saveOptionList(TransformerHandler handler, Iterable<GPOption<?>> options) throws SAXException {
     saveOptionMap(Maps.uniqueIndex(options, new Function<GPOption<?>, String>() {
       @Override
       public String apply(GPOption<?> value) {
