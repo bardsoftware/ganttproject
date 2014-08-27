@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.FocusAdapter;
@@ -41,15 +42,22 @@ import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.painter.Painter;
 
+import com.google.common.collect.Lists;
+
 /**
  * Custom component which adds a configurable list of recently used colors to Swing standard color chooser.
  *
  * @author dbarashev (Dmitry Barashev)
  */
 public class GPColorChooser {
+  private static List<Color> ourRecentColors = Lists.newArrayList();
   private JColorChooser myChooserImpl;
   private List<Color> myRecentColors;
   private Color mySelectedColor;
+
+  public GPColorChooser() {
+    this(ourRecentColors);
+  }
 
   public GPColorChooser(List<Color> recentColors) {
     myChooserImpl = new JColorChooser();
@@ -78,6 +86,7 @@ public class GPColorChooser {
           g.fillRect(4, 4, width-8, height-8);
         }
       });
+      label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
       label.setFocusable(true);
       label.setPreferredSize(new Dimension(20, 20));
       label.setMaximumSize(new Dimension(20, 20));
@@ -119,5 +128,13 @@ public class GPColorChooser {
 
   public void setColor(Color color) {
     myChooserImpl.setColor(color);
+  }
+
+  public static void setRecentColors(List<Color> colors) {
+    ourRecentColors = colors;
+  }
+
+  public static List<Color> getRecentColors() {
+    return ourRecentColors;
   }
 }
