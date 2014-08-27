@@ -42,10 +42,17 @@ import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.painter.Painter;
 
+import biz.ganttproject.core.option.ListOption;
+
 import com.google.common.collect.Lists;
 
 /**
  * Custom component which adds a configurable list of recently used colors to Swing standard color chooser.
+ *
+ * Component per se is not a singleton. However, a list of recent colors is a singleton. The reason is that this
+ * component is used both in options and in properties, and is instantiated through OptionsPageBuilder instance. Passing
+ * the same list of recent colors to all these places isn't easy and seems to be unnecessary, because we want this list
+ * to be the same at least inside one project.
  *
  * @author dbarashev (Dmitry Barashev)
  */
@@ -136,5 +143,9 @@ public class GPColorChooser {
 
   public static List<Color> getRecentColors() {
     return ourRecentColors;
+  }
+
+  public static ListOption<Color> getRecentColorsOption() {
+    return new RecentColorsOption(ourRecentColors);
   }
 }
