@@ -31,6 +31,7 @@ public abstract class AbstractTagHandler implements TagHandler {
 
   private final String myTagName;
   private final StringBuilder myCdataBuffer;
+  private boolean myTagStarted;
 
   protected AbstractTagHandler(String tagName, boolean hasCdata) {
     myTagName = tagName;
@@ -64,10 +65,12 @@ public abstract class AbstractTagHandler implements TagHandler {
     myCdataBuffer.setLength(0);
   }
 
+  @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
       throws FileFormatException {
     if (Objects.equal(myTagName, qName)) {
       onStartElement(attrs);
+      myTagStarted = true;
     }
   }
 
@@ -76,5 +79,13 @@ public abstract class AbstractTagHandler implements TagHandler {
 
   @Override
   public void endElement(String namespaceURI, String sName, String qName) {
+    if (myTagStarted && Objects.equal(myTagName, qName)) {
+      myTagStarted = false;
+      onEndElement();
+    }
   }
+
+  protected void onEndElement() {
+  }
+
 }
