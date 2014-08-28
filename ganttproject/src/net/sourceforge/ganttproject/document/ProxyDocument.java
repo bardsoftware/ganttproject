@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.io.OutputStream;
 import java.net.URI;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -36,6 +38,7 @@ import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
+import net.sourceforge.ganttproject.parser.OptionTagHandler;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
@@ -56,6 +59,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.table.ColumnList;
 
 /**
@@ -325,6 +329,7 @@ class ProxyDocument implements Document {
       opener.addTagHandler(weekHandler);
       opener.addTagHandler(onlyShowWeekendsHandler);
       opener.addTagHandler(viewHandler);
+      opener.addTagHandler(new OptionTagHandler<ListOption<Color>>(GPColorChooser.getRecentColorsOption()));
       opener.addParsingListener(dependencyHandler);
       opener.addParsingListener(resourceHandler);
 
