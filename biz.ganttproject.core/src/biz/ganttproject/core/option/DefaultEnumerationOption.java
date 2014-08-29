@@ -30,10 +30,6 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
   private final List<String> myValues;
   private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<String, T>();
 
-  public DefaultEnumerationOption(String id, String[] values) {
-    super(id);
-    myValues = Arrays.asList(values);
-  }
 
   public DefaultEnumerationOption(String id, List<String> values) {
     super(id);

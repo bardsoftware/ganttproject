@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,7 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.FontUIResource;
 
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -116,7 +118,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
   private final DefaultIntegerOption myFontSizeOption;
+  private final DefaultEnumerationOption<String> myFontFamilyOption;
+  private ChangeValueListener myFontFamilyValueListener;
   private Integer myLastFontSize = null;
+  private String myLastFontFamily;
   private final LanguageOption myLanguageOption;
   private final IGanttProject myProject;
 
@@ -196,11 +201,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     });
 
+    myFontFamilyOption = new DefaultEnumerationOption<String>("ui.appFontFamily", getFontFamilies());
     myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
     myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
-        dateSampleOption, myFontSizeOption };
+    GPOption[] options = new GPOption[] { myLafOption, myFontFamilyOption, myFontSizeOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+        dateSampleOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
@@ -212,6 +218,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myLogoOptions.setTitled(false);
     addOptions(myOptions);
     addOptions(myLogoOptions);
+  }
+
+  private String[] getFontFamilies() {
+    return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
   }
 
   @Override
@@ -523,6 +533,21 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         if (!doSetLookAndFeel(laf)) {
           doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
         }
+        if (myFontFamilyValueListener == null) {
+          myFontFamilyValueListener = new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+              SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                  updateFonts();
+                  SwingUtilities.updateComponentTreeUI(myMainFrame);
+                }
+              });
+            }
+          };
+          myFontFamilyOption.addChangeValueListener(myFontFamilyValueListener);
+        }
       }
     });
   }
@@ -530,26 +555,35 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private boolean doSetLookAndFeel(GanttLookAndFeelInfo laf) {
     try {
       UIManager.setLookAndFeel(laf.getClassName());
-      if (myFontSizeOption.getValue() != 0 && myFontSizeOption.getValue() != myLastFontSize) {
-        UIDefaults defaults = UIManager.getDefaults();
-        for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
-          String key = String.valueOf(keys.nextElement());
-          if (key.endsWith(".font")) {
-            Object obj = UIManager.get(key);
-            if (obj instanceof Font) {
-              Font f = (Font) obj;
-              UIManager.put(key, f.deriveFont(f.getSize() + (float)myFontSizeOption.getValue()));
-            }
-          }
-        }
-        myLastFontSize = myFontSizeOption.getValue();
-      }
+      updateFonts();
       SwingUtilities.updateComponentTreeUI(myMainFrame);
       return true;
     } catch (Exception e) {
       GPLogger.getLogger(UIFacade.class).log(Level.SEVERE,
           "Can't find the LookAndFeel\n" + laf.getClassName() + "\n" + laf.getName(), e);
       return false;
+    }
+  }
+
+  private void updateFonts() {
+    if (myFontSizeOption.getValue() != 0 && myFontSizeOption.getValue() != myLastFontSize ||
+        !Objects.equal(myFontFamilyOption.getValue(), myLastFontFamily)) {
+      UIDefaults defaults = UIManager.getDefaults();
+      for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
+        String key = String.valueOf(keys.nextElement());
+        Object obj = UIManager.get(key);
+        if (obj instanceof Font) {
+          Font f = (Font) obj;
+          int size = f.getSize();
+          int style = f.getStyle();
+          Font newFont = myFontFamilyOption.getSelectedValue() == null
+              ? f : new FontUIResource(myFontFamilyOption.getSelectedValue(), style, size);
+          newFont = newFont.deriveFont(size);
+          UIManager.put(key, newFont);
+        }
+      }
+      myLastFontSize = myFontSizeOption.getValue();
+      myLastFontFamily = myFontFamilyOption.getValue();
     }
   }
 
