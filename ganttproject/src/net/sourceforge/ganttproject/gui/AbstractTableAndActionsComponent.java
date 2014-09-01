@@ -206,4 +206,8 @@ public abstract class AbstractTableAndActionsComponent<T> {
     return result;
   }
 
+  public JTable getTable() {
+    return myTable;
+  }
+
 }
