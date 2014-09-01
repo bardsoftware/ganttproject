@@ -22,7 +22,9 @@ package net.sourceforge.ganttproject.calendar;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Rectangle;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,9 +37,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -45,6 +47,7 @@ import net.sourceforge.ganttproject.gui.UIUtil.GPDateCellEditor;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar;
@@ -80,10 +83,13 @@ public class CalendarEditorPanel {
   };
   private final List<CalendarEvent> myOneOffEvents = Lists.newArrayList();
   private final List<CalendarEvent> myRecurringEvents = Lists.newArrayList();
-  private JTable myTable;
-  private TableModelImpl myModel;
+  private final TableModelImpl myRecurringModel;
+  private final TableModelImpl myOneOffModel;
+//  private JTable myTable;
+//  private TableModelImpl myModel;
 
   private final Runnable myOnChangeCallback;
+  private final Runnable myOnCreate;
 
   private static Predicate<CalendarEvent> recurring(final boolean isRecurring) {
     return new Predicate<CalendarEvent>() {
@@ -97,50 +103,77 @@ public class CalendarEditorPanel {
     myOneOffEvents.addAll(Collections2.filter(events, recurring(false)));
     myRecurringEvents.addAll(Collections2.filter(events, recurring(true)));
     myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
+    myOnCreate = NOOP_CALLBACK;
+    myRecurringModel = new TableModelImpl(myRecurringEvents, myOnChangeCallback, true);
+    myOneOffModel = new TableModelImpl(myOneOffEvents, myOnChangeCallback, false);
   }
 
-  public CalendarEditorPanel(GPCalendar calendar, Runnable onChange) {
+  public CalendarEditorPanel(final GPCalendar calendar, Runnable onChange) {
     myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
-    reload(calendar);
+    myOnCreate = new Runnable() {
+      @Override
+      public void run() {
+        reload(calendar);
+      }
+    };
+    myRecurringModel = new TableModelImpl(myRecurringEvents, myOnChangeCallback, true);
+    myOneOffModel = new TableModelImpl(myOneOffEvents, myOnChangeCallback, false);
   }
 
   public void reload(GPCalendar calendar) {
-    int size = myOneOffEvents.size();
-    myOneOffEvents.clear();
-    if (myModel != null) {
-      myModel.fireTableRowsDeleted(0, size);
-    }
-    myOneOffEvents.addAll(Collections2.filter(calendar.getPublicHolidays(), recurring(false)));
-    myRecurringEvents.addAll(Collections2.filter(calendar.getPublicHolidays(), recurring(true)));
-    if (myModel != null) {
-      myModel.fireTableRowsInserted(0, myOneOffEvents.size());
-    }
+    reload(calendar, myOneOffEvents, myOneOffModel);
+    reload(calendar, myRecurringEvents, myRecurringModel);
+  }
+
+  private static void reload(GPCalendar calendar, List<CalendarEvent> events, TableModelImpl model) {
+    int size = events.size();
+    events.clear();
+    model.fireTableRowsDeleted(0, size);
+    events.addAll(Collections2.filter(calendar.getPublicHolidays(), recurring(model.isRecurring())));
+    model.fireTableRowsInserted(0, events.size());
   }
 
   public JComponent createComponent() {
     JTabbedPane tabbedPane = new JTabbedPane();
     tabbedPane.addTab("One-off", createNonRecurringComponent());
     tabbedPane.addTab("Recurring", createRecurringComponent());
+    myOnCreate.run();
     return tabbedPane;
   }
 
   private Component createRecurringComponent() {
-    TableModelImpl recurringModel = new TableModelImpl(myRecurringEvents, myOnChangeCallback);
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(recurringModel);
+    //DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd");
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myRecurringModel, dateFormat);
     JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
+
+    Date today = CalendarFactory.newCalendar().getTime();
+    final String hint = GanttLanguage.getInstance().formatText("calendar.editor.dateHint", dateFormat.format(today));
+    Pair<JLabel,? extends TableCellEditor> validator = createDateValidatorComponents(hint, dateFormat);
+    TableColumn dateColumn = tableAndActions.getTable().getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
+    dateColumn.setCellEditor(validator.second());
+    result.add(validator.first(), BorderLayout.SOUTH);
     return result;
   }
+
   public JPanel createNonRecurringComponent() {
-    myModel = new TableModelImpl(myOneOffEvents, myOnChangeCallback);
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myModel);
-    myTable = tableAndActions.getTable();
-    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(myTable, tableAndActions.getActionsComponent());
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myOneOffModel, GanttLanguage.getInstance().getShortDateFormat());
+    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
+
     Date today = CalendarFactory.newCalendar().getTime();
     final String hint = GanttLanguage.getInstance().formatText("calendar.editor.dateHint",
         GanttLanguage.getInstance().getMediumDateFormat().format(today), GanttLanguage.getInstance().getShortDateFormat().format(today));
+
+    Pair<JLabel,? extends TableCellEditor> validator = createDateValidatorComponents(hint, GanttLanguage.getInstance().getMediumDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    TableColumn dateColumn = tableAndActions.getTable().getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
+    dateColumn.setCellEditor(validator.second());
+    result.add(validator.first(), BorderLayout.SOUTH);
+    return result;
+  }
+
+  private static Pair<JLabel, ? extends TableCellEditor> createDateValidatorComponents(final String hint, DateFormat... dateFormats) {
     final JLabel hintLabel = new JLabel(" "); // non-empty label to occupy some vertical space
-    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(
-        null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(null, dateFormats);
     ValueValidator<Date> decorator = new ValueValidator<Date>() {
       @Override
       public Date parse(String text) throws ValidationException {
@@ -149,20 +182,17 @@ public class CalendarEditorPanel {
           hintLabel.setText("");
           return result;
         } catch (ValidationException e) {
+          e.printStackTrace();
           hintLabel.setText(hint);
           throw e;
         }
       }
     };
-
-    TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
-    GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator);
-    dateColumn.setCellEditor(dateEditor);
-    result.add(hintLabel, BorderLayout.SOUTH);
-    return result;
+    GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator, dateFormats);
+    return Pair.create(hintLabel, dateEditor);
   }
 
-  private AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel) {
+  private static AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat) {
     final JTable table = new JTable(tableModel);
 
     UIUtil.setupTableUI(table);
@@ -185,11 +215,7 @@ public class CalendarEditorPanel {
           formattedDate = "";
         } else {
           CalendarEvent e = (CalendarEvent) value;
-          if (e.isRecurring) {
-            formattedDate = new SimpleDateFormat("MMM dd").format(e.myDate);
-          } else {
-            formattedDate = GanttLanguage.getInstance().getShortDateFormat().format(e.myDate);
-          }
+          formattedDate = dateFormat.format(e.myDate);
         }
         JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, formattedDate, isSelected, hasFocus,
             row, column);
@@ -270,10 +296,16 @@ public class CalendarEditorPanel {
     }
     private final List<CalendarEvent> myEvents;
     private final Runnable myOnChangeCallback;
+    private final boolean isRecurring;
 
-    TableModelImpl(List<CalendarEvent> events, Runnable onChangeCallback) {
+    TableModelImpl(List<CalendarEvent> events, Runnable onChangeCallback, boolean recurring) {
       myEvents = events;
       myOnChangeCallback = onChangeCallback;
+      isRecurring = recurring;
+    }
+
+    boolean isRecurring() {
+      return isRecurring;
     }
 
     CalendarEvent getValue(int row) {
@@ -338,7 +370,7 @@ public class CalendarEditorPanel {
       }
       String value = String.valueOf(aValue);
       if (row == getRowCount() - 1) {
-        myEvents.add(CalendarEvent.newEvent(null, false, CalendarEvent.Type.HOLIDAY, ""));
+        myEvents.add(CalendarEvent.newEvent(null, isRecurring, CalendarEvent.Type.HOLIDAY, ""));
       }
       CalendarEvent e = myEvents.get(row);
       CalendarEvent newEvent = null;
