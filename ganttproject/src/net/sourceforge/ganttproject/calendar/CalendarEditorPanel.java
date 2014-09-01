@@ -20,7 +20,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.calendar;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.text.ParseException;
@@ -29,13 +28,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -51,6 +53,8 @@ import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -74,14 +78,24 @@ public class CalendarEditorPanel {
     @Override public void run() {
     }
   };
-  private final List<CalendarEvent> myEvents = Lists.newArrayList();
+  private final List<CalendarEvent> myOneOffEvents = Lists.newArrayList();
+  private final List<CalendarEvent> myRecurringEvents = Lists.newArrayList();
   private JTable myTable;
   private TableModelImpl myModel;
 
   private final Runnable myOnChangeCallback;
 
+  private static Predicate<CalendarEvent> recurring(final boolean isRecurring) {
+    return new Predicate<CalendarEvent>() {
+      @Override
+      public boolean apply(CalendarEvent event) {
+        return event.isRecurring == isRecurring;
+      }
+    };
+  }
   public CalendarEditorPanel(List<CalendarEvent> events, Runnable onChange) {
-    myEvents.addAll(events);
+    myOneOffEvents.addAll(Collections2.filter(events, recurring(false)));
+    myRecurringEvents.addAll(Collections2.filter(events, recurring(true)));
     myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
   }
 
@@ -91,26 +105,36 @@ public class CalendarEditorPanel {
   }
 
   public void reload(GPCalendar calendar) {
-    int size = myEvents.size();
-    myEvents.clear();
+    int size = myOneOffEvents.size();
+    myOneOffEvents.clear();
     if (myModel != null) {
       myModel.fireTableRowsDeleted(0, size);
     }
-    myEvents.addAll(calendar.getPublicHolidays());
+    myOneOffEvents.addAll(Collections2.filter(calendar.getPublicHolidays(), recurring(false)));
+    myRecurringEvents.addAll(Collections2.filter(calendar.getPublicHolidays(), recurring(true)));
     if (myModel != null) {
-      myModel.fireTableRowsInserted(0, myEvents.size());
+      myModel.fireTableRowsInserted(0, myOneOffEvents.size());
     }
   }
-  public JPanel createComponent() {
-    myModel = new TableModelImpl(myEvents, myOnChangeCallback);
-    myTable = new JTable(myModel);
 
-    UIUtil.setupTableUI(myTable);
-    CommonPanel.setupComboBoxEditor(
-        myTable.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
-        TYPE_COLUMN_VALUES.toArray(new String[0]));
-    myTable.getColumnModel().getColumn(TableModelImpl.Column.RECURRING.ordinal()).setCellRenderer(myTable.getDefaultRenderer(TableModelImpl.Column.RECURRING.getColumnClass()));
-    // We'll show a hint label under the table if user types something which we can't parse
+  public JComponent createComponent() {
+    JTabbedPane tabbedPane = new JTabbedPane();
+    tabbedPane.addTab("One-off", createNonRecurringComponent());
+    tabbedPane.addTab("Recurring", createRecurringComponent());
+    return tabbedPane;
+  }
+
+  private Component createRecurringComponent() {
+    TableModelImpl recurringModel = new TableModelImpl(myRecurringEvents, myOnChangeCallback);
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(recurringModel);
+    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
+    return result;
+  }
+  public JPanel createNonRecurringComponent() {
+    myModel = new TableModelImpl(myOneOffEvents, myOnChangeCallback);
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myModel);
+    myTable = tableAndActions.getTable();
+    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(myTable, tableAndActions.getActionsComponent());
     Date today = CalendarFactory.newCalendar().getTime();
     final String hint = GanttLanguage.getInstance().formatText("calendar.editor.dateHint",
         GanttLanguage.getInstance().getMediumDateFormat().format(today), GanttLanguage.getInstance().getShortDateFormat().format(today));
@@ -134,6 +158,19 @@ public class CalendarEditorPanel {
     TableColumn dateColumn = myTable.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator);
     dateColumn.setCellEditor(dateEditor);
+    result.add(hintLabel, BorderLayout.SOUTH);
+    return result;
+  }
+
+  private AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel) {
+    final JTable table = new JTable(tableModel);
+
+    UIUtil.setupTableUI(table);
+    CommonPanel.setupComboBoxEditor(
+        table.getColumnModel().getColumn(TableModelImpl.Column.TYPE.ordinal()),
+        TYPE_COLUMN_VALUES.toArray(new String[0]));
+    //myTable.getColumnModel().getColumn(TableModelImpl.Column.RECURRING.ordinal()).setCellRenderer(myTable.getDefaultRenderer(TableModelImpl.Column.RECURRING.getColumnClass()));
+    // We'll show a hint label under the table if user types something which we can't parse
 
     class DateCellRendererImpl implements TableCellRenderer {
       private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
@@ -141,7 +178,7 @@ public class CalendarEditorPanel {
       @Override
       public Component getTableCellRendererComponent(
           JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        assert value == null || value instanceof CalendarEvent : (value == null)
+        assert (value == null || value instanceof CalendarEvent) : (value == null)
             ? "value is null" : String.format("value=%s class=%s", value, value.getClass());
         final String formattedDate;
         if (value == null) {
@@ -160,31 +197,33 @@ public class CalendarEditorPanel {
       }
     }
 
+    TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     dateColumn.setCellRenderer(new DateCellRendererImpl());
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(myTable) {
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
       @Override
       protected void onAddEvent() {
-        int lastRow = myModel.getRowCount() - 1;
-        Rectangle cellRect = myTable.getCellRect(lastRow, 0, true);
-        myTable.scrollRectToVisible(cellRect);
-        myTable.getSelectionModel().setSelectionInterval(lastRow, lastRow);
-        myTable.editCellAt(lastRow, 0);
-        myTable.getEditorComponent().requestFocus();
+        int lastRow = tableModel.getRowCount() - 1;
+        Rectangle cellRect = table.getCellRect(lastRow, 0, true);
+        table.scrollRectToVisible(cellRect);
+        table.getSelectionModel().setSelectionInterval(lastRow, lastRow);
+        table.editCellAt(lastRow, 0);
+        table.getEditorComponent().requestFocus();
       }
 
       @Override
       protected void onDeleteEvent() {
-        if (myTable.getSelectedRow() < myModel.getRowCount() - 1) {
-          myModel.delete(myTable.getSelectedRow());
+        if (table.getSelectedRow() < tableModel.getRowCount() - 1) {
+          tableModel.delete(table.getSelectedRow());
         }
       }
 
       @Override
       protected CalendarEvent getValue(int row) {
-        return myModel.getValue(row);
+        return tableModel.getValue(row);
       }
     };
     Function<List<CalendarEvent>, Boolean> isDeleteEnabled = new Function<List<CalendarEvent>, Boolean>() {
+      @Override
       public Boolean apply(List<CalendarEvent> events) {
         if (events.size() == 1 && events.get(0) == null) {
           return false;
@@ -193,18 +232,19 @@ public class CalendarEditorPanel {
       }
     };
     tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
-    JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(myTable, tableAndActions.getActionsComponent());
-    result.add(hintLabel, BorderLayout.SOUTH);
-    return result;
+    return tableAndActions;
   }
 
   public List<CalendarEvent> getEvents() {
-    return myEvents;
+    List<CalendarEvent> result = Lists.newArrayList();
+    result.addAll(myOneOffEvents);
+    result.addAll(myRecurringEvents);
+    return result;
   }
 
   private static class TableModelImpl extends AbstractTableModel {
     private static enum Column {
-      DATES(CalendarEvent.class, null), RECURRING(Boolean.class, false), SUMMARY(String.class, ""), TYPE(String.class, "");
+      DATES(CalendarEvent.class, null), SUMMARY(String.class, ""), TYPE(String.class, "");
 
       private String myTitle;
       private Class<?> myClazz;
@@ -231,7 +271,7 @@ public class CalendarEditorPanel {
     private final List<CalendarEvent> myEvents;
     private final Runnable myOnChangeCallback;
 
-    public TableModelImpl(List<CalendarEvent> events, Runnable onChangeCallback) {
+    TableModelImpl(List<CalendarEvent> events, Runnable onChangeCallback) {
       myEvents = events;
       myOnChangeCallback = onChangeCallback;
     }
@@ -278,8 +318,6 @@ public class CalendarEditorPanel {
       switch (Column.values()[col]) {
       case DATES:
         return e;
-      case RECURRING:
-        return Boolean.valueOf(e.isRecurring);
       case SUMMARY:
         return Objects.firstNonNull(e.getTitle(), "");
       case TYPE:
@@ -323,9 +361,6 @@ public class CalendarEditorPanel {
             newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, eventType, e.getTitle());
           }
         }
-        break;
-      case RECURRING:
-        newEvent = CalendarEvent.newEvent(e.myDate, Boolean.valueOf(value), e.getType(), e.getTitle());
         break;
       }
       if (newEvent != null) {
