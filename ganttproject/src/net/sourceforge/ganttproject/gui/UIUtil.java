@@ -317,7 +317,7 @@ public abstract class UIUtil {
               }
             }
           } else {
-            if (parseValidator.parse(String.valueOf(editor.getValue())) == null) {
+            if (parseValidator.parse(String.valueOf(editor.getText())) == null) {
               throw new ValidationException();
             }
           }
@@ -350,9 +350,12 @@ public abstract class UIUtil {
    *         and date formats.
    */
   public static JXDatePicker createDatePicker() {
+    return createDatePicker(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+  }
+  public static JXDatePicker createDatePicker(DateFormat... dateFormats) {
     final JXDatePicker result = new JXDatePicker();
     result.setLocale(GanttLanguage.getInstance().getDateFormatLocale());
-    result.setFormats(GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    result.setFormats(dateFormats);
     return result;
   }
 
@@ -449,7 +452,7 @@ public abstract class UIUtil {
   }
 
   public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
-    return new GPDateCellEditor(project, showDatePicker, null);
+    return new GPDateCellEditor(project, showDatePicker, null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
   }
 
   public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener {
@@ -458,14 +461,13 @@ public abstract class UIUtil {
     private final JXDatePicker myDatePicker;
     private final boolean myShowDatePicker;
 
-    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator) {
+    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator, DateFormat... dateFormats) {
       super(new JTextField());
       myProject = project;
-      myDatePicker = UIUtil.createDatePicker();
+      myDatePicker = UIUtil.createDatePicker(dateFormats);
       myShowDatePicker = showDatePicker;
       if (parseValidator == null) {
-        parseValidator = UIUtil.createStringDateValidator(
-            null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+        parseValidator = UIUtil.createStringDateValidator(null, dateFormats);
       }
       UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
     }
