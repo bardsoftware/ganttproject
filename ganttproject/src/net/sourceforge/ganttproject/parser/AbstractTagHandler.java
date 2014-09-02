@@ -69,12 +69,12 @@ public abstract class AbstractTagHandler implements TagHandler {
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
       throws FileFormatException {
     if (Objects.equal(myTagName, qName)) {
-      onStartElement(attrs);
-      myTagStarted = true;
+      myTagStarted = onStartElement(attrs);
     }
   }
 
-  protected void onStartElement(Attributes attrs) {
+  protected boolean onStartElement(Attributes attrs) {
+    return true;
   }
 
   @Override

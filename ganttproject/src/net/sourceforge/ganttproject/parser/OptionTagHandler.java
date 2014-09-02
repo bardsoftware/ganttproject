@@ -46,14 +46,14 @@ public class OptionTagHandler<T extends GPOption<?>> extends AbstractTagHandler 
   }
 
   @Override
-  protected void onStartElement(Attributes attrs) {
-    super.onStartElement(attrs);
+  protected boolean onStartElement(Attributes attrs) {
     if (!Objects.equal(attrs.getValue("id"), myOption.getID())) {
-      return;
+      return false;
     }
     if (!hasCdata()) {
       myOption.loadPersistentValue(attrs.getValue("value"));
     }
+    return super.onStartElement(attrs);
   }
 
   @Override
