@@ -29,6 +29,7 @@ import biz.ganttproject.core.option.ListOption;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
@@ -41,7 +42,7 @@ public class RecentColorsOption extends GPAbstractOption<Color> implements ListO
 
   public RecentColorsOption(List<Color> colors) {
     super("color.recent");
-    myColors = colors;
+    myColors = Preconditions.checkNotNull(colors);
   }
 
   @Override
@@ -54,6 +55,9 @@ public class RecentColorsOption extends GPAbstractOption<Color> implements ListO
 
   @Override
   public String getPersistentValue() {
+    if (myColors.isEmpty()) {
+      return null;
+    }
     List<String> values = Lists.transform(myColors, new Function<Color, String>() {
       @Override
       public String apply(Color c) {
