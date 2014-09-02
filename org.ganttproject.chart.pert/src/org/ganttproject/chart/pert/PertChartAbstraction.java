@@ -102,7 +102,7 @@ public class PertChartAbstraction {
 
   /**
    * PERT graph node abstraction
-   * 
+   *
    * @author bbaranne
    */
   static class TaskGraphNode {
@@ -156,7 +156,7 @@ public class PertChartAbstraction {
     }
 
     GregorianCalendar getEndDate() {
-      return myTask.getEnd();
+      return myTask.getDisplayEnd();
     }
 
     GregorianCalendar getStartDate() {
@@ -166,9 +166,9 @@ public class PertChartAbstraction {
 
   /**
    * Type of the node: NORMAL, SUPER (for super tasks) and MILESTONE.
-   * 
+   *
    * @author bbaranne
-   * 
+   *
    */
   static class Type {
     public static final int NORMAL = 0;
