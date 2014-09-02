@@ -115,7 +115,7 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
-  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, IGanttProject project) {
+  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 
     myI18N = i18n;
@@ -146,6 +146,8 @@ public class WeekendConfigurationPage implements WizardPage {
       };
       panel.add(builder.createOptionLabel(null, myRenderWeekendOption));
       panel.add(builder.createOptionComponent(null, myRenderWeekendOption));
+      panel.add(new JPanel());
+      panel.add(new JPanel());
     }
     {
       myCalendarOption = createCalendarOption(calendar);
@@ -154,7 +156,7 @@ public class WeekendConfigurationPage implements WizardPage {
       panel.add(new JPanel());
       panel.add(myBasedOnLabel);
     }
-    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(panel, 4);
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(panel, 5);
     myPanel.add(panel, BorderLayout.NORTH);
 
     myCalendarEditorPanel = new CalendarEditorPanel(calendar, new Runnable() {

@@ -24,12 +24,12 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -85,8 +85,6 @@ public class CalendarEditorPanel {
   private final List<CalendarEvent> myRecurringEvents = Lists.newArrayList();
   private final TableModelImpl myRecurringModel;
   private final TableModelImpl myOneOffModel;
-//  private JTable myTable;
-//  private TableModelImpl myModel;
 
   private final Runnable myOnChangeCallback;
   private final Runnable myOnCreate;
@@ -153,6 +151,7 @@ public class CalendarEditorPanel {
     TableColumn dateColumn = tableAndActions.getTable().getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     dateColumn.setCellEditor(validator.second());
     result.add(validator.first(), BorderLayout.SOUTH);
+    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     return result;
   }
 
@@ -168,6 +167,7 @@ public class CalendarEditorPanel {
     TableColumn dateColumn = tableAndActions.getTable().getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
     dateColumn.setCellEditor(validator.second());
     result.add(validator.first(), BorderLayout.SOUTH);
+    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     return result;
   }
 
