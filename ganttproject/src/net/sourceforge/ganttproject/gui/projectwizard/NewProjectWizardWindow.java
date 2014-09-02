@@ -49,7 +49,7 @@ public class NewProjectWizardWindow extends WizardImpl {
     myCalendar = project.getActiveCalendar().copy();
     WizardPage weekendPage;
     try {
-      weekendPage = new WeekendConfigurationPage(myCalendar, myI18n, project);
+      weekendPage = new WeekendConfigurationPage(myCalendar, myI18n);
       addPage(weekendPage);
     } catch (Exception e) {
       getUIFacade().showErrorDialog(e);
