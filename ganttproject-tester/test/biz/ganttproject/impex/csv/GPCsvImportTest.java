@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -31,9 +32,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 
 import com.google.common.base.Function;
@@ -162,5 +163,31 @@ public class GPCsvImportTest extends TestCase {
     Task t2 = taskMap.get("t2");
     assertFalse(t1.isMilestone());
     assertTrue(t2.isMilestone());
+  }
+
+  public void testHierarchy() throws IOException {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,End date,Duration,Outline number";
+    String data1 = "1,t1,23/07/12,26/07/12,1,1";
+    String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
+    String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
+    String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
+    String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)), taskManager, null);
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
+    Task t1 = taskMap.get("t1");
+    Task t2 = taskMap.get("t2");
+    Task t3 = taskMap.get("t3");
+    Task t4 = taskMap.get("t4");
+    Task t5 = taskMap.get("t5");
+    assertEquals(t3, hierarchy.getContainer(t5));
+    assertEquals(t3, hierarchy.getContainer(t4));
+    assertEquals(t1, hierarchy.getContainer(t3));
+    assertEquals(t1, hierarchy.getContainer(t2));
   }
 }
