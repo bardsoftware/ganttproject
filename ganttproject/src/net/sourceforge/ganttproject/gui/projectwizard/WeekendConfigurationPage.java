@@ -32,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -180,7 +181,7 @@ public class WeekendConfigurationPage implements WizardPage {
         myCalendarEditorPanel.reload(calendar);
       }
     });
-    JPanel editorComponent = myCalendarEditorPanel.createComponent();
+    JComponent editorComponent = myCalendarEditorPanel.createComponent();
     editorComponent.setBorder(BorderFactory.createCompoundBorder(
         BorderFactory.createEmptyBorder(5, 0, 0, 0),
         editorComponent.getBorder()));
