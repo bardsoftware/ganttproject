@@ -260,7 +260,7 @@ public class GanttChartController extends AbstractChartImplementation implements
 
     List<Task> paste(Task target) {
       ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
-      return processor.paste(target, myClipboardContents);
+      return processor.pasteAsSibling(target, myClipboardContents);
     }
   }
 
