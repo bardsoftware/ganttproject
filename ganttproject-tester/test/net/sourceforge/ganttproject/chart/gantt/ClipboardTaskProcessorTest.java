@@ -47,7 +47,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     contents.addTasks(ImmutableList.<Task>of(task));
     contents.copy();
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
-    Task pastedTask = clipboardProcessor.paste(taskManager.getRootTask(), contents).get(0);
+    Task pastedTask = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents).get(0);
     assertEquals(task.getStart(), pastedTask.getStart());
     assertEquals(task.getEnd(), pastedTask.getEnd());
     assertEquals(task.getDuration(), pastedTask.getDuration());
@@ -64,7 +64,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     contents.addTasks(ImmutableList.of(task1, task2));
     contents.copy();
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
-    List<Task> pasted = clipboardProcessor.paste(target, contents);
+    List<Task> pasted = clipboardProcessor.pasteAsSibling(target, contents);
     assertEquals(2, pasted.size());
     assertTrue(pasted.get(0).getDependencies().hasLinks(pasted));
     assertTrue(pasted.get(1).getDependencies().hasLinks(pasted));
@@ -84,7 +84,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     contents.addTasks(ImmutableList.of(task1, task2));
     contents.copy();
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
-    List<Task> pasted = clipboardProcessor.paste(target, contents);
+    List<Task> pasted = clipboardProcessor.pasteAsSibling(target, contents);
     assertEquals(2, pasted.size());
     assertTrue(pasted.get(0).getDependencies().hasLinks(ImmutableList.of(pasted.get(0), predecessor)));
     assertTrue(pasted.get(1).getDependencies().hasLinks(ImmutableList.of(pasted.get(1), predecessor)));
@@ -105,7 +105,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     contents.addTasks(ImmutableList.of(task1));
     contents.copy();
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
-    List<Task> pasted = clipboardProcessor.paste(taskManager.getRootTask(), contents);
+    List<Task> pasted = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents);
     ResourceAssignment[] newAssignments = pasted.get(0).getAssignments();
     assertEquals(1, newAssignments.length);
     assertEquals(res1, newAssignments[0].getResource());
@@ -131,7 +131,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     assertEquals(0, res1.getAssignments().length);
 
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
-    List<Task> pasted = clipboardProcessor.paste(taskManager.getRootTask(), contents);
+    List<Task> pasted = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents);
     ResourceAssignment[] newAssignments = pasted.get(0).getAssignments();
     assertEquals(1, newAssignments.length);
     assertEquals(res1, newAssignments[0].getResource());

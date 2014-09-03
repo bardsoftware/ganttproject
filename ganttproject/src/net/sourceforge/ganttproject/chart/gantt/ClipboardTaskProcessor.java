@@ -47,24 +47,30 @@ public class ClipboardTaskProcessor {
     myTaskManager = taskManager;
   }
 
-  public List<Task> paste(Task selectedTask, ClipboardContents clipboardContents) {
+  public List<Task> pasteAsSibling(Task selectedTask, ClipboardContents clipboardContents) {
     Task pasteRoot = myTaskManager.getTaskHierarchy().getContainer(selectedTask);
     if (pasteRoot == null) {
       pasteRoot = myTaskManager.getRootTask();
       selectedTask = null;
     }
+    return pasteAsChild(pasteRoot, selectedTask, clipboardContents);
+  }
 
+  public List<Task> pasteAsChild(Task selectedTask, ClipboardContents clipboardContents) {
+    return pasteAsChild(selectedTask, null, clipboardContents);
+  }
+
+  private List<Task> pasteAsChild(Task pasteRoot, Task anchor, ClipboardContents clipboardContents) {
     List<Task> result = Lists.newArrayListWithExpectedSize(clipboardContents.getTasks().size());
     Map<Task, Task> original2copy = Maps.newHashMap();
     for (Task task : clipboardContents.getTasks()) {
-      Task copy = copyAndInsert(task, pasteRoot, selectedTask, original2copy);
+      Task copy = copyAndInsert(task, pasteRoot, anchor, original2copy);
       result.add(copy);
     }
     copyDependencies(clipboardContents, original2copy);
     copyAssignments(clipboardContents, original2copy);
     return result;
   }
-
   private void copyAssignments(ClipboardContents clipboardContents, Map<Task, Task> original2copy) {
     for (ResourceAssignment ra : clipboardContents.getAssignments()) {
       Task copy = original2copy.get(ra.getTask());
