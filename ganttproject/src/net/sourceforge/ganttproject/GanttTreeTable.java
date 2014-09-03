@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Rectangle;
 import java.util.List;
 
+import javax.swing.DropMode;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
@@ -29,7 +30,6 @@ import javax.swing.tree.TreePath;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList.Column;
-
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
@@ -49,6 +49,9 @@ public class GanttTreeTable extends GPTreeTableBase {
     this.ttModel = model;
     myUIfacade = uifacade;
     getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
+    setDragEnabled(true);
+    setDropMode(DropMode.ON_OR_INSERT);
+    setTransferHandler(new GPTreeTransferHandler(this, project.getTaskManager()));
   }
 
   private UIFacade getUiFacade() {
