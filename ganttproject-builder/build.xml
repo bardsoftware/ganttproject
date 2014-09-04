@@ -119,6 +119,7 @@
     
     <property name="package.name.suffix" value="${package.name.version}-r${hg.tip.rev}"/>
     <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
+		<echo message="${package.dir}" file="VERSION"/>
 	</target>
 	
 	<target name="dist-bin" depends="build, make-package-name">
@@ -132,6 +133,7 @@
       <zipfileset dir="${package.dir}" includes="ganttproject" prefix="${package.dir}" filemode="755">
       </zipfileset>
 		</zip>
+		<copy file="${package.dir}.zip" tofile="ganttproject-latest.zip"/>
 	</target>
 	
 	<target name="dist-src">
