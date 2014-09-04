@@ -118,8 +118,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
   private final DefaultIntegerOption myFontSizeOption;
-  private final DefaultEnumerationOption<String> myFontFamilyOption;
-  private ChangeValueListener myFontFamilyValueListener;
+  private final DefaultEnumerationOption<String> myAppFontFamilyOption;
+  private ChangeValueListener myAppFontFamilyValueListener;
   private Integer myLastFontSize = null;
   private String myLastFontFamily;
   private final LanguageOption myLanguageOption;
@@ -201,11 +201,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     });
 
-    myFontFamilyOption = new DefaultEnumerationOption<String>("ui.appFontFamily", getFontFamilies());
+    myAppFontFamilyOption = new DefaultEnumerationOption<String>("ui.appFontFamily", getFontFamilies());
     myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
     myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myFontFamilyOption, myFontSizeOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[] { myLafOption, myAppFontFamilyOption, myFontSizeOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
@@ -533,8 +533,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         if (!doSetLookAndFeel(laf)) {
           doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
         }
-        if (myFontFamilyValueListener == null) {
-          myFontFamilyValueListener = new ChangeValueListener() {
+        if (myAppFontFamilyValueListener == null) {
+          myAppFontFamilyValueListener = new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
               SwingUtilities.invokeLater(new Runnable() {
@@ -546,7 +546,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
               });
             }
           };
-          myFontFamilyOption.addChangeValueListener(myFontFamilyValueListener);
+          myAppFontFamilyOption.addChangeValueListener(myAppFontFamilyValueListener);
         }
       }
     });
@@ -567,7 +567,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   private void updateFonts() {
     if (myFontSizeOption.getValue() != 0 && myFontSizeOption.getValue() != myLastFontSize ||
-        !Objects.equal(myFontFamilyOption.getValue(), myLastFontFamily)) {
+        !Objects.equal(myAppFontFamilyOption.getValue(), myLastFontFamily)) {
       UIDefaults defaults = UIManager.getDefaults();
       for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
         String key = String.valueOf(keys.nextElement());
@@ -576,14 +576,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
           Font f = (Font) obj;
           int size = f.getSize();
           int style = f.getStyle();
-          Font newFont = myFontFamilyOption.getSelectedValue() == null
-              ? f : new FontUIResource(myFontFamilyOption.getSelectedValue(), style, size);
+          Font newFont = myAppFontFamilyOption.getSelectedValue() == null
+              ? f : new FontUIResource(myAppFontFamilyOption.getSelectedValue(), style, size);
           newFont = newFont.deriveFont(size);
           UIManager.put(key, newFont);
         }
       }
       myLastFontSize = myFontSizeOption.getValue();
-      myLastFontFamily = myFontFamilyOption.getValue();
+      myLastFontFamily = myAppFontFamilyOption.getValue();
     }
   }
 

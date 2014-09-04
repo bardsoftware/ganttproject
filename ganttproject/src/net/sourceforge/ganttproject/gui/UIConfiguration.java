@@ -32,8 +32,6 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
  * @author bard
  */
 public class UIConfiguration {
-  private final Font myMenuFont;
-
   private final Font myChartMainFont;
 
   /** default resource color */
@@ -66,7 +64,6 @@ public class UIConfiguration {
   private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
 
   public UIConfiguration(Font menuFont, Font chartMainFont, Color taskColor, boolean isRedlineOn) {
-    myMenuFont = menuFont == null ? Fonts.DEFAULT_MENU_FONT : menuFont;
     myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
     this.isRedlineOn = isRedlineOn;
     myResColor = new Color(140, 182, 206);
@@ -78,10 +75,6 @@ public class UIConfiguration {
     myWeekEndColor = Color.GRAY;
     myDayOffColor = new Color(0.9f, 1f, 0.17f);
     myWeekendAlphaRenderingOption = new AlphaRenderingOption();
-  }
-
-  public Font getMenuFont() {
-    return myMenuFont;
   }
 
   public Font getChartMainFont() {
