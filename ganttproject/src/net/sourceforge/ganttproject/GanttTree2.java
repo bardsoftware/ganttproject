@@ -18,39 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
+import java.awt.Component;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.SystemColor;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,18 +38,18 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TooManyListenersException;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -90,7 +70,6 @@ import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
 import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
-import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -98,14 +77,15 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
+import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
@@ -130,12 +110,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   /** Pointer of application */
   private final GanttProject myProject;
 
-  private TreePath dragPath = null;
-
-  private BufferedImage ghostImage = null; // The 'drag image'
-
-  private Point offsetPoint = new Point(); // Where, in the drag image, the
-
   private final TaskManager myTaskManager;
   private final TaskSelectionManager mySelectionManager;
 
@@ -153,10 +127,11 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   private boolean isOnTaskSelectionEventProcessing;
 
-  private ClipboardTaskProcessor myClipboardProcessor;
+  private Highlighter myDragHighlighter;
 
   private static Runnable createDirtyfier(final GanttProjectBase project) {
     return new Runnable() {
+      @Override
       public void run() {
         project.setModified();
       }
@@ -222,7 +197,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
     getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, newAction,
         myProject.getCutAction(), myProject.getCopyAction(), myProject.getPasteAction(), propertiesAction, deleteAction);
-    myClipboardProcessor = new ClipboardTaskProcessor(myTaskManager);
   }
 
   @Override
@@ -264,11 +238,17 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         mySelectionManager.setUserInputConsumer(this);
       }
     });
-//    DragSource dragSource = DragSource.getDefaultDragSource();
-//    dragSource.createDefaultDragGestureRecognizer(getTreeTable(), DnDConstants.ACTION_COPY_OR_MOVE, this);
-//    dragSource.addDragSourceListener(this);
-//    DropTarget dropTarget = new DropTarget(getTreeTable(), new GanttTreeDropListener());
-//    dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
+    try {
+      GanttTreeDropListener dropListener = new GanttTreeDropListener();
+      getTreeTable().getDropTarget().addDropTargetListener(dropListener);
+      Color selectionBackground = UIManager.getColor("Table.selectionBackground");
+      Color dropBackground = new Color(selectionBackground.getRed(), selectionBackground.getGreen(), selectionBackground.getBlue(), 64);
+      Color foreground = UIManager.getColor("Table.selectionForeground");
+      myDragHighlighter = new ColorHighlighter(dropListener, dropBackground, foreground);
+    } catch (TooManyListenersException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
   }
 
   @Override
@@ -399,25 +379,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     }
 
     getTreeModel().insertNodeInto(childNode, parent, parent.getChildCount());
-    // forwardScheduling();
-
-    // Task task = (Task) (childNode.getUserObject());
-//    boolean res = true;
-//
-//    // test for expansion
-//    while (parent != null) {
-//      Task taskFather = (Task) (parent.getUserObject());
-//      if (!taskFather.getExpand()) {
-//        res = false;
-//        break;
-//      }
-//      parent = (DefaultMutableTreeTableNode) (parent.getParent());
-//    }
-
-//    getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(childNode));
-//    if (!res && parent != null) {
-//      getTreeTable().getTree().collapsePath(TreeUtil.createPath(parent));
-//    }
     myProject.refreshProjectInformation();
 
     return childNode;
@@ -541,391 +502,66 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   // ////////////////////////////////////////////////////////////////////////////////////////
 
-//  private class GanttTreeDropListener implements DropTargetListener {
-//    private TreePath lastPath = null;
-//
-//    private Rectangle2D cueLineRect = new Rectangle2D.Float();
-//
-//    private Rectangle2D ghostImageRect = new Rectangle2D.Float();
-//
-//    private Color cueLineColor;
-//
-//    private Point lastEventPoint = new Point();
-//
-//    private Timer hoverTimer;
-//
-//    public GanttTreeDropListener() {
-//      cueLineColor = new Color(SystemColor.controlShadow.getRed(), SystemColor.controlShadow.getGreen(),
-//          SystemColor.controlShadow.getBlue(), 64);
-//
-//      // Set up a hover timer, so that a node will be automatically
-//      // expanded or collapsed if the user lingers on it for more than a
-//      // short time
-//      hoverTimer = new Timer(1000, new ActionListener() {
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//          if (!getTreeTable().getTree().isExpanded(lastPath)) {
-//            getTreeTable().getTree().expandPath(lastPath);
-//          }
-//        }
-//      });
-//      // Set timer to one-shot mode - it will be restarted when the
-//      // cursor is over a new node
-//      hoverTimer.setRepeats(false);
-//    }
-//
-//    @Override
-//    public void dragEnter(DropTargetDragEvent dtde) {
-//      if (ghostImage == null) {
-//        // In case if you drag a file from out and it's not an
-//        // acceptable, and it can crash if the image is null
-//        ghostImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE);
-//      }
-//      if (!isDragAcceptable(dtde)) {
-//        dtde.rejectDrag();
-//      } else {
-//        dtde.acceptDrag(dtde.getDropAction());
-//      }
-//    }
-//
-//    @Override
-//    public void dragOver(DropTargetDragEvent dtde) {
-//      if (!isDragAcceptable(dtde)) {
-//        dtde.rejectDrag();
-//      } else {
-//        dtde.acceptDrag(dtde.getDropAction());
-//      }
-//
-//      // Even if the mouse is not moving, this method is still invoked
-//      // 10 times per second
-//      Point pt = dtde.getLocation();
-//      if (pt.equals(lastEventPoint)) {
-//        return;
-//      }
-//
-//      lastEventPoint = pt;
-//
-//      Graphics2D g2 = (Graphics2D) getTreeTable().getGraphics();
-//
-//      // If a drag image is not supported by the platform, then draw our
-//      // own drag image
-//      if (!DragSource.isDragImageSupported()) {
-//        // Rub out the last ghost image and cue line
-//        getTreeTable().paintImmediately(ghostImageRect.getBounds());
-//        // And remember where we are about to draw the new ghost image
-//        ghostImageRect.setRect(pt.x - offsetPoint.x, pt.y - offsetPoint.y, ghostImage.getWidth(),
-//            ghostImage.getHeight());
-//        g2.drawImage(ghostImage, AffineTransform.getTranslateInstance(ghostImageRect.getX(), ghostImageRect.getY()),
-//            null);
-//      } else {
-//        // Just rub out the last cue line
-//        getTreeTable().paintImmediately(cueLineRect.getBounds());
-//      }
-//
-//      TreePath path = getTreeTable().getTree().getPathForLocation(pt.x, pt.y);
-//      if (path != lastPath) {
-//        lastPath = path;
-//        hoverTimer.restart();
-//      }
-//
-//      // In any case draw (over the ghost image if necessary) a cue line
-//      // indicating where a drop will occur
-//      Rectangle raPath = getTreeTable().getTree().getCellRect(getTree().rowAtPoint(pt), getTree().columnAtPoint(pt),
-//          true);
-//      if (raPath == null) {
-//        raPath = new Rectangle(1, 1);
-//      }
-//      cueLineRect.setRect(0, raPath.y + (int) raPath.getHeight(), getWidth(), 2);
-//
-//      g2.setColor(cueLineColor);
-//      g2.fill(cueLineRect);
-//
-//      // And include the cue line in the area to be rubbed out next time
-//      ghostImageRect = ghostImageRect.createUnion(cueLineRect);
-//    }
-//
-//    @Override
-//    public void dropActionChanged(DropTargetDragEvent dtde) {
-//      if (!isDragAcceptable(dtde)) {
-//        dtde.rejectDrag();
-//      } else {
-//        dtde.acceptDrag(dtde.getDropAction());
-//      }
-//    }
-//
-//    @Override
-//    public void drop(final DropTargetDropEvent dtde) {
-//      if (!isDropAcceptable(dtde)) {
-//        dtde.rejectDrop();
-//        return;
-//      }
-//
-//      // Prevent hover timer from doing an unwanted expandPath or
-//      // collapsePath
-//      hoverTimer.stop();
-//
-//      myUIFacade.getUndoManager().undoableEdit("Drag tasks", new Runnable() {
-//        @Override
-//        public void run() {
-//          dtde.acceptDrop(dtde.getDropAction());
-//
-//          Transferable transferable = dtde.getTransferable();
-//
-//          DataFlavor[] flavors = transferable.getTransferDataFlavors();
-//          for (DataFlavor flavor : flavors) {
-//            if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
-//              try {
-//                Point pt = dtde.getLocation();
-//                DefaultMutableTreeTableNode target = (DefaultMutableTreeTableNode) getTree().getPathForLocation(pt.x, pt.y).getLastPathComponent();
-//                TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
-//                DefaultMutableTreeTableNode source = (DefaultMutableTreeTableNode) pathSource.getLastPathComponent();
-//
-//                getTreeModel().removeNodeFromParent(source);
-//                getTreeModel().insertNodeInto(source, target, 0);
-//
-//                TreePath pathNewChild = TreeUtil.createPath((TreeNode) pathSource.getLastPathComponent());
-//
-//                // Mark this as the selected path in the tree
-//                getTree().getTreeSelectionModel().setSelectionPath(pathNewChild);
-//
-//                expandRefresh(source);
-//
-//                forwardScheduling();
-//
-//                area.repaint();
-//
-//                myProject.setAskForSave(true);
-//
-//                break; // No need to check remaining flavors
-//              } catch (UnsupportedFlavorException ufe) {
-//                System.out.println(ufe);
-//                dtde.dropComplete(false);
-//                return;
-//              } catch (IOException ioe) {
-//                System.out.println(ioe);
-//                dtde.dropComplete(false);
-//                return;
-//              }
-//            }
-//          }
-//          dtde.dropComplete(true);
-//        }
-//      });
-//    }
-//
-//    @Override
-//    public void dragExit(DropTargetEvent dte) {
-//      if (!DragSource.isDragImageSupported()) {
-//        repaint(ghostImageRect.getBounds());
-//      }
-//      getTreeTable().repaint();
-//    }
-//
-//    public boolean isDragAcceptable(DropTargetDragEvent e) {
-//      // Only accept COPY or MOVE gestures (ie LINK is not supported)
-//      if ((e.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) == 0) {
-//        return false;
-//      }
-//
-//      // Only accept this particular flavor
-//      if (!e.isDataFlavorSupported(GanttTransferableTreePath.TREEPATH_FLAVOR)) {
-//        return false;
-//      }
-//
-//      // Do not accept dropping on the source node
-//      Point pt = e.getLocation();
-//      TreePath path = getTree().getPathForLocation(pt.x, pt.y);
-//      if (path == null) {
-//        return false;
-//      }
-//      if (dragPath.isDescendant(path)) {
-//        return false;
-//      }
-//      if (path.equals(dragPath)) {
-//        return false;
-//      }
-//
-//      // Check if the task is a milestone task
-//      Task task = (Task) (((DefaultMutableTreeTableNode) path.getLastPathComponent()).getUserObject());
-//      if (task.isMilestone()) {
-//        return false;
-//      }
-//
-//      return true;
-//    }
-//
-//    public boolean isDropAcceptable(DropTargetDropEvent e) {
-//      // Only accept COPY or MOVE gestures (ie LINK is not supported)
-//      if ((e.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) == 0) {
-//        return false;
-//      }
-//
-//      // Only accept this particular flavor
-//      if (!e.isDataFlavorSupported(GanttTransferableTreePath.TREEPATH_FLAVOR)) {
-//        return false;
-//      }
-//
-//      // prohibit dropping onto the drag source
-//      Point pt = e.getLocation();
-//      TreePath path = getTree().getPathForLocation(pt.x, pt.y);
-//      if (path == null) {
-//        return false;
-//      }
-//      if (path.equals(dragPath)) {
-//        return false;
-//      }
-//      return true;
-//    }
-//  }
-//
-//  /** Transferable tree path class for the path specified in the constructor */
-//  private static class GanttTransferableTreePath implements Transferable {
-//    // The type of DnD object being dragged...
-//    public static final DataFlavor TREEPATH_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "TreePath");
-//
-//    private TreePath _path;
-//
-//    private DataFlavor[] _flavors = { TREEPATH_FLAVOR };
-//
-//    public GanttTransferableTreePath(TreePath path) {
-//      _path = path;
-//    }
-//
-//    // Transferable interface methods...
-//    @Override
-//    public DataFlavor[] getTransferDataFlavors() {
-//      return _flavors;
-//    }
-//
-//    @Override
-//    public boolean isDataFlavorSupported(DataFlavor flavor) {
-//      return java.util.Arrays.asList(_flavors).contains(flavor);
-//    }
-//
-//    @Override
-//    public synchronized Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-//      if (flavor.isMimeTypeEqual(TREEPATH_FLAVOR.getMimeType())) {
-//        return _path;
-//      }
-//      throw new UnsupportedFlavorException(flavor);
-//    }
-//  }
+  private class GanttTreeDropListener extends DropTargetAdapter implements HighlightPredicate {
+    private TreePath lastPath = null;
+    private Point lastEventPoint = new Point();
+    private Timer hoverTimer;
+    private int myOverRow = -1;
 
-  private AbstractAction[] myTreeActions;
+    public GanttTreeDropListener() {
+      // Set up a hover timer, so that a node will be automatically
+      // expanded or collapsed if the user lingers on it for more than a
+      // short time
+      hoverTimer = new Timer(1000, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (!getTreeTable().getTree().isExpanded(lastPath)) {
+            getTreeTable().getTree().expandPath(lastPath);
+          }
+        }
+      });
+      // Set timer to one-shot mode - it will be restarted when the
+      // cursor is over a new node
+      hoverTimer.setRepeats(false);
+    }
 
-  private void forwardScheduling() {
-    RecalculateTaskScheduleAlgorithm alg = myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-    try {
-      alg.run();
-    } catch (TaskDependencyException e) {
-      myUIFacade.showErrorDialog(e);
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+      Point pt = dtde.getLocation();
+      if (pt.equals(lastEventPoint)) {
+        return;
+      }
+      lastEventPoint = pt;
+      TreePath path = getTreeTable().getTree().getPathForLocation(pt.x, pt.y);
+      myOverRow = getTreeTable().getRowForPath(path);
+      if (path != lastPath) {
+        getTreeTable().removeHighlighter(myDragHighlighter);
+        lastPath = path;
+        hoverTimer.restart();
+        getTreeTable().addHighlighter(myDragHighlighter);
+      }
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+      super.dragExit(dte);
+      myOverRow = -1;
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent arg0) {
+      myOverRow = -1;
+    }
+
+    @Override
+    public boolean isHighlighted(Component arg0, ComponentAdapter adapter) {
+      return myOverRow == adapter.row;
     }
   }
-
-//  @Override
-//  public void dragEnter(DragSourceDragEvent dsde) {
-//  }
-//
-//  @Override
-//  public void dragOver(DragSourceDragEvent dsde) {
-//  }
-//
-//  @Override
-//  public void dropActionChanged(DragSourceDragEvent dsde) {
-//  }
-//
-//  @Override
-//  public void dragDropEnd(DragSourceDropEvent dsde) {
-//  }
-//
-//  @Override
-//  public void dragExit(DragSourceEvent dse) {
-//  }
-//
-//  @Override
-//  public void dragGestureRecognized(DragGestureEvent dge) {
-//
-//    Point ptDragOrigin = dge.getDragOrigin();
-//    TreePath path = getTreeTable().getTree().getPathForLocation(ptDragOrigin.x, ptDragOrigin.y);
-//    if (path == null) {
-//      return;
-//    }
-//
-//    // Work out the offset of the drag point from the TreePath bounding
-//    // rectangle origin
-//    Rectangle raPath = getTreeTable().getTree().getCellRect(getTree().rowAtPoint(ptDragOrigin),
-//        getTree().columnAtPoint(ptDragOrigin), true);
-//    offsetPoint.setLocation(ptDragOrigin.x - raPath.x, ptDragOrigin.y - raPath.y);
-//
-//    // Get the cell renderer (which is a JLabel) for the path being dragged
-//    // JLabel lbl = (JLabel)
-//    // treetable.getTree().getCellRenderer().getTreeCellRendererComponent
-//    // (
-//    // treetable, // tree
-//    // path.getLastPathComponent(), // value
-//    // false, // isSelected (dont want a colored background)
-//    // treetable.getTree().isExpanded(path), // isExpanded
-//    // ((DefaultTreeTableModel)treetable.getModel()).isLeaf(path.getLastPathComponent()),
-//    // // isLeaf
-//    // 0, // row (not important for rendering)
-//    // false // hasFocus (dont want a focus rectangle)
-//    // );
-//    JLabel lbl = new JLabel();
-//    lbl.setSize((int) raPath.getWidth(), (int) raPath.getHeight()); // <-- The
-//                                                                    // layout
-//                                                                    // manager
-//                                                                    // would
-//                                                                    // normally
-//                                                                    // do this
-//
-//    // Get a buffered image of the selection for dragging a ghost image
-//    ghostImage = new BufferedImage((int) raPath.getWidth(), (int) raPath.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
-//    Graphics2D g2 = ghostImage.createGraphics();
-//
-//    // Ask the cell renderer to paint itself into the BufferedImage
-//    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 0.5f)); // Make
-//                                                                           // the
-//                                                                           // image
-//                                                                           // ghostlike
-//    lbl.paint(g2);
-//
-//    // Now paint a gradient UNDER the ghosted JLabel text (but not under the
-//    // icon if any)
-//    // Note: this will need tweaking if your icon is not positioned to the
-//    // left of the text
-//    Icon icon = lbl.getIcon();
-//    int nStartOfText = (icon == null) ? 0 : icon.getIconWidth() + lbl.getIconTextGap();
-//    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, 0.5f)); // Make
-//                                                                                // the
-//                                                                                // gradient
-//                                                                                // ghostlike
-//    g2.setPaint(new GradientPaint(nStartOfText, 0, SystemColor.controlShadow, getWidth(), 0,
-//        new Color(255, 255, 255, 0)));
-//    g2.fillRect(nStartOfText, 0, getWidth(), ghostImage.getHeight());
-//
-//    g2.dispose();
-//
-//    getTree().getTreeSelectionModel().setSelectionPath(path); // Select this
-//                                                              // path in the
-//    // tree
-//
-//    // Wrap the path being transferred into a Transferable object
-//    Transferable transferable = new GanttTransferableTreePath(path);
-//
-//    // Remember the path being dragged (because if it is being moved, we
-//    // will have to delete it later)
-//    dragPath = path;
-//
-//    // We pass our drag image just in case it IS supported by the platform
-//    dge.startDrag(null, ghostImage, new Point(5, 5), transferable, this);
-//  }
+  private AbstractAction[] myTreeActions;
 
   GanttTreeTableModel getModel() {
     return getTreeModel();
-  }
-
-  private GPUndoManager getUndoManager() {
-    return myUIFacade.getUndoManager();
   }
 
   public void setSelectionPaths(TreePath[] selectedPaths) {

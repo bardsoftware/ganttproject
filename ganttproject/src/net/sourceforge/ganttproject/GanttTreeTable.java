@@ -40,17 +40,14 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  * @author dbarashev (Dmitry Barashev) - complete rewrite in 2011
  */
 public class GanttTreeTable extends GPTreeTableBase {
-  private final GanttTreeTableModel ttModel;
-
   private final UIFacade myUIfacade;
 
   GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
     super(project, uifacade, project.getTaskCustomColumnManager(), model);
-    this.ttModel = model;
     myUIfacade = uifacade;
     getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
     setDragEnabled(true);
-    setDropMode(DropMode.ON_OR_INSERT);
+    setDropMode(DropMode.ON);
     setTransferHandler(new GPTreeTransferHandler(this, project.getTaskManager()));
   }
 
