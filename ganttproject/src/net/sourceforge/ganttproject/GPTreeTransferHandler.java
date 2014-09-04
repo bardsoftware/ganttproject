@@ -22,7 +22,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 
 import javax.swing.JComponent;
@@ -89,7 +88,6 @@ class GPTreeTransferHandler extends TransferHandler {
   @Override
   protected Transferable createTransferable(JComponent c) {
     TreePath[] selectedPaths = myTreeTable.getTreeSelectionModel().getSelectionPaths();
-    System.err.println("Create transferrable: selection=" + Arrays.asList(selectedPaths));
     if (selectedPaths == null || selectedPaths.length == 0) {
       return null;
     }
@@ -101,7 +99,6 @@ class GPTreeTransferHandler extends TransferHandler {
         clipboardContents.addTasks(Collections.singletonList(task));
       }
     }
-    System.err.println("Created transferrable");
     return new NodesTransferable(clipboardContents);
   }
 
