@@ -323,9 +323,6 @@ public class GanttOptions extends SaverBase {
         }
         endElement("files", handler);
       }
-      addAttribute("category", "menu", attrs);
-      addAttribute("spec", getFontSpec(getUIConfiguration().getMenuFont()), attrs);
-      emptyElement("font", attrs, handler);
 
       addAttribute("category", "chart-main", attrs);
       addAttribute("spec", getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
@@ -475,11 +472,6 @@ public class GanttOptions extends SaverBase {
   public UIConfiguration getUIConfiguration() {
     if (myUIConfig == null) {
       myUIConfig = new UIConfiguration(null, null, new Color(140, 182, 206), redline) {
-        @Override
-        public Font getMenuFont() {
-          return myMenuFont == null ? super.getMenuFont() : myMenuFont;
-        }
-
         @Override
         public Font getChartMainFont() {
           return myChartMainFont == null ? super.getChartMainFont() : myChartMainFont;
