@@ -117,9 +117,7 @@
     <exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
     </exec>
     
-    <input message="Please enter a package name suffix (prefix is ${package.name.prefix})" 
-      addproperty="package.name.suffix"
-        defaultvalue="${package.name.version}-r${hg.tip.rev}"/>
+    <property name="package.name.suffix" value="${package.name.version}-r${hg.tip.rev}"/>
     <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
 	</target>
 	
