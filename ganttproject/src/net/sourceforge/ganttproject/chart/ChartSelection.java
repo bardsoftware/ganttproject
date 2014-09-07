@@ -30,10 +30,6 @@ import org.eclipse.core.runtime.Status;
 public interface ChartSelection {
   boolean isEmpty();
 
-  List<Task> getTasks();
-
-  List<HumanResource> getHumanResources();
-
   IStatus isDeletable();
 
   void startCopyClipboardTransaction();
@@ -61,16 +57,6 @@ public interface ChartSelection {
     @Override
     public IStatus isDeletable() {
       return Status.CANCEL_STATUS;
-    }
-
-    @Override
-    public List<Task> getTasks() {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public List<HumanResource> getHumanResources() {
-      return Collections.emptyList();
     }
 
     @Override

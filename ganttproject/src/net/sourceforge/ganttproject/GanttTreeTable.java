@@ -28,9 +28,13 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreePath;
 
+import com.google.common.base.Supplier;
+
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList.Column;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
@@ -42,13 +46,19 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 public class GanttTreeTable extends GPTreeTableBase {
   private final UIFacade myUIfacade;
 
-  GanttTreeTable(IGanttProject project, UIFacade uifacade, GanttTreeTableModel model) {
+  GanttTreeTable(IGanttProject project, final UIFacade uifacade, GanttTreeTableModel model) {
     super(project, uifacade, project.getTaskCustomColumnManager(), model);
     myUIfacade = uifacade;
     getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
     setDragEnabled(true);
     setDropMode(DropMode.ON);
-    setTransferHandler(new GPTreeTransferHandler(this, project.getTaskManager()));
+    setTransferHandler(new GPTreeTransferHandler(this, project.getTaskManager(), new Supplier<GanttChart>() {
+
+      @Override
+      public GanttChart get() {
+        return uifacade.getGanttChart();
+      }
+    }));
   }
 
   private UIFacade getUiFacade() {
