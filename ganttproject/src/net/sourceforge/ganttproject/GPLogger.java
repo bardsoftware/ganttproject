@@ -35,13 +35,15 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import com.beust.jcommander.internal.Maps;
+
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 public class GPLogger {
   private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
   private static Handler ourHandler;
   private static UIFacade ourUIFacade;
-  private static Map<Class<?>, Logger> ourClass_Logger = new HashMap<Class<?>, Logger>();
+  private static Map<String, Logger> ourLoggers = Maps.newHashMap();
   private static String ourLogFileName;
 
   static {
@@ -91,14 +93,18 @@ public class GPLogger {
     return getLogger(o.getClass());
   }
 
-  public static Logger getLogger(Class<?> clazz) {
-    Logger logger = ourClass_Logger.get(clazz);
+  public static Logger getLogger(String name) {
+    Logger logger = ourLoggers.get(name);
     if (logger == null) {
-      logger = Logger.getLogger(clazz.getName());
+      logger = Logger.getLogger(name);
       logger.addHandler(ourHandler);
-      ourClass_Logger.put(clazz, logger);
+      ourLoggers.put(name, logger);
     }
     return logger;
+  }
+
+  public static Logger getLogger(Class<?> clazz) {
+    return getLogger(clazz.getName());
   }
 
   public static void setUIFacade(UIFacade uifacade) {
