@@ -37,10 +37,7 @@ import net.sourceforge.ganttproject.ChartImplementation;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.GanttTreeTable;
-import net.sourceforge.ganttproject.GanttTreeTableModel;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.TreeTableContainer;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -65,7 +62,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
@@ -76,7 +72,6 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Shape;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
@@ -205,64 +200,6 @@ public class GanttChartController extends AbstractChartImplementation implements
   }
 
   private GanttChartSelection mySelection;
-
-  private static class GanttChartSelection extends ChartSelectionImpl {
-    private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = new Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode>() {
-      @Override
-      public DefaultMutableTreeTableNode apply(DefaultMutableTreeTableNode node) {
-        return (DefaultMutableTreeTableNode) node.getParent();
-      }
-    };
-
-
-    private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
-    private final TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> myTree;
-    private final TaskManager myTaskManager;
-
-    private ClipboardContents myClipboardContents;
-
-
-    private Function<? super DefaultMutableTreeTableNode, ? extends Task> getTaskFromNode = new Function<DefaultMutableTreeTableNode, Task>() {
-      @Override
-      public Task apply(DefaultMutableTreeTableNode node) {
-        return (Task) node.getUserObject();
-      }
-    };
-
-    private GanttChartSelection(TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager) {
-      myTree = treeView;
-      myTaskManager = taskManager;
-    }
-    @Override
-    public boolean isEmpty() {
-      return myTree.getSelectedNodes().length == 0;
-    }
-
-    @Override
-    public void startCopyClipboardTransaction() {
-      super.startCopyClipboardTransaction();
-      buildClipboardContents().copy();
-    }
-
-    @Override
-    public void startMoveClipboardTransaction() {
-      super.startMoveClipboardTransaction();
-      buildClipboardContents().cut();
-    }
-
-    private ClipboardContents buildClipboardContents() {
-      List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
-      myRetainRootsAlgorithm.run(myTree.getSelectedNodes(), getParentNode, selectedRoots);
-      myClipboardContents = new ClipboardContents(myTaskManager);
-      myClipboardContents.addTasks(Lists.transform(selectedRoots, getTaskFromNode));
-      return myClipboardContents;
-    }
-
-    List<Task> paste(Task target) {
-      ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
-      return processor.pasteAsSibling(target, myClipboardContents);
-    }
-  }
 
   @Override
   public ChartSelection getSelection() {
