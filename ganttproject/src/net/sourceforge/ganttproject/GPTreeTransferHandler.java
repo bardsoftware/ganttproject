@@ -22,20 +22,23 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.Collections;
 
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 
 /**
  * TransferHandler implementation which creates and consumes ClipboardContents objects
@@ -58,10 +61,12 @@ class GPTreeTransferHandler extends TransferHandler {
 
   private final GPTreeTableBase myTreeTable;
   private final TaskManager myTaskManager;
+  private final Supplier<GanttChart> myGanttChart;
 
-  public GPTreeTransferHandler(GPTreeTableBase treeTable, TaskManager taskManager) {
-    myTreeTable = treeTable;
-    myTaskManager = taskManager;
+  public GPTreeTransferHandler(GPTreeTableBase treeTable, TaskManager taskManager, Supplier<GanttChart> ganttChart) {
+    myGanttChart = Preconditions.checkNotNull(ganttChart);
+    myTreeTable = Preconditions.checkNotNull(treeTable);
+    myTaskManager = Preconditions.checkNotNull(taskManager);
   }
 
   @Override
@@ -91,14 +96,7 @@ class GPTreeTransferHandler extends TransferHandler {
     if (selectedPaths == null || selectedPaths.length == 0) {
       return null;
     }
-    ClipboardContents clipboardContents = new ClipboardContents(myTaskManager);
-    for (TreePath path : selectedPaths) {
-      TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
-      Task task = (Task) node.getUserObject();
-      if (task != null) {
-        clipboardContents.addTasks(Collections.singletonList(task));
-      }
-    }
+    ClipboardContents clipboardContents = ((GanttChartSelection)myGanttChart.get().getSelection()).buildClipboardContents();
     return new NodesTransferable(clipboardContents);
   }
 

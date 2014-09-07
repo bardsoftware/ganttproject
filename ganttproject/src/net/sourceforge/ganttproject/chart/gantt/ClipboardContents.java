@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -91,6 +92,9 @@ public class ClipboardContents {
       }
     }
     myIntraDeps.addAll(intraDeps);
+    GPLogger.getLogger("Clipboard").fine(String.format(
+        "Clipboard task (only roots): %s\ninternal-dependencies: %s\nincoming dependencies:%s\noutgoing dependencies:%s",
+        myTasks, myIntraDeps, myIncomingDeps, myOutgoingDeps));
   }
 
   /**

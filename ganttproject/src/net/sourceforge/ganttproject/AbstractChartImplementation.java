@@ -410,26 +410,14 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myCachedHeaderHeight;
   }
 
-  protected static class ChartSelectionImpl implements ChartSelection {
+  public static class ChartSelectionImpl implements ChartSelection {
     private List<Task> myTasks = new ArrayList<Task>();
-    private List<Task> myTasksRO = Collections.unmodifiableList(myTasks);
     private List<HumanResource> myHumanResources = new ArrayList<HumanResource>();
-    private List<HumanResource> myHumanResourceRO = Collections.unmodifiableList(myHumanResources);
     private boolean isTransactionRunning;
 
     @Override
     public boolean isEmpty() {
       return myTasks.isEmpty() && myHumanResources.isEmpty();
-    }
-
-    @Override
-    public List<Task> getTasks() {
-      return myTasksRO;
-    }
-
-    @Override
-    public List<HumanResource> getHumanResources() {
-      return myHumanResourceRO;
     }
 
     @Override
