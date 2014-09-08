@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
@@ -35,6 +37,8 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -80,6 +84,7 @@ import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 /**
  * @author bard
@@ -932,23 +937,36 @@ public class TaskManagerImpl implements TaskManager {
       return result;
     }
 
+
     @Override
-    public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
-      if (root == null) {
-        root = getRootTask();
-      }
-      List<Task> result = Lists.newArrayList();
+    public void breadthFirstSearch(Task root, Predicate<Pair<Task, Task>> predicate) {
+      Preconditions.checkNotNull(root);
       Queue<Task> queue = Queues.newArrayDeque();
-      if (includeRoot) {
+      if (predicate.apply(Pair.create((Task) null, root))) {
         queue.add(root);
-      } else {
-        queue.addAll(Lists.newArrayList(root.getNestedTasks()));
       }
       while (!queue.isEmpty()) {
         Task head = queue.poll();
-        result.add(head);
-        queue.addAll(Lists.newArrayList(head.getNestedTasks()));
+        for (Task child : head.getNestedTasks()) {
+          if (predicate.apply(Pair.create(head, child))) {
+            queue.add(child);
+          }
+        }
       }
+    }
+
+    @Override
+    public List<Task> breadthFirstSearch(Task root, final boolean includeRoot) {
+      final Task _root = (root == null) ? getRootTask() : root;
+      final List<Task> result = Lists.newArrayList();
+      breadthFirstSearch(_root, new Predicate<Pair<Task,Task>>() {
+        public boolean apply(Pair<Task, Task> parent_child) {
+          if (includeRoot || parent_child.first() != null) {
+            result.add(parent_child.second());
+          }
+          return true;
+        }
+      });
       return result;
     }
 

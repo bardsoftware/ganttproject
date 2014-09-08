@@ -21,6 +21,10 @@ package net.sourceforge.ganttproject.task;
 import java.util.Collections;
 import java.util.List;
 
+import net.sourceforge.ganttproject.util.collect.Pair;
+
+import com.google.common.base.Predicate;
+
 /**
  * @author bard
  */
@@ -66,6 +70,7 @@ public interface TaskContainmentHierarchyFacade {
 
   List<Task> getTasksInDocumentOrder();
 
+  void breadthFirstSearch(Task root, final Predicate<Pair<Task, Task>> predicate);
   List<Task> breadthFirstSearch(Task root, boolean includeRoot);
 
   boolean contains(Task task);
@@ -156,6 +161,11 @@ public interface TaskContainmentHierarchyFacade {
 
     @Override
     public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void breadthFirstSearch(Task root, Predicate<Pair<Task, Task>> predicate) {
       throw new UnsupportedOperationException();
     }
   };

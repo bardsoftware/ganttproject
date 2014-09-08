@@ -33,6 +33,8 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -41,6 +43,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {
   private Map<Task, MutableTreeTableNode> myTask2treeNode = new HashMap<Task, MutableTreeTableNode>();
@@ -254,7 +257,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
   private static final Function<MutableTreeTableNode, Task> ourNodeToTaskFxn = new Function<MutableTreeTableNode, Task>() {
     @Override
     public Task apply(MutableTreeTableNode input) {
-      return (Task) input.getUserObject();
+      return input == null ? null : (Task) input.getUserObject();
     }
   };
 
@@ -266,15 +269,30 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     return Lists.transform(subtree.subList(1, subtree.size()), ourNodeToTaskFxn);
   }
 
-  public List<Task> breadthFirstSearch(Task root, boolean includeRoot) {
-    if (root == null) {
-      root = getRootTask();
-    }
+  public void breadthFirstSearch(Task root, final Predicate<Pair<Task, Task>> predicate) {
+    Preconditions.checkNotNull(root);
     MutableTreeTableNode rootNode = myTask2treeNode.get(root);
-    List<MutableTreeTableNode> subtree = TreeUtil.breadthFirstSearch(rootNode);
-    if (!includeRoot) {
-      subtree = subtree.subList(1, subtree.size());
-    }
-    return Lists.transform(subtree, ourNodeToTaskFxn);
+    TreeUtil.breadthFirstSearch(rootNode, new Predicate<Pair<MutableTreeTableNode,MutableTreeTableNode>>() {
+      @Override
+      public boolean apply(Pair<MutableTreeTableNode, MutableTreeTableNode> parent_child) {
+        Task parentTask = ourNodeToTaskFxn.apply(parent_child.first());
+        Task childTask = ourNodeToTaskFxn.apply(parent_child.second());
+        return predicate.apply(Pair.create(parentTask, childTask));
+      }
+    });
+  }
+
+  public List<Task> breadthFirstSearch(Task root, final boolean includeRoot) {
+    final Task _root = (root == null) ? getRootTask() : root;
+    final List<Task> result = Lists.newArrayList();
+    breadthFirstSearch(root, new Predicate<Pair<Task,Task>>() {
+      public boolean apply(Pair<Task, Task> parent_child) {
+        if (includeRoot || parent_child.first() != null) {
+          result.add(parent_child.second());
+        }
+        return true;
+      }
+    });
+    return result;
   }
 }

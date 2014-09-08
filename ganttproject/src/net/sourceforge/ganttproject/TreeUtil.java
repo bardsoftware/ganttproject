@@ -1,3 +1,22 @@
+/*
+Copyright 2013 BarD Software s.r.o
+Copyright 2012 GanttProject Team
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject;
 
 import java.util.List;
@@ -6,12 +25,20 @@ import java.util.Queue;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import net.sourceforge.ganttproject.util.collect.Pair;
+
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
+/**
+ * Utility methods for working with Swing trees.
+ *
+ * @author dbarashev (Dmitry Barashev)
+ */
 public class TreeUtil {
   static int getPrevSibling(TreeNode node, TreeNode child) {
     if (node == null) {
@@ -53,16 +80,29 @@ public class TreeUtil {
 
   public static List<MutableTreeTableNode> breadthFirstSearch(MutableTreeTableNode rootNode) {
     final List<MutableTreeTableNode> result = Lists.newArrayList();
+    breadthFirstSearch(rootNode, new Predicate<Pair<MutableTreeTableNode,MutableTreeTableNode>>() {
+      public boolean apply(Pair<MutableTreeTableNode, MutableTreeTableNode> parent_child) {
+        result.add(parent_child.second());
+        return true;
+      }
+    });
+    return result;
+  }
+
+  public static void breadthFirstSearch(MutableTreeTableNode root, Predicate<Pair<MutableTreeTableNode, MutableTreeTableNode>> predicate) {
     final Queue<MutableTreeTableNode> queue = Queues.newArrayDeque();
-    queue.add(rootNode);
+    if (predicate.apply(Pair.create((MutableTreeTableNode) null, root))) {
+      queue.add(root);
+    }
     while (!queue.isEmpty()) {
       MutableTreeTableNode head = queue.poll();
-      result.add(head);
       for (int i = 0; i < head.getChildCount(); i++) {
-        queue.add((MutableTreeTableNode) head.getChildAt(i));
+        MutableTreeTableNode child = (MutableTreeTableNode) head.getChildAt(i);
+        if (predicate.apply(Pair.create(head, child))) {
+          queue.add(child);
+        }
       }
     }
-    return result;
   }
 
   public static List<MutableTreeTableNode> collectSubtree(MutableTreeTableNode root) {
