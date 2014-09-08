@@ -64,7 +64,7 @@ public class ClipboardTaskProcessor {
     List<Task> result = Lists.newArrayListWithExpectedSize(clipboardContents.getTasks().size());
     Map<Task, Task> original2copy = Maps.newHashMap();
     for (Task task : clipboardContents.getTasks()) {
-      Task copy = copyAndInsert(task, pasteRoot, anchor, original2copy);
+      Task copy = copyAndInsert(task, pasteRoot, anchor, original2copy, clipboardContents);
       result.add(copy);
     }
     copyDependencies(clipboardContents, original2copy);
@@ -124,14 +124,14 @@ public class ClipboardTaskProcessor {
     }
   }
 
-  private Task copyAndInsert(Task task, Task newContainer, Task prevSibling, Map<Task, Task> original2copy) {
+  private Task copyAndInsert(Task task, Task newContainer, Task prevSibling, Map<Task, Task> original2copy, ClipboardContents clipboardContents) {
     TaskBuilder builder = myTaskManager.newTaskBuilder().withPrototype(task).withParent(newContainer).withPrevSibling(prevSibling);
     String newName = MessageFormat.format(myTaskManager.getTaskCopyNamePrefixOption().getValue(), GanttLanguage.getInstance().getText("copy2"), task.getName());
     builder = builder.withName(newName);
     Task result = builder.build();
     original2copy.put(task, result);
-    for (Task child : myTaskManager.getTaskHierarchy().getNestedTasks(task)) {
-      copyAndInsert(child, result, null, original2copy);
+    for (Task child : clipboardContents.getNestedTasks(task)) {
+      copyAndInsert(child, result, null, original2copy, clipboardContents);
     }
     return result;
   }
