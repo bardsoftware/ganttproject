@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.chart.gantt;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -32,13 +34,10 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.TreeMultimap;
-import com.jgoodies.common.collect.LinkedListModel;
 
 /**
  * Represents all objects which are involved into a clipboard transaction on Gantt chart: tasks, dependencies
@@ -48,6 +47,12 @@ import com.jgoodies.common.collect.LinkedListModel;
  * @author dbarashev (Dmitry Barashev)
  */
 public class ClipboardContents {
+  private static final Comparator<? super Task> IN_DOCUMENT_ORDER = new Comparator<Task>() {
+    @Override
+    public int compare(Task left, Task right) {
+      return left.getManager().getTaskHierarchy().compareDocumentOrder(left, right);
+    }
+  };
   private final List<Task> myTasks = Lists.newArrayList();
   private final List<TaskDependency> myIntraDeps = Lists.newArrayList();
   private final List<TaskDependency> myIncomingDeps = Lists.newArrayList();
@@ -84,6 +89,7 @@ public class ClipboardContents {
         return true;
       }
     };
+    Collections.sort(myTasks, IN_DOCUMENT_ORDER);
     for (Task t : myTasks) {
       taskHierarchy.breadthFirstSearch(t, predicate);
     }

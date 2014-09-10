@@ -65,6 +65,7 @@ public class ClipboardTaskProcessor {
     Map<Task, Task> original2copy = Maps.newHashMap();
     for (Task task : clipboardContents.getTasks()) {
       Task copy = copyAndInsert(task, pasteRoot, anchor, original2copy, clipboardContents);
+      anchor = copy;
       result.add(copy);
     }
     copyDependencies(clipboardContents, original2copy);
@@ -130,8 +131,10 @@ public class ClipboardTaskProcessor {
     builder = builder.withName(newName);
     Task result = builder.build();
     original2copy.put(task, result);
+    Task anchor = null;
     for (Task child : clipboardContents.getNestedTasks(task)) {
-      copyAndInsert(child, result, null, original2copy, clipboardContents);
+      Task copied = copyAndInsert(child, result, anchor, original2copy, clipboardContents);
+      anchor = copied;
     }
     return result;
   }
