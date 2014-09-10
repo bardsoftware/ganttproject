@@ -58,7 +58,7 @@ public class GanttTreeTable extends GPTreeTableBase {
       public GanttChart get() {
         return uifacade.getGanttChart();
       }
-    }));
+    }, uifacade.getUndoManager()));
   }
 
   private UIFacade getUiFacade() {

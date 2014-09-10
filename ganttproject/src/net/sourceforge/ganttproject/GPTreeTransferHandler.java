@@ -26,13 +26,16 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 import javax.swing.tree.TreePath;
+import javax.swing.undo.UndoManager;
 
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -62,11 +65,13 @@ class GPTreeTransferHandler extends TransferHandler {
   private final GPTreeTableBase myTreeTable;
   private final TaskManager myTaskManager;
   private final Supplier<GanttChart> myGanttChart;
+  private final GPUndoManager myUndoManager;
 
-  public GPTreeTransferHandler(GPTreeTableBase treeTable, TaskManager taskManager, Supplier<GanttChart> ganttChart) {
+  public GPTreeTransferHandler(GPTreeTableBase treeTable, TaskManager taskManager, Supplier<GanttChart> ganttChart, GPUndoManager undoManager) {
     myGanttChart = Preconditions.checkNotNull(ganttChart);
     myTreeTable = Preconditions.checkNotNull(treeTable);
     myTaskManager = Preconditions.checkNotNull(taskManager);
+    myUndoManager = undoManager;
   }
 
   @Override
@@ -112,15 +117,20 @@ class GPTreeTransferHandler extends TransferHandler {
     }
     try {
       Transferable t = support.getTransferable();
-      ClipboardContents clipboard = (ClipboardContents) t.getTransferData(ourClipboardContentsFlavor);
+      final ClipboardContents clipboard = (ClipboardContents) t.getTransferData(ourClipboardContentsFlavor);
       JXTreeTable.DropLocation dl = (JXTreeTable.DropLocation) support.getDropLocation();
       int dropRow = myTreeTable.rowAtPoint(dl.getDropPoint());
       TreePath dropPath = myTreeTable.getPathForRow(dropRow);
       DefaultMutableTreeTableNode dropNode = (DefaultMutableTreeTableNode) dropPath.getLastPathComponent();
-      Task dropTask = (Task) dropNode.getUserObject();
-      clipboard.cut();
-      ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
-      processor.pasteAsChild(dropTask, clipboard);
+      final Task dropTask = (Task) dropNode.getUserObject();
+      myUndoManager.undoableEdit(GanttLanguage.getInstance().getText("dragndrop.undo.label"), new Runnable() {
+        @Override
+        public void run() {
+          clipboard.cut();
+          ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
+          processor.pasteAsChild(dropTask, clipboard);
+        }
+      });
       return true;
     } catch (UnsupportedFlavorException | IOException e) {
       GPLogger.logToLogger(e);
