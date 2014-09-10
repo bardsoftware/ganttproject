@@ -30,7 +30,9 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Tests for clipboard operations with tasks.
@@ -139,4 +141,36 @@ public class ClipboardTaskProcessorTest extends TestCase {
     assertEquals(1, res1.getAssignments().length);
   }
 
+  /**
+   * Tests that tasks cut and pasted with the help of ClipboardContents appear in the paste
+   * target in the same document order which they had before clipboard operation, no matter in which
+   * order they were added to clipboard.
+   */
+  public void testTaskOrder() {
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
+    taskManager.getTaskCopyNamePrefixOption().setValue("{1}");
+    Task task1 = taskManager.newTaskBuilder().withName("1").build();
+    Task task2 = taskManager.newTaskBuilder().withName("2").build();
+    Task task3 = taskManager.newTaskBuilder().withName("3").build();
+    Task task4 = taskManager.newTaskBuilder().withName("4").build();
+    Task task5 = taskManager.newTaskBuilder().withName("5").build();
+    Task task6 = taskManager.newTaskBuilder().withName("6").build();
+    taskManager.getTaskHierarchy().move(task2, task1);
+    taskManager.getTaskHierarchy().move(task4, task3);
+    taskManager.getTaskHierarchy().move(task5, task3);
+
+    ClipboardContents contents = new ClipboardContents(taskManager);
+    contents.addTasks(ImmutableList.of(task3, task1));
+    contents.cut();
+    ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+    clipboardProcessor.pasteAsChild(task6, contents);
+    List<Task> search = taskManager.getTaskHierarchy().breadthFirstSearch(task6, false);
+
+    assertEquals(ImmutableList.of("1", "3", "2", "4", "5"), Lists.transform(search, new Function<Task, String>() {
+      @Override
+      public String apply(Task t) {
+        return t.getName();
+      }
+    }));
+  }
 }
