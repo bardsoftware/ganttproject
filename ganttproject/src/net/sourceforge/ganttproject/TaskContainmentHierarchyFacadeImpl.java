@@ -269,6 +269,7 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     return Lists.transform(subtree.subList(1, subtree.size()), ourNodeToTaskFxn);
   }
 
+  @Override
   public void breadthFirstSearch(Task root, final Predicate<Pair<Task, Task>> predicate) {
     Preconditions.checkNotNull(root);
     MutableTreeTableNode rootNode = myTask2treeNode.get(root);
@@ -282,10 +283,12 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     });
   }
 
+  @Override
   public List<Task> breadthFirstSearch(Task root, final boolean includeRoot) {
     final Task _root = (root == null) ? getRootTask() : root;
     final List<Task> result = Lists.newArrayList();
-    breadthFirstSearch(root, new Predicate<Pair<Task,Task>>() {
+    breadthFirstSearch(_root, new Predicate<Pair<Task,Task>>() {
+      @Override
       public boolean apply(Pair<Task, Task> parent_child) {
         if (includeRoot || parent_child.first() != null) {
           result.add(parent_child.second());
