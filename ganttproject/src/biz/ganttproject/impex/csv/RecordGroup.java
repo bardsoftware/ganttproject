@@ -43,6 +43,7 @@ public abstract class RecordGroup {
   private final Set<String> myFields;
   private final Set<String> myMandatoryFields;
   private SetView<String> myCustomFields;
+  private List<String> myHeader;
   private final String myName;
 
   public RecordGroup(String name, Set<String> fields) {
@@ -90,6 +91,9 @@ public abstract class RecordGroup {
       if (!record.isSet(s)) {
         return false;
       }
+      if (Strings.isNullOrEmpty(record.get(s))) {
+        return false;
+      }
     }
     return true;
   }
@@ -101,12 +105,19 @@ public abstract class RecordGroup {
     return record.get(columnName);
   }
 
-  protected abstract boolean doProcess(CSVRecord record);
+  protected boolean doProcess(CSVRecord record) {
+    return (myHeader != null);
+  }
 
   protected void postProcess() {}
 
   public void setHeader(List<String> header) {
+    myHeader = header;
     myCustomFields = Sets.difference(Sets.newHashSet(header), myFields);
+  }
+
+  public List<String> getHeader() {
+    return myHeader;
   }
 
   protected Collection<String> getCustomFields() {

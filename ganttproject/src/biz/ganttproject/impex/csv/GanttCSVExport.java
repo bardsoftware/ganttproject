@@ -89,7 +89,7 @@ public class GanttCSVExport {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
     }
     if (csvOptions.sSeparatedTextChar.length() == 1) {
-      format = format.withQuoteChar(csvOptions.sSeparatedTextChar.charAt(0));
+      format = format.withQuote(csvOptions.sSeparatedTextChar.charAt(0));
     }
 
     CSVPrinter csvPrinter = new CSVPrinter(writer, format);

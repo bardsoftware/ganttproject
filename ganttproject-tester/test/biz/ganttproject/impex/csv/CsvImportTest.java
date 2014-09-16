@@ -27,7 +27,6 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import junit.framework.TestCase;
@@ -38,8 +37,13 @@ import junit.framework.TestCase;
  * @author dbarashev (Dmitry Barashev)
  */
 public class CsvImportTest extends TestCase {
-  private Supplier<Reader> createSupplier(String data) {
-    return Suppliers.<Reader> ofInstance(new StringReader(data));
+  private Supplier<Reader> createSupplier(final String data) {
+    return new Supplier<Reader>() {
+      @Override
+      public Reader get() {
+        return new StringReader(data);
+      }
+    };
   }
 
   public void testBasic() throws Exception {
@@ -49,6 +53,9 @@ public class CsvImportTest extends TestCase {
     RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         wasCalled.set(true);
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
@@ -58,10 +65,25 @@ public class CsvImportTest extends TestCase {
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data)), recordGroup);
     importer.load();
     assertTrue(wasCalled.get());
+  }
 
-    // Now test with one empty line between header and data
-    wasCalled.set(false);
-    importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, "", data)), recordGroup);
+  public void testSkipEmptyLine() throws Exception {
+    String header = "A, B";
+    String data = "a1, b1";
+    final AtomicBoolean wasCalled = new AtomicBoolean(false);
+    RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
+        wasCalled.set(true);
+        assertEquals("a1", record.get("A"));
+        assertEquals("b1", record.get("B"));
+        return true;
+      }
+    };
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, "", data)), recordGroup);
     importer.load();
     assertTrue(wasCalled.get());
   }
@@ -73,6 +95,9 @@ public class CsvImportTest extends TestCase {
     RecordGroup recordGroup1 = new RecordGroup("AB", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
         wasCalled1.set(true);
@@ -86,6 +111,9 @@ public class CsvImportTest extends TestCase {
     RecordGroup recordGroup2 = new RecordGroup("CDE", ImmutableSet.<String> of("C", "D", "E")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         assertEquals("c1", record.get("C"));
         assertEquals("d1", record.get("D"));
         assertEquals("e1", record.get("E"));
@@ -108,6 +136,9 @@ public class CsvImportTest extends TestCase {
         ImmutableSet.<String> of("A", "B")) { // mandatory fields
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         wasCalled.set(true);
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
@@ -127,6 +158,9 @@ public class CsvImportTest extends TestCase {
     RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         wasCalled.set(true);
         assertEquals("a1", record.get("A"));
         assertEquals("b1", record.get("B"));
@@ -149,6 +183,9 @@ public class CsvImportTest extends TestCase {
         ImmutableSet.<String> of("A", "B", "C"), ImmutableSet.<String> of("A", "B")) {
       @Override
       protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
         if (!hasMandatoryFields(record)) {
           return false;
         }

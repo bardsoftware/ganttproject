@@ -45,6 +45,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -117,6 +118,51 @@ public class GanttCSVOpen {
     return resourceManager == null ? null : new ResourceRecords(resourceManager);
   }
 
+  private int doLoad(CSVParser parser, int numGroup, int linesToSkip) {
+    final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
+    int lineCounter = 0;
+    RecordGroup currentGroup = myRecordGroups.get(numGroup);
+    boolean searchHeader = currentGroup.getHeader() == null;
+    if (searchHeader) {
+      debug(logger, "[CSV] Searching for a header of %s", currentGroup);
+    } else {
+      debug(logger, "[CSV] Expecting to read records of group %s", currentGroup);
+      numGroup++;
+    }
+
+    for (Iterator<CSVRecord> it = parser.iterator(); it.hasNext();) {
+      CSVRecord record = it.next();
+      lineCounter++;
+      if (linesToSkip-- > 0) {
+        continue;
+      }
+      if (record.size() == 0 || record.size() == 1 && Strings.isNullOrEmpty(record.get(0))) {
+        // If line is empty then current record group is probably finished.
+        // Let's search for the next group header.
+        searchHeader = true;
+        continue;
+      }
+      if (searchHeader) {
+        if (numGroup < myRecordGroups.size()) {
+          debug(logger, "%s\n", record);
+          RecordGroup nextGroup = myRecordGroups.get(numGroup);
+          // Record is not empty and we're searching for header.
+          if (nextGroup.isHeader(record)) {
+            debug(logger, "[CSV] ^^^ This seems to be a header");
+
+            nextGroup.setHeader(Lists.newArrayList(record.iterator()));
+            return lineCounter;
+          }
+        }
+      }
+      if (currentGroup.doProcess(record)) {
+        searchHeader = false;
+      } else {
+        mySkippedLine++;
+      }
+    }
+    return 0;
+  }
   /**
    * Create tasks from file.
    *
@@ -125,41 +171,24 @@ public class GanttCSVOpen {
    */
   public boolean load() throws IOException {
     final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
-    CSVParser parser = new CSVParser(myInputSupplier.get(),
-        CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true));
-    int numGroup = 0;
-    RecordGroup currentGroup = null;
-    boolean searchHeader = true;
-    debug(logger, "[CSV] Searching for a header of %s", myRecordGroups.get(numGroup));
-    for (Iterator<CSVRecord> it = parser.iterator(); it.hasNext();) {
-      CSVRecord record = it.next();
-      if (record.size() == 0) {
-        // If line is empty then current record group is probably finished.
-        // Let's search for the next group header.
-        searchHeader = true;
-        continue;
+
+    int idxCurrentGroup = 0;
+    int idxNextGroup;
+    int skipHeadLines = 0;
+    do {
+      idxNextGroup = idxCurrentGroup;
+      CSVFormat format = CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true);
+      RecordGroup currentGroup = myRecordGroups.get(idxCurrentGroup);
+      if (currentGroup.getHeader() != null) {
+        format = format.withHeader(currentGroup.getHeader().toArray(new String[0]));
+        idxNextGroup++;
       }
-      if (searchHeader) {
-        debug(logger, "%s\n", record);
-        // Record is not empty and we're searching for header.
-        if (numGroup < myRecordGroups.size() && myRecordGroups.get(numGroup).isHeader(record)) {
-          debug(logger, "[CSV] ^^^ This seems to be a header");
-          // If next group acknowledges the header, then we give it the turn,
-          // otherwise it was just an empty line in the current group
-          searchHeader = false;
-          currentGroup = myRecordGroups.get(numGroup);
-          parser.replaceHeader(record);
-          currentGroup.setHeader(Lists.newArrayList(record.iterator()));
-          numGroup++;
-          continue;
-        }
+      try (Reader reader = myInputSupplier.get()) {
+        CSVParser parser = new CSVParser(reader, format);
+        skipHeadLines = doLoad(parser, idxCurrentGroup, skipHeadLines);
       }
-      if (currentGroup != null && currentGroup.doProcess(record)) {
-        searchHeader = false;
-      } else {
-        mySkippedLine++;
-      }
-    }
+      idxCurrentGroup = idxNextGroup;
+    } while (skipHeadLines > 0);
     for (RecordGroup group : myRecordGroups) {
       group.postProcess();
     }
