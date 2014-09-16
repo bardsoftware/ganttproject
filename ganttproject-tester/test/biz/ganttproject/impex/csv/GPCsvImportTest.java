@@ -49,8 +49,13 @@ import com.google.common.collect.Maps;
  * @author dbarashev (Dmitry Barashev)
  */
 public class GPCsvImportTest extends TestCase {
-  private Supplier<Reader> createSupplier(String data) {
-    return Suppliers.<Reader> ofInstance(new StringReader(data));
+  private Supplier<Reader> createSupplier(final String data) {
+    return new Supplier<Reader>() {
+      @Override
+      public Reader get() {
+        return new StringReader(data);
+      }
+    };
   }
 
   private static Map<String, Task> buildTaskMap(TaskManager taskManager) {

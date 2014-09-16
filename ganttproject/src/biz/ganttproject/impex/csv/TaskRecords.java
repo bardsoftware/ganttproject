@@ -42,6 +42,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -98,6 +99,9 @@ class TaskRecords extends RecordGroup {
 
   @Override
   protected boolean doProcess(CSVRecord record) {
+    if (!super.doProcess(record)) {
+      return false;
+    }
     if (!hasMandatoryFields(record)) {
       return false;
     }
@@ -117,7 +121,10 @@ class TaskRecords extends RecordGroup {
       }
     }
     if (record.isSet(TaskFields.COMPLETION.toString())) {
-      builder = builder.withCompletion(Integer.parseInt(record.get(TaskFields.COMPLETION.toString())));
+      String completion = record.get(TaskFields.COMPLETION.toString());
+      if (!Strings.isNullOrEmpty(completion)) {
+        builder = builder.withCompletion(Integer.parseInt(completion));
+      }
     }
     if (record.isSet(TaskDefaultColumn.COST.getName())) {
       try {

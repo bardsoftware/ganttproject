@@ -70,6 +70,9 @@ class ResourceRecords extends RecordGroup {
 
   @Override
   protected boolean doProcess(CSVRecord record) {
+    if (!super.doProcess(record)) {
+      return false;
+    }
     if (!hasMandatoryFields(record)) {
       return false;
     }
