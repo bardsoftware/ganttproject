@@ -62,6 +62,9 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
     if ("date".equals(qName)) {
       loadHoliday(myAttrs);
     }
+    if ("calendars".equals(qName)) {
+      processLastEvent();
+    }
   }
 
   /**
@@ -84,6 +87,7 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       } else {
         myEvents.add(CalendarEvent.newEvent(myLastEvent.myDate, myLastEvent.isRecurring, myLastEvent.getType(), cdata));
       }
+      myLastEvent = null;
     }
   }
 
