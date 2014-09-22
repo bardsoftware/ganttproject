@@ -194,18 +194,14 @@ class ProjectFileImporter {
 
     importTasks(pf, foreignId2nativeTask);
     hideCustomProperties();
-    try {
-      importDependencies(pf, foreignId2nativeTask);
-      List<net.sourceforge.ganttproject.task.Task> leafTasks = Lists.newArrayList();
-      for (GanttTask task : foreignId2nativeTask.values()) {
-        if (!getTaskManager().getTaskHierarchy().hasNestedTasks(task)) {
-          leafTasks.add(task);
-        }
+    importDependencies(pf, foreignId2nativeTask);
+    List<net.sourceforge.ganttproject.task.Task> leafTasks = Lists.newArrayList();
+    for (GanttTask task : foreignId2nativeTask.values()) {
+      if (!getTaskManager().getTaskHierarchy().hasNestedTasks(task)) {
+        leafTasks.add(task);
       }
-      myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
-    } catch (TaskDependencyException e) {
-      throw new MPXJException("Failed to import dependencies", e);
     }
+    myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
     importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
 
     return myErrors;
@@ -605,8 +601,7 @@ class ProjectFileImporter {
     }
     throw new IllegalStateException("No ID found in task=" + mpxjTask);
   }
-  private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask)
-      throws TaskDependencyException {
+  private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask) {
     for (Task t : pf.getAllTasks()) {
       if (t.getPredecessors() == null) {
         continue;
@@ -624,13 +619,18 @@ class ProjectFileImporter {
               "Failed to import relation=%s because target task=%s", t, foreignId(r.getTargetTask()))));
           continue;
         }
-        TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
-        dependency.setConstraint(convertConstraint(r));
-        if (r.getLag().getDuration() != 0.0) {
-          // TODO(dbarashev): get rid of days
-          dependency.setDifference((int) r.getLag().convertUnits(TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
+        try {
+          TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
+          dependency.setConstraint(convertConstraint(r));
+          if (r.getLag().getDuration() != 0.0) {
+            // TODO(dbarashev): get rid of days
+            dependency.setDifference((int) r.getLag().convertUnits(TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
+          }
+          dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));
+        } catch (TaskDependencyException e) {
+          GPLogger.getLogger("MSProject").log(Level.SEVERE, "Failed to import relation=" + r, e);
+          myErrors.add(Pair.create(Level.SEVERE, String.format("Failed to import relation=%s: %s", r, e.getMessage())));
         }
-        dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));
       }
     }
   }
