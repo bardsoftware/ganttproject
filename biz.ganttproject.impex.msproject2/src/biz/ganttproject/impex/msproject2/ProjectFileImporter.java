@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.xml.transform.OutputKeys;
@@ -96,6 +97,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 class ProjectFileImporter {
@@ -106,7 +108,7 @@ class ProjectFileImporter {
   private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
   private Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<String, Object>();
   private ColumnList myTaskFields;
-  private List<String> myErrors = new ArrayList<String>();
+  private List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
 
   private static ProjectReader createReader(File file) {
@@ -169,7 +171,7 @@ class ProjectFileImporter {
     return Collections.emptyList();
   }
 
-  public List<String> run() throws MPXJException {
+  public List<Pair<Level, String>> run() throws MPXJException {
     ProjectFile pf;
     try {
       pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile))
@@ -359,7 +361,8 @@ class ProjectFileImporter {
   private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask,
       Map<Integer, GanttTask> foreignId2nativeTask) {
     if (t.getNull()) {
-      myErrors.add(MessageFormat.format("[harmless] Task with id={0} is blank task and was skipped", t.getID()));
+      myErrors.add(Pair.create(Level.INFO,
+          MessageFormat.format("Task with id={0} is blank task. Skipped", foreignId(t))));
       return;
     }
     if (t.getUniqueID() == 0) {
@@ -375,7 +378,8 @@ class ProjectFileImporter {
     StringBuilder report = new StringBuilder();
     Function<Task, Pair<TimeDuration, TimeDuration>> getDuration = findDurationFunction(t, report);
     if (getDuration == null) {
-      myErrors.add("[suspicious] Failed to import leaf task=" + t + ". Unable to determine its duration (" + report.toString() + ")");
+      myErrors.add(Pair.create(Level.SEVERE,
+          String.format("Can't determine the duration  of task %s (%s). Skipped", t, report)));
       return;
     }
 
@@ -406,16 +410,16 @@ class ProjectFileImporter {
         if (workingDuration.getLength() > 0) {
           taskBuilder.withDuration(workingDuration);
         } else if (nonWorkingDuration.getLength() > 0) {
-          myErrors.add(MessageFormat.format(
+          myErrors.add(Pair.create(Level.INFO, MessageFormat.format(
               "[FYI] Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
-                  + "We set its duration to {6}", t.getID(), t.getName(), t.getStart(), t.getFinish(),
-              t.getMilestone(), workingDuration, nonWorkingDuration));
+                  + "We set its duration to {6}", foreignId(t), t.getName(), t.getStart(), t.getFinish(),
+              t.getMilestone(), workingDuration, nonWorkingDuration)));
           taskBuilder.withDuration(nonWorkingDuration);
         } else {
-          myErrors.add(MessageFormat.format(
+          myErrors.add(Pair.create(Level.INFO, MessageFormat.format(
               "[FYI] Task with id={0}, name={1}, start date={2}, end date={3}, milestone={4} has working time={5} and non working time={6}.\n"
-                  + "We set its duration to default={7}", t.getID(), t.getName(), t.getStart(), t.getFinish(),
-              t.getMilestone(), workingDuration, nonWorkingDuration, defaultDuration));
+                  + "We set its duration to default={7}", foreignId(t), t.getName(), t.getStart(), t.getFinish(),
+              t.getMilestone(), workingDuration, nonWorkingDuration, defaultDuration)));
           taskBuilder.withDuration(defaultDuration);
         }
       } else {
@@ -433,7 +437,7 @@ class ProjectFileImporter {
       }
     }
     importCustomFields(t, nativeTask);
-    foreignId2nativeTask.put(t.getID(), nativeTask);
+    foreignId2nativeTask.put(foreignId(t), nativeTask);
   }
 
   private Date convertStartTime(Date start) {
@@ -590,6 +594,17 @@ class ProjectFileImporter {
         }
       };
 
+  private static Integer foreignId(Task mpxjTask) {
+    Integer result = mpxjTask.getID();
+    if (result != null) {
+      return result;
+    }
+    result = mpxjTask.getUniqueID();
+    if (result != null) {
+      return result;
+    }
+    throw new IllegalStateException("No ID found in task=" + mpxjTask);
+  }
   private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask)
       throws TaskDependencyException {
     for (Task t : pf.getAllTasks()) {
@@ -597,16 +612,16 @@ class ProjectFileImporter {
         continue;
       }
       for (Relation r : t.getPredecessors()) {
-        GanttTask dependant = foreignId2nativeTask.get(r.getSourceTask().getID());
-        GanttTask dependee = foreignId2nativeTask.get(r.getTargetTask().getID());
+        GanttTask dependant = foreignId2nativeTask.get(foreignId(r.getSourceTask()));
+        GanttTask dependee = foreignId2nativeTask.get(foreignId(r.getTargetTask()));
         if (dependant == null) {
-          myErrors.add("[suspicious] Failed to import relation=" + t + " because source task=" + r.getSourceTask().getID()
-              + " was not found");
+          myErrors.add(Pair.create(Level.SEVERE, String.format(
+              "Failed to import relation=%s because source task=%s was not found", r, foreignId(r.getSourceTask()))));
           continue;
         }
         if (dependee == null) {
-          myErrors.add("[suspicious] Failed to import relation=" + t + " because target task=" + r.getTargetTask().getID()
-              + " was not found");
+          myErrors.add(Pair.create(Level.SEVERE, String.format(
+              "Failed to import relation=%s because target task=%s", t, foreignId(r.getTargetTask()))));
           continue;
         }
         TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(dependant, dependee);
@@ -638,10 +653,10 @@ class ProjectFileImporter {
   private void importResourceAssignments(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask,
       Map<Integer, HumanResource> foreignId2nativeResource) {
     for (ResourceAssignment ra : pf.getAllResourceAssignments()) {
-      GanttTask nativeTask = foreignId2nativeTask.get(ra.getTask().getID());
+      GanttTask nativeTask = foreignId2nativeTask.get(foreignId(ra.getTask()));
       if (nativeTask == null) {
-        myErrors.add("[suspicious] Failed to import resource assignment=" + ra + " because its task with ID=" + ra.getTask().getID()
-            + " and name=" + ra.getTask().getName() + " was not found or not imported");
+        myErrors.add(Pair.create(Level.SEVERE, String.format(
+            "Failed to import resource assignment=%s because its task with ID=%d  and name=%s was not found or not imported", ra, foreignId(ra.getTask()), ra.getTask().getName())));
         continue;
       }
       Resource resource = ra.getResource();
@@ -650,14 +665,21 @@ class ProjectFileImporter {
       }
       HumanResource nativeResource = foreignId2nativeResource.get(resource.getUniqueID());
       if (nativeResource == null) {
-        myErrors.add("[suspicious] Failed to import resource assignment=" + ra + " because its resource with ID="
-            + resource.getUniqueID() + " and name=" + resource.getName() + " was not found or not imported");
+        myErrors.add(Pair.create(Level.SEVERE, String.format(
+            "Failed to import resource assignment=%s because its resource with ID=%d and name=%s was not found or not imported", ra, resource.getUniqueID(), resource.getName())));
         continue;
 
       }
       net.sourceforge.ganttproject.task.ResourceAssignment nativeAssignment = nativeTask.getAssignmentCollection().addAssignment(
           nativeResource);
-      nativeAssignment.setLoad(ra.getUnits().floatValue());
+      Preconditions.checkNotNull(nativeAssignment);
+      if (ra.getUnits() == null) {
+        myErrors.add(Pair.create(Level.INFO, String.format(
+            "Units not found in resource assignment=%s. Replaced with 100", ra)));
+        nativeAssignment.setLoad(100f);
+      } else {
+        nativeAssignment.setLoad(ra.getUnits().floatValue());
+      }
     }
   }
 }

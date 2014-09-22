@@ -20,6 +20,7 @@ package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
 
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
@@ -34,6 +35,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
@@ -61,7 +63,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
     try {
       File selectedFile = getFile();
       BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
-      List<String> errors = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile).run();
+      List<Pair<Level, String>> errors = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile).run();
 
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
@@ -73,11 +75,12 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
       }
       if (!errors.isEmpty()) {
-        StringBuilder builder = new StringBuilder();
-        for (String message : errors) {
-          GPLogger.log(message);
-          builder.append("<li>").append(message);
+        StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
+        for (Pair<Level, String> message : errors) {
+          GPLogger.getLogger("MSProject").log(message.first(), message.second());
+          builder.append(String.format("<tr><td><b>%s</b></td><td>%s</td></tr>", message.first().getName(), message.second()));
         }
+        builder.append("</table>");
         getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
             GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
       }
