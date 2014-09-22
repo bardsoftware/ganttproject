@@ -20,16 +20,23 @@ package net.sourceforge.ganttproject.chart.gantt;
 
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
+import java.util.Date;
 
+import com.google.common.base.Strings;
+
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
+import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
 class MouseMotionListenerImpl extends MouseMotionListenerBase {
@@ -53,6 +60,16 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
     if (taskUnderPoint == null) {
       myChartComponent.setDefaultCursor();
       myChartController.hideTooltip();
+
+      if (itemUnderPoint instanceof CalendarChartItem) {
+        CalendarEvent event = findCalendarEvent(((CalendarChartItem) itemUnderPoint).getDate());
+        if (event != null) {
+          myChartController.showTooltip(e.getX(), e.getY(), GanttLanguage.getInstance().formatText(
+              "timeline.holidayTooltip.pattern",
+              GanttLanguage.getInstance().formatDate(CalendarFactory.createGanttCalendar(event.myDate)),
+              Strings.nullToEmpty(event.getTitle())));
+        }
+      }
     }
     else if (itemUnderPoint instanceof TaskBoundaryChartItem) {
       Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
@@ -63,13 +80,19 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
     else if (itemUnderPoint instanceof TaskProgressChartItem) {
       myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
     }
-    else if (itemUnderPoint instanceof TaskNotesChartItem) {
+    else if (itemUnderPoint instanceof TaskNotesChartItem && taskUnderPoint.getNotes() != null) {
       myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);
-      myChartController.showTooltip(e.getX(), e.getY(), taskUnderPoint.getNotes());
+      myChartController.showTooltip(e.getX(), e.getY(),
+          GanttLanguage.getInstance().formatText(
+              "task.notesTooltip.pattern", taskUnderPoint.getNotes().replace("\n", "<br>")));
     }
     else {
       myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);
     }
 
+  }
+
+  private CalendarEvent findCalendarEvent(Date date) {
+    return myChartComponent.getProject().getActiveCalendar().getEvent(date);
   }
 }

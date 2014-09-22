@@ -247,6 +247,14 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     return false;
   }
 
+  public CalendarEvent getEvent(Date date) {
+    CalendarEvent result = myOneOffEvents.get(date);
+    if (result == null) {
+      result = myRecurringEvents.get(date);
+    }
+    return result;
+  }
+  
   @Override
   public int getDayMask(Date date) {
     int result = 0;

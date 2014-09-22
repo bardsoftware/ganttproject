@@ -50,6 +50,7 @@ public interface GPCalendar {
 
   DayType getWeekDayType(int day);
 
+  CalendarEvent getEvent(Date date);
   public int getDayMask(Date date);
   
   //public boolean isNonWorkingDay(Date curDayStart);

@@ -75,6 +75,11 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
+  public CalendarEvent getEvent(Date date) {
+    return null;
+  }
+
+  @Override
   public Date findClosestWorkingTime(Date date) {
     // No days off, so given date is good
     return date;
