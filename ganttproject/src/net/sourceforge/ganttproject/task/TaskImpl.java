@@ -1047,7 +1047,7 @@ public class TaskImpl implements Task {
 
   @Override
   public void setDuration(TimeDuration length) {
-    assert length.getLength() >= 0;
+    assert length.getLength() >= 0 : "An attempt to set length=" + length + " to task=" + this;
 
     myLength = length;
     myEnd = null;
