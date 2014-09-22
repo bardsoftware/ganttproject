@@ -60,6 +60,7 @@ public class OptionTagHandler<T extends GPOption<?>> extends AbstractTagHandler 
   public void onEndElement() {
     if (hasCdata()) {
       myOption.loadPersistentValue(getCdata());
+      clearCdata();
     }
   }
 }
