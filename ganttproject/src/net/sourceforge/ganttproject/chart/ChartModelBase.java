@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -37,7 +38,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.Offset;
@@ -672,6 +672,10 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     Canvas.Shape text = myTimelineLabelRenderer.getLabelLayer().getPrimitive(x, y);
     if (text instanceof Canvas.Text) {
       return new TimelineLabelChartItem((Task)text.getModelObject());
+    }
+    Offset offset = getOffsetAt(x);
+    if (offset != null) {
+      return new CalendarChartItem(offset.getOffsetStart());
     }
     return null;
   }
