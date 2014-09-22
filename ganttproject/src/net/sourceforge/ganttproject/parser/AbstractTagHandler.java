@@ -53,8 +53,10 @@ public abstract class AbstractTagHandler implements TagHandler {
 
   @Override
   public void appendCdata(String cdata) {
-    assert hasCdata() : "It is a bug: this methid should not be called for a tag which has no cdata";
-    myCdataBuffer.append(cdata);
+    assert hasCdata() : "It is a bug: this method should not be called for a tag which has no cdata";
+    if (myTagStarted) {
+      myCdataBuffer.append(cdata);
+    }
   }
 
   protected String getCdata() {

@@ -210,9 +210,11 @@ public class GanttXMLOpen implements GPParser {
       indent = indent.substring(0, indent.length() - 4);
       if ("description".equals(qName)) {
         myProjectInfo.setDescription(getCdata());
+        clearCdata();
       } else if ("notes".equals(qName)) {
         Task currentTask = getContext().peekTask();
         currentTask.setNotes(getCdata());
+        clearCdata();
       }
     }
   }
@@ -241,25 +243,24 @@ public class GanttXMLOpen implements GPParser {
         }
       }
     }
+
     @Override
-    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-        throws FileFormatException {
-      if ("timeline".equals(qName)) {
-        clearCdata();
-      }
+    protected boolean onStartElement(Attributes attrs) {
+      clearCdata();
+      return super.onStartElement(attrs);
     }
+
     @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
-      if ("timeline".equals(qName)) {
-        String[] ids = getCdata().split(",");
-        for (String id : ids) {
-          try {
-            myIds.add(Integer.valueOf(id.trim()));
-          } catch (NumberFormatException e) {
-            GPLogger.logToLogger(e);
-          }
+    protected void onEndElement() {
+      String[] ids = getCdata().split(",");
+      for (String id : ids) {
+        try {
+          myIds.add(Integer.valueOf(id.trim()));
+        } catch (NumberFormatException e) {
+          GPLogger.logToLogger(e);
         }
       }
+      clearCdata();
     }
   }
 }
