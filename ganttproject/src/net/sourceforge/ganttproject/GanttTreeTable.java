@@ -34,7 +34,6 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList.Column;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
