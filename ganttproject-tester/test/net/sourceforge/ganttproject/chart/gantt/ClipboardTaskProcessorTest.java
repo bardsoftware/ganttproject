@@ -173,4 +173,33 @@ public class ClipboardTaskProcessorTest extends TestCase {
       }
     }));
   }
+
+  public void testNestedTasksCopy() {
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
+    Task task1 = taskManager.newTaskBuilder().build();
+    Task task2 = taskManager.newTaskBuilder().build();
+    taskManager.getTaskHierarchy().move(task2, task1);
+    Task target = taskManager.newTaskBuilder().build();
+
+    {
+      ClipboardContents contents = new ClipboardContents(taskManager);
+      contents.addTasks(ImmutableList.of(task1));
+      contents.copy();
+      ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+      List<Task> pasted = clipboardProcessor.pasteAsChild(target, contents);
+      assertEquals(1, pasted.size());
+      assertTrue(taskManager.getTaskHierarchy().hasNestedTasks(pasted.get(0)));
+      assertEquals(1, taskManager.getTaskHierarchy().getNestedTasks(pasted.get(0)).length);
+    }
+    {
+      ClipboardContents contents = new ClipboardContents(taskManager);
+      contents.addTasks(ImmutableList.of(task1));
+      contents.cut();
+      ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+      List<Task> pasted = clipboardProcessor.pasteAsChild(target, contents);
+      assertEquals(1, pasted.size());
+      assertTrue(taskManager.getTaskHierarchy().hasNestedTasks(pasted.get(0)));
+      assertEquals(1, taskManager.getTaskHierarchy().getNestedTasks(pasted.get(0)).length);
+    }
+  }
 }
