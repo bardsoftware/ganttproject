@@ -47,7 +47,7 @@ public class MouseListenerBase extends MouseAdapter {
   }
 
   protected void showPopupMenu(MouseEvent e) {
-    Action[] actions = getPopupMenuActions();
+    Action[] actions = getPopupMenuActions(e);
     if (actions.length > 0) {
       getUIFacade().showPopupMenu(myChartComponent, actions, e.getX(), e.getY());
     }
@@ -83,7 +83,7 @@ public class MouseListenerBase extends MouseAdapter {
   public void mouseExited(MouseEvent e) {
   }
 
-  protected Action[] getPopupMenuActions() {
+  protected Action[] getPopupMenuActions(MouseEvent e) {
     return new Action[0];
   }
 }

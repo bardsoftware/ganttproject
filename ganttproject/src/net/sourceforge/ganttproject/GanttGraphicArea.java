@@ -25,12 +25,14 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.Action;
@@ -43,6 +45,7 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.ProjectCalendarDialogAction;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
+import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -57,7 +60,7 @@ import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.GPOption;
@@ -195,7 +198,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
     int width = renderedImage.getWidth();
     int height = renderedImage.getHeight();
-    System.err.println("width=" + width + " height=" + height);
     BufferedImage result = renderedImage.getWholeImage();
     repaint();
     return result;
@@ -226,8 +228,24 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public Action[] getPopupMenuActions() {
-    return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction };
+  public Action[] getPopupMenuActions(MouseEvent e) {
+    Action toggleDayTypeAction = createToggleHolidayAction(e.getX());
+    if (toggleDayTypeAction == null) {
+      return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction};
+    }
+    return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction, toggleDayTypeAction};
+  }
+
+  private Action createToggleHolidayAction(int x) {
+    ChartItem chartItem = myChartModel.getChartItemWithCoordinates(x, 0);
+    if (chartItem instanceof CalendarChartItem) {
+      Date date = ((CalendarChartItem) chartItem).getDate();
+      int dayMask = getProject().getActiveCalendar().getDayMask(date);
+      if ((dayMask & GPCalendar.DayMask.WEEKEND) != 0 && (dayMask & GPCalendar.DayMask.WORKING) == 0) {
+        return new WeekendExceptionAction(getProject().getActiveCalendar(), date);
+      }
+    }
+    return null;
   }
 
   @Override

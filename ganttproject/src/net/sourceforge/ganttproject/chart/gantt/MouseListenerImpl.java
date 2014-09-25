@@ -82,14 +82,14 @@ class MouseListenerImpl extends MouseListenerBase {
   }
 
   @Override
-  protected Action[] getPopupMenuActions() {
+  protected Action[] getPopupMenuActions(MouseEvent e) {
     Action[] treeActions = myTree.getPopupMenuActions();
     int sep = 0;
     if (treeActions.length != 0) {
       sep = 1;
     }
 
-    Action[] chartActions = myChartComponent.getPopupMenuActions();
+    Action[] chartActions = myChartComponent.getPopupMenuActions(e);
     Action[] result = new Action[treeActions.length + sep + chartActions.length];
     System.arraycopy(treeActions, 0, result, 0, treeActions.length);
     System.arraycopy(chartActions, 0, result, treeActions.length + sep, chartActions.length);
