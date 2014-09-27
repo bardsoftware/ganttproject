@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.awt.event.ActionEvent;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -37,11 +38,11 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class WeekendExceptionAction extends GPAction {
-  private final GPCalendar myCalendar;
-  private final Date myDate;
-  public WeekendExceptionAction(GPCalendar calendar, Date date) {
-    super("calendar.weekend.exception");
+public abstract class WeekendExceptionAction extends GPAction {
+  protected final GPCalendar myCalendar;
+  protected final Date myDate;
+  public WeekendExceptionAction(GPCalendar calendar, Date date, String id) {
+    super(id);
     myCalendar = Preconditions.checkNotNull(calendar);
     myDate = Preconditions.checkNotNull(date);
     updateName();
@@ -49,14 +50,30 @@ public class WeekendExceptionAction extends GPAction {
 
   @Override
   protected String getLocalizedName() {
-    return myDate == null ? super.getLocalizedName() : "Make " + GanttLanguage.getInstance().formatShortDate(CalendarFactory.createGanttCalendar(myDate)) + " working";
+    GanttLanguage i18n = GanttLanguage.getInstance();
+    return myDate == null ? super.getLocalizedName()
+        : i18n.formatText(getID(), i18n.formatShortDate(CalendarFactory.createGanttCalendar(myDate)));
   }
 
 
-  public void actionPerformed(ActionEvent e) {
-    Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
-    events.add(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, "Explicit request"));
-    myCalendar.setPublicHolidays(events);
+  public static WeekendExceptionAction addException(GPCalendar calendar, Date date) {
+    return new WeekendExceptionAction(calendar, date, "calendar.action.weekendException.add") {
+      public void actionPerformed(ActionEvent e) {
+        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        events.add(CalendarEvent.newEvent(
+            myDate, false, Type.WORKING_DAY, GanttLanguage.getInstance().getText("calendar.action.weekendException.add.description")));
+        myCalendar.setPublicHolidays(events);
+      }
+    };
   }
 
+  public static WeekendExceptionAction removeException(GPCalendar calendar, Date date) {
+    return new WeekendExceptionAction(calendar, date, "calendar.action.weekendException.remove") {
+      public void actionPerformed(ActionEvent e) {
+        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        events.remove(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, null));
+        myCalendar.setPublicHolidays(events);
+      }
+    };
+  }
 }
