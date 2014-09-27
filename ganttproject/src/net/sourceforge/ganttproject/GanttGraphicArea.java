@@ -241,8 +241,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     if (chartItem instanceof CalendarChartItem) {
       Date date = ((CalendarChartItem) chartItem).getDate();
       int dayMask = getProject().getActiveCalendar().getDayMask(date);
-      if ((dayMask & GPCalendar.DayMask.WEEKEND) != 0 && (dayMask & GPCalendar.DayMask.WORKING) == 0) {
-        return new WeekendExceptionAction(getProject().getActiveCalendar(), date);
+      if ((dayMask & GPCalendar.DayMask.WEEKEND) != 0) {
+        switch (dayMask & GPCalendar.DayMask.WORKING) {
+        case 0:
+          return WeekendExceptionAction.addException(getProject().getActiveCalendar(), date);
+        case GPCalendar.DayMask.WORKING:
+          return WeekendExceptionAction.removeException(getProject().getActiveCalendar(), date);
+        }
       }
     }
     return null;
