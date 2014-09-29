@@ -19,10 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.List;
 
 import javax.swing.DropMode;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -49,15 +52,20 @@ public class GanttTreeTable extends GPTreeTableBase {
     super(project, uifacade, project.getTaskCustomColumnManager(), model);
     myUIfacade = uifacade;
     getTableHeaderUiFacade().createDefaultColumns(TaskDefaultColumn.getColumnStubs());
-    setDragEnabled(true);
     setDropMode(DropMode.ON);
-    setTransferHandler(new GPTreeTransferHandler(this, project.getTaskManager(), new Supplier<GanttChart>() {
-
+    final GPTreeTransferHandler transferHandler = new GPTreeTransferHandler(this, project.getTaskManager(), new Supplier<GanttChart>() {
       @Override
       public GanttChart get() {
         return uifacade.getGanttChart();
       }
-    }, uifacade.getUndoManager()));
+    }, uifacade.getUndoManager());
+    setTransferHandler(transferHandler);
+    addMouseMotionListener(new MouseMotionAdapter() {
+      @Override
+      public void mouseDragged(MouseEvent e) {
+        transferHandler.exportAsDrag(getTable(), e, TransferHandler.MOVE);
+      }
+    });
   }
 
   private UIFacade getUiFacade() {
