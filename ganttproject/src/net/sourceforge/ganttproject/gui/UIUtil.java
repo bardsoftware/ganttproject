@@ -28,6 +28,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -42,6 +45,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -515,5 +519,26 @@ public abstract class UIUtil {
     component.setBorder(BorderFactory.createEmptyBorder(
         width * (mask & TOP), width * (mask & LEFT) >> 1, width * (mask & BOTTOM) >> 2, width * (mask & RIGHT) >> 3));
     return component;
+  }
+
+  public static String formatPathForLabel(File file) {
+    Path path = Paths.get(file.toURI());
+    if (path.getNameCount() <= 4) {
+      return file.getAbsolutePath();
+    }
+    Path prefix = path.subpath(0, 3);
+    Path suffix = path.getFileName();
+    return path.getRoot().resolve(Paths.get(prefix.toString(), "...", suffix.toString())).toString();
+  }
+
+  public static void setupErrorLabel(JLabel label, String errorMessage) {
+    label.setIcon(GPAction.getIcon("8", "label-red-exclamation.png"));
+    label.setText(errorMessage);
+    label.setForeground(Color.RED);
+  }
+
+  public static void clearErrorLabel(JLabel label) {
+    label.setIcon(null);
+    label.setForeground(UIManager.getColor("Label.foreground"));
   }
 }

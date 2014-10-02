@@ -43,6 +43,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -75,13 +76,9 @@ public abstract class FileChooserPageBase implements WizardPage {
   private int ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
   private final WizardImpl myWizard;
   private final boolean isUrlChooserEnabled;
-  private final JLabel myFileLabel = new JLabel("  ");
-  private final JLabel myUrlLabel = new JLabel("  ");
+  private final JLabel myFileLabel = new JLabel(" ");
+  private final JLabel myUrlLabel = new JLabel(" ");
   private final Preferences myPreferences;
-
-  protected FileChooserPageBase(WizardImpl wizard, Preferences prefs) {
-    this(wizard, prefs, true);
-  }
 
   protected FileChooserPageBase(WizardImpl wizard, Preferences prefs, boolean enableUrlChooser) {
     myPreferences = prefs;
@@ -125,7 +122,12 @@ public abstract class FileChooserPageBase implements WizardPage {
     myChooser.setFileSelectionMode(getFileChooserSelectionMode());
     JComponent contentPanel = new JPanel(new BorderLayout());
     if (!isUrlChooserEnabled) {
-      contentPanel.add(myChooser, BorderLayout.NORTH);
+      Box fileBox = Box.createVerticalBox();
+      myChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
+      fileBox.add(myChooser);
+      myFileLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+      fileBox.add(myFileLabel);
+      contentPanel.add(fileBox, BorderLayout.NORTH);
     } else {
       final UrlFetcher urlFetcher = new UrlFetcher() {
         @Override
@@ -313,11 +315,11 @@ public abstract class FileChooserPageBase implements WizardPage {
   private static void setStatus(JLabel label, IStatus status) {
     label.setOpaque(true);
     if (status.isOK()) {
-      label.setForeground(Color.BLACK);
+      UIUtil.clearErrorLabel(label);
+      label.setText(status.getMessage());
     } else {
-      label.setForeground(Color.RED);
+      UIUtil.setupErrorLabel(label, status.getMessage());
     }
-    label.setText(status.getMessage());
   }
 
   class UrlFetcher {
