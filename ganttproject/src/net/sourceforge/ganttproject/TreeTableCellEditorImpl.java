@@ -117,7 +117,12 @@ class TreeTableCellEditorImpl implements TableCellEditor {
       @Override
       public void focusGained(FocusEvent arg0) {
         super.focusGained(arg0);
-        textComponent.selectAll();
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            textComponent.selectAll();
+          }
+        });
         textComponent.removeFocusListener(this);
       }
     });
