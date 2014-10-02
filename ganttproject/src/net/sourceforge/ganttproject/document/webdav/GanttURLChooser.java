@@ -513,9 +513,9 @@ class GanttURLChooser {
     myPassword.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        myPasswordLabel.setText(myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
-        myPasswordLabel.setIcon(null);
-        myPasswordLabel.setForeground(UIManager.getColor("Label.foreground"));
+        UIUtil.clearErrorLabel(myPasswordLabel);
+        myPasswordLabel.setText(
+            myPassword.getValue() == null ? "" : Strings.repeat("*", myPassword.getValue().length()));
       }
     });
     grid.add(myPasswordLabel);
@@ -617,9 +617,7 @@ class GanttURLChooser {
 
   void showError(Exception e) {
     if (e.getCause() instanceof NotAuthorizedException) {
-      myPasswordLabel.setIcon(GPAction.getIcon("8", "label-red-exclamation.png"));
-      myPasswordLabel.setText("Access denied");
-      myPasswordLabel.setForeground(Color.RED);
+      UIUtil.setupErrorLabel(myPasswordLabel, "Access denied");
       setWebDavActionsEnabled(false);
     }
     GPLogger.log(e);

@@ -32,12 +32,12 @@ import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl.State;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 import net.sourceforge.ganttproject.gui.FileChooserPageBase;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -100,11 +100,28 @@ class FileChooserPage extends FileChooserPageBase {
 
   @Override
   protected IStatus onSelectedFileChange(File file) {
-    if (file.exists() && !file.canWrite()) {
-      return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to file", null);
-    }
-    if (!file.exists() && !file.getParentFile().canWrite()) {
-      return new Status(IStatus.ERROR, "foo", IStatus.ERROR, "Can't write to directory", null);
+    if (!file.exists()) {
+      File parent = file.getParentFile();
+      if (!parent.exists()) {
+        return new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+            GanttLanguage.getInstance().formatText("fileChooser.error.directoryDoesNotExists", UIUtil.formatPathForLabel(parent)),
+            null);
+      }
+      if (!parent.canWrite()) {
+        return new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+            GanttLanguage.getInstance().formatText("fileChooser.error.directoryIsReadOnly", UIUtil.formatPathForLabel(parent)),
+            null);
+      }
+    } else if (!file.canWrite()) {
+      if (file.isDirectory()) {
+        return new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+            GanttLanguage.getInstance().formatText("fileChooser.error.directoryIsReadOnly", UIUtil.formatPathForLabel(file)),
+            null);
+      } else {
+        return new Status(IStatus.ERROR, "foo", IStatus.ERROR,
+            GanttLanguage.getInstance().formatText("fileChooser.error.fileIsReadOnly", UIUtil.formatPathForLabel(file)),
+            null);
+      }
     }
     IStatus result = new Status(IStatus.OK, "foo", IStatus.OK, "", null);
     String proposedExtension = myState.getExporter().proposeFileExtension();
