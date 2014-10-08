@@ -33,8 +33,11 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLayer;
 import javax.swing.JPanel;
 
+import net.sourceforge.ganttproject.AbstractChartImplementation.MouseHoverLayerUi;
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -320,4 +323,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   public Action[] getPopupMenuActions(MouseEvent e) {
     return new Action[0];
   }
+
+  JComponent getJComponent() {
+    return new JLayer<>(this, getImplementation().createMouseHoverLayer());
+  }
+
+
 }

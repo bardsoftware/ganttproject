@@ -303,7 +303,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     bar.add(helpMenu.createMenu());
 
     System.err.println("4. creating views...");
-    myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTaskTree(), area,
+    myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTaskTree(), area.getJComponent(),
         getUIConfiguration());
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);
