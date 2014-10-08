@@ -31,8 +31,9 @@ public class Offset {
   private final TimeUnit myOffsetUnit;
   private final int myDayMask;
   private final Date myOffsetStart;
+  private int myStartPixels;
 
-  public Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int offsetPixels,
+  public Offset(TimeUnit offsetUnit, Date offsetAnchor, Date offsetStart, Date offsetEnd, int startPixels, int offsetPixels,
       int dayMask) {
     myOffsetAnchor = offsetAnchor;
     myOffsetStart = offsetStart;
@@ -40,6 +41,7 @@ public class Offset {
     myOffsetPixels = offsetPixels;
     myOffsetUnit = offsetUnit;
     myDayMask = dayMask;
+    myStartPixels = startPixels;
   }
 
   Date getOffsetAnchor() {
@@ -54,11 +56,15 @@ public class Offset {
     return myOffsetEnd;
   }
 
+  public int getStartPixels() {
+    return myStartPixels;
+  }
   public int getOffsetPixels() {
     return myOffsetPixels;
   }
 
   void shift(int pixels) {
+    myStartPixels += pixels;
     myOffsetPixels += pixels;
   }
 
@@ -101,8 +107,8 @@ public class Offset {
    * @return
    */
   public static Offset createFullyClosed(TimeUnit timeUnit, Date anchor, Date closedStartDate, Date closedEndDate,
-      int pixels, int dayMask) {
-    return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, pixels, dayMask);
+      int startPixels, int endPixels, int dayMask) {
+    return new Offset(timeUnit, anchor, closedStartDate, closedEndDate, startPixels, endPixels, dayMask);
   }
 
   public static String debugPrint(List<Offset> offsets) {

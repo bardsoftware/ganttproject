@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.awt.AWTEvent;
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -40,8 +42,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JComponent;
+import javax.swing.JLayer;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.plaf.LayerUI;
 import javax.swing.table.JTableHeader;
 
 import net.sourceforge.ganttproject.chart.Chart;
@@ -69,6 +73,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -84,12 +89,45 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   private final Timer myTimer = new Timer();
   private Runnable myTimerTask = null;
 
+  public class MouseHoverLayerUi extends LayerUI<ChartComponentBase> {
+    private Point myHoverPoint;
+
+    @Override
+    public void installUI(JComponent c) {
+      super.installUI(c);
+      JLayer jlayer = (JLayer)c;
+      jlayer.setLayerEventMask(
+        AWTEvent.MOUSE_MOTION_EVENT_MASK
+      );
+    }
+
+    @Override
+    protected void processMouseMotionEvent(MouseEvent e, JLayer l) {
+      myHoverPoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), l);
+      l.repaint();
+    }
+
+    @Override
+    public void paint(Graphics g, JComponent c) {
+      Graphics2D g2 = (Graphics2D)g.create();
+      super.paint (g2, c);
+      if (myHoverPoint == null) {
+        return;
+      }
+      ChartModelBase chartModel = getChartModel();
+      Offset offset = chartModel.getOffsetAt(myHoverPoint.x);
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .1f));
+      g2.fillRect(offset.getStartPixels(), 0, offset.getOffsetPixels() - offset.getStartPixels(), getChartModel().getBounds().height);
+    }
+  }
+
   public AbstractChartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
       ChartComponentBase chartComponent) {
     assert chartModel != null;
     myUiFacade = uiFacade;
     myChartModel = chartModel;
     myProject = project;
+
     myChartComponent = chartComponent;
     uiFacade.getTaskSelectionManager().addSelectionListener(new TaskSelectionManager.Listener() {
       @Override
@@ -112,6 +150,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
     }, 1000, 1000);
   }
+
 
   @Override
   public void init(IGanttProject project) {
@@ -451,5 +490,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       isTransactionRunning = false;
     }
 
+  }
+
+  public MouseHoverLayerUi createMouseHoverLayer() {
+    return new MouseHoverLayerUi();
   }
 }

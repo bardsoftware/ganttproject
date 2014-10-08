@@ -116,6 +116,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
     Date currentDate = myStartDate;
     int shift = 0;
     OffsetStep step = new OffsetStep();
+    int prevEnd = initialEnd;
     do {
       TimeUnit concreteTimeUnit = getConcreteUnit(getBottomUnit(), currentDate);
       calculateNextStep(step, concreteTimeUnit, currentDate);
@@ -124,8 +125,9 @@ public class OffsetBuilderImpl implements OffsetBuilder {
         shift = (int) (step.parrots * getDefaultUnitWidth());
       }
       int offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;
-      Offset offset = Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd
-          + offsetEnd, step.dayMask);
+      Offset offset = Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, 
+          prevEnd, initialEnd + offsetEnd, step.dayMask);
+      prevEnd = initialEnd + offsetEnd;
       offsets.add(offset);
       currentDate = endDate;
 
@@ -147,6 +149,7 @@ public class OffsetBuilderImpl implements OffsetBuilder {
     int lastBottomOffset = bottomOffsets.get(bottomOffsets.size() - 1).getOffsetPixels();
     OffsetLookup offsetLookup = new OffsetLookup();
     Date currentDate = myStartDate;
+    int prevEnd = initialEnd;
     int offsetEnd;
     do {
       TimeUnit concreteTimeUnit = getConcreteUnit(timeUnit, currentDate);
@@ -165,8 +168,9 @@ public class OffsetBuilderImpl implements OffsetBuilder {
           offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;
         }
       }
-      topOffsets.add(Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, initialEnd
+      topOffsets.add(Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, prevEnd, initialEnd
           + offsetEnd, DayMask.WORKING));
+      prevEnd = initialEnd + offsetEnd;
       currentDate = endDate;
 
     } while (offsetEnd <= lastBottomOffset && (myEndDate == null || currentDate.before(myEndDate)));

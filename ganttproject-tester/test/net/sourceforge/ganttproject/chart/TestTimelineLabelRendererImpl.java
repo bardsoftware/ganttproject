@@ -93,12 +93,12 @@ public class TestTimelineLabelRendererImpl extends TestCase {
   private void testHasTimelineLabel(Task task, boolean condition) {
     testApi.getTaskManager().getTaskHierarchy().move(task, testApi.getTaskManager().getRootTask());
 
-    testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), SUNDAY.getTime(), MONDAY.getTime(), 50,
+    testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), SUNDAY.getTime(), MONDAY.getTime(), 0, 50,
         DayMask.WEEKEND));
-    testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), MONDAY.getTime(), TUESDAY.getTime(), 100,
+    testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), MONDAY.getTime(), TUESDAY.getTime(), 50, 100,
         DayMask.WORKING));
     testApi.myOffsets.add(new Offset(GPTimeUnitStack.DAY, SUNDAY.getTime(), TUESDAY.getTime(), WEDNESDAY.getTime(),
-        150, DayMask.WORKING));
+        100, 150, DayMask.WORKING));
 
     TimelineLabelRendererImpl renderer = new TimelineLabelRendererImpl(testApi);
     renderer.render();
