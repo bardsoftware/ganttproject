@@ -61,7 +61,7 @@ public abstract class CalendarEventAction extends GPAction {
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.add(CalendarEvent.newEvent(
-            myDate, false, Type.WORKING_DAY, GanttLanguage.getInstance().getText("calendar.action.weekendException.add.description")));
+            myDate, false, Type.WORKING_DAY, GanttLanguage.getInstance().getText("calendar.action.weekendException.add.description"), null));
         myCalendar.setPublicHolidays(events);
       }
     };
@@ -72,7 +72,7 @@ public abstract class CalendarEventAction extends GPAction {
       @Override
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
-        events.remove(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, null));
+        events.remove(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, null, null));
         myCalendar.setPublicHolidays(events);
       }
     };
@@ -84,7 +84,7 @@ public abstract class CalendarEventAction extends GPAction {
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.add(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY,
-            GanttLanguage.getInstance().formatText("calendar.action.holiday.add.description", date)));
+            GanttLanguage.getInstance().formatText("calendar.action.holiday.add.description", date), null));
         myCalendar.setPublicHolidays(events);
       }
     };
@@ -95,7 +95,7 @@ public abstract class CalendarEventAction extends GPAction {
       @Override
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
-        events.remove(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY, null));
+        events.remove(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY, null, null));
         myCalendar.setPublicHolidays(events);
       }
     };

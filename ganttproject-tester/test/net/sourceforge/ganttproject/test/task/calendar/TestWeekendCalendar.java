@@ -60,7 +60,7 @@ public class TestWeekendCalendar extends TaskTestCase {
             noWeekendsOneHolidayCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);
         }
         noWeekendsOneHolidayCalendar.setPublicHolidays(ImmutableList.of(
-            CalendarEvent.newEvent(TestSetupHelper.newMonday().getTime(), false, CalendarEvent.Type.HOLIDAY, null)));
+            CalendarEvent.newEvent(TestSetupHelper.newMonday().getTime(), false, CalendarEvent.Type.HOLIDAY, null, null)));
         TaskManager mgr = TestSetupHelper.newTaskManagerBuilder().withCalendar(noWeekendsOneHolidayCalendar).build();
         Task t = mgr.createTask();
         t.setStart(TestSetupHelper.newFriday());

@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.Offset;
@@ -279,8 +280,12 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         return myChartUIConfiguration.getHolidayTimeBackgroundColor();
       }
       @Override
-      public Color getHolidayColor() {
-        return myChartUIConfiguration.getPublicHolidayTimeBackgroundColor();
+      public Color getHolidayColor(Date holiday) {
+        CalendarEvent event = getTaskManager().getCalendar().getEvent(holiday);
+        if (event == null || event.getColor() == null) {
+          return null;
+        }
+        return event.getColor();
       }
       @Override
       public int getTopLineHeight() {

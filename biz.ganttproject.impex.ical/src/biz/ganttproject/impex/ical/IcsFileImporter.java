@@ -163,7 +163,7 @@ public class IcsFileImporter extends ImporterBase {
               recursYearly = Recur.YEARLY.equals(recurrenceRule.getRecur().getFrequency()) && 1 == recurrenceRule.getRecur().getInterval();
             }
             while (startDate.before(endDate)) {
-              gpEvents.add(CalendarEvent.newEvent(startDate, recursYearly, CalendarEvent.Type.HOLIDAY, event.getSummary().getValue()));
+              gpEvents.add(CalendarEvent.newEvent(startDate, recursYearly, CalendarEvent.Type.HOLIDAY, event.getSummary().getValue(), null));
               startDate = GPCalendarCalc.PLAIN.shiftDate(startDate, oneDay);
             }
           }

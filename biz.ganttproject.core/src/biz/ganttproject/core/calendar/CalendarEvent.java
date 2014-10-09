@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.calendar;
 
+import java.awt.Color;
 import java.util.Date;
 
 import com.google.common.base.Objects;
@@ -42,16 +43,18 @@ public class CalendarEvent {
   public final boolean isRecurring;
   private final Type myType;
   private final String myTitle;
+  private final Color myColor;
   
-  public static CalendarEvent newEvent(Date date, boolean isRecurring, Type type, String title) {
-    return new CalendarEvent(date, isRecurring, type, title);
+  public static CalendarEvent newEvent(Date date, boolean isRecurring, Type type, String title, Color color) {
+    return new CalendarEvent(date, isRecurring, type, title, color);
   }
   
-  CalendarEvent(Date date, boolean recurring, Type type, String title) {
+  CalendarEvent(Date date, boolean recurring, Type type, String title, Color color) {
     myDate = date;
     isRecurring = recurring;
     myType = type;
     myTitle = title;
+    myColor = color;
   }
 
   public String getTitle() {
@@ -60,6 +63,10 @@ public class CalendarEvent {
 
   public Type getType() {
     return myType;
+  }
+  
+  public Color getColor() {
+    return myColor;
   }
   
   @Override
