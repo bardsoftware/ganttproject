@@ -37,6 +37,8 @@ import java.util.List;
 
 import javax.swing.Action;
 
+import com.google.common.collect.Lists;
+
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
@@ -60,6 +62,7 @@ import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
@@ -229,28 +232,39 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   @Override
   public Action[] getPopupMenuActions(MouseEvent e) {
-    Action toggleDayTypeAction = createToggleHolidayAction(e.getX());
-    if (toggleDayTypeAction == null) {
-      return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction};
-    }
-    return new Action[] { getOptionsDialogAction(), myPublicHolidayDialogAction, toggleDayTypeAction};
+    List<Action> actions = Lists.newArrayList(getOptionsDialogAction(), myPublicHolidayDialogAction);
+    actions.addAll(createToggleHolidayAction(e.getX()));
+    return actions.toArray(new Action[actions.size()]);
   }
 
-  private Action createToggleHolidayAction(int x) {
+  private List<Action> createToggleHolidayAction(int x) {
+    List<Action> result = Lists.newArrayList();
     ChartItem chartItem = myChartModel.getChartItemWithCoordinates(x, 0);
     if (chartItem instanceof CalendarChartItem) {
       Date date = ((CalendarChartItem) chartItem).getDate();
+      CalendarEvent event = getProject().getActiveCalendar().getEvent(date);
       int dayMask = getProject().getActiveCalendar().getDayMask(date);
       if ((dayMask & GPCalendar.DayMask.WEEKEND) != 0) {
         switch (dayMask & GPCalendar.DayMask.WORKING) {
         case 0:
-          return WeekendExceptionAction.addException(getProject().getActiveCalendar(), date);
+          if (event == null) {
+            result.add(CalendarEventAction.addException(getProject().getActiveCalendar(), date));
+          }
+          break;
         case GPCalendar.DayMask.WORKING:
-          return WeekendExceptionAction.removeException(getProject().getActiveCalendar(), date);
+          result.add(CalendarEventAction.removeException(getProject().getActiveCalendar(), date));
+          break;
+        }
+      }
+      if ((dayMask & GPCalendar.DayMask.HOLIDAY) != 0) {
+        result.add(CalendarEventAction.removeHoliday(getProject().getActiveCalendar(), date));
+      } else {
+        if (event == null) {
+          result.add(CalendarEventAction.addHoliday(getProject().getActiveCalendar(), date));
         }
       }
     }
-    return null;
+    return result;
   }
 
   @Override
