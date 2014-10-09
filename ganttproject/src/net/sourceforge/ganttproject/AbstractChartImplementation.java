@@ -116,8 +116,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
       ChartModelBase chartModel = getChartModel();
       Offset offset = chartModel.getOffsetAt(myHoverPoint.x);
-      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .1f));
-      g2.fillRect(offset.getStartPixels(), 0, offset.getOffsetPixels() - offset.getStartPixels(), getChartModel().getBounds().height);
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .05f));
+      g2.fillRect(offset.getStartPixels(), chartModel.getChartUIConfiguration().getHeaderHeight(), offset.getOffsetPixels() - offset.getStartPixels(), getChartModel().getBounds().height);
     }
   }
 

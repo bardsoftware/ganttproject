@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject;
 
 import java.awt.event.ActionEvent;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -34,14 +33,14 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
- * Action which adds a weekend exception from the chart UI
+ * Action which adds or removes calendar events, such as weekend exceptions or holidays, from the chart UI
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public abstract class WeekendExceptionAction extends GPAction {
+public abstract class CalendarEventAction extends GPAction {
   protected final GPCalendar myCalendar;
   protected final Date myDate;
-  public WeekendExceptionAction(GPCalendar calendar, Date date, String id) {
+  public CalendarEventAction(GPCalendar calendar, Date date, String id) {
     super(id);
     myCalendar = Preconditions.checkNotNull(calendar);
     myDate = Preconditions.checkNotNull(date);
@@ -56,8 +55,9 @@ public abstract class WeekendExceptionAction extends GPAction {
   }
 
 
-  public static WeekendExceptionAction addException(GPCalendar calendar, Date date) {
-    return new WeekendExceptionAction(calendar, date, "calendar.action.weekendException.add") {
+  public static CalendarEventAction addException(GPCalendar calendar, Date date) {
+    return new CalendarEventAction(calendar, date, "calendar.action.weekendException.add") {
+      @Override
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.add(CalendarEvent.newEvent(
@@ -67,11 +67,35 @@ public abstract class WeekendExceptionAction extends GPAction {
     };
   }
 
-  public static WeekendExceptionAction removeException(GPCalendar calendar, Date date) {
-    return new WeekendExceptionAction(calendar, date, "calendar.action.weekendException.remove") {
+  public static CalendarEventAction removeException(GPCalendar calendar, Date date) {
+    return new CalendarEventAction(calendar, date, "calendar.action.weekendException.remove") {
+      @Override
       public void actionPerformed(ActionEvent e) {
         Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.remove(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, null));
+        myCalendar.setPublicHolidays(events);
+      }
+    };
+  }
+
+  public static CalendarEventAction addHoliday(GPCalendar calendar, final Date date) {
+    return new CalendarEventAction(calendar, date, "calendar.action.holiday.add") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        events.add(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY,
+            GanttLanguage.getInstance().formatText("calendar.action.holiday.add.description", date)));
+        myCalendar.setPublicHolidays(events);
+      }
+    };
+  }
+
+  public static CalendarEventAction removeHoliday(GPCalendar calendar, Date date) {
+    return new CalendarEventAction(calendar, date, "calendar.action.holiday.remove") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        events.remove(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY, null));
         myCalendar.setPublicHolidays(events);
       }
     };
