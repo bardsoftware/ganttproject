@@ -370,7 +370,7 @@ public class CalendarEditorPanel {
       }
       String value = String.valueOf(aValue);
       if (row == getRowCount() - 1) {
-        myEvents.add(CalendarEvent.newEvent(null, isRecurring, CalendarEvent.Type.HOLIDAY, ""));
+        myEvents.add(CalendarEvent.newEvent(null, isRecurring, CalendarEvent.Type.HOLIDAY, "", null));
       }
       CalendarEvent e = myEvents.get(row);
       CalendarEvent newEvent = null;
@@ -378,19 +378,19 @@ public class CalendarEditorPanel {
       case DATES:
         try {
           Date date = GanttLanguage.getInstance().getShortDateFormat().parse(value);
-          newEvent = CalendarEvent.newEvent(date, e.isRecurring, e.getType(), e.getTitle());
+          newEvent = CalendarEvent.newEvent(date, e.isRecurring, e.getType(), e.getTitle(), null);
         } catch (ParseException e1) {
           // TODO Auto-generated catch block
           e1.printStackTrace();
         }
         break;
       case SUMMARY:
-        newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, e.getType(), value);
+        newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, e.getType(), value, null);
         break;
       case TYPE:
         for (CalendarEvent.Type eventType : CalendarEvent.Type.values()) {
           if (getI18NedEventType(eventType).equals(value)) {
-            newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, eventType, e.getTitle());
+            newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, eventType, e.getTitle(), null);
           }
         }
         break;

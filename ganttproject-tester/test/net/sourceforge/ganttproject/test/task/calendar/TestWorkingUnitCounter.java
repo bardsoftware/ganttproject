@@ -61,7 +61,7 @@ public class TestWorkingUnitCounter extends TaskTestCase {
         WeekendCalendarImpl calendar = new WeekendCalendarImpl();
         calendar.setWeekDayType(Calendar.SATURDAY, GPCalendar.DayType.WEEKEND);
         calendar.setWeekDayType(Calendar.SUNDAY, GPCalendar.DayType.WEEKEND);
-        calendar.setPublicHolidays(ImmutableList.of(CalendarEvent.newEvent(TestSetupHelper.newTuesday().getTime(), false, CalendarEvent.Type.HOLIDAY, null)));
+        calendar.setPublicHolidays(ImmutableList.of(CalendarEvent.newEvent(TestSetupHelper.newTuesday().getTime(), false, CalendarEvent.Type.HOLIDAY, null, null)));
 
         WorkingUnitCounter counter = new WorkingUnitCounter(
                 calendar, GregorianTimeUnitStack.DAY);

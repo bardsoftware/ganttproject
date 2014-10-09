@@ -85,7 +85,7 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       if (Strings.isNullOrEmpty(cdata)) {
         myEvents.add(myLastEvent);
       } else {
-        myEvents.add(CalendarEvent.newEvent(myLastEvent.myDate, myLastEvent.isRecurring, myLastEvent.getType(), cdata));
+        myEvents.add(CalendarEvent.newEvent(myLastEvent.myDate, myLastEvent.isRecurring, myLastEvent.getType(), cdata, null));
       }
       myLastEvent = null;
     }
@@ -102,11 +102,11 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, true, type, null);
+        myLastEvent = CalendarEvent.newEvent(date, true, type, null, null);
       } else {
         int year = Integer.parseInt(yearAsString);
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, false, type, null);
+        myLastEvent = CalendarEvent.newEvent(date, false, type, null, null);
       }
       clearCdata();
     } catch (NumberFormatException e) {

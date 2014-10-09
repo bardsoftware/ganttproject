@@ -57,22 +57,22 @@ public class WeekendCalendarImplTest extends TestCase {
     };
   }
   private static List<CalendarEvent> TEST_EVENTS = ImmutableList.of(
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 1, 14).getTime(), false, CalendarEvent.Type.NEUTRAL, "Feb 14"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Mar 8, 2014"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014")
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 1, 14).getTime(), false, CalendarEvent.Type.NEUTRAL, "Feb 14", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Mar 8, 2014", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014", null)
   );
   private static List<CalendarEvent> TEST_EVENTS_RECURRING_FIRST = ImmutableList.of(
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 1, 14).getTime(), false, CalendarEvent.Type.NEUTRAL, "Feb 14"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Mar 8, 2014"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014"),
-      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014")
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 1, 14).getTime(), false, CalendarEvent.Type.NEUTRAL, "Feb 14", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Mar 8, 2014", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014", null),
+      CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014", null)
   );
 
 
@@ -122,7 +122,7 @@ public class WeekendCalendarImplTest extends TestCase {
   public void testOneOffWorkingWeekend() {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
     calendar.setPublicHolidays(ImmutableList.of(
-        CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Jan 4, Saturday")
+        CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Jan 4, Saturday", null)
     ));
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime()) & DayMask.WORKING);
     assertEquals(0, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 11).getTime()) & DayMask.WORKING);

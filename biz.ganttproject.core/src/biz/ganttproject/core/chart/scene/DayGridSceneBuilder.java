@@ -48,7 +48,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     BooleanOption getProjectDatesOption();
     int getTopLineHeight();
     Color getWeekendColor();
-    Color getHolidayColor();
+    Color getHolidayColor(Date holiday);
 
     Date getProjectStart();
     Date getProjectEnd();
@@ -110,7 +110,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
         // And expand it to the timeline area.
         Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
             - curX, getLineBottomPosition() - getLineTopPosition() + 1);
-        applyRectangleStyle(r, offset.getDayMask());
+        applyRectangleStyle(r, offset);
       }
       curX = offset.getOffsetPixels();
     }
@@ -119,15 +119,19 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
   private void renderNonWorkingDay(int curX, Offset curOffset) {
     Canvas.Rectangle r = getCanvas().createRectangle(curX, getLineBottomPosition(),
         curOffset.getOffsetPixels() - curX, getHeight());
-    applyRectangleStyle(r, curOffset.getDayMask());
+    applyRectangleStyle(r, curOffset);
   }
 
-  private static void applyRectangleStyle(Rectangle r, int dayMask) {
-    if ((dayMask & DayMask.HOLIDAY) == DayMask.HOLIDAY) {
+  private void applyRectangleStyle(Rectangle r, Offset offset) {
+    Color customColor = myInputApi.getHolidayColor(offset.getOffsetStart());
+    if (customColor != null) {
+      r.setBackgroundColor(customColor);
+    }
+    if ((offset.getDayMask() & DayMask.HOLIDAY) == DayMask.HOLIDAY) {
       r.setStyle("calendar.holiday");
       return;
     }
-    if ((dayMask & DayMask.WEEKEND) == DayMask.WEEKEND) {
+    if ((offset.getDayMask() & DayMask.WEEKEND) == DayMask.WEEKEND) {
       r.setStyle("calendar.weekend");
     }
   }

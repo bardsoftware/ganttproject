@@ -236,7 +236,7 @@ class ProjectFileImporter {
         importHolidays(e, new HolidayAdder() {
           @Override
           public void addHoliday(Date date) {
-            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null));
+            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null, null));
           }
         });
         getNativeCalendar().setPublicHolidays(holidays);
