@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
@@ -115,7 +116,7 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
-  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n) {
+  public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, UIFacade uiFacade) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 
     myI18N = i18n;
@@ -159,7 +160,7 @@ public class WeekendConfigurationPage implements WizardPage {
     OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(panel, 5);
     myPanel.add(panel, BorderLayout.NORTH);
 
-    myCalendarEditorPanel = new CalendarEditorPanel(calendar, new Runnable() {
+    myCalendarEditorPanel = new CalendarEditorPanel(uiFacade, calendar, new Runnable() {
       @Override public void run() {
         fillCustomCalendar(myCalendarEditorPanel.getEvents(), myCalendarOption.getSelectedValue());
         if (myCalendarOption.getSelectedValue() != myCustomCalendar) {

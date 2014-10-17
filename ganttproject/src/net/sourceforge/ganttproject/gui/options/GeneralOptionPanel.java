@@ -79,7 +79,7 @@ public abstract class GeneralOptionPanel extends JPanel {
     return myComment;
   }
 
-  private UIFacade getUIFacade() {
+  protected UIFacade getUIFacade() {
     return myUiFacade;
   }
 

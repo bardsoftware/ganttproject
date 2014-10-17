@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -59,6 +60,7 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
 
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
@@ -277,7 +279,7 @@ public class OptionsPageBuilder {
     } else if (option instanceof BooleanOption) {
       result = createBooleanComponent(group, (BooleanOption) option);
     } else if (option instanceof ColorOption) {
-      result = createColorComponent((ColorOption) option);
+      result = createColorComponent((ColorOption) option).getJComponent();
     } else if (option instanceof DateOption) {
       result = createDateComponent((DateOption) option);
     } else if (option instanceof GPOptionGroup) {
@@ -556,8 +558,14 @@ public class OptionsPageBuilder {
     return result;
   }
 
-  public Component createColorComponent(final ColorOption option) {
-    final JButton colorButton = new JButton();
+  public static interface ColorComponent {
+    JComponent getJComponent();
+    void openChooser();
+    void setOnCancelCallback(Runnable onCancel);
+    void setOnOkCallback(Runnable runnable);
+  }
+  public ColorComponent createColorComponent(final ColorOption option) {
+    final JXHyperlink colorButton = new JXHyperlink();
     final JPanel label = new JPanel();
     label.setPreferredSize(new Dimension(16, 16));
     label.setBackground(option.getValue());
@@ -568,7 +576,9 @@ public class OptionsPageBuilder {
         label.setBackground(option.getValue());
       }
     });
-    Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
+    final AtomicReference<Runnable> onOk = new AtomicReference<>();
+    final AtomicReference<Runnable> onCancel = new AtomicReference<>();
+    final Action action = new AbstractAction(myi18n.getColorButtonText(option)) {
       @Override
       public void actionPerformed(ActionEvent e) {
         final GPColorChooser colorChooser = new GPColorChooser();
@@ -584,23 +594,52 @@ public class OptionsPageBuilder {
             }
             recentColors.add(0,  color);
             GPColorChooser.setRecentColors(recentColors);
+            if (onOk.get() != null) {
+              onOk.get().run();
+            }
+          }
+        };
+        final CancelAction cancelAction = new CancelAction() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            super.actionPerformed(e);
+            if (onCancel.get() != null) {
+              onCancel.get().run();
+            }
           }
         };
         colorChooser.setColor(colorButton.getBackground());
         Dialog dialog = myUiFacade.createDialog(
             colorChooser.buildComponent(),
-            new Action[] {okAction, CancelAction.EMPTY},
+            new Action[] {okAction, cancelAction},
             myi18n.getColorChooserTitle(option));
         dialog.show();
       };
     };
     colorButton.setAction(action);
 
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+    final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
     buttonPanel.add(label);
     buttonPanel.add(new JLabel(" "));
     buttonPanel.add(colorButton);
-    return buttonPanel;
+    return new ColorComponent() {
+      @Override
+      public void openChooser() {
+        action.actionPerformed(null);
+      }
+      @Override
+      public JComponent getJComponent() {
+        return buttonPanel;
+      }
+      @Override
+      public void setOnCancelCallback(Runnable runnable) {
+        onCancel.set(runnable);
+      }
+      @Override
+      public void setOnOkCallback(Runnable runnable) {
+        onOk.set(runnable);
+      }
+    };
   }
 
   public JComponent createDateComponent(final DateOption option) {
