@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -36,6 +37,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -58,6 +60,7 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -71,6 +74,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -87,6 +91,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
 public abstract class UIUtil {
@@ -510,6 +515,36 @@ public abstract class UIUtil {
     }
   }
 
+  public static JComponent newColorComponent(Color value) {
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+    final JPanel label = new JPanel();
+    label.setPreferredSize(new Dimension(16, 16));
+    label.setBackground(value);
+    buttonPanel.add(label);
+    buttonPanel.add(new JXHyperlink(new AbstractAction("choose") {
+      public void actionPerformed(ActionEvent e) {
+        System.err.println("Clicked!");
+
+      }
+    }));
+    return buttonPanel;
+  }
+  public static TableCellRenderer newColorRenderer(final Supplier<Integer> rowCount) {
+    return new DefaultTableCellRenderer() {
+      @Override
+      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+          int row, int column) {
+        JComponent def = (JComponent) super.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, column);
+        if (row >= rowCount.get()) {
+          return def;
+        }
+        JComponent buttonPanel = newColorComponent((Color)value);
+        buttonPanel.setBackground(def.getBackground());
+        buttonPanel.setBorder(def.getBorder());
+        return buttonPanel;
+      }
+    };
+  }
   public static JComponent contentPaneBorder(JComponent component) {
     return border(component, 5, TOP | LEFT | BOTTOM | RIGHT);
   }

@@ -94,7 +94,7 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
 
     // Make a copy of the WeekDayTypes
     calendar = project.getActiveCalendar().copy();
-    weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N());
+    weekendConfigurationPanel = new WeekendConfigurationPage(calendar, new I18N(), getUIFacade());
     vb.add(weekendConfigurationPanel.getComponent());
   }
 }

@@ -20,8 +20,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.calendar;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,12 +33,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -42,8 +48,10 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.UIUtil.GPDateCellEditor;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -51,12 +59,14 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
@@ -88,6 +98,7 @@ public class CalendarEditorPanel {
 
   private final Runnable myOnChangeCallback;
   private final Runnable myOnCreate;
+  private final UIFacade myUiFacade;
 
   private static Predicate<CalendarEvent> recurring(final boolean isRecurring) {
     return new Predicate<CalendarEvent>() {
@@ -97,16 +108,18 @@ public class CalendarEditorPanel {
       }
     };
   }
-  public CalendarEditorPanel(List<CalendarEvent> events, Runnable onChange) {
+  public CalendarEditorPanel(UIFacade uifacade, List<CalendarEvent> events, Runnable onChange) {
     myOneOffEvents.addAll(Collections2.filter(events, recurring(false)));
     myRecurringEvents.addAll(Collections2.filter(events, recurring(true)));
     myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
     myOnCreate = NOOP_CALLBACK;
+    myUiFacade = uifacade;
     myRecurringModel = new TableModelImpl(myRecurringEvents, myOnChangeCallback, true);
     myOneOffModel = new TableModelImpl(myOneOffEvents, myOnChangeCallback, false);
   }
 
-  public CalendarEditorPanel(final GPCalendar calendar, Runnable onChange) {
+  public CalendarEditorPanel(UIFacade uifacade, final GPCalendar calendar, Runnable onChange) {
+    myUiFacade = uifacade;
     myOnChangeCallback = onChange == null ? NOOP_CALLBACK : onChange;
     myOnCreate = new Runnable() {
       @Override
@@ -142,7 +155,7 @@ public class CalendarEditorPanel {
   private Component createRecurringComponent() {
     //DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd");
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myRecurringModel, dateFormat);
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myRecurringModel, dateFormat, myUiFacade);
     JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
 
     Date today = CalendarFactory.newCalendar().getTime();
@@ -156,7 +169,7 @@ public class CalendarEditorPanel {
   }
 
   public JPanel createNonRecurringComponent() {
-    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myOneOffModel, GanttLanguage.getInstance().getShortDateFormat());
+    AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myOneOffModel, GanttLanguage.getInstance().getShortDateFormat(), myUiFacade);
     JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
 
     Date today = CalendarFactory.newCalendar().getTime();
@@ -192,7 +205,114 @@ public class CalendarEditorPanel {
     return Pair.create(hintLabel, dateEditor);
   }
 
-  private static AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat) {
+  static interface FocusSetter {
+    void setFocus(int row);
+  }
+  static class ColorEditor extends AbstractCellEditor implements TableCellEditor {
+    private final OptionsPageBuilder.ColorComponent myEditor;
+    private final DefaultColorOption myOption;
+    private final FocusSetter myFocusMover;
+
+    ColorEditor(UIFacade uiFacade, FocusSetter focusSetter) {
+      myOption = new DefaultColorOption("sadf") {
+        @Override
+        protected void resetValue(Color value, boolean resetInitial, Object clientId) {
+          super.resetValue(value, resetInitial, clientId);
+          if (clientId != this) {
+            stopCellEditing();
+          }
+        }
+      };
+      OptionsPageBuilder builder = new OptionsPageBuilder();
+      builder.setUiFacade(uiFacade);
+      myEditor = builder.createColorComponent(myOption);
+      myFocusMover = focusSetter;
+    }
+
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row, int column) {
+      TableCellRenderer renderer = table.getCellRenderer(row, column);
+      Component c = renderer.getTableCellRendererComponent(table, value, isSelected, true, row, column);
+      if (c != null) {
+        myEditor.getJComponent().setOpaque(true);
+        myEditor.getJComponent().setBackground(c.getBackground());
+        if (c instanceof JComponent) {
+          myEditor.getJComponent().setBorder(((JComponent) c).getBorder());
+        }
+      } else {
+        myEditor.getJComponent().setOpaque(false);
+      }
+      myOption.setValue((Color)value, this);
+      final FocusListener onStartEditing = new FocusAdapter() {
+        @Override
+        public void focusGained(FocusEvent e) {
+          myEditor.getJComponent().removeFocusListener(this);
+          myEditor.openChooser();
+        }
+      };
+      myEditor.getJComponent().addFocusListener(onStartEditing);
+      myEditor.setOnCancelCallback(new Runnable() {
+        @Override
+        public void run() {
+          cancelCellEditing();
+          myEditor.getJComponent().removeFocusListener(onStartEditing);
+          moveFocusToTable(row);
+        }
+      });
+      myEditor.setOnOkCallback(new Runnable() {
+        @Override
+        public void run() {
+          myEditor.getJComponent().removeFocusListener(onStartEditing);
+          moveFocusToTable(row);
+        }
+      });
+      return myEditor.getJComponent();
+    }
+
+    private void moveFocusToTable(final int row) {
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          myFocusMover.setFocus(row);
+        }
+      });
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return myOption.getValue();
+    }
+  }
+
+  static class DateCellRendererImpl implements TableCellRenderer {
+    private final DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
+    private final DateFormat myDateFormat;
+
+    DateCellRendererImpl(DateFormat dateFormat) {
+      myDateFormat = dateFormat;
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(
+        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      assert (value == null || value instanceof CalendarEvent) : (value == null)
+          ? "value is null" : String.format("value=%s class=%s", value, value.getClass());
+      final String formattedDate;
+      if (value == null) {
+        formattedDate = "";
+      } else {
+        CalendarEvent e = (CalendarEvent) value;
+        formattedDate = myDateFormat.format(e.myDate);
+      }
+      JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, formattedDate, isSelected, hasFocus,
+          row, column);
+      return result;
+    }
+  }
+
+
+  private static AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat, UIFacade uiFacade) {
     final JTable table = new JTable(tableModel);
 
     UIUtil.setupTableUI(table);
@@ -202,29 +322,26 @@ public class CalendarEditorPanel {
     //myTable.getColumnModel().getColumn(TableModelImpl.Column.RECURRING.ordinal()).setCellRenderer(myTable.getDefaultRenderer(TableModelImpl.Column.RECURRING.getColumnClass()));
     // We'll show a hint label under the table if user types something which we can't parse
 
-    class DateCellRendererImpl implements TableCellRenderer {
-      private DefaultTableCellRenderer myDefaultRenderer = new DefaultTableCellRenderer();
-
-      @Override
-      public Component getTableCellRendererComponent(
-          JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        assert (value == null || value instanceof CalendarEvent) : (value == null)
-            ? "value is null" : String.format("value=%s class=%s", value, value.getClass());
-        final String formattedDate;
-        if (value == null) {
-          formattedDate = "";
-        } else {
-          CalendarEvent e = (CalendarEvent) value;
-          formattedDate = dateFormat.format(e.myDate);
-        }
-        JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, formattedDate, isSelected, hasFocus,
-            row, column);
-        return result;
-      }
-    }
-
     TableColumn dateColumn = table.getColumnModel().getColumn(TableModelImpl.Column.DATES.ordinal());
-    dateColumn.setCellRenderer(new DateCellRendererImpl());
+    dateColumn.setCellRenderer(new DateCellRendererImpl(dateFormat));
+
+    TableColumn colorColumn = table.getColumnModel().getColumn(TableModelImpl.Column.COLOR.ordinal());
+    colorColumn.setCellRenderer(UIUtil.newColorRenderer(new Supplier<Integer>() {
+      @Override
+      public Integer get() {
+        return tableModel.getRowCount() - 1;
+      }
+    }));
+
+
+    colorColumn.setCellEditor(new ColorEditor(uiFacade, new FocusSetter() {
+      @Override
+      public void setFocus(int row) {
+        table.requestFocus();
+        table.getSelectionModel().setSelectionInterval(row, row);
+      }
+    }));
+
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<CalendarEvent>(table) {
       @Override
       protected void onAddEvent() {
@@ -270,7 +387,7 @@ public class CalendarEditorPanel {
 
   private static class TableModelImpl extends AbstractTableModel {
     private static enum Column {
-      DATES(CalendarEvent.class, null), SUMMARY(String.class, ""), TYPE(String.class, "");
+      DATES(CalendarEvent.class, null), SUMMARY(String.class, ""), TYPE(String.class, ""), COLOR(Color.class, Color.GRAY);
 
       private String myTitle;
       private Class<?> myClazz;
@@ -354,6 +471,8 @@ public class CalendarEditorPanel {
         return Objects.firstNonNull(e.getTitle(), "");
       case TYPE:
         return getI18NedEventType(e.getType());
+      case COLOR:
+        return Objects.firstNonNull(e.getColor(), Column.values()[col].getDefault());
       }
       return null;
     }
@@ -368,6 +487,9 @@ public class CalendarEditorPanel {
       if (row < 0 || row >= getRowCount()) {
         return;
       }
+      if (aValue == null) {
+        return;
+      }
       String value = String.valueOf(aValue);
       if (row == getRowCount() - 1) {
         myEvents.add(CalendarEvent.newEvent(null, isRecurring, CalendarEvent.Type.HOLIDAY, "", null));
@@ -378,21 +500,25 @@ public class CalendarEditorPanel {
       case DATES:
         try {
           Date date = GanttLanguage.getInstance().getShortDateFormat().parse(value);
-          newEvent = CalendarEvent.newEvent(date, e.isRecurring, e.getType(), e.getTitle(), null);
+          newEvent = CalendarEvent.newEvent(date, e.isRecurring, e.getType(), e.getTitle(), e.getColor());
         } catch (ParseException e1) {
           // TODO Auto-generated catch block
           e1.printStackTrace();
         }
         break;
       case SUMMARY:
-        newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, e.getType(), value, null);
+        newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, e.getType(), value, e.getColor());
         break;
       case TYPE:
         for (CalendarEvent.Type eventType : CalendarEvent.Type.values()) {
           if (getI18NedEventType(eventType).equals(value)) {
-            newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, eventType, e.getTitle(), null);
+            newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, eventType, e.getTitle(), e.getColor());
           }
         }
+        break;
+      case COLOR:
+        assert aValue instanceof Color : "Bug: we expect Color but we get " + aValue.getClass();
+        newEvent = CalendarEvent.newEvent(e.myDate, e.isRecurring, e.getType(), e.getTitle(), (Color)aValue);
         break;
       }
       if (newEvent != null) {

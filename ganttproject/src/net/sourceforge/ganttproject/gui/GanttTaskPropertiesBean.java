@@ -268,7 +268,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     OptionsPageBuilder builder = new OptionsPageBuilder(GanttTaskPropertiesBean.this, OptionsPageBuilder.TWO_COLUMN_LAYOUT);
     builder.setUiFacade(myUIfacade);
     JPanel colorBox = new JPanel(new BorderLayout(5, 0));
-    colorBox.add(builder.createColorComponent(myTaskColorOption), BorderLayout.WEST);
+    colorBox.add(builder.createColorComponent(myTaskColorOption).getJComponent(), BorderLayout.WEST);
     //colorBox.add(Box.createHorizontalStrut(5));
     colorBox.add(new JXHyperlink(mySetDefaultColorAction), BorderLayout.CENTER);
     //colorBox.add(Box.createHorizontalGlue());
