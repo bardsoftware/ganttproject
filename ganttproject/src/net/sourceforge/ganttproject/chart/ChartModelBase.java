@@ -287,9 +287,13 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         }
         return event.getColor();
       }
+
+      public boolean hasEvent(Date date) {
+        return getTaskManager().getCalendar().getEvent(date) != null;
+      }
       @Override
       public int getTopLineHeight() {
-        return myChartUIConfiguration.getSpanningHeaderHeight();
+        return myChartUIConfiguration.getHeaderHeight();
       }
       @Override
       public BooleanOption getRedlineOption() {
