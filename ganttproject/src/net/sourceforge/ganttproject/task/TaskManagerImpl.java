@@ -22,6 +22,7 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
@@ -673,6 +674,16 @@ public class TaskManagerImpl implements TaskManager {
     };
   }
 
+  public GPCalendarListener getCalendarListener() {
+    return new GPCalendarListener() {
+      @Override
+      public void onCalendarChange() {
+        for (Task t : getTasks()) {
+          t.setEnd(null);
+        }
+      }
+    };
+  }
   public void fireTaskProgressChanged(Task changedTask) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(changedTask);

@@ -234,6 +234,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     }, taskConfig);
     addProjectEventListener(myTaskManager.getProjectListener());
+    getActiveCalendar().addListener(myTaskManager.getCalendarListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
     setIconImage(icon.getImage());
 
