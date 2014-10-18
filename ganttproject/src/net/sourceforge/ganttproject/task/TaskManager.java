@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Map;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.time.TimeDuration;
@@ -235,4 +236,6 @@ public interface TaskManager {
   DependencyGraph getDependencyGraph();
 
   ProjectEventListener getProjectListener();
+
+  GPCalendarListener getCalendarListener();
 }

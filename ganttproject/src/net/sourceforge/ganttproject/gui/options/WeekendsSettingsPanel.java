@@ -65,11 +65,6 @@ public class WeekendsSettingsPanel extends GeneralOptionPanel {
       projectCalendar.setWeekDayType(i, calendar.getWeekDayType(i));
     }
     if (hasChange) {
-      // Update tasks for the new weekends
-      // By setting their end dates to null it gets recalculated
-      for (Task task : project.getTaskManager().getTasks()) {
-        task.setEnd(null);
-      }
       projectCalendar.setBaseCalendarID(calendar.getBaseCalendarID());
       projectCalendar.setPublicHolidays(calendar.getPublicHolidays());
       projectCalendar.setOnlyShowWeekends(calendar.getOnlyShowWeekends());

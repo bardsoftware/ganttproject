@@ -63,15 +63,24 @@ public class ProjectCalendarDialogAction extends AbstractAction {
     myUIFacade.createDialog(panel, new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        configPage.commit();
-        myProject.setModified();
-        try {
-          myProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-        } catch (TaskDependencyException e1) {
-          GPLogger.getLogger(ProjectCalendarDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
-        }
-        myUIFacade.getActiveChart().reset();
+        myUIFacade.getUndoManager().undoableEdit("Project calendar change", new Runnable() {
+          @Override
+          public void run() {
+            onCalendarEditCommited(configPage);
+          }
+        });
       }
     }, CancelAction.EMPTY }, GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays")).show();
+  }
+
+  private void onCalendarEditCommited(ProjectCalendarOptionPageProvider configPage) {
+    configPage.commit();
+    myProject.setModified();
+    try {
+      myProject.getTaskManager().getAlgorithmCollection().getScheduler().run();
+    } catch (TaskDependencyException e1) {
+      GPLogger.getLogger(ProjectCalendarDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
+    }
+    myUIFacade.getActiveChart().reset();
   }
 }
