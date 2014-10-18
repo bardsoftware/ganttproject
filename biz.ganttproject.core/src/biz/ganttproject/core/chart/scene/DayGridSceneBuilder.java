@@ -54,6 +54,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     Date getProjectEnd();
 
     OffsetList getAtomUnitOffsets();
+    boolean hasEvent(Date offsetStart);
   }
 
   public DayGridSceneBuilder(InputApi inputApi, Canvas timelineCanvas) {
@@ -104,12 +105,12 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     }
     for (Offset offset : defaultOffsets) {
       int dayMask = offset.getDayMask();
-      if ((dayMask & (DayMask.HOLIDAY | DayMask.WEEKEND)) != 0) {
+      if ((dayMask & (DayMask.HOLIDAY | DayMask.WEEKEND)) != 0 || myInputApi.hasEvent(offset.getOffsetStart())) {
         // Create a holiday/weekend day bar in the main area
         renderNonWorkingDay(curX, offset);
         // And expand it to the timeline area.
-        Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition() + 1, offset.getOffsetPixels()
-            - curX, getLineBottomPosition() - getLineTopPosition() + 1);
+        Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition(), offset.getOffsetPixels()
+            - curX, getLineBottomPosition() - getLineTopPosition());
         applyRectangleStyle(r, offset);
       }
       curX = offset.getOffsetPixels();

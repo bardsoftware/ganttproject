@@ -479,7 +479,7 @@ public class CalendarEditorPanel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-      return true;
+      return rowIndex < myEvents.size() || columnIndex == Column.DATES.ordinal();
     }
 
     @Override
