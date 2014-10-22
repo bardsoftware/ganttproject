@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.chart.canvas.Canvas;
@@ -54,7 +55,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     Date getProjectEnd();
 
     OffsetList getAtomUnitOffsets();
-    boolean hasEvent(Date offsetStart);
+    CalendarEvent getEvent(Date offsetStart);
   }
 
   public DayGridSceneBuilder(InputApi inputApi, Canvas timelineCanvas) {
@@ -103,15 +104,33 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     if (curX > 0) {
       curX = 0;
     }
-    for (Offset offset : defaultOffsets) {
+    for (final Offset offset : defaultOffsets) {
       int dayMask = offset.getDayMask();
-      if ((dayMask & (DayMask.HOLIDAY | DayMask.WEEKEND)) != 0 || myInputApi.hasEvent(offset.getOffsetStart())) {
-        // Create a holiday/weekend day bar in the main area
-        renderNonWorkingDay(curX, offset);
-        // And expand it to the timeline area.
-        Rectangle r = myTimelineCanvas.createRectangle(curX, getLineTopPosition(), offset.getOffsetPixels()
-            - curX, getLineBottomPosition() - getLineTopPosition());
-        applyRectangleStyle(r, offset);
+      CalendarEvent event = myInputApi.getEvent(offset.getOffsetStart());
+      final int _curX = curX;
+      Runnable r = new Runnable() {
+        @Override
+        public void run() {
+          // Create a holiday/weekend day bar in the main area
+          renderNonWorkingDay(_curX, offset);
+          // And expand it to the timeline area.
+          Rectangle r = myTimelineCanvas.createRectangle(_curX, getLineTopPosition(), 
+              offset.getOffsetPixels() - _curX, getLineBottomPosition() - getLineTopPosition());
+          applyRectangleStyle(r, offset);
+        }        
+      };
+      if ((dayMask & (DayMask.WEEKEND)) != 0) {
+        // We render weekends always. If there is a colored event its color will be applied
+        // in applyRectangleStyle because getholidaycolor returns non-null
+        r.run();
+      } else if (event != null) {
+        // It is not a weekends but it is an event
+        // Holidays should always be painted, but neutral and working days should not unless
+        // they have a custom color
+        if (event.getType() != CalendarEvent.Type.HOLIDAY && event.getColor() == null) {
+          continue;
+        }
+        r.run();
       }
       curX = offset.getOffsetPixels();
     }
@@ -127,6 +146,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     Color customColor = myInputApi.getHolidayColor(offset.getOffsetStart());
     if (customColor != null) {
       r.setBackgroundColor(customColor);
+      r.setOpacity(1.0f);
     }
     if ((offset.getDayMask() & DayMask.HOLIDAY) == DayMask.HOLIDAY) {
       r.setStyle("calendar.holiday");
@@ -134,6 +154,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     }
     if ((offset.getDayMask() & DayMask.WEEKEND) == DayMask.WEEKEND) {
       r.setStyle("calendar.weekend");
+      return;
     }
   }
 

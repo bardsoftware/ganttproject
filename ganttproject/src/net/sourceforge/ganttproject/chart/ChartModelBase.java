@@ -288,8 +288,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         return event.getColor();
       }
 
-      public boolean hasEvent(Date date) {
-        return getTaskManager().getCalendar().getEvent(date) != null;
+      public CalendarEvent getEvent(Date date) {
+        return getTaskManager().getCalendar().getEvent(date);
       }
       @Override
       public int getTopLineHeight() {
