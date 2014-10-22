@@ -66,6 +66,7 @@ import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -75,8 +76,10 @@ import org.eclipse.core.runtime.Status;
 
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
@@ -110,14 +113,26 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     @Override
     public void paint(Graphics g, JComponent c) {
       Graphics2D g2 = (Graphics2D)g.create();
-      super.paint (g2, c);
+      super.paint(g2, c);
       if (myHoverPoint == null) {
         return;
       }
       ChartModelBase chartModel = getChartModel();
+      if (chartModel.getBottomUnit() == GPTimeUnitStack.DAY) {
+        return;
+      }
       Offset offset = chartModel.getOffsetAt(myHoverPoint.x);
-      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .02f));
-      g2.fillRect(offset.getStartPixels(), chartModel.getChartUIConfiguration().getHeaderHeight(), offset.getOffsetPixels() - offset.getStartPixels(), getChartModel().getBounds().height);
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .4f));
+      g2.setFont(chartModel.getChartUIConfiguration().getChartFont().deriveFont(9.0f));
+      g2.setColor(Color.BLACK);
+      int offsetMidPx = (offset.getStartPixels() + offset.getOffsetPixels()) / 2;
+      int headerBottomPx = chartModel.getChartUIConfiguration().getHeaderHeight();
+      int[] xPoints = new int[] {offsetMidPx - 3, offsetMidPx, offsetMidPx + 3};
+      int[] yPoints = new int[] {headerBottomPx + 6, headerBottomPx, headerBottomPx + 6};
+
+      g2.fillPolygon(xPoints, yPoints, 3);
+      g2.drawString(GanttLanguage.getInstance().formatShortDate(CalendarFactory.createGanttCalendar(offset.getOffsetStart())),
+          offsetMidPx, headerBottomPx + 15);
     }
   }
 
