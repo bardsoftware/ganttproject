@@ -39,7 +39,6 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
   @Override
   protected TimeUnitText[] createTimeUnitText(Date startDate) {
     myCalendar.setTime(startDate);
-    myCalendar.setMinimalDaysInFirstWeek(4);
     return new TimeUnitText[] { createTopText(), createBottomText() };
   }
 
