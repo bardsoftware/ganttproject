@@ -127,10 +127,9 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
         // It is not a weekends but it is an event
         // Holidays should always be painted, but neutral and working days should not unless
         // they have a custom color
-        if (event.getType() != CalendarEvent.Type.HOLIDAY && event.getColor() == null) {
-          continue;
+        if (event.getType() == CalendarEvent.Type.HOLIDAY || event.getColor() != null) {
+          r.run();
         }
-        r.run();
       }
       curX = offset.getOffsetPixels();
     }
