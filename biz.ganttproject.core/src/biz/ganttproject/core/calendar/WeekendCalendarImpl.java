@@ -230,9 +230,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         // intentionally fall-through, consult recurring holidays in this case 
       }
     }
-    myCalendar.setTime(curDayStart);
-    myCalendar.set(Calendar.YEAR, 1);
-    CalendarEvent recurring = myRecurringEvents.get(myCalendar.getTime());
+    CalendarEvent recurring = myRecurringEvents.get(getRecurringDate(curDayStart));
     if (recurring != null) {
       switch (recurring.getType()) {
       case HOLIDAY:
@@ -250,11 +248,16 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   public CalendarEvent getEvent(Date date) {
     CalendarEvent result = myOneOffEvents.get(date);
     if (result == null) {
-      result = myRecurringEvents.get(date);
+      result = myRecurringEvents.get(getRecurringDate(date));
     }
     return result;
   }
   
+  private Date getRecurringDate(Date date) {
+    myCalendar.setTime(date);
+    myCalendar.set(Calendar.YEAR, 1);
+    return myCalendar.getTime();
+  }
   @Override
   public int getDayMask(Date date) {
     int result = 0;
