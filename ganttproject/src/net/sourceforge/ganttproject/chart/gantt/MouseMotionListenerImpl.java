@@ -57,17 +57,26 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
     Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();
     // System.err.println("[OldMouseMotionListenerImpl] mouseMoved:
     // taskUnderPoint="+taskUnderPoint);
+    myChartController.hideTooltip();
     if (taskUnderPoint == null) {
       myChartComponent.setDefaultCursor();
-      myChartController.hideTooltip();
 
       if (itemUnderPoint instanceof CalendarChartItem) {
         CalendarEvent event = findCalendarEvent(((CalendarChartItem) itemUnderPoint).getDate());
         if (event != null) {
-          myChartController.showTooltip(e.getX(), e.getY(), GanttLanguage.getInstance().formatText(
-              "timeline.holidayTooltip.pattern",
-              GanttLanguage.getInstance().formatDate(CalendarFactory.createGanttCalendar(event.myDate)),
-              Strings.nullToEmpty(event.getTitle())));
+          String tooltipText;
+          if (event.isRecurring) {
+            tooltipText = GanttLanguage.getInstance().formatText(
+                "timeline.holidayTooltipRecurring.pattern",
+                GanttLanguage.getInstance().getRecurringDateFormat().format(event.myDate),
+                Strings.nullToEmpty(event.getTitle()));
+          } else {
+            tooltipText = GanttLanguage.getInstance().formatText(
+                "timeline.holidayTooltip.pattern",
+                GanttLanguage.getInstance().formatDate(CalendarFactory.createGanttCalendar(event.myDate)),
+                Strings.nullToEmpty(event.getTitle()));
+          }
+          myChartController.showTooltip(e.getX(), e.getY(), tooltipText);
         }
       }
     }

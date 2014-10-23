@@ -93,6 +93,8 @@ public class GanttLanguage {
 
   private static final GanttLanguage ganttLanguage = new GanttLanguage();
 
+  private final SimpleDateFormat myRecurringDateFormat = new SimpleDateFormat("MMM dd");
+
   private ArrayList<Listener> myListeners = new ArrayList<Listener>();
 
   private Locale currentLocale = null;
@@ -144,6 +146,9 @@ public class GanttLanguage {
     return shortCurrentDateFormat;
   }
 
+  public DateFormat getRecurringDateFormat() {
+    return myRecurringDateFormat;
+  }
   public DateFormat getLongDateFormat() {
     return myLongFormat;
   }
