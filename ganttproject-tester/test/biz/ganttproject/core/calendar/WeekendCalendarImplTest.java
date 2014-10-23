@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.CalendarFactory;
@@ -97,6 +98,7 @@ public class WeekendCalendarImplTest extends TestCase {
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2013, 0, 1).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2015, 0, 1).getTime()) & DayMask.HOLIDAY);
+    assertEquals(CalendarEvent.Type.HOLIDAY, calendar.getEvent(CalendarFactory.createGanttCalendar(2015, 0, 1).getTime()).getType());
   }
 
   public void testOneOffHoliday() {
