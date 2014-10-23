@@ -293,7 +293,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
       @Override
       public int getTopLineHeight() {
-        return myChartUIConfiguration.getHeaderHeight();
+        return myChartUIConfiguration.getSpanningHeaderHeight();
       }
       @Override
       public BooleanOption getRedlineOption() {
