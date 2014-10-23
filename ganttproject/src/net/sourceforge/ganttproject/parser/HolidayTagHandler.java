@@ -19,12 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.parser;
 
 
+import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 
 import org.xml.sax.Attributes;
 
@@ -97,16 +99,18 @@ public class HolidayTagHandler extends AbstractTagHandler {
       String monthAsString = atts.getValue("month");
       String dayAsString = atts.getValue("date");
       String typeAsString = atts.getValue("type");
+      String colorAsString = atts.getValue("color");
       int month = Integer.parseInt(monthAsString);
       int day = Integer.parseInt(dayAsString);
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
+      Color color = colorAsString == null ? null : ColorConvertion.determineColor(colorAsString);
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, true, type, null, null);
+        myLastEvent = CalendarEvent.newEvent(date, true, type, null, color);
       } else {
         int year = Integer.parseInt(yearAsString);
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, false, type, null, null);
+        myLastEvent = CalendarEvent.newEvent(date, false, type, null, color);
       }
       clearCdata();
     } catch (NumberFormatException e) {

@@ -27,6 +27,7 @@ import java.util.Locale;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -75,6 +76,9 @@ public class CalendarSaver extends SaverBase {
       addAttribute("month", String.valueOf(d.getMonth() + 1), attrs);
       addAttribute("date", String.valueOf(d.getDate()), attrs);
       addAttribute("type", holiday.getType().name(), attrs);
+      if (holiday.getColor() != null) {
+        addAttribute("color", ColorConvertion.getColor(holiday.getColor()), attrs);
+      }
       if (Strings.isNullOrEmpty(holiday.getTitle())) {
         emptyElement("date", attrs, handler);
       } else {
