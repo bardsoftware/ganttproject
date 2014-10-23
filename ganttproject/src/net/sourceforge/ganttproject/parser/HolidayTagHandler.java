@@ -38,7 +38,7 @@ import biz.ganttproject.core.time.CalendarFactory;
 /**
  * @author nbohn
  */
-public class HolidayTagHandler extends AbstractTagHandler implements ParsingListener {
+public class HolidayTagHandler extends AbstractTagHandler {
   private final GPCalendar myCalendar;
   private final List<CalendarEvent> myEvents = Lists.newArrayList();
   private Attributes myAttrs;
@@ -63,7 +63,7 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       loadHoliday(myAttrs);
     }
     if ("calendars".equals(qName)) {
-      processLastEvent();
+      onCalendarLoaded();
     }
   }
 
@@ -113,16 +113,9 @@ public class HolidayTagHandler extends AbstractTagHandler implements ParsingList
       GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);
       return;
     }
-
   }
 
-  @Override
-  public void parsingStarted() {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void parsingFinished() {
+  public void onCalendarLoaded() {
     processLastEvent();
     myCalendar.setPublicHolidays(myEvents);
   }
