@@ -153,8 +153,7 @@ public class CalendarEditorPanel {
   }
 
   private Component createRecurringComponent() {
-    //DateFormat dateFormat = GanttLanguage.getInstance().getShortDateFormat();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd");
+    DateFormat dateFormat = GanttLanguage.getInstance().getRecurringDateFormat();
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = createTableComponent(myRecurringModel, dateFormat, myUiFacade);
     JPanel result = AbstractTableAndActionsComponent.createDefaultTableAndActions(tableAndActions.getTable(), tableAndActions.getActionsComponent());
 
