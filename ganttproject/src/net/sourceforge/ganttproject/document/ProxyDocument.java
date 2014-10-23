@@ -343,7 +343,6 @@ class ProxyDocument implements Document {
         }
       });
       opener.addTagHandler(holidayHandler);
-      opener.addParsingListener(holidayHandler);
 
       PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();
       opener.addTagHandler(portfolioHandler);

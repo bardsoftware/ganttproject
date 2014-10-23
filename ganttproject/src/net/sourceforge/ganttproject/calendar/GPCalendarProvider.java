@@ -52,19 +52,25 @@ import biz.ganttproject.core.calendar.WeekendCalendarImpl;
  */
 public class GPCalendarProvider {
   private static class CalendarTagHandler extends AbstractTagHandler {
-    private GPCalendarCalc myCalendar;
+    private final GPCalendarCalc myCalendar;
+    private final HolidayTagHandler myHolidayHandler;
 
-    CalendarTagHandler(GPCalendarCalc calendar) {
+    CalendarTagHandler(GPCalendarCalc calendar, HolidayTagHandler holidayHandler) {
       super("calendar");
       myCalendar = calendar;
+      myHolidayHandler = holidayHandler;
     }
 
     @Override
-    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-      if ("calendar".equals(qName)) {
-        myCalendar.setName(attrs.getValue("name"));
-        myCalendar.setBaseCalendarID(attrs.getValue("base-id"));
-      }
+    protected boolean onStartElement(Attributes attrs) {
+      myCalendar.setName(attrs.getValue("name"));
+      myCalendar.setBaseCalendarID(attrs.getValue("base-id"));
+      return true;
+    }
+
+    @Override
+    protected void onEndElement() {
+      myHolidayHandler.onCalendarLoaded();
     }
   }
 
@@ -73,11 +79,11 @@ public class GPCalendarProvider {
   private static GPCalendar readCalendar(File resource) {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
 
-    CalendarTagHandler calendarHandler = new CalendarTagHandler(calendar);
     HolidayTagHandler holidayHandler = new HolidayTagHandler(calendar);
+    CalendarTagHandler calendarHandler = new CalendarTagHandler(calendar, holidayHandler);
     XmlParser parser = new XmlParser(
         ImmutableList.<TagHandler>of(calendarHandler, holidayHandler),
-        ImmutableList.<ParsingListener>of(holidayHandler));
+        ImmutableList.<ParsingListener>of());
     try {
       parser.parse(new BufferedInputStream(new FileInputStream(resource)));
       return calendar;
