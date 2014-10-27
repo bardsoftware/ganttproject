@@ -95,8 +95,6 @@ public class GanttOptions extends SaverBase {
 
   private UIConfiguration myUIConfig;
 
-  private Font myChartMainFont;
-
   private int toolBarPosition;
 
   private boolean bShowStatusBar;
@@ -324,9 +322,9 @@ public class GanttOptions extends SaverBase {
         endElement("files", handler);
       }
 
-      addAttribute("category", "chart-main", attrs);
-      addAttribute("spec", getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
-      emptyElement("font", attrs, handler);
+      //addAttribute("category", "chart-main", attrs);
+      //addAttribute("spec", getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
+      //emptyElement("font", attrs, handler);
 
       saveRoleSets(handler);
       new OptionSaver().saveOptionMap(myGPOptions.entrySet(), handler);
@@ -471,12 +469,7 @@ public class GanttOptions extends SaverBase {
 
   public UIConfiguration getUIConfiguration() {
     if (myUIConfig == null) {
-      myUIConfig = new UIConfiguration(null, null, new Color(140, 182, 206), redline) {
-        @Override
-        public Font getChartMainFont() {
-          return myChartMainFont == null ? super.getChartMainFont() : myChartMainFont;
-        }
-      };
+      myUIConfig = new UIConfiguration(new Color(140, 182, 206), redline);
     }
     return myUIConfig;
   }
@@ -484,8 +477,6 @@ public class GanttOptions extends SaverBase {
   private RoleManager getRoleManager() {
     return myRoleManager;
   }
-
-  private Font myMenuFont;
 
   /** Class to parse the xml option file */
   class GanttXMLOptionsParser extends DefaultHandler {
@@ -689,15 +680,6 @@ public class GanttOptions extends SaverBase {
               break;
             }
           }
-        }
-      }
-
-      if (qName.equals("font")) {
-        String category = attrs.getValue("category");
-        if ("menu".equals(category)) {
-          myMenuFont = Font.decode(attrs.getValue("spec"));
-        } else if ("chart-main".equals(category)) {
-          myChartMainFont = Font.decode(attrs.getValue("spec"));
         }
       }
     }

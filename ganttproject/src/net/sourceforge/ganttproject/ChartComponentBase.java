@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -59,6 +61,8 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import org.eclipse.core.runtime.IStatus;
 
 import biz.ganttproject.core.calendar.GPCalendarListener;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -98,6 +102,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   private final UIFacade myUIFacade;
 
   private final ViewChartOptionsDialogAction myOptionsDialogAction;
+  private final DefaultEnumerationOption<String> myChartFontFamilyOption =
+      new DefaultEnumerationOption<>("ui.chartFontFamily", GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
 
   public ChartComponentBase(IGanttProject project, UIFacade uiFacade, ZoomManager zoomManager) {
     myProject = project;
@@ -148,6 +154,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   @Override
   public GPOptionGroup[] getOptionGroups() {
     return getChartModel().getChartOptionGroups();
+  }
+
+  public EnumerationOption getChartFontFamilyOption() {
+    return myChartFontFamilyOption;
   }
 
   @Override
@@ -301,10 +311,15 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   @Override
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
+    getChartModel().getChartUIConfiguration().setBaseFont(getBaseChartFont());
     getChartModel().setBounds(getSize());
     getImplementation().paintChart(g);
   }
 
+  private Font getBaseChartFont() {
+    String family = getChartFontFamilyOption().getValue();
+    return new Font(family, Font.PLAIN, 12);
+  }
   @Override
   public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
     getImplementation().buildImage(settings, imageVisitor);

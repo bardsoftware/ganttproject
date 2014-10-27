@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
@@ -47,6 +48,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   public static final String ID = "ui.general";
@@ -81,7 +83,10 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
 
   @Override
   public GPOptionGroup[] getOptionGroups() {
-    return getUiFacade().getOptions();
+    List<GPOptionGroup> groups = Lists.newArrayList();
+    groups.addAll(Arrays.asList(getUiFacade().getOptions()));
+    groups.add(new GPOptionGroup("", getUiFacade().getGanttChart().getChartFontFamilyOption()));
+    return groups.toArray(new GPOptionGroup[groups.size()]);
   }
 
   @Override

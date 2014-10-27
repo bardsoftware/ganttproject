@@ -20,11 +20,13 @@ package net.sourceforge.ganttproject.gui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
-
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 
@@ -32,7 +34,7 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
  * @author bard
  */
 public class UIConfiguration {
-  private final Font myChartMainFont;
+//  private final Font myChartMainFont;
 
   /** default resource color */
   private Color myResColor;
@@ -63,8 +65,9 @@ public class UIConfiguration {
   private final RedlineOption myRedlineOption = new RedlineOption();
   private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
 
-  public UIConfiguration(Font menuFont, Font chartMainFont, Color taskColor, boolean isRedlineOn) {
-    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
+
+  public UIConfiguration(Color taskColor, boolean isRedlineOn) {
+//    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
     this.isRedlineOn = isRedlineOn;
     myResColor = new Color(140, 182, 206);
     myResOverColor = new Color(229, 50, 50);
@@ -77,10 +80,10 @@ public class UIConfiguration {
     myWeekendAlphaRenderingOption = new AlphaRenderingOption();
   }
 
-  public Font getChartMainFont() {
-    return myChartMainFont;
-  }
-
+//  public Font getChartMainFont() {
+//    return myChartMainFont;
+//  }
+//
   public Color getResourceColor() {
     return myResColor;
   }

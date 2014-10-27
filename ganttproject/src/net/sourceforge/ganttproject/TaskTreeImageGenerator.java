@@ -58,7 +58,7 @@ class TaskTreeImageGenerator {
   protected Dimension calculateDimension(List<DefaultMutableTreeNode> taskNodes) {
     BufferedImage tmpImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
 
-    FontMetrics fmetric = tmpImage.getGraphics().getFontMetrics(myUIConfiguration.getChartMainFont().deriveFont(12f));
+    FontMetrics fmetric = tmpImage.getGraphics().getFontMetrics(Fonts.DEFAULT_CHART_FONT.deriveFont(12f));
     int fourEmWidth = fmetric.stringWidth("mmmm");
 
     int width = 0;
