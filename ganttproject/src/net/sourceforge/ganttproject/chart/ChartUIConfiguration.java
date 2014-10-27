@@ -43,8 +43,6 @@ public class ChartUIConfiguration {
 
   private final Color myBottomUnitGridColor;
 
-  private final Font myBottomUnitFont;
-
   private final Color myWorkingTimeBackgroundColor;
 
   private final Color myHolidayTimeBackgroundColor;
@@ -61,9 +59,10 @@ public class ChartUIConfiguration {
 
   private final int myMargin = 4;
 
+  private Font myBaseFont = Fonts.DEFAULT_CHART_FONT;
+
   ChartUIConfiguration(UIConfiguration projectConfig) {
     mySpanningRowTextFont = Fonts.TOP_UNIT_FONT;
-    myBottomUnitFont = projectConfig.getChartMainFont();
     mySpanningHeaderBackgroundColor = new Color(0.93f, 0.93f, 0.93f);
     myHeaderBorderColor = new Color(0.482f, 0.482f, 0.482f);
     myWorkingTimeBackgroundColor = Color.WHITE;
@@ -76,10 +75,6 @@ public class ChartUIConfiguration {
 
   Font getSpanningHeaderFont() {
     return mySpanningRowTextFont;
-  }
-
-  Font getBottomUnitFont() {
-    return myBottomUnitFont;
   }
 
   public int getHeaderHeight() {
@@ -143,7 +138,7 @@ public class ChartUIConfiguration {
   }
 
   public Font getChartFont() {
-    return myProjectConfig.getChartMainFont();
+    return myBaseFont;
   }
 
   public Color getResourceNormalLoadColor() {
@@ -200,5 +195,9 @@ public class ChartUIConfiguration {
     copy.setRowHeight(getRowHeight());
     copy.setYOffSet(getYOffSet());
     return copy;
+  }
+
+  public void setBaseFont(Font baseChartFont) {
+    myBaseFont = baseChartFont;
   }
 }

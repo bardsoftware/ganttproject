@@ -62,7 +62,7 @@ public class GanttProjectImpl implements IGanttProject {
         new CustomColumnsManager());
     myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
-    myUIConfiguration = new UIConfiguration(Fonts.DEFAULT_MENU_FONT, Fonts.DEFAULT_CHART_FONT, Color.BLUE, true);
+    myUIConfiguration = new UIConfiguration(Color.BLUE, true);
     myTaskCustomColumnManager = new CustomColumnsManager();
   }
 
