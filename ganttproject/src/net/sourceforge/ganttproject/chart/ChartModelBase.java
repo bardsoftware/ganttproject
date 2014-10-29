@@ -20,14 +20,18 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
@@ -38,8 +42,10 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
@@ -54,7 +60,12 @@ import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultFontOption;
+import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -200,7 +211,10 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
-
+  private final DefaultFontOption myChartFontFamilyOption =
+      new DefaultFontOption("family", new FontSpec("Dialog", 12),
+          Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+  private final GPOptionGroup myFontOptions = new GPOptionGroup("ganttChartFont", myChartFontFamilyOption);
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
@@ -323,6 +337,15 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     addRenderer(myChartHeader);
     addRenderer(myChartGrid);
     addRenderer(myTimelineLabelRenderer);
+
+    myChartFontFamilyOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        FontSpec fontSpec = myChartFontFamilyOption.getValue();
+        Font font = new Font(fontSpec.getFamily(), Font.PLAIN, fontSpec.getSize());
+        getChartUIConfiguration().setBaseFont(font);
+      }
+    });
   }
 
   private OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
@@ -628,7 +651,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public GPOptionGroup[] getChartOptionGroups() {
-    return new GPOptionGroup[] { myChartGridOptions, myTimelineLabelOptions };
+    return new GPOptionGroup[] { myFontOptions, myChartGridOptions, myTimelineLabelOptions };
   }
 
   public void addOptionChangeListener(GPOptionChangeListener listener) {

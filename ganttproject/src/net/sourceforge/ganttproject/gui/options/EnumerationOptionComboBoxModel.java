@@ -25,11 +25,14 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
   private final EnumerationOption myOption;
 
   public EnumerationOptionComboBoxModel(EnumerationOption option, GPOptionGroup group) {
+    this(option, geti18nedValues(option, group));
+  }
+
+  public EnumerationOptionComboBoxModel(EnumerationOption option, String[] i18nedValues) {
     myOption = option;
     String currentValue = option.getValue();
     Item currentItem = null;
     String[] ids = option.getAvailableValues();
-    String[] i18nedValues = geti18nedValues(option, group);
 
     myValues = new ArrayList<Item>(ids.length);
     for (int i = 0; i < ids.length; i++) {

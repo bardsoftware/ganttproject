@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2014 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -15,21 +15,19 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.core.option;
+
+import java.util.List;
+
+/**
+ * Option that keeps font specifications. 
+ * 
+ * @author dbarashev (Dmitry Barashev)
  */
-package net.sourceforge.ganttproject.chart;
-
-import net.sourceforge.ganttproject.GanttPreviousState;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-
-public interface GanttChart extends TimelineChart {
-  void setBaseline(GanttPreviousState ganttPreviousState);
-
-  GanttPreviousState getBaseline();
-
-  GPOptionGroup getBaselineColorOptions();
-  ColorOption getTaskDefaultColorOption();
-
-  GPOptionGroup getTaskLabelOptions();
+public interface FontOption extends GPOption<FontSpec>{
+  /**
+   * @return all available font families 
+   */
+  public List<String> getFontFamilies();
 }
