@@ -68,9 +68,13 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DateOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DoubleOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.FileOption;
+import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
@@ -81,6 +85,7 @@ import biz.ganttproject.core.option.ValidationException;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -318,6 +323,8 @@ public class OptionsPageBuilder {
           }
         }
       });
+    } else if (option instanceof FontOption) {
+      result = createFontComponent((FontOption)option);
     }
     if (result == null) {
       result = new JLabel("Unknown option class=" + option.getClass());
@@ -536,7 +543,16 @@ public class OptionsPageBuilder {
   }
 
   private JComboBox createEnumerationComponent(final EnumerationOption option, final GPOptionGroup group) {
-    final JComboBox result = new JComboBox(new EnumerationOptionComboBoxModel(option, group));
+    return createEnumerationComponent(option, new Supplier<EnumerationOptionComboBoxModel>() {
+      @Override
+      public EnumerationOptionComboBoxModel get() {
+        return new EnumerationOptionComboBoxModel(option, group);
+      }
+    });
+  }
+
+  private JComboBox createEnumerationComponent(final EnumerationOption option, final Supplier<EnumerationOptionComboBoxModel> modelFactory) {
+    final JComboBox result = new JComboBox(modelFactory.get());
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
@@ -549,7 +565,7 @@ public class OptionsPageBuilder {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if (EnumerationOption.VALUE_SET.equals(evt.getPropertyName())) {
-          EnumerationOptionComboBoxModel model = new EnumerationOptionComboBoxModel(option, group);
+          EnumerationOptionComboBoxModel model = modelFactory.get();
           result.setModel(model);
           result.setSelectedItem(model.getSelectedItem());
         }
@@ -641,6 +657,46 @@ public class OptionsPageBuilder {
       }
     };
   }
+
+  public Component createFontComponent(final FontOption option) {
+    final Object CLIENT_ID = new Object();
+    final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies());
+    final DefaultIntegerOption sizeOption = new DefaultIntegerOption("", option.getValue().getSize());
+    familiesOption.setSelectedValue(option.getValue().getFamily());
+
+    ChangeValueListener uiChangeListener = new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        FontSpec currentSpec = option.getValue();
+        option.setValue(new FontSpec(familiesOption.getValue(), sizeOption.getValue()), CLIENT_ID);
+      }
+    };
+
+    familiesOption.addChangeValueListener(uiChangeListener);
+    sizeOption.addChangeValueListener(uiChangeListener);
+
+    JComboBox comboBox = createEnumerationComponent(familiesOption, new Supplier<EnumerationOptionComboBoxModel>() {
+      @Override
+      public EnumerationOptionComboBoxModel get() {
+        return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies().toArray(new String[0]));
+      }
+    });
+    Component sizeComponent = createValidatingComponent(sizeOption, new ValueValidator<Integer>() {
+      @Override
+      public Integer parse(String text) {
+        Integer i = Integer.valueOf(text);
+        if (i < 0 || i > 100) {
+          throw new ValidationException("Fotn size is expected to be in [0, 100] range");
+        }
+        return i;
+      }
+    });
+    final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+    buttonPanel.add(comboBox);
+    buttonPanel.add(sizeComponent);
+    return buttonPanel;
+  }
+
 
   public JComponent createDateComponent(final DateOption option) {
     class OptionValueUpdater implements ActionListener, PropertyChangeListener {

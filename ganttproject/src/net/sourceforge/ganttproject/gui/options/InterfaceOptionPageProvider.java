@@ -85,7 +85,6 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   public GPOptionGroup[] getOptionGroups() {
     List<GPOptionGroup> groups = Lists.newArrayList();
     groups.addAll(Arrays.asList(getUiFacade().getOptions()));
-    groups.add(new GPOptionGroup("", getUiFacade().getGanttChart().getChartFontFamilyOption()));
     return groups.toArray(new GPOptionGroup[groups.size()]);
   }
 
