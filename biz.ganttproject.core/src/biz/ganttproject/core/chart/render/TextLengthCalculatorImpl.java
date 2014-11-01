@@ -67,7 +67,7 @@ public class TextLengthCalculatorImpl implements TextMetrics {
 
   @Override
   public int getTextHeight(String text) {
-    return (int) myGraphics.getFontMetrics().getLineMetrics(text, myGraphics).getAscent();
+    return (int) myGraphics.getFontMetrics().getLineMetrics(text, myGraphics).getHeight();
   }
 
   @Override

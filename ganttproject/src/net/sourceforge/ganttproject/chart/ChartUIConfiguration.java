@@ -61,6 +61,8 @@ public class ChartUIConfiguration {
 
   private Font myBaseFont = Fonts.DEFAULT_CHART_FONT;
 
+  private int myBaseFontSize;
+
   ChartUIConfiguration(UIConfiguration projectConfig) {
     mySpanningRowTextFont = Fonts.TOP_UNIT_FONT;
     mySpanningHeaderBackgroundColor = new Color(0.93f, 0.93f, 0.93f);
@@ -197,7 +199,12 @@ public class ChartUIConfiguration {
     return copy;
   }
 
-  public void setBaseFont(Font baseChartFont) {
+  public void setBaseFont(Font baseChartFont, int fontSize) {
     myBaseFont = baseChartFont;
+    myBaseFontSize = fontSize;
+  }
+
+  public int getBaseFontSize() {
+    return myBaseFontSize;
   }
 }

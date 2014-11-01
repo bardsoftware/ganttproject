@@ -116,9 +116,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   };
 
   class TaskActivityChartApi implements TaskActivitySceneBuilder.ChartApi {
-    private final int myBarHeight;
-    TaskActivityChartApi(int barHeight) {
-      myBarHeight = barHeight;
+    TaskActivityChartApi() {
     }
     @Override
     public Date getChartStartDate() {
@@ -138,7 +136,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
     @Override
     public int getBarHeight() {
-      return myBarHeight;
+      return getRectangleHeight();
     }
     @Override
     public int getViewportWidth() {
@@ -200,17 +198,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
       @Override
       public int getFontSize() {
-        return getChartModel().getChartUIConfiguration().getChartFont().getSize();
+        return getChartModel().getChartUIConfiguration().getBaseFontSize();
       }
     }, myLabelsLayer);
     myLabelOptions = new ChartOptionGroup("ganttChartDetails",
         new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
         model.getOptionEventDispatcher());
 
-    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityChartApi(getRectangleHeight()),
+    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityChartApi(),
         new TaskActivitySceneBuilder.Style(0));
     myBaselineActivityRenderer = createTaskActivitySceneBuilder(
-        getPrimitiveContainer().getLayer(2), new TaskActivityChartApi(getRectangleHeight()/2),
+        getPrimitiveContainer().getLayer(2), new TaskActivityChartApi(),
         new TaskActivitySceneBuilder.Style(getRectangleHeight()));
   }
 
