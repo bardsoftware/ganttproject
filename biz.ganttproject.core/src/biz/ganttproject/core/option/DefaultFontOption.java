@@ -19,6 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.option;
 
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+import biz.ganttproject.core.option.FontSpec.Size;
 
 /**
  * Default implementation of FontOption
@@ -40,10 +44,26 @@ public class DefaultFontOption extends GPAbstractOption<FontSpec> implements Fon
 
   @Override
   public void loadPersistentValue(String value) {
+    int lastDash = value.lastIndexOf('-');
+    if (lastDash < 0) {
+      return;
+    }
+    String size = value.substring(lastDash + 1);
+    String family = value.substring(0, lastDash);
+    setValue(new FontSpec(family, FontSpec.Size.valueOf(size)));
   }
 
   @Override
   public List<String> getFontFamilies() {
     return myFontFamilies;
+  }
+
+  @Override
+  public Map<Size, String> getSizeLabels() {
+    Map<Size, String> result = Maps.newHashMap();
+    for (FontSpec.Size size : FontSpec.Size.values()) {
+      result.put(size, size.toString());
+    }
+    return result;
   }
 }

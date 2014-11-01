@@ -21,8 +21,11 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.AbstractAction;
@@ -42,11 +45,14 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -87,6 +93,8 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * @author bard
@@ -661,19 +669,9 @@ public class OptionsPageBuilder {
   public Component createFontComponent(final FontOption option) {
     final Object CLIENT_ID = new Object();
     final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies());
-    final DefaultIntegerOption sizeOption = new DefaultIntegerOption("", option.getValue().getSize());
-    familiesOption.setSelectedValue(option.getValue().getFamily());
-
-    ChangeValueListener uiChangeListener = new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        FontSpec currentSpec = option.getValue();
-        option.setValue(new FontSpec(familiesOption.getValue(), sizeOption.getValue()), CLIENT_ID);
-      }
-    };
-
-    familiesOption.addChangeValueListener(uiChangeListener);
-    sizeOption.addChangeValueListener(uiChangeListener);
+    if (option.getValue() != null) {
+      familiesOption.setValue(option.getValue().getFamily());
+    }
 
     JComboBox comboBox = createEnumerationComponent(familiesOption, new Supplier<EnumerationOptionComboBoxModel>() {
       @Override
@@ -681,19 +679,35 @@ public class OptionsPageBuilder {
         return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies().toArray(new String[0]));
       }
     });
-    Component sizeComponent = createValidatingComponent(sizeOption, new ValueValidator<Integer>() {
+    final JSlider slider = new JSlider(0, 4);
+    slider.setPaintTicks(false);
+    Hashtable<Integer, JComponent> labels = new Hashtable<Integer, JComponent>();
+    for (Map.Entry<FontSpec.Size, String> label : option.getSizeLabels().entrySet()) {
+      labels.put(label.getKey().ordinal(), new JLabel(label.getValue()));
+    }
+    slider.setLabelTable(labels);
+    slider.setPaintLabels(true);
+    if (option.getValue() != null) {
+      slider.setValue(option.getValue().getSize().ordinal());
+    }
+
+    ChangeValueListener uiChangeListener = new ChangeValueListener() {
       @Override
-      public Integer parse(String text) {
-        Integer i = Integer.valueOf(text);
-        if (i < 0 || i > 100) {
-          throw new ValidationException("Fotn size is expected to be in [0, 100] range");
-        }
-        return i;
+      public void changeValue(ChangeValueEvent event) {
+        option.setValue(new FontSpec(familiesOption.getValue(), FontSpec.Size.values()[slider.getValue()]), CLIENT_ID);
+      }
+    };
+    familiesOption.addChangeValueListener(uiChangeListener);
+    slider.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent arg0) {
+        option.setValue(new FontSpec(familiesOption.getValue(), FontSpec.Size.values()[slider.getValue()]), CLIENT_ID);
       }
     });
-    final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+
+    final Box buttonPanel = Box.createVerticalBox();
     buttonPanel.add(comboBox);
-    buttonPanel.add(sizeComponent);
+    buttonPanel.add(slider);
+    buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
     return buttonPanel;
   }
 
@@ -789,6 +803,14 @@ public class OptionsPageBuilder {
     }
 
     public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
+      String result = null;
+      if (group != null) {
+        String keyWithGroup = String.format("%s%s.%s.label", myOptionKeyPrefix, group.getID(), option.getID());
+        result = getValue(group, keyWithGroup);
+        if (!Objects.equal(result, keyWithGroup)) {
+          return result;
+        }
+      }
       String canonicalKey = getCanonicalOptionLabelKey(option);
       return getValue(group, canonicalKey);
     }

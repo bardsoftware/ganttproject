@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
@@ -42,20 +42,18 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
-import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
-import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
+import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
@@ -63,9 +61,9 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.FontSpec;
+import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -77,6 +75,7 @@ import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -211,10 +210,21 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
-  private final DefaultFontOption myChartFontFamilyOption =
-      new DefaultFontOption("family", new FontSpec("Dialog", 12),
-          Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
-  private final GPOptionGroup myFontOptions = new GPOptionGroup("ganttChartFont", myChartFontFamilyOption);
+  private final DefaultFontOption myChartFontOption =
+      new DefaultFontOption("fontSpec",
+          new FontSpec("Dialog", FontSpec.Size.NORMAL),
+          Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())) {
+
+            @Override
+            public Map<Size, String> getSizeLabels() {
+              Map<Size, String> result = Maps.newHashMap();
+              for (FontSpec.Size size : FontSpec.Size.values()) {
+                result.put(size, GanttLanguage.getInstance().formatText(
+                    "optionValue.chart.fontSpec.value", (int)(size.getFactor() * 100)));
+              }
+              return result;
+            }
+  };
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
@@ -286,7 +296,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
-        new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
+        new GPOption[] { myChartFontOption, projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
@@ -338,11 +348,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     addRenderer(myChartGrid);
     addRenderer(myTimelineLabelRenderer);
 
-    myChartFontFamilyOption.addChangeValueListener(new ChangeValueListener() {
+    myChartFontOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        FontSpec fontSpec = myChartFontFamilyOption.getValue();
-        Font font = new Font(fontSpec.getFamily(), Font.PLAIN, fontSpec.getSize());
+        FontSpec fontSpec = myChartFontOption.getValue();
+        Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*fontSpec.getSize().getFactor()));
         getChartUIConfiguration().setBaseFont(font);
       }
     });
@@ -651,7 +661,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public GPOptionGroup[] getChartOptionGroups() {
-    return new GPOptionGroup[] { myFontOptions, myChartGridOptions, myTimelineLabelOptions };
+    return new GPOptionGroup[] { myChartGridOptions, myTimelineLabelOptions };
   }
 
   public void addOptionChangeListener(GPOptionChangeListener listener) {

@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.option;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Option that keeps font specifications. 
@@ -30,4 +31,6 @@ public interface FontOption extends GPOption<FontSpec>{
    * @return all available font families 
    */
   public List<String> getFontFamilies();
+  
+  public Map<FontSpec.Size, String> getSizeLabels();
 }
