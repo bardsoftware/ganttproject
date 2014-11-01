@@ -98,7 +98,7 @@ public class TextPainter {
       ybottom = ybottom + (textHeight + padding.getY()) + padding.getTop();
       break;
     case BOTTOM:
-      ybottom -= padding.getBottom();
+      ybottom -= (padding.getBottom() + myGraphics.getFontMetrics().getDescent());
       break;
     }
     Style.Color background = style.getBackgroundColor(text);

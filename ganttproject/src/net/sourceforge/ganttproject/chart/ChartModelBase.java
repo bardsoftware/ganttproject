@@ -22,7 +22,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +53,7 @@ import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetManager;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
+import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
@@ -353,7 +356,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       public void changeValue(ChangeValueEvent event) {
         FontSpec fontSpec = myChartFontOption.getValue();
         Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*fontSpec.getSize().getFactor()));
-        getChartUIConfiguration().setBaseFont(font);
+        BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_BGR);
+        Graphics2D g = (Graphics2D) dummyImage.getGraphics();
+        TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl(g);
+        int fontSize = calculator.getTextHeight(font, "Agpqf");
+        getChartUIConfiguration().setBaseFont(font, fontSize);
       }
     });
   }

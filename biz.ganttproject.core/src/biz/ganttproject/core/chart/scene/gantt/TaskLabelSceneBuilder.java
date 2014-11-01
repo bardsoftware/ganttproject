@@ -67,7 +67,7 @@ public class TaskLabelSceneBuilder<T> {
 
   private final TaskApi<T> myTaskApi;
 
-  private final int myFontSize;
+  private final InputApi myInputApi;
 
   public interface TaskApi<T> {
     Object getProperty(T task, String propertyID);
@@ -98,9 +98,9 @@ public class TaskLabelSceneBuilder<T> {
   public TaskLabelSceneBuilder(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
     myCanvas = canvas;
     myTaskApi = taskApi;
+    myInputApi = inputApi;
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
-    myFontSize = inputApi.getFontSize();
   }
 
   public void renderLabels(List<Canvas.Polygon> activityRectangles) {
@@ -138,7 +138,7 @@ public class TaskLabelSceneBuilder<T> {
 
     if (text.length() > 0) {
       int xOrigin = rectangle.getRightX();
-      int yOrigin = rectangle.getBottomY() + 2;
+      int yOrigin = rectangle.getBottomY() + TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
       textPrimitive.setAlignment(HAlignment.RIGHT, VAlignment.TOP);
     }
@@ -149,7 +149,7 @@ public class TaskLabelSceneBuilder<T> {
     String text = getTaskLabel(activity.getOwner(), UP);
     if (text.length() > 0) {
       int xOrigin = rectangle.getRightX();
-      int yOrigin = rectangle.getTopY() - 3;
+      int yOrigin = rectangle.getTopY() - TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
       textPrimitive.setAlignment(HAlignment.RIGHT, VAlignment.BOTTOM);
     }
@@ -207,8 +207,8 @@ public class TaskLabelSceneBuilder<T> {
     return isTextDown() && !isTextUp();
   }
 
-  static final int TINY_SPACE = 1;
-  static final int MEDIUM_SPACE = 2;
+  static final int TINY_SPACE = 2;
+  static final int MEDIUM_SPACE = 3;
   static final int LARGE_SPACE = 4;
 
   public int calculateRowHeight() {
@@ -245,6 +245,6 @@ public class TaskLabelSceneBuilder<T> {
   }
 
   public int getFontHeight() {
-    return myFontSize;
+    return myInputApi.getFontSize();
   }
 }
