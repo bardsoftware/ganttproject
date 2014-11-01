@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
@@ -70,15 +71,14 @@ import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
-import net.sourceforge.ganttproject.language.GanttLanguage.Listener;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -93,13 +93,16 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultFileOption;
-import biz.ganttproject.core.option.DefaultIntegerOption;
+import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private static final ImageIcon LOGO = new ImageIcon(UIFacadeImpl.class.getResource("/icons/big.png"));
@@ -117,13 +120,25 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
-  private final DefaultIntegerOption myFontSizeOption;
-  private final DefaultEnumerationOption<String> myAppFontFamilyOption;
-  private ChangeValueListener myAppFontFamilyValueListener;
-  private Integer myLastFontSize = null;
-  private String myLastFontFamily;
+//  private final DefaultIntegerOption myFontSizeOption;
+  private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
+  private final DefaultFontOption myAppFontOption = new DefaultFontOption(
+      "appFontSpec", null, Arrays.asList(getFontFamilies())) {
+    @Override
+    public Map<FontSpec.Size, String> getSizeLabels() {
+      Map<FontSpec.Size, String> result = Maps.newHashMap();
+      for (FontSpec.Size size : FontSpec.Size.values()) {
+        result.put(size, GanttLanguage.getInstance().getText("optionValue.ui.appFontSpec." + size.toString() + ".label"));
+      }
+      return result;
+    }
+  };
+  private ChangeValueListener myAppFontValueListener;
+//  private Integer myLastFontSize = null;
+//  private String myLastFontFamily;
   private final LanguageOption myLanguageOption;
   private final IGanttProject myProject;
+  private FontSpec myLastFontSpec;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
       IGanttProject project, UIFacade fallbackDelegate) {
@@ -201,11 +216,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     });
 
-    myAppFontFamilyOption = new DefaultEnumerationOption<String>("ui.appFontFamily", getFontFamilies());
-    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
-    myFontSizeOption.setHasUi(false);
+//    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
+//    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myAppFontFamilyOption, myFontSizeOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
@@ -533,8 +547,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         if (!doSetLookAndFeel(laf)) {
           doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
         }
-        if (myAppFontFamilyValueListener == null) {
-          myAppFontFamilyValueListener = new ChangeValueListener() {
+        if (myAppFontValueListener == null) {
+          myAppFontValueListener = new ChangeValueListener() {
             @Override
             public void changeValue(ChangeValueEvent event) {
               SwingUtilities.invokeLater(new Runnable() {
@@ -546,7 +560,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
               });
             }
           };
-          myAppFontFamilyOption.addChangeValueListener(myAppFontFamilyValueListener);
+          myAppFontOption.addChangeValueListener(myAppFontValueListener);
         }
       }
     });
@@ -566,24 +580,30 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private void updateFonts() {
-    if (myFontSizeOption.getValue() != 0 && myFontSizeOption.getValue() != myLastFontSize ||
-        !Objects.equal(myAppFontFamilyOption.getValue(), myLastFontFamily)) {
+    if (myOriginalFonts.isEmpty()) {
       UIDefaults defaults = UIManager.getDefaults();
       for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
         String key = String.valueOf(keys.nextElement());
         Object obj = UIManager.get(key);
         if (obj instanceof Font) {
           Font f = (Font) obj;
-          int size = f.getSize();
-          int style = f.getStyle();
-          Font newFont = myAppFontFamilyOption.getSelectedValue() == null
-              ? f : new FontUIResource(myAppFontFamilyOption.getSelectedValue(), style, size);
-          newFont = newFont.deriveFont(size);
-          UIManager.put(key, newFont);
+          myOriginalFonts.put(key, f);
         }
       }
-      myLastFontSize = myFontSizeOption.getValue();
-      myLastFontFamily = myAppFontFamilyOption.getValue();
+    }
+    FontSpec currentSpec = myAppFontOption.getValue();
+    if (currentSpec != null && !currentSpec.equals(myLastFontSpec)) {
+      for (Map.Entry<String, Font> font : myOriginalFonts.entrySet()) {
+        float newSize = (font.getValue().getSize() * currentSpec.getSize().getFactor());
+        Font newFont;
+        if (Strings.isNullOrEmpty(currentSpec.getFamily())) {
+          newFont = font.getValue().deriveFont(newSize);
+        } else {
+          newFont = new FontUIResource(currentSpec.getFamily(), font.getValue().getStyle(), (int)newSize);
+        }
+        UIManager.put(font.getKey(), newFont);
+      }
+      myLastFontSpec = currentSpec;
     }
   }
 

@@ -18,6 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.option;
 
+import java.util.Objects;
+
+import com.google.common.base.Strings;
+
 /**
  * Font specification object, encapsulating font family and size.
  * It is used in option infrastructure which is meant to be portable to other
@@ -26,10 +30,23 @@ package biz.ganttproject.core.option;
  * @author dbarashev (Dmitry Barashev)
  */
 public class FontSpec {
+  public static enum Size {
+    SMALLER(0.75f), NORMAL(1.0f), LARGER(1.25f), LARGE(1.5f), HUGE(2.0f);
+    
+    private final float myFactor;
+
+    Size(float factor) {
+      myFactor = factor;
+    }
+    
+    public float getFactor() {
+      return myFactor;
+    }
+  }
   private final String myFamily;
-  private final int mySize;
+  private final Size mySize;
   
-  public FontSpec(String family, int size) {
+  public FontSpec(String family, Size size) {
     myFamily = family;
     mySize = size;
   }
@@ -38,11 +55,30 @@ public class FontSpec {
     return myFamily;
   }
   
-  public int getSize() {
+  public Size getSize() {
     return mySize;
   }
-  
+
   public String asString() {
-    return String.format("%s-%d", myFamily, mySize);
+    return String.format("%s-%s", Strings.nullToEmpty(myFamily), mySize.toString());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof FontSpec == false) {
+      return false;
+    }
+    FontSpec that = (FontSpec) obj;
+    return Objects.equals(myFamily, that.myFamily) && Objects.equals(mySize, that.mySize);
+  }
+
+  @Override
+  public int hashCode() {
+    return myFamily.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return asString();
   }
 }
