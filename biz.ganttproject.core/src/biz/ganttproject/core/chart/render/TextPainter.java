@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.common.base.Supplier;
+
 import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
@@ -43,9 +45,12 @@ public class TextPainter {
 
   private final TextLengthCalculatorImpl myTextLengthCalculator;
 
-  public TextPainter(Properties props) {
+  private final Supplier<Font> myBaseFont;
+
+  public TextPainter(Properties props, Supplier<Font> baseFont) {
     myProperties = props;
     myTextLengthCalculator = new TextLengthCalculatorImpl(null);
+    myBaseFont = baseFont;
   }
 
   public void setGraphics(Graphics2D graphics) {
@@ -121,7 +126,7 @@ public class TextPainter {
 
   public void paint(TextGroup textGroup) {
     TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl((Graphics2D) myGraphics.create());
-    FontChooser fontChooser = new FontChooser(myProperties, calculator);
+    FontChooser fontChooser = new FontChooser(myProperties, calculator, myBaseFont);
     textGroup.setFonts(fontChooser);
     for (int i = 0; i < textGroup.getLineCount(); i++) {
       paintTextLine(textGroup, i);

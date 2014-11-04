@@ -448,7 +448,6 @@ public class Canvas {
     }
 
     public void setFonts(FontChooser fontChooser) {
-
       while (getTotalHeight(fontChooser, myBaselines) > myHeight) {
         fontChooser.decreaseBaseFontSize();
       }

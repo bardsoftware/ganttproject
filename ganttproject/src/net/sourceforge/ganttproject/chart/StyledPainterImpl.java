@@ -20,11 +20,14 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import com.google.common.base.Supplier;
 
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
@@ -73,7 +76,7 @@ public class StyledPainterImpl implements Painter {
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
 
-  public StyledPainterImpl(ChartUIConfiguration config) {
+  public StyledPainterImpl(final ChartUIConfiguration config) {
     myConfig = config;
     margin = myConfig.getMargin();
 
@@ -100,7 +103,11 @@ public class StyledPainterImpl implements Painter {
 
     myProperties = new Properties();
     PropertiesUtil.loadProperties(myProperties, "/chart.properties");
-    myTextPainter = new TextPainter(myProperties);
+    myTextPainter = new TextPainter(myProperties, new Supplier<Font>() {
+      public Font get() {
+        return config.getChartFont();
+      }
+    });
     myLineRenderer = new LineRenderer(myProperties);
     myRectangleRenderer = new RectangleRenderer(myProperties);
     myPolygonRenderer = new PolygonRenderer(myProperties);
