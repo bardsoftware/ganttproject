@@ -20,19 +20,26 @@ package biz.ganttproject.core.chart.canvas;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+
 public class FontChooser {
 
-  private Properties myProperties;
+  private final Properties myProperties;
   private Map<String, Font> myFonts = new HashMap<String, Font>();
-  private TextMetrics myCalculator;
+  private final TextMetrics myCalculator;
+  private final Supplier<Font> myBaseFont;
 
-  public FontChooser(Properties properties, TextMetrics calculator) {
+  public FontChooser(Properties properties, TextMetrics calculator, Supplier<Font> chartBaseFont) {
     myProperties = properties;
     myCalculator = calculator;
+    myBaseFont = chartBaseFont;
   }
 
   public void decreaseBaseFontSize() {
@@ -60,10 +67,43 @@ public class FontChooser {
 
   public Font getFont(String style) {
     Font f = myFonts.get(style);
-    if (f == null) {
-      f = Font.decode(myProperties.getProperty(style + ".font", "Dialog 10"));
+    if (f == null) {      
+      String propValue = Strings.nullToEmpty(myProperties.getProperty(style + ".font")).trim();
+      if (propValue.isEmpty()) {
+        // If .font property is not set then we use the base font
+        f = myBaseFont.get();
+      } else {
+        String[] components = propValue.split("\\s+");
+        String last = components[components.length - 1];
+        String family = "";
+        float absoluteSize;
+        try {
+          // If the last component of .font property is int/float then
+          // we check whether it is a relative increment (it should be prefixed with sign)
+          // or an absolute value
+          if (last.startsWith("+") || last.startsWith("-")) {            
+            absoluteSize = Float.parseFloat(last) + myBaseFont.get().getSize();
+          } else {
+            absoluteSize = Float.parseFloat(last);
+          }
+          if (components.length > 1) {
+            family = Joiner.on(' ').join(Arrays.asList(components).subList(0, components.length - 1));
+          }
+          if (family.isEmpty()) {
+            f = myBaseFont.get().deriveFont(absoluteSize);
+          } else {
+            f = Font.decode(family + " 10");
+            if (f == null) {
+              f = myBaseFont.get();
+            }
+            f = f.deriveFont(absoluteSize);
+          }
+        } catch (NumberFormatException e) {
+          f = Font.decode(propValue);
+        }
+      }
       myFonts.put(style, f);
-    }
+    } 
     return f;
   }
 

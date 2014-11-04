@@ -39,7 +39,8 @@ public class DefaultFontOption extends GPAbstractOption<FontSpec> implements Fon
 
   @Override
   public String getPersistentValue() {
-    return getValue().asString();
+    FontSpec value = getValue();
+    return value == null ? null : value.asString();
   }
 
   @Override
