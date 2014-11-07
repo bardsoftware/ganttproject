@@ -5,6 +5,7 @@
 
 SCRIPT_FILE="$0"
 
+WORKING_DIR="$(pwd)"
 # We want to find the directory where the real script file resides.
 # If real file is symlinked (possibly many times) then we need to follow
 # symlinks until we reach the real script
@@ -18,7 +19,9 @@ while [ -L "$SCRIPT_FILE" ]; do
   SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
 done
 
-GP_HOME="$(pwd -P)"
+GP_HOME="$(pwd)"
+
+cd "$WORKING_DIR"
 
 # Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d"
