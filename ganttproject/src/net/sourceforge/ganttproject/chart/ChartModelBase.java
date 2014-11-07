@@ -354,15 +354,19 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartFontOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        FontSpec fontSpec = myChartFontOption.getValue();
-        Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*fontSpec.getSize().getFactor()));
-        BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_BGR);
-        Graphics2D g = (Graphics2D) dummyImage.getGraphics();
-        TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl(g);
-        int fontSize = calculator.getTextHeight(font, "Agpqf");
-        getChartUIConfiguration().setBaseFont(font, fontSize);
+        setBaseFont(myChartFontOption.getValue());
       }
     });
+    setBaseFont(myChartFontOption.getValue());
+  }
+
+  private void setBaseFont(FontSpec fontSpec) {
+    Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*fontSpec.getSize().getFactor()));
+    BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_BGR);
+    Graphics2D g = (Graphics2D) dummyImage.getGraphics();
+    TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl(g);
+    int fontSize = calculator.getTextHeight(font, "Agpqf");
+    getChartUIConfiguration().setBaseFont(font, fontSize);
   }
 
   private OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
