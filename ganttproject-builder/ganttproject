@@ -1,14 +1,26 @@
 #!/bin/bash
+# Copyright 2014 BarD Software s.r.o
+# This script launches GanttProject. It can be symlinked and can be ran from
+# any working directory
 
-SCRIPT_PATH=$0
-RESOLVED_PATH=`readlink -f "$SCRIPT_PATH"`
-while [ ! "$RESOLVED_PATH" = "$SCRIPT_PATH" ]; do
-  SCRIPT_PATH=$RESOLVED_PATH
-  RESOLVED_PATH=`readlink -f "$SCRIPT_PATH"`
+SCRIPT_FILE="$0"
+
+# We want to find the directory where the real script file resides.
+# If real file is symlinked (possibly many times) then we need to follow
+# symlinks until we reach the real script
+# After that we run pwd to get directory path
+cd "$(dirname "$SCRIPT_FILE")"
+SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
+
+while [ -L "$SCRIPT_FILE" ]; do
+  SCRIPT_FILE="$(readlink "$SCRIPT_FILE")"
+  cd "$(dirname "$SCRIPT_FILE")"
+  SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
 done
-GP_HOME=`dirname "$SCRIPT_PATH"`
 
+GP_HOME="$(pwd -P)"
 
+# Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d"
 # Check if log dir is present (or create it)
 if [ ! -d $GP_LOG_DIR ]; then
@@ -39,19 +51,24 @@ if [ -z "$JAVA_HOME" ]; then
 else
   JAVA_COMMAND=$JAVA_HOME/bin/java
 fi
+if [ ! -e "$JAVA_COMMAND" ]; then
+  echo "$JAVA_COMMAND does not exist" >&2
+  exit 1
+fi
 if [ ! -x "$JAVA_COMMAND" ]; then
-  echo "$JAVA_COMMAND is not executable. Please check the permissions." >&2
+  echo "$JAVA_COMMAND is not executable" >&2
   exit 1
 fi
 
-LOCAL_CLASSPATH=${GP_HOME}/eclipsito.jar:${GP_HOME}
+CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
+export CLASSPATH
 CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 
-JAVA_ARGS="-Xmx256m -classpath $CLASSPATH:$LOCAL_CLASSPATH $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE"
+JAVA_ARGS="-Xmx256m $BOOT_CLASS $CONFIGURATION_FILE -log -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
-  $JAVA_COMMAND $JAVA_ARGS "$@"
+  "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else
-  exec $JAVA_COMMAND $JAVA_ARGS "$@" &
+  "$JAVA_COMMAND" $JAVA_ARGS "$@" &
 fi
 
