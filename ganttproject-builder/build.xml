@@ -1,0 +1,358 @@
+<project name="GanttProject builder" default="build">
+	<property file="build.public.properties"/>
+	<property file="build.private.properties"/>
+
+  <target name="build_biz.ganttproject.core">
+    <ant antfile="../biz.ganttproject.core/build.xml" target="install" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+      <property name="debug" value="${debug}"></property>
+    </ant>
+  </target>
+	<target name="build_net.sourceforge.ganttproject">
+		<ant antfile="../ganttproject/build.xml" target="install" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="debug" value="${debug}"></property>
+		</ant>
+	</target>
+  <target name="build_biz.ganttproject.impex.ical">
+    <ant antfile="../biz.ganttproject.impex.ical/build.xml" target="install" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+      <property name="debug" value="${debug}"></property>
+    </ant>
+  </target>
+	<target name="build_org.ganttproject.impex.htmlpdf">
+		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="install" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="debug" value="${debug}"></property>
+		</ant>
+	</target>
+	<target name="build_biz.ganttproject.impex.msproject2">
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="install" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="debug" value="${debug}"></property>
+		</ant>
+	</target>
+	<target name="build_org.ganttproject.chart.pert">
+		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="install" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="debug" value="${debug}"></property>
+		</ant>
+	</target>
+
+	<target name="clean_biz.ganttproject.core">
+    	<ant antfile="../biz.ganttproject.core/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_net.sourceforge.ganttproject">
+		<ant antfile="../ganttproject/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+  <target name="clean_biz.ganttproject.impex.ical">
+    <ant antfile="../biz.ganttproject.impex.ical/build.xml" target="clean" inheritall="false">
+      <property name="install.dir" value="${install.dir}"></property>
+    </ant>
+  </target>
+	<target name="clean_org.ganttproject.impex.htmlpdf">
+		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_biz.ganttproject.impex.msproject2">
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+	<target name="clean_org.ganttproject.chart.pert">
+		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="clean" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+		</ant>
+	</target>
+
+	<target name="welcome-message">
+		<echo>
+=======================================================
+	Compiling GanttProject 2.7
+=======================================================
+		</echo>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${install.dir}"/>
+		<mkdir dir="${install.dir}/jre_ext"/>
+	</target>
+	
+	<target name="copy-launchers">
+		<copy todir="${install.dir}">
+			<fileset dir=".">
+				<include name="ganttproject"/>
+				<include name="README-install.txt"/>
+				<include name="LICENSE"/>
+				<include name="ganttproject.bat"/>
+				<include name="ganttproject.command"/>
+				<include name="ganttproject.exe"/>
+				<include name="ganttproject_16.ico"/>
+				<include name="ganttproject_32_2.ico"/>
+				<include name="GanttProject.app/**"/>
+				<include name="HouseBuildingSample.gan"/>
+				<include name="lib/javagalician.jar"/>
+			</fileset>
+		</copy>
+		<jar destfile="${install.dir}/eclipsito.jar" update="true">
+			<fileset dir="." includes="ganttproject-eclipsito-config.xml"/>
+		</jar>
+	</target>
+	<target name="build" depends="welcome-message,
+		build_biz.ganttproject.core,
+		build_net.sourceforge.ganttproject,
+		build_org.ganttproject.impex.htmlpdf,
+		build_biz.ganttproject.impex.ical,
+		build_biz.ganttproject.impex.msproject2,
+		build_org.ganttproject.chart.pert,
+		copy-launchers">
+	</target>
+
+	<target name="make-package-name">
+    <exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
+    </exec>
+    
+    <property name="package.name.suffix" value="${package.name.version}-r${hg.tip.rev}"/>
+    <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
+		<echo message="${package.dir}" file="VERSION"/>
+	</target>
+	
+	<target name="dist-bin" depends="build, make-package-name">
+		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
+    <chmod perm="ugo+rx" file="${install.dir}/ganttproject.command"></chmod>
+		
+		<move file="${install.dir}" tofile="${package.dir}"></move>
+		<zip destfile="${package.dir}.zip" basedir="." includes="/**">
+			<zipfileset dir="${package.dir}" excludes="ganttproject" prefix="${package.dir}">
+			</zipfileset>
+      <zipfileset dir="${package.dir}" includes="ganttproject" prefix="${package.dir}" filemode="755">
+      </zipfileset>
+		</zip>
+		<copy file="${package.dir}.zip" tofile="ganttproject-latest.zip"/>
+	</target>
+	
+	<target name="dist-src">
+		<property name="src.dir" value="${basedir}/dist-src"/>
+		<ant antfile="../ganttproject/build.xml" target="copy-src" inheritall="false">
+			<property name="install.dir" value="${src.dir}"></property>
+		</ant>		
+		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="copy-src" inheritall="false">
+			<property name="install.dir" value="${src.dir}"></property>
+		</ant>		
+		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="copy-src" inheritall="false">
+			<property name="install.dir" value="${src.dir}"></property>
+		</ant>		
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="copy-src" inheritall="false">
+			<property name="install.dir" value="${src.dir}"></property>
+		</ant>		
+		<mkdir dir="${src.dir}/ganttproject-builder"/>
+		<copy todir="${src.dir}/ganttproject-builder">
+			<fileset dir=".">
+				<include name="deb/**"/>
+        <include name="lib/**"/>
+        <include name="src/**"/>
+        <include name="build-deb.xml"/>
+        <include name="build-deb.properties"/>
+				<include name="build.xml"/>
+				<include name="build.public.properties"/>
+				<include name="build.private.properties"/>
+				<include name="formatter.xml"/>
+        <include name="ganttproject_16.ico"/>
+				<include name="ganttproject_32_2.ico"/>
+				<include name="ganttproject"/>
+				<include name="ganttproject.bat"/>
+        <include name="ganttproject.command"/>
+				<include name="ganttproject.desktop"/>
+				<include name="ganttproject-eclipsito-config.xml"/>
+        <include name="ganttproject.exe"/>
+				<include name="ganttproject.jnlp"/>
+        <include name="ganttproject.nsi"/>
+				<include name="ganttproject-webstart-config.xml"/>
+				<include name="HouseBuildingSample.gan"/>
+        <include name="LICENSE"/>
+				<include name=".project"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	
+	<target name="webstart_net.sourceforge.ganttproject">
+		<fail message="Please set properties keystore and storepass in build.private.properties">
+			<condition>
+				<not>
+					<and>
+						<isset property="keystore"/>
+						<isset property="storepass"/>
+					</and>
+				</not>
+			</condition>
+		</fail>
+		<ant antfile="../ganttproject/build.xml" target="webstart" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="webstart.dir" value="${webstart.dir}"></property>
+			<property name="keystore" value="${keystore}"/>
+			<property name="storepass" value="${storepass}"/>
+			<property name="alias" value="${alias}"/>
+		</ant>
+	</target>
+	
+	<target name="webstart_org.ganttproject.impex.htmlpdf">
+		<fail message="Please set properties keystore and storepass in build.private.properties">
+			<condition>
+				<not>
+					<and>
+						<isset property="keystore"/>
+						<isset property="storepass"/>
+					</and>
+				</not>
+			</condition>
+		</fail>
+		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="webstart" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="webstart.dir" value="${webstart.dir}"></property>
+			<property name="keystore" value="${keystore}"/>
+			<property name="storepass" value="${storepass}"/>
+			<property name="alias" value="${alias}"/>
+		</ant>
+	</target>
+
+	<target name="webstart_biz.ganttproject.impex.msproject2">
+		<fail message="Please set properties keystore and storepass in build.private.properties">
+			<condition>
+				<not>
+					<and>
+						<isset property="keystore"/>
+						<isset property="storepass"/>
+					</and>
+				</not>
+			</condition>
+		</fail>
+		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="webstart" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="webstart.dir" value="${webstart.dir}"></property>
+			<property name="keystore" value="${keystore}"/>
+			<property name="storepass" value="${storepass}"/>
+			<property name="alias" value="${alias}"/>
+		</ant>
+	</target>
+
+	<target name="webstart_org.ganttproject.chart.pert">
+		<fail message="Please set properties keystore and storepass in build.private.properties">
+			<condition>
+				<not>
+					<and>
+						<isset property="keystore"/>
+						<isset property="storepass"/>
+					</and>
+				</not>
+			</condition>
+		</fail>
+		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="webstart" inheritall="false">
+			<property name="install.dir" value="${install.dir}"></property>
+			<property name="webstart.dir" value="${webstart.dir}"></property>
+			<property name="keystore" value="${keystore}"/>
+			<property name="storepass" value="${storepass}"/>
+			<property name="alias" value="${alias}"/>
+		</ant>
+	</target>
+	
+
+	<target name="init-webstart">
+		<fail message="Please set properties keystore and storepass in build.private.properties">
+			<condition>
+				<not>
+					<and>
+						<isset property="keystore"/>
+						<isset property="storepass"/>
+					</and>
+				</not>
+			</condition>
+		</fail>
+		<mkdir dir="${webstart.dir}"/>
+		<mkdir dir="${webstart.dir}/configuration"/>
+	</target>
+	<!--
+	   <target name="dist-webstart" depends="init-webstart, build, webstart_net.sourceforge.ganttproject, webstart_org.ganttproject.impex.htmlpdf, webstart_biz.ganttproject.impex.msproject2, webstart_org.ganttproject.chart.pert">
+	-->
+	<target name="dist-webstart" depends="init-webstart, build, webstart_net.sourceforge.ganttproject">
+		<copy todir="${webstart.dir}" file="ganttproject.jnlp"/>
+		<copy todir="${webstart.dir}/configuration" file="ganttproject-webstart-config.xml"/>
+		<jar destfile="${webstart.dir}/configuration.jar">
+			<fileset dir="${webstart.dir}/configuration" includes="**/*"/>
+		</jar>
+		<signjar jar="${webstart.dir}/configuration.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
+		<delete dir="${webstart.dir}/configuration"/>
+	</target>
+	
+	<target name="clean" description="Removes all intermediate building files" depends="clean_biz.ganttproject.core,
+		clean_net.sourceforge.ganttproject,
+		clean_org.ganttproject.impex.htmlpdf,
+		clean_biz.ganttproject.impex.ical,
+		clean_biz.ganttproject.impex.msproject2,
+		clean_org.ganttproject.chart.pert">
+		<delete dir="bin"/>
+		<delete dir="dist-bin"/>
+		<delete dir="build-deb"/>
+	</target>
+	
+	<target name="dist-win" description="Builds Windows installer" depends="dist-bin">
+		<copy todir="${package.dir}" file="ganttproject.nsi"/>
+		<exec executable="makensis" dir="${package.dir}">
+			<arg value="ganttproject.nsi"/>
+	  </exec>
+		<copy todir="." file="${package.dir}/${package.dir}.exe"/>
+	</target>
+	
+	<target name="dist-deb" description="Builds DEB package" depends="make-package-name">
+    <ant antfile="build-deb.xml" inheritall="false">
+      <property name="package-version" value="${package.name.suffix}"></property>
+    </ant>
+    <copy todir="." file="${deb.dir}/${package.name.prefix}_${package.name.suffix}-1_all.deb"></copy>
+	</target>
+	
+  <taskdef name="bundleapp"
+           classname="com.oracle.appbundler.AppBundlerTask"   
+           classpath="lib/appbundler-1.0.jar" />
+
+  <target name="dist-mac" depends="init,make-package-name">
+    <bundleapp outputdirectory="${package.dir}"
+        name="GanttProject"
+        displayname="GanttProject"
+        identifier="net.sourceforge.ganttproject"
+        shortversion="${package.name.version}"
+        icon="ganttproject.icns"
+        copyright="Copyright 2014 BarD Software s.r.o. Distributed under GPL3"
+        applicationCategory="public.app-category.productivity"
+        mainclassname="org.bardsoftware.eclipsito.Boot">
+  
+        <classpath file="eclipsito.jar"/>
+        <argument value="-app"/>
+        <argument value="net.sourceforge.ganttproject.GanttProject"/>
+        <argument value="-plugins"/>
+        <argument value="$APP_ROOT/Contents/Java/plugins"/>
+        <option value="-Dapple.laf.useScreenMenuBar=true"/>
+        <option value="-Xdock:name=GanttProject"/>
+    </bundleapp>
+  	<copy todir="${package.dir}/GanttProject.app/Contents/Java">
+  	  <fileset dir="${package.dir}">
+  	  	<include name="eclipsito.jar"/>
+  	  	<include name="plugins/**"/>
+  	  </fileset>
+  	</copy>
+  	<patch patchfile="Info.plist.patch" originalfile="${package.dir}/GanttProject.app/Contents/Info.plist"/>
+  	<chmod perm="ugo+rx" file="${package.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+  </target>
+
+	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">
+    <echo>
+=======================================================
+  All packages build completed
+=======================================================
+    </echo>		
+	</target>
+</project>

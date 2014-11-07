@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.ganttproject.impex.htmlpdf"
+   name="Export to HTML and PDF"
+   version="2.0.0"
+   provider-name="ganttproject.org team">
+
+   <runtime>
+      <library name="ganttproject-htmlpdf.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/itextpdf-5.3.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="resource/">
+         <export name="*"/>
+      </library>
+   </runtime>
+   <requires>
+      <import plugin="biz.ganttproject.core"/>
+      <import plugin="net.sourceforge.ganttproject"/>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+   <extension-point id="HTMLStylesheet" name="HTML Stylesheet"/>
+   <extension-point id="PDFStylesheet" name="PDF Stylesheet"/>
+   <extension-point id="itext.ITextStylesheet" name="IText Stylesheet"/>
+   <extension-point id="FontDirectory" name="Font Directory"/>
+   <extension
+         point="net.sourceforge.ganttproject.exporter">
+         <exporter class="org.ganttproject.impex.htmlpdf.ExporterToHTML"/>
+         <exporter class="org.ganttproject.impex.htmlpdf.ExporterToPDF"/>
+   </extension>
+   <extension point="org.ganttproject.impex.htmlpdf.HTMLStylesheet">
+       <theme name="Samara" url="html-export-themes/samara/"/>
+       <theme name="Default theme" url="html-export-themes/default/"/>
+       <theme name="Striped Blue" url="html-export-themes/striped_blue/"/>
+   </extension>
+   <extension point="org.ganttproject.impex.htmlpdf.itext.ITextStylesheet">
+       <theme name="Sortavala" url="itext-export-themes/sortavala.txt"/>
+   </extension>
+   <extension point="org.ganttproject.impex.htmlpdf.FontDirectory">
+       <dir name="C:/windows/fonts" absolute="true"/>
+       <dir name="/usr/share/fonts/truetype" absolute="true"/>
+       <dir name="/System/Library/Fonts" absolute="true"/>
+       <dir name="fonts"/>
+   </extension>
+</plugin>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Deutschland/alle" type="country">
+<!-- http://www.officeholidays.com/countries/germany/ -->
+<!-- http://www.holidays-info.com/Holidays-Germany/2012/holidays_2012.html -->
+	<date year="" month="01" date="01"/>      <!-- New Year --> 
+	<date year="" month="01" date="06"/>      <!-- Epiphany: only BW,BY,ST -->
+	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
+	<date year="2012" month="04" date="09"/>  <!-- Easter Monday -->
+	<date year="" month="05" date="01"/>      <!-- Labour day -->
+	<date year="2012" month="05" date="17"/>  <!-- Ascension -->
+	<date year="2012" month="05" date="28"/>  <!-- Whitmonday -->
+	<date year="2012" month="06" date="07"/>  <!-- Corpus Christi: only BW,BY,HE,NW,RP,SL -->
+	<date year="" month="08" date="15"/>      <!-- Assumption: only SL -->
+	<date year="" month="10" date="03"/>      <!-- German Unity -->
+	<date year="" month="10" date="31"/>      <!-- Reformation: only BB,MV,SN,ST,TH -->
+	<date year="" month="11" date="01"/>      <!-- All Saints: only BW,BY,NW,RP,SL -->
+	<date year="2012" month="11" date="21"/>  <!-- Repentance: only SN -->
+	<date year="" month="12" date="25"/>      <!-- Christmas -->
+	<date year="" month="12" date="26"/>      <!-- St.Stephens -->
+	<date year="2006" month="04" date="14"/>
+	<date year="2006" month="04" date="17"/>
+	<date year="2006" month="05" date="25"/>
+	<date year="2006" month="06" date="05"/>
+	<date year="2006" month="06" date="15"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2006" month="11" date="22"/> #nur SN
+	<date year="2007" month="04" date="06"/>
+	<date year="2007" month="04" date="09"/>
+	<date year="2007" month="05" date="17"/>
+	<date year="2007" month="05" date="28"/>
+	<date year="2007" month="06" date="07"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2007" month="11" date="21"/> #nur SN
+	<date year="2008" month="03" date="21"/>
+	<date year="2008" month="03" date="24"/>
+	<date year="2008" month="05" date="12"/>
+	<date year="2008" month="05" date="22"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2008" month="11" date="19"/> #nur SN
+	<date year="2009" month="04" date="10"/>
+	<date year="2009" month="04" date="13"/>
+	<date year="2009" month="05" date="21"/>
+	<date year="2009" month="06" date="1"/>
+	<date year="2009" month="06" date="11"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
+	<date year="2009" month="11" date="18"/> #nur SN
+</calendar >
+ 
+

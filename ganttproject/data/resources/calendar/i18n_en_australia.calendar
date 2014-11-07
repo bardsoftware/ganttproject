@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Australia" type="country">
+<!-- http://www.fairwork.gov.au/leave/public-holidays/pages/default.aspx -->
+<!-- http://www.officeholidays.com/countries/australia/2012.asp -->
+	<date year="" month="01" date="01"/>     <!-- New Year -->
+	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
+	<date year="" month="01" date="26"/>     <!-- Australia day -->
+	<date year="2012" month="04" date="06"/> <!-- Good Friday -->
+	<date year="2012" month="04" date="08"/> <!-- Easter Monday -->
+	<date year="" month="04" date="25"/>     <!-- ANZAC day -->
+	<date year="2012" month="06" date="11"/> <!-- Queen's birthday -->
+	<date year="" month="12" date="25"/>     <!-- Christmas -->
+	<date year="" month="12" date="26"/>     <!-- Boxing day -->
+</calendar>
