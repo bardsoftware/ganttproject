@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.parser;
 import java.awt.Color;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import net.sourceforge.ganttproject.GPLogger;
@@ -31,6 +32,7 @@ import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.xml.sax.Attributes;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.calendar.CalendarEvent;
@@ -41,6 +43,7 @@ import biz.ganttproject.core.time.CalendarFactory;
  * @author nbohn
  */
 public class HolidayTagHandler extends AbstractTagHandler {
+  private static final Set<String> TAGS = ImmutableSet.of("date", "calendars");
   private final GPCalendar myCalendar;
   private final List<CalendarEvent> myEvents = Lists.newArrayList();
   private Attributes myAttrs;
@@ -61,11 +64,15 @@ public class HolidayTagHandler extends AbstractTagHandler {
    */
   @Override
   public void endElement(String namespaceURI, String sName, String qName) {
+    if (!TAGS.contains(qName)) {
+      return;
+    }
     if ("date".equals(qName)) {
       loadHoliday(myAttrs);
     }
     if ("calendars".equals(qName)) {
       onCalendarLoaded();
+      setTagStarted(false);
     }
   }
 
@@ -75,6 +82,10 @@ public class HolidayTagHandler extends AbstractTagHandler {
    */
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
+    if (!TAGS.contains(qName)) {
+      return;
+    }
+    setTagStarted(true);
     if (qName.equals("date")) {
       processLastEvent();
       myAttrs = attrs;
@@ -88,6 +99,7 @@ public class HolidayTagHandler extends AbstractTagHandler {
         myEvents.add(myLastEvent);
       } else {
         myEvents.add(CalendarEvent.newEvent(myLastEvent.myDate, myLastEvent.isRecurring, myLastEvent.getType(), cdata, null));
+        clearCdata();
       }
       myLastEvent = null;
     }
@@ -104,13 +116,14 @@ public class HolidayTagHandler extends AbstractTagHandler {
       int day = Integer.parseInt(dayAsString);
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
       Color color = colorAsString == null ? null : ColorConvertion.determineColor(colorAsString);
+      String description = getCdata();
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, true, type, null, color);
+        myLastEvent = CalendarEvent.newEvent(date, true, type, description, color);
       } else {
         int year = Integer.parseInt(yearAsString);
         Date date = CalendarFactory.createGanttCalendar(year, month - 1, day).getTime();
-        myLastEvent = CalendarEvent.newEvent(date, false, type, null, color);
+        myLastEvent = CalendarEvent.newEvent(date, false, type, description, color);
       }
       clearCdata();
     } catch (NumberFormatException e) {

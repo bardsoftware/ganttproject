@@ -45,24 +45,10 @@ public class DependencyTagHandler extends AbstractTagHandler implements ParsingL
     myUIFacade = uiFacade;
   }
 
-  /**
-   * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
-   *      String, String)
-   */
   @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-  }
-
-  /**
-   * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
-   *      String, String, Attributes)
-   */
-  @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-
-    if ("depend".equals(qName)) {
-      loadDependency(attrs);
-    }
+  protected boolean onStartElement(Attributes attrs) {
+    loadDependency(attrs);
+    return true;
   }
 
   @Override

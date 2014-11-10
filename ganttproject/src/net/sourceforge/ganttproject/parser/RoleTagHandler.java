@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
+import java.util.Set;
+
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RolePersistentID;
@@ -25,8 +27,11 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 import org.xml.sax.Attributes;
 
+import com.google.common.collect.ImmutableSet;
+
 /** Class to parse the attributes of resources handler */
 public class RoleTagHandler  extends AbstractTagHandler {
+  private final Set<String> TAGS = ImmutableSet.of("roles", "role");
   private RoleSet myRoleSet;
   private final RoleManager myRoleManager;
 
@@ -41,9 +46,13 @@ public class RoleTagHandler  extends AbstractTagHandler {
    */
   @Override
   public void endElement(String namespaceURI, String sName, String qName) {
+    if (!TAGS.contains(qName)) {
+      return;
+    }
     if (qName.equals("roles")) {
       clearRoleSet();
     }
+    setTagStarted(false);
   }
 
   private void clearRoleSet() {
@@ -56,7 +65,10 @@ public class RoleTagHandler  extends AbstractTagHandler {
    */
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-
+    if (!TAGS.contains(qName)) {
+      return;
+    }
+    setTagStarted(true);
     if (qName.equals("roles")) {
       findRoleSet(attrs.getValue("roleset-name"));
     } else if (qName.equals("role")) {

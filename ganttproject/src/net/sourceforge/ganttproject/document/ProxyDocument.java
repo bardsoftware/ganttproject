@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Set;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
@@ -57,6 +58,8 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
+
+import com.google.common.collect.ImmutableSet;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.ListOption;
@@ -312,7 +315,6 @@ class ProxyDocument implements Document {
       opener.addTagHandler(taskHandler);
       opener.addParsingListener(taskHandler);
 
-      opener.addParsingListener(taskPropHandler);
       opener.addParsingListener(taskDisplayHandler);
       opener.addParsingListener(customPropHandler);
 
@@ -420,12 +422,17 @@ class ProxyDocument implements Document {
   private class PortfolioTagHandler extends AbstractTagHandler {
     private static final String PORTFOLIO_TAG = "portfolio";
     private static final String PROJECT_TAG = "project";
+    private final Set<String> TAGS = ImmutableSet.of(PORTFOLIO_TAG, PROJECT_TAG);
     private static final String LOCATION_ATTR = "location";
     private boolean isReadingPortfolio = false;
 
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
         throws FileFormatException {
+      if (!TAGS.contains(qName)) {
+        return;
+      }
+      setTagStarted(true);
       if (PORTFOLIO_TAG.equals(qName)) {
         isReadingPortfolio = true;
         return;
@@ -442,9 +449,13 @@ class ProxyDocument implements Document {
 
     @Override
     public void endElement(String namespaceURI, String sName, String qName) {
+      if (!TAGS.contains(qName)) {
+        return;
+      }
       if (PORTFOLIO_TAG.equals(qName)) {
         isReadingPortfolio = false;
       }
+      setTagStarted(false);
     }
   }
 
@@ -453,17 +464,14 @@ class ProxyDocument implements Document {
     private final GPCalendarCalc calendar;
 
     public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
+      super("only-show-weekends");
       this.calendar = calendar;
     }
 
     @Override
-    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-      if ("only-show-weekends".equals(qName))
-        calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
-    }
-
-    @Override
-    public void endElement(String namespaceURI, String sName, String qName) {
+    protected boolean onStartElement(Attributes attrs) {
+      calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
+      return true;
     }
   }
 }

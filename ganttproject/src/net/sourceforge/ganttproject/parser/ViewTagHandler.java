@@ -19,19 +19,12 @@ public class ViewTagHandler extends AbstractTagHandler {
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-      throws FileFormatException {
-    if ("view".equals(qName)) {
-      loadViewState(attrs);
-    }
+  protected boolean onStartElement(Attributes attrs) {
+    loadViewState(attrs);
+    return true;
   }
 
   private void loadViewState(Attributes attrs) {
     myUIFacade.getZoomManager().setZoomState(attrs.getValue("zooming-state"));
   }
-
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-  }
-
 }

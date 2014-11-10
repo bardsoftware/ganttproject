@@ -59,6 +59,14 @@ public abstract class AbstractTagHandler implements TagHandler {
     }
   }
 
+  protected void setTagStarted(boolean started) {
+    myTagStarted = started;
+    if (!started && hasCdata()) {
+      // we clear accumulated CDATA value when tag which contains CDATA closes
+      clearCdata();
+    }
+  }
+
   protected String getCdata() {
     return myCdataBuffer.toString();
   }
