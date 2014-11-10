@@ -426,6 +426,9 @@ class ProxyDocument implements Document {
     private static final String LOCATION_ATTR = "location";
     private boolean isReadingPortfolio = false;
 
+    public PortfolioTagHandler() {
+      super(null, false);
+    }
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
         throws FileFormatException {

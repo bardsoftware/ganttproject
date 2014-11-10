@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.parser;
 import org.xml.sax.Attributes;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * Base class for all tag handlers.
@@ -40,10 +41,6 @@ public abstract class AbstractTagHandler implements TagHandler {
 
   protected AbstractTagHandler(String tagName) {
     this(tagName, false);
-  }
-
-  protected AbstractTagHandler() {
-    this(null, false);
   }
 
   @Override
@@ -67,6 +64,15 @@ public abstract class AbstractTagHandler implements TagHandler {
     }
   }
 
+  protected boolean isMyTag(String tagName) {
+    Preconditions.checkNotNull(myTagName);
+    return myTagName.equals(tagName);
+  }
+
+  protected boolean isTagStarted() {
+    return myTagStarted;
+  }
+
   protected String getCdata() {
     return myCdataBuffer.toString();
   }
@@ -78,6 +84,7 @@ public abstract class AbstractTagHandler implements TagHandler {
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
       throws FileFormatException {
+    Preconditions.checkNotNull(myTagName, "If you don't define tag name then please override this method");
     if (Objects.equal(myTagName, qName)) {
       myTagStarted = onStartElement(attrs);
     }
