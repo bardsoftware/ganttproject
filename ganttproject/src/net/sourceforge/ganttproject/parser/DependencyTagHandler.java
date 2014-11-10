@@ -110,11 +110,11 @@ public class DependencyTagHandler extends AbstractTagHandler implements ParsingL
     }
   }
 
-  protected int getDependencyAddressee() {
+  private int getDependencyAddressee() {
     return getContext().peekTask().getTaskID();
   }
 
-  protected int getDependencyAddresser(Attributes attrs) {
+  private int getDependencyAddresser(Attributes attrs) {
     try {
       return Integer.parseInt(attrs.getValue("id"));
     } catch (NumberFormatException e) {

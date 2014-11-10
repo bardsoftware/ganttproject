@@ -60,8 +60,13 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
   }
 
   @Override
-  protected void onEndElement() {
-    myContext.popTask();
+  public void endElement(String namespaceURI, String sName, String qName) {
+    if (isMyTag(qName) && isTagStarted()) {
+      myContext.popTask();
+      if (myContext.isStackEmpty()) {
+        setTagStarted(false);
+      }
+    }
   }
 
   private void loadTask(Attributes attrs) {

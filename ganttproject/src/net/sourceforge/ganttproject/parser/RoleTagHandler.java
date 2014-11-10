@@ -36,6 +36,7 @@ public class RoleTagHandler  extends AbstractTagHandler {
   private final RoleManager myRoleManager;
 
   public RoleTagHandler(RoleManager roleManager) {
+    super(null, false);
     myRoleManager = roleManager;
     myRoleManager.clear(); // Cleanup the old stuff
   }
