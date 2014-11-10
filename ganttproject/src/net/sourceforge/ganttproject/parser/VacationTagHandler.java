@@ -29,7 +29,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 /**
  * @author nbohn
  */
-public class VacationTagHandler extends AbstractTagHandler implements ParsingListener {
+public class VacationTagHandler extends AbstractTagHandler {
   private HumanResourceManager myResourceManager;
 
   public VacationTagHandler(HumanResourceManager resourceManager) {
@@ -55,22 +55,8 @@ public class VacationTagHandler extends AbstractTagHandler implements ParsingLis
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-    if (qName.equals("vacation")) {
-      loadResource(attrs);
-    }
+  protected boolean onStartElement(Attributes attrs) {
+    loadResource(attrs);
+    return true;
   }
-
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-  }
-
-  @Override
-  public void parsingStarted() {
-  }
-
-  @Override
-  public void parsingFinished() {
-  }
-
 }

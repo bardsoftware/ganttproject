@@ -53,20 +53,9 @@ public class CustomPropertiesTagHandler extends AbstractTagHandler implements Pa
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-      throws FileFormatException {
-    if (qName.equals("customproperty"))
-      loadProperty(attrs);
-
-  }
-
-  /**
-   * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(java.lang.String,
-   *      java.lang.String, java.lang.String)
-   */
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-    // nothing to do.
+  protected boolean onStartElement(Attributes attrs) {
+    loadProperty(attrs);
+    return true;
   }
 
   /**

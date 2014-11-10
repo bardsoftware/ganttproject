@@ -44,11 +44,9 @@ public class DefaultWeekTagHandler extends AbstractTagHandler {
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-      throws FileFormatException {
-    if ("default-week".equals(qName)) {
-      loadCalendar(attrs);
-    }
+  protected boolean onStartElement(Attributes attrs) {
+    loadCalendar(attrs);
+    return true;
   }
 
   private void loadCalendar(Attributes attrs) {
@@ -66,9 +64,4 @@ public class DefaultWeekTagHandler extends AbstractTagHandler {
     myCalendar.set(Calendar.DAY_OF_WEEK, i);
     return myShortFormat.format(myCalendar.getTime()).toLowerCase();
   }
-
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-  }
-
 }

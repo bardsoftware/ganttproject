@@ -54,18 +54,14 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-    if (qName.equals("task")) {
-      loadTask(attrs);
-    }
+  protected boolean onStartElement(Attributes attrs) {
+    loadTask(attrs);
+    return true;
   }
 
-  /** Method when finish to parse an attribute */
   @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-    if (qName.equals("task")) {
-      myContext.popTask();
-    }
+  protected void onEndElement() {
+    myContext.popTask();
   }
 
   private void loadTask(Attributes attrs) {
