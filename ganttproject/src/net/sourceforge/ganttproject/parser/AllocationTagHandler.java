@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
@@ -54,16 +55,16 @@ public class AllocationTagHandler extends AbstractTagHandler implements  Parsing
     myRoleManager = roleMgr;
   }
 
-  @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-      throws FileFormatException {
-    if (qName.equals("allocation")) {
-      loadAllocation(attrs);
-    }
-  }
 
   @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
+  protected boolean onStartElement(Attributes attrs) {
+    try {
+      loadAllocation(attrs);
+      return true;
+    } catch (FileFormatException e) {
+      GPLogger.log(e);
+      return false;
+    }
   }
 
   private void loadAllocation(Attributes attrs) throws FileFormatException {

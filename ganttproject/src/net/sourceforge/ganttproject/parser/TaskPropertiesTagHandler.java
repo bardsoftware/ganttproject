@@ -13,7 +13,7 @@ import org.xml.sax.Attributes;
 /**
  * @author bbaranne Mar 10, 2005
  */
-public class TaskPropertiesTagHandler extends AbstractTagHandler implements ParsingListener {
+public class TaskPropertiesTagHandler extends AbstractTagHandler {
   private final CustomPropertyManager myCustomPropertyManager;
 
   public TaskPropertiesTagHandler(CustomPropertyManager customPropertyManager) {
@@ -21,23 +21,10 @@ public class TaskPropertiesTagHandler extends AbstractTagHandler implements Pars
     myCustomPropertyManager = customPropertyManager;
   }
 
-  /**
-   * @see net.sourceforge.ganttproject.parser.TagHandler#startElement(String,
-   *      String, String, Attributes)
-   */
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-    if (qName.equals("taskproperty"))
-      loadTaskProperty(attrs);
-  }
-
-  /**
-   * @see net.sourceforge.ganttproject.parser.TagHandler#endElement(String,
-   *      String, String)
-   */
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-    // System.out.println(Mediator.getCustomColumnsStorage().toString());
+  protected boolean onStartElement(Attributes attrs) {
+     loadTaskProperty(attrs);
+     return true;
   }
 
   private void loadTaskProperty(Attributes atts) {
@@ -49,24 +36,5 @@ public class TaskPropertiesTagHandler extends AbstractTagHandler implements Pars
       String valueStr = atts.getValue("defaultvalue");
       myCustomPropertyManager.createDefinition(id, type, name, valueStr);
     }
-  }
-
-  /**
-   * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingStarted()
-   */
-  @Override
-  public void parsingStarted() {
-    // nothing to do.
-
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see net.sourceforge.ganttproject.parser.ParsingListener#parsingFinished()
-   */
-  @Override
-  public void parsingFinished() {
-    // this.treeTable.setDisplayedColumns(columns);
   }
 }

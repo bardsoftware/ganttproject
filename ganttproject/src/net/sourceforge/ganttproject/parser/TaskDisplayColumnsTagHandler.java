@@ -37,7 +37,6 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
   private final String myOrderPropertyName;
   private final String myWidthPropertyName;
   private final String myVisiblePropertyName;
-  private final String myTagName;
 
   public TaskDisplayColumnsTagHandler(ColumnList visibleFields) {
     this(visibleFields, "displaycolumn", "property-id", "order", "width", "visible");
@@ -47,7 +46,6 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
       String orderPropertyName, String widthPropertyName, String visiblePropertyName) {
     super(tagName);
     myVisibleFields = visibleFields;
-    myTagName = tagName;
     myIDPropertyName = idPropertyName;
     myOrderPropertyName = orderPropertyName;
     myWidthPropertyName = widthPropertyName;
@@ -55,17 +53,9 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
   }
 
   @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
-      throws FileFormatException {
-    if (qName.equals(myTagName)) {
-      loadTaskDisplay(attrs);
-    }
-
-  }
-
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-    // TODO Auto-generated method stub
+  protected boolean onStartElement(Attributes attrs) {
+    loadTaskDisplay(attrs);
+    return true;
   }
 
   @Override
