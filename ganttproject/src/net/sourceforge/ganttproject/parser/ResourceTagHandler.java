@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -37,8 +38,11 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 import org.xml.sax.Attributes;
 
+import com.google.common.collect.ImmutableSet;
+
 /** Class to parse the attribute of resources handler */
 public class ResourceTagHandler extends AbstractTagHandler implements ParsingListener {
+  private final Set<String> TAGS = ImmutableSet.of("resource", "custom-property", "custom-property-definition", "rate");
   private final CustomPropertyManager myCustomPropertyManager;
 
   private HumanResource myCurrentResource;
@@ -64,7 +68,10 @@ public class ResourceTagHandler extends AbstractTagHandler implements ParsingLis
    */
   @Override
   public void endElement(String namespaceURI, String sName, String qName) {
-
+    if (!TAGS.contains(qName)) {
+      return;
+    }
+    setTagStarted(false);
   }
 
   /**
@@ -73,7 +80,10 @@ public class ResourceTagHandler extends AbstractTagHandler implements ParsingLis
    */
   @Override
   public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-
+    if (!TAGS.contains(qName)) {
+      return;
+    }
+    setTagStarted(true);
     if (qName.equals("resource")) {
       loadResource(attrs);
     }

@@ -25,17 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import java.util.Set;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.parser.AbstractTagHandler;
-import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParsingContext;
 import net.sourceforge.ganttproject.parser.ParsingListener;
@@ -44,12 +40,11 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.time.GanttCalendar;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * Allows to load a gantt file from xml format, using SAX parser
@@ -57,8 +52,6 @@ import biz.ganttproject.core.time.GanttCalendar;
 public class GanttXMLOpen implements GPParser {
   /** 0-->description of project, 1->note for task */
   int typeChar = -1;
-
-  private String indent = "";
 
   private final ArrayList<TagHandler> myTagHandlers = new ArrayList<TagHandler>();
 
@@ -157,17 +150,19 @@ public class GanttXMLOpen implements GPParser {
   }
 
   private class DefaultTagHandler extends AbstractTagHandler {
+    private final Set<String> myTags = ImmutableSet.of("project", "tasks", "description", "notes");
+
     public DefaultTagHandler() {
       super(null, true);
     }
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
       clearCdata();
-      indent += "    ";
       String eName = sName; // element name
       if ("".equals(eName)) {
         eName = qName; // not namespace aware
       }
+      setTagStarted(myTags.contains(eName));
       if (eName.equals("tasks")) {
         myTaskManager.setZeroMilestones(null);
       }
@@ -207,15 +202,16 @@ public class GanttXMLOpen implements GPParser {
 
     @Override
     public void endElement(String namespaceURI, String sName, String qName) {
-      indent = indent.substring(0, indent.length() - 4);
+      if (!myTags.contains(qName)) {
+        return;
+      }
       if ("description".equals(qName)) {
         myProjectInfo.setDescription(getCdata());
-        clearCdata();
       } else if ("notes".equals(qName)) {
         Task currentTask = getContext().peekTask();
         currentTask.setNotes(getCdata());
-        clearCdata();
       }
+      setTagStarted(false);
     }
   }
 
