@@ -37,7 +37,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -74,7 +73,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
-import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -467,13 +465,11 @@ public abstract class UIUtil {
 
   public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener {
     private Date myDate;
-    private final IGanttProject myProject;
     private final JXDatePicker myDatePicker;
     private final boolean myShowDatePicker;
 
     public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator, DateFormat... dateFormats) {
       super(new JTextField());
-      myProject = project;
       myDatePicker = UIUtil.createDatePicker(dateFormats);
       myShowDatePicker = showDatePicker;
       if (parseValidator == null) {
@@ -487,9 +483,7 @@ public abstract class UIUtil {
       if (value instanceof GanttCalendar) {
         myDatePicker.setDate(((GanttCalendar)value).getTime());
       }
-      JFormattedTextField editor = myDatePicker.getEditor();
-      editor.selectAll();
-      return myShowDatePicker ? myDatePicker : editor;
+      return myShowDatePicker ? myDatePicker : myDatePicker.getEditor();
     }
 
     private ActionListener getActionListener() {
@@ -521,12 +515,12 @@ public abstract class UIUtil {
     label.setPreferredSize(new Dimension(16, 16));
     label.setBackground(value);
     buttonPanel.add(label);
-    buttonPanel.add(new JXHyperlink(new AbstractAction("choose") {
-      public void actionPerformed(ActionEvent e) {
-        System.err.println("Clicked!");
-
-      }
-    }));
+//    buttonPanel.add(new JXHyperlink(new AbstractAction("choose") {
+//      public void actionPerformed(ActionEvent e) {
+//        System.err.println("Clicked!");
+//
+//      }
+//    }));
     return buttonPanel;
   }
   public static TableCellRenderer newColorRenderer(final Supplier<Integer> rowCount) {

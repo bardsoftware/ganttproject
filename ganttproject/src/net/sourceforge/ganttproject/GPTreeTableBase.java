@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -76,7 +77,6 @@ import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import biz.ganttproject.core.option.ValidationException;
@@ -115,20 +115,21 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   };
 
-
   @Override
-  public boolean editCellAt(int row, int column) {
-    TableCellEditor cellEditor = getTable().getCellEditor(row, column);
-    boolean result = super.editCellAt(row, column);
-    if (cellEditor instanceof TreeTableCellEditor) {
-      JTextComponent editorComponent = (JTextComponent) ((TreeTableCellEditor)cellEditor).getComponent();
-      TreeTableCellEditorImpl.createSelectAllCommand(editorComponent).run();
-    }
-    if (cellEditor instanceof TreeTableCellEditorImpl) {
-      ((TreeTableCellEditorImpl) cellEditor).requestFocus();
+  public Component prepareEditor(TableCellEditor editor, int row, int column) {
+    Component result = super.prepareEditor(editor, row, column);
+    if (result instanceof JTextComponent) {
+      final Runnable command = TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result);
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          command.run();
+        }
+      });
     }
     return result;
   }
+
 
   @Override
   public void editingCanceled(ChangeEvent e) {
