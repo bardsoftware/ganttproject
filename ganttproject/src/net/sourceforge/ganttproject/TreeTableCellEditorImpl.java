@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Component;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
@@ -28,6 +29,8 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CellEditorListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 
@@ -36,7 +39,6 @@ import biz.ganttproject.core.option.ValidationException;
 
 class TreeTableCellEditorImpl implements TableCellEditor {
   private final DefaultCellEditor myProxiedEditor;
-  private Runnable myFocusCommand;
   private final JTable myTable;
 
   TreeTableCellEditorImpl(DefaultCellEditor proxiedEditor, JTable table) {
@@ -50,7 +52,7 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     final Component result = myProxiedEditor.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);
     if (result instanceof JTextComponent) {
       ((JTextComponent) result).selectAll();
-      myFocusCommand = createSelectAllCommand((JTextComponent)result);
+      //myFocusCommand = createSelectAllCommand((JTextComponent)result);
     }
     return result;
   }
@@ -106,14 +108,8 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     myProxiedEditor.removeCellEditorListener(arg0);
   }
 
-  public void requestFocus() {
-    if (myFocusCommand != null) {
-      SwingUtilities.invokeLater(myFocusCommand);
-    }
-  }
-
   static Runnable createSelectAllCommand(final JTextComponent textComponent) {
-    textComponent.addFocusListener(new FocusAdapter() {
+    final FocusListener focusListener = new FocusAdapter() {
       @Override
       public void focusGained(FocusEvent arg0) {
         super.focusGained(arg0);
@@ -125,7 +121,22 @@ class TreeTableCellEditorImpl implements TableCellEditor {
         });
         textComponent.removeFocusListener(this);
       }
+    };
+    textComponent.getDocument().addDocumentListener(new DocumentListener() {
+      @Override
+      public void removeUpdate(DocumentEvent arg0) {
+        textComponent.removeFocusListener(focusListener);
+      }
+      @Override
+      public void insertUpdate(DocumentEvent arg0) {
+        textComponent.removeFocusListener(focusListener);
+      }
+      @Override
+      public void changedUpdate(DocumentEvent arg0) {
+        textComponent.removeFocusListener(focusListener);
+      }
     });
+    textComponent.addFocusListener(focusListener);
     return new Runnable() {
       @Override
       public void run() {
