@@ -80,6 +80,9 @@ class TaskMoveEnabledPredicate implements Predicate<List<Task>> {
         if (moveTarget == null) {
           return false;
         }
+        if (moveTarget.isMilestone()) {
+          return false;
+        }
         dependencyGraph.move(task, moveTarget);
       }
     } catch (TaskDependencyException e) {
