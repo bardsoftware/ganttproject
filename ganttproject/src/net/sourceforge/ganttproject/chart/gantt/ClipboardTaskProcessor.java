@@ -126,9 +126,16 @@ public class ClipboardTaskProcessor {
   }
 
   private Task copyAndInsert(Task task, Task newContainer, Task prevSibling, Map<Task, Task> original2copy, ClipboardContents clipboardContents) {
-    TaskBuilder builder = myTaskManager.newTaskBuilder().withPrototype(task).withParent(newContainer).withPrevSibling(prevSibling);
-    String newName = MessageFormat.format(myTaskManager.getTaskCopyNamePrefixOption().getValue(), GanttLanguage.getInstance().getText("copy2"), task.getName());
-    builder = builder.withName(newName);
+    TaskBuilder builder = myTaskManager.newTaskBuilder()
+        .withPrototype(task)
+        .withParent(newContainer)
+        .withPrevSibling(prevSibling);
+    if (clipboardContents.isCut()) {
+      builder = builder.withId(task.getTaskID()).withName(task.getName());
+    } else {
+      String newName = MessageFormat.format(myTaskManager.getTaskCopyNamePrefixOption().getValue(), GanttLanguage.getInstance().getText("copy2"), task.getName());
+      builder = builder.withName(newName);
+    }
     Task result = builder.build();
     original2copy.put(task, result);
     Task anchor = null;

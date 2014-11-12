@@ -132,11 +132,8 @@ class GPTreeTransferHandler extends TransferHandler {
         }
       });
       return true;
-    } catch (UnsupportedFlavorException | IOException e) {
+    } catch (UnsupportedFlavorException | IOException | RuntimeException e) {
       GPLogger.logToLogger(e);
-      return false;
-    } catch (RuntimeException e) {
-      e.printStackTrace();
       return false;
     }
   }
@@ -150,8 +147,9 @@ class GPTreeTransferHandler extends TransferHandler {
 
     @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-      if (!isDataFlavorSupported(flavor))
+      if (!isDataFlavorSupported(flavor)) {
         throw new UnsupportedFlavorException(flavor);
+      }
       return myClipboardContents;
     }
 
