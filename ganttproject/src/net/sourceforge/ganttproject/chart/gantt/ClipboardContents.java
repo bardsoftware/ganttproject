@@ -60,6 +60,7 @@ public class ClipboardContents {
   private final List<ResourceAssignment> myAssignments = Lists.newArrayList();
   private final Multimap<Task, Task> myNestedTasks = LinkedHashMultimap.create();
   private final TaskManager myTaskManager;
+  private boolean isCut;
 
   public ClipboardContents(TaskManager taskManager) {
     myTaskManager = taskManager;
@@ -158,6 +159,7 @@ public class ClipboardContents {
    */
   public void cut() {
     build();
+    isCut = true;
     for (Task t : getTasks()) {
       myAssignments.addAll(Arrays.asList(t.getAssignments()));
       myTaskManager.deleteTask(t);
@@ -170,7 +172,12 @@ public class ClipboardContents {
    */
   public void copy() {
     build();
+    isCut = false;
     // Nothing needs to be done, actually, in addition to what build() already does
+  }
+
+  public boolean isCut() {
+    return isCut;
   }
 
   public Collection<Task> getNestedTasks(Task task) {
