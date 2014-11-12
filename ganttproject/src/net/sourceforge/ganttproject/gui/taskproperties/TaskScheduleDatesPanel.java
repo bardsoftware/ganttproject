@@ -71,10 +71,10 @@ public class TaskScheduleDatesPanel {
   private GanttCalendar myEnd;
 
   private Task myUnpluggedClone;
-  private static final BooleanOption ourStartDateLock = new DefaultBooleanOption("", true);
-  private static final BooleanOption ourEndDateLock = new DefaultBooleanOption("", false);
+  private static final BooleanOption ourStartDateLock = new DefaultBooleanOption("", false);
+  private static final BooleanOption ourEndDateLock = new DefaultBooleanOption("", true);
   private static final BooleanOption ourDurationLock = new DefaultBooleanOption("", false);
-  private static BooleanOption ourPrevLock = ourStartDateLock;
+  private static BooleanOption ourPrevLock = ourEndDateLock;
   private final UIFacade myUiFacade;
   private JXHyperlink myLockHyperlink;
   private boolean isMilestone;
