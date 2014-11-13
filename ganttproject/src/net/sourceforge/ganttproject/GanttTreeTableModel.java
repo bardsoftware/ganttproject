@@ -34,7 +34,6 @@ import javax.swing.event.TableColumnModelListener;
 
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
@@ -284,7 +283,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = Joiner.on(',').join(depids);
         break;
       case ID:
-        res = new Integer(t.getTaskID());
+        res = t.getTaskID();
         break;
       case OUTLINE_NUMBER:
         List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
