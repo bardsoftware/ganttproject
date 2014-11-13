@@ -18,17 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.text.NumberFormat;
 import java.util.List;
 
 import javax.swing.DropMode;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 
 import com.google.common.base.Supplier;
@@ -47,6 +52,10 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  */
 public class GanttTreeTable extends GPTreeTableBase {
   private final UIFacade myUIfacade;
+  private static final NumberFormat ID_FORMAT = (NumberFormat) NumberFormat.getIntegerInstance().clone();
+  static {
+    ID_FORMAT.setGroupingUsed(false);
+  }
 
   GanttTreeTable(IGanttProject project, final UIFacade uifacade, GanttTreeTableModel model) {
     super(project, uifacade, project.getTaskCustomColumnManager(), model);
@@ -90,7 +99,18 @@ public class GanttTreeTable extends GPTreeTableBase {
     VscrollAdjustmentListener vscrollListener = new VscrollAdjustmentListener(myUIfacade.getGanttChart(), true);
     getVerticalScrollBar().addAdjustmentListener(vscrollListener);
     myUIfacade.getGanttChart().setVScrollController(vscrollListener);
-
+    TableCellRenderer idRenderer = new DefaultTableCellRenderer() {
+      @Override
+      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+          int row, int column) {
+        if (value instanceof Integer) {
+          value = ID_FORMAT.format((Integer) value);
+        }
+        return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+      }
+    };
+    getTableHeaderUiFacade().findColumnByID(TaskDefaultColumn.ID.getStub().getID())
+        .getTableColumnExt().setCellRenderer(idRenderer);
   }
 
   void centerViewOnSelectedCell() {
@@ -104,12 +124,6 @@ public class GanttTreeTable extends GPTreeTableBase {
     getScrollPane().getViewport().scrollRectToVisible(rect);
   }
 
-  /**
-   * This class repaints the GraphicArea and the table every time the table
-   * model has been modified. TODO Add the refresh functionality when available.
-   *
-   * @author Benoit Baranne
-   */
   private class ModelListener implements TableModelListener {
     @Override
     public void tableChanged(TableModelEvent e) {
