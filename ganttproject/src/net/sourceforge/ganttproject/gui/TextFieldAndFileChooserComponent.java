@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,11 +37,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
+
+import com.google.common.base.Objects;
 
 /**
  * @author bard
@@ -57,7 +60,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
   private final String myDialogCaption;
 
-  private int myFileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES;
+  private int myFileSelectionMode = JFileChooser.FILES_ONLY;
 
   private boolean myProcessTextEventEnabled = true;
 
@@ -194,11 +197,12 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 
     File selectedFile = getFile();
     fc.setCurrentDirectory(selectedFile == null ? getWorkingDir() : selectedFile.getParentFile());
+    fc.setDialogType(JFileChooser.SAVE_DIALOG);
     fc.setDialogTitle(myDialogCaption);
     fc.setControlButtonsAreShown(false);
     fc.setApproveButtonToolTipText(myDialogCaption);
-    fc.setFileSelectionMode(myFileSelectionMode);
-
+//    fc.setFileSelectionMode(myFileSelectionMode);
+//
     // Remove the possibility to use a file filter for all files
     FileFilter[] filefilters = fc.getChoosableFileFilters();
     for (int i = 0; i < filefilters.length; i++) {
@@ -206,17 +210,21 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
     }
 
     fc.addChoosableFileFilter(myFileFilter);
+    for (FileFilter ff : filefilters) {
+      fc.addChoosableFileFilter(ff);
+    }
     fc.doLayout();
 
-    fc.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        File f = (File) evt.getNewValue();
-        if (f != null) {
-          setFile(f);
-        }
-      }
-    });
+//    fc.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, new PropertyChangeListener() {
+//      @Override
+//      public void propertyChange(PropertyChangeEvent evt) {
+//        File f = (File) evt.getNewValue();
+//        if (f != null) {
+//          setFile(f);
+//        }
+//      }
+//    });
+//
     // myChooserPanel.add(fc, BorderLayout.CENTER);
     // Timeline t = new Timeline(this);
     // t.addPropertyToInterpolate("chooserHeight", 0,
@@ -226,10 +234,41 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
     Action[] dialogActions = new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        setFile(fc.getSelectedFile());
+        File selected = fc.getSelectedFile();
+        if (selected == null || Objects.equal(selected, fc.getCurrentDirectory())) {
+          JTextComponent textField = getTextField(fc);
+          if (textField != null) {
+            String filename = textField.getText();
+            File currentDirectory = fc.getCurrentDirectory();
+            selected = new File(currentDirectory, filename);
+          }
+        }
+        setFile(selected);
         onFileChosen(myFile);
       }
+
+      private JTextComponent getTextField(Container container) {
+        JTextComponent result = null;
+        for (Component c : container.getComponents()) {
+          if (c instanceof JTextComponent) {
+            result = (JTextComponent) c;
+            return result;
+          }
+          if (c instanceof Container) {
+            result = getTextField((Container) c);
+          }
+          if (result != null) {
+            return result;
+          }
+        }
+        return null;
+      }
     }, CancelAction.EMPTY };
+//    int result = fc.showSaveDialog(myUiFacade.getMainFrame());
+//    if (result == JFileChooser.APPROVE_OPTION) {
+//      setFile(fc.getSelectedFile());
+//      onFileChosen(myFile);
+//    }
     myUiFacade.createDialog(fc, dialogActions, "").show();
   }
 

@@ -76,7 +76,7 @@ public abstract class FileChooserPageBase implements WizardPage {
   private int ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
   private final WizardImpl myWizard;
   private final boolean isUrlChooserEnabled;
-  private final JLabel myFileLabel = new JLabel(" ");
+  private final JLabel myFileLabel = new JLabel("");
   private final JLabel myUrlLabel = new JLabel(" ");
   private final Preferences myPreferences;
 
