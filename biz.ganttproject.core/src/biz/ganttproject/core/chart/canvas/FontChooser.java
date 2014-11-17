@@ -42,14 +42,18 @@ public class FontChooser {
     myBaseFont = chartBaseFont;
   }
 
-  public void decreaseBaseFontSize() {
+  public int decreaseBaseFontSize() {
     Map<String, Font> newFonts = new HashMap<String, Font>();
+    int minSize = Integer.MAX_VALUE;
     for (String style : myFonts.keySet()) {
       Font f = myFonts.get(style);
-      f = f.deriveFont(f.getSize() - 1f);
+      float newSize = f.getSize() - 1f;
+      f = f.deriveFont(newSize);
       newFonts.put(style, f);
+      minSize = Math.min(minSize, (int)newSize);
     }
     myFonts = newFonts;
+    return minSize;
   }
 
   public int getMarginTop(String style) {

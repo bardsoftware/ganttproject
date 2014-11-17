@@ -448,8 +448,12 @@ public class Canvas {
     }
 
     public void setFonts(FontChooser fontChooser) {
-      while (getTotalHeight(fontChooser, myBaselines) > myHeight) {
-        fontChooser.decreaseBaseFontSize();
+      for (int totalHeight = getTotalHeight(fontChooser, myBaselines); totalHeight > myHeight;
+          totalHeight = getTotalHeight(fontChooser, myBaselines)) {
+        int baseSize = fontChooser.decreaseBaseFontSize();
+        if (baseSize < 8) {
+          break;
+        }
       }
       for (String style : myLineStyles) {
         myFonts.add(fontChooser.getFont(style));
