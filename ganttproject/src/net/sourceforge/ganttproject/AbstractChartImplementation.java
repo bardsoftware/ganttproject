@@ -28,11 +28,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -46,7 +47,6 @@ import javax.swing.JLayer;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.LayerUI;
-import javax.swing.table.JTableHeader;
 
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -449,16 +449,36 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   private Integer myCachedHeaderHeight = null;
-  public int getHeaderHeight(JComponent tableContainer, JTable table) {
-    JTableHeader tableHeader = table.getTableHeader();
+  public int getHeaderHeight(final JComponent tableContainer, final JTable table) {
     if (myCachedHeaderHeight == null) {
-      Point headerLocation = tableHeader.getLocationOnScreen();
-      Point treeLocation = tableContainer.getLocationOnScreen();
+      tableContainer.addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentMoved(ComponentEvent e) {
+          myCachedHeaderHeight = null;
+          tableContainer.removeComponentListener(this);
+        }
+        @Override
+        public void componentResized(ComponentEvent e) {
+          myCachedHeaderHeight = null;
+          tableContainer.removeComponentListener(this);
+        }
+      });
+      table.addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentMoved(ComponentEvent e) {
+          myCachedHeaderHeight = null;
+          table.removeComponentListener(this);
+        }
+        @Override
+        public void componentResized(ComponentEvent e) {
+          myCachedHeaderHeight = null;
+          table.removeComponentListener(this);
+        }
+      });
+      Point tableLocation = table.getLocationOnScreen();
+      Point containerLocation = tableContainer.getLocationOnScreen();
 
-      int height = headerLocation.y - treeLocation.y + tableHeader.getHeight() + myUiFacade.getLogo().getHeight(null);
-      if (tableHeader.getHeight() == 0) {
-        return height;
-      }
+      int height = tableLocation.y - containerLocation.y + myUiFacade.getLogo().getHeight(null);
       myCachedHeaderHeight = height;
     }
     return myCachedHeaderHeight;
