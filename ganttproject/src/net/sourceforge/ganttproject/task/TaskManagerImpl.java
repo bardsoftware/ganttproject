@@ -71,6 +71,7 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgori
 import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollectionImpl;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
@@ -232,6 +233,13 @@ public class TaskManagerImpl implements TaskManager {
       protected TaskContainmentHierarchyFacade getTaskHierarchy() {
         return TaskManagerImpl.this.getTaskHierarchy();
       }
+
+      @Override
+      protected Hardness getDefaultHardness() {
+        String optionValue = getDependencyHardnessOption().getValue();
+        return optionValue == null ? super.getDefaultHardness() : TaskDependency.Hardness.parse(optionValue);
+      }
+
     };
     myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
     // clear();
