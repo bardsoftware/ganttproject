@@ -173,7 +173,7 @@ public class GanttLanguage {
   public void setShortDateFormat(SimpleDateFormat dateFormat) {
     shortCurrentDateFormat = dateFormat;
     UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
-
+    fireLanguageChanged();
   }
 
   public void setLocale(Locale locale) {
