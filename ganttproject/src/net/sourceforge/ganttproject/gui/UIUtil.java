@@ -70,6 +70,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.jdesktop.swingx.JXDatePicker;
@@ -460,10 +461,10 @@ public abstract class UIUtil {
   }
 
   public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
-    return new GPDateCellEditor(project, showDatePicker, null, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    return new GPDateCellEditor(project, showDatePicker, null, GanttLanguage.getInstance().getShortDateFormat());
   }
 
-  public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener {
+  public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener, GanttLanguage.Listener {
     private Date myDate;
     private final JXDatePicker myDatePicker;
     private final boolean myShowDatePicker;
@@ -476,6 +477,7 @@ public abstract class UIUtil {
         parseValidator = UIUtil.createStringDateValidator(null, dateFormats);
       }
       UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
+      GanttLanguage.getInstance().addListener(this);
     }
 
     @Override
@@ -506,6 +508,10 @@ public abstract class UIUtil {
     @Override
     public void actionPerformed(ActionEvent e) {
       stopCellEditing();
+    }
+
+    public void languageChanged(Event event) {
+      myDatePicker.setFormats(GanttLanguage.getInstance().getShortDateFormat());
     }
   }
 
