@@ -92,9 +92,12 @@ public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
   @Override
   public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
       throws TaskDependencyException {
-    return createDependency(dependant, dependee, constraint, TaskDependency.Hardness.STRONG);
+    return createDependency(dependant, dependee, constraint, getDefaultHardness());
   }
 
+  protected TaskDependency.Hardness getDefaultHardness() {
+    return TaskDependency.Hardness.STRONG;
+  }
   @Override
   public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint,
       Hardness hardness) throws TaskDependencyException {
