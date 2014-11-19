@@ -138,6 +138,9 @@ public class TextPainter {
     Font savedFont = myGraphics.getFont();
     Color savedColor = myGraphics.getColor();
 
+    if (textGroup.getFont(lineNum) == null) {
+      return;
+    }
     myGraphics.setFont(textGroup.getFont(lineNum));
     myGraphics.setColor(textGroup.getColor(lineNum));
 

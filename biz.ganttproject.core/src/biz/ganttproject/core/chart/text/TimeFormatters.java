@@ -41,6 +41,11 @@ public class TimeFormatters {
     public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
       return EMPTY_TEXT;
     }
+
+    @Override
+    public int getTextCount() {
+      return 1;
+    }
   };
 
   public TimeFormatters(LocaleApi localeApi) {

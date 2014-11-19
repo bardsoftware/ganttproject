@@ -40,6 +40,9 @@ public abstract class CachingTextFormatter {
     myTextCache.clear();
   }
 
+  public int getTextCount() {
+    return 1;
+  }
   protected abstract TimeUnitText[] createTimeUnitText(Date adjustedLeft);
 
 }
