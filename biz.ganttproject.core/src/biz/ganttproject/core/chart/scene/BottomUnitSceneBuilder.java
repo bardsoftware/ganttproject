@@ -60,19 +60,31 @@ public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
     if (xpos > 0) {
       xpos = 0;
     }
-    TextGroup textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
-        myInputApi.getTopLineHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
+    TimeFormatter formatter = null;
+    TextGroup textGroup = null;
+    
     for (Offset offset : bottomOffsets) {
       renderScaleMark(offset, prevOffset);
-      renderLabel(textGroup, xpos, offset.getOffsetStart(), offset);
+      if (formatter == null) {
+        formatter = myInputApi.getFormatter(offset.getOffsetUnit(), TimeUnitText.Position.LOWER_LINE); 
+      }
+      if (textGroup == null) {
+        if (formatter.getTextCount() == 1) {
+          textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
+              myInputApi.getTopLineHeight(), "timeline.bottom.label");      
+        } else {
+          textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
+              myInputApi.getTopLineHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
+        }
+      }
+      renderLabel(textGroup, xpos, offset.getOffsetStart(), offset, formatter);
       prevOffset = offset;
       xpos = prevOffset.getOffsetPixels();
     }
   }
 
-  private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset) {
+  private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset, TimeFormatter formatter) {
     final int maxWidth = curOffset.getOffsetPixels() - curX;
-    TimeFormatter formatter = myInputApi.getFormatter(curOffset.getOffsetUnit(), TimeUnitText.Position.LOWER_LINE);
     TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
     for (int i = 0; i < texts.length; i++) {
       final TimeUnitText timeUnitText = texts[i];

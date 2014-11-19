@@ -57,19 +57,31 @@ public class FontChooser {
   }
 
   public int getMarginTop(String style) {
+    if ("hidden".equalsIgnoreCase(myProperties.getProperty(style + ".visibility"))) {
+      return 0;
+    }
     return Integer.parseInt(myProperties.getProperty(style + ".margin-top", "0"));
   }
 
   public int getTextHeight(String style) {
+    if ("hidden".equalsIgnoreCase(myProperties.getProperty(style + ".visibility"))) {
+      return 0;
+    }
     Font f = getFont(style);
     return myCalculator.getTextHeight(f, "A");
   }
 
   public int getMarginBottom(String style) {
+    if ("hidden".equalsIgnoreCase(myProperties.getProperty(style + ".visibility"))) {
+      return 0;
+    }
     return Integer.parseInt(myProperties.getProperty(style + ".margin-bottom", "0"));
   }
 
   public Font getFont(String style) {
+    if ("hidden".equalsIgnoreCase(myProperties.getProperty(style + ".visibility"))) {
+      return null;
+    }
     Font f = myFonts.get(style);
     if (f == null) {      
       String propValue = Strings.nullToEmpty(myProperties.getProperty(style + ".font")).trim();

@@ -24,4 +24,6 @@ import biz.ganttproject.core.time.TimeUnit;
 
 public interface TimeFormatter {
   TimeUnitText[] format(TimeUnit timeUnit, Date baseDate);
+
+  int getTextCount();
 }

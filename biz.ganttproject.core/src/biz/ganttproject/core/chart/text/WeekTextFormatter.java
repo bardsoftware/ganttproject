@@ -62,4 +62,8 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
     myWeekText = localeApi.i18n("week");
   }
 
+  @Override
+  public int getTextCount() {
+    return 2;
+  }
 }
