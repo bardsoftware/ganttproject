@@ -25,6 +25,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import com.google.common.base.Supplier;
@@ -41,6 +42,8 @@ import biz.ganttproject.core.chart.render.LineRenderer;
 import biz.ganttproject.core.chart.render.PolygonRenderer;
 import biz.ganttproject.core.chart.render.RectangleRenderer;
 import biz.ganttproject.core.chart.render.TextPainter;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 
 /**
  * Implements styled painters for the available primitives (see
@@ -103,6 +106,14 @@ public class StyledPainterImpl implements Painter {
 
     myProperties = new Properties();
     PropertiesUtil.loadProperties(myProperties, "/chart.properties");
+    config.getChartStylesOption().addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        for (Entry<String, String> entry : config.getChartStylesOption().getValues()) {
+          myProperties.put(entry.getKey(), entry.getValue());
+        }
+      }
+    });
     myTextPainter = new TextPainter(myProperties, new Supplier<Font>() {
       public Font get() {
         return config.getChartFont();

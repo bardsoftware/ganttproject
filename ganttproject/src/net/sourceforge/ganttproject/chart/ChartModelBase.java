@@ -299,7 +299,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
-        new GPOption[] { myChartFontOption, projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption() },
+        new GPOption[] { myChartFontOption, projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
+          myChartUIConfiguration.getChartStylesOption()},
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
