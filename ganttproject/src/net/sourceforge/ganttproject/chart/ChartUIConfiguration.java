@@ -20,9 +20,19 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
-
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.ListOption;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 
@@ -63,6 +73,78 @@ public class ChartUIConfiguration {
 
   private int myBaseFontSize;
 
+  private ChartPropertiesOption myChartStylesOption;
+
+  private static class ChartPropertiesOption extends GPAbstractOption<Map.Entry<String, String>> implements ListOption<Map.Entry<String, String>> {
+    private static final Function<Entry<String, String>, String> ENTRY_TO_KEY_VALUE = new Function<Entry<String, String>, String>() {
+      @Override
+      public String apply(Entry<String, String> entry) {
+        return String.format("%s = %s", entry.getKey(), entry.getValue());
+      }
+    };
+    private Map<String, String> myMap = Maps.newHashMap();
+
+    public ChartPropertiesOption() {
+      super("chart.styles");
+      setHasUi(false);
+    }
+
+    @Override
+    public String getPersistentValue() {
+      return "\n" + Joiner.on('\n').join(Iterables.transform(getValues(), ENTRY_TO_KEY_VALUE)) + "\n";
+    }
+
+    @Override
+    public void loadPersistentValue(String value) {
+      myMap.clear();
+      for (String line : value.split("\n")) {
+        String[] keyValue = line.split("=");
+        if (keyValue.length < 2) {
+          continue;
+        }
+        myMap.put(keyValue[0].trim(), keyValue[1].trim());
+      }
+      fireChangeValueEvent(new ChangeValueEvent(getID(), null, null, this));
+    }
+
+    @Override
+    public void setValues(Iterable<Entry<String, String>> values) {
+      for (Entry<String, String> e : values) {
+        myMap.put(e.getKey(), e.getValue());
+      }
+    }
+
+    @Override
+    public Iterable<Entry<String, String>> getValues() {
+      return myMap.entrySet();
+    }
+
+    @Override
+    public void setValueIndex(int idx) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addValue(Entry<String, String> value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateValue(Entry<String, String> oldValue, Entry<String, String> newValue) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void removeValueIndex(int idx) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EnumerationOption asEnumerationOption() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
   ChartUIConfiguration(UIConfiguration projectConfig) {
     mySpanningRowTextFont = Fonts.TOP_UNIT_FONT;
     mySpanningHeaderBackgroundColor = new Color(0.93f, 0.93f, 0.93f);
@@ -73,8 +155,12 @@ public class ChartUIConfiguration {
     // myHeaderBorderColor = new Color(0f, 1f, 0f);
     myBottomUnitGridColor = new Color(0.482f, 0.482f, 0.482f);
     myProjectConfig = projectConfig;
+    myChartStylesOption = new ChartPropertiesOption();
   }
 
+  ListOption<Map.Entry<String, String>> getChartStylesOption() {
+    return myChartStylesOption;
+  }
   Font getSpanningHeaderFont() {
     return mySpanningRowTextFont;
   }
