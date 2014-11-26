@@ -5,18 +5,24 @@
 package net.sourceforge.ganttproject.document;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Comparator;
-
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.core.table.ColumnList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
@@ -25,6 +31,14 @@ import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.time.CalendarFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * This is a helper class, to create new instances of Document easily. It
@@ -33,6 +47,8 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
+  private static final ExecutorService ourExecutor = Executors.newSingleThreadExecutor();
+
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
@@ -45,6 +61,7 @@ public class DocumentCreator implements DocumentManager {
   private final GPOptionGroup myOptionGroup;
 
   private final GPOptionGroup myWebDavOptionGroup;
+  private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
@@ -137,13 +154,80 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newAutosaveDocument() throws IOException {
-    File tempFile = createAutosaveFile();
-    // tempFile.deleteOnExit();
+    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan");
     return getDocument(tempFile.getAbsolutePath());
   }
 
-  private File createAutosaveFile() throws IOException {
-    return File.createTempFile("_ganttproject_autosave", ".gan");
+  public static void startAutosaveCleanup() {
+    long now = CalendarFactory.newCalendar().getTimeInMillis();
+    final File tempDir = getTempDir();
+    final long cutoff;
+    try {
+      File optionsFile = GanttOptions.getOptionsFile();
+      BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
+      FileTime accessTime = attrs.lastAccessTime();
+      cutoff = Math.min(accessTime.toMillis(), now);
+    } catch (IOException e) {
+      GPLogger.log(e);
+      return;
+    }
+    ourExecutor.submit(new Runnable() {
+      @Override
+      public void run() {
+        deleteAutosaves();
+      }
+
+      private void deleteAutosaves() {
+        // Let's find autosaves created before launch of this GP instance
+        File[] previousAutosaves = tempDir.listFiles(new FileFilter() {
+          @Override
+          public boolean accept(File file) {
+            return file.getName().startsWith("_ganttproject_autosave") && file.lastModified() < cutoff;
+          }
+        });
+        for (File f : previousAutosaves) {
+          f.deleteOnExit();
+        }
+      }
+    });
+  }
+
+  private FileSystem getAutosaveZipFs() {
+    try {
+      File tempDir = getTempDir();
+      if (tempDir == null) {
+        return null;
+      }
+      File autosaveFile = new File(tempDir, "_ganttproject_autosave.zip");
+      if (autosaveFile.exists() && !autosaveFile.canWrite()) {
+        myLogger.warning(String.format(
+            "Autosave file %s is not writable", autosaveFile.getAbsolutePath()));
+        return null;
+      }
+      URI uri = new URI("jar:file:" + autosaveFile.toURI().getPath());
+      return FileSystems.newFileSystem(uri, ImmutableMap.<String, Object>of("create", "true"));
+    } catch (Throwable e) {
+      myLogger.log(Level.SEVERE, "Failure when creating ZIP FS for autosaves", e);
+      return null;
+    }
+  }
+
+  private static File getTempDir() {
+    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
+      return tempDir;
+    }
+    try {
+      File tempFile = File.createTempFile("_ganttproject_autosave", ".empty");
+      tempDir = tempFile.getParentFile();
+      if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
+        return tempDir;
+      }
+    } catch (IOException e) {
+      GPLogger.getLogger(DocumentManager.class).log(Level.WARNING, "Can't get parent of the temp file", e);
+    }
+    GPLogger.getLogger(DocumentManager.class).warning("Failed to find temporary directory");
+    return null;
   }
 
   @Override

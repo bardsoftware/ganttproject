@@ -75,6 +75,7 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -824,6 +825,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return false;
     }
 
+    DocumentCreator.startAutosaveCleanup();
     GanttSplash splash = new GanttSplash();
     try {
       splash.setVisible(true);

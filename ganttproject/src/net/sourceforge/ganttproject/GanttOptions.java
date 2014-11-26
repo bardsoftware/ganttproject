@@ -180,18 +180,20 @@ public class GanttOptions extends SaverBase {
     csvOptions = new CSVOptions();
   }
 
+  public static File getOptionsFile() {
+    return new File(System.getProperty("user.home") + System.getProperty("file.separator") + ".ganttproject");
+  }
   /**
    * Save the options file
    */
   public void save() {
     try {
-      String sFileName = ".ganttproject";
-
+      File file = getOptionsFile();
       // if (System.getProperty("os.name").startsWith("Windows")
       // || System.getProperty("os.name").startsWith("Mac"))
       // sFileName = "ganttproject.ini";
 
-      File file = new File(System.getProperty("user.home") + System.getProperty("file.separator") + sFileName);
+
       // DataOutputStream fout = new DataOutputStream(new
       // FileOutputStream(file));
       final TransformerHandler handler = ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();
