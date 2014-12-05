@@ -24,7 +24,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -56,14 +58,21 @@ public class GanttProjectImpl implements IGanttProject {
   private UIConfiguration myUIConfiguration;
   private final CustomColumnsManager myTaskCustomColumnManager;
   private final List<GanttPreviousState> myBaselines = new ArrayList<GanttPreviousState>();
+  private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   public GanttProjectImpl() {
     myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
         new CustomColumnsManager());
-    myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, GanttLanguage.getInstance());
+    myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, myCalendar, GanttLanguage.getInstance());
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
     myUIConfiguration = new UIConfiguration(Color.BLUE, true);
     myTaskCustomColumnManager = new CustomColumnsManager();
+    myCalendar.addListener(new GPCalendarListener() {
+      @Override
+      public void onCalendarChange() {
+        setModified();
+      }
+    });
   }
 
   @Override
@@ -211,12 +220,12 @@ public class GanttProjectImpl implements IGanttProject {
   private static class TaskManagerConfigImpl implements TaskManagerConfig {
     private final HumanResourceManager myResourceManager;
     private final GPTimeUnitStack myTimeUnitStack;
-    private final WeekendCalendarImpl myCalendar;
+    private final GPCalendarCalc myCalendar;
 
-    private TaskManagerConfigImpl(HumanResourceManager resourceManager, GanttLanguage i18n) {
+    private TaskManagerConfigImpl(HumanResourceManager resourceManager, GPCalendarCalc calendar, GanttLanguage i18n) {
       myResourceManager = resourceManager;
       myTimeUnitStack = new GPTimeUnitStack();
-      myCalendar = new WeekendCalendarImpl();
+      myCalendar = calendar;
     }
 
     @Override

@@ -107,6 +107,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -173,11 +174,32 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private RowHeightAligner myRowHeightAligner;
 
+  public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
+
+  public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
+
+  private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
+
+  private ParserFactory myParserFactory;
+
+  private HumanResourceManager myHumanResourceManager;
+
+  private RoleManager myRoleManager;
+
+  private static WindowListener ourWindowListener;
+
+
   public GanttProject(boolean isOnlyViewer) {
     System.err.println("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
+    myCalendar.addListener(new GPCalendarListener() {
+      @Override
+      public void onCalendarChange() {
+        GanttProject.this.setModified();
+      }
+    });
     Mediator.registerTaskSelectionManager(getTaskSelectionManager());
 
     this.isOnlyViewer = isOnlyViewer;
@@ -863,20 +885,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       });
     }
   }
-
-  public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
-
-  public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
-
-  private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
-
-  private ParserFactory myParserFactory;
-
-  private HumanResourceManager myHumanResourceManager;
-
-  private RoleManager myRoleManager;
-
-  private static WindowListener ourWindowListener;
 
   // ///////////////////////////////////////////////////////
   // IGanttProject implementation
