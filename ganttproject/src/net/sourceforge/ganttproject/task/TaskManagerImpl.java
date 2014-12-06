@@ -363,7 +363,9 @@ public class TaskManagerImpl implements TaskManager {
         } else if (myPrototype != null) {
           duration = myPrototype.getDuration();
         } else {
-          duration = (myEndDate == null) ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f) : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
+          duration = (myEndDate == null)
+              ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f)
+                  : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
         }
         task.setDuration(duration);
 

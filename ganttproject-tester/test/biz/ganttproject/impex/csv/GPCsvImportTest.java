@@ -21,6 +21,7 @@ package biz.ganttproject.impex.csv;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -84,6 +85,7 @@ public class GPCsvImportTest extends TestCase {
         return GanttLanguage.getInstance().getText(key);
       }
     });
+    GanttLanguage.getInstance().setShortDateFormat(new SimpleDateFormat("dd/MM/yy"));
   }
 
   public void testImportAssignments() throws Exception {
@@ -96,7 +98,8 @@ public class GPCsvImportTest extends TestCase {
 
     String header2 = "Name,ID,e-mail,Phone,Default role";
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)), taskManager, resourceManager);
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
+        taskManager, resourceManager, builder.getTimeUnitStack());
     importer.load();
 
     Map<String, Task> taskMap = buildTaskMap(taskManager);
@@ -112,13 +115,37 @@ public class GPCsvImportTest extends TestCase {
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
   }
 
+  public void testImportResourceRole() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+    HumanResourceManager resourceManager = builder.getResourceManager();
+
+    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String data1 = "";
+
+    String header2 = "Name,ID,Default role";
+    String data2 = "Joe,1,Default:1";
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
+        taskManager, resourceManager, builder.getTimeUnitStack());
+    importer.load();
+
+    Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+      @Override
+      public String apply(HumanResource input) {
+        return input.getName();
+      }
+    });
+    assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+  }
+
   public void testCustomFields() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
     String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
     String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)), taskManager, null);
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
+        taskManager, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     Task t1 = taskMap.get("t1");
@@ -142,7 +169,8 @@ public class GPCsvImportTest extends TestCase {
     String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
     String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3)), taskManager, null);
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3)),
+        taskManager, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     Task t1 = taskMap.get("t1");
@@ -161,7 +189,8 @@ public class GPCsvImportTest extends TestCase {
     String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2)), taskManager, null);
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2)),
+        taskManager, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     Task t1 = taskMap.get("t1");
@@ -181,7 +210,8 @@ public class GPCsvImportTest extends TestCase {
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)), taskManager, null);
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
+        taskManager, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
@@ -195,4 +225,19 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(t1, hierarchy.getContainer(t3));
     assertEquals(t1, hierarchy.getContainer(t2));
   }
+
+  public void testUseEndDateInsteadOfDuration() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,End date";
+    String data1 = "1,t1,23/07/12,26/07/12";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
+        taskManager, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+  }
+
 }
