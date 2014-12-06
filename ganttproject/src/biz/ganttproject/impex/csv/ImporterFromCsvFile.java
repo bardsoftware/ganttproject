@@ -61,7 +61,7 @@ public class ImporterFromCsvFile extends ImporterBase {
   public void run() {
     File selectedFile = getFile();
     BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
-    GanttCSVOpen opener = new GanttCSVOpen(selectedFile, bufferProject.getTaskManager(), bufferProject.getHumanResourceManager());
+    GanttCSVOpen opener = new GanttCSVOpen(selectedFile, bufferProject.getTaskManager(), bufferProject.getHumanResourceManager(), bufferProject.getTimeUnitStack());
     try {
       opener.load();
       ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, null);

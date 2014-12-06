@@ -43,6 +43,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import biz.ganttproject.core.time.TimeUnitStack;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -87,11 +89,12 @@ public class GanttCSVOpen {
     }
   }
 
-  public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager, final HumanResourceManager resourceManager) {
-    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager), createResourceRecordGroup(resourceManager));
+  public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager,
+      final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
+    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack), createResourceRecordGroup(resourceManager));
   }
 
-  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager) {
+  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
     this(new Supplier<Reader>() {
       @Override
       public Reader get() {
@@ -101,11 +104,12 @@ public class GanttCSVOpen {
           throw new RuntimeException(e);
         }
       }
-    }, taskManager, resourceManager);
+    }, taskManager, resourceManager, timeUnitStack);
   }
 
-  private static RecordGroup createTaskRecordGroup(final TaskManager taskManager, final HumanResourceManager resourceManager) {
-    return new TaskRecords(taskManager, resourceManager);
+  private static RecordGroup createTaskRecordGroup(final TaskManager taskManager,
+      final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
+    return new TaskRecords(taskManager, resourceManager, timeUnitStack);
   }
 
   protected static void createCustomProperties(Collection<String> customFields, CustomPropertyManager customPropertyManager) {

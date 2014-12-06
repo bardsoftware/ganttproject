@@ -21,6 +21,7 @@ package biz.ganttproject.impex.csv;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import org.apache.commons.csv.CSVRecord;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.time.TimeUnitStack;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -71,24 +73,26 @@ class TaskRecords extends RecordGroup {
       return GanttLanguage.getInstance().getText(text);
     }
   }
-  private Map<Task, String> myAssignmentMap = Maps.newHashMap();
-  private Map<Task, String> myPredecessorMap = Maps.newHashMap();
-  private SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
+  private final Map<Task, String> myAssignmentMap = Maps.newHashMap();
+  private final Map<Task, String> myPredecessorMap = Maps.newHashMap();
+  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
     @Override
     public int compare(String s1, String s2) {
       return - (s1.compareTo(s2));
     }
   });
-  private Map<String, Task> myTaskIdMap = Maps.newHashMap();
-  private TaskManager taskManager;
-  private HumanResourceManager resourceManager;
+  private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
+  private final TaskManager taskManager;
+  private final HumanResourceManager resourceManager;
+  private final TimeUnitStack myTimeUnitStack;
 
-  TaskRecords(TaskManager taskManager, HumanResourceManager resourceManager) {
+  TaskRecords(TaskManager taskManager, HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
     super("Task group",
       Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.values())),
       Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.NAME, TaskFields.BEGIN_DATE)));
     this.taskManager = taskManager;
     this.resourceManager = resourceManager;
+    myTimeUnitStack = timeUnitStack;
   }
 
   @Override
@@ -114,10 +118,15 @@ class TaskRecords extends RecordGroup {
     if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
       builder = builder.withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())));
     }
-    if (record.isSet(TaskFields.END_DATE.toString()) && record.isSet(TaskDefaultColumn.DURATION.getName())) {
-      if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
-          && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
-        builder = builder.withLegacyMilestone();
+    if (record.isSet(TaskFields.END_DATE.toString())) {
+      if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
+        if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
+            && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
+          builder = builder.withLegacyMilestone();
+        }
+      } else {
+        Date endDate = GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.END_DATE.toString()));
+        builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
       }
     }
     if (record.isSet(TaskFields.COMPLETION.toString())) {
