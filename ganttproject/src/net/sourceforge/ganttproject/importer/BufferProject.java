@@ -30,6 +30,9 @@ import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import biz.ganttproject.core.table.ColumnList;
 
@@ -46,6 +49,7 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   final UIFacade myUIfacade;
   private final ColumnList myVisibleFields = new VisibleFieldsImpl();
   final ColumnList myResourceVisibleFields = new VisibleFieldsImpl();
+  private final HumanResourceManager myBufferResourceManager;
 
   public BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
     myDocumentManager = new DocumentCreator(this, uiFacade, this) {
@@ -60,6 +64,8 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
     };
     myTaskManager = targetProject.getTaskManager().emptyClone();
     myUIfacade = uiFacade;
+    myBufferResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
+        new CustomColumnsManager(), targetProject.getRoleManager());
   }
 
   public ColumnList getVisibleFields() {
@@ -90,4 +96,11 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   public CustomPropertyManager getTaskCustomColumnManager() {
     return myTaskManager.getCustomPropertyManager();
   }
+
+  @Override
+  public HumanResourceManager getHumanResourceManager() {
+    return myBufferResourceManager;
+  }
+
+
 }
