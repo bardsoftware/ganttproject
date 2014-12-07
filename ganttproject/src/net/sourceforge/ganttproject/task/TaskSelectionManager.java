@@ -20,15 +20,18 @@ package net.sourceforge.ganttproject.task;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import com.google.common.base.Supplier;
 
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 
 /**
  * This class manages the selected tasks.
- * 
+ *
  * @author bbaranne
  */
 public class TaskSelectionManager implements TaskSelectionContext {
@@ -44,11 +47,13 @@ public class TaskSelectionManager implements TaskSelectionContext {
   private final List<Task> selectedTasks = new ArrayList<Task>();
   private final List<Listener> myListeners = new ArrayList<Listener>();
   private Object myUserInputConsumer;
+  private final Supplier<TaskManager> myTaskManager;
 
   /**
    * Creates an instance of TaskSelectionManager
    */
-  public TaskSelectionManager() {
+  public TaskSelectionManager(Supplier<TaskManager> taskManager) {
+    myTaskManager = taskManager;
   }
 
   public void setUserInputConsumer(Object consumer) {
@@ -60,7 +65,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
 
   /**
    * Adds <code>task</code> to the selected tasks.
-   * 
+   *
    * @param task
    *          A task to add to the selected tasks.
    */
@@ -73,7 +78,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
 
   /**
    * Removes <code>task</code> from the selected tasks;
-   * 
+   *
    * @param task
    *          A task to remove from the selected tasks.
    */
@@ -84,6 +89,26 @@ public class TaskSelectionManager implements TaskSelectionContext {
     }
   }
 
+  private TaskContainmentHierarchyFacade getTaskHierarchy() {
+    return myTaskManager.get().getTaskHierarchy();
+  }
+
+  public void setSelectedTasks(List<Task> tasks) {
+    // selection paths in Swing are stored in a hashtable
+    // and thus come to selection listeners in pretty random order.
+    // For correct indent/outdent operations with need
+    // to order them the way they are ordered in the tree.
+    Collections.sort(tasks, new Comparator<Task>() {
+      @Override
+      public int compare(Task o1, Task o2) {
+        return getTaskHierarchy().compareDocumentOrder(o1, o2);
+      }
+    });
+    clear();
+    for (Task t : tasks) {
+      addTask(t);
+    }
+  }
   /**
    * @param task
    *          The task to test.

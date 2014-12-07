@@ -80,6 +80,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -101,6 +102,8 @@ import biz.ganttproject.core.option.GPOptionGroup;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -141,7 +144,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private FontSpec myLastFontSpec;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
-      IGanttProject project, UIFacade fallbackDelegate) {
+      final IGanttProject project, UIFacade fallbackDelegate) {
     myMainFrame = mainFrame;
     myProject = project;
     myDialogBuilder = new DialogBuilder(mainFrame);
@@ -151,7 +154,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
-    myTaskSelectionManager = new TaskSelectionManager();
+    myTaskSelectionManager = new TaskSelectionManager(Suppliers.memoize(new Supplier<TaskManager>() {
+      public TaskManager get() {
+        return project.getTaskManager();
+      }
+    }));
     myNotificationManager = notificationManager;
 
     myLafOption = new LafOption(this);
