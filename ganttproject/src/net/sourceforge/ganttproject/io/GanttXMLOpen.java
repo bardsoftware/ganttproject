@@ -230,8 +230,10 @@ public class GanttXMLOpen implements GPParser {
     @Override
     public void parsingStarted() {
     }
+
     @Override
     public void parsingFinished() {
+      myUIFacade.getCurrentTaskView().getTimelineTasks().clear();
       for (Integer id : myIds) {
         Task t = myTaskManager.getTask(id);
         if (t != null) {
