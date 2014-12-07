@@ -27,7 +27,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+
+import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -45,6 +48,7 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
@@ -60,7 +64,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   private HumanResource[] clipboard = null;
   private boolean isCut = false;
 
-  private Action myTaskPropertiesAction;
+  private GPAction myTaskPropertiesAction;
 
   private final UIFacade myUIFacade;
 
@@ -139,6 +143,17 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     super.onSelectionChanged(selection);
     getPropertiesAction().setEnabled(!selection.isEmpty());
     updateContextActions();
+    List<Task> selectedTasks = Lists.newArrayList();
+    for (DefaultMutableTreeTableNode node : selection) {
+      if (node instanceof AssignmentNode) {
+        selectedTasks.add(((AssignmentNode)node).getTask());
+      }
+    }
+    if (selectedTasks.isEmpty()) {
+      myUIFacade.getTaskSelectionManager().clear();
+    } else {
+      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks);
+    }
   }
 
   private void updateContextActions() {
@@ -405,8 +420,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return myResourceActionSet;
   }
 
-  void setTaskPropertiesAction(Action action) {
+  void setTaskPropertiesAction(GPAction action) {
     myTaskPropertiesAction = action;
+    getTreeTable().addActionWithAccelleratorKey(action);
   }
 
   private UIFacade getUIFacade() {

@@ -176,18 +176,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
     return false;
   }
 
-  public void setAction(Action action) {
-    InputMap inputMap = new InputMap();
-
-    inputMap.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), action.getValue(Action.NAME));
-
-    inputMap.setParent(getTreeTable().getInputMap(JComponent.WHEN_FOCUSED));
-    getTreeTable().setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-
-    // Add the action to the component
-    getTreeTable().getActionMap().put(action.getValue(Action.NAME), action);
-  }
-
   public boolean canMoveSelectionUp() {
     final DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
     if (selectedNodes.length != 1) {

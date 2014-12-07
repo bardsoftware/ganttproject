@@ -279,20 +279,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         selectedTasks.add((Task) node.getUserObject());
       }
     }
-    // selection paths in Swing are stored in a hashtable
-    // and thus come to selection listeners in pretty random order.
-    // For correct indent/outdent operations with need
-    // to order them the way they are ordered in the tree.
-    Collections.sort(selectedTasks, new Comparator<Task>() {
-      @Override
-      public int compare(Task o1, Task o2) {
-        return myTaskManager.getTaskHierarchy().compareDocumentOrder(o1, o2);
-      }
-    });
-    getTaskSelectionManager().clear();
-    for (Task t : selectedTasks) {
-      getTaskSelectionManager().addTask(t);
-    }
+    mySelectionManager.setSelectedTasks(selectedTasks);
   }
 
   private TaskSelectionManager getTaskSelectionManager() {
