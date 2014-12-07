@@ -174,6 +174,12 @@ public class GPLogger {
   public static void logSystemInformation() {
     try {
       StringBuilder result = new StringBuilder();
+      result.append("GanttProject " + GPVersion.CURRENT).append("\n");
+      File optionsFile = GanttOptions.getOptionsFile();
+      result.append("Settings file:\n");
+      result.append("\tlocation: ").append(optionsFile.getAbsolutePath()).append("\n");
+      result.append("\tsize:").append(optionsFile.length()).append("\n");
+      result.append("\tis readable: ").append(optionsFile.canRead()).append("\n");
       for (String name : SYSTEM_PROPERTIES) {
         result.append(name).append(": ").append(System.getProperty(name)).append("\n");
       }
