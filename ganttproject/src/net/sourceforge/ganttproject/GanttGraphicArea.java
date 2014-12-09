@@ -192,7 +192,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   private int getHeaderHeight() {
-    return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getTable());
+    return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getScrollPane().getViewport());
   }
 
   /** @return an image with the gantt chart */
