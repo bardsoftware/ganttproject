@@ -26,9 +26,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkEvent.EventType;
-import javax.swing.event.HyperlinkListener;
+import net.sourceforge.ganttproject.GPVersion;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationItem;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -42,16 +45,8 @@ import biz.ganttproject.core.option.DateOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import net.sourceforge.ganttproject.GPVersion;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationItem;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * Checks GanttProject RSS news feeds once per day
@@ -86,22 +81,11 @@ public class RssFeedChecker {
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",
-      GanttLanguage.getInstance().formatText("updateRss.question",
-          GanttLanguage.getInstance().getText("updateRss.question.learnUrl")), new HyperlinkListener() {
-        @Override
-        public void hyperlinkUpdate(HyperlinkEvent e) {
-          if (e.getEventType() != EventType.ACTIVATED) {
-            return;
-          }
-          if ("settings".equals(e.getURL().getHost())) {
-            onSettings();
-            getNotificationManager().hideNotification();
-          } else {
-            NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
-            getNotificationManager().hideNotification();
-          }
-        }
-      });
+      GanttLanguage.getInstance().formatText("updateRss.question.template",
+          GanttLanguage.getInstance().getText("updateRss.question.0"),
+          GanttLanguage.getInstance().getText("updateRss.question.1"),
+          GanttLanguage.getInstance().getText("updateRss.question.2")),
+          NotificationManager.DEFAULT_HYPERLINK_LISTENER);
 
   public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
     myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
@@ -234,10 +218,6 @@ public class RssFeedChecker {
 
   private boolean wasToday(Date date) {
     return myTimeUnitStack.createDuration(GPTimeUnitStack.DAY, date, GPTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
-  }
-
-  private void onSettings() {
-    myUiFacade.showSettingsDialog(InterfaceOptionPageProvider.ID);
   }
 
   private void onYes() {
