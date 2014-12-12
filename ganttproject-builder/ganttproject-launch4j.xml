@@ -1,29 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>eclipsito.jar</jar>
-  <outfile>C:\Documents and Settings\bard\Мои документы\ganttproject\ganttproject-builder\ganttproject.exe</outfile>
+  <outfile>ganttproject.exe</outfile>
   <errTitle></errTitle>
   <cmdLine>ganttproject-eclipsito-config.xml -log</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
-  <supportUrl></supportUrl>
-  <customProcName>false</customProcName>
+  <supportUrl>http://ganttproject.biz/discuss</supportUrl>
   <stayAlive>true</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>C:\Documents and Settings\bard\Мои документы\ganttproject\ganttproject-builder\ganttproject_32_2.ico</icon>
+  <icon>ganttproject_32_2.ico</icon>
   <classPath>
     <mainClass>org.bardsoftware.eclipsito.Boot</mainClass>
     <cp>.</cp>
   </classPath>
   <jre>
     <path></path>
-    <minVersion>1.6.0</minVersion>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <minVersion>1.7.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
     <initialHeapSize>32</initialHeapSize>
     <maxHeapSize>512</maxHeapSize>
     <opt>-ea</opt>
   </jre>
+  <messages>
+    <startupErr>GanttProject failed to start. Please refer to http://ganttproject.biz/discuss to get support</startupErr>
+    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>
+    <jreVersionErr>GanttProject needs Java 7 or higher. Please refer to http://ganttproject.biz/discuss to get support</jreVersionErr>
+    <launcherErr>Java Runtime not found or is corrupted. Please refer to http://ganttproject.biz/discuss to get support</launcherErr>
+    <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
+  </messages>
 </launch4jConfig>
