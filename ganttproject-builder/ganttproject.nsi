@@ -7,13 +7,13 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.6.6"
-!define VERSION_BUILD "2.6.6-r1715"
+!define VERSION "2.7"
+!define VERSION_BUILD "2.7-RCI-r1848"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-2.6
+InstallDir $PROGRAMFILES\GanttProject-2.7
 
 
 !define MUI_ABORTWARNING
@@ -76,6 +76,10 @@ Section "GanttProject"
   StrCpy $OUTDIR "$INSTDIR\plugins"
   File /r plugins\net.sourceforge.ganttproject
   File /r plugins\biz.ganttproject.core
+  File /r plugins\biz.ganttproject.impex.ical
+  File /r plugins\biz.ganttproject.impex.msproject2
+  File /r plugins\org.ganttproject.chart.pert
+  File /r plugins\org.ganttproject.impex.htmlpdf
   SetOutPath $INSTDIR
 
   ; Write the installation path into the registry
@@ -98,40 +102,13 @@ Section "GanttProject"
   System::Call 'Shell32::SHChange Notify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 SectionEnd
 
-Section "MS-Project Import/Export"
-
-  SetOutPath $INSTDIR
-  StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\biz.ganttproject.impex.msproject2
-  SetOutPath $INSTDIR
-SectionEnd
-
-Section "PERT chart"
-
-  SetOutPath $INSTDIR
-  StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\org.ganttproject.chart.pert
-  SetOutPath $INSTDIR
-
-SectionEnd
-
-; to uncheck a section by default use Section /o "HTML export plug-in"
-Section "HTML/PDF export"
-  SectionSetText "HTML and PDF export capabilities" 1
-  SetOutPath $INSTDIR
-  StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\org.ganttproject.impex.htmlpdf
-  SetOutPath $INSTDIR
-
-SectionEnd
-
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
 
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\GanttProject"
   CreateShortCut "$SMPROGRAMS\GanttProject\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject 2.7 RCI.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
   CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_32_2.ico"
   CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
   CreateShortCut "$DESKTOP\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
@@ -151,7 +128,7 @@ Section /o "Open Microsoft Project files with GanttProject"
   WriteRegStr HKCR ".mpx\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
   
-      WriteRegStr HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files" 1
+  WriteRegStr HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files" 1
 
 SectionEnd
 
