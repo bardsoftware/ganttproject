@@ -31,7 +31,7 @@ import com.google.common.base.Strings;
  */
 public class FontSpec {
   public static enum Size {
-    SMALLER(0.75f), NORMAL(1.0f), LARGER(1.25f), LARGE(1.5f), HUGE(2.0f);
+    SMALLER(0.75f), NORMAL(1.0f), LARGE(1.25f), LARGER(1.5f), HUGE(2.0f);
     
     private final float myFactor;
 
