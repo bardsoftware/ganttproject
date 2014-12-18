@@ -86,6 +86,7 @@ public class RssFeedChecker {
           GanttLanguage.getInstance().getText("updateRss.question.1"),
           GanttLanguage.getInstance().getText("updateRss.question.2")),
           NotificationManager.DEFAULT_HYPERLINK_LISTENER);
+  private String myOptionsVersion;
 
   public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
     myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
@@ -130,7 +131,15 @@ public class RssFeedChecker {
     Runnable command = null;
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
-      NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
+      if (myOptionsVersion == null) {
+        // We used opt-in before GP 2.7; now we use opt-out, and we suggest to
+        // subscribe once again to those who previously chosen not to.
+        checkOption = CheckOption.UNDEFINED;
+        myCheckRssOption.setSelectedValue(checkOption);
+        markLastCheck();
+      } else {
+        NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
+      }
       return;
     }
     Date lastCheck = myLastCheckOption.getValue();
@@ -226,5 +235,9 @@ public class RssFeedChecker {
 
   private void markLastCheck() {
     myLastCheckOption.setValue(new Date());
+  }
+
+  public void setOptionsVersion(String version) {
+    myOptionsVersion = version;
   }
 }

@@ -851,7 +851,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     GanttSplash splash = new GanttSplash();
     try {
       splash.setVisible(true);
-      GanttProject ganttFrame = new GanttProject(false);
+      final GanttProject ganttFrame = new GanttProject(false);
       System.err.println("Main frame created");
       ganttFrame.fireProjectCreated();
       if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
@@ -864,6 +864,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         OSXAdapter.registerMacOSXApplication(ganttFrame);
       }
       ganttFrame.getActiveChart().reset();
+      ganttFrame.getRssFeedChecker().setOptionsVersion(ganttFrame.getGanttOptions().getVersion());
       ganttFrame.getRssFeedChecker().run();
       return true;
     } catch (Throwable e) {

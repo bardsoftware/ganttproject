@@ -20,7 +20,12 @@ package net.sourceforge.ganttproject;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,7 +69,9 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import com.google.common.xml.XmlEscapers;
+import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 
 /**
  * This class is able to load and save options on the file
@@ -137,6 +144,8 @@ public class GanttOptions extends SaverBase {
 
   private final PluginPreferencesImpl myPluginPreferencesRootNode;
 
+  private String myVersion;
+
   public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer, DocumentsMRU mru) {
     myDocumentManager = documentManager;
     myRoleManager = roleManager;
@@ -183,25 +192,31 @@ public class GanttOptions extends SaverBase {
   public static File getOptionsFile() {
     return new File(System.getProperty("user.home") + System.getProperty("file.separator") + ".ganttproject");
   }
+
+
   /**
    * Save the options file
    */
   public void save() {
     try {
       File file = getOptionsFile();
-      // if (System.getProperty("os.name").startsWith("Windows")
-      // || System.getProperty("os.name").startsWith("Mac"))
-      // sFileName = "ganttproject.ini";
-
-
-      // DataOutputStream fout = new DataOutputStream(new
-      // FileOutputStream(file));
+      ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
+      doSave(outBuffer);
+      BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(file));
+      ByteStreams.copy(new ByteArrayInputStream(outBuffer.toByteArray()), outFile);
+      outFile.flush();
+      outFile.close();
+    } catch (Throwable e) {
+      GPLogger.log(e);
+    }
+  }
+  private void doSave(OutputStream out) throws Exception {
       final TransformerHandler handler = ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();
       Transformer serializer = handler.getTransformer();
       serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
       serializer.setOutputProperty(OutputKeys.INDENT, "yes");
       serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-      handler.setResult(new StreamResult(file));
+      handler.setResult(new StreamResult(out));
       handler.startDocument();
       // handler.startDTD("ganttproject.sourceforge.net",
       // "-//GanttProject.org//DTD GanttProject-1.x//EN",
@@ -209,6 +224,7 @@ public class GanttOptions extends SaverBase {
       // handler.endDTD();
 
       final AttributesImpl attrs = new AttributesImpl();
+      addAttribute("version", GPVersion.getCurrentVersionNumber(), attrs);
       handler.startElement("", "ganttproject-options", "ganttproject-options", attrs);
 
       attrs.clear();
@@ -336,11 +352,6 @@ public class GanttOptions extends SaverBase {
 
       GPLogger.log("[GanttOptions] save(): finished!!");
       handler.endDocument();
-    } catch (Exception e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-    }
   }
 
   private void savePreferences(Preferences node, TransformerHandler handler) throws BackingStoreException, SAXException {
@@ -493,6 +504,10 @@ public class GanttOptions extends SaverBase {
         String qName, // qualified name
         Attributes attrs) throws SAXException {
 
+      if ("ganttproject-options".equals(qName)) {
+        myVersion = attrs.getValue("version");
+        return;
+      }
       if ("configuration".equals(qName) || "instance".equals(qName)) {
         myPluginOptionsHandler = new PluginOptionsHandler(myPluginPreferencesRootNode);
       }
@@ -1019,5 +1034,9 @@ public class GanttOptions extends SaverBase {
             nextConverter);
       }
     }
+  }
+
+  public String getVersion() {
+    return myVersion;
   }
 }

@@ -35,7 +35,7 @@ public class DefaultDateOption extends GPAbstractOption<Date> implements DateOpt
 
   @Override
   public String getPersistentValue() {
-    return DateParser.getIsoDateNoHours(getValue());
+    return getValue() == null ? null : DateParser.getIsoDateNoHours(getValue());
   }
 
   @Override
