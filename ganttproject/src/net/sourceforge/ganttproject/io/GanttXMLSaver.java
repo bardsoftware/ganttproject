@@ -31,6 +31,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttProject;
@@ -45,7 +46,7 @@ import net.sourceforge.ganttproject.roles.RoleSet;
 
 public class GanttXMLSaver extends SaverBase implements GPSaver {
 
-  private static final String VERSION = "2.0";
+  private static final String VERSION = GPVersion.getCurrentVersionNumber();
 
   private final IGanttProject myProject;
 
