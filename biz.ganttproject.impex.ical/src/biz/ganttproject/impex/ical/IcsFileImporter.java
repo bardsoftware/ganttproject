@@ -151,8 +151,15 @@ public class IcsFileImporter extends ImporterBase {
       for (Component comp : (List<Component>)c.getComponents()) {
         if (comp instanceof VEvent) {
           VEvent event = (VEvent) comp;
+          if (event.getStartDate() == null) {
+            GPLogger.log("No start date found, ignoring. Event="+event);
+            continue;            
+          }
           Date eventStartDate = event.getStartDate().getDate();
-          Date eventEndDate = event.getEndDate().getDate();
+          if (event.getEndDate() == null) {
+            GPLogger.log("No end date found, using start date instead. Event="+event);
+          }
+          Date eventEndDate = event.getEndDate() == null ? eventStartDate : event.getEndDate().getDate();
           TimeDuration oneDay = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, 1);
           if (eventEndDate != null) {
             java.util.Date startDate = GPTimeUnitStack.DAY.adjustLeft(eventStartDate);
@@ -162,7 +169,7 @@ public class IcsFileImporter extends ImporterBase {
             if (recurrenceRule != null) {
               recursYearly = Recur.YEARLY.equals(recurrenceRule.getRecur().getFrequency()) && 1 == recurrenceRule.getRecur().getInterval();
             }
-            while (startDate.before(endDate)) {
+            while (startDate.compareTo(endDate) <= 0) {
               gpEvents.add(CalendarEvent.newEvent(startDate, recursYearly, CalendarEvent.Type.HOLIDAY, event.getSummary().getValue(), null));
               startDate = GPCalendarCalc.PLAIN.shiftDate(startDate, oneDay);
             }

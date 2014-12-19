@@ -34,10 +34,11 @@ import biz.ganttproject.core.time.TimeUnit;
 abstract class GPCalendarBase implements GPCalendarCalc {
   private final List<GPCalendarListener> myListeners = Lists.newArrayList();
   private String myName;
-
+  private String myId;
+  
   @Override
   public String getID() {
-    return myName;
+    return myId == null ? myName : myId;
   }
   
   @Override
@@ -48,6 +49,11 @@ abstract class GPCalendarBase implements GPCalendarCalc {
   @Override
   public void setName(String name) {
     myName = name;
+  }
+
+  @Override
+  public void setID(String id) {
+    myId = id;
   }
 
   public Date shiftDate(Date input, TimeDuration shift) {

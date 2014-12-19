@@ -64,6 +64,7 @@ public class GPCalendarProvider {
     @Override
     protected boolean onStartElement(Attributes attrs) {
       myCalendar.setName(attrs.getValue("name"));
+      myCalendar.setID(attrs.getValue("id"));
       myCalendar.setBaseCalendarID(attrs.getValue("base-id"));
       return true;
     }

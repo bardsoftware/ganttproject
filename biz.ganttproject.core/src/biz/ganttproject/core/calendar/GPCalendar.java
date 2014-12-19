@@ -72,4 +72,5 @@ public interface GPCalendar {
   public String getID();
   public String getName();
   public void setName(String name);
+  public void setID(String id);
 }
