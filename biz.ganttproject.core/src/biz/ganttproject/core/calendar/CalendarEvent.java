@@ -80,7 +80,8 @@ public class CalendarEvent {
       return false;
     }
     CalendarEvent that = (CalendarEvent) obj;
-    return Objects.equal(this.myDate, that.myDate) && Objects.equal(this.isRecurring, that.isRecurring);
+    return Objects.equal(this.myDate, that.myDate) && Objects.equal(this.isRecurring, that.isRecurring) 
+        && Objects.equal(this.myType, that.myType);
   }
 
 

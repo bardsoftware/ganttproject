@@ -94,7 +94,7 @@ public class HolidayTagHandler extends AbstractTagHandler {
 
   private void processLastEvent() {
     if (myLastEvent != null) {
-      String cdata = getCdata().trim();
+      String cdata = getCdata().replaceAll("^\\p{Space}+", "").replaceAll("\\p{Space}+$", "");
       if (Strings.isNullOrEmpty(cdata)) {
         myEvents.add(myLastEvent);
       } else {
@@ -116,7 +116,7 @@ public class HolidayTagHandler extends AbstractTagHandler {
       int day = Integer.parseInt(dayAsString);
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
       Color color = colorAsString == null ? null : ColorConvertion.determineColor(colorAsString);
-      String description = getCdata();
+      String description = getCdata().replaceAll("^\\p{Space}+", "").replaceAll("\\p{Space}+$", "");
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
         myLastEvent = CalendarEvent.newEvent(date, true, type, description, color);
