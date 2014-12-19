@@ -1,18 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="France" type="country">
+<calendar id="france" name="France National Holidays 2008-2016" type="country">
 <!-- http://www.officeholidays.com/countries/france/ -->
-	<date year="" month="01" date="01"/>     <!-- New Year -->
-	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
-	<date year="2012" month="04" date="09"/> <!-- Easter Monday -->
-	<date year="" month="05" date="01"/>     <!-- Labor Day -->
-	<date year="" month="05" date="08"/>     <!-- Victory in Europe -->
-	<date year="2012" month="05" date="17"/> <!-- Ascension -->
-	<date year="2012" month="05" date="28"/> <!-- Whitmonday -->
-	<date year="" month="07" date="14"/>     <!-- Bastille -->
-	<date year="" month="08" date="15"/>     <!-- Assumption -->
-	<date year="" month="11" date="01"/>     <!-- All Saints -->
-	<date year="" month="11" date="11"/>     <!-- Armistice -->
-	<date year="2012" month="11" date="12"/> <!-- Armistice in lieu -->
-	<date year="" month="12" date="25"/>     <!-- Christmas -->
-	<date year="2005" month="3" date="28"/>
+    <date year="2008" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2008" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2008" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2008" month="5" date="12" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2008" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2008" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2008" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2008" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2008" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2009" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2009" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2009" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2009" month="5" date="21" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2009" month="6" date="1" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2009" month="7" date="13" type="NEUTRAL"><![CDATA[Bastille Day]]></date>
+    <date year="2009" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2009" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2009" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2009" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2009" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2010" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2010" month="4" date="5" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2010" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2010" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2010" month="5" date="13" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2010" month="5" date="24" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2010" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2010" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2010" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2010" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2010" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2011" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2011" month="4" date="25" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2011" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2011" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2011" month="5" date="29" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2011" month="6" date="2" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2011" month="6" date="13" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2011" month="6" date="19" type="NEUTRAL"><![CDATA[Fathers Day]]></date>
+    <date year="2011" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2011" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2011" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2011" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2011" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2012" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2012" month="1" date="2" type="HOLIDAY"><![CDATA[New Years Day (in lieu)]]></date>
+    <date year="2012" month="4" date="9" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2012" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2012" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2012" month="5" date="17" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2012" month="5" date="28" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2012" month="6" date="3" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2012" month="6" date="17" type="NEUTRAL"><![CDATA[Fathers Day]]></date>
+    <date year="2012" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2012" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2012" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2012" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2012" month="11" date="12" type="HOLIDAY"><![CDATA[Armistice Day (in Lieu)]]></date>
+    <date year="2012" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2013" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2013" month="4" date="1" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2013" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2013" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2013" month="5" date="9" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2013" month="5" date="20" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2013" month="5" date="26" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2013" month="6" date="16" type="NEUTRAL"><![CDATA[Fathers Day]]></date>
+    <date year="2013" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2013" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2013" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2013" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2013" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2014" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2014" month="4" date="21" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2014" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2014" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2014" month="5" date="25" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2014" month="5" date="29" type="NEUTRAL"><![CDATA[Ascension Day]]></date>
+    <date year="2014" month="6" date="9" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2014" month="6" date="15" type="HOLIDAY"><![CDATA[Fathers Day]]></date>
+    <date year="2014" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2014" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2014" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2014" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2014" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2015" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2015" month="4" date="6" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2015" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2015" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2015" month="5" date="14" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2015" month="5" date="24" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2015" month="6" date="21" type="NEUTRAL"><![CDATA[Fathers Day]]></date>
+    <date year="2015" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2015" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2015" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2015" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2015" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2016" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2016" month="3" date="28" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2016" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2016" month="5" date="5" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2016" month="5" date="8" type="HOLIDAY"><![CDATA[V-E Day]]></date>
+    <date year="2016" month="5" date="16" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2016" month="5" date="29" type="NEUTRAL"><![CDATA[Mothers Day]]></date>
+    <date year="2016" month="6" date="19" type="NEUTRAL"><![CDATA[Fathers Day]]></date>
+    <date year="2016" month="7" date="14" type="HOLIDAY"><![CDATA[Bastille Day]]></date>
+    <date year="2016" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day]]></date>
+    <date year="2016" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day]]></date>
+    <date year="2016" month="11" date="11" type="HOLIDAY"><![CDATA[Armistice Day]]></date>
+    <date year="2016" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="2016" month="12" date="26" type="HOLIDAY"><![CDATA[Christmas Day (observed)]]></date>
 </calendar >
