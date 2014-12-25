@@ -24,4 +24,6 @@ import net.sourceforge.ganttproject.task.Task;
 
 public interface TaskTreeUIFacade extends TreeUiFacade<Task> {
   AbstractAction[] getTreeActions();
+
+  void ensureVisible(Task task);
 }

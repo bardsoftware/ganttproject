@@ -584,6 +584,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     setEditingTask(modelElement);
   }
 
+
+  @Override
+  public void ensureVisible(Task task) {
+    MutableTreeTableNode node = getNode(task);
+    getTree().scrollPathToVisible(TreeUtil.createPath(node));
+  }
+
   @Override
   protected DefaultMutableTreeTableNode getRootNode() {
     return getTreeModel().getRootNode();

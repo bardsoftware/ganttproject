@@ -73,7 +73,9 @@ public class TaskMoveUpAction extends TaskActionBase {
         }
       });
     }
-    forwardScheduling();
+    getTreeFacade().ensureVisible(selection.get(0));
+    //getTree().getTreeTable().sccenterViewOnSelectedCell();
+    //forwardScheduling();
     // TODO Ideally this should get done by the move method as it modifies the
     // document
     getUIFacade().getGanttChart().getProject().setModified();
