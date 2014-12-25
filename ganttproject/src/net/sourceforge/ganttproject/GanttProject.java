@@ -133,9 +133,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final ProjectMenu myProjectMenu;
 
-  /** List containing the Most Recent Used documents */
-  private final DocumentsMRU myMRU = new DocumentsMRU(5);
-
   private TestGanttRolloverButton bNew;
 
   /** The project filename */
@@ -210,7 +207,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     setFocusable(true);
     System.err.println("1. loading look'n'feels");
-    options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer, myMRU);
+    options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
     myUIConfiguration = options.getUIConfiguration();
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
@@ -295,7 +292,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Project menu related sub menus and items
     ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade(), "lastOpen");
     mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
-    myMRU.addListener(mruMenu);
+    getDocumentManager().addListener(mruMenu);
 
     myProjectMenu = new ProjectMenu(this, mruMenu, "project");
     bar.add(myProjectMenu);
@@ -625,7 +622,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public void open(Document document) throws IOException, DocumentException {
     document.read();
-    myMRU.add(document.getPath(), true);
+    getDocumentManager().addToRecentDocuments(document);
+    //myMRU.add(document.getPath(), true);
     projectDocument = document;
     setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
     for (Chart chart : PluginManager.getCharts()) {

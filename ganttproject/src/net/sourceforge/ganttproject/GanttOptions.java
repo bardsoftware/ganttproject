@@ -98,8 +98,6 @@ public class GanttOptions extends SaverBase {
 
   private final RoleManager myRoleManager;
 
-  private final DocumentsMRU documentsMRU;
-
   private UIConfiguration myUIConfig;
 
   private int toolBarPosition;
@@ -146,10 +144,9 @@ public class GanttOptions extends SaverBase {
 
   private String myVersion;
 
-  public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer, DocumentsMRU mru) {
+  public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
     myDocumentManager = documentManager;
     myRoleManager = roleManager;
-    documentsMRU = mru;
     myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
     initDefault();
     try {
@@ -333,8 +330,9 @@ public class GanttOptions extends SaverBase {
       // The last opened files
       {
         startElement("files", attrs, handler);
-        for (Iterator<String> it = documentsMRU.iterator(); it.hasNext();) {
-          addAttribute("path", it.next(), attrs);
+
+        for (String recent : myDocumentManager.getRecentDocuments()) {
+          addAttribute("path", recent, attrs);
           emptyElement("file", attrs, handler);
         }
         endElement("files", handler);
@@ -431,7 +429,7 @@ public class GanttOptions extends SaverBase {
         return false;
       }
 
-      documentsMRU.clear();
+      myDocumentManager.clearRecentDocuments();
 
       // Parse the input
       SAXParser saxParser = factory.newSAXParser();
@@ -583,7 +581,7 @@ public class GanttOptions extends SaverBase {
             }
           } else if (qName.equals("file")) {
             if (aName.equals("path")) {
-              documentsMRU.add(value, false);
+              myDocumentManager.addToRecentDocuments(value);
             }
           } else if (qName.equals("automatic-launch")) {
             if (aName.equals("value")) {

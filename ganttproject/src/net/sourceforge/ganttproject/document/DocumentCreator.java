@@ -16,6 +16,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -39,6 +40,7 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * This is a helper class, to create new instances of Document easily. It
@@ -62,6 +64,8 @@ public class DocumentCreator implements DocumentManager {
 
   private final GPOptionGroup myWebDavOptionGroup;
   private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);
+  /** List containing the Most Recent Used documents */
+  private final DocumentsMRU myMRU = new DocumentsMRU(5);
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
@@ -268,12 +272,6 @@ public class DocumentCreator implements DocumentManager {
     return null;
   }
 
-  @Override
-  public void addToRecentDocuments(Document document) {
-    // TODO Auto-generated method stub
-
-  }
-
   protected ParserFactory getParserFactory() {
     return myParserFactory;
   }
@@ -378,5 +376,30 @@ public class DocumentCreator implements DocumentManager {
     public void loadValue(String legacyValue) {
       loadPersistentValue(legacyValue);
     }
+  }
+
+  @Override
+  public List<String> getRecentDocuments() {
+    return Lists.newArrayList(myMRU.iterator());
+  }
+
+  @Override
+  public void addListener(DocumentMRUListener listener) {
+    myMRU.addListener(listener);
+  }
+
+  @Override
+  public void addToRecentDocuments(Document document) {
+    myMRU.add(document.getPath(), true);
+  }
+
+  @Override
+  public void addToRecentDocuments(String value) {
+    myMRU.add(value, false);
+  }
+
+  @Override
+  public void clearRecentDocuments() {
+    myMRU.clear();
   }
 }
