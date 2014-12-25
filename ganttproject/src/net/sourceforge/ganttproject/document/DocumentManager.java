@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject.document;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
@@ -35,8 +37,6 @@ public interface DocumentManager {
   Document getLastAutosaveDocument(Document priorTo) throws IOException;
 
   Document getDocument(String path);
-
-  void addToRecentDocuments(Document document);
 
   Document getProxyDocument(Document physicalDocument);
 
@@ -65,4 +65,14 @@ public interface DocumentManager {
 
     public abstract StringOption getPassword();
   }
+
+  List<String> getRecentDocuments();
+
+  void addListener(DocumentMRUListener listener);
+
+  void addToRecentDocuments(Document document);
+
+  void addToRecentDocuments(String value);
+
+  void clearRecentDocuments();
 }
