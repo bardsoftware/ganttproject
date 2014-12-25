@@ -226,7 +226,7 @@
             exec="/usr/bin/ganttproject %f"
       mimetype="application/ganttproject+xml"
             categories="Office"
-            onlyshowin="GNOME;KDE;Unity"
+            onlyshowin="GNOME;KDE;Unity;LXDE"
         >
       <!--
       <name lang="ro" value="Un nume"/>
