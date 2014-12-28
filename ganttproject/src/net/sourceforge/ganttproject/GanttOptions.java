@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.security.AccessControlException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JToolBar;
@@ -42,7 +41,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.io.CSVOptions;
@@ -71,7 +69,6 @@ import biz.ganttproject.core.option.ListOption;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.xml.XmlEscapers;
-import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 
 /**
  * This class is able to load and save options on the file
