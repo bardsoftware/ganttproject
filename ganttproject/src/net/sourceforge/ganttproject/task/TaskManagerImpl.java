@@ -1020,7 +1020,9 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskManager emptyClone() {
-    return new TaskManagerImpl(null, myConfig);
+    TaskManagerImpl result = new TaskManagerImpl(null, myConfig);
+    result.myDependencyHardnessOption.setValue(this.myDependencyHardnessOption.getValue());
+    return result;
   }
 
   @Override
