@@ -53,9 +53,9 @@ public class CustomColumnsPanel {
 
   private final UIFacade myUiFacade;
 
-  private CustomColumnTableModel model;
+  private CustomColumnTableModel myModel;
 
-  private JTable table;
+  private JTable myTable;
 
   private CustomPropertyHolder myHolder;
 
@@ -71,10 +71,10 @@ public class CustomColumnsPanel {
   }
 
   public JComponent getComponent() {
-    model = new CustomColumnTableModel();
-    table = new JTable(model);
+    myModel = new CustomColumnTableModel();
+    myTable = new JTable(myModel);
 
-    UIUtil.setupTableUI(table);
+    UIUtil.setupTableUI(myTable);
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
       @Override
@@ -82,10 +82,16 @@ public class CustomColumnsPanel {
         ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade,
             myCustomPropertyManager);
         dialog.show();
-        model.fireTableStructureChanged();
+        myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);
-    return CommonPanel.createTableAndActions(table, buttonPanel);
+    return CommonPanel.createTableAndActions(myTable, buttonPanel);
+  }
+
+  public void commit() {
+    if (myTable.isEditing()) {
+      myTable.getCellEditor().stopCellEditing();
+    }
   }
 
   class CustomColumnTableModel extends DefaultTableModel {
