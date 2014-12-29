@@ -22,7 +22,7 @@ public class DesktopEntry extends Task
     private List _localizedEntries = new ArrayList ();
 
     private static final Set VALID_ONLY_SHOW_IN = new HashSet (
-        Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old", "Unity"}));
+        Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old", "Unity", "LXDE"}));
 
     public static class LocalizedEntry
     {
