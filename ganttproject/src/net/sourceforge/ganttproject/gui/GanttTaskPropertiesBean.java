@@ -475,6 +475,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
     };
     UIUtil.setupDatePicker(myThirdDatePicker, originalThirdDate == null ? null : originalThirdDate.getTime(), validator, listener);
+    myThird = originalThirdDate;
     thirdDateComboBox.setSelectedIndex(originalThirdDateConstraint);
 
     if (mileStoneCheckBox1 != null) {
