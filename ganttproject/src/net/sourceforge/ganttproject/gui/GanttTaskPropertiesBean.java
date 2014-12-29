@@ -447,6 +447,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       mutator.commit();
       myDependenciesPanel.commit();
       myAllocationsPanel.commit();
+      myCustomColumnPanel.commit();
 
       if (!myShowInTimeline.isSelected()) {
         myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
