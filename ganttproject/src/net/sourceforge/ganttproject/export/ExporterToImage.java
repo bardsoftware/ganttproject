@@ -134,6 +134,7 @@ public class ExporterToImage extends ExporterBase {
   @Override
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createImageExportJob(outputFile);
+    resultFiles.add(outputFile);
     return new ExporterJob[] { job };
   }
 

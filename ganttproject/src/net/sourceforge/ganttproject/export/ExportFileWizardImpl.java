@@ -28,8 +28,9 @@ import javax.swing.SwingUtilities;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -50,8 +51,16 @@ public class ExportFileWizardImpl extends WizardImpl {
 
   public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
     super(uiFacade, language.getText("exportWizard.dialog.title"));
+    final Preferences exportNode = pluginPreferences.node("/instance/net.sourceforge.ganttproject/export");
     myProject = project;
     myState = new State();
+    myState.myPublishInWebOption.setValue(exportNode.getBoolean("publishInWeb", false));
+    myState.myPublishInWebOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        exportNode.putBoolean("publishInWeb", myState.myPublishInWebOption.getValue());
+      }
+    });
     if (ourExporters == null) {
       ourExporters = PluginManager.getExporters();
     }
@@ -60,8 +69,7 @@ public class ExportFileWizardImpl extends WizardImpl {
       e.setContext(project, uiFacade, pluginPreferences);
     }
     addPage(new ExporterChooserPage(ourExporters, myState));
-    addPage(new FileChooserPage(myState, myProject, this, pluginPreferences.node(
-        "/instance/net.sourceforge.ganttproject/export")));
+    addPage(new FileChooserPage(myState, myProject, this, exportNode));
   }
 
   @Override
