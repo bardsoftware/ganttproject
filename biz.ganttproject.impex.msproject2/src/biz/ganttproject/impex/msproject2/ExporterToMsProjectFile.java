@@ -105,6 +105,7 @@ public class ExporterToMsProjectFile extends ExporterBase {
   @Override
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createExportJob(outputFile);
+    resultFiles.add(outputFile);
     return new ExporterJob[] { job };
   }
 

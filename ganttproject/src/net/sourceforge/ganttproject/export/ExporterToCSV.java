@@ -68,6 +68,7 @@ public class ExporterToCSV extends ExporterBase {
   @Override
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createCVSExportJob(outputFile);
+    resultFiles.add(outputFile);
     return new ExporterJob[] { job };
   }
 

@@ -39,6 +39,7 @@ public class ExporterToPDF extends StylesheetExporterBase {
     super.setCommandLineStylesheet();
 
     if (mySelectedStylesheet instanceof ITextStylesheet) {
+      resultFiles.add(outputFile);
       return myITextEngine.createJobs(outputFile, resultFiles);
     }
     assert false : "Unknown stylesheet is selected: " + mySelectedStylesheet;
