@@ -28,7 +28,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +46,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -146,8 +146,10 @@ public class CalendarEditorPanel {
 
   public JComponent createComponent() {
     JTabbedPane tabbedPane = new JTabbedPane();
-    tabbedPane.addTab("One-off", createNonRecurringComponent());
-    tabbedPane.addTab("Recurring", createRecurringComponent());
+    tabbedPane.addTab(GanttLanguage.getInstance().getText("calendar.editor.tab.oneoff.title"),
+        createNonRecurringComponent());
+    tabbedPane.addTab(GanttLanguage.getInstance().getText("calendar.editor.column.recurring.title"),
+        createRecurringComponent());
     myOnCreate.run();
     return tabbedPane;
   }
@@ -501,8 +503,7 @@ public class CalendarEditorPanel {
           Date date = GanttLanguage.getInstance().getShortDateFormat().parse(value);
           newEvent = CalendarEvent.newEvent(date, e.isRecurring, e.getType(), e.getTitle(), e.getColor());
         } catch (ParseException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
+          GPLogger.log(e1);
         }
         break;
       case SUMMARY:
