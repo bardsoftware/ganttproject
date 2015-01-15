@@ -96,9 +96,11 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultFileOption;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.FontSpec.Size;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -123,22 +125,32 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
-//  private final DefaultIntegerOption myFontSizeOption;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
+
+  private static Map<FontSpec.Size, String> getSizeLabels() {
+    Map<FontSpec.Size, String> result = Maps.newHashMap();
+    for (FontSpec.Size size : FontSpec.Size.values()) {
+      result.put(size, GanttLanguage.getInstance().getText("optionValue.ui.appFontSpec." + size.toString() + ".label"));
+    }
+    return result;
+  }
+
   private final DefaultFontOption myAppFontOption = new DefaultFontOption(
       "appFontSpec", null, Arrays.asList(getFontFamilies())) {
     @Override
     public Map<FontSpec.Size, String> getSizeLabels() {
-      Map<FontSpec.Size, String> result = Maps.newHashMap();
-      for (FontSpec.Size size : FontSpec.Size.values()) {
-        result.put(size, GanttLanguage.getInstance().getText("optionValue.ui.appFontSpec." + size.toString() + ".label"));
-      }
-      return result;
+      return UIFacadeImpl.getSizeLabels();
     }
   };
+  private final DefaultFontOption myChartFontOption = new DefaultFontOption(
+      "chartFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), Arrays.asList(getFontFamilies())) {
+    @Override
+    public Map<Size, String> getSizeLabels() {
+      return UIFacadeImpl.getSizeLabels();
+    }
+  };
+
   private ChangeValueListener myAppFontValueListener;
-//  private Integer myLastFontSize = null;
-//  private String myLastFontFamily;
   private final LanguageOption myLanguageOption;
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
@@ -226,7 +238,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 //    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
 //    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myChartFontOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
@@ -682,5 +694,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   void addOptions(GPOptionGroup options) {
     myOptionGroups.add(options);
+  }
+
+  FontOption getChartFontOption() {
+    return myChartFontOption;
   }
 }

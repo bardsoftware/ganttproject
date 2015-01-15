@@ -209,6 +209,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     System.err.println("1. loading look'n'feels");
     options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
     myUIConfiguration = options.getUIConfiguration();
+    myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {

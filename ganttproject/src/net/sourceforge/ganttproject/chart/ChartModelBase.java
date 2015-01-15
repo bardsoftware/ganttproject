@@ -65,6 +65,7 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultFontOption;
+import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.option.GPOption;
@@ -213,26 +214,13 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
-  private final DefaultFontOption myChartFontOption =
-      new DefaultFontOption("fontSpec",
-          new FontSpec("Dialog", FontSpec.Size.NORMAL),
-          Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())) {
-
-            @Override
-            public Map<Size, String> getSizeLabels() {
-              Map<Size, String> result = Maps.newHashMap();
-              for (FontSpec.Size size : FontSpec.Size.values()) {
-                result.put(size, GanttLanguage.getInstance().formatText(
-                    "optionValue.chart.fontSpec.value", (int)(size.getFactor() * 100)));
-              }
-              return result;
-            }
-  };
+  private final FontOption myChartFontOption;
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
+    myChartFontOption = projectConfig.getChartFontOption();
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
     final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
@@ -299,7 +287,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
-        new GPOption[] { myChartFontOption, projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
+        new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
           myChartUIConfiguration.getChartStylesOption()},
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
