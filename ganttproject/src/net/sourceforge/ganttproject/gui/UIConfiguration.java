@@ -27,8 +27,10 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.FontOption;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.gui.taskproperties.DependencyTableModel.MyColumn;
 
 /**
  * @author bard
@@ -64,6 +66,8 @@ public class UIConfiguration {
   private final AlphaRenderingOption myWeekendAlphaRenderingOption;
   private final RedlineOption myRedlineOption = new RedlineOption();
   private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
+
+  private FontOption myChartFontOption;
 
 
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
@@ -204,4 +208,15 @@ public class UIConfiguration {
   public BooleanOption getProjectBoundariesOption() {
     return myProjectDatesOption;
   }
+
+  public void setChartFontOption(FontOption chartFontOption) {
+    myChartFontOption = chartFontOption;
+  }
+
+  public FontOption getChartFontOption() {
+    return myChartFontOption;
+  }
+
+
+
 }

@@ -148,7 +148,7 @@ public class CalendarEditorPanel {
     JTabbedPane tabbedPane = new JTabbedPane();
     tabbedPane.addTab(GanttLanguage.getInstance().getText("calendar.editor.tab.oneoff.title"),
         createNonRecurringComponent());
-    tabbedPane.addTab(GanttLanguage.getInstance().getText("calendar.editor.column.recurring.title"),
+    tabbedPane.addTab(GanttLanguage.getInstance().getText("calendar.editor.tab.recurring.title"),
         createRecurringComponent());
     myOnCreate.run();
     return tabbedPane;
