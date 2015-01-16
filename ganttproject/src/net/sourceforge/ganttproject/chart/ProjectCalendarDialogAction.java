@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -30,10 +29,10 @@ import javax.swing.JPanel;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.ProjectCalendarOptionPageProvider;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
@@ -41,14 +40,14 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class ProjectCalendarDialogAction extends AbstractAction {
+public class ProjectCalendarDialogAction extends GPAction {
 
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
 
   public ProjectCalendarDialogAction(IGanttProject project, UIFacade uiFacade) {
-    super(GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays"));
+    super("editPublicHolidays");
     myProject = project;
     myUIFacade = uiFacade;
   }
@@ -63,14 +62,14 @@ public class ProjectCalendarDialogAction extends AbstractAction {
     myUIFacade.createDialog(panel, new Action[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        myUIFacade.getUndoManager().undoableEdit("Project calendar change", new Runnable() {
+        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
           @Override
           public void run() {
             onCalendarEditCommited(configPage);
           }
         });
       }
-    }, CancelAction.EMPTY }, GanttLanguage.getInstance().getCorrectedLabel("editPublicHolidays")).show();
+    }, CancelAction.EMPTY }, getLocalizedDescription()).show();
   }
 
   private void onCalendarEditCommited(ProjectCalendarOptionPageProvider configPage) {
