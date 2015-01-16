@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="sr" name="Serbian Holidays 2015" type="country">
+<!-- Data sources
+Calendar contributed by Slobodan Simic
+-->
+    <date year="" month="1" date="1" type="HOLIDAY" color="#ff9999"><![CDATA[Нова година]]></date>
+    <date year="" month="1" date="2" type="HOLIDAY" color="#ff9999"><![CDATA[Нова година]]></date>
+    <date year="" month="1" date="7" type="HOLIDAY" color="#ff9999"><![CDATA[Божић]]></date>
+    <date year="" month="1" date="27" type="NEUTRAL" color="#808080"><![CDATA[св. Сава]]></date>
+    <date year="" month="2" date="15" type="HOLIDAY" color="#ff9999"><![CDATA[Сретење - дан државности]]></date>
+    <date year="" month="2" date="16" type="HOLIDAY" color="#ff9999"><![CDATA[Сретење - дан државности]]></date>
+    <date year="" month="5" date="1" type="HOLIDAY" color="#ff9999"><![CDATA[Празник рада]]></date>
+    <date year="" month="5" date="2" type="HOLIDAY" color="#ff9999"><![CDATA[Празник рада]]></date>
+    <date year="" month="5" date="9" type="NEUTRAL"><![CDATA[Дан победе]]></date>
+    <date year="" month="6" date="28" type="NEUTRAL"><![CDATA[Видовдан]]></date>
+    <date year="" month="10" date="21" type="NEUTRAL"><![CDATA[Дан сећања на српске жртве у 2. светском рату]]></date>
+    <date year="" month="11" date="11" type="HOLIDAY" color="#ff9999"><![CDATA[Дан примирја у 1. светском рату]]></date>
+    <date year="2015" month="4" date="10" type="HOLIDAY" color="#ff9999"><![CDATA[Велики Петак]]></date>
+    <date year="2015" month="4" date="12" type="HOLIDAY" color="#ff9999"><![CDATA[Васкрс]]></date>
+    <date year="2015" month="4" date="13" type="HOLIDAY" color="#ff9999"><![CDATA[Васкршњи Понедељак]]></date>    
+</calendar >
+
+
+ 
+
