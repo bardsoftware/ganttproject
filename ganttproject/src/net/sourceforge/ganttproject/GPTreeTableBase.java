@@ -177,8 +177,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       clearUiColumns();
       myColumns.clear();
       for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
-        myDefaultColumnStubs.get(i).setVisible(false);
-        createColumn(i, myDefaultColumnStubs.get(i));
+        Column stub = myDefaultColumnStubs.get(i);
+        ColumnImpl column = createColumn(i, stub);
+        if (stub.isVisible()) {
+          insertColumnIntoUi(column);
+        }
       }
     }
 
