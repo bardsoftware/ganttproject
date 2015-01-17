@@ -352,6 +352,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
+            getGanttChart().reset();
+            getResourceChart().reset();
             // This will clear any modifications which might be caused by
             // adjusting widths of table columns during initial layout process.
             getProject().setModified(false);

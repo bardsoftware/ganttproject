@@ -180,6 +180,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         Column stub = myDefaultColumnStubs.get(i);
         ColumnImpl column = createColumn(i, stub);
         if (stub.isVisible()) {
+          // keep some columns visible in the table when creating a new project
+          // otherwise table appears without any columns at all and as a side effect,
+          // chart timeline may change its height
           insertColumnIntoUi(column);
         }
       }
