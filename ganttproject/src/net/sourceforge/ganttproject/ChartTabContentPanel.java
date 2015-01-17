@@ -24,13 +24,17 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.border.Border;
 
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
@@ -54,9 +58,9 @@ abstract class ChartTabContentPanel {
 
   protected JComponent createContentComponent() {
     JPanel tabContentPanel = new JPanel(new BorderLayout());
-    JPanel left = new JPanel(new BorderLayout());
+    final JPanel left = new JPanel(new BorderLayout());
     Box treeHeader = Box.createVerticalBox();
-    Component buttonPanel = createButtonPanel();
+    final Component buttonPanel = createButtonPanel();
     treeHeader.add(buttonPanel);
 
     treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
@@ -67,7 +71,18 @@ abstract class ChartTabContentPanel {
     left.setMinimumSize(minSize);
 
     JPanel right = new JPanel(new BorderLayout());
-    right.add(createChartPanels(), BorderLayout.NORTH);
+    final JComponent chartPanels = createChartPanels();
+    chartPanels.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        super.componentResized(e);
+        int maxHeight = Math.max(buttonPanel.getPreferredSize().height, chartPanels.getPreferredSize().height);
+        if (buttonPanel.getHeight() < maxHeight) {
+          left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
+        }
+      }
+    });
+    right.add(chartPanels, BorderLayout.NORTH);
     right.setBackground(new Color(0.93f, 0.93f, 0.93f));
     right.add(getChartComponent(), BorderLayout.CENTER);
     right.setMinimumSize(minSize);
@@ -104,7 +119,7 @@ abstract class ChartTabContentPanel {
     mySplitPane.setDividerLocation(location);
   }
 
-  private Component createChartPanels() {
+  private JComponent createChartPanels() {
     JPanel result = new JPanel(new BorderLayout());
 
     Box panelsBox = Box.createHorizontalBox();
