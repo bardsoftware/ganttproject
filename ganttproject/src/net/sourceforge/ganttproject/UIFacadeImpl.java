@@ -574,7 +574,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
                 @Override
                 public void run() {
                   updateFonts();
-                  SwingUtilities.updateComponentTreeUI(myMainFrame);
+                  updateComponentTreeUI();
                 }
               });
             }
@@ -589,13 +589,23 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     try {
       UIManager.setLookAndFeel(laf.getClassName());
       updateFonts();
-      SwingUtilities.updateComponentTreeUI(myMainFrame);
+      updateComponentTreeUI();
       return true;
     } catch (Exception e) {
       GPLogger.getLogger(UIFacade.class).log(Level.SEVERE,
           "Can't find the LookAndFeel\n" + laf.getClassName() + "\n" + laf.getName(), e);
       return false;
     }
+  }
+
+  private void updateComponentTreeUI() {
+    SwingUtilities.updateComponentTreeUI(myMainFrame);
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        getGanttChart().reset();
+        getResourceChart().reset();
+      }
+    });
   }
 
   private void updateFonts() {
@@ -632,6 +642,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     LafOption(UIFacade uiFacade) {
       super("laf", GanttLookAndFeels.getGanttLookAndFeels().getInstalledLookAndFeels());
       myUiFacade = uiFacade;
+      setValue("Plastic");
     }
 
     public GanttLookAndFeelInfo getLookAndFeel() {
