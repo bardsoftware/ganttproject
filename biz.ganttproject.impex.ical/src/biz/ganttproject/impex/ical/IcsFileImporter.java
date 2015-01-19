@@ -37,6 +37,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RRule;
+import net.fortuna.ical4j.util.CompatibilityHints;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.importer.ImporterBase;
@@ -145,6 +146,7 @@ public class IcsFileImporter extends ImporterBase {
    */
   private static List<CalendarEvent> readEvents(File f) {
     try {
+      CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_PARSING, true);
       CalendarBuilder builder = new CalendarBuilder();
       List<CalendarEvent> gpEvents = Lists.newArrayList();
       Calendar c = builder.build(new UnfoldingReader(new FileReader(f)));
