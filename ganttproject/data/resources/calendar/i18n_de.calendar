@@ -1,45 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Deutschland/alle" type="country">
+<calendar id="de.all" name="German national public holidays 2008-2016" type="country">
 <!-- http://www.officeholidays.com/countries/germany/ -->
-<!-- http://www.holidays-info.com/Holidays-Germany/2012/holidays_2012.html -->
-	<date year="" month="01" date="01"/>      <!-- New Year --> 
-	<date year="" month="01" date="06"/>      <!-- Epiphany: only BW,BY,ST -->
-	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
-	<date year="2012" month="04" date="09"/>  <!-- Easter Monday -->
-	<date year="" month="05" date="01"/>      <!-- Labour day -->
-	<date year="2012" month="05" date="17"/>  <!-- Ascension -->
-	<date year="2012" month="05" date="28"/>  <!-- Whitmonday -->
-	<date year="2012" month="06" date="07"/>  <!-- Corpus Christi: only BW,BY,HE,NW,RP,SL -->
-	<date year="" month="08" date="15"/>      <!-- Assumption: only SL -->
-	<date year="" month="10" date="03"/>      <!-- German Unity -->
-	<date year="" month="10" date="31"/>      <!-- Reformation: only BB,MV,SN,ST,TH -->
-	<date year="" month="11" date="01"/>      <!-- All Saints: only BW,BY,NW,RP,SL -->
-	<date year="2012" month="11" date="21"/>  <!-- Repentance: only SN -->
-	<date year="" month="12" date="25"/>      <!-- Christmas -->
-	<date year="" month="12" date="26"/>      <!-- St.Stephens -->
-	<date year="2006" month="04" date="14"/>
-	<date year="2006" month="04" date="17"/>
-	<date year="2006" month="05" date="25"/>
-	<date year="2006" month="06" date="05"/>
-	<date year="2006" month="06" date="15"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
-	<date year="2006" month="11" date="22"/> #nur SN
-	<date year="2007" month="04" date="06"/>
-	<date year="2007" month="04" date="09"/>
-	<date year="2007" month="05" date="17"/>
-	<date year="2007" month="05" date="28"/>
-	<date year="2007" month="06" date="07"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
-	<date year="2007" month="11" date="21"/> #nur SN
-	<date year="2008" month="03" date="21"/>
-	<date year="2008" month="03" date="24"/>
-	<date year="2008" month="05" date="12"/>
-	<date year="2008" month="05" date="22"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
-	<date year="2008" month="11" date="19"/> #nur SN
-	<date year="2009" month="04" date="10"/>
-	<date year="2009" month="04" date="13"/>
-	<date year="2009" month="05" date="21"/>
-	<date year="2009" month="06" date="1"/>
-	<date year="2009" month="06" date="11"/> #nur BW,BY,HE,NW,RP,SL,SN,TH
-	<date year="2009" month="11" date="18"/> #nur SN
+    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="" month="10" date="3" type="HOLIDAY"><![CDATA[German Unity Day]]></date>
+    <date year="" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day ]]></date>
+    <date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+    <date year="" month="12" date="26" type="HOLIDAY"><![CDATA[St Stephens Day]]></date>
+
+    <date year="2008" month="3" date="21" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2008" month="3" date="24" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2008" month="5" date="12" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2009" month="4" date="10" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2009" month="4" date="13" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2009" month="5" date="21" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2009" month="6" date="1" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2010" month="4" date="2" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2010" month="4" date="5" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2010" month="5" date="13" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2010" month="5" date="24" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2011" month="4" date="22" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2011" month="4" date="25" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2011" month="6" date="2" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2011" month="6" date="13" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2012" month="4" date="6" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2012" month="4" date="9" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2012" month="5" date="17" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2012" month="5" date="28" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2013" month="3" date="29" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2013" month="4" date="1" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2013" month="5" date="9" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2013" month="5" date="20" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2014" month="4" date="18" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2014" month="4" date="21" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2014" month="5" date="29" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2014" month="6" date="9" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2015" month="4" date="3" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2015" month="4" date="6" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2015" month="5" date="14" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+    <date year="2016" month="3" date="25" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2016" month="3" date="28" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2016" month="5" date="5" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2016" month="5" date="16" type="HOLIDAY"><![CDATA[Whitmonday]]></date>
+
+    <!-- Regional holidays -->
+    <date year="" month="1" date="6" type="HOLIDAY"><![CDATA[Epiphany (BW, BY, ST)]]></date>
+    <date year="" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day  (SL)]]></date>
+    <date year="" month="10" date="31" type="HOLIDAY"><![CDATA[Day of Reformation  (BB, MV, SN, ST, TH)]]></date>
+    <date year="2008" month="5" date="22" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2008" month="11" date="19" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2009" month="6" date="11" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2009" month="11" date="18" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2010" month="6" date="3" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2010" month="11" date="17" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2011" month="6" date="23" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2011" month="11" date="16" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2012" month="6" date="7" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2012" month="11" date="21" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2013" month="5" date="30" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2013" month="11" date="20" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2014" month="6" date="19" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2014" month="11" date="19" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2015" month="6" date="4" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2015" month="11" date="18" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="2016" month="5" date="26" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2016" month="11" date="16" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+
 </calendar >
  
 
