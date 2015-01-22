@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="uk.northern_ireland" name="United Kingdom (Northern Ireland) Natinal Holidays 2015" type="country">
+<!-- https://www.gov.uk/bank-holidays -->
+<!-- http://www.officeholidays.com/countries/united_kingdom/2012.asp -->
+<!-- The whole UK -->
+    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day ]]></date>
+    <date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Boxing Day]]></date>
+    <date year="2015" month="12" date="28" type="HOLIDAY"><![CDATA[Boxing Day (in lieu)]]></date>
+
+    <date year="2015" month="4" date="3" type="HOLIDAY"><![CDATA[Good Friday ]]></date>
+    <date year="2015" month="4" date="6" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2015" month="5" date="4" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
+<!-- Northern Ireland -->
+    <date year="" month="3" date="17" type="HOLIDAY"><![CDATA[St Patricks Day]]></date>
+    <date year="" month="7" date="12" type="HOLIDAY"><![CDATA[Battle of the Boyne]]></date>
+    <date year="2015" month="7" date="13" type="HOLIDAY"><![CDATA[Battle of the Boyne (observed)]]></date>
+    <date year="2015" month="8" date="31" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>    	
+</calendar >
