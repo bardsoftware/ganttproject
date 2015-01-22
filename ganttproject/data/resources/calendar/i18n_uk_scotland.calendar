@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="uk.scotland" name="United Kingdom (Scotland) Natinal Holidays 2015" type="country">
+<!-- http://www.direct.gov.uk/en/Employment/Employees/Timeoffandholidays/DG_073741 -->
+<!-- http://www.officeholidays.com/countries/united_kingdom/index.php -->
+<!-- The whole UK -->
+    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day ]]></date>
+    <date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Boxing Day]]></date>
+    <date year="2015" month="12" date="28" type="HOLIDAY"><![CDATA[Boxing Day (in lieu)]]></date>
+
+    <date year="2015" month="4" date="3" type="HOLIDAY"><![CDATA[Good Friday ]]></date>
+    <date year="2015" month="4" date="6" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2015" month="5" date="4" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
+<!-- Scotland -->
+    <date year="2015" month="1" date="2" type="HOLIDAY"><![CDATA[Day after New Years Day]]></date>
+    <date year="2015" month="8" date="3" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
+    <date year="2015" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
+</calendar >
