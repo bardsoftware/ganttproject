@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -56,8 +57,6 @@ public class AboutDialog2 extends AbstractPagesDialog {
   private static List<ListItem> createPages() {
     List<ListItem> result = new ArrayList<AbstractPagesDialog.ListItem>();
     result.add(createSummaryPage());
-    result.add(createHtmlPage("authors"));
-    result.add(createTranslationsPage());
     result.add(createHtmlPage("license"));
     result.add(createHtmlPage("library"));
     return result;
@@ -65,11 +64,20 @@ public class AboutDialog2 extends AbstractPagesDialog {
 
   private static ListItem createSummaryPage() {
     JPanel result = new JPanel(new BorderLayout());
-    JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.CURRENT));
-    html.setAlignmentX(0.5f);
-    JPanel htmlWrapper = new JPanel(new BorderLayout());
-    htmlWrapper.add(html, BorderLayout.NORTH);
-    result.add(htmlWrapper, BorderLayout.NORTH);
+    Box htmlBox = Box.createVerticalBox();
+    {
+      JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.CURRENT));
+      html.setAlignmentX(0.5f);
+      htmlBox.add(html);
+      htmlBox.add(Box.createVerticalStrut(20));
+    }
+    {
+      JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.authors.short", "http://ganttproject.biz/about"));
+      html.setAlignmentX(0.5f);
+      htmlBox.add(html);
+      htmlBox.add(Box.createVerticalStrut(20));
+    }
+    result.add(htmlBox, BorderLayout.NORTH);
 
     JLabel icon = new JLabel(new ImageIcon(AboutDialog2.class.getResource("/icons/ganttproject.png")));
     icon.setAlignmentX(0.5f);
