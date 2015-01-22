@@ -326,7 +326,7 @@
         identifier="net.sourceforge.ganttproject"
         shortversion="${package.name.version}"
         icon="ganttproject.icns"
-        copyright="Copyright 2014 BarD Software s.r.o. Distributed under GPL3"
+        copyright="Copyright 2015 BarD Software s.r.o. Distributed under GPL3"
         applicationCategory="public.app-category.productivity"
         mainclassname="org.bardsoftware.eclipsito.Boot">
   
