@@ -642,7 +642,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     LafOption(UIFacade uiFacade) {
       super("laf", GanttLookAndFeels.getGanttLookAndFeels().getInstalledLookAndFeels());
       myUiFacade = uiFacade;
-      setValue("Plastic");
+      if (!System.getProperty("os.name").toLowerCase().contains("os x")) {
+        setValue("Plastic");
+      }
     }
 
     public GanttLookAndFeelInfo getLookAndFeel() {
