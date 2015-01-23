@@ -691,6 +691,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     for (int i = 0; i < copyOptions.length; i++) {
       copyOptions[i].copyFrom(thisOptions[i]);
     }
+    copy.myChartFontOption.setValue(myChartFontOption.getValue());
     copy.calculateRowHeight();
   }
 
