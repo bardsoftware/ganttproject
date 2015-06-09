@@ -95,6 +95,7 @@ public interface Task extends MutableTask {
     BigDecimal getValue();
     BigDecimal getManualValue();
     BigDecimal getCalculatedValue();
+    void setValue(Cost copy);
     void setValue(BigDecimal value);
     boolean isCalculated();
     void setCalculated(boolean calculated);
