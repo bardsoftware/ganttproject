@@ -137,7 +137,10 @@ class TaskRecords extends RecordGroup {
     }
     if (record.isSet(TaskDefaultColumn.COST.getName())) {
       try {
-        builder = builder.withCost(new BigDecimal(record.get(TaskDefaultColumn.COST.getName())));
+        String cost = record.get(TaskDefaultColumn.COST.getName());
+        if (!Strings.isNullOrEmpty(cost)) {
+          builder = builder.withCost(new BigDecimal(cost));
+        }
       } catch (NumberFormatException e) {
         GPLogger.logToLogger(e);
         GPLogger.log(String.format("Failed to parse %s as cost value", record.get(TaskDefaultColumn.COST.getName())));
