@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -144,5 +145,15 @@ public class ClipboardTaskProcessor {
       anchor = copied;
     }
     return result;
+  }
+
+  public boolean canMove(Task dropTarget, ClipboardContents clipboard) {
+    TaskContainmentHierarchyFacade hierarchy = myTaskManager.getTaskHierarchy();
+    for (Task t : clipboard.getTasks()) {
+      if (!hierarchy.areUnrelated(t, dropTarget)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
