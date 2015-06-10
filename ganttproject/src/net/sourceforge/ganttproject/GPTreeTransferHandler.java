@@ -121,21 +121,26 @@ class GPTreeTransferHandler extends TransferHandler {
       JXTreeTable.DropLocation dl = (JXTreeTable.DropLocation) support.getDropLocation();
       int dropRow = myTreeTable.rowAtPoint(dl.getDropPoint());
       TreePath dropPath = myTreeTable.getPathForRow(dropRow);
+      if (dropPath == null) {
+        return false;
+      }
       DefaultMutableTreeTableNode dropNode = (DefaultMutableTreeTableNode) dropPath.getLastPathComponent();
       final Task dropTask = (Task) dropNode.getUserObject();
-      myUndoManager.undoableEdit(GanttLanguage.getInstance().getText("dragndrop.undo.label"), new Runnable() {
-        @Override
-        public void run() {
-          clipboard.cut();
-          ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
-          processor.pasteAsChild(dropTask, clipboard);
-        }
-      });
-      return true;
+      final ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
+      if (processor.canMove(dropTask, clipboard)) {
+        myUndoManager.undoableEdit(GanttLanguage.getInstance().getText("dragndrop.undo.label"), new Runnable() {
+          @Override
+          public void run() {
+            clipboard.cut();
+            processor.pasteAsChild(dropTask, clipboard);
+          }
+        });
+        return true;
+      }
     } catch (UnsupportedFlavorException | IOException | RuntimeException e) {
       GPLogger.logToLogger(e);
-      return false;
     }
+    return false;
   }
 
   private static class NodesTransferable implements Transferable {

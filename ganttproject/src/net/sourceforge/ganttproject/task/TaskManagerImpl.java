@@ -854,6 +854,9 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public boolean areUnrelated(Task first, Task second) {
+      if (first.equals(second)) {
+        return false;
+      }
       myPathBuffer.clear();
       for (Task container = getContainer(first); container != null; container = getContainer(container)) {
         myPathBuffer.add(container);
