@@ -37,6 +37,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import net.java.balloontip.BalloonTip;
@@ -78,6 +79,7 @@ class DialogBuilder {
       myDlg = dlg;
       myNotificationOwner = notificationOwner;
       notificationOwner.setAction(new AbstractAction("Error") {
+        @Override
         public void actionPerformed(ActionEvent e) {
           showBalloon();
         }
@@ -186,17 +188,45 @@ class DialogBuilder {
     for (final Action nextAction : buttonActions) {
       JButton nextButton = null;
       if (nextAction instanceof OkAction) {
-        nextButton = new JButton(nextAction);
-        nextButton.addActionListener(new ActionListener() {
+        final JButton _btn = new JButton();
+        OkAction proxy = new OkAction() {
+          // These two steps handel the case when focus is somewhere in text input
+          // and user hits Ctrl+Enter
+          // First we want to move focus to OK button to allow focus listeners, if any,
+          // to catch focusLost event
+          // Second, we want it to happen before original OkAction runs
+          // So we wrap original OkAction into proxy which moves focus and schedules "later" command
+          // which call the original action. Between them EDT sends out focusLost events.
+          final Runnable myStep2 = new Runnable() {
+            @Override
+            public void run() {
+              result.hide();
+              commiter.commit();
+              nextAction.actionPerformed(null);
+            }
+          };
+          final Runnable myStep1 = new Runnable() {
+            @Override
+            public void run() {
+              _btn.requestFocus();
+              SwingUtilities.invokeLater(myStep2);
+            }
+          };
           @Override
-          public void actionPerformed(ActionEvent e) {
-            result.hide();
-            commiter.commit();
+          public void actionPerformed(final ActionEvent e) {
+            SwingUtilities.invokeLater(myStep1);
           }
-        });
+        };
+        for (Object key : proxy.getKeys()) {
+          proxy.putValue(key.toString(), nextAction.getValue(key.toString()));
+        }
+        _btn.setAction(proxy);
+        nextButton = _btn;
+
         if (((OkAction)nextAction).isDefault()) {
           dlg.getRootPane().setDefaultButton(nextButton);
         }
+
       }
       if (nextAction instanceof CancelAction) {
         cancelAction = nextAction;
