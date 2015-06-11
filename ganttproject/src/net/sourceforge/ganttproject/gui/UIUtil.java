@@ -318,6 +318,7 @@ public abstract class UIUtil {
       @Override
       public void focusLost(FocusEvent e) {
         try {
+          editor.commitEdit();
           if (editor.getValue() instanceof Date) {
             if (dv != null) {
               Pair<Boolean, String> validation = dv.apply((Date)editor.getValue());
