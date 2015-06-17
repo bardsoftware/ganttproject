@@ -88,6 +88,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -294,10 +295,82 @@ public abstract class UIUtil {
       final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ActionListener listener) {
     ValueValidator<Date> parseValidator = createStringDateValidator(
         dv, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
-    setupDatePicker(picker, initialDate, dv, parseValidator, listener);
+    DatePickerEditCommiter commiter = setupDatePicker(picker, initialDate, dv, parseValidator, listener);
+    commiter.attachOnFocusLost(listener);
   }
 
-  public static void setupDatePicker(final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ValueValidator<Date> parseValidator, final ActionListener listener) {
+  // This class is responsible for committing user input in a text editor component of a date picker
+  private static class DatePickerEditCommiter {
+    private final JFormattedTextField myTextEditor;
+    private final JXDatePicker myDatePicker;
+    private final Date myInitialDate;
+    private final DateValidator myDateValidator;
+    private final ValueValidator<Date> myParseValidator;
+
+    private DatePickerEditCommiter(JXDatePicker datePicker, JFormattedTextField textEditor,
+        DateValidator dateValidator,  ValueValidator<Date> parseValidator) {
+      myTextEditor = Preconditions.checkNotNull(textEditor);
+      myDatePicker = Preconditions.checkNotNull(datePicker);
+      myInitialDate = myDatePicker.getDate();
+      myDateValidator = dateValidator;
+      myParseValidator = parseValidator;
+    }
+
+    // We need listen focus lost in a dialog, but we don't need it in the table view,
+    // so listener is optional
+    void attachOnFocusLost(final ActionListener onSuccess) {
+      myTextEditor.addFocusListener(new FocusAdapter() {
+        @Override
+        public void focusLost(FocusEvent e) {
+          try {
+            tryCommit();
+            onSuccess.actionPerformed(new ActionEvent(myDatePicker, ActionEvent.ACTION_PERFORMED, ""));
+            return;
+          } catch (ValidationException | ParseException ex) {
+            // We probably don't want to log parse/validation exceptions
+            // If user input is not valid we reset value to the initial one
+            resetValue();
+          }
+        }
+      });
+    }
+
+    void resetValue() {
+      myTextEditor.setBackground(getValidFieldColor());
+      SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          if (myInitialDate != null) {
+            myDatePicker.setDate(myInitialDate);
+          }
+        }
+      });
+    }
+
+    // Tries to finish editing and set the result value into the date picker
+    void tryCommit() throws ParseException, ValidationException {
+      myTextEditor.commitEdit();
+      final Date dateValue;
+      if (myTextEditor.getValue() instanceof Date) {
+        if (myDateValidator != null) {
+          Pair<Boolean, String> validation = myDateValidator.apply((Date)myTextEditor.getValue());
+          if (!validation.first()) {
+            throw new ValidationException(validation.second());
+          }
+        }
+        dateValue = (Date) myTextEditor.getValue();
+      } else {
+        dateValue = myParseValidator.parse(String.valueOf(myTextEditor.getText()));
+        if (dateValue == null) {
+          throw new ValidationException();
+        }
+      }
+      myDatePicker.setDate(dateValue);
+      myTextEditor.setBackground(getValidFieldColor());
+      return;
+    }
+  }
+  public static DatePickerEditCommiter setupDatePicker(final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ValueValidator<Date> parseValidator, final ActionListener listener) {
     if (dv == null) {
       picker.addActionListener(listener);
     } else {
@@ -314,46 +387,10 @@ public abstract class UIUtil {
     }
     final JFormattedTextField editor = picker.getEditor();
     UIUtil.attachValidator(editor, parseValidator, null);
-    editor.addFocusListener(new FocusAdapter() {
-      @Override
-      public void focusLost(FocusEvent e) {
-        try {
-          editor.commitEdit();
-          if (editor.getValue() instanceof Date) {
-            if (dv != null) {
-              Pair<Boolean, String> validation = dv.apply((Date)editor.getValue());
-              if (!validation.first()) {
-                throw new ValidationException(validation.second());
-              }
-            }
-          } else {
-            if (parseValidator.parse(String.valueOf(editor.getText())) == null) {
-              throw new ValidationException();
-            }
-          }
-          editor.setBackground(getValidFieldColor());
-          picker.commitEdit();
-          listener.actionPerformed(new ActionEvent(picker, ActionEvent.ACTION_PERFORMED, ""));
-          return;
-        } catch (ValidationException e1) {
-          // We probably don't want to log parse/validation exceptions
-        } catch (ParseException e2) {
-          // We probably don't want to log parse/validation exceptions
-        }
-        editor.setBackground(getValidFieldColor());
-        SwingUtilities.invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            if (initialDate != null) {
-              picker.setDate(initialDate);
-            }
-          }
-        });
-      }
-    });
     if (initialDate != null) {
       picker.setDate(initialDate);
     }
+    return new DatePickerEditCommiter(picker, editor, dv, parseValidator);
   }
   /**
    * @return a {@link JXDatePicker} component with the default locale, images
@@ -469,6 +506,7 @@ public abstract class UIUtil {
     private Date myDate;
     private final JXDatePicker myDatePicker;
     private final boolean myShowDatePicker;
+    private DatePickerEditCommiter myCommitter;
 
     public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator, DateFormat... dateFormats) {
       super(new JTextField());
@@ -477,7 +515,7 @@ public abstract class UIUtil {
       if (parseValidator == null) {
         parseValidator = UIUtil.createStringDateValidator(null, dateFormats);
       }
-      UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
+      myCommitter = UIUtil.setupDatePicker(myDatePicker, null, null, parseValidator, getActionListener());
       GanttLanguage.getInstance().addListener(this);
     }
 
@@ -500,6 +538,12 @@ public abstract class UIUtil {
 
     @Override
     public boolean stopCellEditing() {
+      try {
+        myCommitter.tryCommit();
+      } catch (ValidationException | ParseException e) {
+        myCommitter.resetValue();
+        return false;
+      }
       myDate = myDatePicker.getDate();
       getComponent().setBackground(null);
       super.fireEditingStopped();
