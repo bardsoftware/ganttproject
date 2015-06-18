@@ -324,6 +324,7 @@ public class TaskManagerImpl implements TaskManager {
   public void deleteTask(Task tasktoRemove) {
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
+    tasktoRemove.delete();
     fireTaskRemoved(container, tasktoRemove);
   }
 
