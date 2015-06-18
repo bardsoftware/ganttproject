@@ -18,9 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -45,6 +47,8 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
   private static final int STANDARD_COLUMN_COUNT = ResourceDefaultColumn.values().length;
@@ -70,15 +74,18 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
       public void taskScheduleChanged(TaskScheduleEvent e) {
-        fireResourceChange(e.getTask());
-      }
-
-      void fireResourceChange(Task task) {
-        ResourceAssignment[] assignments = task.getAssignments();
-        for (int i = 0; i < assignments.length; i++) {
-          assignments[i].getResource().resetLoads();
-          resourceAssignmentsChanged(new HumanResource[] { assignments[i].getResource() });
+        Set<HumanResource> affected = Sets.newHashSet();
+        List<Task> subtree = Lists.newArrayList(myTaskManager.getTaskHierarchy().getDeepNestedTasks(e.getTask()));
+        subtree.add(e.getTask());
+        for (Task t : subtree) {
+          for (ResourceAssignment ra : t.getAssignments()) {
+            affected.add(ra.getResource());
+          }
         }
+        for (HumanResource resource : affected) {
+          resource.resetLoads();
+        }
+        resourceAssignmentsChanged(affected);
       }
     });
     root = buildTree();
@@ -301,9 +308,9 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     modelSupport.firePathChanged(TreeUtil.createPath(node));
   }
 
-  public void resourceAssignmentsChanged(HumanResource[] resources) {
-    for (int i = 0; i < resources.length; i++) {
-      ResourceNode nextNode = getNodeForResource(resources[i]);
+  public void resourceAssignmentsChanged(Iterable<HumanResource> resources) {
+    for (HumanResource resource : resources) {
+      ResourceNode nextNode = getNodeForResource(resource);
       SelectionKeeper selectionKeeper = new SelectionKeeper(mySelectionModel, nextNode);
       buildAssignmentsSubtree(nextNode);
       selectionKeeper.restoreSelection();
