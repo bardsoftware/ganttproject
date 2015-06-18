@@ -692,6 +692,7 @@ public class TaskManagerImpl implements TaskManager {
         for (Task t : getTasks()) {
           t.setEnd(null);
         }
+        myScheduler.run();
       }
     };
   }

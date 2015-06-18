@@ -74,12 +74,6 @@ public class ProjectCalendarDialogAction extends GPAction {
 
   private void onCalendarEditCommited(ProjectCalendarOptionPageProvider configPage) {
     configPage.commit();
-    myProject.setModified();
-    try {
-      myProject.getTaskManager().getAlgorithmCollection().getScheduler().run();
-    } catch (TaskDependencyException e1) {
-      GPLogger.getLogger(ProjectCalendarDialogAction.class).log(Level.SEVERE, "Exception after changing holidays", e1);
-    }
     myUIFacade.getActiveChart().reset();
   }
 }
