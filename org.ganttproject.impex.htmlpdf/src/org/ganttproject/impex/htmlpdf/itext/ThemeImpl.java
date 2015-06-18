@@ -38,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -54,6 +55,7 @@ import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.StylesheetImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -430,6 +432,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         }
         Paragraph p = new Paragraph(value, getSansRegular(12));
         cell = new PdfPCell(p);
+        if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
+            || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())) {
+          cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
+        }
         cell.setBorderWidth(0);
         cell.setPaddingLeft(5);
       }
