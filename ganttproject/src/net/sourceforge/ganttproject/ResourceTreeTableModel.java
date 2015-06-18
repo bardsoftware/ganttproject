@@ -69,11 +69,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     myTaskManager = taskManager;
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
-      public void taskRemoved(TaskHierarchyEvent e) {
-        fireResourceChange(e.getTask());
-      }
-
-      @Override
       public void taskScheduleChanged(TaskScheduleEvent e) {
         fireResourceChange(e.getTask());
       }
