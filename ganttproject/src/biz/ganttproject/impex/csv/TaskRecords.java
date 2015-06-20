@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.logging.Level;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import org.apache.commons.csv.CSVRecord;
 
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.TimeUnitStack;
 
@@ -101,6 +103,16 @@ class TaskRecords extends RecordGroup {
     GanttCSVOpen.createCustomProperties(getCustomFields(), taskManager.getCustomPropertyManager());
   }
 
+  private Date parseDateOrError(String strDate) {
+    Date result = GanttCSVOpen.language.parseDate(strDate);
+    if (result == null) {
+      addError(Level.WARNING, GanttLanguage.getInstance().formatText("impex.csv.error.parse_date",
+          strDate,
+          GanttLanguage.getInstance().getShortDateFormat().toPattern(),
+          GanttLanguage.getInstance().getShortDateFormat().format(new Date())));
+    }
+    return result;
+  }
   @Override
   protected boolean doProcess(CSVRecord record) {
     if (!super.doProcess(record)) {
@@ -109,10 +121,11 @@ class TaskRecords extends RecordGroup {
     if (!hasMandatoryFields(record)) {
       return false;
     }
+    Date startDate = parseDateOrError(getOrNull(record, TaskFields.BEGIN_DATE.toString()));
     // Create the task
     TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
         .withName(getOrNull(record, TaskFields.NAME.toString()))
-        .withStartDate(GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.BEGIN_DATE.toString())))
+        .withStartDate(startDate)
         .withWebLink(getOrNull(record, TaskFields.WEB_LINK.toString()))
         .withNotes(getOrNull(record, TaskFields.NOTES.toString()));
     if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
@@ -125,8 +138,10 @@ class TaskRecords extends RecordGroup {
           builder = builder.withLegacyMilestone();
         }
       } else {
-        Date endDate = GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.END_DATE.toString()));
-        builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
+        Date endDate = parseDateOrError(getOrNull(record, TaskFields.END_DATE.toString()));
+        if (endDate != null) {
+          builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
+        }
       }
     }
     if (record.isSet(TaskFields.COMPLETION.toString())) {

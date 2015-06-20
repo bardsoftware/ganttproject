@@ -19,14 +19,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
+import java.util.List;
+import java.util.logging.Level;
 
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.collect.Pair;
 import net.sourceforge.ganttproject.wizard.WizardPage;
 
 public abstract class ImporterBase implements Importer {
@@ -116,5 +121,18 @@ public abstract class ImporterBase implements Importer {
   @Override
   public WizardPage getCustomPage() {
     return null;
+  }
+
+  protected void reportErrors(List<Pair<Level, String>> errors, String loggerName) {
+    if (!errors.isEmpty()) {
+      StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
+      for (Pair<Level, String> message : errors) {
+        GPLogger.getLogger(loggerName).log(message.first(), message.second());
+        builder.append(String.format("<tr><td><b>%s</b></td><td>%s</td></tr>", message.first().getName(), message.second()));
+      }
+      builder.append("</table>");
+      getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
+          GanttLanguage.getInstance().formatText("impex." + loggerName.toLowerCase() + ".importErrorReport", builder.toString()));
+    }
   }
 }
