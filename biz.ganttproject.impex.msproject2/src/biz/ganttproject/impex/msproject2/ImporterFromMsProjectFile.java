@@ -69,21 +69,8 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
       getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
 
-      try {
-        ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
-      } finally {
-
-      }
-      if (!errors.isEmpty()) {
-        StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
-        for (Pair<Level, String> message : errors) {
-          GPLogger.getLogger("MSProject").log(message.first(), message.second());
-          builder.append(String.format("<tr><td><b>%s</b></td><td>%s</td></tr>", message.first().getName(), message.second()));
-        }
-        builder.append("</table>");
-        getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
-            GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
-      }
+      ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
+      reportErrors(errors, "MSProject");
     } catch (MPXJException e) {
       getUiFacade().showErrorDialog(e);
     } finally {

@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sourceforge.ganttproject.CustomPropertyClass;
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -173,9 +175,12 @@ public class GanttCSVOpen {
    * @throws IOException
    *           on parse error or input read-failure
    */
-  public boolean load() throws IOException {
+  public List<Pair<Level, String>> load() throws IOException {
     final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
-
+    final List<Pair<Level, String>> errors = Lists.newArrayList();
+    for (RecordGroup group : myRecordGroups) {
+      group.setErrorOutput(errors);
+    }
     int idxCurrentGroup = 0;
     int idxNextGroup;
     int skipHeadLines = 0;
@@ -196,8 +201,7 @@ public class GanttCSVOpen {
     for (RecordGroup group : myRecordGroups) {
       group.postProcess();
     }
-    // Succeeded
-    return true;
+    return errors;
   }
 
   int getSkippedLineCount() {

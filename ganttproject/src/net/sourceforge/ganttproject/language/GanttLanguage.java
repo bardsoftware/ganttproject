@@ -138,18 +138,18 @@ public class GanttLanguage {
     return ganttLanguage;
   }
 
-  public DateFormat getMediumDateFormat() {
+  public SimpleDateFormat getMediumDateFormat() {
     return currentDateFormat;
   }
 
-  public DateFormat getShortDateFormat() {
+  public SimpleDateFormat getShortDateFormat() {
     return shortCurrentDateFormat;
   }
 
-  public DateFormat getRecurringDateFormat() {
+  public SimpleDateFormat getRecurringDateFormat() {
     return myRecurringDateFormat;
   }
-  public DateFormat getLongDateFormat() {
+  public SimpleDateFormat getLongDateFormat() {
     return myLongFormat;
   }
 
