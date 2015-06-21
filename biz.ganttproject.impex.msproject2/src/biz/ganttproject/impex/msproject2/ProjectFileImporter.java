@@ -96,6 +96,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 
+import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -110,6 +111,7 @@ class ProjectFileImporter {
   private ColumnList myTaskFields;
   private List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
+  private Map<GanttTask, Date> myNativeTask2foreignStart;
 
   private static ProjectReader createReader(File file) {
     int lastDot = file.getName().lastIndexOf('.');
@@ -171,7 +173,7 @@ class ProjectFileImporter {
     return Collections.emptyList();
   }
 
-  public List<Pair<Level, String>> run() throws MPXJException {
+  public void run() throws MPXJException {
     ProjectFile pf;
     try {
       pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile))
@@ -188,11 +190,12 @@ class ProjectFileImporter {
     }
     myProjectFile = pf;
     Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
+    myNativeTask2foreignStart = Maps.newHashMap();
     Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
     importCalendar(pf);
     importResources(pf, foreignId2nativeResource);
 
-    importTasks(pf, foreignId2nativeTask);
+    importTasks(pf, foreignId2nativeTask, myNativeTask2foreignStart);
     hideCustomProperties();
     importDependencies(pf, foreignId2nativeTask);
     List<net.sourceforge.ganttproject.task.Task> leafTasks = Lists.newArrayList();
@@ -203,10 +206,15 @@ class ProjectFileImporter {
     }
     myNativeProject.getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
     importResourceAssignments(pf, foreignId2nativeTask, foreignId2nativeResource);
+  }
 
+  List<Pair<Level, String>> getErrors() {
     return myErrors;
   }
 
+  Map<GanttTask, Date> getOriginalStartDates() {
+    return myNativeTask2foreignStart;
+  }
   private void hideCustomProperties() {
     for (Map.Entry<String, Object> it : myCustomPropertyUniqueValueMapping.entrySet()) {
       if (it.getValue() != null) {
@@ -334,10 +342,10 @@ class ProjectFileImporter {
     }
   }
 
-  private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask) {
+  private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
     myTaskCustomPropertyMapping = new HashMap<TaskField, CustomPropertyDefinition>();
     for (Task t : foreignProject.getChildTasks()) {
-      importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask);
+      importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
     }
   }
 
@@ -355,7 +363,7 @@ class ProjectFileImporter {
 
 
   private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask,
-      Map<Integer, GanttTask> foreignId2nativeTask) {
+      Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
     if (t.getNull()) {
       myErrors.add(Pair.create(Level.INFO,
           MessageFormat.format("Task with id={0} is blank task. Skipped", foreignId(t))));
@@ -365,7 +373,7 @@ class ProjectFileImporter {
       boolean isRealTask = t.getName() != null && !t.getChildTasks().isEmpty();
       if (!isRealTask) {
         for (Task child : t.getChildTasks()) {
-          importTask(foreignProject, child, getTaskManager().getRootTask(), foreignId2nativeTask);
+          importTask(foreignProject, child, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
         }
         return;
       }
@@ -387,8 +395,9 @@ class ProjectFileImporter {
     if (t.getPriority() != null) {
       taskBuilder = taskBuilder.withPriority(convertPriority(t.getPriority()));
     }
+    Date foreignStartDate = convertStartTime(t.getStart());
     if (t.getChildTasks().isEmpty()) {
-      taskBuilder.withStartDate(convertStartTime(t.getStart()));
+      taskBuilder.withStartDate(foreignStartDate);
       if (t.getPercentageComplete() != null) {
         taskBuilder.withCompletion(t.getPercentageComplete().intValue());
       }
@@ -429,11 +438,12 @@ class ProjectFileImporter {
     }
     if (!t.getChildTasks().isEmpty()) {
       for (Task child : t.getChildTasks()) {
-        importTask(foreignProject, child, nativeTask, foreignId2nativeTask);
+        importTask(foreignProject, child, nativeTask, foreignId2nativeTask, nativeTask2foreignStart);
       }
     }
     importCustomFields(t, nativeTask);
     foreignId2nativeTask.put(foreignId(t), nativeTask);
+    nativeTask2foreignStart.put(nativeTask, foreignStartDate);
   }
 
   private Date convertStartTime(Date start) {
