@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import com.google.common.collect.Lists;
+
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
 import net.sf.mpxj.MPXJException;
@@ -98,6 +100,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
   private void findChangedDates(Map<GanttTask, Date> originalDates, Map<Task, Task> buffer2realTask,
       List<Pair<Level, String>> errors) {
+    List<Pair<Level, String>> dateChangeMessages = Lists.newArrayList();
     for (Task bufferTask : originalDates.keySet()) {
       Date startPerMsProject = originalDates.get(bufferTask);
       if (startPerMsProject == null) {
@@ -109,8 +112,14 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       }
       Date startPerGanttProject = realTask.getStart().getTime();
       if (!startPerMsProject.equals(startPerGanttProject)) {
-        errors.add(Pair.create(Level.WARNING, MessageFormat.format("Task {0} has changed it dates from {1} in MS Project file to {2} in GanttProject", realTask.getName(), startPerMsProject, startPerGanttProject)));
+        dateChangeMessages.add(Pair.create(Level.WARNING, GanttLanguage.getInstance().formatText(
+            "impex.msproject.warning.taskDateChanged", realTask.getName(), startPerMsProject, startPerGanttProject)));
       }
+    }
+    if (!dateChangeMessages.isEmpty()) {
+      errors.add(Pair.create(Level.INFO, GanttLanguage.getInstance().formatText(
+          "impex.msproject.warning.taskDateChanged.heading", dateChangeMessages.size(), originalDates.size())));
+      errors.addAll(dateChangeMessages);
     }
   }
 

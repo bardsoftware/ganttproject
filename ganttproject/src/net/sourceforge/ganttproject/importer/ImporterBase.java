@@ -128,7 +128,7 @@ public abstract class ImporterBase implements Importer {
       StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
       for (Pair<Level, String> message : errors) {
         GPLogger.getLogger(loggerName).log(message.first(), message.second());
-        builder.append(String.format("<tr><td><b>%s</b></td><td>%s</td></tr>", message.first().getName(), message.second()));
+        builder.append(String.format("<tr><td valign=top><b>%s</b></td><td valign=top>%s</td></tr>", message.first().getName(), message.second()));
       }
       builder.append("</table>");
       getUiFacade().showNotificationDialog(NotificationChannel.WARNING,

@@ -198,7 +198,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     return new FileDocument(selectedFile);
   }
 
-  public static void importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption, ImportCalendarOption importCalendarOption) {
+  public static Map<Task, Task> importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption, ImportCalendarOption importCalendarOption) {
     targetProject.getRoleManager().importData(bufferProject.getRoleManager());
     if (importCalendarOption != null) {
       targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
@@ -210,16 +210,16 @@ public class ImporterFromGanttFile extends ImporterBase {
     Map<HumanResource, HumanResource> original2ImportedResource = targetProject.getHumanResourceManager().importData(
         bufferProject.getHumanResourceManager(), new OverwritingMerger(mergeOption));
 
+    Map<Task, Task> result = null;
     {
       CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
       Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs = targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
       TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
       try {
         origTaskManager.setEventsEnabled(false);
-        Map<Task, Task> original2ImportedTask = origTaskManager.importData(bufferProject.getTaskManager(),
-            that2thisCustomDefs);
+        result = origTaskManager.importData(bufferProject.getTaskManager(), that2thisCustomDefs);
         origTaskManager.importAssignments(bufferProject.getTaskManager(), targetProject.getHumanResourceManager(),
-            original2ImportedTask, original2ImportedResource);
+            result, original2ImportedResource);
       } finally {
         origTaskManager.setEventsEnabled(true);
       }
@@ -227,5 +227,6 @@ public class ImporterFromGanttFile extends ImporterBase {
     uiFacade.refresh();
     uiFacade.getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
     uiFacade.getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
+    return result;
   }
 }
