@@ -27,6 +27,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -189,6 +191,7 @@ class DialogBuilder {
       JButton nextButton = null;
       if (nextAction instanceof OkAction) {
         final JButton _btn = new JButton();
+        final AbstractAction _delegate = (AbstractAction) nextAction;
         OkAction proxy = new OkAction() {
           // These two steps handel the case when focus is somewhere in text input
           // and user hits Ctrl+Enter
@@ -203,6 +206,7 @@ class DialogBuilder {
               result.hide();
               commiter.commit();
               nextAction.actionPerformed(null);
+              _delegate.removePropertyChangeListener(myDelegateListener);
             }
           };
           final Runnable myStep1 = new Runnable() {
@@ -216,10 +220,23 @@ class DialogBuilder {
           public void actionPerformed(final ActionEvent e) {
             SwingUtilities.invokeLater(myStep1);
           }
+          private void copyValues() {
+            for (Object key : _delegate.getKeys()) {
+              putValue(key.toString(), _delegate.getValue(key.toString()));
+            }
+            setEnabled(_delegate.isEnabled());
+          }
+          private PropertyChangeListener myDelegateListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+              copyValues();
+            }
+          };
+          {
+            _delegate.addPropertyChangeListener(myDelegateListener);
+            copyValues();
+          }
         };
-        for (Object key : proxy.getKeys()) {
-          proxy.putValue(key.toString(), nextAction.getValue(key.toString()));
-        }
         _btn.setAction(proxy);
         nextButton = _btn;
 
