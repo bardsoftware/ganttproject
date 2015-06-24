@@ -82,7 +82,7 @@
            homepage="http://ganttproject.biz/"
            section="editors"
            priority="optional"
-           depends="openjdk-7-jre | openjdk-8-jre"
+           depends="openjdk-7-jre | openjdk-8-jre | oracle-java7-jre | oracle-java8-jre"
            conflicts="ganttproject-praha"
       	   replaces="ganttproject-praha"
            postrm="deb/postrm"
