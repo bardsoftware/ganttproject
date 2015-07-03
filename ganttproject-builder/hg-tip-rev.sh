@@ -1,3 +1,3 @@
 #!/bin/sh
-REV=`hg log -l 1 | grep changeset: | cut -d: -f 2 | tr -d ' '`
-echo $(($REV+1))
+REV=$(git rev-list --count ganttproject-2.7..)
+echo $(($REV+1891))
