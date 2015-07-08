@@ -164,11 +164,15 @@ public class TaskProperties {
     if (coordinators.isEmpty()) {
       return "";
     }
-    return Joiner.on(", ").join(Collections2.transform(coordinators, new Function<ResourceAssignment, String>() {
-      @Override
-      public String apply(ResourceAssignment input) {
-        return input.getResource().getName();
-      }
-    }));
+    return formatResources(coordinators);
+  }
+
+  public static String formatResources(Collection<ResourceAssignment> resources) {
+    return Joiner.on(", ").join(Collections2.transform(resources, new Function<ResourceAssignment, String>() {
+        @Override
+        public String apply(ResourceAssignment input) {
+          return input.getResource().getName();
+        }
+      }));
   }
 }
