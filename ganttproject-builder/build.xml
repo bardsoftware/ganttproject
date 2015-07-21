@@ -320,7 +320,9 @@
            classpath="lib/appbundler-1.0.jar" />
 
   <target name="dist-mac" depends="init,make-package-name">
-    <bundleapp outputdirectory="${package.dir}"
+    <property name="package.osx.dir" value="ganttproject.app-${package.name.suffix}"/>
+    <mkdir dir="${package.osx.dir}"/>
+    <bundleapp outputdirectory="${package.osx.dir}"
         name="GanttProject"
         displayname="GanttProject"
         identifier="net.sourceforge.ganttproject"
@@ -333,22 +335,28 @@
         <classpath file="eclipsito.jar"/>
         <argument value="-app"/>
         <argument value="net.sourceforge.ganttproject.GanttProject"/>
-        <argument value="-plugins"/>
+        <argument value="-plugins-dir"/>
         <argument value="$APP_ROOT/Contents/Java/plugins"/>
         <option value="-Dapple.laf.useScreenMenuBar=true"/>
         <option value="-Xdock:name=GanttProject"/>
-    </bundleapp>
-  	<copy todir="${package.dir}/GanttProject.app/Contents/Java">
+        <option value="-Xmx512m"/>
+        <option value="-ea"/>
+  </bundleapp>
+  	<copy todir="${package.osx.dir}/GanttProject.app/Contents/Java">
   	  <fileset dir="${package.dir}">
   	  	<include name="eclipsito.jar"/>
   	  	<include name="plugins/**"/>
   	  </fileset>
   	</copy>
-  	<patch patchfile="Info.plist.patch" originalfile="${package.dir}/GanttProject.app/Contents/Info.plist"/>
-  	<chmod perm="ugo+rx" file="${package.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+  	<patch patchfile="Info.plist.patch" originalfile="${package.osx.dir}/GanttProject.app/Contents/Info.plist"/>
+  	<chmod perm="ugo+rx" file="${package.osx.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+        <zip destfile="${package.osx.dir}.zip">
+	   <zipfileset dir="${package.osx.dir}" includes="GanttProject.app/**">
+	   </zipfileset>
+        </zip>
   </target>
 
-	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">
+	<target name="dist-all" depends="dist-bin,dist-win,dist-deb,dist-mac">
     <echo>
 =======================================================
   All packages build completed
