@@ -47,6 +47,8 @@ public class ResourceActionSet {
 
   private final AssignmentDeleteAction myAssignmentDelete;
 
+  private final ResourceImportLdapAction myResourceLdapImportAction;
+
   private AbstractAction[] myActions;
 
   public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext,
@@ -60,6 +62,7 @@ public class ResourceActionSet {
     myResourceSendMailAction = new ResourceSendMailAction(table);
     myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(),
         projectFrame.getRoleManager(), projectFrame);
+    myResourceLdapImportAction = new ResourceImportLdapAction(manager,projectFrame.getTaskManager(),projectFrame.getRoleManager(),projectFrame);
     myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
   }
 
@@ -69,6 +72,7 @@ public class ResourceActionSet {
       myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourceImportAction.putValue(Action.SHORT_DESCRIPTION, null);
+      myResourceLdapImportAction.putValue(Action.SHORT_DESCRIPTION,null);
       myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
     }
     return myActions;
@@ -100,6 +104,10 @@ public class ResourceActionSet {
 
   public ResourceImportAction getResourceImportAction() {
     return myResourceImportAction;
+  }
+
+  public ResourceImportLdapAction getResourceLdapImportAction() {
+	  return myResourceLdapImportAction;
   }
 
   public AssignmentDeleteAction getAssignmentDelete() {

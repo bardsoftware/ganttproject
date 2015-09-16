@@ -319,6 +319,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     mHuman.add(myResourceActions.getResourceSendMailAction());
     mHuman.add(myResourceActions.getResourceImportAction());
+    mHuman.add(myResourceActions.getResourceLdapImportAction());
     bar.add(mHuman);
 
     HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
