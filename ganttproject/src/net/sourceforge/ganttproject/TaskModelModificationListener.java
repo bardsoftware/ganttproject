@@ -37,6 +37,7 @@ public class TaskModelModificationListener extends TaskListenerAdapter {
   @Override
   public void taskScheduleChanged(TaskScheduleEvent e) {
     myGanttProject.setModified();
+    myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run(e.getTask());
   }
 
   @Override
@@ -65,6 +66,7 @@ public class TaskModelModificationListener extends TaskListenerAdapter {
   @Override
   public void taskRemoved(TaskHierarchyEvent e) {
     myGanttProject.setModified();
+    myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
   }
 
   @Override
