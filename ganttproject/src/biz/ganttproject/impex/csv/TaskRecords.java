@@ -222,6 +222,12 @@ class TaskRecords extends RecordGroup {
         }
       }
     }
+    Function<Integer, Task> taskIndex = new Function<Integer, Task>() {
+      @Override
+      public Task apply(Integer id) {
+        return myTaskIdMap.get(String.valueOf(id));
+      }
+    };
     for (Entry<Task, String> entry : myPredecessorMap.entrySet()) {
       if (entry.getValue() == null) {
         continue;
@@ -230,7 +236,7 @@ class TaskRecords extends RecordGroup {
       String[] depSpecs = entry.getValue().split(";");
       for (String spec : depSpecs) {
         try {
-          TaskProperties.parseDependency(spec, successor);
+          TaskProperties.parseDependency(spec, successor, taskIndex);
         } catch (IllegalArgumentException e) {
           GPLogger.logToLogger(String.format("%s\nwhen parsing subspec %s of predecessor specification %s of task %s",
               e.getMessage(), spec, depSpecs, successor));

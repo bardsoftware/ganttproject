@@ -176,11 +176,11 @@ public class TaskProperties {
     return "";
   }
 
-  public static TaskDependency parseDependency(String depSpec, Task successor) {
+  public static TaskDependency parseDependency(String depSpec, Task successor, Function<Integer, Task> taskIndex) {
     TaskManager taskMgr = successor.getManager();
     int posDash = depSpec.indexOf('-');
     if (posDash < 0) {
-      Task predecessor = taskMgr.getTask(Integer.parseInt(depSpec));
+      Task predecessor = taskIndex.apply(Integer.parseInt(depSpec));
       if (predecessor == null) {
         throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
       }
@@ -189,7 +189,7 @@ public class TaskProperties {
     if (depSpec.length() < posDash + 3) {
       throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. There must be a two-letter dependency type specification after dash", depSpec));
     }
-    Task predecessor = taskMgr.getTask(Integer.parseInt(depSpec.substring(0, posDash)));
+    Task predecessor = taskIndex.apply(Integer.parseInt(depSpec.substring(0, posDash)));
     if (predecessor == null) {
       throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
     }
