@@ -32,7 +32,8 @@ import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
 import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.*;
 /**
  * Class with which one can get any properties (even custom) from any task.
@@ -133,7 +134,7 @@ public class TaskProperties {
         sb.append("# ").append(task.getTaskID());
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_PREDECESSORS)) {
-        return formatPredecessors(task, ", ");
+        return formatPredecessors(task, ", ", false);
       }
     }
     return res;
@@ -141,16 +142,77 @@ public class TaskProperties {
   }
 
   public static String formatPredecessors(Task task, String separator) {
+    return formatPredecessors(task, separator, false);
+  }
+
+  public static String formatPredecessors(Task task, String separator, final boolean addDependencyType) {
     TaskDependency[] dep = task.getDependenciesAsDependant().toArray();
     if (dep != null && dep.length > 0) {
       return Joiner.on(separator).join(Lists.transform(Arrays.asList(dep), new Function<TaskDependency, String>() {
         @Override
         public String apply(TaskDependency input) {
-          return String.valueOf(input.getDependee().getTaskID());
+          StringBuilder builder = new StringBuilder(String.valueOf(input.getDependee().getTaskID()));
+          if (!addDependencyType) {
+            return builder.toString();
+          }
+          TaskDependencyConstraint constraint = input.getConstraint();
+          if (constraint.getType() == Type.finishstart && input.getDifference() == 0 && input.getHardness() == TaskDependency.Hardness.STRONG) {
+            return builder.toString();
+          }
+          builder.append("-").append(constraint.getType().getReadablePersistentValue());
+          if (input.getDifference() == 0 && input.getHardness() == TaskDependency.Hardness.STRONG) {
+            return builder.toString();
+          }
+          if (input.getHardness() == TaskDependency.Hardness.RUBBER) {
+            builder.append(">");
+          } else {
+            builder.append("=");
+          }
+          builder.append(String.format("P%dD", input.getDifference()));
+          return builder.toString();
         }
       }));
     }
     return "";
+  }
+
+  public static TaskDependency parseDependency(String depSpec, Task successor) {
+    TaskManager taskMgr = successor.getManager();
+    int posDash = depSpec.indexOf('-');
+    if (posDash < 0) {
+      Task predecessor = taskMgr.getTask(Integer.parseInt(depSpec));
+      if (predecessor == null) {
+        throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
+      }
+      return taskMgr.getDependencyCollection().createDependency(successor, predecessor);
+    }
+    if (depSpec.length() < posDash + 3) {
+      throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. There must be a two-letter dependency type specification after dash", depSpec));
+    }
+    Task predecessor = taskMgr.getTask(Integer.parseInt(depSpec.substring(0, posDash)));
+    if (predecessor == null) {
+      throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
+    }
+    TaskDependencyConstraint.Type depType = TaskDependencyConstraint.Type.fromReadablePersistentValue(depSpec.substring(posDash + 1, posDash + 3));
+    if (depSpec.length() == posDash + 3) {
+      TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
+      return taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint);
+    }
+    char hardnessSpec = depSpec.charAt(posDash + 3);
+    if (hardnessSpec != '=' && hardnessSpec != '>') {
+      throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. There must be either > or = char after dependency type", depSpec));
+    }
+    if (depSpec.charAt(posDash + 4) != 'P' || depSpec.charAt(depSpec.length() - 1) != 'D') {
+      throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. Lag interval is expected to be P*D where * denotes integer value of lag days, e.g. P1D", depSpec));
+    }
+    int lag = Integer.parseInt(depSpec.substring(posDash + 5, depSpec.length() - 1));
+    TaskDependency.Hardness hardness = hardnessSpec == '=' ? TaskDependency.Hardness.STRONG : TaskDependency.Hardness.RUBBER;
+    TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
+    TaskDependency dependency = taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint, hardness);
+    if (lag > 0) {
+      dependency.setDifference(lag);
+    }
+    return dependency;
   }
 
   public static String formatCoordinators(Task t) {

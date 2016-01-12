@@ -186,7 +186,7 @@ public class GanttCSVExport {
             writer.print(coordinator == null ? "" : coordinator.getResource().getName());
             break;
           case PREDECESSORS:
-            writer.print(TaskProperties.formatPredecessors(task, ";"));
+            writer.print(TaskProperties.formatPredecessors(task, ";", true));
             break;
           case COST:
             writer.print(task.getCost().getValue().toPlainString());

@@ -35,11 +35,11 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import org.apache.commons.csv.CSVRecord;
 
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.TimeUnitStack;
 
@@ -222,22 +222,24 @@ class TaskRecords extends RecordGroup {
         }
       }
     }
-    for (Entry<Task, String> predecessor : myPredecessorMap.entrySet()) {
-      if (predecessor.getValue() == null) {
+    for (Entry<Task, String> entry : myPredecessorMap.entrySet()) {
+      if (entry.getValue() == null) {
         continue;
       }
-      String[] ids = predecessor.getValue().split(";");
-      for (String id : ids) {
-        Task dependee = myTaskIdMap.get(id);
-        if (dependee != null) {
-          try {
-            taskManager.getDependencyCollection().createDependency(predecessor.getKey(), dependee);
-          } catch (TaskDependencyException e) {
-            GPLogger.logToLogger(e);
-          }
+      Task successor = entry.getKey();
+      String[] depSpecs = entry.getValue().split(";");
+      for (String spec : depSpecs) {
+        try {
+          TaskProperties.parseDependency(spec, successor);
+        } catch (IllegalArgumentException e) {
+          GPLogger.logToLogger(String.format("%s\nwhen parsing subspec %s of predecessor specification %s of task %s",
+              e.getMessage(), spec, depSpecs, successor));
+        } catch (TaskDependencyException e) {
+          GPLogger.logToLogger(e);
         }
       }
     }
   }
+
 }
 
