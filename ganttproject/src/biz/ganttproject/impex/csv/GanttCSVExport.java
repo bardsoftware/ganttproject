@@ -149,10 +149,6 @@ public class GanttCSVExport {
             writer.print(getWebLink((GanttTask) task));
             continue;
           }
-          if ("resources".equals(entry.getKey())) {
-            writer.print(getAssignments(task));
-            continue;
-          }
           if ("notes".equals(entry.getKey())) {
             writer.print(task.getNotes());
             continue;
@@ -187,6 +183,9 @@ public class GanttCSVExport {
             break;
           case PREDECESSORS:
             writer.print(TaskProperties.formatPredecessors(task, ";", true));
+            break;
+          case RESOURCES:
+            writer.print(getAssignments(task));
             break;
           case COST:
             writer.print(task.getCost().getValue().toPlainString());

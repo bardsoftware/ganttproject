@@ -56,7 +56,6 @@ public class CSVOptions {
       }
     }
     createTaskExportOption("webLink");
-    createTaskExportOption("resources");
     createTaskExportOption("notes");
 
     myResourceOptions.put("id", new DefaultBooleanOption("id", true));
