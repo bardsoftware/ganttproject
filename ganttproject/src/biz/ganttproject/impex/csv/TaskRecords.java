@@ -80,7 +80,7 @@ class TaskRecords extends RecordGroup {
   private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
     @Override
     public int compare(String s1, String s2) {
-      return - (s1.compareTo(s2));
+      return (s1.compareTo(s2));
     }
   });
   private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
