@@ -139,6 +139,7 @@ public class BaselineDialogAction extends GPAction {
     }, CancelAction.EMPTY };
 
     OptionsPageBuilder optionsBuilder = new OptionsPageBuilder();
+    optionsBuilder.setUiFacade(myUiFacade);
     JPanel contentPanel = new JPanel(new BorderLayout());
     contentPanel.add(list.createDefaultComponent(), BorderLayout.CENTER);
     contentPanel.add(optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()), BorderLayout.SOUTH);
