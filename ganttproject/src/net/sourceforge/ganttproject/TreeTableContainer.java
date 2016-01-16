@@ -269,6 +269,14 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     return getTreeTable().getTree().isVisible(TreeUtil.createPath(node));
   }
 
+  @Override
+  public void makeVisible(ModelObject modelObject) {
+    MutableTreeTableNode node = getNode(modelObject);
+    if (node != null) {
+      getTree().scrollPathToVisible(TreeUtil.createPath(node));
+    }
+  }
+
   public void commitIfEditing() {
     if (myTreeTable.getTable().isEditing()) {
       myTreeTable.getTable().getCellEditor().stopCellEditing();

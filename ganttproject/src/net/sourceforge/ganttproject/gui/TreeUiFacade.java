@@ -53,6 +53,8 @@ public interface TreeUiFacade<T> {
   /** Clears the current selection */
   void clearSelection();
 
+  void makeVisible(T modelElement);
+
   GPAction getNewAction();
 
   GPAction getPropertiesAction();
