@@ -100,7 +100,7 @@ public class GPCalendarProvider {
       if (resolved == null) {
         return Collections.emptyList();
       }
-      File dir = new File(resolved.toURI());
+      File dir = new File(resolved.getFile());
       if (dir.exists() && dir.isDirectory() && dir.canRead()) {
         List<GPCalendar> calendars = Lists.newArrayList();
         for (File f : dir.listFiles()) {
@@ -118,7 +118,7 @@ public class GPCalendarProvider {
         }
         return calendars;
       }
-    } catch (IOException | URISyntaxException e) {
+    } catch (IOException e) {
       GPLogger.logToLogger(e);
     }
     return Collections.emptyList();
