@@ -13,8 +13,18 @@
     <date year="2015" month="5" date="4" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
     <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
 
+    <date year="2016" month="3" date="25" type="HOLIDAY"><![CDATA[Good Friday ]]></date>
+    <date year="2016" month="5" date="2" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2016" month="5" date="30" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
 <!-- Scotland -->
     <date year="2015" month="1" date="2" type="HOLIDAY"><![CDATA[Day after New Years Day]]></date>
     <date year="2015" month="8" date="3" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
     <date year="2015" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
+
+    <date year="2016" month="1" date="4" type="HOLIDAY"><![CDATA[Day after New Years Day (in lieu)]]></date>
+    <date year="2016" month="8" date="1" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
+    <date year="2016" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
+
+
 </calendar >

@@ -13,9 +13,14 @@
     <date year="2015" month="5" date="4" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
     <date year="2015" month="5" date="25" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
 
+    <date year="2016" month="3" date="25" type="HOLIDAY"><![CDATA[Good Friday ]]></date>
+    <date year="2016" month="5" date="2" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2016" month="5" date="30" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
 <!-- Northern Ireland -->
     <date year="" month="3" date="17" type="HOLIDAY"><![CDATA[St Patricks Day]]></date>
     <date year="" month="7" date="12" type="HOLIDAY"><![CDATA[Battle of the Boyne]]></date>
     <date year="2015" month="7" date="13" type="HOLIDAY"><![CDATA[Battle of the Boyne (observed)]]></date>
     <date year="2015" month="8" date="31" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>    	
+    <date year="2016" month="8" date="29" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>    	
 </calendar >
