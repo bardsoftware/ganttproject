@@ -187,12 +187,17 @@ class ProjectFileExporter {
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
     Date startTime = convertStartTime(t.getStart().getTime());
-    Date finishTime = convertFinishTime(t.getEnd().getTime());
     mpxjTask.setStart(startTime);
-    mpxjTask.setFinish(finishTime);
+
     Duration duration = convertDuration(t.getDuration());
     mpxjTask.setDuration(duration);
     mpxjTask.setManualDuration(duration);
+    if (t.isMilestone()) {
+      mpxjTask.setFinish(startTime);
+    } else {
+      Date finishTime = convertFinishTime(t.getEnd().getTime());
+      mpxjTask.setFinish(finishTime);
+    }
     mpxjTask.setCost(t.getCost().getValue());
     // mpxjTask.setDurationFormat(TimeUnit.DAYS);
     Duration[] durations = getActualAndRemainingDuration(mpxjTask);
