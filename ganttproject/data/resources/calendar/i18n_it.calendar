@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Italia" type="country">
+<calendar id="it" name="Italy Bank Holidays 2015-2016" type="country">
 <!-- http://en.wikipedia.org/wiki/Public_holidays_in_Italy -->
-<!-- http://www.officeholidays.com/countries/italy/2012.asp -->
+<!-- http://www.officeholidays.com/countries/italy/index.php -->
 <!-- http://www.timeanddate.com/holidays/italy/ -->
 
 	<date year="" month="01" date="01"><![CDATA[New Years Day]]></date>
@@ -20,7 +20,11 @@
 	<date year="2008" month="03" date="24"><![CDATA[Easter Monday]]></date>
 	<date year="2009" month="04" date="13"><![CDATA[Easter Monday]]></date>
 	<date year="2010" month="04" date="05"><![CDATA[Easter Monday]]></date>
+	<date year="2011" month="04" date="25"><![CDATA[Easter Monday]]></date>
 	<date year="2012" month="04" date="09"><![CDATA[Easter Monday]]></date>
+	<date year="2013" month="04" date="01"><![CDATA[Easter Monday]]></date>
+	<date year="2014" month="04" date="21"><![CDATA[Easter Monday]]></date>
+	<date year="2015" month="04" date="06"><![CDATA[Easter Monday]]></date>
 	<date year="2016" month="03" date="28"><![CDATA[Easter Monday]]></date>
 
 
