@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="mx" name="Mexico Statutory Holidays 2016" type="country">
+<!-- http://www.holiday-times.com/public-holidays-mexico/ -->
+<!-- http://www.officeholidays.com/countries/mexico/index.php -->
+<!-- http://www.timeanddate.com/holidays/mexico/ -->
+
+	<date year="" month="01" date="01"><![CDATA[New Years Day]]></date>
+	<date year="" month="05" date="01"><![CDATA[Labour Day]]></date>
+	<date year="" month="09" date="16"><![CDATA[Independence Day]]></date>
+	<date year="" month="12" date="12"><![CDATA[Day of the Virgin of Guadalope]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas Day]]></date>
+
+	<date year="2016" month="02" date="01"><![CDATA[Constitution Day]]></date>
+	<date year="2016" month="03" date="14"><![CDATA[Birthday of Benito Juárez]]></date>
+	<date year="2016" month="03" date="24"><![CDATA[Maundy Thursday]]></date>
+	<date year="2016" month="03" date="25"><![CDATA[Good Friday]]></date>
+	<date year="2016" month="11" date="21"><![CDATA[Revolution Day]]></date>
+
+</calendar >
