@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Japan" type="country">
+<calendar id="ja" name="Japan Holidays 2016" type="country">
 <!-- http://calendar.retira.eu/public-holidays/japan/2012/ -->
-<!-- http://www.officeholidays.com/countries/japan/2012.asp -->
+<!-- http://www.officeholidays.com/countries/japan/ -->
 <!-- http://www.japanspecialist.co.uk/Travel-tips/Japan/National-holidays -->
-	<date year="" month="01" date="01"/>     <!-- New Year -->
-	<date year="2012" month="01" date="01"/> <!-- New Year in lieu -->
-	<date year="2012" month="01" date="09"/> <!-- Coming-of-age day -->
-	<date year="" month="02" date="11"/>     <!-- National Foundation day -->
-	<date year="2012" month="03" date="20"/> <!-- Vernal Equinox day -->
-	<date year="" month="04" date="29"/>     <!-- Showa day -->
-	<date year="" month="04" date="30"/>     <!-- Showa day in lieu -->
-	<date year="" month="05" date="3"/>      <!-- Constitution memorial day -->
-	<date year="" month="05" date="4"/>      <!-- Greenery day -->
-	<date year="" month="05" date="5"/>      <!-- Childrens day -->
-	<date year="2012" month="07" date="16"/> <!-- Marine day -->
-	<date year="2012" month="09" date="17"/> <!-- Respect for the Aged day -->
-	<date year="2012" month="09" date="22"/> <!-- Autumnal Equinox day -->
-	<date year="" month="09" date="23"/>
-    <date year="2012" month="10" date="8"/>  <!-- Health and Sports day -->
-	<date year="" month="11" date="3"/>      <!-- Culture day -->
-	<date year="" month="11" date="23"/>     <!-- Labor thanksgiving day -->
-	<date year="" month="12" date="23"/>     <!-- Emperor's birthday -->
-	<date year="2012" month="12" date="24"/> <!-- Emperor's birthday in lieu -->
-	<date year="" month="12" date="31"/>     <!-- New years Eve -->
+<!-- http://www.timeanddate.com/holidays/japan/ -->
+	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
+    <date year="" month="02" date="11" type="HOLIDAY"><![CDATA[National Foundation Day]]></date>
+    <date year="" month="04" date="29" type="HOLIDAY"><![CDATA[Showa Day]]></date>
+    <date year="" month="05" date="03" type="HOLIDAY"><![CDATA[Constitution Memorial Day]]></date>
+    <date year="" month="05" date="04" type="HOLIDAY"><![CDATA[Greenery Day]]></date>
+    <date year="" month="05" date="05" type="HOLIDAY"><![CDATA[Children's Day]]></date>
+    <date year="" month="08" date="11" type="HOLIDAY"><![CDATA[Mountain Day]]></date>
+	<date year="" month="11" date="03" type="HOLIDAY"><![CDATA[Culture Day]]></date>
+	<date year="" month="11" date="23" type="HOLIDAY"><![CDATA[Labour Thanksgiving Day]]></date>
+	<date year="" month="12" date="23" type="HOLIDAY"><![CDATA[The Emperor's Birthday]]></date>
 	
 	
 	<date year="2006" month="01" date="09"/>
@@ -41,4 +32,21 @@
 	<date year="2008" month="07" date="21"/>
 	<date year="2008" month="10" date="6"/>
 	<date year="2008" month="11" date="24"/>
+	<date year="2012" month="01" date="01"/> <!-- New Year in lieu -->
+	<date year="2012" month="01" date="09"/> <!-- Coming-of-age day -->
+	<date year="2012" month="03" date="20"/> <!-- Vernal Equinox day -->
+	<date year="2012" month="07" date="16"/> <!-- Marine day -->
+	<date year="2012" month="09" date="17"/> <!-- Respect for the Aged day -->
+	<date year="2012" month="09" date="22"/> <!-- Autumnal Equinox day -->
+    <date year="2012" month="10" date="8"/>  <!-- Health and Sports day -->
+	<date year="2012" month="12" date="24"/> <!-- Emperor's birthday in lieu -->
+
+	<date year="2016" month="01" date="11" type="HOLIDAY"><![CDATA[Coming of Age Day]]></date>
+	<date year="2016" month="03" date="21" type="HOLIDAY"><![CDATA[Vernal Equinox Day]]></date>
+	<date year="2016" month="07" date="18" type="HOLIDAY"><![CDATA[Marine Day]]></date>
+	<date year="2016" month="09" date="19" type="HOLIDAY"><![CDATA[Respect for the Aged Day]]></date>
+	<date year="2016" month="09" date="22" type="HOLIDAY"><![CDATA[Autumnal Equinox Day]]></date>
+    <date year="2016" month="10" date="10" type="HOLIDAY"><![CDATA[Health and Sports Day]]></date>
+
+
 </calendar >
