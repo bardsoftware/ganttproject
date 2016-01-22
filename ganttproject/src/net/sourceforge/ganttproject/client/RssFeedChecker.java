@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
@@ -176,6 +177,7 @@ public class RssFeedChecker {
     return new Runnable() {
       @Override
       public void run() {
+        GPLogger.log("Starting RSS check...");
         HttpClient httpClient = new DefaultHttpClient();
         String url = RSS_URL;
         try {
@@ -196,6 +198,7 @@ public class RssFeedChecker {
           e.printStackTrace();
         } finally {
           httpClient.getConnectionManager().shutdown();
+          GPLogger.log("RSS check finished");
         }
       }
 

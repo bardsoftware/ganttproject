@@ -143,15 +143,17 @@ public class ITextEngine extends AbstractEngine {
           // FIXME Add some better way of determining whether the fonts can be
           // read already
           Thread.sleep(10000);
+          GPLogger.getLogger(TTFontCache.class).info("Scanning font directories...");
         } catch (InterruptedException e) {
           // TODO Auto-generated catch block
-          e.printStackTrace();
+          GPLogger.logToLogger(e);
         }
         registerFontDirectories();
         synchronized (ITextEngine.this.myFontsMutex) {
           myFontsReady = true;
           myFontsMutex.notifyAll();
         }
+        GPLogger.getLogger(TTFontCache.class).info("Scanning font directories completed");
       }
     });
     fontReadingThread.setPriority(Thread.MIN_PRIORITY);

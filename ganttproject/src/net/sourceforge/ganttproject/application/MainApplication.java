@@ -28,18 +28,23 @@ public class MainApplication implements IPlatformRunnable {
     String[] cmdLine = (String[]) args;
     WindowAdapter closingListener = new WindowAdapter() {
       @Override
-      public void windowClosed(WindowEvent e) {
-        GPLogger.log("Main window closed");
-        myLock.notify();
+      public void windowClosing(WindowEvent e) {
+        synchronized(myLock) {
+          myLock.notify();
+        }
       }
     };
     GanttProject.setWindowListener(closingListener);
     if (GanttProject.main(cmdLine)) {
       synchronized (myLock) {
+        GPLogger.log("Waiting until main window closes");
         myLock.wait();
+        GPLogger.log("Main window has closed");
       }
     }
     GPLogger.log("Program terminated");
+    GPLogger.close();
+    System.exit(0);
     return null;
   }
 

@@ -191,4 +191,8 @@ public class GPLogger {
     }
 
   }
+
+  public static void close() {
+    ourHandler.flush();
+  }
 }

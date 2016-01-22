@@ -38,7 +38,15 @@ public class GanttSplash extends JFrame {
 
   public GanttSplash() {
     super("GanttProject Start");
+  }
 
+  private void drawTextWithShadow(Graphics2D graphics, String text, int xpos, int ypos) {
+    graphics.setColor(Color.GRAY);
+    graphics.drawString(text, xpos, ypos);
+  }
+
+  @Override
+  public void setVisible(boolean b) {
     ImageIcon splashImage = new ImageIcon(getClass().getResource("/icons/splash.png"));
     mySplashComponent = new JLabel(splashImage) {
       @Override
@@ -53,15 +61,6 @@ public class GanttSplash extends JFrame {
         // drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
       }
     };
-  }
-
-  private void drawTextWithShadow(Graphics2D graphics, String text, int xpos, int ypos) {
-    graphics.setColor(Color.GRAY);
-    graphics.drawString(text, xpos, ypos);
-  }
-
-  @Override
-  public void setVisible(boolean b) {
     if (b) {
       getContentPane().add(mySplashComponent, BorderLayout.CENTER);
       pack();

@@ -721,7 +721,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       getProject().close();
       setVisible(false);
       dispose();
-      System.exit(0);
     } else {
       setVisible(true);
     }
@@ -815,7 +814,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
 
     CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
-    Args mainArgs = new Args();
+    final Args mainArgs = new Args();
     try {
       JCommander cmdLineParser = new JCommander(new Object[] { mainArgs, cmdlineApplication.getArguments() }, arg);
       if (mainArgs.help) {
@@ -849,43 +848,57 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
 
     DocumentCreator.startAutosaveCleanup();
-    GanttSplash splash = new GanttSplash();
+    final GanttSplash splash = new GanttSplash();
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        splash.setVisible(true);
+      }
+    });
     try {
-      splash.setVisible(true);
-      final GanttProject ganttFrame = new GanttProject(false);
-      System.err.println("Main frame created");
-      ganttFrame.fireProjectCreated();
-      if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
-        ganttFrame.openStartupDocument(mainArgs.file.get(0));
-      } else {
-      }
-      ganttFrame.setVisible(true);
+      Thread.sleep(1000);
+    } catch (InterruptedException e1) {
+      GPLogger.log(e1);
+    }
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          final GanttProject ganttFrame = new GanttProject(false);
+          System.err.println("Main frame created");
+          ganttFrame.fireProjectCreated();
+          if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
+            ganttFrame.openStartupDocument(mainArgs.file.get(0));
+          }
+          ganttFrame.setVisible(true);
 
-      if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
-        OSXAdapter.registerMacOSXApplication(ganttFrame);
-      }
-      ganttFrame.getActiveChart().reset();
-      ganttFrame.getRssFeedChecker().setOptionsVersion(ganttFrame.getGanttOptions().getVersion());
-      ganttFrame.getRssFeedChecker().run();
-      return true;
-    } catch (Throwable e) {
-      e.printStackTrace();
-      return false;
-    } finally {
-      splash.close();
-      System.err.println("Splash closed");
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+          if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
+            OSXAdapter.registerMacOSXApplication(ganttFrame);
+          }
+          ganttFrame.getActiveChart().reset();
+          ganttFrame.getRssFeedChecker().setOptionsVersion(ganttFrame.getGanttOptions().getVersion());
+          ganttFrame.getRssFeedChecker().run();
+        } catch (Throwable e) {
+          e.printStackTrace();
+        } finally {
+          splash.close();
+          System.err.println("Splash closed");
+          SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void uncaughtException(Thread t, Throwable e) {
-              GPLogger.log(e);
+            public void run() {
+              Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                  GPLogger.log(e);
+                }
+              });
             }
           });
         }
-      });
-    }
+      }
+
+    });
+    return true;
   }
 
   // ///////////////////////////////////////////////////////

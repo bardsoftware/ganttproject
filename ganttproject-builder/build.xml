@@ -97,6 +97,7 @@
 				<include name="GanttProject.app/**"/>
 				<include name="HouseBuildingSample.gan"/>
 				<include name="lib/javagalician.jar"/>
+                                <include name="logging.properties"/>
 			</fileset>
 		</copy>
 		<jar destfile="${install.dir}/eclipsito.jar" update="true">
