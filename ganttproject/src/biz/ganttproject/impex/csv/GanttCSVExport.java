@@ -213,7 +213,11 @@ public class GanttCSVExport {
         continue;
       }
       if (defaultColumn == null) {
-        writer.print(i18n(entry.getKey()));
+        if ("id".equals(entry.getKey())) {
+          writer.print(i18n("tableColID"));
+        } else {
+          writer.print(i18n(entry.getKey()));
+        }
       } else {
         writer.print(defaultColumn.getName());
       }
