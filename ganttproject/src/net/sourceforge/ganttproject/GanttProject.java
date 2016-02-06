@@ -39,6 +39,7 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -46,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -183,7 +185,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private RoleManager myRoleManager;
 
-  private static WindowListener ourWindowListener;
+  private static Runnable ourQuitCallback;
 
 
   public GanttProject(boolean isOnlyViewer) {
@@ -384,9 +386,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
     myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
-    if (ourWindowListener != null) {
-      addWindowListener(ourWindowListener);
-    }
     addMouseListenerToAllContainer(this.getComponents());
 
     // Add globally available actions/key strokes
@@ -636,7 +635,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    fireProjectOpened();
+      fireProjectOpened();
   }
 
   public void openStartupDocument(String path) {
@@ -711,18 +710,33 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return myUIConfiguration;
   }
 
+  private boolean myQuitEntered = false;
+
   /** Quit the application */
-  public void quitApplication() {
-    options.setWindowPosition(getX(), getY());
-    options.setWindowSize(getWidth(), getHeight());
-    options.setUIConfiguration(myUIConfiguration);
-    options.save();
-    if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-      getProject().close();
-      setVisible(false);
-      dispose();
-    } else {
-      setVisible(true);
+  public boolean quitApplication() {
+    if (myQuitEntered) {
+      return false;
+    }
+    myQuitEntered = true;
+    try {
+      options.setWindowPosition(getX(), getY());
+      options.setWindowSize(getWidth(), getHeight());
+      options.setUIConfiguration(myUIConfiguration);
+      options.save();
+      if (getProjectUIFacade().ensureProjectSaved(getProject())) {
+        getProject().close();
+        setVisible(false);
+        dispose();
+        if (ourQuitCallback != null) {
+          ourQuitCallback.run();
+        }
+        return true;
+      } else {
+        setVisible(true);
+        return false;
+      }
+    } finally {
+      myQuitEntered = false;
     }
   }
 
@@ -878,6 +892,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           ganttFrame.getActiveChart().reset();
           ganttFrame.getRssFeedChecker().setOptionsVersion(ganttFrame.getGanttOptions().getVersion());
           ganttFrame.getRssFeedChecker().run();
+          ganttFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         } catch (Throwable e) {
           e.printStackTrace();
         } finally {
@@ -987,6 +1002,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void setModified() {
+    GPLogger.getLogger(getClass().getName() + ".setModified").log(Level.FINE, "Marking project modified", new Exception());
     setAskForSave(true);
   }
 
@@ -1020,7 +1036,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     myPreviousStates = new ArrayList<GanttPreviousState>();
     myCalendar.reset();
-    myFacadeInvalidator.projectClosed();
+      myFacadeInvalidator.projectClosed();
   }
 
   @Override
@@ -1143,8 +1159,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
   }
 
-  public static void setWindowListener(WindowListener windowListener) {
-    ourWindowListener = windowListener;
+  public static void setApplicationQuitCallback(Runnable callback) {
+    ourQuitCallback = callback;
   }
 
   @Override

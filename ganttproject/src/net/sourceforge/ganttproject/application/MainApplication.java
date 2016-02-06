@@ -26,15 +26,14 @@ public class MainApplication implements IPlatformRunnable {
   public Object run(Object args) throws Exception {
     Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
     String[] cmdLine = (String[]) args;
-    WindowAdapter closingListener = new WindowAdapter() {
-      @Override
-      public void windowClosing(WindowEvent e) {
+    Runnable onApplicationQuit = new Runnable() {
+      public void run() {
         synchronized(myLock) {
           myLock.notify();
         }
       }
     };
-    GanttProject.setWindowListener(closingListener);
+    GanttProject.setApplicationQuitCallback(onApplicationQuit);
     if (GanttProject.main(cmdLine)) {
       synchronized (myLock) {
         GPLogger.log("Waiting until main window closes");
