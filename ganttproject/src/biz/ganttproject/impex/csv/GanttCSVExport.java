@@ -149,10 +149,6 @@ public class GanttCSVExport {
             writer.print(getWebLink((GanttTask) task));
             continue;
           }
-          if ("resources".equals(entry.getKey())) {
-            writer.print(getAssignments(task));
-            continue;
-          }
           if ("notes".equals(entry.getKey())) {
             writer.print(task.getNotes());
             continue;
@@ -186,7 +182,10 @@ public class GanttCSVExport {
             writer.print(coordinator == null ? "" : coordinator.getResource().getName());
             break;
           case PREDECESSORS:
-            writer.print(TaskProperties.formatPredecessors(task, ";"));
+            writer.print(TaskProperties.formatPredecessors(task, ";", true));
+            break;
+          case RESOURCES:
+            writer.print(getAssignments(task));
             break;
           case COST:
             writer.print(task.getCost().getValue().toPlainString());
@@ -214,7 +213,11 @@ public class GanttCSVExport {
         continue;
       }
       if (defaultColumn == null) {
-        writer.print(i18n(entry.getKey()));
+        if ("id".equals(entry.getKey())) {
+          writer.print(i18n("tableColID"));
+        } else {
+          writer.print(i18n(entry.getKey()));
+        }
       } else {
         writer.print(defaultColumn.getName());
       }

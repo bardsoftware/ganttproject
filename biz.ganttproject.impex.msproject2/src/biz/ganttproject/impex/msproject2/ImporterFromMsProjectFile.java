@@ -19,13 +19,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.impex.msproject2;
 
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+
+import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
 import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.Importer;
@@ -33,6 +39,7 @@ import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.collect.Pair;
@@ -63,27 +70,19 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
     try {
       File selectedFile = getFile();
       BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
-      List<Pair<Level, String>> errors = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile).run();
+      ProjectFileImporter importer = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile);
+      importer.run();
 
+      List<Pair<Level, String>> errors = importer.getErrors();
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
       getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
 
-      try {
-        ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
-      } finally {
+      Map<Task, Task> buffer2realTask = ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
+      Map<GanttTask, Date> originalDates = importer.getOriginalStartDates();
 
-      }
-      if (!errors.isEmpty()) {
-        StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
-        for (Pair<Level, String> message : errors) {
-          GPLogger.getLogger("MSProject").log(message.first(), message.second());
-          builder.append(String.format("<tr><td><b>%s</b></td><td>%s</td></tr>", message.first().getName(), message.second()));
-        }
-        builder.append("</table>");
-        getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
-            GanttLanguage.getInstance().formatText("impex.msproject.importErrorReport", builder.toString()));
-      }
+      findChangedDates(originalDates, buffer2realTask, errors);
+      reportErrors(errors, "MSProject");
     } catch (MPXJException e) {
       getUiFacade().showErrorDialog(e);
     } finally {
@@ -96,6 +95,31 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
     } catch (TaskDependencyException e) {
       getUiFacade().showErrorDialog(e);
+    }
+  }
+
+  private void findChangedDates(Map<GanttTask, Date> originalDates, Map<Task, Task> buffer2realTask,
+      List<Pair<Level, String>> errors) {
+    List<Pair<Level, String>> dateChangeMessages = Lists.newArrayList();
+    for (Task bufferTask : originalDates.keySet()) {
+      Date startPerMsProject = originalDates.get(bufferTask);
+      if (startPerMsProject == null) {
+        continue;
+      }
+      Task realTask = buffer2realTask.get(bufferTask);
+      if (realTask == null) {
+        continue;
+      }
+      Date startPerGanttProject = realTask.getStart().getTime();
+      if (!startPerMsProject.equals(startPerGanttProject)) {
+        dateChangeMessages.add(Pair.create(Level.WARNING, GanttLanguage.getInstance().formatText(
+            "impex.msproject.warning.taskDateChanged", realTask.getName(), startPerMsProject, startPerGanttProject)));
+      }
+    }
+    if (!dateChangeMessages.isEmpty()) {
+      errors.add(Pair.create(Level.INFO, GanttLanguage.getInstance().formatText(
+          "impex.msproject.warning.taskDateChanged.heading", dateChangeMessages.size(), originalDates.size())));
+      errors.addAll(dateChangeMessages);
     }
   }
 

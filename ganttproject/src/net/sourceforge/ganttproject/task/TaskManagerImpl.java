@@ -324,6 +324,7 @@ public class TaskManagerImpl implements TaskManager {
   public void deleteTask(Task tasktoRemove) {
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
+    tasktoRemove.delete();
     fireTaskRemoved(container, tasktoRemove);
   }
 
@@ -691,6 +692,7 @@ public class TaskManagerImpl implements TaskManager {
         for (Task t : getTasks()) {
           t.setEnd(null);
         }
+        myScheduler.run();
       }
     };
   }
@@ -854,6 +856,9 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public boolean areUnrelated(Task first, Task second) {
+      if (first.equals(second)) {
+        return false;
+      }
       myPathBuffer.clear();
       for (Task container = getContainer(first); container != null; container = getContainer(container)) {
         myPathBuffer.add(container);
@@ -1062,13 +1067,15 @@ public class TaskManagerImpl implements TaskManager {
         builder = builder.withId(that.getTaskID());
       }
       Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
-        .withDuration(that.getDuration()).withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+        .withDuration(that.getDuration())
+        .withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
 
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
       nextImported.setTaskInfo(nested[i].getTaskInfo());
       nextImported.setExpand(nested[i].getExpand());
       nextImported.setMilestone(nested[i].isMilestone());
+      nextImported.getCost().setValue(that.getCost());
       if (nested[i].getThird() != null) {
         nextImported.setThirdDate(nested[i].getThird().clone());
         nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());

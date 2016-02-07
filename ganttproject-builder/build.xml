@@ -77,12 +77,12 @@
 =======================================================
 		</echo>
 	</target>
-	
+
 	<target name="init">
 		<mkdir dir="${install.dir}"/>
 		<mkdir dir="${install.dir}/jre_ext"/>
 	</target>
-	
+
 	<target name="copy-launchers">
 		<copy todir="${install.dir}">
 			<fileset dir=".">
@@ -97,6 +97,7 @@
 				<include name="GanttProject.app/**"/>
 				<include name="HouseBuildingSample.gan"/>
 				<include name="lib/javagalician.jar"/>
+        <include name="logging.properties"/>
 			</fileset>
 		</copy>
 		<jar destfile="${install.dir}/eclipsito.jar" update="true">
@@ -116,16 +117,16 @@
 	<target name="make-package-name">
     <exec dir="${basedir}" executable="./hg-tip-rev.sh" outputproperty="hg.tip.rev">
     </exec>
-    
+
     <property name="package.name.suffix" value="${package.name.version}-r${hg.tip.rev}"/>
     <property name="package.dir" value="${package.name.prefix}-${package.name.suffix}"/>
 		<echo message="${package.dir}" file="VERSION"/>
 	</target>
-	
+
 	<target name="dist-bin" depends="build, make-package-name">
 		<chmod perm="ugo+rx" file="${install.dir}/ganttproject"></chmod>
     <chmod perm="ugo+rx" file="${install.dir}/ganttproject.command"></chmod>
-		
+
 		<move file="${install.dir}" tofile="${package.dir}"></move>
 		<zip destfile="${package.dir}.zip" basedir="." includes="/**">
 			<zipfileset dir="${package.dir}" excludes="ganttproject" prefix="${package.dir}">
@@ -135,21 +136,21 @@
 		</zip>
 		<copy file="${package.dir}.zip" tofile="ganttproject-latest.zip"/>
 	</target>
-	
+
 	<target name="dist-src">
 		<property name="src.dir" value="${basedir}/dist-src"/>
 		<ant antfile="../ganttproject/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
-		</ant>		
+		</ant>
 		<ant antfile="../org.ganttproject.chart.pert/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
-		</ant>		
+		</ant>
 		<ant antfile="../org.ganttproject.impex.htmlpdf/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
-		</ant>		
+		</ant>
 		<ant antfile="../biz.ganttproject.impex.msproject2/build.xml" target="copy-src" inheritall="false">
 			<property name="install.dir" value="${src.dir}"></property>
-		</ant>		
+		</ant>
 		<mkdir dir="${src.dir}/ganttproject-builder"/>
 		<copy todir="${src.dir}/ganttproject-builder">
 			<fileset dir=".">
@@ -179,8 +180,8 @@
 			</fileset>
 		</copy>
 	</target>
-	
-	
+
+
 	<target name="webstart_net.sourceforge.ganttproject">
 		<fail message="Please set properties keystore and storepass in build.private.properties">
 			<condition>
@@ -200,7 +201,7 @@
 			<property name="alias" value="${alias}"/>
 		</ant>
 	</target>
-	
+
 	<target name="webstart_org.ganttproject.impex.htmlpdf">
 		<fail message="Please set properties keystore and storepass in build.private.properties">
 			<condition>
@@ -260,7 +261,7 @@
 			<property name="alias" value="${alias}"/>
 		</ant>
 	</target>
-	
+
 
 	<target name="init-webstart">
 		<fail message="Please set properties keystore and storepass in build.private.properties">
@@ -288,7 +289,7 @@
 		<signjar jar="${webstart.dir}/configuration.jar" alias="${alias}" keystore="${keystore}" storepass="${storepass}"/>
 		<delete dir="${webstart.dir}/configuration"/>
 	</target>
-	
+
 	<target name="clean" description="Removes all intermediate building files" depends="clean_biz.ganttproject.core,
 		clean_net.sourceforge.ganttproject,
 		clean_org.ganttproject.impex.htmlpdf,
@@ -299,7 +300,7 @@
 		<delete dir="dist-bin"/>
 		<delete dir="build-deb"/>
 	</target>
-	
+
 	<target name="dist-win" description="Builds Windows installer" depends="dist-bin">
 		<copy todir="${package.dir}" file="ganttproject.nsi"/>
 		<exec executable="makensis" dir="${package.dir}">
@@ -307,52 +308,61 @@
 	  </exec>
 		<copy todir="." file="${package.dir}/${package.dir}.exe"/>
 	</target>
-	
+
 	<target name="dist-deb" description="Builds DEB package" depends="make-package-name">
     <ant antfile="build-deb.xml" inheritall="false">
       <property name="package-version" value="${package.name.suffix}"></property>
     </ant>
     <copy todir="." file="${deb.dir}/${package.name.prefix}_${package.name.suffix}-1_all.deb"></copy>
 	</target>
-	
+
   <taskdef name="bundleapp"
-           classname="com.oracle.appbundler.AppBundlerTask"   
+           classname="com.oracle.appbundler.AppBundlerTask"
            classpath="lib/appbundler-1.0.jar" />
 
   <target name="dist-mac" depends="init,make-package-name">
-    <bundleapp outputdirectory="${package.dir}"
+    <property name="package.osx.dir" value="ganttproject.app-${package.name.suffix}"/>
+    <mkdir dir="${package.osx.dir}"/>
+    <bundleapp outputdirectory="${package.osx.dir}"
         name="GanttProject"
         displayname="GanttProject"
         identifier="net.sourceforge.ganttproject"
         shortversion="${package.name.version}"
         icon="ganttproject.icns"
-        copyright="Copyright 2015 BarD Software s.r.o. Distributed under GPL3"
+        copyright="Copyright 2016 BarD Software s.r.o. Distributed under GPL3"
         applicationCategory="public.app-category.productivity"
         mainclassname="org.bardsoftware.eclipsito.Boot">
-  
+
         <classpath file="eclipsito.jar"/>
         <argument value="-app"/>
         <argument value="net.sourceforge.ganttproject.GanttProject"/>
-        <argument value="-plugins"/>
+        <argument value="-plugins-dir"/>
         <argument value="$APP_ROOT/Contents/Java/plugins"/>
         <option value="-Dapple.laf.useScreenMenuBar=true"/>
+				<option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
         <option value="-Xdock:name=GanttProject"/>
-    </bundleapp>
-  	<copy todir="${package.dir}/GanttProject.app/Contents/Java">
+        <option value="-Xmx512m"/>
+        <option value="-ea"/>
+  </bundleapp>
+  	<copy todir="${package.osx.dir}/GanttProject.app/Contents/Java">
   	  <fileset dir="${package.dir}">
   	  	<include name="eclipsito.jar"/>
   	  	<include name="plugins/**"/>
   	  </fileset>
   	</copy>
-  	<patch patchfile="Info.plist.patch" originalfile="${package.dir}/GanttProject.app/Contents/Info.plist"/>
-  	<chmod perm="ugo+rx" file="${package.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+  	<patch patchfile="Info.plist.patch" originalfile="${package.osx.dir}/GanttProject.app/Contents/Info.plist"/>
+  	<chmod perm="ugo+rx" file="${package.osx.dir}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+        <zip destfile="${package.osx.dir}.zip">
+	   <zipfileset dir="${package.osx.dir}" includes="GanttProject.app/**">
+	   </zipfileset>
+        </zip>
   </target>
 
-	<target name="dist-all" depends="dist-bin,dist-win,dist-deb">
+	<target name="dist-all" depends="dist-bin,dist-win,dist-deb,dist-mac">
     <echo>
 =======================================================
   All packages build completed
 =======================================================
-    </echo>		
+    </echo>
 	</target>
 </project>

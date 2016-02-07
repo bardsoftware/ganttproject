@@ -168,6 +168,10 @@ public class DocumentCreator implements DocumentManager {
     final long cutoff;
     try {
       File optionsFile = GanttOptions.getOptionsFile();
+      if (!optionsFile.exists()) {
+        return;
+      }
+      GPLogger.log("Options file:" + optionsFile.getAbsolutePath());
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
       FileTime accessTime = attrs.lastAccessTime();
       cutoff = Math.min(accessTime.toMillis(), now);
@@ -178,6 +182,7 @@ public class DocumentCreator implements DocumentManager {
     ourExecutor.submit(new Runnable() {
       @Override
       public void run() {
+        GPLogger.log("Deleting old auto-save files");
         deleteAutosaves();
       }
 

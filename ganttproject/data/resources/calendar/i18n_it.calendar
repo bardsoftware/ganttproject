@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Italia" type="country">
+<calendar id="it" name="Italy Bank Holidays 2015-2016" type="country">
 <!-- http://en.wikipedia.org/wiki/Public_holidays_in_Italy -->
-<!-- http://www.officeholidays.com/countries/italy/2012.asp -->
-	<date year="" month="01" date="01"/>     <!-- New Year -->
-	<date year="" month="01" date="06"/>     <!-- Epiphany -->
-	<date year="2012" month="04" date="09"/> <!-- Easter Monday -->
-	<date year="" month="04" date="25"/>     <!-- Liberation day -->
-	<date year="" month="05" date="01"/>     <!-- Labour day -->
-	<date year="" month="06" date="02"/>     <!-- Republic day -->
-	<date year="" month="08" date="15"/>     <!-- Assumption day -->
-	<date year="" month="11" date="01"/>     <!-- All Saints day -->
-	<date year="" month="12" date="08"/>     <!-- Immaculate Conception day -->
-	<date year="" month="12" date="25"/>     <!-- Christmas -->
-	<date year="" month="12" date="26"/>     <!-- St.Stephens day -->
-	<date year="2005" month="03" date="28"/>
-	<date year="2006" month="04" date="17"/>
-	<date year="2007" month="04" date="09"/>
-	<date year="2008" month="03" date="24"/>
-	<date year="2009" month="04" date="13"/>
-	<date year="2010" month="04" date="05"/>
+<!-- http://www.officeholidays.com/countries/italy/index.php -->
+<!-- http://www.timeanddate.com/holidays/italy/ -->
+
+	<date year="" month="01" date="01"><![CDATA[New Years Day]]></date>
+	<date year="" month="01" date="06"><![CDATA[Epiphany]]></date>
+	<date year="" month="04" date="25"><![CDATA[Liberation Day]]></date>
+	<date year="" month="05" date="01"><![CDATA[Labor Day]]></date>
+	<date year="" month="06" date="02"><![CDATA[Republic Day]]></date>
+	<date year="" month="08" date="15"><![CDATA[Assumption Day]]></date>
+	<date year="" month="11" date="01"><![CDATA[All Saints Day]]></date>
+	<date year="" month="12" date="08"><![CDATA[Immaculate Conception Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas Day]]></date>
+	<date year="" month="12" date="26"><![CDATA[St. Stephen's Day]]></date>
+	<date year="2005" month="03" date="28"><![CDATA[Easter Monday]]></date>
+	<date year="2006" month="04" date="17"><![CDATA[Easter Monday]]></date>
+	<date year="2007" month="04" date="09"><![CDATA[Easter Monday]]></date>
+	<date year="2008" month="03" date="24"><![CDATA[Easter Monday]]></date>
+	<date year="2009" month="04" date="13"><![CDATA[Easter Monday]]></date>
+	<date year="2010" month="04" date="05"><![CDATA[Easter Monday]]></date>
+	<date year="2011" month="04" date="25"><![CDATA[Easter Monday]]></date>
+	<date year="2012" month="04" date="09"><![CDATA[Easter Monday]]></date>
+	<date year="2013" month="04" date="01"><![CDATA[Easter Monday]]></date>
+	<date year="2014" month="04" date="21"><![CDATA[Easter Monday]]></date>
+	<date year="2015" month="04" date="06"><![CDATA[Easter Monday]]></date>
+	<date year="2016" month="03" date="28"><![CDATA[Easter Monday]]></date>
+
+
 </calendar >

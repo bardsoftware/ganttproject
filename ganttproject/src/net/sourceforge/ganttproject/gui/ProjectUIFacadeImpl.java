@@ -235,12 +235,14 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       if (UIFacade.Choice.YES == saveChoice) {
         try {
           saveProject(project);
+          // If all those complex save procedures complete successfully and project gets saved
+          // then its modified state becomes false
+          // Otherwise it remains true which means we have not saved and can't continue
+          return !project.isModified();
         } catch (Exception e) {
           myWorkbenchFacade.showErrorDialog(e);
           return false;
         }
-        // Check if project indeed is saved
-        return project.isModified() == false;
       }
     }
     return true;

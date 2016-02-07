@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.logging.Level;
 
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
@@ -34,6 +35,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import org.apache.commons.csv.CSVRecord;
@@ -78,7 +80,7 @@ class TaskRecords extends RecordGroup {
   private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
     @Override
     public int compare(String s1, String s2) {
-      return - (s1.compareTo(s2));
+      return (s1.compareTo(s2));
     }
   });
   private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
@@ -101,6 +103,16 @@ class TaskRecords extends RecordGroup {
     GanttCSVOpen.createCustomProperties(getCustomFields(), taskManager.getCustomPropertyManager());
   }
 
+  private Date parseDateOrError(String strDate) {
+    Date result = GanttCSVOpen.language.parseDate(strDate);
+    if (result == null) {
+      addError(Level.WARNING, GanttLanguage.getInstance().formatText("impex.csv.error.parse_date",
+          strDate,
+          GanttLanguage.getInstance().getShortDateFormat().toPattern(),
+          GanttLanguage.getInstance().getShortDateFormat().format(new Date())));
+    }
+    return result;
+  }
   @Override
   protected boolean doProcess(CSVRecord record) {
     if (!super.doProcess(record)) {
@@ -109,10 +121,11 @@ class TaskRecords extends RecordGroup {
     if (!hasMandatoryFields(record)) {
       return false;
     }
+    Date startDate = parseDateOrError(getOrNull(record, TaskFields.BEGIN_DATE.toString()));
     // Create the task
     TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
         .withName(getOrNull(record, TaskFields.NAME.toString()))
-        .withStartDate(GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.BEGIN_DATE.toString())))
+        .withStartDate(startDate)
         .withWebLink(getOrNull(record, TaskFields.WEB_LINK.toString()))
         .withNotes(getOrNull(record, TaskFields.NOTES.toString()));
     if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
@@ -125,8 +138,10 @@ class TaskRecords extends RecordGroup {
           builder = builder.withLegacyMilestone();
         }
       } else {
-        Date endDate = GanttCSVOpen.language.parseDate(getOrNull(record, TaskFields.END_DATE.toString()));
-        builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
+        Date endDate = parseDateOrError(getOrNull(record, TaskFields.END_DATE.toString()));
+        if (endDate != null) {
+          builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
+        }
       }
     }
     if (record.isSet(TaskFields.COMPLETION.toString())) {
@@ -137,7 +152,10 @@ class TaskRecords extends RecordGroup {
     }
     if (record.isSet(TaskDefaultColumn.COST.getName())) {
       try {
-        builder = builder.withCost(new BigDecimal(record.get(TaskDefaultColumn.COST.getName())));
+        String cost = record.get(TaskDefaultColumn.COST.getName());
+        if (!Strings.isNullOrEmpty(cost)) {
+          builder = builder.withCost(new BigDecimal(cost));
+        }
       } catch (NumberFormatException e) {
         GPLogger.logToLogger(e);
         GPLogger.log(String.format("Failed to parse %s as cost value", record.get(TaskDefaultColumn.COST.getName())));
@@ -204,22 +222,30 @@ class TaskRecords extends RecordGroup {
         }
       }
     }
-    for (Entry<Task, String> predecessor : myPredecessorMap.entrySet()) {
-      if (predecessor.getValue() == null) {
+    Function<Integer, Task> taskIndex = new Function<Integer, Task>() {
+      @Override
+      public Task apply(Integer id) {
+        return myTaskIdMap.get(String.valueOf(id));
+      }
+    };
+    for (Entry<Task, String> entry : myPredecessorMap.entrySet()) {
+      if (entry.getValue() == null) {
         continue;
       }
-      String[] ids = predecessor.getValue().split(";");
-      for (String id : ids) {
-        Task dependee = myTaskIdMap.get(id);
-        if (dependee != null) {
-          try {
-            taskManager.getDependencyCollection().createDependency(predecessor.getKey(), dependee);
-          } catch (TaskDependencyException e) {
-            GPLogger.logToLogger(e);
-          }
+      Task successor = entry.getKey();
+      String[] depSpecs = entry.getValue().split(";");
+      for (String spec : depSpecs) {
+        try {
+          TaskProperties.parseDependency(spec, successor, taskIndex);
+        } catch (IllegalArgumentException e) {
+          GPLogger.logToLogger(String.format("%s\nwhen parsing subspec %s of predecessor specification %s of task %s",
+              e.getMessage(), spec, depSpecs, successor));
+        } catch (TaskDependencyException e) {
+          GPLogger.logToLogger(e);
         }
       }
     }
   }
+
 }
 

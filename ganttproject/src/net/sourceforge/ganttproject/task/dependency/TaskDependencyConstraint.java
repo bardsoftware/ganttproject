@@ -29,13 +29,27 @@ import biz.ganttproject.core.time.GanttCalendar;
 public interface TaskDependencyConstraint extends Cloneable {
   enum Type {
     startstart, finishstart, finishfinish, startfinish;
+    private static final String[] PERSISTENT_VALUES = new String[] {
+      "SS", "FS", "FF", "SF"
+    };
 
     public String getPersistentValue() {
       return String.valueOf(ordinal() + 1);
     }
 
+    public String getReadablePersistentValue() {
+      return PERSISTENT_VALUES[ordinal()];
+    }
     public static Type fromPersistentValue(String dependencyTypeAsString) {
       return Type.values()[Integer.parseInt(dependencyTypeAsString) - 1];
+    }
+    public static Type fromReadablePersistentValue(String str) {
+      for (int i = 0; i < PERSISTENT_VALUES.length; i++) {
+        if (PERSISTENT_VALUES[i].equals(str)) {
+          return Type.values()[i];
+        }
+      }
+      throw new IllegalArgumentException("Can't find constraint by persistent value=" + str);
     }
   }
 

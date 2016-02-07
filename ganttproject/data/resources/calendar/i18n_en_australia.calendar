@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Australia" type="country">
-<!-- http://www.fairwork.gov.au/leave/public-holidays/pages/default.aspx -->
-<!-- http://www.officeholidays.com/countries/australia/2012.asp -->
-	<date year="" month="01" date="01"/>     <!-- New Year -->
+<calendar id="au" name="Australia National Holidays 2016" type="country">
+<!-- http://www.australia.gov.au/about-australia/special-dates-and-events/public-holidays -->
+<!-- http://www.officeholidays.com/countries/australia/index.php -->
+<!-- http://www.timeanddate.com/holidays/australia/ -->
+	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
+	<date year="" month="01" date="26" type="HOLIDAY"><![CDATA[Australia Day]]></date>
+	<date year="" month="04" date="25" type="HOLIDAY"><![CDATA[ANZAC Day]]></date>
+	<date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas]]></date>
+	<date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Boxing Day]]></date>
+
 	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
-	<date year="" month="01" date="26"/>     <!-- Australia day -->
 	<date year="2012" month="04" date="06"/> <!-- Good Friday -->
 	<date year="2012" month="04" date="08"/> <!-- Easter Monday -->
-	<date year="" month="04" date="25"/>     <!-- ANZAC day -->
 	<date year="2012" month="06" date="11"/> <!-- Queen's birthday -->
-	<date year="" month="12" date="25"/>     <!-- Christmas -->
-	<date year="" month="12" date="26"/>     <!-- Boxing day -->
+
+    <date year="2016" month="03" date="25" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2016" month="03" date="28" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2016" month="12" date="27" type="HOLIDAY"><![CDATA[Christmas Day (in lieu)]]></date>
 </calendar>

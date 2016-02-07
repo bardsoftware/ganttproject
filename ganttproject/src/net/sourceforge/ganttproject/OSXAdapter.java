@@ -37,6 +37,9 @@ public class OSXAdapter extends ApplicationAdapter {
 
   private OSXAdapter(GanttProject myProj) {
     this.myProj = myProj;
+    System.setProperty("apple.awt.graphics.EnableQ2DX", "true");
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
+    System.setProperty("com.apple.mrj.application.apple.menu.about.name", "GanttProject");
   }
 
   /**
@@ -85,12 +88,11 @@ public class OSXAdapter extends ApplicationAdapter {
    */
   @Override
   public void handleQuit(ApplicationEvent event) {
-    myProj.quitApplication();
     /*
      * Not a typo. Must set handled to false else the app will still quit even
      * if we say "cancel" on confirmation.
      */
-    event.setHandled(false);
+    event.setHandled(myProj.quitApplication());
   }
 
   public static void registerMacOSXApplication(GanttProject myProj) {

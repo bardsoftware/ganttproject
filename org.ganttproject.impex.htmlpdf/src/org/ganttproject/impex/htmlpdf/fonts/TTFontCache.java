@@ -63,12 +63,12 @@ public class TTFontCache {
   private BaseFont myFallbackFont;
 
   public void registerDirectory(String path) {
-    GPLogger.getLogger(getClass()).fine("reading directory=" + path);
+    GPLogger.getLogger(getClass()).info("scanning directory=" + path);
     File dir = new File(path);
     if (dir.exists() && dir.isDirectory()) {
       registerFonts(dir);
     } else {
-      GPLogger.getLogger(getClass()).fine("directory " + path + " is not readable");
+      GPLogger.getLogger(getClass()).info("directory " + path + " is not readable");
     }
   }
 
@@ -93,6 +93,9 @@ public class TTFontCache {
     }
     final File[] files = dir.listFiles();
     for (File f : files) {
+      if (!f.canRead()) {
+        continue;
+      }
       if (f.isDirectory()) {
         registerFonts(f);
         continue;
@@ -104,7 +107,7 @@ public class TTFontCache {
       try {
         registerFontFile(f, runningUnderJava6);
       } catch (Throwable e) {
-        GPLogger.getLogger(ITextEngine.class).log(Level.FINE, "Failed to register font from " + f.getAbsolutePath(), e);
+        GPLogger.getLogger(TTFontCache.class).log(Level.FINE, "Failed to register font from " + f.getAbsolutePath(), e);
       }
     }
   }
@@ -139,12 +142,10 @@ public class TTFontCache {
       Font result = null;
       for (File f : myFiles) {
         Font font = createFont(f);
-        System.err.println("trying font=" + font);
         if (result == null || result.getStyle() > font.getStyle()) {
           result = font;
         }
       }
-      System.err.println("result="+result);
       return result;
     }
 
@@ -164,6 +165,7 @@ public class TTFontCache {
       IOException {
     // FontFactory.register(fontFile.getAbsolutePath());
     Font awtFont = createAwtFont(fontFile, runningUnderJava6);
+    GPLogger.getLogger(getClass()).fine("Trying font file: " + fontFile.getAbsolutePath());
 
     final String family = awtFont.getFontName().toLowerCase();
     AwtFontSupplier awtSupplier = myMap_Family_RegularFont.get(family);

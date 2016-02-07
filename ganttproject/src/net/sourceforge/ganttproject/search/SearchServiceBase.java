@@ -26,9 +26,9 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 
 /**
  * Base class for task and resource search services.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
- * 
+ *
  * @param <SR>
  *          search result object type
  * @param <SO>
@@ -63,6 +63,7 @@ abstract class SearchServiceBase<SR extends SearchResult<SO>, SO> implements Sea
     myTreeUiFacade.clearSelection();
     for (SearchResult<SO> r : results) {
       myTreeUiFacade.setSelected(r.getObject(), false);
+      myTreeUiFacade.makeVisible(r.getObject());
     }
     myUiFacade.setViewIndex(myViewIndex);
     myTreeUiFacade.getTreeComponent().requestFocusInWindow();

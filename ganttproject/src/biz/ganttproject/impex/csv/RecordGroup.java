@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.apache.commons.csv.CSVRecord;
 
@@ -45,6 +46,7 @@ public abstract class RecordGroup {
   private SetView<String> myCustomFields;
   private List<String> myHeader;
   private final String myName;
+  private List<Pair<Level, String>> myErrorOutput;
 
   public RecordGroup(String name, Set<String> fields) {
     myName = name;
@@ -127,5 +129,13 @@ public abstract class RecordGroup {
   @Override
   public String toString() {
     return myName;
+  }
+
+  void setErrorOutput(List<Pair<Level, String>> errors) {
+    myErrorOutput = errors;
+  }
+
+  protected void addError(Level level, String message) {
+    myErrorOutput.add(Pair.create(level, message));
   }
 }

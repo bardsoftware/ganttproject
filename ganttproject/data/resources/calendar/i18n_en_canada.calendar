@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Canada" type="country">
-<!-- http://www.officeholidays.com/countries/canada/2012.asp -->
-<!-- http://www.statutoryholidays.com/2012.php -->
-	<date year="" month="01" date="01"/>      <!-- New Year -->
-	<date year="2012" month="01" date="02"/>  <!-- New Year in lieu -->
-	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
-	<date year="2012" month="05" date="21"/>  <!-- Victoria day -->
-	<date year="" month="07" date="01"/>      <!-- Canada day -->
-	<date year="2012" month="07" date="02"/>  <!-- Canada day in lieu -->
-	<date year="2012" month="09" date="03"/>  <!-- Labour day -->
-	<date year="" month="10" date="08"/>      <!-- Thanksgiving day -->
-	<date year="" month="12" date="25"/>      <!-- Christmas -->
+<calendar id="ca" name="Canada Statutory Holidays 2016" type="country">
+<!-- http://www.officeholidays.com/countries/canada/ -->
+<!-- http://www.statutoryholidays.com/2016.php -->
+<!-- http://www.timeanddate.com/holidays/canada/ -->
+	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
+	<date year="" month="07" date="01" type="HOLIDAY"><![CDATA[Canada Day]]></date>
+	<date year="" month="11" date="11" type="HOLIDAY"><![CDATA[Remembrance Day]]></date>
+	<date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas]]></date>
 
 	<date year="2005" month="01" date="01"/>
 	<date year="2005" month="03" date="25"/>
@@ -52,5 +48,16 @@
 	<date year="2008" month="11" date="11"/>
 	<date year="2008" month="12" date="25"/>
 	<date year="2008" month="12" date="26"/>
+	<date year="2012" month="01" date="02"/>  <!-- New Year in lieu -->
+	<date year="2012" month="04" date="06"/>  <!-- Good Friday -->
+	<date year="2012" month="05" date="21"/>  <!-- Victoria day -->
+	<date year="2012" month="07" date="02"/>  <!-- Canada day in lieu -->
+	<date year="2012" month="09" date="03"/>  <!-- Labour day -->
+
+    <date year="2016" month="03" date="25" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2016" month="05" date="23" type="HOLIDAY"><![CDATA[Victoria Day]]></date>
+    <date year="2016" month="09" date="05" type="HOLIDAY"><![CDATA[Labour Day]]></date>
+    <date year="2016" month="10" date="10" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
+
 </calendar >
  

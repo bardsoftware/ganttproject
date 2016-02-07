@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package org.ganttproject.impex.htmlpdf;
 
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,7 @@ public class PropertyFetcher {
     id2value.put(TaskDefaultColumn.COMPLETION.getStub().getID(), String.valueOf(t.getCompletionPercentage()));
     id2value.put(TaskDefaultColumn.PREDECESSORS.getStub().getID(), TaskProperties.formatPredecessors(t, ", "));
     id2value.put(TaskDefaultColumn.COORDINATOR.getStub().getID(), TaskProperties.formatCoordinators(t));
+    id2value.put(TaskDefaultColumn.RESOURCES.getStub().getID(), TaskProperties.formatResources(Arrays.asList(t.getAssignments())));
     List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
     id2value.put(TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), Joiner.on('.').join(outlinePath));
     id2value.put(TaskDefaultColumn.ID.getStub().getID(), String.valueOf(t.getTaskID()));

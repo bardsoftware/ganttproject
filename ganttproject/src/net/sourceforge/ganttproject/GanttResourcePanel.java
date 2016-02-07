@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -233,7 +234,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   public void resourceAssignmentsChanged(ResourceEvent e) {
-    getTreeModel().resourceAssignmentsChanged(e.getResources());
+    getTreeModel().resourceAssignmentsChanged(Arrays.asList(e.getResources()));
     repaint();
   }
 

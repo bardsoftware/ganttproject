@@ -57,6 +57,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.task.Task.Cost;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
@@ -188,6 +189,7 @@ public class TaskImpl implements Task {
     myColor = copy.myColor;
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
+    myCost.setValue(copy.myCost);
 
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
@@ -1257,6 +1259,11 @@ public class TaskImpl implements Task {
     @Override
     public void setValue(BigDecimal value) {
       myValue = value;
+    }
+
+    public void setValue(Cost copy) {
+      myValue = copy.getValue();
+      isCalculated = copy.isCalculated();
     }
 
     @Override

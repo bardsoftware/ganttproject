@@ -237,7 +237,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       Collections.sort(myColumns, new Comparator<ColumnImpl>() {
         @Override
         public int compare(ColumnImpl left, ColumnImpl right) {
-          if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
+          if (!left.getStub().isVisible() || !right.getStub().isVisible()) {
             return left.getName().compareTo(right.getName());
           }
           return left.getStub().getOrder() - right.getStub().getOrder();

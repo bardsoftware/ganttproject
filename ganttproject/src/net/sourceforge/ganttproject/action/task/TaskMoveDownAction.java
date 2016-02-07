@@ -73,7 +73,7 @@ public class TaskMoveDownAction extends TaskActionBase {
         }
       });
     }
-    getTreeFacade().ensureVisible(selection.get(selection.size() - 1));
+    getTreeFacade().makeVisible(selection.get(selection.size() - 1));
     // TODO Ideally this should get done by the move method as it modifies the
     // document
     getUIFacade().getGanttChart().getProject().setModified();

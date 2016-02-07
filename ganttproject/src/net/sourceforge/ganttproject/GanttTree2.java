@@ -33,7 +33,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -582,13 +581,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       getTable().getCellEditor().stopCellEditing();
     }
     setEditingTask(modelElement);
-  }
-
-
-  @Override
-  public void ensureVisible(Task task) {
-    MutableTreeTableNode node = getNode(task);
-    getTree().scrollPathToVisible(TreeUtil.createPath(node));
   }
 
   @Override
