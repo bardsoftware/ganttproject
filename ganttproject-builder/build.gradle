@@ -20,6 +20,8 @@ task copyPlugin(type: Copy) {
   into(rootProject.distBinDir)
   from(fileTree(".")) {
     include "lib/javagalician.jar"
+    include "ganttproject"
+    include "ganttproject-eclipsito-config.xml"
     include "logging.properties"
   }
 }
