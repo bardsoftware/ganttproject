@@ -1,0 +1,43 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+dependencies {
+  compile fileTree(dir: 'lib/core', include: ['*.jar'])
+  compile project(':..:biz.ganttproject.core')
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+        }
+    }
+}
+
+task copyPluginFiles(type: Copy) {
+    into(new File(rootProject.pluginsDir, project.name))
+    from(jar.outputs.getFiles().getFiles().flatten())
+    from(fileTree(".")) {
+      include "plugin.xml"
+      include "lib/core/**.jar"
+      exclude "lib/core/eclipsito.jar"
+      include "data/resources/**.properties"
+      include "data/resources/calendar/**"
+      include "data/resources/icons/**"
+      include "data/resources/language/**"
+    }
+}
+
+task copyEclipsito(type: Copy) {
+    into(rootProject.distBinDir)
+    from(fileTree("lib/core")) {
+      include "eclipsito.jar"
+    }
+    outputs.upToDateWhen {
+      new File(rootProject.distBinDir, "eclipsito.jar").exists()
+    }
+}
+
+task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }
