@@ -18,14 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
+import biz.ganttproject.storage.StorageDialogAction;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIUtil;
+
+import javax.swing.*;
 
 /**
  * Collection of actions present in the project menu
@@ -46,15 +43,17 @@ public class ProjectMenu extends JMenu {
     ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
     myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());
     SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
-    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
-        project.getProjectUIFacade());
-    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
-        project.getProjectUIFacade());
+//    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
+//        project.getProjectUIFacade());
+//    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
+//        project.getProjectUIFacade());
     ExitAction exitAction = new ExitAction(project);
     ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
     ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project,
         project.getGanttOptions().getPluginPreferences());
 
+    StorageDialogAction cloudDialogAction = new StorageDialogAction();
+    add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);
     add(myOpenProjectAction);
@@ -69,10 +68,10 @@ public class ProjectMenu extends JMenu {
     add(projectExportAction);
     addSeparator();
 
-    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
-    mServer.add(openURLAction);
-    mServer.add(saveURLAction);
-    add(mServer);
+//    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
+//    mServer.add(openURLAction);
+//    mServer.add(saveURLAction);
+//    add(mServer);
 
     addSeparator();
     add(myPrintAction);
