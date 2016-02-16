@@ -1,0 +1,54 @@
+.body {
+    -fx-background-color: white;
+}
+.btn-service {
+    -fx-background-color: white;
+    -fx-border-width: 0;
+    -fx-text-fill: black;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+}
+.btn-service:hover {
+    -fx-background-color: derive(white, -10%);
+}
+.btn-service.active {
+    -fx-background-color: derive(orange, 20%);
+}
+.btn-signup {
+    -fx-background-color: red;
+    -fx-border-width: 1;
+    -fx-border-color: derive(red, -10%);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.center {
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+}
+.pane-service-buttons {
+    -fx-border-width: 0 1 0 0;
+    -fx-border-color: derive(white, -15%);
+}
+.pane-service-contents {
+    -fx-padding: 10 10 10 10;
+}
+.pane-service-contents > .title {
+    -fx-padding: 0 0 5 0;
+    -fx-font-size: 130%;
+}
+.pane-service-contents > .title-help {
+    -fx-padding: 0 5 10 5;
+    -fx-font-size: 80%;
+    -fx-text-fill: dimgray;
+    -fx-wrap-text: true;
+}
+.section {
+    -fx-font-size: 110%;
+    -fx-padding: 0 0 3 0;
+}
+.help {
+    -fx-padding: 0 0 3 0;
+    -fx-font-size: 80%;
+    -fx-text-fill: dimgray;
+    -fx-wrap-text: true;
+}
