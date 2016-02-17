@@ -1,5 +1,19 @@
+.alert-warning {
+    -fx-background-color: derive(yellow, 10%);
+    -fx-border-color: derive(yellow, -10%);
+    -fx-text-fill: dimgray;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+    -fx-wrap-text: true;
+}
+
 .body {
     -fx-background-color: white;
+}
+.bordered {
+    -fx-border-width: 1;
+    -fx-border-style: dotted;
+    -fx-border-color: red;
 }
 .btn-service {
     -fx-background-color: white;
@@ -42,12 +56,12 @@
     -fx-text-fill: dimgray;
     -fx-wrap-text: true;
 }
-.section {
+.subtitle {
     -fx-font-size: 110%;
-    -fx-padding: 0 0 3 0;
+    -fx-padding: 20 0 3 0;
 }
 .help {
-    -fx-padding: 0 0 3 0;
+    -fx-padding: 0 0 5 0;
     -fx-font-size: 80%;
     -fx-text-fill: dimgray;
     -fx-wrap-text: true;
