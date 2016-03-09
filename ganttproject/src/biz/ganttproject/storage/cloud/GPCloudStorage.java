@@ -111,6 +111,9 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
         myPane.getChildren().add(createSetupCloudPane());
       } else if (cloudServer.getPassword() == null) {
         myPane.getChildren().add(createConnectCloudPane());
+      } else {
+        WebdavStorage webdavStorage = new WebdavStorage();
+        myPane.getChildren().add(webdavStorage.createUi());
       }
     }
     return myPane;

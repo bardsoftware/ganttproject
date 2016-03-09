@@ -33,7 +33,10 @@
       <library name="lib/core/concurrentlinkedhashmap-lru-1.3.2.jar">
          <export name="*"/>
       </library>
-            
+      <library name="lib/core/controlsfx-8.40.10.jar">
+         <export name="*"/>
+      </library>
+
       <library name="lib/core/endrick-cache-1.7.9.jar">
          <export name="*"/>
       </library>
@@ -43,13 +46,13 @@
       <library name="lib/core/ganttproject-jxbusycomponent-1.2.2.jar">
          <export name="*"/>
       </library>
-      
+
       <library name="lib/core/httpclient-4.2.1.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/httpcore-4.2.1.jar">
          <export name="*"/>
-      </library>      
+      </library>
       <library name="lib/core/jcommander-1.17.jar">
          <export name="*"/>
       </library>
