@@ -18,19 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import com.google.common.base.Supplier;
-
-import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
@@ -44,6 +31,14 @@ import biz.ganttproject.core.chart.render.RectangleRenderer;
 import biz.ganttproject.core.chart.render.TextPainter;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
+import com.google.common.base.Supplier;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
+
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * Implements styled painters for the available primitives (see
@@ -235,7 +230,7 @@ public class StyledPainterImpl implements Painter {
     public void paint(Rectangle next) {
       int margin = StyledPainterImpl.this.margin - 3;
       Color c = myConfig.getDayOffColor();
-      myGraphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 100));
+      myGraphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()));
       myGraphics.fillRect(next.getLeftX(), next.getTopY() + margin, next.getWidth(), next.getHeight() - 2 * margin);
       myGraphics.setColor(Color.BLACK);
       myGraphics.drawLine(next.getLeftX(), next.getTopY() + margin, next.getLeftX(), next.getBottomY() - margin);

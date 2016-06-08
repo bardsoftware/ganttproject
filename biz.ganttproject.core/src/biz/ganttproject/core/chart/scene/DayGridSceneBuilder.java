@@ -2,7 +2,7 @@
 GanttProject is an opensource project management tool.
 Copyright (C) 2004-2012 GanttProject Team
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -17,12 +17,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene;
 
-import java.awt.Color;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
@@ -31,6 +26,10 @@ import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.option.BooleanOption;
+
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Builds a scene consisting of vertical columns on the charts, such as weekend days, today line and
@@ -95,8 +94,8 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     line.setStyle(style);
   }
 
-  // This method creates colored vertical stripes on the chart which correspond 
-  // to weekend days and holidays. It is not necessary that colored stripe is 
+  // This method creates colored vertical stripes on the chart which correspond
+  // to weekend days and holidays. It is not necessary that colored stripe is
   // a non-working day, though: e.g. we may show weekends but count them as working days.
   private void renderNonWorkingDayColumns() {
     List<Offset> defaultOffsets = myInputApi.getAtomUnitOffsets();
@@ -114,10 +113,10 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
           // Create a holiday/weekend day bar in the main area
           renderNonWorkingDay(_curX, offset);
           // And expand it to the timeline area.
-          Rectangle r = myTimelineCanvas.createRectangle(_curX, getLineTopPosition(), 
+          Rectangle r = myTimelineCanvas.createRectangle(_curX, getLineTopPosition(),
               offset.getOffsetPixels() - _curX, getLineBottomPosition() - getLineTopPosition());
           applyRectangleStyle(r, offset);
-        }        
+        }
       };
       if ((dayMask & (DayMask.WEEKEND)) != 0) {
         // We render weekends always. If there is a colored event its color will be applied
@@ -145,7 +144,7 @@ public class DayGridSceneBuilder extends AbstractSceneBuilder {
     Color customColor = myInputApi.getHolidayColor(offset.getOffsetStart());
     if (customColor != null) {
       r.setBackgroundColor(customColor);
-      r.setOpacity(1.0f);
+      r.setOpacity(customColor.getAlpha()/256f);
     }
     if ((offset.getDayMask() & DayMask.HOLIDAY) == DayMask.HOLIDAY) {
       r.setStyle("calendar.holiday");

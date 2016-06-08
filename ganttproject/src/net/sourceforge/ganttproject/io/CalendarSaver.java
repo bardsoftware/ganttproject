@@ -18,24 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.ColorOption;
+import com.google.common.base.Strings;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.util.ColorConvertion;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.sax.TransformerHandler;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
-import javax.xml.transform.sax.TransformerHandler;
-
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.util.ColorConvertion;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import com.google.common.base.Strings;
-
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.CalendarEvent;
 
 public class CalendarSaver extends SaverBase {
   private SimpleDateFormat myShortFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
@@ -78,6 +75,7 @@ public class CalendarSaver extends SaverBase {
       addAttribute("type", holiday.getType().name(), attrs);
       if (holiday.getColor() != null) {
         addAttribute("color", ColorConvertion.getColor(holiday.getColor()), attrs);
+        addAttribute("background", ColorOption.Util.getCssBackground(holiday.getColor()), attrs);
       }
       if (Strings.isNullOrEmpty(holiday.getTitle())) {
         emptyElement("date", attrs, handler);

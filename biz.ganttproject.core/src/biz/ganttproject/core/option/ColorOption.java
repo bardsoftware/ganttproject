@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -47,6 +47,16 @@ public interface ColorOption extends GPOption<Color> {
       g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();
       b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();
       return new Color(r, g, b);
-    }    
+    }
+
+    public static String getCssBackground(Color color) {
+      return String.format("#%02X%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    }
+
+    public static Color fromCssBackground(String backgroundColor) {
+      javafx.scene.paint.Color parsedColor = javafx.scene.paint.Color.web(backgroundColor);
+      System.err.println("String color="+backgroundColor+" parsed="+parsedColor);
+      return new Color((float)parsedColor.getRed(), (float)parsedColor.getGreen(), (float)parsedColor.getBlue(), (float)parsedColor.getOpacity());
+    }
   }
 }

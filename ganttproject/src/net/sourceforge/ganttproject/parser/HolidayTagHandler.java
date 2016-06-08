@@ -19,25 +19,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.parser;
 
 
-import java.awt.Color;
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.io.GanttXMLOpen;
+import org.xml.sax.Attributes;
+
+import java.awt.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.io.GanttXMLOpen;
-import net.sourceforge.ganttproject.util.ColorConvertion;
-
-import org.xml.sax.Attributes;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.time.CalendarFactory;
 
 /**
  * @author nbohn
@@ -111,11 +108,14 @@ public class HolidayTagHandler extends AbstractTagHandler {
       String monthAsString = atts.getValue("month");
       String dayAsString = atts.getValue("date");
       String typeAsString = atts.getValue("type");
-      String colorAsString = atts.getValue("color");
+      String colorAsString = atts.getValue("background");
+      if (Strings.isNullOrEmpty(colorAsString)) {
+        colorAsString = atts.getValue("color");
+      }
       int month = Integer.parseInt(monthAsString);
       int day = Integer.parseInt(dayAsString);
       CalendarEvent.Type type = Strings.isNullOrEmpty(typeAsString) ? CalendarEvent.Type.HOLIDAY : CalendarEvent.Type.valueOf(typeAsString);
-      Color color = colorAsString == null ? null : ColorConvertion.determineColor(colorAsString);
+      Color color = colorAsString == null ? null : ColorOption.Util.fromCssBackground(colorAsString);
       String description = getCdata().replaceAll("^\\p{Space}+", "").replaceAll("\\p{Space}+$", "");
       if (Strings.isNullOrEmpty(yearAsString)) {
         Date date = CalendarFactory.createGanttCalendar(1, month - 1, day).getTime();
