@@ -18,27 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.net.URL;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.Action;
-
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionChangeListener;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
@@ -49,7 +37,6 @@ import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
-import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -62,14 +49,18 @@ import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionChangeListener;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.CalendarFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Class for the graphic part of the soft
@@ -248,19 +239,19 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
         switch (dayMask & GPCalendar.DayMask.WORKING) {
         case 0:
           if (event == null) {
-            result.add(CalendarEventAction.addException(getProject().getActiveCalendar(), date));
+            result.add(CalendarEventAction.addException(getProject().getActiveCalendar(), date, getUndoManager()));
           }
           break;
         case GPCalendar.DayMask.WORKING:
-          result.add(CalendarEventAction.removeException(getProject().getActiveCalendar(), date));
+          result.add(CalendarEventAction.removeException(getProject().getActiveCalendar(), date, getUndoManager()));
           break;
         }
       }
       if ((dayMask & GPCalendar.DayMask.HOLIDAY) != 0) {
-        result.add(CalendarEventAction.removeHoliday(getProject().getActiveCalendar(), date));
+        result.add(CalendarEventAction.removeHoliday(getProject().getActiveCalendar(), date, getUndoManager()));
       } else {
         if (event == null) {
-          result.add(CalendarEventAction.addHoliday(getProject().getActiveCalendar(), date));
+          result.add(CalendarEventAction.addHoliday(getProject().getActiveCalendar(), date, getUndoManager()));
         }
       }
     }
