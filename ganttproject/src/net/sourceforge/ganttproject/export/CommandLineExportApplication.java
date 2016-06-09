@@ -18,23 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.PluginPreferencesImpl;
+import net.sourceforge.ganttproject.plugins.PluginManager;
+import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.service.prefs.Preferences;
+import org.w3c.util.DateParser;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.PluginPreferencesImpl;
-import net.sourceforge.ganttproject.plugins.PluginManager;
-
-import org.eclipse.core.runtime.jobs.Job;
-import org.osgi.service.prefs.Preferences;
-import org.w3c.util.DateParser;
-
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.converters.FileConverter;
+import java.util.concurrent.CountDownLatch;
 
 public class CommandLineExportApplication {
   public static class Args {
@@ -83,6 +83,7 @@ public class CommandLineExportApplication {
       return false;
     }
     Exporter exporter = myFlag2exporter.get(myArgs.exporter);
+    GPLogger.log("Using exporter=" + exporter);
     if (exporter == null) {
       return false;
     }
@@ -104,7 +105,6 @@ public class CommandLineExportApplication {
     File outputFile = myArgs.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)
         : myArgs.outputFile;
 
-    System.err.println("[CommandLineExportApplication] export(): exporting with " + exporter);
     Preferences prefs = new PluginPreferencesImpl(null, "");
     prefs.putInt("zoom", myArgs.zooming);
     prefs.put(
@@ -126,14 +126,16 @@ public class CommandLineExportApplication {
     prefs.putBoolean("expandResources", myArgs.expandResources);
 
     exporter.setContext(project, consoleUI, prefs);
+    final CountDownLatch latch = new CountDownLatch(1);
     try {
       ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
         @Override
         public void run(File[] exportedFiles) {
-          System.exit(0);
+          latch.countDown();
         }
       };
       exporter.run(outputFile, finalizationJob);
+      latch.await();
     } catch (Exception e) {
       consoleUI.showErrorDialog(e);
     }
