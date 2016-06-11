@@ -18,30 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import com.google.common.collect.ImmutableList;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
@@ -53,11 +29,11 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.task.Task.Cost;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
@@ -69,6 +45,26 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDepende
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author bard
@@ -650,7 +646,7 @@ public class TaskImpl implements Task {
       if (myStartChange != null && TaskImpl.this.isSupertask()) {
         TaskImpl.this.adjustNestedTasks();
       }
-      if ((myStartChange != null || myEndChange != null || myDurationChange != null || myShiftChange != null) && areEventsEnabled()) {
+      if ((myStartChange != null || myEndChange != null || myDurationChange != null || myShiftChange != null || myThirdChange != null) && areEventsEnabled()) {
         GanttCalendar oldStart;
         if (myStartChange != null) {
           oldStart = (GanttCalendar) myStartChange.myOldValue;
@@ -997,13 +993,11 @@ public class TaskImpl implements Task {
   @Override
   public void setThirdDate(GanttCalendar third) {
     myThird = third;
-    // recalculateActivities();
   }
 
   @Override
   public void setThirdDateConstraint(int thirdDateConstraint) {
     myThirdDateConstraint = thirdDateConstraint;
-    // recalculateActivities();
   }
 
   @Override
