@@ -78,8 +78,8 @@ public class Offset {
 
   @Override
   public String toString() {
-    return "start date: " + myOffsetStart + " end date: " + myOffsetEnd + " end pixel: " + myOffsetPixels
-        + " time unit: " + myOffsetUnit.getName();
+    return String.format("start: %s[%dpx] end: %s[%dpx] unit=%s", 
+        myOffsetStart, myStartPixels, myOffsetEnd, myOffsetPixels, myOffsetUnit.getName());
   }
 
   @Override

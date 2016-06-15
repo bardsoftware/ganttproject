@@ -23,6 +23,8 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
@@ -39,6 +41,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
@@ -54,6 +57,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -153,6 +157,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   private final Canvas myLabelsLayer;
 
+  private TaskActivityChartApi myChartApi;
+
   public TaskRendererImpl2(ChartModelImpl model) {
     super(model);
     this.myModel = model;
@@ -205,7 +211,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
         model.getOptionEventDispatcher());
 
-    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), new TaskActivityChartApi(),
+    myChartApi = new TaskActivityChartApi();
+    myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), myChartApi,
         new TaskActivitySceneBuilder.Style(0));
     myBaselineActivityRenderer = createTaskActivitySceneBuilder(
         getPrimitiveContainer().getLayer(2), new TaskActivityChartApi(),
@@ -379,6 +386,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     for (Task t : visibleTasks) {
       boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
+      activities = splitOnViewportBounds(activities);
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
         if (p.getModelObject() != null) {
@@ -392,6 +400,62 @@ public class TaskRendererImpl2 extends ChartRendererBase {
           (int) getChartModel().getBounds().getWidth(), rowNum * getRowHeight());
       nextLine.setForegroundColor(Color.GRAY);
     }
+  }
+
+  /**
+   * Some parts of the renderer, e.g. progress bar rendering, don't like activities which cross
+   * the viewport borders. The reason is that we build shapes (specifically, rectangles) only for
+   * visible parts of activities. When activity crosses the viewport border, the invisible parts
+   * are no more than ~20px wide. However, progress bar needs to know pixel size of all shapes from
+   * the task beginning up to the point where progress bar should be terminated OR needs activities
+   * to be split exactly at the viewport border.
+   *
+   * @param activities
+   * @return
+   */
+  private List<TaskActivity> splitOnViewportBounds(List<TaskActivity> activities) {
+    return TaskRendererImpl2.splitOnBounds(activities, getChartModel().getStartDate(), myChartApi.getEndDate());
+  }
+  /**
+   * This method scans the list of activities and splits activities crossing the borders
+   * of the given frame into parts "before" and "after" the border date. Activities which
+   * do not cross frame borders are left as is, and the relative order of activities is preserved.
+   *
+   * Normally no more than two activities from the input list are partitioned.
+   *
+   * @return input activities with those crossing frame borders partitioned into left and right parts
+   */
+  static List<TaskActivity> splitOnBounds(List<TaskActivity> activities, Date frameStartDate, Date frameEndDate) {
+    Preconditions.checkArgument(frameEndDate.compareTo(frameStartDate) >= 0,
+        String.format("Invalid frame: start=%s end=%s", frameStartDate, frameEndDate));
+    List<TaskActivity> result = Lists.newArrayList();
+    Deque<TaskActivity> queue = new LinkedList<>(activities);
+    while (!queue.isEmpty()) {
+      TaskActivity head = queue.pollFirst();
+      if (head.getStart().compareTo(frameStartDate) < 0
+          && head.getEnd().compareTo(frameStartDate) > 0) {
+
+        // Okay, this activity crosses frame start. Lets add its left part to the result
+        // and push back its right part
+        TaskActivity beforeViewport = new TaskActivityPart(head, head.getStart(), frameStartDate);
+        TaskActivity remaining = new TaskActivityPart(head, frameStartDate, head.getEnd());
+        result.add(beforeViewport);
+        queue.addFirst(remaining);
+        continue;
+      }
+      if (head.getStart().compareTo(frameEndDate) < 0
+          && head.getEnd().compareTo(frameEndDate) > 0) {
+        // This activity crosses frame end date. Again, lets add its left part to the result
+        // and push back the remainder.
+        TaskActivity insideViewport = new TaskActivityPart(head, head.getStart(), frameEndDate);
+        TaskActivity remaining = new TaskActivityPart(head, frameEndDate, head.getEnd());
+        result.add(insideViewport);
+        queue.addFirst(remaining);
+        continue;
+      }
+      result.add(head);
+    }
+    return result;
   }
 
   private int getRowHeight() {
@@ -491,6 +555,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         nextProgressBarLength = (int) (nextRectangle.getWidth() * (completed / nextLength));
         completed = 0f;
       }
+
       final Rectangle nextProgressBar = container.createRectangle(nextRectangle.getLeftX(),
           nextRectangle.getMiddleY() - 1, nextProgressBarLength, 3);
       nextProgressBar.setStyle(completed == 0f ? "task.progress.end" : "task.progress");
