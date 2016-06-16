@@ -209,7 +209,7 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     GanttCalendar newEndCalendar = CalendarFactory.createGanttCalendar(newEnd);
     if (getDiagnostic() != null) {
-      getDiagnostic().info("Task #" + task.getTaskID() + " " + task.getName() + "\n\tEND DATE old:" + task.getEnd() + " new:" + newEndCalendar);
+      getDiagnostic().addModifiedTask(task, null, newEnd);
     }
     TaskMutator mutator = task.createMutator();
     mutator.setEnd(newEndCalendar);
@@ -222,7 +222,7 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     GanttCalendar newStartCalendar = CalendarFactory.createGanttCalendar(newStart);
     if (getDiagnostic() != null) {
-      getDiagnostic().info("Task #" + task.getTaskID() + " " + task.getName() + "\n\tSTART DATE old:" + task.getStart() + " new:" + newStartCalendar);
+      getDiagnostic().addModifiedTask(task, newStart, null);
     }
     TaskMutator mutator = task.createMutator();
     if (myTaskHierarchy.get().hasNestedTasks(task)) {

@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -59,12 +63,16 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
 
+import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -270,18 +278,54 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     }
   }
 
+  class DiagnosticImpl implements AlgorithmBase.Diagnostic {
+    List<String> myMessages = Lists.newArrayList();
+    LinkedHashMap<Task, Pair<Date, Date>> myModifiedTasks = new LinkedHashMap<>();
+    Map<Task, String> myReasons = Maps.newHashMap();
+
+    void info(String message) {
+      myMessages.add(message);
+    }
+    @Override
+    public void addModifiedTask(Task t, Date newStart, Date newEnd) {
+      Pair<Date, Date> entry = myModifiedTasks.get(t);
+      if (entry == null) {
+        entry = Pair.create(null, null);
+      }
+      if (newStart != null) {
+        entry = Pair.create(newStart, entry.second());
+      }
+      if (newEnd != null) {
+        entry = Pair.create(entry.first(), newEnd);
+      }
+      myModifiedTasks.put(t, entry);
+    }
+    void addReason(Task t, String reason) {
+      myReasons.put(t, reason);
+    }
+    void showDialog() {
+      String intro = "<p>Some tasks have changed their dates. The list of tasks and possible reasons is given below</p>";
+      List<String> tableRows = Lists.newArrayList();
+      for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
+        Task t = entry.getKey();
+        Pair<Date,Date> changes = entry.getValue();
+        String row = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+            t.getName(),
+            changes.first() == null ? "No change" : changes.first(),
+            Objects.firstNonNull(myReasons.get(t), "Other reasons"));
+        tableRows.add(row);
+      }
+      String msg = String.format("<html><p>%s</p><table><tr><th>Task</th><th>Start date change</th><th>Reason</th></tr>%s</table></html>",
+          intro, Joiner.on('\n').join(tableRows));
+      JOptionPane.showMessageDialog(myWorkbenchFacade.getMainFrame(), msg);
+    }
+  }
+
   @Override
   public void openProject(final Document document, final IGanttProject project) throws IOException, DocumentException {
     beforeClose();
     project.close();
 
-    class DiagnosticImpl implements AlgorithmBase.Diagnostic {
-      List<String> myMessages = Lists.newArrayList();
-      @Override
-      public void info(String message) {
-        myMessages.add(message);
-      }
-    }
     final DiagnosticImpl d = new DiagnosticImpl();
     try {
       project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
@@ -334,18 +378,32 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       }
     }
 
+    // Analyze earliest start dates
+    boolean hasEarliestStarts = false;
+    for (Task t : taskManager.getTasks()) {
+      if (t.getThird() != null && d.myModifiedTasks.containsKey(t)) {
+        hasEarliestStarts = true;
+        d.addReason(t, "Earliest start constraint");
+      }
+    }
+    if (hasEarliestStarts) {
+      d.info("There are tasks with earliest start constraints");
+    }
+
+
     tasks.add(new Runnable() {
       @Override
       public void run() {
         if (!d.myMessages.isEmpty()) {
-          TimeDuration newDuration = project.getTaskManager().getProjectLength();
-          GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
-          String part0 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part0");
-          String part1 = (newDuration.getLength() == oldDuration.getLength())
-              ? "": GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
-          String part2 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part2");
-          String msg = GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2);
-          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, msg);
+          d.showDialog();
+//          TimeDuration newDuration = project.getTaskManager().getProjectLength();
+//          GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
+//          String part0 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part0");
+//          String part1 = (newDuration.getLength() == oldDuration.getLength())
+//              ? "": GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
+//          String part2 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part2");
+//          String msg = GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2);
+//          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, msg);
         }
       }
     });
