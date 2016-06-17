@@ -27,9 +27,11 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -76,6 +78,7 @@ import com.google.common.collect.Range;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
@@ -282,6 +285,8 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     List<String> myMessages = Lists.newArrayList();
     LinkedHashMap<Task, Pair<Date, Date>> myModifiedTasks = new LinkedHashMap<>();
     Map<Task, String> myReasons = Maps.newHashMap();
+    private boolean myHasOnlyEndDateChange = false;
+    private GanttLanguage i18n = GanttLanguage.getInstance();
 
     void info(String message) {
       myMessages.add(message);
@@ -298,26 +303,86 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       if (newEnd != null) {
         entry = Pair.create(entry.first(), newEnd);
       }
+      if (entry.first() == null && entry.second() != null) {
+        myHasOnlyEndDateChange = true;
+      }
       myModifiedTasks.put(t, entry);
     }
-    void addReason(Task t, String reason) {
-      myReasons.put(t, reason);
+    void addReason(Task t, String reasonKey) {
+      myReasons.put(t, reasonKey);
     }
     void showDialog() {
-      String intro = "<p>Some tasks have changed their dates. The list of tasks and possible reasons is given below</p>";
+      String intro = Joiner.on("<br>").join(myMessages);
+      String startDateChangeTable = buildStartDateChangeTable();
+      String endDateChangeTable = myHasOnlyEndDateChange ? buildEndDateChangeTable() : "";
+      String reasonTable = buildReasonTable();
+      String msg = String.format("<html><p>%s</p><br>%s%s<br>%s</html>",
+          intro,
+          startDateChangeTable,
+          endDateChangeTable,
+          reasonTable);
+      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, msg, new Action[] {CancelAction.CLOSE});
+    }
+    private String buildReasonTable() {
+      List<String> rows = Lists.newArrayList();
+      Set<String> uniqueReasons = new LinkedHashSet<>(myReasons.values());
+      uniqueReasons.add("scheduler.warning.reason.other");
+      for (String reasonKey : uniqueReasons) {
+        rows.add(String.format("<p><b>%s</b>: %s<br></p>",
+            i18n.getText(reasonKey + ".label"),
+            i18n.getText(reasonKey + ".description")));
+      }
+      return String.format("<hr>%s", Joiner.on("<br>").join(rows));
+    }
+    private String buildStartDateChangeTable() {
       List<String> tableRows = Lists.newArrayList();
       for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
         Task t = entry.getKey();
         Pair<Date,Date> changes = entry.getValue();
-        String row = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-            t.getName(),
-            changes.first() == null ? "No change" : changes.first(),
-            Objects.firstNonNull(myReasons.get(t), "Other reasons"));
-        tableRows.add(row);
+        if (changes.first() != null) {
+          String row = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+              t.getName(),
+              i18n.formatDate(CalendarFactory.createGanttCalendar(changes.first())),
+              i18n.getText(Objects.firstNonNull(
+                  myReasons.get(t),
+                  "scheduler.warning.reason.other") + ".label")
+           );
+          tableRows.add(row);
+        }
       }
-      String msg = String.format("<html><p>%s</p><table><tr><th>Task</th><th>Start date change</th><th>Reason</th></tr>%s</table></html>",
-          intro, Joiner.on('\n').join(tableRows));
-      JOptionPane.showMessageDialog(myWorkbenchFacade.getMainFrame(), msg);
+      String rows =  Joiner.on('\n').join(tableRows);
+      String table = String.format("<hr><b>%s</b><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>%s</table>",
+          i18n.getText("scheduler.warning.section.startDate"),
+          i18n.getText("taskname"),
+          i18n.getText("option.generic.startDate.label"),
+          i18n.getText("scheduler.warning.reason"),
+          rows);
+      return table;
+    }
+    private String buildEndDateChangeTable() {
+      List<String> tableRows = Lists.newArrayList();
+      for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
+        Task t = entry.getKey();
+        Pair<Date,Date> changes = entry.getValue();
+        if (changes.first() == null) {
+          String row = String.format("<br><tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+              t.getName(),
+              i18n.formatDate(CalendarFactory.createGanttCalendar(changes.second())),
+              i18n.getText(Objects.firstNonNull(
+                  myReasons.get(t),
+                  "scheduler.warning.reason.other") + ".label")
+           );
+          tableRows.add(row);
+        }
+      }
+      String rows =  Joiner.on('\n').join(tableRows);
+      String table = String.format("<b>%s</b><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>%s</table>",
+          i18n.getText("scheduler.warning.section.endDate"),
+          i18n.getText("taskname"),
+          i18n.getText("option.generic.endDate.label"),
+          i18n.getText("scheduler.warning.reason"),
+          rows);
+      return table;
     }
   }
 
@@ -326,20 +391,25 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     beforeClose();
     project.close();
 
+    TimeDuration oldDuration = null;
+    boolean resetModified = true;
+
     final DiagnosticImpl d = new DiagnosticImpl();
+    AlgorithmBase scheduler = project.getTaskManager().getAlgorithmCollection().getScheduler();
     try {
-      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
+      oldDuration = project.getTaskManager().getProjectLength();
+      scheduler.setEnabled(false);
+      scheduler.setDiagnostic(d);
       project.open(document);
+      scheduler.setEnabled(true);
     } finally {
-      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(null);
+      scheduler.setDiagnostic(null);
     }
     if (document.getPortfolio() != null) {
       Document defaultDocument = document.getPortfolio().getDefaultDocument();
       project.open(defaultDocument);
     }
 
-    final TimeDuration oldDuration = project.getTaskManager().getProjectLength();
-    boolean resetModified = true;
 
     final TaskManager taskManager = project.getTaskManager();
     boolean hasLegacyMilestones = false;
@@ -378,31 +448,29 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       }
     }
 
+    GanttLanguage i18n = GanttLanguage.getInstance();
     // Analyze earliest start dates
-    boolean hasEarliestStarts = false;
     for (Task t : taskManager.getTasks()) {
       if (t.getThird() != null && d.myModifiedTasks.containsKey(t)) {
-        hasEarliestStarts = true;
-        d.addReason(t, "Earliest start constraint");
+        d.addReason(t, "scheduler.warning.reason.earliestStart");
       }
     }
-    if (hasEarliestStarts) {
-      d.info("There are tasks with earliest start constraints");
+
+    TimeDuration newDuration = project.getTaskManager().getProjectLength();
+    if (!d.myModifiedTasks.isEmpty()) {
+      String part0 = i18n.getText("scheduler.warning.datesChanged.part0");
+      String part1 = (newDuration.getLength() == oldDuration.getLength())
+          ? "": i18n.formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
+      String part2 = "";
+      d.info(i18n.formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2));
     }
-
-
     tasks.add(new Runnable() {
       @Override
       public void run() {
         if (!d.myMessages.isEmpty()) {
           d.showDialog();
-//          TimeDuration newDuration = project.getTaskManager().getProjectLength();
+//
 //          GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
-//          String part0 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part0");
-//          String part1 = (newDuration.getLength() == oldDuration.getLength())
-//              ? "": GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
-//          String part2 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part2");
-//          String msg = GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2);
 //          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, msg);
         }
       }
