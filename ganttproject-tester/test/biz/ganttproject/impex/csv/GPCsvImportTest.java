@@ -240,4 +240,18 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
   }
 
+  private static void assertOrder(String first, String second) {
+    assertEquals(-1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, second));
+    assertEquals(1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, first));
+    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
+    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
+  }
+  public void testOutlineNumberComparator() {
+    assertOrder("1", "2");
+    assertOrder("1", "1.1");
+    assertOrder("1.1", "1.2");
+    assertOrder("1.1", "2");
+    assertOrder("1.2", "1.10");
+    assertOrder("2", "10");
+  }
 }
