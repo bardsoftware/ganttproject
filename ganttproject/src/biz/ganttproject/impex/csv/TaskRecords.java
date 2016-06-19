@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.logging.Level;
 
@@ -56,6 +57,28 @@ import com.google.common.collect.Sets;
  * @author dbarashev (Dmitry Barashev)
  */
 class TaskRecords extends RecordGroup {
+  static final Comparator<String> OUTLINE_NUMBER_COMPARATOR = new Comparator<String>() {
+    @Override
+    public int compare(String s1, String s2) {
+      try (Scanner sc1 = new Scanner(s1).useDelimiter("\\.");
+           Scanner sc2 = new Scanner(s2).useDelimiter("\\.")) {
+        while (sc1.hasNextInt() && sc2.hasNextInt()) {
+          int diff = sc1.nextInt() - sc2.nextInt();
+          if (diff != 0) {
+            return Integer.signum(diff);
+          }
+        }
+        if (sc1.hasNextInt()) {
+          return 1;
+        }
+        if (sc2.hasNextInt()) {
+          return -1;
+        }
+        return 0;
+      }
+    }
+  };
+
   /** List of known (and supported) Task attributes */
   static enum TaskFields {
     ID(TaskDefaultColumn.ID.getNameKey()),
@@ -77,12 +100,7 @@ class TaskRecords extends RecordGroup {
   }
   private final Map<Task, String> myAssignmentMap = Maps.newHashMap();
   private final Map<Task, String> myPredecessorMap = Maps.newHashMap();
-  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
-    @Override
-    public int compare(String s1, String s2) {
-      return (s1.compareTo(s2));
-    }
-  });
+  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR);
   private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
   private final TaskManager taskManager;
   private final HumanResourceManager resourceManager;
