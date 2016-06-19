@@ -25,13 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -65,24 +59,18 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.util.FileUtil;
-import net.sourceforge.ganttproject.util.collect.Pair;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
 
-import com.beust.jcommander.internal.Maps;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
-  private final UIFacade myWorkbenchFacade;
+  final UIFacade myWorkbenchFacade;
   private final GanttLanguage i18n = GanttLanguage.getInstance();
   private final DocumentManager myDocumentManager;
   private final GPUndoManager myUndoManager;
@@ -281,111 +269,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     }
   }
 
-  class DiagnosticImpl implements AlgorithmBase.Diagnostic {
-    List<String> myMessages = Lists.newArrayList();
-    LinkedHashMap<Task, Pair<Date, Date>> myModifiedTasks = new LinkedHashMap<>();
-    Map<Task, String> myReasons = Maps.newHashMap();
-    private boolean myHasOnlyEndDateChange = false;
-    private GanttLanguage i18n = GanttLanguage.getInstance();
-
-    void info(String message) {
-      myMessages.add(message);
-    }
-    @Override
-    public void addModifiedTask(Task t, Date newStart, Date newEnd) {
-      Pair<Date, Date> entry = myModifiedTasks.get(t);
-      if (entry == null) {
-        entry = Pair.create(null, null);
-      }
-      if (newStart != null) {
-        entry = Pair.create(newStart, entry.second());
-      }
-      if (newEnd != null) {
-        entry = Pair.create(entry.first(), newEnd);
-      }
-      if (entry.first() == null && entry.second() != null) {
-        myHasOnlyEndDateChange = true;
-      }
-      myModifiedTasks.put(t, entry);
-    }
-    void addReason(Task t, String reasonKey) {
-      myReasons.put(t, reasonKey);
-    }
-    void showDialog() {
-      String intro = Joiner.on("<br>").join(myMessages);
-      String startDateChangeTable = buildStartDateChangeTable();
-      String endDateChangeTable = myHasOnlyEndDateChange ? buildEndDateChangeTable() : "";
-      String reasonTable = buildReasonTable();
-      String msg = String.format("<html><p>%s</p><br>%s%s<br>%s</html>",
-          intro,
-          startDateChangeTable,
-          endDateChangeTable,
-          reasonTable);
-      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, msg, new Action[] {CancelAction.CLOSE});
-    }
-    private String buildReasonTable() {
-      List<String> rows = Lists.newArrayList();
-      Set<String> uniqueReasons = new LinkedHashSet<>(myReasons.values());
-      uniqueReasons.add("scheduler.warning.reason.other");
-      for (String reasonKey : uniqueReasons) {
-        rows.add(String.format("<p><b>%s</b>: %s<br></p>",
-            i18n.getText(reasonKey + ".label"),
-            i18n.getText(reasonKey + ".description")));
-      }
-      return String.format("<hr>%s", Joiner.on("<br>").join(rows));
-    }
-    private String buildStartDateChangeTable() {
-      List<String> tableRows = Lists.newArrayList();
-      for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
-        Task t = entry.getKey();
-        Pair<Date,Date> changes = entry.getValue();
-        if (changes.first() != null) {
-          String row = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-              t.getName(),
-              i18n.formatDate(CalendarFactory.createGanttCalendar(changes.first())),
-              i18n.getText(Objects.firstNonNull(
-                  myReasons.get(t),
-                  "scheduler.warning.reason.other") + ".label")
-           );
-          tableRows.add(row);
-        }
-      }
-      String rows =  Joiner.on('\n').join(tableRows);
-      String table = String.format("<hr><b>%s</b><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>%s</table>",
-          i18n.getText("scheduler.warning.section.startDate"),
-          i18n.getText("taskname"),
-          i18n.getText("option.generic.startDate.label"),
-          i18n.getText("scheduler.warning.reason"),
-          rows);
-      return table;
-    }
-    private String buildEndDateChangeTable() {
-      List<String> tableRows = Lists.newArrayList();
-      for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
-        Task t = entry.getKey();
-        Pair<Date,Date> changes = entry.getValue();
-        if (changes.first() == null) {
-          String row = String.format("<br><tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-              t.getName(),
-              i18n.formatDate(CalendarFactory.createGanttCalendar(changes.second())),
-              i18n.getText(Objects.firstNonNull(
-                  myReasons.get(t),
-                  "scheduler.warning.reason.other") + ".label")
-           );
-          tableRows.add(row);
-        }
-      }
-      String rows =  Joiner.on('\n').join(tableRows);
-      String table = String.format("<b>%s</b><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>%s</table>",
-          i18n.getText("scheduler.warning.section.endDate"),
-          i18n.getText("taskname"),
-          i18n.getText("option.generic.endDate.label"),
-          i18n.getText("scheduler.warning.reason"),
-          rows);
-      return table;
-    }
-  }
-
   @Override
   public void openProject(final Document document, final IGanttProject project) throws IOException, DocumentException {
     beforeClose();
@@ -394,7 +277,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     TimeDuration oldDuration = null;
     boolean resetModified = true;
 
-    final DiagnosticImpl d = new DiagnosticImpl();
+    final ProjectOpenDiagnosticImpl d = new ProjectOpenDiagnosticImpl(myWorkbenchFacade);
     AlgorithmBase scheduler = project.getTaskManager().getAlgorithmCollection().getScheduler();
     try {
       oldDuration = project.getTaskManager().getProjectLength();
