@@ -27,6 +27,7 @@ import javax.swing.undo.CannotUndoException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 
 /**
  * @author bard
@@ -89,7 +90,17 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   private void restoreDocument(Document document) throws IOException, DocumentException {
     Document projectDocument = myManager.getProject().getDocument();
     myManager.getProject().close();
-    document.read();
+    AlgorithmCollection algs = myManager.getProject().getTaskManager().getAlgorithmCollection();
+    try {
+      algs.getScheduler().setEnabled(false);
+      algs.getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+      algs.getAdjustTaskBoundsAlgorithm().setEnabled(false);
+      document.read();
+    } finally {
+      algs.getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+      algs.getAdjustTaskBoundsAlgorithm().setEnabled(true);
+      algs.getScheduler().setEnabled(true);
+    }
     myManager.getProject().setDocument(projectDocument);
 
   }
