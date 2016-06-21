@@ -239,18 +239,17 @@ class ProjectOpenStrategy implements AutoCloseable {
       // Analyze earliest start dates
       for (Task t : myProject.getTaskManager().getTasks()) {
         if (t.getThird() != null && myDiagnostics.myModifiedTasks.containsKey(t)) {
-          myDiagnostics.addReason(t, "scheduler.warning.reason.earliestStart");
+          myDiagnostics.addReason(t, "scheduler.warning.table.reason.earliestStart");
         }
       }
 
       TimeDuration newDuration = myProject.getTaskManager().getProjectLength();
       if (!myDiagnostics.myModifiedTasks.isEmpty()) {
         // Some tasks have been modified, so let's add introduction text to the dialog
-        String part0 = i18n.getText("scheduler.warning.datesChanged.part0");
-        String part1 = (newDuration.getLength() == myOldDuration.getLength())
-            ? "": i18n.formatText("scheduler.warning.datesChanged.part1", myOldDuration, newDuration);
-        String part2 = "";
-        myDiagnostics.info(i18n.formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2));
+        myDiagnostics.info(i18n.getText("scheduler.warning.summary.item0"));
+        if (newDuration.getLength() != myOldDuration.getLength()) {
+          myDiagnostics.info(i18n.formatText("scheduler.warning.summary.item1", myOldDuration, newDuration));
+        }
       }
       return new Step3();
     }

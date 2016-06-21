@@ -36,6 +36,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+
+import javafx.embed.swing.JFXPanel;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -65,6 +68,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.html.HTMLEditorKit;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -620,5 +624,20 @@ public abstract class UIUtil {
   public static void clearErrorLabel(JLabel label) {
     label.setIcon(null);
     label.setForeground(UIManager.getColor("Label.foreground"));
+  }
+
+  public static void initJavaFx() {
+    final CountDownLatch latch  = new CountDownLatch(1);
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+          new JFXPanel(); // initializes JavaFX environment
+          latch.countDown();
+      }
+    });
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      GPLogger.log(e);
+    }
   }
 }
