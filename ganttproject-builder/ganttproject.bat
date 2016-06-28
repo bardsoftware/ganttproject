@@ -2,7 +2,7 @@
 
 SET GP_HOME=.
 
-SET JAVA_COMMAND=%JAVA_HOME%\bin\java.exe
+SET "JAVA_COMMAND=%JAVA_HOME%\bin\java.exe"
 IF "%JAVA_HOME%"=="" SET JAVA_COMMAND=java
 
 SET LOCAL_CLASSPATH=%GP_HOME%\eclipsito.jar;%GP_HOME%
