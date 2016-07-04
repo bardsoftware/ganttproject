@@ -18,11 +18,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Rectangle;
+import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.task.CustomColumn;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.NumberEditorExt;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.TreeTableModel;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -39,49 +66,6 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-
-import javax.swing.Action;
-import javax.swing.DefaultCellEditor;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.text.JTextComponent;
-
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.task.CustomColumn;
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
-
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.table.NumberEditorExt;
-import org.jdesktop.swingx.table.TableColumnExt;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableModel;
-
-import biz.ganttproject.core.option.ValidationException;
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.table.ColumnList.Column;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
@@ -218,10 +202,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       insertColumnIntoUi(column);
     }
 
-    @Override
-    public void importData(ColumnList source) {
-      for (int i = 0; i < source.getSize(); i++) {
-        Column foreign = source.getField(i);
+    private boolean importColumnList(ColumnList columns) {
+      boolean anyVisible = false;
+      for (int i = 0; i < columns.getSize(); i++) {
+        Column foreign = columns.getField(i);
         ColumnImpl mine = findColumnByID(foreign.getID());
         if (mine == null) {
           int modelIndex = getModelIndex(foreign);
@@ -232,12 +216,27 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
           mine.getStub().setOrder(foreign.getOrder());
           mine.getStub().setVisible(foreign.isVisible());
           mine.getStub().setWidth(foreign.getWidth());
+          anyVisible = foreign.isVisible();
         }
+      }
+      return anyVisible;
+    }
+    @Override
+    public void importData(ColumnList source) {
+      for (ColumnImpl column : myColumns) {
+        column.getStub().setVisible(false);
+      }
+      if (!importColumnList(source)) {
+        importColumnList(ColumnList.Immutable.fromList(myDefaultColumnStubs));
       }
       Collections.sort(myColumns, new Comparator<ColumnImpl>() {
         @Override
         public int compare(ColumnImpl left, ColumnImpl right) {
-          if (!left.getStub().isVisible() || !right.getStub().isVisible()) {
+          int test1 = (left.getStub().isVisible() ? -1 : 0) + (right.getStub().isVisible() ? 1 : 0);
+          if (test1 != 0) {
+            return test1;
+          }
+          if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
             return left.getName().compareTo(right.getName());
           }
           return left.getStub().getOrder() - right.getStub().getOrder();
