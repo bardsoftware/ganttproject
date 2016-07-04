@@ -18,13 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.xml.sax.Attributes;
-
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import org.xml.sax.Attributes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author bbaranne
@@ -37,9 +36,10 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
   private final String myOrderPropertyName;
   private final String myWidthPropertyName;
   private final String myVisiblePropertyName;
+  private boolean isEnabled;
 
   public TaskDisplayColumnsTagHandler(ColumnList visibleFields) {
-    this(visibleFields, "displaycolumn", "property-id", "order", "width", "visible");
+    this(visibleFields, "field", "id", "order", "width", "visible");
   }
 
   public TaskDisplayColumnsTagHandler(ColumnList visibleFields, String tagName, String idPropertyName,
@@ -52,8 +52,15 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
     myVisiblePropertyName = visiblePropertyName;
   }
 
+  void setEnabled(boolean enabled) {
+    isEnabled = enabled;
+  }
+
   @Override
   protected boolean onStartElement(Attributes attrs) {
+    if (!isEnabled) {
+      return false;
+    }
     loadTaskDisplay(attrs);
     return true;
   }
