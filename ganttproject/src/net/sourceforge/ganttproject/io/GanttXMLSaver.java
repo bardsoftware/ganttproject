@@ -18,17 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
@@ -43,6 +32,15 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleSet;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
 
 public class GanttXMLSaver extends SaverBase implements GPSaver {
 
@@ -94,7 +92,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       saveResources(handler);
       saveAssignments(handler);
       saveVacations(handler);
-      saveGanttChartView(handler);
+      //saveGanttChartView(handler);
       saveHistory(handler);
       saveRoles(handler);
       endElement("project", handler);

@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -75,6 +76,8 @@ public class GanttCSVOpen {
   private final Supplier<Reader> myInputSupplier;
 
   private int mySkippedLine;
+
+  private CSVOptions myCsvOptions;
 
   public GanttCSVOpen(Supplier<Reader> inputSupplier, RecordGroup group) {
     myInputSupplier = inputSupplier;
@@ -187,6 +190,9 @@ public class GanttCSVOpen {
     do {
       idxNextGroup = idxCurrentGroup;
       CSVFormat format = CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true);
+      if (myCsvOptions != null) {
+        format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0)).withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));
+      }
       RecordGroup currentGroup = myRecordGroups.get(idxCurrentGroup);
       if (currentGroup.getHeader() != null) {
         format = format.withHeader(currentGroup.getHeader().toArray(new String[0]));
@@ -206,5 +212,9 @@ public class GanttCSVOpen {
 
   int getSkippedLineCount() {
     return mySkippedLine;
+  }
+
+  public void setOptions(CSVOptions csvOptions) {
+    myCsvOptions = csvOptions;
   }
 }

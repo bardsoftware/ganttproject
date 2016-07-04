@@ -59,6 +59,8 @@
 
   <target name="createdeb-full" depends="define_tasks">
     <description>Create a complete GanttProject deb package. Everything included.</description>
+    <copy file="${basedir}/ganttproject.svg" tofile="${basedir}/deb/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+    </copy>
     <ganttproject-base-deb package-name="${package.name}" output-dir="dist-deb/single-package" package-description="${description.full}">
       <application-files>
         <tarfileset dir="${basedir}/dist-bin" prefix="usr/share/${package.name}">
@@ -111,11 +113,11 @@
     <desktopEntry
             toFile="build-deb/ganttproject.desktop"
             name="GanttProject"
-      icon="ganttproject.png"
-            exec="/usr/bin/ganttproject %f"
-      mimetype="application/ganttproject+xml"
-            categories="Office"
-            onlyshowin="GNOME;KDE;Unity;LXDE"
+            icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
+            exec="/usr/bin/ganttproject %U"
+            mimetype="application/x-ganttproject;"
+            categories="Office;"
+            onlyshowin="GNOME;KDE;Unity;LXDE;"
         >
       <genericname value="GanttProject"/>
     </desktopEntry>

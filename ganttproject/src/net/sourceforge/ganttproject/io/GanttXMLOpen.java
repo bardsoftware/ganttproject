@@ -93,16 +93,7 @@ public class GanttXMLOpen implements GPParser {
 
   @Override
   public boolean load(InputStream inStream) throws IOException {
-    try {
-      myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(false);
-      myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
-      myTaskManager.getAlgorithmCollection().getScheduler().setEnabled(false);
-      return doLoad(inStream);
-    } finally {
-      myTaskManager.getAlgorithmCollection().getScheduler().setEnabled(true);
-      myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
-      myTaskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().setEnabled(true);
-    }
+    return doLoad(inStream);
   }
 
   public boolean doLoad(InputStream inStream) throws IOException {
