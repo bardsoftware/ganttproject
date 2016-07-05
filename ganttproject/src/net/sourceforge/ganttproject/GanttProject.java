@@ -892,7 +892,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
       }
     });
-    UIUtil.initJavaFx();
     return true;
   }
 

@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2016 GanttProject team
+Copyright (C) 2016 BarD Software s.r.o
 
 This file is part of GanttProject.
 
@@ -19,52 +19,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
-
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-
-import net.sourceforge.ganttproject.GPLogger;
+import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.html.HTMLAnchorElement;
-
-import biz.ganttproject.core.time.CalendarFactory;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import javax.swing.*;
+import java.awt.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Diagnostic class collects information from the scheduler when user opens
@@ -74,6 +47,9 @@ import com.google.common.collect.Maps;
  * @author dbarashev@ganttproject.biz (Dmitry Barashev)
  */
 class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
+  interface ShowDialogCallback {
+    void showDialog(JComponent contentPane);
+  }
   private final UIFacade myUiFacade;
 
   List<String> myMessages = Lists.newArrayList();
@@ -125,69 +101,26 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         startDateChangeTable,
         endDateChangeTable
     );
-
-    final JFXPanel contentPane = new JFXPanel();
-    final Runnable showDialog = new Runnable() {
-      public void run() {
-        myUiFacade.createDialog(contentPane, new Action[] {CancelAction.CLOSE}, "").show();
+    final ShowDialogCallback showDialog = new ShowDialogCallback() {
+      @Override
+      public void showDialog(JComponent contentPane) {
+        Dimension htmlSize = contentPane.getPreferredSize();
+        final JScrollPane scrollPane = new JScrollPane(contentPane);
+        scrollPane.setAutoscrolls(false);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setPreferredSize(new Dimension(Math.min(600, htmlSize.width + 50), Math.min(400, htmlSize.height + 50)));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
+        myUiFacade.createDialog(scrollPane, new Action[] {CancelAction.CLOSE}, "").show();
       }
     };
-    Platform.runLater(new Runnable() {
-      public void run() {
-        VBox root = new VBox();
-        WebView browser = new WebView();
-        WebEngine webEngine = browser.getEngine();
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent(browser);
-        webEngine.loadContent(msg);
-
-        setOpenLinksInBrowser(webEngine);
-
-        root.getChildren().addAll(scrollPane);
-        Scene scene = new Scene(new Group());
-        scene.setRoot(root);
-        contentPane.setScene(scene);
-        SwingUtilities.invokeLater(showDialog);
-      }
-    });
+    try {
+      Class.forName("javafx.beans.value.ChangeListener");
+      new ProjectOpenDiagnosticUiFx().run(msg, showDialog);
+    } catch (ClassNotFoundException e) {
+      new ProjectOpenDiagnosticUiSwing().run(msg, showDialog);
+    }
   }
 
-  private static void setOpenLinksInBrowser(final WebEngine webEngine) {
-    webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-      public void changed(
-          ObservableValue<? extends javafx.concurrent.Worker.State> observable,
-          javafx.concurrent.Worker.State oldValue,
-          javafx.concurrent.Worker.State newValue) {
-
-        if (Worker.State.SUCCEEDED.equals(newValue)) {
-          NodeList nodeList = webEngine.getDocument().getElementsByTagName("a");
-          for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            EventTarget eventTarget = (EventTarget) node;
-            eventTarget.addEventListener("click", new EventListener() {
-              @Override
-              public void handleEvent(Event evt) {
-                evt.preventDefault();
-                EventTarget target = evt.getCurrentTarget();
-                HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
-                final String href = anchorElement.getHref();
-                SwingUtilities.invokeLater(new Runnable() {
-                  public void run() {
-                    try {
-                      Desktop.getDesktop().browse(new URI(href));
-                    } catch (IOException | URISyntaxException e) {
-                      GPLogger.log(e);
-                    }
-                  }
-                });
-              }
-            }, false);
-          }
-        }
-      }
-    });
-  }
   private String buildStartDateChangeTable() {
     List<String> tableRows = Lists.newArrayList();
     for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
