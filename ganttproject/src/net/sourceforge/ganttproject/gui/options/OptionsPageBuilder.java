@@ -3,71 +3,6 @@
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.gui.GPColorChooser;
-import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.jdesktop.swingx.JXDatePicker;
-import org.jdesktop.swingx.JXHyperlink;
-
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -75,7 +10,6 @@ import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DateOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DoubleOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.FileOption;
@@ -87,14 +21,43 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
-
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.GPColorChooser;
+import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author bard
@@ -189,12 +152,18 @@ public class OptionsPageBuilder {
 
   public JComponent createGroupComponent(GPOptionGroup group) {
     GPOption<?>[] options = group.getOptions();
-    JComponent optionsPanel = createGroupComponent(group, options);
+    final JComponent optionsPanel = createGroupComponent(group, options);
     if (group.isTitled()) {
       UIUtil.createTitle(optionsPanel, myi18n.getOptionGroupLabel(group));
     }
     JPanel result = new JPanel(new BorderLayout());
     result.add(optionsPanel, BorderLayout.NORTH);
+    result.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusGained(FocusEvent e) {
+        optionsPanel.requestFocus();
+      }
+    });
     return result;
   }
 

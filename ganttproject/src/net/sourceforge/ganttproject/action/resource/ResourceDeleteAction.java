@@ -18,15 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
-import net.sourceforge.ganttproject.util.StringUtils;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Action for deleting resources
@@ -53,18 +51,13 @@ public class ResourceDeleteAction extends ResourceAction {
   public void actionPerformed(ActionEvent event) {
     final HumanResource[] selectedResources = getSelection();
     if (selectedResources.length > 0) {
-      final String message = getI18n("msg6") + " " + StringUtils.getDisplayNames(selectedResources) + "?";
-      final String title = getI18n("question");
-      Choice choice = myUIFacade.showConfirmationDialog(message, title);
-      if (choice == Choice.YES) {
-        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-          @Override
-          public void run() {
-            deleteResources(selectedResources);
-            myProject.repaint2();
-          }
-        });
-      }
+      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+        @Override
+        public void run() {
+          deleteResources(selectedResources);
+          myProject.repaint2();
+        }
+      });
     }
   }
 
