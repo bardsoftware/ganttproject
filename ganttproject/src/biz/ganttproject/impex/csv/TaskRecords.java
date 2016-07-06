@@ -18,6 +18,27 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.time.TimeUnitStack;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import org.apache.commons.csv.CSVRecord;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -28,28 +49,6 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.logging.Level;
-
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-
-import org.apache.commons.csv.CSVRecord;
-
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.time.TimeUnitStack;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Class responsible for processing task records in CSV import
@@ -252,15 +251,17 @@ class TaskRecords extends RecordGroup {
       }
       Task successor = entry.getKey();
       String[] depSpecs = entry.getValue().split(";");
-      for (String spec : depSpecs) {
-        try {
-          TaskProperties.parseDependency(spec, successor, taskIndex);
-        } catch (IllegalArgumentException e) {
-          GPLogger.logToLogger(String.format("%s\nwhen parsing subspec %s of predecessor specification %s of task %s",
-              e.getMessage(), spec, depSpecs, successor));
-        } catch (TaskDependencyException e) {
-          GPLogger.logToLogger(e);
+      try {
+        Map<Integer, Supplier<TaskDependency>> constructors = TaskProperties.parseDependencies(
+            Arrays.asList(depSpecs), successor, taskIndex);
+        for (Supplier<TaskDependency> constructor : constructors.values()) {
+          constructor.get();
         }
+      } catch (IllegalArgumentException e) {
+        GPLogger.logToLogger(String.format("%s\nwhen parsing predecessor specification %s of task %s",
+            e.getMessage(), entry.getValue(), successor));
+      } catch (TaskDependencyException e) {
+        GPLogger.logToLogger(e);
       }
     }
   }
