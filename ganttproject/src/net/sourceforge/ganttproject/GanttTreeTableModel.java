@@ -18,33 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.math.BigDecimal;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.CustomColumnsException;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.ValidationException;
@@ -52,13 +25,41 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.CustomColumnsException;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskNode;
+import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
@@ -273,14 +274,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = sb.toString();
         break;
       case PREDECESSORS:
-        List<Integer> depids = Lists.newArrayList(Lists.transform(Arrays.asList(t.getDependenciesAsDependant().toArray()), new Function<TaskDependency, Integer>() {
-          @Override
-          public Integer apply(TaskDependency value) {
-            return value.getDependee().getTaskID();
-          }
-        }));
-        Collections.sort(depids);
-        res = Joiner.on(',').join(depids);
+        res = TaskProperties.formatPredecessors(t, ",", true);
         break;
       case ID:
         res = t.getTaskID();
@@ -349,7 +343,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     }
     assert node instanceof TaskNode : "Tree node=" + node + " is not a task node";
 
-    Task task = (Task) ((TaskNode)node).getUserObject();
+    final Task task = (Task) ((TaskNode)node).getUserObject();
     TaskDefaultColumn property = TaskDefaultColumn.values()[column];
     switch (property) {
     case NAME:
@@ -371,47 +365,31 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       ((TaskNode) node).setCompletionPercentage(((Integer) value).intValue());
       break;
     case PREDECESSORS:
-      List<Integer> newIds = Lists.newArrayList();
+      //List<Integer> newIds = Lists.newArrayList();
+      List<String> specs = Lists.newArrayList();
       for (String s : String.valueOf(value).split(",")) {
         if (!s.trim().isEmpty()) {
-          try {
-            newIds.add(Integer.parseInt(s));
-          } catch (NumberFormatException e) {
-            throw new ValidationException(MessageFormat.format("{0} is not a number", value));
-          }
+          specs.add(s.trim());
         }
       }
-      List<Integer> oldIds = Lists.transform(Arrays.asList(task.getDependenciesAsDependant().toArray()), new Function<TaskDependency, Integer>() {
-        @Override
-        public Integer apply(TaskDependency value) {
-          return value.getDependee().getTaskID();
+      Map<Integer, Supplier<TaskDependency>> promises;
+      try {
+         promises = TaskProperties.parseDependencies(
+            specs, task, new Function<Integer, Task>() {
+              @Override
+              public Task apply(@Nullable Integer id) {
+                return task.getManager().getTask(id);
+              }
+            });
+        TaskManager taskManager = task.getManager();
+        taskManager.getAlgorithmCollection().getScheduler().setEnabled(false);
+        task.getDependenciesAsDependant().clear();
+        for (Supplier<TaskDependency> promise : promises.values()) {
+          promise.get();
         }
-      });
-      Set<Integer> removedIds = Sets.difference(Sets.newHashSet(oldIds), Sets.newHashSet(newIds));
-      Set<Integer> addedIds = Sets.difference(Sets.newHashSet(newIds), Sets.newHashSet(oldIds));
-
-      for (Integer id : removedIds) {
-        Task dependee = task.getManager().getTask(id);
-        TaskDependency dep = task.getDependenciesAsDependant().getDependency(dependee);
-        if (dep != null) {
-          dep.delete();
-        }
-      }
-      for (Integer id : addedIds) {
-        Task predecessorCandidate = null;
-        try {
-          predecessorCandidate = task.getManager().getTask(id);
-          if (predecessorCandidate == null) {
-            continue;
-          }
-          if (task.getManager().getDependencyCollection().canCreateDependency(task, predecessorCandidate)) {
-            task.getManager().getDependencyCollection().createDependency(task, predecessorCandidate);
-          } else {
-            throw new ValidationException(MessageFormat.format("Can't create dependency between task {0} and {1}", task.getName(), predecessorCandidate.getName()));
-          }
-        } catch (TaskDependencyException e) {
-          throw new ValidationException(MessageFormat.format("Can't create dependency between task {0} and {1}", task.getName(), predecessorCandidate.getName()));
-        }
+        taskManager.getAlgorithmCollection().getScheduler().setEnabled(true);
+      } catch (IllegalArgumentException | TaskDependencyException e) {
+        throw new ValidationException(e);
       }
       break;
     case COST:

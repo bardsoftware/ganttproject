@@ -18,23 +18,34 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
-import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.*;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_ADVANCEMENT;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_COORDINATOR;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_DATES;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_ID;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_LENGTH;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_NAME;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_PREDECESSORS;
+import static biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.ID_TASK_RESOURCES;
 /**
  * Class with which one can get any properties (even custom) from any task.
  *
@@ -176,28 +187,69 @@ public class TaskProperties {
     return "";
   }
 
-  public static TaskDependency parseDependency(String depSpec, Task successor, Function<Integer, Task> taskIndex) {
-    TaskManager taskMgr = successor.getManager();
+  public static Map<Integer, Supplier<TaskDependency>> parseDependencies(
+      Iterable<String> deps, Task successor, Function<Integer, Task> taskIndex) {
+    Map<Integer, Supplier<TaskDependency>> result = Maps.newLinkedHashMap();
+    for (String spec : deps) {
+      parseDependency(spec, successor, taskIndex, result);
+    }
+    return result;
+  }
+
+  public static void parseDependency(String depSpec, final Task successor, Function<Integer, Task> taskIndex,
+                                     Map<Integer, Supplier<TaskDependency>> out) {
+    final TaskManager taskMgr = successor.getManager();
     int posDash = depSpec.indexOf('-');
+    String maybeId = posDash < 0 ? depSpec : depSpec.substring(0, posDash);
+    final Integer predecessorId;
+    try {
+      predecessorId = Integer.parseInt(maybeId);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(String.format("%s is not a number", maybeId));
+    }
     if (posDash < 0) {
-      Task predecessor = taskIndex.apply(Integer.parseInt(depSpec));
+      final Task predecessor = taskIndex.apply(predecessorId);
       if (predecessor == null) {
         throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
       }
-      return taskMgr.getDependencyCollection().createDependency(successor, predecessor);
+      out.put(predecessorId, new Supplier<TaskDependency>() {
+        @Override
+        public TaskDependency get() {
+          if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
+            return taskMgr.getDependencyCollection().createDependency(successor, predecessor);
+          }
+          throw new TaskDependencyException(MessageFormat.format(
+              "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
+        }
+      });
+      return;
     }
+
+
     if (depSpec.length() < posDash + 3) {
       throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. There must be a two-letter dependency type specification after dash", depSpec));
     }
-    Task predecessor = taskIndex.apply(Integer.parseInt(depSpec.substring(0, posDash)));
+    final Task predecessor = taskIndex.apply(predecessorId);
     if (predecessor == null) {
       throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
     }
     TaskDependencyConstraint.Type depType = TaskDependencyConstraint.Type.fromReadablePersistentValue(depSpec.substring(posDash + 1, posDash + 3));
     if (depSpec.length() == posDash + 3) {
-      TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
-      return taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint);
+      final TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
+      out.put(predecessorId, new Supplier<TaskDependency>() {
+        @Override
+        public TaskDependency get() {
+          if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
+            return taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint);
+          }
+          throw new TaskDependencyException(MessageFormat.format(
+              "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
+        }
+      });
+      return;
     }
+
+
     char hardnessSpec = depSpec.charAt(posDash + 3);
     if (hardnessSpec != '=' && hardnessSpec != '>') {
       throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. There must be either > or = char after dependency type", depSpec));
@@ -205,14 +257,23 @@ public class TaskProperties {
     if (depSpec.charAt(posDash + 4) != 'P' || depSpec.charAt(depSpec.length() - 1) != 'D') {
       throw new IllegalArgumentException(String.format("Invalid dependency spec '%s'. Lag interval is expected to be P*D where * denotes integer value of lag days, e.g. P1D", depSpec));
     }
-    int lag = Integer.parseInt(depSpec.substring(posDash + 5, depSpec.length() - 1));
-    TaskDependency.Hardness hardness = hardnessSpec == '=' ? TaskDependency.Hardness.STRONG : TaskDependency.Hardness.RUBBER;
-    TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
-    TaskDependency dependency = taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint, hardness);
-    if (lag > 0) {
-      dependency.setDifference(lag);
-    }
-    return dependency;
+    final int lag = Integer.parseInt(depSpec.substring(posDash + 5, depSpec.length() - 1));
+    final TaskDependency.Hardness hardness = hardnessSpec == '=' ? TaskDependency.Hardness.STRONG : TaskDependency.Hardness.RUBBER;
+    final TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
+    out.put(predecessorId, new Supplier<TaskDependency>() {
+      @Override
+      public TaskDependency get() {
+        if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
+          TaskDependency dependency = taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint, hardness);
+          if (lag > 0) {
+            dependency.setDifference(lag);
+          }
+          return dependency;
+        }
+        throw new TaskDependencyException(MessageFormat.format(
+            "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
+      }
+    });
   }
 
   public static String formatCoordinators(Task t) {
