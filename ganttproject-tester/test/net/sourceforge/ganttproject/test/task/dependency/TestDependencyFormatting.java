@@ -18,7 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.test.task.dependency;
 
+import java.util.Map;
+
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Maps;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
@@ -92,11 +96,16 @@ public class TestDependencyFormatting extends TaskTestCase {
         TaskProperties.formatPredecessors(successor, ";", true));
   }
 
+  private static TaskDependency parseDependency(String depSpec, final Task successor, Function<Integer, Task> taskIndex) {
+    Map<Integer, Supplier<TaskDependency>> out = Maps.newHashMap();
+    TaskProperties.parseDependency(depSpec, successor, taskIndex, out);
+    return out.values().iterator().next().get();
+  }
   public void testBasicDependencyParsing() {
     Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
     Task successor = createTask(TestSetupHelper.newWendesday(), 2);
 
-    TaskDependency dependency = TaskProperties.parseDependency(
+    TaskDependency dependency = parseDependency(
         String.format("%d", predecessor.getTaskID()), successor,
         createTaskIndex(getTaskManager()));
     assertEquals(successor, dependency.getDependant());
@@ -110,7 +119,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
     Task successor = createTask(TestSetupHelper.newWendesday(), 2);
 
-    TaskDependency dependency = TaskProperties.parseDependency(
+    TaskDependency dependency = parseDependency(
         String.format("%d-FF", predecessor.getTaskID()), successor,
         createTaskIndex(getTaskManager()));
     assertEquals(successor, dependency.getDependant());
@@ -125,7 +134,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     {
       Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
 
-      TaskDependency dependency = TaskProperties.parseDependency(
+      TaskDependency dependency = parseDependency(
           String.format("%d-FS=P0D", predecessor.getTaskID()), successor,
           createTaskIndex(getTaskManager()));
       assertEquals(successor, dependency.getDependant());
@@ -137,7 +146,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     {
       Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
 
-      TaskDependency dependency = TaskProperties.parseDependency(
+      TaskDependency dependency = parseDependency(
           String.format("%d-FS=P1D", predecessor.getTaskID()), successor,
           createTaskIndex(getTaskManager()));
       assertEquals(successor, dependency.getDependant());
@@ -149,7 +158,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     {
       Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
 
-      TaskDependency dependency = TaskProperties.parseDependency(
+      TaskDependency dependency = parseDependency(
           String.format("%d-FS>P1D", predecessor.getTaskID()), successor,
           createTaskIndex(getTaskManager()));
       assertEquals(successor, dependency.getDependant());
