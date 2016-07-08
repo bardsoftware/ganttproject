@@ -352,9 +352,11 @@ public abstract class UIUtil {
         @Override
         public void actionPerformed(ActionEvent e) {
           Date date = ((JXDatePicker) e.getSource()).getDate();
-          Pair<Boolean, String> validation = dv.apply(date);
-          if (!validation.first()) {
-            throw new ValidationException(validation.second());
+          if (date != null) {
+            Pair<Boolean, String> validation = dv.apply(date);
+            if (!validation.first()) {
+              throw new ValidationException(validation.second());
+            }
           }
         }
       });
