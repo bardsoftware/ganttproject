@@ -78,6 +78,7 @@ public class TaskScheduleDatesPanel {
   private final UIFacade myUiFacade;
   private JXHyperlink myLockHyperlink;
   private boolean isMilestone;
+  private JLabel myLockLabel;
 
   public TaskScheduleDatesPanel(UIFacade uiFacade) {
     myUiFacade = uiFacade;
@@ -183,7 +184,8 @@ public class TaskScheduleDatesPanel {
     final GPAction durationLockAction = createLockAction("option.taskProperties.main.scheduling.manual.value.duration", ourDurationLock);
     JComponent durationLabel = createLabel(language.getText("length"), ourDurationLock, durationField1, durationLockAction);
 
-    propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.scheduling.label")));
+    myLockLabel = new JLabel(language.getText("option.taskProperties.main.scheduling.label"));
+    propertiesPanel.add(myLockLabel);
     final Box box = Box.createHorizontalBox();
     myLockHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.manual.label") {
       @Override
@@ -307,12 +309,30 @@ public class TaskScheduleDatesPanel {
       ourDurationLock.setValue(true);
       ourEndDateLock.setValue(true);
       myLockHyperlink.setEnabled(false);
+      myLockLabel.setEnabled(false);
+    } else {
+      ourDurationLock.setValue(false);
+      ourEndDateLock.setValue(false);
+      myLockHyperlink.setEnabled(true);
+      myLockLabel.setEnabled(true);
+      ourPrevLock.setValue(true);
+    }
+    this.isMilestone = isMilestone;
+  }
+
+  public void setSupertask(boolean isSupertask) {
+    if (isSupertask) {
+      ourStartDateLock.setValue(true);
+      ourDurationLock.setValue(true);
+      ourEndDateLock.setValue(true);
+      myLockHyperlink.setEnabled(false);
+      myLockLabel.setEnabled(false);
     } else {
       ourDurationLock.setValue(false);
       ourEndDateLock.setValue(false);
       myLockHyperlink.setEnabled(true);
       ourPrevLock.setValue(true);
+      myLockLabel.setEnabled(true);
     }
-    this.isMilestone = isMilestone;
   }
 }

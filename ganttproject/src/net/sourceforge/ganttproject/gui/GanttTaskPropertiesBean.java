@@ -485,6 +485,9 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
     myTaskScheduleDates.setMilestone(isMilestone());
 
+    boolean isSupertask = myUnpluggedClone.getManager().getTaskHierarchy().hasNestedTasks(selectedTasks[0]);
+    myTaskScheduleDates.setSupertask(isSupertask);
+
     tfWebLink.setText(originalWebLink);
 
     if (selectedTasks[0].shapeDefined()) {
