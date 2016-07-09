@@ -25,13 +25,16 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -42,6 +45,7 @@ import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
@@ -51,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -71,14 +76,18 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     static ImageIcon ALERT_TASK_INPROGRESS = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert1_16.gif"));
     static ImageIcon ALERT_TASK_OUTDATED = new ImageIcon(GanttTreeTableModel.class.getResource("/icons/alert2_16.gif"));
   }
-
+  static Predicate<Task> NOT_SUPERTASK = new Predicate<Task>() {
+    @Override
+    public boolean apply(Task task) {
+      return !task.isSupertask();
+    }
+  };
   static Predicate<Task> NOT_MILESTONE = new Predicate<Task>() {
     @Override
     public boolean apply(Task input) {
       return !input.isMilestone();
     }
   };
-
   static {
     new DefaultBooleanOption("");
     TaskDefaultColumn.setLocaleApi(new TaskDefaultColumn.LocaleApi() {
@@ -108,8 +117,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
   public GanttTreeTableModel(
       TaskManager taskManager, CustomPropertyManager customColumnsManager, UIFacade uiFacade, Runnable dirtyfier) {
     super(new TaskNode(taskManager.getRootTask()));
-    TaskDefaultColumn.END_DATE.setIsEditablePredicate(NOT_MILESTONE);
-    TaskDefaultColumn.DURATION.setIsEditablePredicate(NOT_MILESTONE);
+    TaskDefaultColumn.BEGIN_DATE.setIsEditablePredicate(NOT_SUPERTASK);
+    TaskDefaultColumn.END_DATE.setIsEditablePredicate(Predicates.and(NOT_SUPERTASK, NOT_MILESTONE));
+    TaskDefaultColumn.DURATION.setIsEditablePredicate(Predicates.and(NOT_SUPERTASK, NOT_MILESTONE));
     myUiFacade = uiFacade;
     myDirtyfier = dirtyfier;
     myCustomColumnsManager = customColumnsManager;
