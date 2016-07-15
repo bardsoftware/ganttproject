@@ -267,7 +267,7 @@ class ProjectOpenStrategy implements AutoCloseable {
           }
         }
       });
-      if (myResetModifiedState) {
+      if (myDiagnostics.myMessages.isEmpty() && myResetModifiedState) {
         myTasks.add(new Runnable() {
           @Override
           public void run() {
@@ -276,6 +276,7 @@ class ProjectOpenStrategy implements AutoCloseable {
         });
       }
       myTasks.add(new Runnable() {
+        @Override
         public void run() {
           try {
             ProjectOpenStrategy.this.close();
