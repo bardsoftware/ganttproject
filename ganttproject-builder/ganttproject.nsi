@@ -7,13 +7,13 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.7.2"
-!define VERSION_BUILD "2.7.2-r1954"
+!define VERSION "2.8"
+!define VERSION_BUILD "2.8-rcII-r2009"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-2.7
+InstallDir $PROGRAMFILES\GanttProject-2.8
 
 
 !define MUI_ABORTWARNING

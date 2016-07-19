@@ -18,16 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.logging.Level;
-
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.time.TimeUnitStack;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -36,19 +35,20 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-
 import org.apache.commons.csv.CSVRecord;
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.time.TimeUnitStack;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.SortedMap;
+import java.util.logging.Level;
 
 /**
  * Class responsible for processing task records in CSV import
@@ -56,6 +56,28 @@ import com.google.common.collect.Sets;
  * @author dbarashev (Dmitry Barashev)
  */
 class TaskRecords extends RecordGroup {
+  static final Comparator<String> OUTLINE_NUMBER_COMPARATOR = new Comparator<String>() {
+    @Override
+    public int compare(String s1, String s2) {
+      try (Scanner sc1 = new Scanner(s1).useDelimiter("\\.");
+           Scanner sc2 = new Scanner(s2).useDelimiter("\\.")) {
+        while (sc1.hasNextInt() && sc2.hasNextInt()) {
+          int diff = sc1.nextInt() - sc2.nextInt();
+          if (diff != 0) {
+            return Integer.signum(diff);
+          }
+        }
+        if (sc1.hasNextInt()) {
+          return 1;
+        }
+        if (sc2.hasNextInt()) {
+          return -1;
+        }
+        return 0;
+      }
+    }
+  };
+
   /** List of known (and supported) Task attributes */
   static enum TaskFields {
     ID(TaskDefaultColumn.ID.getNameKey()),
@@ -77,12 +99,7 @@ class TaskRecords extends RecordGroup {
   }
   private final Map<Task, String> myAssignmentMap = Maps.newHashMap();
   private final Map<Task, String> myPredecessorMap = Maps.newHashMap();
-  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(new Comparator<String>() {
-    @Override
-    public int compare(String s1, String s2) {
-      return (s1.compareTo(s2));
-    }
-  });
+  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR);
   private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
   private final TaskManager taskManager;
   private final HumanResourceManager resourceManager;
@@ -234,15 +251,17 @@ class TaskRecords extends RecordGroup {
       }
       Task successor = entry.getKey();
       String[] depSpecs = entry.getValue().split(";");
-      for (String spec : depSpecs) {
-        try {
-          TaskProperties.parseDependency(spec, successor, taskIndex);
-        } catch (IllegalArgumentException e) {
-          GPLogger.logToLogger(String.format("%s\nwhen parsing subspec %s of predecessor specification %s of task %s",
-              e.getMessage(), spec, depSpecs, successor));
-        } catch (TaskDependencyException e) {
-          GPLogger.logToLogger(e);
+      try {
+        Map<Integer, Supplier<TaskDependency>> constructors = TaskProperties.parseDependencies(
+            Arrays.asList(depSpecs), successor, taskIndex);
+        for (Supplier<TaskDependency> constructor : constructors.values()) {
+          constructor.get();
         }
+      } catch (IllegalArgumentException e) {
+        GPLogger.logToLogger(String.format("%s\nwhen parsing predecessor specification %s of task %s",
+            e.getMessage(), entry.getValue(), successor));
+      } catch (TaskDependencyException e) {
+        GPLogger.logToLogger(e);
       }
     }
   }

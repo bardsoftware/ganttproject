@@ -18,10 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.task.algorithm;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
@@ -29,12 +25,10 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-
 import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -46,6 +40,11 @@ import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.Node;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * This class walk the dependency graph and updates start and end dates of tasks
@@ -103,7 +102,7 @@ public class SchedulerImpl extends AlgorithmBase {
 
   private void doRun() {
     int layers = myGraph.checkLayerValidity();
-    for (int i = 1; i < layers; i++) {
+    for (int i = 0; i < layers; i++) {
       Collection<Node> layer = myGraph.getLayer(i);
       for (Node node : layer) {
         try {
@@ -116,6 +115,8 @@ public class SchedulerImpl extends AlgorithmBase {
   }
 
   private void schedule(Node node) {
+    Logger logger = GPLogger.getLogger(this);
+    GPLogger.debug(logger, "Scheduling node %s", node);
     Range<Date> startRange = Range.all();
     Range<Date> endRange = Range.all();
 
@@ -124,6 +125,7 @@ public class SchedulerImpl extends AlgorithmBase {
 
     List<Date> subtaskRanges = Lists.newArrayList();
     List<DependencyEdge> incoming = node.getIncoming();
+    GPLogger.debug(logger, ".. #incoming edges=%d", incoming.size());
     for (DependencyEdge edge : incoming) {
       if (!edge.refresh()) {
         continue;
@@ -144,11 +146,13 @@ public class SchedulerImpl extends AlgorithmBase {
         GPLogger.logToLogger("both start and end ranges were calculated as empty for task=" + node.getTask() + ". Skipping it");
       }
     }
+    GPLogger.debug(logger, "..Ranges: start=%s end=%s weakStart=%s weakEnd=%s", startRange, endRange, weakStartRange, weakEndRange);
 
     Range<Date> subtasksSpan = subtaskRanges.isEmpty() ?
         Range.closed(node.getTask().getStart().getTime(), node.getTask().getEnd().getTime()) : Range.encloseAll(subtaskRanges);
     Range<Date> subtreeStartUpwards = subtasksSpan.span(Range.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
     Range<Date> subtreeEndDownwards = subtasksSpan.span(Range.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
+    GPLogger.debug(logger, "..Subtasks span=%s", subtasksSpan);
 
     if (!startRange.equals(Range.all())) {
       startRange = startRange.intersection(weakStartRange);
@@ -162,11 +166,13 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
       startRange = startRange.intersection(Range.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
+      GPLogger.debug(logger, ".. applying earliest start=%s. Now start range=%s", node.getTask().getThird(), startRange);
     }
     if (!subtaskRanges.isEmpty()) {
       startRange = startRange.intersection(subtasksSpan);
       endRange = endRange.intersection(subtasksSpan);
     }
+    GPLogger.debug(logger, ".. finally, start range=%s", startRange);
     if (startRange.hasLowerBound()) {
       modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
     }
@@ -203,7 +209,7 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     GanttCalendar newEndCalendar = CalendarFactory.createGanttCalendar(newEnd);
     if (getDiagnostic() != null) {
-      getDiagnostic().info("Task #" + task.getTaskID() + " " + task.getName() + "\n\tEND DATE old:" + task.getEnd() + " new:" + newEndCalendar);
+      getDiagnostic().addModifiedTask(task, null, newEnd);
     }
     TaskMutator mutator = task.createMutator();
     mutator.setEnd(newEndCalendar);
@@ -216,7 +222,7 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     GanttCalendar newStartCalendar = CalendarFactory.createGanttCalendar(newStart);
     if (getDiagnostic() != null) {
-      getDiagnostic().info("Task #" + task.getTaskID() + " " + task.getName() + "\n\tSTART DATE old:" + task.getStart() + " new:" + newStartCalendar);
+      getDiagnostic().addModifiedTask(task, newStart, null);
     }
     TaskMutator mutator = task.createMutator();
     if (myTaskHierarchy.get().hasNestedTasks(task)) {

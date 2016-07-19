@@ -25,6 +25,7 @@ import java.util.logging.Level;
 
 import biz.ganttproject.core.option.GPOption;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
@@ -65,6 +66,7 @@ public class ImporterFromCsvFile extends ImporterBase {
     File selectedFile = getFile();
     BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
     GanttCSVOpen opener = new GanttCSVOpen(selectedFile, bufferProject.getTaskManager(), bufferProject.getHumanResourceManager(), bufferProject.getTimeUnitStack());
+    opener.setOptions(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
     try {
       List<Pair<Level, String>> errors = opener.load();
       ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, null);

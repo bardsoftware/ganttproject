@@ -5,7 +5,7 @@
   <jar>eclipsito.jar</jar>
   <outfile>ganttproject.exe</outfile>
   <errTitle></errTitle>
-  <cmdLine>ganttproject-eclipsito-config.xml -log</cmdLine>
+  <cmdLine>ganttproject-eclipsito-config.xml -log true</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>

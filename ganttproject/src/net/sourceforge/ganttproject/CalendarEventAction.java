@@ -18,19 +18,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.event.ActionEvent;
-import java.util.Date;
-import java.util.Set;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
-
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import java.awt.event.ActionEvent;
+import java.util.Date;
+import java.util.Set;
 
 /**
  * Action which adds or removes calendar events, such as weekend exceptions or holidays, from the chart UI
@@ -45,6 +45,7 @@ public abstract class CalendarEventAction extends GPAction {
     myCalendar = Preconditions.checkNotNull(calendar);
     myDate = Preconditions.checkNotNull(date);
     updateName();
+    updateTooltip();
   }
 
   @Override
@@ -54,49 +55,76 @@ public abstract class CalendarEventAction extends GPAction {
         : i18n.formatText(getID(), i18n.formatShortDate(CalendarFactory.createGanttCalendar(myDate)));
   }
 
+  @Override
+  protected String getLocalizedDescription() {
+    GanttLanguage i18n = GanttLanguage.getInstance();
+    return myDate == null ? super.getLocalizedDescription()
+        : i18n.formatText(getID() + ".description", i18n.formatShortDate(CalendarFactory.createGanttCalendar(myDate)));
+  }
 
-  public static CalendarEventAction addException(GPCalendar calendar, Date date) {
+  public static CalendarEventAction addException(GPCalendar calendar, Date date, final GPUndoManager undoManager) {
     return new CalendarEventAction(calendar, date, "calendar.action.weekendException.add") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        final Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.add(CalendarEvent.newEvent(
             myDate, false, Type.WORKING_DAY, GanttLanguage.getInstance().getText("calendar.action.weekendException.add.description"), null));
-        myCalendar.setPublicHolidays(events);
+        undoManager.undoableEdit(getLocalizedName(), new Runnable() {
+          @Override
+          public void run() {
+            myCalendar.setPublicHolidays(events);
+          }
+        });
       }
     };
   }
 
-  public static CalendarEventAction removeException(GPCalendar calendar, Date date) {
+  public static CalendarEventAction removeException(GPCalendar calendar, Date date, final GPUndoManager undoManager) {
     return new CalendarEventAction(calendar, date, "calendar.action.weekendException.remove") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        final Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.remove(CalendarEvent.newEvent(myDate, false, Type.WORKING_DAY, null, null));
-        myCalendar.setPublicHolidays(events);
+        undoManager.undoableEdit(getLocalizedName(), new Runnable() {
+          @Override
+          public void run() {
+            myCalendar.setPublicHolidays(events);
+          }
+        });
       }
     };
   }
 
-  public static CalendarEventAction addHoliday(GPCalendar calendar, final Date date) {
+  public static CalendarEventAction addHoliday(GPCalendar calendar, final Date date, final GPUndoManager undoManager) {
     return new CalendarEventAction(calendar, date, "calendar.action.holiday.add") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        final Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.add(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY,
             GanttLanguage.getInstance().formatText("calendar.action.holiday.add.description", date), null));
-        myCalendar.setPublicHolidays(events);
+
+        undoManager.undoableEdit(getLocalizedName(), new Runnable() {
+          @Override
+          public void run() {
+            myCalendar.setPublicHolidays(events);
+          }
+        });
       }
     };
   }
 
-  public static CalendarEventAction removeHoliday(GPCalendar calendar, Date date) {
+  public static CalendarEventAction removeHoliday(GPCalendar calendar, Date date, final GPUndoManager undoManager) {
     return new CalendarEventAction(calendar, date, "calendar.action.holiday.remove") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
+        final Set<CalendarEvent> events = Sets.newLinkedHashSet(myCalendar.getPublicHolidays());
         events.remove(CalendarEvent.newEvent(myDate, false, Type.HOLIDAY, null, null));
-        myCalendar.setPublicHolidays(events);
+        undoManager.undoableEdit(getLocalizedName(), new Runnable() {
+          @Override
+          public void run() {
+            myCalendar.setPublicHolidays(events);
+          }
+        });
       }
     };
   }

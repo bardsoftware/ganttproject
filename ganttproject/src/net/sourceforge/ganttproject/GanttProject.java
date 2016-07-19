@@ -18,46 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GPCalendarListener;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.TimeUnitStack;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -78,7 +45,6 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentCreator;
-import net.sourceforge.ganttproject.document.DocumentsMRU;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
@@ -108,14 +74,28 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.GPCalendarListener;
-import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.TimeUnitStack;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * Main frame of the project
@@ -802,7 +782,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public static class Args {
-    @Parameter(names = "-log", description = "Enable logging")
+    @Parameter(names = "-log", description = "Enable logging", arity = 1)
     public boolean log = true;
 
     @Parameter(names = "-log_file", description = "Log file name")
@@ -911,7 +891,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           });
         }
       }
-
     });
     return true;
   }

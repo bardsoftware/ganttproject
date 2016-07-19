@@ -23,6 +23,7 @@ import com.google.common.base.Suppliers;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -224,6 +225,76 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newWendesday(), tasks[1].getEnd());
     assertEquals(TestSetupHelper.newMonday(), tasks[2].getStart());
     assertEquals(TestSetupHelper.newTuesday(), tasks[3].getStart());
+  }
+
+  public void testEarliestStartLaterThanStartDate() {
+    getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+
+    // start date on Mo, but earliest start is set to We.
+    // task should be shifted forward
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday())};
+    tasks[0].setThirdDateConstraint(TaskImpl.EARLIESTBEGIN);
+    tasks[0].setThirdDate(TestSetupHelper.newWendesday());
+    TaskDependency[] deps = new TaskDependency[0];
+    DependencyGraph graph = createGraph(tasks, deps);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newWendesday(), tasks[0].getStart());
+  }
+
+  public void testEarliestStartEarlierThanStartDate() {
+    getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+
+    // start date on Mo, but earliest start is set to Fr (previous week).
+    // task should be shifted backwards because there are no other constraints
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday())};
+    tasks[0].setThirdDateConstraint(TaskImpl.EARLIESTBEGIN);
+    tasks[0].setThirdDate(TestSetupHelper.newFriday());
+    TaskDependency[] deps = new TaskDependency[0];
+    DependencyGraph graph = createGraph(tasks, deps);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newFriday(), tasks[0].getStart());
+  }
+
+  public void testEarliestStartEarlierLosesToDependency() {
+    getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+
+    // task0 starts on Mo.
+    // task1 start date on Tu, earliest start is set to Fr (previous week), and there is
+    // a dependency task0->task1 which prevents task1 from moving to the earliest start date
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newTuesday())};
+    tasks[1].setThirdDateConstraint(TaskImpl.EARLIESTBEGIN);
+    tasks[1].setThirdDate(TestSetupHelper.newFriday());
+    TaskDependency[] deps = new TaskDependency[] {createDependency(tasks[1], tasks[0])};
+    DependencyGraph graph = createGraph(tasks, deps);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newTuesday(), tasks[1].getStart());
+  }
+
+  public void testEarliestStartLaterWinsToDependency() {
+    getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+
+    // task0 starts on Mo.
+    // task1 start date on Tu, earliest start is set to We
+    // Despite the dependency task0->task1 earliest start wins and we move task1 forward
+    Task[] tasks = new Task[] {createTask(TestSetupHelper.newMonday()), createTask(TestSetupHelper.newTuesday())};
+    tasks[1].setThirdDateConstraint(TaskImpl.EARLIESTBEGIN);
+    tasks[1].setThirdDate(TestSetupHelper.newWendesday());
+    TaskDependency[] deps = new TaskDependency[] {createDependency(tasks[1], tasks[0])};
+    DependencyGraph graph = createGraph(tasks, deps);
+
+    SchedulerImpl scheduler = new SchedulerImpl(graph, Suppliers.ofInstance(getTaskManager().getTaskHierarchy()));
+    scheduler.run();
+
+    assertEquals(TestSetupHelper.newWendesday(), tasks[1].getStart());
   }
 
   private DependencyGraph createGraph(Task[] tasks, TaskDependency[] deps) {
