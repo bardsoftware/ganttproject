@@ -63,7 +63,6 @@ import net.sourceforge.ganttproject.util.FileUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.jdesktop.swingx.JXRadioGroup;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -71,17 +70,12 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
-  private final UIFacade myWorkbenchFacade;
+  final UIFacade myWorkbenchFacade;
   private final GanttLanguage i18n = GanttLanguage.getInstance();
   private final DocumentManager myDocumentManager;
   private final GPUndoManager myUndoManager;
 
-  private static enum ConvertMilestones {
-    UNKNOWN, TRUE, FALSE
-  }
-  private final DefaultEnumerationOption<ConvertMilestones> myConvertMilestonesOption = new DefaultEnumerationOption<ConvertMilestones>(
-      "milestones_to_zero", ConvertMilestones.values());
-  private final GPOptionGroup myConverterGroup = new GPOptionGroup("convert", myConvertMilestonesOption);
+  private final GPOptionGroup myConverterGroup = new GPOptionGroup("convert", ProjectOpenStrategy.getMilestonesOption());
   public ProjectUIFacadeImpl(UIFacade workbenchFacade, DocumentManager documentManager, GPUndoManager undoManager) {
     myWorkbenchFacade = workbenchFacade;
     myDocumentManager = documentManager;
@@ -275,164 +269,14 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     beforeClose();
     project.close();
 
-    class DiagnosticImpl implements AlgorithmBase.Diagnostic {
-      List<String> myMessages = Lists.newArrayList();
-      @Override
-      public void info(String message) {
-        myMessages.add(message);
-      }
-    }
-    final DiagnosticImpl d = new DiagnosticImpl();
-    try {
-      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
-      project.open(document);
-    } finally {
-      project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(null);
-    }
-    if (document.getPortfolio() != null) {
-      Document defaultDocument = document.getPortfolio().getDefaultDocument();
-      project.open(defaultDocument);
-    }
-
-    final TimeDuration oldDuration = project.getTaskManager().getProjectLength();
-    boolean resetModified = true;
-
-    final TaskManager taskManager = project.getTaskManager();
-    boolean hasLegacyMilestones = false;
-    for (Task t : taskManager.getTasks()) {
-      if (((TaskImpl)t).isLegacyMilestone()) {
-        hasLegacyMilestones = true;
-        break;
-      }
-    }
-
-    List<Runnable> tasks = Lists.newArrayList();
-
-    if (hasLegacyMilestones && taskManager.isZeroMilestones() == null) {
-      ConvertMilestones option = myConvertMilestonesOption.getSelectedValue() == null ? ConvertMilestones.UNKNOWN : myConvertMilestonesOption.getSelectedValue();
-      switch (option) {
-      case UNKNOWN:
-        tasks.add(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(d);
-              tryPatchMilestones(project, taskManager);
-            } finally {
-              project.getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(null);
-            }
-          }
-        });
-        break;
-      case TRUE:
-        taskManager.setZeroMilestones(true);
-        resetModified = false;
-        break;
-      case FALSE:
-        taskManager.setZeroMilestones(false);
-        break;
-      }
-    }
-
-    tasks.add(new Runnable() {
-      @Override
-      public void run() {
-        if (!d.myMessages.isEmpty()) {
-          TimeDuration newDuration = project.getTaskManager().getProjectLength();
-          GPLogger.logToLogger(Joiner.on('\n').join(d.myMessages));
-          String part0 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part0");
-          String part1 = (newDuration.getLength() == oldDuration.getLength())
-              ? "": GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.part1", oldDuration, newDuration);
-          String part2 = GanttLanguage.getInstance().getText("scheduler.warning.datesChanged.part2");
-          String msg = GanttLanguage.getInstance().formatText("scheduler.warning.datesChanged.pattern", part0, part1, part2);
-          myWorkbenchFacade.showNotificationDialog(NotificationChannel.WARNING, msg);
-        }
-      }
-    });
-    if (resetModified) {
-      tasks.add(new Runnable() {
-        @Override
-        public void run() {
-          project.setModified(false);
-        }
-      });
-    }
-    processTasks(tasks);
-  }
-
-  private void processTasks(final List<Runnable> tasks) {
-    if (tasks.isEmpty()) {
-      return;
-    }
-    final Runnable task = tasks.get(0);
-    Runnable wrapper = new Runnable() {
-      @Override
-      public void run() {
-        task.run();
-        tasks.remove(0);
-        processTasks(tasks);
-      }
-    };
-    SwingUtilities.invokeLater(wrapper);
-  }
-
-  private void adjustTasks(TaskManager taskManager) {
-//    try {
-//      taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-//    } catch (TaskDependencyException e) {
-//      GPLogger.logToLogger(e);
-//    }
-//    List<Task> leafTasks = Lists.newArrayList();
-//    for (Task t : taskManager.getTasks()) {
-//      if (taskManager.getTaskHierarchy().getNestedTasks(t).length == 0) {
-//        leafTasks.add(t);
-//      }
-//    }
-//    taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(leafTasks);
-    try {
-      taskManager.getAlgorithmCollection().getScheduler().run();
+    try (ProjectOpenStrategy strategy = new ProjectOpenStrategy(project, myWorkbenchFacade)) {
+      strategy.openFileAsIs(document)
+        .checkLegacyMilestones()
+        .checkEarliestStartConstraints()
+        .runUiTasks();
     } catch (Exception e) {
-      GPLogger.logToLogger(e);
+      throw new DocumentException("Can't open document " + document, e);
     }
-  }
-
-  private void tryPatchMilestones(final IGanttProject project, final TaskManager taskManager) {
-    final JRadioButton buttonConvert = new JRadioButton(i18n.getText("legacyMilestones.choice.convert"));
-    final JRadioButton buttonKeep = new JRadioButton(i18n.getText("legacyMilestones.choice.keep"));
-    buttonConvert.setSelected(true);
-    JXRadioGroup<JRadioButton> group = JXRadioGroup.create(new JRadioButton[] {buttonConvert, buttonKeep});
-    group.setLayoutAxis(BoxLayout.PAGE_AXIS);
-    final JCheckBox remember = new JCheckBox(i18n.getText("legacyMilestones.choice.remember"));
-
-    Box content = Box.createVerticalBox();
-    JLabel question = new JLabel(i18n.getText("legacyMilestones.question"), SwingConstants.LEADING);
-    question.setOpaque(true);
-    question.setAlignmentX(0.5f);
-    content.add(question);
-    content.add(Box.createVerticalStrut(15));
-    content.add(group);
-    content.add(Box.createVerticalStrut(5));
-    content.add(remember);
-
-    Box icon = Box.createVerticalBox();
-    icon.add(new JLabel(GPAction.getIcon("64", "dialog-question.png")));
-    icon.add(Box.createVerticalGlue());
-
-    JPanel result = new JPanel(new BorderLayout());
-    result.add(content, BorderLayout.CENTER);
-    result.add(icon, BorderLayout.WEST);
-    result.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    myWorkbenchFacade.createDialog(result, new Action[] {new OkAction() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        taskManager.setZeroMilestones(buttonConvert.isSelected());
-        if (remember.isSelected()) {
-          myConvertMilestonesOption.setSelectedValue(buttonConvert.isSelected() ? ConvertMilestones.TRUE : ConvertMilestones.FALSE);
-        }
-        adjustTasks(taskManager);
-        project.setModified(true);
-      }
-    }}, i18n.getText("legacyMilestones.title")).show();
   }
 
   private void beforeClose() {

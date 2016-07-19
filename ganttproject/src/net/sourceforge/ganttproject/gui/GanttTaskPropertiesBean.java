@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -93,7 +94,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       myTaskColorOption.setValue(myUIfacade.getGanttChart().getTaskDefaultColorOption().getValue());
     }
   };
-  private JXDatePicker myThirdDatePicker;
+  private JXDatePicker myEarliestBeginDatePicker;
 
   private GanttTask[] selectedTasks;
 
@@ -122,7 +123,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private JComboBox priorityComboBox;
 
-  private JComboBox thirdDateComboBox;
+  private JCheckBox myEarliestBeginEnabled;
 
   private JCheckBox mileStoneCheckBox1;
 
@@ -147,9 +148,9 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private GanttCalendar originalEndDate;
 
-  private GanttCalendar originalThirdDate;
+  private GanttCalendar originalEarliestBeginDate;
 
-  private int originalThirdDateConstraint;
+  private int originalEarliestBeginEnabled;
 
   private boolean originalIsProjectTask;
 
@@ -179,6 +180,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   private final UIFacade myUIfacade;
 
   private JCheckBox myShowInTimeline;
+  private AbstractAction myOnEarliestBeginToggle;
 
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     myTaskScheduleDates = new TaskScheduleDatesPanel(uifacade);
@@ -215,31 +217,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     myTaskScheduleDates.insertInto(propertiesPanel);
 
-    Box extraConstraintBox = Box.createHorizontalBox();
-    thirdDateComboBox = new JComboBox();
-    thirdDateComboBox.addItem("");
-    thirdDateComboBox.addItem(language.getText("earliestBegin"));
-    thirdDateComboBox.setName("third");
-    thirdDateComboBox.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        switch (thirdDateComboBox.getSelectedIndex()) {
-        case TaskImpl.EARLIESTBEGIN:
-          myThirdDatePicker.setEnabled(true);
-          break;
-        case TaskImpl.NONE:
-          myThirdDatePicker.setEnabled(false);
-          break;
-        }
-      }
-    });
-    extraConstraintBox.add(thirdDateComboBox);
-    myThirdDatePicker = UIUtil.createDatePicker();
-    extraConstraintBox.add(Box.createHorizontalStrut(5));
-    extraConstraintBox.add(myThirdDatePicker);
-    propertiesPanel.add(new JLabel(language.getText("option.taskProperties.main.extraConstraint.label")));
-    propertiesPanel.add(extraConstraintBox);
-
+    constructEarliestBegin(propertiesPanel);
     addEmptyRow(propertiesPanel);
 
     propertiesPanel.add(new JLabel(language.getText("priority")));
@@ -309,6 +287,39 @@ public class GanttTaskPropertiesBean extends JPanel {
     generalPanel.add(propertiesWrapper);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
+  }
+
+  private void constructEarliestBegin(Container propertiesPanel) {
+    final JXHyperlink copyFromBeginDate = new JXHyperlink(new GPAction("option.taskProperties.main.earliestBegin.copyBeginDate") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        setThird(myTaskScheduleDates.getStart());
+      }
+
+      @Override
+      protected String getLocalizedName() {
+        String fallbackLabel = String.format("%s %s", language.getText("copy"), language.getText("generic.startDate.label"));
+        return Objects.firstNonNull(super.getLocalizedName(), fallbackLabel);
+      }
+
+    });
+    myEarliestBeginDatePicker = UIUtil.createDatePicker();
+    Box valueBox = Box.createHorizontalBox();
+    myOnEarliestBeginToggle = new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        myEarliestBeginDatePicker.setEnabled(myEarliestBeginEnabled.isSelected());
+        copyFromBeginDate.setEnabled(myEarliestBeginEnabled.isSelected());
+      }
+    };
+    myEarliestBeginEnabled = new JCheckBox(myOnEarliestBeginToggle);
+    valueBox.add(myEarliestBeginEnabled);
+    valueBox.add(Box.createHorizontalStrut(10));
+    valueBox.add(myEarliestBeginDatePicker);
+    valueBox.add(Box.createHorizontalStrut(5));
+    valueBox.add(copyFromBeginDate);
+    propertiesPanel.add(new JLabel(language.getText("earliestBegin")));
+    propertiesPanel.add(valueBox);
   }
 
   private void constructCustomColumnPanel() {
@@ -419,9 +430,9 @@ public class GanttTaskPropertiesBean extends JPanel {
       if (!originalEndDate.equals(getEnd())) {
         mutator.setEnd(getEnd());
       }
-      if (originalThirdDate == null && getThird() != null || originalThirdDate != null && getThird() == null
-          || originalThirdDate != null && !originalThirdDate.equals(getThird())
-          || originalThirdDateConstraint != getThirdDateConstraint()) {
+      if (originalEarliestBeginDate == null && getThird() != null || originalEarliestBeginDate != null && getThird() == null
+          || originalEarliestBeginDate != null && !originalEarliestBeginDate.equals(getThird())
+          || originalEarliestBeginEnabled != getThirdDateConstraint()) {
         mutator.setThird(getThird(), getThirdDateConstraint());
       }
 
@@ -471,12 +482,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     ActionListener listener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        setThird(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()), false);
+        setThird(CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate()));
       }
     };
-    UIUtil.setupDatePicker(myThirdDatePicker, originalThirdDate == null ? null : originalThirdDate.getTime(), validator, listener);
-    myThird = originalThirdDate;
-    thirdDateComboBox.setSelectedIndex(originalThirdDateConstraint);
+    UIUtil.setupDatePicker(myEarliestBeginDatePicker, originalEarliestBeginDate == null ? null : originalEarliestBeginDate.getTime(), validator, listener);
+    myThird = originalEarliestBeginDate;
+    myEarliestBeginEnabled.setSelected(originalEarliestBeginEnabled == 1);
+    myOnEarliestBeginToggle.actionPerformed(null);
 
     if (mileStoneCheckBox1 != null) {
       mileStoneCheckBox1.setSelected(originalIsMilestone);
@@ -484,6 +496,9 @@ public class GanttTaskPropertiesBean extends JPanel {
       projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
     myTaskScheduleDates.setMilestone(isMilestone());
+
+    boolean isSupertask = myUnpluggedClone.getManager().getTaskHierarchy().hasNestedTasks(selectedTasks[0]);
+    myTaskScheduleDates.setSupertask(isSupertask);
 
     tfWebLink.setText(originalWebLink);
 
@@ -514,7 +529,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private int getThirdDateConstraint() {
-    return thirdDateComboBox.getSelectedIndex();
+    return myEarliestBeginEnabled.isSelected() ? 1 : 0;
   }
 
   private String getNotes() {
@@ -557,9 +572,9 @@ public class GanttTaskPropertiesBean extends JPanel {
 
 
 
-  private void setThird(GanttCalendar third, @SuppressWarnings("unused") boolean test) {
+  private void setThird(GanttCalendar third) {
     myThird = third;
-    myThirdDatePicker.setDate(myThird.getTime());
+    myEarliestBeginDatePicker.setDate(myThird.getTime());
   }
 
   private void storeOriginalValues(GanttTask task) {
@@ -572,8 +587,8 @@ public class GanttTaskPropertiesBean extends JPanel {
     originalCompletionPercentage = task.getCompletionPercentage();
     originalPriority = task.getPriority();
     originalShape = task.getShape();
-    originalThirdDate = task.getThird();
-    originalThirdDateConstraint = task.getThirdDateConstraint();
+    originalEarliestBeginDate = task.getThird();
+    originalEarliestBeginEnabled = task.getThirdDateConstraint();
     originalIsProjectTask = task.isProjectTask();
   }
 

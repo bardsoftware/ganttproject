@@ -18,24 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Component;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
+import biz.ganttproject.core.option.ValidationException;
+import net.sourceforge.ganttproject.gui.UIUtil;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
-
-import net.sourceforge.ganttproject.gui.UIUtil;
-import biz.ganttproject.core.option.ValidationException;
+import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 class TreeTableCellEditorImpl implements TableCellEditor {
   private final DefaultCellEditor myProxiedEditor;
@@ -88,6 +85,7 @@ class TreeTableCellEditorImpl implements TableCellEditor {
     try {
       return myProxiedEditor.stopCellEditing();
     } catch (ValidationException e) {
+      GPLogger.log(e.getMessage());
       myProxiedEditor.getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);
       return false;
     }

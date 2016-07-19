@@ -783,7 +783,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public static class Args {
-    @Parameter(names = "-log", description = "Enable logging")
+    @Parameter(names = "-log", description = "Enable logging", arity = 1)
     public boolean log = true;
 
     @Parameter(names = "-log_file", description = "Log file name")
@@ -893,7 +893,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           });
         }
       }
-
     });
     return true;
   }

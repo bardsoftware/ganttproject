@@ -18,14 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
-import java.awt.Color;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.Set;
-
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.table.ColumnList;
+import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -45,7 +41,6 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
-import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
 import net.sourceforge.ganttproject.parser.TaskPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.TaskTagHandler;
@@ -55,15 +50,16 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
-
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
-import com.google.common.collect.ImmutableSet;
-
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.option.ListOption;
-import biz.ganttproject.core.table.ColumnList;
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.Set;
 
 /**
  * @author bard
@@ -297,7 +293,6 @@ class ProxyDocument implements Document {
       TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext(), myUIFacade.getTaskTree());
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
-      ViewTagHandler viewHandler = new ViewTagHandler(getUIFacade());
 
       TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
       opener.addTagHandler(taskPropHandler);
@@ -306,11 +301,15 @@ class ProxyDocument implements Document {
       opener.addTagHandler(customPropHandler);
       TaskDisplayColumnsTagHandler taskDisplayHandler = new TaskDisplayColumnsTagHandler(myTaskVisibleFields);
       opener.addTagHandler(taskDisplayHandler);
+      opener.addParsingListener(taskDisplayHandler);
+      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), taskDisplayHandler));
 
-      TaskDisplayColumnsTagHandler resourceViewHandler = new TaskDisplayColumnsTagHandler(
+
+      TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
           myResourceVisibleFields, "field", "id", "order", "width", "visible");
-      opener.addTagHandler(resourceViewHandler);
-      opener.addParsingListener(resourceViewHandler);
+      opener.addTagHandler(resourceFieldsHandler);
+      opener.addParsingListener(resourceFieldsHandler);
+      opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
       opener.addTagHandler(taskHandler);
       opener.addParsingListener(taskHandler);
@@ -330,7 +329,6 @@ class ProxyDocument implements Document {
       opener.addTagHandler(rolesHandler);
       opener.addTagHandler(weekHandler);
       opener.addTagHandler(onlyShowWeekendsHandler);
-      opener.addTagHandler(viewHandler);
       opener.addTagHandler(new OptionTagHandler<ListOption<Color>>(GPColorChooser.getRecentColorsOption()));
       opener.addParsingListener(dependencyHandler);
       opener.addParsingListener(resourceHandler);

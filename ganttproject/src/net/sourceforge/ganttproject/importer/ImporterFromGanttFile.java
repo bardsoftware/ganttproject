@@ -44,6 +44,7 @@ import net.sourceforge.ganttproject.resource.OverwritingMerger;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 
 public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
@@ -99,7 +100,17 @@ public class ImporterFromGanttFile extends ImporterBase {
   private void run(File selectedFile, IGanttProject targetProject, BufferProject bufferProject) {
     try {
       Document document = bufferProject.getDocumentManager().getDocument(selectedFile.getAbsolutePath());
-      document.read();
+      AlgorithmCollection algs = getProject().getTaskManager().getAlgorithmCollection();
+      try {
+        algs.getScheduler().setEnabled(false);
+        algs.getRecalculateTaskScheduleAlgorithm().setEnabled(false);
+        algs.getAdjustTaskBoundsAlgorithm().setEnabled(false);
+        document.read();
+      } finally {
+        algs.getRecalculateTaskScheduleAlgorithm().setEnabled(true);
+        algs.getAdjustTaskBoundsAlgorithm().setEnabled(true);
+        algs.getScheduler().setEnabled(true);
+      }
 
       importBufferProject(targetProject, bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
     } catch (DocumentException e) {
