@@ -1,9 +1,18 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 
+ext {
+  libDir = 'lib/core'
+}
+
 dependencies {
-  compile fileTree(dir: 'lib/core', include: ['*.jar'])
+  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
+  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.10'
+}
+
+updateMavenDeps.doFirst {
+  into project.ext.libDir
 }
 
 sourceSets {

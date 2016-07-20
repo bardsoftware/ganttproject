@@ -1,15 +1,45 @@
 import org.gradle.plugins.ide.idea.model.*
 
+// This installs dependencyUpdates plugin
+// Run gradle dependencyUpdates to get the report
+plugins {
+    id 'com.github.ben-manes.versions' version '0.13.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'idea'
 
+// Directories where we build the distro
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file('dist-bin/plugins')
 
+// What is counted as java project for the purposes of this build
 def javaProjects() {
     subprojects.findAll { project ->
         project.name != rootProject.name && project.path != ':..'
     }
+}
+
+// Config for all projects: deps come from Maven repository,
+// compile using Java 8, libs normally sit in lib
+allprojects {
+  configurations {
+    mavenDeps
+  }
+  repositories {
+    mavenCentral()
+  }
+  apply plugin: 'java'
+  ext {
+    libDir = 'lib'
+  }
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  task updateMavenDeps(type: Copy) {
+    from configurations.mavenDeps
+    into project.ext.libDir
+  }
 }
 
 clean {
@@ -27,6 +57,10 @@ task copyPlugin(type: Copy) {
 }
 task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) << {
   println "== Finished building binary distro =="
+}
+
+task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) << {
+  println "== Finished updating libs =="
 }
 
 idea {
