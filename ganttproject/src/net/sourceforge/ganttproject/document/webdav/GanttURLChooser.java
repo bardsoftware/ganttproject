@@ -19,39 +19,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.document.webdav;
 
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.storage.cloud.WebdavLoadWorker;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import io.milton.http.exceptions.NotAuthorizedException;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -64,24 +45,23 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
 import org.divxdede.swing.busy.JBusyComponent;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
 
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.IntegerOption;
-import biz.ganttproject.core.option.ListOption;
-import biz.ganttproject.core.option.StringOption;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * UI component for WebDAV operarions.
@@ -259,43 +239,20 @@ class GanttURLChooser {
   }
 
   class ReloadWorker extends SwingWorker<Pair<WebDavResource, List<WebDavResource>>, Object> {
-    private WebDavResource myResource;
+    private final WebdavLoadWorker myWorkerImpl;
 
     public ReloadWorker(WebDavResource resource) {
-      myResource = resource;
-      setProgressBar(true);
+      myWorkerImpl = new WebdavLoadWorker(resource);
     }
     @Override
     protected Pair<WebDavResource, List<WebDavResource>> doInBackground() throws Exception {
       try {
-        WebDavResource resource = myResource;
-        if (resource.exists() && resource.isCollection()) {
-          return Pair.create(resource, readChildren(resource));
-        }
-        WebDavResource parent = resource.getParent();
-        if (parent.exists() && parent.isCollection()) {
-          return Pair.create(parent, readChildren(parent));
-        }
-        return null;
+        setProgressBar(true);
+        return myWorkerImpl.load();
       } catch (WebDavException e) {
         showError(e);
         return null;
       }
-    }
-
-    private List<WebDavResource> readChildren(WebDavResource parent) throws WebDavException {
-      List<WebDavResource> children = Lists.newArrayList();
-      for (WebDavResource child : parent.getChildResources()) {
-        try {
-          if (child.exists()) {
-            children.add(child);
-          }
-        }
-        catch (WebDavException e) {
-          GPLogger.logToLogger(e);
-        }
-      }
-      return children;
     }
 
     @Override
