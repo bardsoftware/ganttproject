@@ -55,7 +55,8 @@ public class ProjectMenu extends JMenu {
         project.getGanttOptions().getPluginPreferences());
 
     WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();
-    StorageDialogAction cloudDialogAction = new StorageDialogAction(new GPCloudStorageOptions(webdavStorage.getServersOption()));
+    StorageDialogAction cloudDialogAction = new StorageDialogAction(
+        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), new GPCloudStorageOptions(webdavStorage.getServersOption()));
     add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);

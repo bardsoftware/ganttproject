@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 
 /**
@@ -103,7 +104,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi() {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver) {
     if (myPane.getChildren().isEmpty()) {
       WebDavServerDescriptor cloudServer = myOptions.getCloudServer();
       if (cloudServer == null) {
@@ -112,7 +113,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
         myPane.setCenter(createConnectCloudPane());
       } else {
         WebdavStorage webdavStorage = new WebdavStorage(cloudServer);
-        myPane.setCenter(webdavStorage.createUi());
+        myPane.setCenter(webdavStorage.createUi(documentReceiver));
       }
     }
     return myPane;

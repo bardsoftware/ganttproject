@@ -10,19 +10,26 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.MaskerPane;
+
+import java.io.IOException;
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
   private final WebdavLoadService myLoadService;
+  private final WebDavServerDescriptor myServer;
 
   public WebdavStorage(WebDavServerDescriptor cloudServer) {
     myLoadService = new WebdavLoadService(cloudServer);
+    myServer = cloudServer;
   }
 
   @Override
@@ -31,7 +38,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi() {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver) {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
@@ -43,6 +50,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     filesTable.setCellFactory(param -> new ListCell<WebDavResource>() {
       @Override
       protected void updateItem(WebDavResource item, boolean empty) {
+        super.updateItem(item, empty);
         if (empty) {
           setGraphic(null);
         } else {
@@ -50,9 +58,15 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
         }
       }
     });
-    //TableColumn<WebDavResource, String> colName = new TableColumn<>("Filename");
-    //colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-    //filesTable.getColumns().setAll(colName);
+    filesTable.setOnMouseClicked(event -> {
+      if (event.getClickCount() == 2) {
+        try {
+          documentReceiver.setDocument(createDocument(filesTable.getSelectionModel().getSelectedItem()));
+        } catch (IOException | Document.DocumentException e) {
+          e.printStackTrace();
+        }
+      }
+    });
     rootPane.getChildren().add(filesTable);
 
     StackPane stackPane = new StackPane();
@@ -75,5 +89,9 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myLoadService.start();
     maskerPane.setVisible(true);
     return stackPane;
+  }
+
+  private Document createDocument(WebDavResource resource) throws IOException {
+    return new HttpDocument(resource, myServer.getUsername(), myServer.getPassword(), HttpDocument.NO_LOCK);
   }
 }

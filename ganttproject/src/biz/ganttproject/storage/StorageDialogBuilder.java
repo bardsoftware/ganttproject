@@ -3,6 +3,7 @@ package biz.ganttproject.storage;
 
 import biz.ganttproject.storage.cloud.GPCloudStorage;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -17,22 +18,35 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 public class StorageDialogBuilder {
   private final GPCloudStorageOptions myCloudStorageOptions;
+  private final DocumentStorageUi.DocumentReceiver myDocumentReceiver;
   private Button myActiveBtn;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<Ui> myStorageUiList = Lists.newArrayList();
+  private @Nullable Dialog myDialog = null;
 
-  public StorageDialogBuilder(GPCloudStorageOptions cloudStorageOptions) {
-    myCloudStorageOptions = cloudStorageOptions;
+  public StorageDialogBuilder(@Nonnull IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, @Nonnull GPCloudStorageOptions cloudStorageOptions) {
+    myCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions);
+    myDocumentReceiver = document -> {
+      projectUi.openProject(documentManager.getProxyDocument(document), project);
+      Objects.requireNonNull(myDialog, "Dialog is expected to be created by this moment").close();
+    };
   }
 
   private void onStorageChange(BorderPane borderPane, String storageId) {
@@ -53,7 +67,7 @@ public class StorageDialogBuilder {
 
     myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions));
     myStorageUiList.forEach(storageUi -> {
-      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
+      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver)));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
       servicesPane.getChildren().addAll(btn);
     });
@@ -74,6 +88,7 @@ public class StorageDialogBuilder {
     dialog.setHeight(300);
     dialog.setOnShown(event -> ((Button)servicesPane.getChildren().get(0)).fire());
 
+    myDialog = dialog;
     return dialog;
   }
 
@@ -95,6 +110,6 @@ public class StorageDialogBuilder {
 
   public interface Ui {
     String getId();
-    Pane createUi();
+    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver);
   }
 }

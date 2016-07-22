@@ -18,21 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document.webdav;
 
+import biz.ganttproject.core.option.StringOption;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.document.AbstractURLDocument;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.document.AbstractURLDocument;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import biz.ganttproject.core.option.StringOption;
 
 /**
  * This class implements the interface Document for file access on HTTP-servers
@@ -42,7 +40,7 @@ import biz.ganttproject.core.option.StringOption;
  */
 public class HttpDocument extends AbstractURLDocument {
 
-  static final int NO_LOCK = -1;
+  public static final int NO_LOCK = -1;
 
   private String lastError;
 
@@ -82,7 +80,7 @@ public class HttpDocument extends AbstractURLDocument {
   public boolean canRead() {
     WebDavResource res = getWebdavResource();
     try {
-      return (null == res ? false : (res.exists() && !res.isCollection()));
+      return (null != res && (res.exists() && !res.isCollection()));
     } catch (WebDavException e) {
       return false;
     }
@@ -91,7 +89,7 @@ public class HttpDocument extends AbstractURLDocument {
   @Override
   public IStatus canWrite() {
     WebDavResource res = getWebdavResource();
-    boolean exists = false;
+    boolean exists;
     try {
       exists = res.exists();
     } catch (WebDavException e) {
