@@ -8,7 +8,7 @@ ext {
 dependencies {
   compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
-  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.10'
+  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
 }
 
 updateMavenDeps.doFirst {
