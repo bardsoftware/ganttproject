@@ -39,6 +39,25 @@
     -fx-alignment: center;
     -fx-max-width: Infinity;
 }
+.notification {
+    -fx-padding: 5px 10px 0px 10px;
+}
+.notification > *.content {
+    -fx-background-color: maroon;
+    -fx-border-color: derive(maroon, -10%);
+}
+
+.notification .label {
+    -fx-padding: 3px;
+    -fx-background-color: maroon;
+    -fx-text-fill: white;
+}
+
+.notification > .title {
+    visibility: hidden;
+    -fx-pref-height: 0px;
+    -fx-max-height: 0px;
+}
 .pane-service-buttons {
     -fx-border-width: 0 1 0 0;
     -fx-border-color: derive(white, -15%);
@@ -46,7 +65,7 @@
     -fx-spacing: 8;
 }
 .pane-service-contents {
-    -fx-padding: 10 10 10 10;
+    -fx-padding: 10 10 0 10;
 }
 .pane-service-contents > .title {
     -fx-padding: 0 0 5 0;

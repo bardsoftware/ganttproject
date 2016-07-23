@@ -4,7 +4,6 @@ package biz.ganttproject.storage.cloud;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 
 import java.util.List;
@@ -21,7 +20,6 @@ public class WebdavLoadTask extends Task<ObservableList<WebDavResource>> {
 
   @Override
   protected ObservableList<WebDavResource> call() throws Exception {
-    try {
       ObservableList<WebDavResource> result = FXCollections.observableArrayList();
       updateMessage("Connecting to the server");
       List<WebDavResource> resources = myWorker.load().second();
@@ -31,15 +29,5 @@ public class WebdavLoadTask extends Task<ObservableList<WebDavResource>> {
       }
       result.setAll(resources);
       return result;
-    } catch (Exception e) {
-      GPLogger.log(e);
-      if (isCancelled()) {
-        updateMessage("Cancelled");
-      } else {
-        setException(e);
-        updateMessage(e.getMessage());
-      }
-      return null;
-    }
   }
 }

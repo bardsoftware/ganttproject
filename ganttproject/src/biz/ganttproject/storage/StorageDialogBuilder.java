@@ -8,12 +8,16 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -40,6 +44,26 @@ public class StorageDialogBuilder {
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<Ui> myStorageUiList = Lists.newArrayList();
   private @Nullable Dialog myDialog = null;
+  private TitledPane myNotificationPane;
+  private ErrorUi myErrorUi = new ErrorUi() {
+    @Override
+    public void error(Throwable e) {
+      myNotificationPane.setContent(createErrorPane(e.getMessage()));
+      myNotificationPane.setExpanded(true);
+    }
+
+    @Override
+    public void error(String message) {
+      myNotificationPane.setContent(createErrorPane(message));
+      myNotificationPane.setExpanded(true);
+    }
+    private Node createErrorPane(String message) {
+      Label result = new Label(message);
+      result.getStyleClass().add("label");
+      return result;
+    }
+  };
+
 
   public StorageDialogBuilder(@Nonnull IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, @Nonnull GPCloudStorageOptions cloudStorageOptions) {
     myCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions);
@@ -67,7 +91,7 @@ public class StorageDialogBuilder {
 
     myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions));
     myStorageUiList.forEach(storageUi -> {
-      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver)));
+      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver, myErrorUi)));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
       servicesPane.getChildren().addAll(btn);
     });
@@ -78,15 +102,25 @@ public class StorageDialogBuilder {
     emptyPane.setPrefSize(600, 600);
     borderPane.setCenter(emptyPane);
 
+    myNotificationPane = new TitledPane();
+    myNotificationPane.getStyleClass().add("notification");
+    Platform.runLater(() -> {
+      Pane title = (Pane) myNotificationPane.lookup(".title");
+      if (title != null) {
+        title.setVisible(false);
+      }
+    });
+    borderPane.setBottom(myNotificationPane);
     dialog.getDialogPane().getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
     dialog.getDialogPane().getStyleClass().add("body");
+
     dialog.getDialogPane().setContent(borderPane);
     dialog.initModality(Modality.WINDOW_MODAL);
     dialog.setTitle("My Projects");
     dialog.setResizable(true);
     dialog.setWidth(300);
     dialog.setHeight(300);
-    dialog.setOnShown(event -> ((Button)servicesPane.getChildren().get(0)).fire());
+    dialog.setOnShown(event -> ((Button) servicesPane.getChildren().get(0)).fire());
 
     myDialog = dialog;
     return dialog;
@@ -108,8 +142,12 @@ public class StorageDialogBuilder {
     return btnService;
   }
 
+  public interface ErrorUi {
+    void error(Throwable e);
+    void error(String s);
+  }
   public interface Ui {
     String getId();
-    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver);
+    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, ErrorUi errorUi);
   }
 }

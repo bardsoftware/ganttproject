@@ -104,7 +104,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver) {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.ErrorUi errorUi) {
     if (myPane.getChildren().isEmpty()) {
       WebDavServerDescriptor cloudServer = myOptions.getCloudServer();
       if (cloudServer == null) {
@@ -113,7 +113,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
         myPane.setCenter(createConnectCloudPane());
       } else {
         WebdavStorage webdavStorage = new WebdavStorage(cloudServer);
-        myPane.setCenter(webdavStorage.createUi(documentReceiver));
+        myPane.setCenter(webdavStorage.createUi(documentReceiver, errorUi));
       }
     }
     return myPane;

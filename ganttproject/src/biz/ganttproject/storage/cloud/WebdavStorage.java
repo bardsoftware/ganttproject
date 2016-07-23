@@ -38,7 +38,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver) {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.ErrorUi errorUi) {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
@@ -63,7 +63,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
         try {
           documentReceiver.setDocument(createDocument(filesTable.getSelectionModel().getSelectedItem()));
         } catch (IOException | Document.DocumentException e) {
-          e.printStackTrace();
+          errorUi.error(e);
         }
       }
     });
@@ -80,7 +80,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     });
     myLoadService.setOnFailed((event) -> {
       maskerPane.setVisible(false);
-      GPLogger.log("WebdavService failed!");
+      errorUi.error("WebdavService failed!");
     });
     myLoadService.setOnCancelled((event) -> {
       maskerPane.setVisible(false);

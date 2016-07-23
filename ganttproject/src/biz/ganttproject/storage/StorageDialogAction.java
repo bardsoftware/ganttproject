@@ -8,6 +8,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 
 import java.awt.event.ActionEvent;
 
@@ -30,9 +31,9 @@ public class StorageDialogAction extends GPAction {
   }
   @Override
   public void actionPerformed(ActionEvent actionEvent) {
-    Platform.runLater(() -> {
+    UIUtil.initJavaFx(() -> Platform.runLater(() -> {
       Dialog dialog = new StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions).build();
       dialog.showAndWait();
-    });
+    }));
   }
 }
