@@ -338,6 +338,8 @@
         <argument value="net.sourceforge.ganttproject.GanttProject"/>
         <argument value="-plugins-dir"/>
         <argument value="$APP_ROOT/Contents/Java/plugins"/>
+        <argument value="-log"/>
+        <argument value="true"/>
         <option value="-Dapple.laf.useScreenMenuBar=true"/>
 				<option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
         <option value="-Xdock:name=GanttProject"/>
