@@ -981,7 +981,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void setModified() {
-    GPLogger.getLogger(getClass().getName() + ".setModified").log(Level.FINE, "Marking project modified", new Exception());
     setAskForSave(true);
   }
 
