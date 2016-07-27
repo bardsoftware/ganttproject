@@ -67,6 +67,9 @@
 .pane-service-contents {
     -fx-padding: 10 10 0 10;
 }
+.pane-service-contents > .breadcrumb {
+    -fx-padding: 0 0 5 0;
+}
 .pane-service-contents > .title {
     -fx-padding: 0 0 5 0;
     -fx-font-size: 130%;

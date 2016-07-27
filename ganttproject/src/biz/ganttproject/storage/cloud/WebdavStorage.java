@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -19,6 +20,7 @@ import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.MaskerPane;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -42,53 +44,89 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
-    BreadCrumbBar<String> breadcrumbs = new BreadCrumbBar<>(BreadCrumbBar.buildTreeModel("GanttProject Cloud"));
-    breadcrumbs.getStyleClass().add("title");
+    class BreadCrumbNode {
+      private String path;
+      private String label;
+      BreadCrumbNode(String path, String label) { this.path = path; this.label = label; }
+
+      @Override
+      public String toString() {
+        return this.label;
+      }
+    }
+    BreadCrumbBar<BreadCrumbNode> breadcrumbs = new BreadCrumbBar<>();
+    breadcrumbs.getStyleClass().add("breadcrumb");
+
     rootPane.getChildren().add(breadcrumbs);
 
     ListView<WebDavResource> filesTable = new ListView<>();
     filesTable.setCellFactory(param -> new ListCell<WebDavResource>() {
       @Override
       protected void updateItem(WebDavResource item, boolean empty) {
-        super.updateItem(item, empty);
-        if (empty) {
-          setGraphic(null);
+        if (item == null) {
+          setText("");
         } else {
-          setText(item.getName());
-        }
-      }
-    });
-    filesTable.setOnMouseClicked(event -> {
-      if (event.getClickCount() == 2) {
-        try {
-          documentReceiver.setDocument(createDocument(filesTable.getSelectionModel().getSelectedItem()));
-        } catch (IOException | Document.DocumentException e) {
-          errorUi.error(e);
+          super.updateItem(item, empty);
+          if (empty) {
+            setGraphic(null);
+          } else {
+            setText(item.getName());
+          }
         }
       }
     });
     rootPane.getChildren().add(filesTable);
-
     StackPane stackPane = new StackPane();
     MaskerPane maskerPane = new MaskerPane();
     stackPane.getChildren().addAll(rootPane, maskerPane);
-    myLoadService.setPath("/");
+
+    TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
+    Consumer<TreeItem<BreadCrumbNode>> handler = selectedCrumb -> {
+      selectedCrumb.getChildren().clear();
+      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, errorUi);
+    };
+    breadcrumbs.setOnCrumbAction(value -> handler.accept(value.getSelectedCrumb()));
+    breadcrumbs.setSelectedCrumb(rootItem);
+    handler.accept(rootItem);
+
+    filesTable.setOnMouseClicked(event -> {
+      if (event.getClickCount() == 2) {
+        try {
+          WebDavResource selectedItem = filesTable.getSelectionModel().getSelectedItem();
+          if (selectedItem.isCollection()) {
+            BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
+            TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
+            breadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
+            breadcrumbs.setSelectedCrumb(treeItem);
+            handler.accept(treeItem);
+          } else {
+            documentReceiver.setDocument(createDocument(selectedItem));
+          }
+        } catch (IOException | Document.DocumentException | WebDavResource.WebDavException e) {
+          errorUi.error(e);
+        }
+      }
+    });
+    return stackPane;
+  }
+
+  private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.ErrorUi errorUi) {
+    myLoadService.setPath(path);
     myLoadService.setOnSucceeded((event) -> {
       Worker<ObservableList<WebDavResource>> source = event.getSource();
-      filesTable.setItems(source.getValue());
-      maskerPane.setVisible(false);
+      setResult.accept(source.getValue());
+      showMaskPane.accept(false);
     });
     myLoadService.setOnFailed((event) -> {
-      maskerPane.setVisible(false);
+      showMaskPane.accept(false);
       errorUi.error("WebdavService failed!");
     });
     myLoadService.setOnCancelled((event) -> {
-      maskerPane.setVisible(false);
+      showMaskPane.accept(false);
       GPLogger.log("WebdavService cancelled!");
     });
-    myLoadService.start();
-    maskerPane.setVisible(true);
-    return stackPane;
+    myLoadService.restart();
+    showMaskPane.accept(true);
   }
 
   private Document createDocument(WebDavResource resource) throws IOException {

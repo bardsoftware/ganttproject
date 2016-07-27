@@ -18,6 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.document.webdav;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.OutputSupplier;
 import io.milton.common.Path;
 import io.milton.http.exceptions.BadRequestException;
 import io.milton.http.exceptions.ConflictException;
@@ -42,12 +47,6 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.OutputSupplier;
 
 /**
  * Implementation which uses Milton client library.
@@ -223,6 +222,14 @@ public class MiltonResourceImpl implements WebDavResource {
     }
   }
 
+  @Override
+  public String getAbsolutePath() {
+    if (myImpl != null) {
+      return myImpl.path().toPath();
+    }
+    return Path.path(myUrl.path).toPath();
+
+  }
   @Override
   public String getName() {
     if (myImpl != null) {
