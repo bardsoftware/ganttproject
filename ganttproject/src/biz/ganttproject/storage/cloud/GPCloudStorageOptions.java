@@ -12,8 +12,11 @@ import java.util.Set;
  */
 public class GPCloudStorageOptions {
   private static final Set<String> GANTTPROJECT_CLOUD_SERVERS = ImmutableSet.of(
-    "https://webdav.ganttproject.biz", "https://webdav.ganttproject.cloud", "http://ganttproject-cloud.appspot.com/webdav"
+      "http://webdav.ganttproject.biz", "https://webdav.ganttproject.biz", "https://webdav.ganttproject.cloud", "http://ganttproject-cloud.appspot.com/webdav"
   );
+//  private static final Set<String> GANTTPROJECT_CLOUD_SERVERS = ImmutableSet.of(
+//    "https://webdav.yandex.ru"
+//  );
   private final ListOption<WebDavServerDescriptor> myWebdavServerListOption;
 
   public GPCloudStorageOptions(ListOption<WebDavServerDescriptor> webdavServerListOption) {
@@ -29,4 +32,7 @@ public class GPCloudStorageOptions {
     return null;
   }
 
+  public void setCloudServer(GPCloudStorage.CloudSettingsDto cloudServer) {
+    myWebdavServerListOption.addValue(new WebDavServerDescriptor("GP Cloud", cloudServer.serverUrl, cloudServer.username, cloudServer.password));
+  }
 }

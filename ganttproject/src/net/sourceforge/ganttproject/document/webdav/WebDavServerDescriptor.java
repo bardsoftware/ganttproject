@@ -41,6 +41,11 @@ public class WebDavServerDescriptor {
     this.username = username;
   }
 
+  public WebDavServerDescriptor(String name, String rootUrl, String username, String password) {
+    this(name, rootUrl, username);
+    this.password = password;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof WebDavServerDescriptor == false) {
@@ -58,6 +63,9 @@ public class WebDavServerDescriptor {
     return this.password;
   }
 
+  public void setPassword(String password) {
+    this.password = password;
+  }
   @Override
   public int hashCode() {
     return Objects.hashCode(this.getRootUrl());
