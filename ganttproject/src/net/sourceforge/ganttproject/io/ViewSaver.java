@@ -100,7 +100,7 @@ class ViewSaver extends SaverBase {
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);
-        addAttribute("width", field.getWidth() * 100 / totalWidth, attrs);
+        addAttribute("width", field.getWidth(), attrs);
         addAttribute("order", field.getOrder(), attrs);
         emptyElement("field", attrs, handler);
       }
