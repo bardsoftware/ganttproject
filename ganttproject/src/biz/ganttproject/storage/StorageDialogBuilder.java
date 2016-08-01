@@ -8,16 +8,10 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -27,6 +21,7 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,23 +39,50 @@ public class StorageDialogBuilder {
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<Ui> myStorageUiList = Lists.newArrayList();
   private @Nullable Dialog myDialog = null;
-  private TitledPane myNotificationPane;
+  private StatusBar myNotificationPane;
   private ErrorUi myErrorUi = new ErrorUi() {
     @Override
     public void error(Throwable e) {
-      myNotificationPane.setContent(createErrorPane(e.getMessage()));
-      myNotificationPane.setExpanded(true);
+      setClass("alert-error");
+      //myNotificationPane.setContent(createErrorPane(e.getMessage()));
+      myNotificationPane.setText(e.getMessage());
+      //myNotificationPane.setExpanded(true);
     }
 
     @Override
     public void error(String message) {
-      myNotificationPane.setContent(createErrorPane(message));
-      myNotificationPane.setExpanded(true);
+      setClass("alert-error");
+      myNotificationPane.setText(message);
+      //myNotificationPane.setContent(createErrorPane(message));
+      //myNotificationPane.setExpanded(true);
     }
+
+    @Override
+    public void message(String message) {
+      setClass("alert-info");
+      myNotificationPane.setText(message);
+//      myNotificationPane.setContent(createErrorPane(message));
+//      myNotificationPane.setExpanded(true);
+    }
+
+    @Override
+    public void showBusyIndicator(boolean show) {
+      if (show) {
+        myNotificationPane.setProgress(-1);
+      } else {
+        myNotificationPane.setProgress(0);
+      }
+    }
+
     private Node createErrorPane(String message) {
       Label result = new Label(message);
       result.getStyleClass().add("label");
       return result;
+    }
+
+    private void setClass(String className) {
+      myNotificationPane.getStyleClass().clear();
+      myNotificationPane.getStyleClass().add(className);
     }
   };
 
@@ -97,19 +119,23 @@ public class StorageDialogBuilder {
     });
 
 
-    borderPane.setLeft(servicesPane);
-    Pane emptyPane = new Pane();
-    emptyPane.setPrefSize(600, 600);
-    borderPane.setCenter(emptyPane);
-
-    myNotificationPane = new TitledPane();
+    if (myStorageUiList.size() > 1) {
+      borderPane.setLeft(servicesPane);
+      Pane emptyPane = new Pane();
+      emptyPane.setPrefSize(600, 600);
+      borderPane.setCenter(emptyPane);
+    } else {
+      borderPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
+    }
+    myNotificationPane = new StatusBar();
     myNotificationPane.getStyleClass().add("notification");
-    Platform.runLater(() -> {
-      Pane title = (Pane) myNotificationPane.lookup(".title");
-      if (title != null) {
-        title.setVisible(false);
-      }
-    });
+    myNotificationPane.setText("");
+//    Platform.runLater(() -> {
+//      Pane title = (Pane) myNotificationPane.lookup(".title");
+//      if (title != null) {
+//        title.setVisible(false);
+//      }
+//    });
     borderPane.setBottom(myNotificationPane);
     dialog.getDialogPane().getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
     dialog.getDialogPane().getStyleClass().add("body");
@@ -145,6 +171,8 @@ public class StorageDialogBuilder {
   public interface ErrorUi {
     void error(Throwable e);
     void error(String s);
+    void message(String message);
+    void showBusyIndicator(boolean shown);
   }
   public interface Ui {
     String getId();

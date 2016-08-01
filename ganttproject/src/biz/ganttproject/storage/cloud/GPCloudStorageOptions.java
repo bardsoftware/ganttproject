@@ -32,7 +32,7 @@ public class GPCloudStorageOptions {
     return null;
   }
 
-  public void setCloudServer(GPCloudStorage.CloudSettingsDto cloudServer) {
+  public void setCloudServer(CloudSettingsDto cloudServer) {
     myWebdavServerListOption.addValue(new WebDavServerDescriptor("GP Cloud", cloudServer.serverUrl, cloudServer.username, cloudServer.password));
   }
 }
