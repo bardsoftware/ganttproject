@@ -113,8 +113,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     fadeOut.setToValue(0.1);
     fadeOut.play();
     fadeOut.setOnFinished(e ->  {
-      myPane.getChildren().clear();
-      myPane.getChildren().add(newUi);
+      myPane.setCenter(newUi);
       fadeIn.play();
     });
 

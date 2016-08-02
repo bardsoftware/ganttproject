@@ -53,7 +53,7 @@ class GPCloudLoginPane {
         "If you don't know your access credentials, sign in to your account on GanttProject Cloud and request a PIN number. Type the PIN into the field below.",
         "help");
     result.getChildren().addAll(pinSubtitle, pinHelp);
-    //addPinControls(result);
+    addPinControls(result);
     return result;
   }
 
