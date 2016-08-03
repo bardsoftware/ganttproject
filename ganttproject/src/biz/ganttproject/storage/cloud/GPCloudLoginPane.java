@@ -5,14 +5,22 @@ import biz.ganttproject.core.OperationStatus;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import javafx.beans.property.StringProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.*;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPVersion;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,10 +56,22 @@ class GPCloudLoginPane {
     VBox result = new VBox();
     result.setPrefWidth(400);
     result.getStyleClass().add("pane-service-contents");
-    Label pinSubtitle = newLabel("Use PIN to get access credentials", "subtitle");
-    Label pinHelp = newLabel(
-        "If you don't know your access credentials, sign in to your account on GanttProject Cloud and request a PIN number. Type the PIN into the field below.",
-        "help");
+    Label title = newLabel("Connect to GanttProject Cloud", "title");
+
+    Label loginSubtitle = newLabel("Using email and password", "subtitle");
+    Label loginHelp = newLabel("Use this if you know your access credentials");
+    LoginForm loginForm = new LoginForm();
+    result.getChildren().addAll(title, loginSubtitle, loginForm.createPane());
+    loginForm.myEmail.setValue("foo@bar.com");
+    loginForm.myPassword.setValue("foobar");
+
+    Label pinSubtitle = newLabel("Using PIN", "subtitle");
+    FlowPane pinHelp = new FlowPane();
+    pinHelp.getStyleClass().add("help");
+    pinHelp.getChildren().addAll(
+        newLabel("Use this if you're accessing GanttProject Cloud the first time.", "help"),
+        new Hyperlink("Request a PIN from GanttProject Cloud")
+    );
     result.getChildren().addAll(pinSubtitle, pinHelp);
     addPinControls(result);
     return result;
@@ -130,4 +150,25 @@ class GPCloudLoginPane {
   }
 
 
+  static class LoginForm {
+    StringProperty myEmail;
+    StringProperty myPassword;
+
+    Pane createPane() {
+      GridPane grid = new GridPane();
+      grid.getStyleClass().add("login-form");
+      grid.setHgap(10);
+      grid.setVgap(10);
+      grid.add(newLabel("Email", "control-label"), 0, 0);
+      TextField email = new TextField();
+      myEmail = email.textProperty();
+      grid.add(email, 1, 0);
+
+      grid.add(newLabel("Password", "control-label"), 0, 1);
+      PasswordField password = new PasswordField();
+      myPassword = password.textProperty();
+      grid.add(password, 1, 1);
+      return grid;
+    }
+  }
 }

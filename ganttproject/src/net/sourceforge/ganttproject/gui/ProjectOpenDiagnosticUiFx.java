@@ -19,29 +19,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.FXUtil;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import net.sourceforge.ganttproject.GPLogger;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.html.HTMLAnchorElement;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * This class shows project opening diagnostics using JavaFX web view.
@@ -62,7 +49,7 @@ class ProjectOpenDiagnosticUiFx {
 
             webEngine.loadContent(msg);
 
-            setOpenLinksInBrowser(webEngine);
+            FXUtil.setOpenLinksInBrowser(webEngine);
 
             root.getChildren().addAll(browser);
             Scene scene = new Scene(new Group());
@@ -81,39 +68,4 @@ class ProjectOpenDiagnosticUiFx {
     });
   }
 
-  private static void setOpenLinksInBrowser(final WebEngine webEngine) {
-    webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-      public void changed(
-          ObservableValue<? extends Worker.State> observable,
-          javafx.concurrent.Worker.State oldValue,
-          javafx.concurrent.Worker.State newValue) {
-
-        if (Worker.State.SUCCEEDED.equals(newValue)) {
-          NodeList nodeList = webEngine.getDocument().getElementsByTagName("a");
-          for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            EventTarget eventTarget = (EventTarget) node;
-            eventTarget.addEventListener("click", new EventListener() {
-              @Override
-              public void handleEvent(Event evt) {
-                evt.preventDefault();
-                EventTarget target = evt.getCurrentTarget();
-                HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
-                final String href = anchorElement.getHref();
-                SwingUtilities.invokeLater(new Runnable() {
-                  public void run() {
-                    try {
-                      Desktop.getDesktop().browse(new URI(href));
-                    } catch (IOException | URISyntaxException e) {
-                      GPLogger.log(e);
-                    }
-                  }
-                });
-              }
-            }, false);
-          }
-        }
-      }
-    });
-  }
 }

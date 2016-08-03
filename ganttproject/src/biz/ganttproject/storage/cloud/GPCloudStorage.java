@@ -30,7 +30,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   static Label newLabel(String key, String... classes) {
     Label label = new Label(key);
     label.getStyleClass().addAll(classes);
-    label.setPrefWidth(400);
+    //label.setPrefWidth(400);
     return label;
   }
 

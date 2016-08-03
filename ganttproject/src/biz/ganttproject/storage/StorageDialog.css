@@ -42,6 +42,8 @@
     -fx-alignment: center;
     -fx-max-width: Infinity;
 }
+.control-label {
+}
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
@@ -79,6 +81,9 @@
 .pane-service-contents > * {
     -fx-font-family: Arial;
 }
+.pane-service-contents .login-form {
+    -fx-padding: 5 0 20 0;
+}
 .pane-service-contents > .breadcrumb {
     -fx-padding: 0 0 5 0;
 }
@@ -92,6 +97,7 @@
     -fx-font-size: 80%;
     -fx-text-fill: dimgray;
     -fx-wrap-text: true;
+    -fx-pref-width: 400px;
 }
 .space-section {
     -fx-padding: 10px 0 10px 0;
@@ -101,8 +107,10 @@
     -fx-padding: 20 0 3 0;
 }
 .help {
-    -fx-padding: 0 0 5 0;
     -fx-font-size: 80%;
+    -fx-padding: 0 0 5 0;
+    -fx-pref-width: 400px;
+    -fx-max-width: 400px;
     -fx-text-fill: dimgray;
     -fx-wrap-text: true;
 }
