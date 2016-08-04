@@ -14,8 +14,9 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -29,7 +30,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.controlsfx.control.SegmentedButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -196,17 +196,18 @@ class GPCloudLoginPane {
       grid.add(password, 1, 1 + startRow);
 
       //grid.add(newLabel("Keep password", "control-label"), 0, 2 + startRow);
-      ToggleButton dontSave = new ToggleButton("Don't save password");
+      ToggleGroup btnGroup = new ToggleGroup();
+      RadioButton dontSave = new RadioButton("Don't save password");
+      dontSave.setToggleGroup(btnGroup);
       myForgetPassword = dontSave.selectedProperty();
 
-      ToggleButton savePassword = new ToggleButton("Store password on disk");
+      RadioButton savePassword = new RadioButton("Store password on disk");
+      savePassword.setToggleGroup(btnGroup);
       mySavePassword = savePassword.selectedProperty();
 
-      SegmentedButton btnGroup = new SegmentedButton();
-      btnGroup.getButtons().addAll(dontSave, savePassword);
-      grid.add(btnGroup, 1, 2 + startRow);
-      btnGroup.getStyleClass().add(SegmentedButton.STYLE_CLASS_DARK);
-      return 3;
+      grid.add(dontSave, 1, 2 + startRow);
+      grid.add(savePassword, 1, 3 + startRow);
+      return 4;
     }
   }
 }
