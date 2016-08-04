@@ -5,6 +5,7 @@ import biz.ganttproject.core.option.ListOption;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -23,13 +24,13 @@ public class GPCloudStorageOptions {
     myWebdavServerListOption = webdavServerListOption;
   }
 
-  public WebDavServerDescriptor getCloudServer() {
+  public Optional<WebDavServerDescriptor> getCloudServer() {
     for (WebDavServerDescriptor server : myWebdavServerListOption.getValues()) {
       if (GANTTPROJECT_CLOUD_SERVERS.contains(server.getRootUrl())) {
-        return server;
+        return Optional.of(server);
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   public void setCloudServer(CloudSettingsDto cloudServer) {

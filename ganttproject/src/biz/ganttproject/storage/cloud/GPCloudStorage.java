@@ -3,6 +3,8 @@ package biz.ganttproject.storage.cloud;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.animation.FadeTransition;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,6 +14,9 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
+import org.controlsfx.control.HyperlinkLabel;
+
+import java.util.Optional;
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -32,6 +37,13 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     label.getStyleClass().addAll(classes);
     //label.setPrefWidth(400);
     return label;
+  }
+
+  static HyperlinkLabel newHyperlink(EventHandler<ActionEvent> eventHandler, String text, String... classes) {
+    HyperlinkLabel result = new HyperlinkLabel(text);
+    result.addEventHandler(ActionEvent.ACTION, eventHandler);
+    result.getStyleClass().addAll(classes);
+    return result;
   }
 
   static Pane centered(Node... nodes) {
@@ -89,26 +101,27 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   private Pane doCreateUi() {
     GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myErrorUi);
     GPCloudStartPane startPane = new GPCloudStartPane(this::replaceUi, loginPane);
-    if (myPane.getChildren().isEmpty()) {
-      WebDavServerDescriptor cloudServer = myOptions.getCloudServer();
-      if (cloudServer == null) {
-        myPane.setCenter(startPane.createPane());
-      } else if (cloudServer.getPassword() == null) {
-        myPane.setCenter(createConnectCloudPane());
+    Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();
+    if (cloudServer.isPresent()) {
+      WebDavServerDescriptor wevdavServer = cloudServer.get();
+      if (wevdavServer.getPassword() == null) {
+        myPane.setCenter(loginPane.createPane());
       } else {
-        WebdavStorage webdavStorage = new WebdavStorage(cloudServer);
+        WebdavStorage webdavStorage = new WebdavStorage(wevdavServer);
         myPane.setCenter(webdavStorage.createUi(myDocumentReceiver, myErrorUi));
       }
+    } else {
+      myPane.setCenter(startPane.createPane());
     }
     return myPane;
   }
 
   private void replaceUi(Pane newUi) {
-    FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), myPane);
+    FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), myPane);
     fadeIn.setFromValue(0.0);
     fadeIn.setToValue(1.0);
 
-    FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), myPane);
+    FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), myPane);
     fadeOut.setFromValue(1.0);
     fadeOut.setToValue(0.1);
     fadeOut.play();

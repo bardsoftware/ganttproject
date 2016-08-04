@@ -142,11 +142,10 @@ public class StorageDialogBuilder {
 
     dialog.getDialogPane().setContent(borderPane);
     dialog.initModality(Modality.WINDOW_MODAL);
-    dialog.setTitle("My Projects");
+    dialog.setTitle("GanttProject Cloud");
     dialog.setResizable(true);
-    dialog.setWidth(300);
-    dialog.setHeight(300);
-    dialog.setOnShown(event -> ((Button) servicesPane.getChildren().get(0)).fire());
+    dialog.getDialogPane().getScene().getWindow().sizeToScene();
+    dialog.setOnShown(event -> dialog.getDialogPane().getScene().getWindow().sizeToScene());
 
     myDialog = dialog;
     return dialog;
