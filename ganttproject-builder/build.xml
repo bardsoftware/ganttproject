@@ -101,7 +101,10 @@ Compiling GanttProject 2.8
             </fileset>
         </copy>
         <jar destfile="${install.dir}/eclipsito.jar" update="true">
-            <fileset dir="." includes="ganttproject-eclipsito-config.xml"/>
+            <fileset dir=".">
+                <include name="ganttproject-eclipsito-config.xml"/>
+                <include name="logging.properties"/>
+            </fileset>
         </jar>
     </target>
     <target name="build" depends="welcome-message,
@@ -351,6 +354,7 @@ Compiling GanttProject 2.8
             <fileset dir="${package.dir}">
                 <include name="eclipsito.jar"/>
                 <include name="plugins/**"/>
+                <include name="logging.properties"/>
             </fileset>
         </copy>
         <patch patchfile="Info.plist.patch" originalfile="${package.osx.dir}/GanttProject.app/Contents/Info.plist"/>
