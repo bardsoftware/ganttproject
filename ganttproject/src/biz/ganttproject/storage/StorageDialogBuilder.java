@@ -39,8 +39,9 @@ public class StorageDialogBuilder {
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<Ui> myStorageUiList = Lists.newArrayList();
   private @Nullable Dialog myDialog = null;
+  private EventHandler<ActionEvent> myOnNextClick;
   private StatusBar myNotificationPane;
-  private ErrorUi myErrorUi = new ErrorUi() {
+  private DialogUi myDialogUi = new DialogUi() {
     @Override
     public void error(Throwable e) {
       setClass("alert-error");
@@ -74,6 +75,22 @@ public class StorageDialogBuilder {
       }
     }
 
+    @Override
+    public void resize() {
+      myDialog.getDialogPane().getScene().getWindow().sizeToScene();
+    }
+
+    @Override
+    public void showNextButton(Runnable onClick) {
+      myDialog.getDialogPane().getButtonTypes().add(ButtonType.NEXT);
+      Node btn = myDialog.getDialogPane().lookupButton(ButtonType.NEXT);
+      if (myOnNextClick != null) {
+        btn.removeEventHandler(ActionEvent.ACTION, myOnNextClick);
+      }
+      myOnNextClick = (e) -> onClick.run();
+      btn.addEventHandler(ActionEvent.ACTION, myOnNextClick);
+    }
+
     private Node createErrorPane(String message) {
       Label result = new Label(message);
       result.getStyleClass().add("label");
@@ -101,9 +118,10 @@ public class StorageDialogBuilder {
   }
 
   Dialog build() {
-    ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
+    ButtonType btnClose = new ButtonType("Close", ButtonBar.ButtonData.FINISH);
     Dialog<Void> dialog = new Dialog<>();
-    dialog.getDialogPane().getButtonTypes().add(loginButtonType);
+    myDialog = dialog;
+    dialog.getDialogPane().getButtonTypes().add(btnClose);
 
     BorderPane borderPane = new BorderPane();
 
@@ -113,7 +131,7 @@ public class StorageDialogBuilder {
 
     myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions));
     myStorageUiList.forEach(storageUi -> {
-      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver, myErrorUi)));
+      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver, myDialogUi)));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
       servicesPane.getChildren().addAll(btn);
     });
@@ -146,8 +164,6 @@ public class StorageDialogBuilder {
     dialog.setResizable(true);
     dialog.getDialogPane().getScene().getWindow().sizeToScene();
     dialog.setOnShown(event -> dialog.getDialogPane().getScene().getWindow().sizeToScene());
-
-    myDialog = dialog;
     return dialog;
   }
 
@@ -167,7 +183,9 @@ public class StorageDialogBuilder {
     return btnService;
   }
 
-  public interface ErrorUi {
+  public interface DialogUi {
+    void resize();
+    void showNextButton(Runnable onClick);
     void error(Throwable e);
     void error(String s);
     void message(String message);
@@ -175,6 +193,6 @@ public class StorageDialogBuilder {
   }
   public interface Ui {
     String getId();
-    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, ErrorUi errorUi);
+    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, DialogUi dialogUi);
   }
 }

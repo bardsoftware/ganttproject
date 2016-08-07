@@ -92,6 +92,7 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
     String endDateChangeTable = myHasOnlyEndDateChange ? buildEndDateChangeTable() : "";
     //String reasonTable = buildReasonTable();
     final String msg = String.format(i18n.getText("scheduler.warning.template"),
+        i18n.getText("zz.dialog.css"),
         i18n.getText("scheduler.warning.h1"),
         i18n.getText("scheduler.warning.intro1"),
         intro,

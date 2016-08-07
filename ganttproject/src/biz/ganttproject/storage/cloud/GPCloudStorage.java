@@ -25,7 +25,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   private final GPCloudStorageOptions myOptions;
   private final BorderPane myPane;
   private DocumentStorageUi.DocumentReceiver myDocumentReceiver;
-  private StorageDialogBuilder.ErrorUi myErrorUi;
+  private StorageDialogBuilder.DialogUi myDialogUi;
 
   public GPCloudStorage(GPCloudStorageOptions options) {
     myOptions = options;
@@ -92,15 +92,16 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.ErrorUi errorUi) {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
     myDocumentReceiver = documentReceiver;
-    myErrorUi = errorUi;
+    myDialogUi = dialogUi;
     return doCreateUi();
   }
 
   private Pane doCreateUi() {
-    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myErrorUi);
-    GPCloudStartPane startPane = new GPCloudStartPane(this::replaceUi, loginPane);
+    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi);
+    GPCloudSignupPane signupPane = new GPCloudSignupPane();
+    GPCloudStartPane startPane = new GPCloudStartPane(myDialogUi, this::replaceUi, loginPane, signupPane);
     Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();
     if (cloudServer.isPresent()) {
       WebDavServerDescriptor wevdavServer = cloudServer.get();
@@ -108,7 +109,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
         myPane.setCenter(loginPane.createPane());
       } else {
         WebdavStorage webdavStorage = new WebdavStorage(wevdavServer);
-        myPane.setCenter(webdavStorage.createUi(myDocumentReceiver, myErrorUi));
+        myPane.setCenter(webdavStorage.createUi(myDocumentReceiver, myDialogUi));
       }
     } else {
       myPane.setCenter(startPane.createPane());
@@ -127,6 +128,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     fadeOut.play();
     fadeOut.setOnFinished(e ->  {
       myPane.setCenter(newUi);
+      myDialogUi.resize();
       fadeIn.play();
     });
 

@@ -1,6 +1,7 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.cloud;
 
+import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,10 +20,14 @@ import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
 public class GPCloudStartPane {
   private final Consumer<Pane> myUpdateUi;
   private final GPCloudLoginPane myLoginPane;
+  private final GPCloudSignupPane mySignupPane;
+  private final StorageDialogBuilder.DialogUi myDialogUi;
 
-  GPCloudStartPane(Consumer<Pane> updateUi, GPCloudLoginPane loginPane) {
+  GPCloudStartPane(StorageDialogBuilder.DialogUi dialogUi, Consumer<Pane> updateUi, GPCloudLoginPane loginPane, GPCloudSignupPane signupPane) {
+    myDialogUi = dialogUi;
     myUpdateUi= updateUi;
     myLoginPane = loginPane;
+    mySignupPane = signupPane;
   }
   Pane createPane() {
     VBox cloudSetupPane = new VBox();
@@ -49,7 +54,13 @@ public class GPCloudStartPane {
     spacer.getStyleClass().addAll("space-section");
     cloudSetupPane.getChildren().addAll(spacer);
     Button nextPage = new Button("Continue");
-    nextPage.addEventHandler(ActionEvent.ACTION, event -> myUpdateUi.accept(myLoginPane.createPane()));
+    nextPage.addEventHandler(ActionEvent.ACTION, event -> {
+      if (unregistered.isSelected()) {
+        myUpdateUi.accept(mySignupPane.createPane());
+      } else {
+        myUpdateUi.accept(myLoginPane.createPane());
+      }
+    });
     nextPage.getStyleClass().add("btn-continue");
     cloudSetupPane.getChildren().add(nextPage);
     return cloudSetupPane;

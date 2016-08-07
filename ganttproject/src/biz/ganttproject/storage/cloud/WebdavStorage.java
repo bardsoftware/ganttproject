@@ -40,7 +40,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.ErrorUi errorUi) {
+  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
@@ -83,7 +83,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     Consumer<TreeItem<BreadCrumbNode>> handler = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, errorUi);
+      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, dialogUi);
     };
     breadcrumbs.setOnCrumbAction(value -> handler.accept(value.getSelectedCrumb()));
     breadcrumbs.setSelectedCrumb(rootItem);
@@ -103,14 +103,14 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
             documentReceiver.setDocument(createDocument(selectedItem));
           }
         } catch (IOException | Document.DocumentException | WebDavResource.WebDavException e) {
-          errorUi.error(e);
+          dialogUi.error(e);
         }
       }
     });
     return stackPane;
   }
 
-  private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.ErrorUi errorUi) {
+  private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
     myLoadService.setPath(path);
     myLoadService.setOnSucceeded((event) -> {
       Worker<ObservableList<WebDavResource>> source = event.getSource();
@@ -119,7 +119,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     });
     myLoadService.setOnFailed((event) -> {
       showMaskPane.accept(false);
-      errorUi.error("WebdavService failed!");
+      dialogUi.error("WebdavService failed!");
     });
     myLoadService.setOnCancelled((event) -> {
       showMaskPane.accept(false);

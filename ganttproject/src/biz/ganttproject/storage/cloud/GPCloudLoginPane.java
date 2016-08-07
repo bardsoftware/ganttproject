@@ -49,11 +49,11 @@ class GPCloudLoginPane {
   private static final URI PIN_REQUEST_URL = URI.create("http://cloud.ganttproject.biz/");
 
   private final GPCloudStorageOptions myOptions;
-  private final StorageDialogBuilder.ErrorUi myErrorUi;
+  private final StorageDialogBuilder.DialogUi myDialogUi;
 
-  GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.ErrorUi errorUi) {
+  GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.DialogUi dialogUi) {
     myOptions = cloudStorageOptions;
-    myErrorUi = errorUi;
+    myDialogUi = dialogUi;
   }
 
   Pane createPane() {
@@ -90,7 +90,7 @@ class GPCloudLoginPane {
       try {
         Desktop.getDesktop().browse(PIN_REQUEST_URL);
       } catch (IOException ex) {
-        myErrorUi.error(ex);
+        myDialogUi.error(ex);
       }
     }), "First time accessing GanttProject Cloud? [Request a PIN]", "help"), 0, row++, 2, 1);
     addPinControls(result, row, loginForm);
@@ -116,7 +116,7 @@ class GPCloudLoginPane {
       }
     };
     btnConnect.addEventHandler(ActionEvent.ACTION, event -> {
-//      myErrorUi.showBusyIndicator(true);
+//      myDialogUi.showBusyIndicator(true);
 //      pinApplyService.setOnSucceeded(e -> {
 //        Worker<OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode>> worker = e.getSource();
 //        OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> result = worker.getValue();
@@ -127,9 +127,9 @@ class GPCloudLoginPane {
 //          loginForm.myPassword.setValue(dto.password);
 //          loginForm.myForgetPassword.setValue(true);
 //        } else {
-//          myErrorUi.error(result.getMessage());
+//          myDialogUi.error(result.getMessage());
 //        }
-//        myErrorUi.showBusyIndicator(false);
+//        myDialogUi.showBusyIndicator(false);
 //      });
 //      pinApplyService.start();
       CloudSettingsDto dto = new CloudSettingsDto("http://webdav.ganttproject.biz", "dbarashev@bardsoftware.com", "foobar");
