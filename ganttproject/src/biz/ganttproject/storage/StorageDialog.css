@@ -38,11 +38,18 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
+.button-pane {
+    -fx-padding: 5px 0px 0px 0px;
+}
 .center {
     -fx-alignment: center;
     -fx-max-width: Infinity;
 }
 .control-label {
+    -fx-padding: 10 0;
+}
+.control-row {
+    -fx-padding: 5 0;
 }
 .help {
     -fx-font-size: 80%;
@@ -79,9 +86,11 @@
 .pane-service-contents > * {
     -fx-font-family: Arial;
 }
-.pane-service-contents .login-form {
-    -fx-padding: 5 0 20 0;
-    -fx-pref-width: 400px;
+.pane-service-contents > TextField {
+    -fx-padding: 5 0 5 0;
+}
+.pane-service-contents > RadioButton {
+    -fx-padding: 5 0 5 0;
 }
 .pane-service-contents > .breadcrumb {
     -fx-padding: 0 0 5 0;

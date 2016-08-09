@@ -11,11 +11,15 @@ import com.google.common.collect.Maps;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.DocumentStorageUi;
@@ -118,10 +122,12 @@ public class StorageDialogBuilder {
   }
 
   Dialog build() {
-    ButtonType btnClose = new ButtonType("Close", ButtonBar.ButtonData.FINISH);
+    //ButtonType btnClose = new ButtonType("Close", ButtonBar.ButtonData.FINISH);
     Dialog<Void> dialog = new Dialog<>();
     myDialog = dialog;
-    dialog.getDialogPane().getButtonTypes().add(btnClose);
+    Window window = dialog.getDialogPane().getScene().getWindow();
+    window.setOnCloseRequest(event -> window.hide());
+    //dialog.getDialogPane().getButtonTypes().add(btnClose);
 
     BorderPane borderPane = new BorderPane();
 

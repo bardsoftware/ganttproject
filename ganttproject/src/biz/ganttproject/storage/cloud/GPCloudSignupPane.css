@@ -43,6 +43,10 @@ li:before {
     margin-left: -1em;
     margin-right: .5em;
 }
+p {
+    color: dimgray;
+    font-size: 90%;
+}
 table {
     font-size: 90%;
     margin-left: 10px;
@@ -55,6 +59,8 @@ th {
     border-bottom: solid gray 1px;
 }
 ul {
+    color: dimgray;
+    font-size: 90%;
     margin: 10px 0 10px 30px;
     padding-left: 20px;
     text-indent: 0px;

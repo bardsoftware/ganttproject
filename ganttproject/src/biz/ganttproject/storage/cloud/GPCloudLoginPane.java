@@ -11,6 +11,7 @@ import javafx.beans.property.StringProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newHyperlink;
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
@@ -44,45 +46,28 @@ import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudLoginPane {
+class GPCloudLoginPane implements GPCloudStorage.PageUi {
   private static final String PIN_APPLY_URL = "http://cloud.ganttproject.biz/me/pin-apply";
   private static final URI PIN_REQUEST_URL = URI.create("http://cloud.ganttproject.biz/");
 
   private final GPCloudStorageOptions myOptions;
   private final StorageDialogBuilder.DialogUi myDialogUi;
+  private LoginForm myLoginForm;
+  private Button mySigninButton;
 
   GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.DialogUi dialogUi) {
     myOptions = cloudStorageOptions;
     myDialogUi = dialogUi;
   }
 
-  Pane createPane() {
+  public CompletableFuture<Pane> createPane() {
     GridPane result = new GridPane();
     int row = 0;
     result.setHgap(10);
-    result.setVgap(10);
     result.setPrefWidth(400);
     result.getStyleClass().add("pane-service-contents");
-    Label title = newLabel("Connect to GanttProject Cloud", "title");
+    Label title = newLabel("Sign in to GanttProject Cloud", "title");
     result.add(title, 0, row++, 2, 1);
-
-    Label loginSubtitle = newLabel("With email and password", "subtitle");
-    result.add(loginSubtitle, 0, row++, 2, 1);
-
-    LoginForm loginForm = new LoginForm();
-    row += loginForm.createPane(result, row);
-    //result.getChildren().addAll(title, loginSubtitle, loginForm.createPane());
-    myOptions.getCloudServer().ifPresent(server -> {
-      loginForm.myEmail.setValue(server.getUsername());
-      String password = Strings.nullToEmpty(server.getPassword());
-      loginForm.myPassword.setValue(password);
-      if (password.isEmpty()) {
-        loginForm.myForgetPassword.setValue(true);
-      } else {
-        loginForm.mySavePassword.setValue(true);
-      }
-    });
-
 
     Label pinSubtitle = newLabel("With PIN", "subtitle");
     result.add(pinSubtitle, 0, row++, 2, 1);
@@ -93,14 +78,51 @@ class GPCloudLoginPane {
         myDialogUi.error(ex);
       }
     }), "First time accessing GanttProject Cloud? [Request a PIN]", "help"), 0, row++, 2, 1);
-    addPinControls(result, row, loginForm);
-    return result;
+    row += addPinControls(result, row, myLoginForm);
+
+    Label loginSubtitle = newLabel("With email and password", "subtitle");
+    result.add(loginSubtitle, 0, row++, 2, 1);
+
+    myLoginForm = new LoginForm();
+    row += myLoginForm.createPane(result, row);
+
+    HBox loginBox = new HBox();
+    loginBox.setAlignment(Pos.CENTER);
+    mySigninButton = new Button("Sign In");
+    loginBox.getChildren().add(mySigninButton);
+    result.add(loginBox, 0, row++, 2, 1);
+
+    //result.getChildren().addAll(title, loginSubtitle, myLoginForm.createPane());
+    myOptions.getCloudServer().ifPresent(server -> {
+      myLoginForm.myEmail.setValue(server.getUsername());
+      String password = Strings.nullToEmpty(server.getPassword());
+      myLoginForm.myPassword.setValue(password);
+      if (password.isEmpty()) {
+        myLoginForm.myForgetPassword.setValue(true);
+      } else {
+        myLoginForm.mySavePassword.setValue(true);
+      }
+    });
+    myLoginForm.myEmail.addListener((observable, oldValue, newValue) -> {
+      updateLoginButton();
+    });
+    myLoginForm.myPassword.addListener((observable, oldValue, newValue) -> {
+      updateLoginButton();
+    });
+    myLoginForm.myForgetPassword.setValue(true);
+
+    return CompletableFuture.completedFuture(result);
   }
 
-  private void addPinControls(GridPane grid, int startRow, LoginForm loginForm) {
+  private void updateLoginButton() {
+    mySigninButton.setDisable(Strings.isNullOrEmpty(myLoginForm.myEmail.getValue()) || Strings.isNullOrEmpty(myLoginForm.myPassword.getValue()));
+  }
+
+  private int addPinControls(GridPane grid, int startRow, LoginForm loginForm) {
     TextField pinField = new TextField();
     pinField.setPromptText("Type PIN");
     HBox pinBox = new HBox();
+    pinBox.getStyleClass().add("control-row");
     pinBox.setMaxWidth(Region.USE_PREF_SIZE);
     Button btnConnect = new Button("Connect");
 
@@ -123,9 +145,9 @@ class GPCloudLoginPane {
 //        if (result.isOk()) {
 //          CloudSettingsDto dto = result.get();
 //          saveCloudServer(dto);
-//          loginForm.myEmail.setValue(dto.username);
-//          loginForm.myPassword.setValue(dto.password);
-//          loginForm.myForgetPassword.setValue(true);
+//          myLoginForm.myEmail.setValue(dto.username);
+//          myLoginForm.myPassword.setValue(dto.password);
+//          myLoginForm.myForgetPassword.setValue(true);
 //        } else {
 //          myDialogUi.error(result.getMessage());
 //        }
@@ -141,6 +163,7 @@ class GPCloudLoginPane {
     pinBox.getChildren().addAll(pinField, btnConnect);
 
     grid.add(pinBox, 1, startRow);
+    return 1;
   }
 
   private OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> getCloudSettings(String pin) {
@@ -197,11 +220,11 @@ class GPCloudLoginPane {
 
       //grid.add(newLabel("Keep password", "control-label"), 0, 2 + startRow);
       ToggleGroup btnGroup = new ToggleGroup();
-      RadioButton dontSave = new RadioButton("Don't save password");
+      RadioButton dontSave = new RadioButton("Don't save password anywhere");
       dontSave.setToggleGroup(btnGroup);
       myForgetPassword = dontSave.selectedProperty();
 
-      RadioButton savePassword = new RadioButton("Store password on disk");
+      RadioButton savePassword = new RadioButton("Save password in the options file");
       savePassword.setToggleGroup(btnGroup);
       mySavePassword = savePassword.selectedProperty();
 

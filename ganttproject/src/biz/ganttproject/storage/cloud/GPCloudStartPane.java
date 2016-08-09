@@ -1,9 +1,7 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.cloud;
 
-import biz.ganttproject.storage.StorageDialogBuilder;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
+import javafx.beans.property.BooleanProperty;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -17,25 +15,26 @@ import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
 /**
  * @author dbarashev@bardsoftware.com
  */
-public class GPCloudStartPane {
-  private final Consumer<Pane> myUpdateUi;
+public class GPCloudStartPane  {
+  private final Consumer<GPCloudStorage.PageUi> myUpdateUi;
   private final GPCloudLoginPane myLoginPane;
   private final GPCloudSignupPane mySignupPane;
-  private final StorageDialogBuilder.DialogUi myDialogUi;
+  private final Consumer<Runnable> myOnClickNext;
+  private BooleanProperty myIsRegistered;
 
-  GPCloudStartPane(StorageDialogBuilder.DialogUi dialogUi, Consumer<Pane> updateUi, GPCloudLoginPane loginPane, GPCloudSignupPane signupPane) {
-    myDialogUi = dialogUi;
+  GPCloudStartPane(Consumer<GPCloudStorage.PageUi> updateUi, Consumer<Runnable> onClickNext, GPCloudLoginPane loginPane, GPCloudSignupPane signupPane) {
+    myOnClickNext = onClickNext;
     myUpdateUi= updateUi;
     myLoginPane = loginPane;
     mySignupPane = signupPane;
   }
-  Pane createPane() {
+  public Pane createPane() {
     VBox cloudSetupPane = new VBox();
     cloudSetupPane.setPrefWidth(400);
     cloudSetupPane.getStyleClass().add("pane-service-contents");
-    Label title = newLabel("Setup GanttProject Cloud", "title");
+    Label title = newLabel("GanttProject Cloud", "title");
     Label titleHelp = newLabel(
-        "GanttProject Cloud is a cloud-based service for storing projects and collaborating with your colleagues",
+        "We have not found your GanttProject Cloud access credentials",
         "title-help");
     cloudSetupPane.getChildren().addAll(title, titleHelp);
 
@@ -44,25 +43,24 @@ public class GPCloudStartPane {
     RadioButton registered = new RadioButton("Yes, I am registered");
     registered.setToggleGroup(group);
     registered.getStyleClass().addAll("btn-radio");
+    myIsRegistered = registered.selectedProperty();
     RadioButton unregistered = new RadioButton("Not yet");
     unregistered.setToggleGroup(group);
     unregistered.setSelected(true);
     unregistered.getStyleClass().addAll("btn-radio");
     cloudSetupPane.getChildren().addAll(areYouRegistered, unregistered, registered);
 
-    Pane spacer = new Pane();
-    spacer.getStyleClass().addAll("space-section");
-    cloudSetupPane.getChildren().addAll(spacer);
-    Button nextPage = new Button("Continue");
-    nextPage.addEventHandler(ActionEvent.ACTION, event -> {
-      if (unregistered.isSelected()) {
-        myUpdateUi.accept(mySignupPane.createPane());
+    return cloudSetupPane;
+  }
+
+  public void setVisible(boolean visible) {
+    myOnClickNext.accept(() -> {
+      if (myIsRegistered.getValue()) {
+        myUpdateUi.accept(myLoginPane);
       } else {
-        myUpdateUi.accept(myLoginPane.createPane());
+        myUpdateUi.accept(mySignupPane);
       }
     });
-    nextPage.getStyleClass().add("btn-continue");
-    cloudSetupPane.getChildren().add(nextPage);
-    return cloudSetupPane;
+
   }
 }
