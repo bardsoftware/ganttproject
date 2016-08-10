@@ -37,7 +37,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   private StorageDialogBuilder.DialogUi myDialogUi;
   private EventHandler<ActionEvent> myNextEventHandler;
 
-  public GPCloudStorage(GPCloudStorageOptions options) {
+  public GPCloudStorage(GPCloudStorageOptions options, DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
     myOptions = options;
     myPane = new BorderPane();
     myButtonPane = new HBox();
@@ -47,6 +47,8 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     myButtonPane.getChildren().add(myNextButton);
     myNextButton.visibleProperty().setValue(false);
     myPane.setBottom(myButtonPane);
+    myDocumentReceiver = documentReceiver;
+    myDialogUi = dialogUi;
   }
 
   static Label newLabel(String key, String... classes) {
@@ -78,14 +80,13 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
-    myDocumentReceiver = documentReceiver;
-    myDialogUi = dialogUi;
+  public Pane createUi() {
     return doCreateUi();
   }
 
   private Pane doCreateUi() {
-    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi);
+    WebdavStorage webdavStorage = new WebdavStorage(myDocumentReceiver, myDialogUi);
+    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
     //GPCloudStartPane startPane = new GPCloudStartPane(this::nextPage, this::setNextButton, loginPane, signupPane);
     Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();
@@ -94,34 +95,14 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
       if (wevdavServer.getPassword() == null) {
         loginPane.createPane().thenApply(pane -> nextPage(pane));
       } else {
-        WebdavStorage webdavStorage = new WebdavStorage(wevdavServer);
-        myPane.setCenter(webdavStorage.createUi(myDocumentReceiver, myDialogUi));
+        webdavStorage.setServer(wevdavServer);
+        myPane.setCenter(webdavStorage.createUi());
       }
     } else {
       signupPane.createPane().thenApply(pane -> nextPage(pane));
     }
     return myPane;
   }
-
-//  private void setNextButton(Runnable onClick) {
-//    setNextButton(onClick, "Continue");
-//  }
-//
-//  private void setLoginButton(Runnable onClick) {
-//    setNextButton(onClick, "Login");
-//  }
-//
-//  private void setNextButton(Runnable onClick, String text) {
-//    myNextButton.setVisible(true);
-//    myNextButton.setDisable(false);
-//    if (myNextEventHandler != null) {
-//      myNextButton.removeEventHandler(ActionEvent.ACTION, myNextEventHandler);
-//    }
-//    myNextEventHandler = event -> onClick.run();
-//    myNextButton.addEventHandler(ActionEvent.ACTION, myNextEventHandler);
-//    myNextButton.setText(text);
-//  }
-
 
   private Pane nextPage(Pane newPage) {
     Runnable replacePane = () -> {

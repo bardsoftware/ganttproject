@@ -10,6 +10,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -39,6 +40,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newHyperlink;
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
@@ -52,12 +54,17 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
 
   private final GPCloudStorageOptions myOptions;
   private final StorageDialogBuilder.DialogUi myDialogUi;
+  private final Consumer<Pane> myUpdateUi;
+  private final WebdavStorage myWebdavStorage;
   private LoginForm myLoginForm;
   private Button mySigninButton;
 
-  GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.DialogUi dialogUi) {
+  GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.DialogUi dialogUi,
+                   Consumer<Pane> updateUi, WebdavStorage webdavStorage) {
     myOptions = cloudStorageOptions;
     myDialogUi = dialogUi;
+    myUpdateUi = updateUi;
+    myWebdavStorage = webdavStorage;
   }
 
   public CompletableFuture<Pane> createPane() {
@@ -115,6 +122,7 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
   }
 
   private void updateLoginButton() {
+    saveCloudServer(new CloudSettingsDto(GPCloudStorageOptions.CANONICAL_GANTTPROJECT_CLOUD_URL, myLoginForm.myEmail.getValue(), myLoginForm.myPassword.getValue()));
     mySigninButton.setDisable(Strings.isNullOrEmpty(myLoginForm.myEmail.getValue()) || Strings.isNullOrEmpty(myLoginForm.myPassword.getValue()));
   }
 
@@ -138,27 +146,28 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
       }
     };
     btnConnect.addEventHandler(ActionEvent.ACTION, event -> {
-//      myDialogUi.showBusyIndicator(true);
-//      pinApplyService.setOnSucceeded(e -> {
-//        Worker<OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode>> worker = e.getSource();
-//        OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> result = worker.getValue();
-//        if (result.isOk()) {
-//          CloudSettingsDto dto = result.get();
-//          saveCloudServer(dto);
-//          myLoginForm.myEmail.setValue(dto.username);
-//          myLoginForm.myPassword.setValue(dto.password);
-//          myLoginForm.myForgetPassword.setValue(true);
-//        } else {
-//          myDialogUi.error(result.getMessage());
-//        }
-//        myDialogUi.showBusyIndicator(false);
-//      });
-//      pinApplyService.start();
-      CloudSettingsDto dto = new CloudSettingsDto("http://webdav.ganttproject.biz", "dbarashev@bardsoftware.com", "foobar");
-      saveCloudServer(dto);
-      loginForm.myEmail.setValue(dto.username);
-      loginForm.myPassword.setValue(dto.password);
-      loginForm.myForgetPassword.setValue(true);
+      myDialogUi.showBusyIndicator(true);
+      pinApplyService.setOnSucceeded(e -> {
+        Worker<OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode>> worker = e.getSource();
+        OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> result = worker.getValue();
+        if (result.isOk()) {
+          CloudSettingsDto dto = result.get();
+          saveCloudServer(dto);
+          myLoginForm.myEmail.setValue(dto.username);
+          myLoginForm.myPassword.setValue(dto.password);
+          myLoginForm.myForgetPassword.setValue(true);
+          nextPage();
+        } else {
+          myDialogUi.error(result.getMessage());
+        }
+        myDialogUi.showBusyIndicator(false);
+      });
+      pinApplyService.start();
+//      CloudSettingsDto dto = new CloudSettingsDto("http://webdav.ganttproject.biz", "dbarashev@bardsoftware.com", "foobar");
+//      saveCloudServer(dto);
+//      loginForm.myEmail.setValue(dto.username);
+//      loginForm.myPassword.setValue(dto.password);
+//      loginForm.myForgetPassword.setValue(true);
     });
     pinBox.getChildren().addAll(pinField, btnConnect);
 
@@ -166,6 +175,13 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
     return 1;
   }
 
+  private void nextPage() {
+    myOptions.getCloudServer().ifPresent(server -> {
+      myWebdavStorage.setServer(server);
+      myUpdateUi.accept(myWebdavStorage.createUi());
+    });
+
+  }
   private OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> getCloudSettings(String pin) {
     HttpClient httpClient = new DefaultHttpClient();
     HttpPost pinApply = new HttpPost(PIN_APPLY_URL);

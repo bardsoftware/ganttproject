@@ -135,9 +135,9 @@ public class StorageDialogBuilder {
     VBox servicesPane = new VBox();
     servicesPane.getStyleClass().add("pane-service-buttons");
 
-    myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions));
+    myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions, myDocumentReceiver, myDialogUi));
     myStorageUiList.forEach(storageUi -> {
-      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi(myDocumentReceiver, myDialogUi)));
+      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
       servicesPane.getChildren().addAll(btn);
     });
@@ -199,6 +199,6 @@ public class StorageDialogBuilder {
   }
   public interface Ui {
     String getId();
-    Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, DialogUi dialogUi);
+    Pane createUi();
   }
 }

@@ -26,21 +26,27 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
-  private final WebdavLoadService myLoadService;
-  private final WebDavServerDescriptor myServer;
+  private final DocumentStorageUi.DocumentReceiver myDocumentReceiver;
+  private final StorageDialogBuilder.DialogUi myDialogUi;
+  private WebdavLoadService myLoadService;
+  private WebDavServerDescriptor myServer;
 
-  public WebdavStorage(WebDavServerDescriptor cloudServer) {
-    myLoadService = new WebdavLoadService(cloudServer);
-    myServer = cloudServer;
+  public WebdavStorage(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
+    myDocumentReceiver = documentReceiver;
+    myDialogUi = dialogUi;
   }
 
+  void setServer(WebDavServerDescriptor webdavServer) {
+    myLoadService = new WebdavLoadService(webdavServer);
+    myServer = webdavServer;
+  }
   @Override
   public String getId() {
     return null;
   }
 
   @Override
-  public Pane createUi(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
+  public Pane createUi() {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
@@ -83,7 +89,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     Consumer<TreeItem<BreadCrumbNode>> handler = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, dialogUi);
+      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, myDialogUi);
     };
     breadcrumbs.setOnCrumbAction(value -> handler.accept(value.getSelectedCrumb()));
     breadcrumbs.setSelectedCrumb(rootItem);
@@ -100,10 +106,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
             breadcrumbs.setSelectedCrumb(treeItem);
             handler.accept(treeItem);
           } else {
-            documentReceiver.setDocument(createDocument(selectedItem));
+            myDocumentReceiver.setDocument(createDocument(selectedItem));
           }
         } catch (IOException | Document.DocumentException | WebDavResource.WebDavException e) {
-          dialogUi.error(e);
+          myDialogUi.error(e);
         }
       }
     });
