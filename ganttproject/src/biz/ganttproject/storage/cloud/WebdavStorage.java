@@ -4,6 +4,9 @@ package biz.ganttproject.storage.cloud;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TreeItem;
@@ -12,7 +15,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
@@ -26,13 +28,19 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
-  private final DocumentStorageUi.DocumentReceiver myDocumentReceiver;
+  private final Consumer<Document> myOpenDocument;
+  private final Consumer<Document> myReplaceDocument;
   private final StorageDialogBuilder.DialogUi myDialogUi;
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
+  private BreadCrumbBar<BreadCrumbNode> myBreadcrumbs;
+  private ListView<WebDavResource> myFilesTable;
+  private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
+  private WebDavResource myCurrentFolder;
 
-  public WebdavStorage(DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
-    myDocumentReceiver = documentReceiver;
+  public WebdavStorage(Consumer<Document> openDocument, Consumer<Document> replaceDocument, StorageDialogBuilder.DialogUi dialogUi) {
+    myOpenDocument = openDocument;
+    myReplaceDocument = replaceDocument;
     myDialogUi = dialogUi;
   }
 
@@ -45,28 +53,57 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     return null;
   }
 
+  static class BreadCrumbNode {
+    private String path;
+    private String label;
+    BreadCrumbNode(String path, String label) { this.path = path; this.label = label; }
+
+    @Override
+    public String toString() {
+      return this.label;
+    }
+  }
+
   @Override
   public Pane createUi() {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
-    class BreadCrumbNode {
-      private String path;
-      private String label;
-      BreadCrumbNode(String path, String label) { this.path = path; this.label = label; }
 
-      @Override
-      public String toString() {
-        return this.label;
+    VBox buttonPane = new VBox();
+
+    buttonPane.getStyleClass().add("webdav-button-pane");
+    ButtonBar buttonBar = new ButtonBar("L+");
+
+    Button btnOpen = new Button("Open");
+    ButtonBar.setButtonData(btnOpen, ButtonBar.ButtonData.LEFT);
+    btnOpen.addEventHandler(ActionEvent.ACTION, event -> openResource());
+
+    Button btnSave = new Button("Save");
+    ButtonBar.setButtonData(btnSave, ButtonBar.ButtonData.LEFT);
+    btnSave.addEventHandler(ActionEvent.ACTION, event -> {
+      try {
+        Document document = createDocument(myLoadService.createResource(myCurrentFolder, "Foo.gan"));
+        myReplaceDocument.accept(document);
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-    }
-    BreadCrumbBar<BreadCrumbNode> breadcrumbs = new BreadCrumbBar<>();
-    breadcrumbs.getStyleClass().add("breadcrumb");
+    });
 
-    rootPane.getChildren().add(breadcrumbs);
+    Button btnSaveAs = new Button("Save As");
+    ButtonBar.setButtonData(btnSaveAs, ButtonBar.ButtonData.LEFT);
 
-    ListView<WebDavResource> filesTable = new ListView<>();
-    filesTable.setCellFactory(param -> new ListCell<WebDavResource>() {
+    buttonBar.getButtons().addAll(btnOpen, btnSave, btnSaveAs);
+    buttonPane.getChildren().add(buttonBar);
+    rootPane.getChildren().add(buttonPane);
+
+    myBreadcrumbs = new BreadCrumbBar<>();
+    myBreadcrumbs.getStyleClass().add("breadcrumb");
+
+    rootPane.getChildren().add(myBreadcrumbs);
+
+    myFilesTable = new ListView<>();
+    myFilesTable.setCellFactory(param -> new ListCell<WebDavResource>() {
       @Override
       protected void updateItem(WebDavResource item, boolean empty) {
         if (item == null) {
@@ -81,43 +118,49 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
         }
       }
     });
-    rootPane.getChildren().add(filesTable);
+    rootPane.getChildren().add(myFilesTable);
     StackPane stackPane = new StackPane();
     MaskerPane maskerPane = new MaskerPane();
     stackPane.getChildren().addAll(rootPane, maskerPane);
 
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
-    Consumer<TreeItem<BreadCrumbNode>> handler = selectedCrumb -> {
+    myOnSelectCrumb = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, filesTable::setItems, myDialogUi);
+      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, myFilesTable::setItems, myDialogUi);
     };
-    breadcrumbs.setOnCrumbAction(value -> handler.accept(value.getSelectedCrumb()));
-    breadcrumbs.setSelectedCrumb(rootItem);
-    handler.accept(rootItem);
+    myBreadcrumbs.setOnCrumbAction(value -> myOnSelectCrumb.accept(value.getSelectedCrumb()));
+    myBreadcrumbs.setSelectedCrumb(rootItem);
+    myOnSelectCrumb.accept(rootItem);
 
-    filesTable.setOnMouseClicked(event -> {
+    myFilesTable.setOnMouseClicked(event -> {
       if (event.getClickCount() == 2) {
-        try {
-          WebDavResource selectedItem = filesTable.getSelectionModel().getSelectedItem();
-          if (selectedItem.isCollection()) {
-            BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
-            TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
-            breadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
-            breadcrumbs.setSelectedCrumb(treeItem);
-            handler.accept(treeItem);
-          } else {
-            myDocumentReceiver.setDocument(createDocument(selectedItem));
-          }
-        } catch (IOException | Document.DocumentException | WebDavResource.WebDavException e) {
-          myDialogUi.error(e);
-        }
+        openResource();
       }
     });
+
     return stackPane;
   }
 
+  private void openResource() {
+    try {
+      WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
+      if (selectedItem.isCollection()) {
+        BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
+        TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
+        myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
+        myBreadcrumbs.setSelectedCrumb(treeItem);
+        myOnSelectCrumb.accept(treeItem);
+      } else {
+        myOpenDocument.accept(createDocument(selectedItem));
+      }
+    } catch (IOException | WebDavResource.WebDavException e) {
+      myDialogUi.error(e);
+    }
+
+  }
   private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
     myLoadService.setPath(path);
+    myCurrentFolder = myLoadService.createRootResource();
     myLoadService.setOnSucceeded((event) -> {
       Worker<ObservableList<WebDavResource>> source = event.getSource();
       setResult.accept(source.getValue());

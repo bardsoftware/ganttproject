@@ -14,12 +14,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.controlsfx.control.HyperlinkLabel;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -33,11 +34,12 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   private final BorderPane myPane;
   private final HBox myButtonPane;
   private final Button myNextButton;
-  private DocumentStorageUi.DocumentReceiver myDocumentReceiver;
+  private final Consumer<Document> myOpenDocument;
+  private final Consumer<Document> myReplaceDocument;
   private StorageDialogBuilder.DialogUi myDialogUi;
   private EventHandler<ActionEvent> myNextEventHandler;
 
-  public GPCloudStorage(GPCloudStorageOptions options, DocumentStorageUi.DocumentReceiver documentReceiver, StorageDialogBuilder.DialogUi dialogUi) {
+  public GPCloudStorage(GPCloudStorageOptions options, Consumer<Document> openDocument, Consumer<Document> replaceDocument, StorageDialogBuilder.DialogUi dialogUi) {
     myOptions = options;
     myPane = new BorderPane();
     myButtonPane = new HBox();
@@ -47,7 +49,8 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     myButtonPane.getChildren().add(myNextButton);
     myNextButton.visibleProperty().setValue(false);
     myPane.setBottom(myButtonPane);
-    myDocumentReceiver = documentReceiver;
+    myOpenDocument = openDocument;
+    myReplaceDocument = replaceDocument;
     myDialogUi = dialogUi;
   }
 
@@ -85,7 +88,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   private Pane doCreateUi() {
-    WebdavStorage webdavStorage = new WebdavStorage(myDocumentReceiver, myDialogUi);
+    WebdavStorage webdavStorage = new WebdavStorage(myOpenDocument, myReplaceDocument, myDialogUi);
     GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
     //GPCloudStartPane startPane = new GPCloudStartPane(this::nextPage, this::setNextButton, loginPane, signupPane);

@@ -34,7 +34,12 @@ public class WebdavLoadService extends Service<ObservableList<WebDavResource>> {
     return new WebdavLoadTask(createRootResource());
   }
 
-  private WebDavResource createRootResource() {
+  public WebDavResource createResource(WebDavResource parent, String name) {
+    myResourceFactory.setCredentials(myServer.getUsername(), myServer.getPassword());
+    return myResourceFactory.createResource(parent.getWebDavUri().buildChild(name));
+  }
+
+  public WebDavResource createRootResource() {
     myResourceFactory.setCredentials(myServer.getUsername(), myServer.getPassword());
     return myResourceFactory.createResource(buildUrl());
   }

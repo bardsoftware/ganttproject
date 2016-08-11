@@ -18,17 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 /**
  * Document which proxies all read methods and forbids all write methods.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class ReadOnlyProxyDocument implements Document {
@@ -128,4 +128,8 @@ public class ReadOnlyProxyDocument implements Document {
     return myDelegate.isLocal();
   }
 
+  @Override
+  public void setMirror(Document mirrorDocument) {
+    throw new UnsupportedOperationException("Read only document doesn't support mirroring");
+  }
 }

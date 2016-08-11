@@ -21,24 +21,27 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.document.DocumentStorageUi;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 public class StorageDialogBuilder {
   private final GPCloudStorageOptions myCloudStorageOptions;
-  private final DocumentStorageUi.DocumentReceiver myDocumentReceiver;
+  private final Consumer<Document> myDocumentReceiver;
+  private final Consumer<Document> myDocumentUpdater;
   private Button myActiveBtn;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<Ui> myStorageUiList = Lists.newArrayList();
@@ -111,9 +114,23 @@ public class StorageDialogBuilder {
   public StorageDialogBuilder(@Nonnull IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, @Nonnull GPCloudStorageOptions cloudStorageOptions) {
     myCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions);
     myDocumentReceiver = document -> {
-      projectUi.openProject(documentManager.getProxyDocument(document), project);
+      try {
+        projectUi.openProject(documentManager.getProxyDocument(document), project);
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (Document.DocumentException e) {
+        e.printStackTrace();
+      }
       Objects.requireNonNull(myDialog, "Dialog is expected to be created by this moment").close();
     };
+    myDocumentUpdater = document -> {
+      if (project.getDocument() == null) {
+        project.setDocument(documentManager.getProxyDocument(document));
+      } else {
+        project.getDocument().setMirror(document);
+      }
+    };
+
   }
 
   private void onStorageChange(BorderPane borderPane, String storageId) {
@@ -135,7 +152,7 @@ public class StorageDialogBuilder {
     VBox servicesPane = new VBox();
     servicesPane.getStyleClass().add("pane-service-buttons");
 
-    myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions, myDocumentReceiver, myDialogUi));
+    myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions, myDocumentReceiver, myDocumentUpdater, myDialogUi));
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));

@@ -115,3 +115,7 @@
     -fx-padding: 10 0 3 0;
     -fx-font-weight: bold;
 }
+.webdav-button-pane {
+    -fx-padding: 0 0 20 0;
+    -fx-alignment: center-left;
+}
