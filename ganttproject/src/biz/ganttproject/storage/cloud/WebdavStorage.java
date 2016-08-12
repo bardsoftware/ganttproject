@@ -7,8 +7,6 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
@@ -37,10 +35,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
   private BreadCrumbBar<BreadCrumbNode> myBreadcrumbs;
-  private ListView<WebDavResource> myFilesTable;
   private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
+  private WebdavResourceListView myListView;
 
   public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
     myMode = mode;
@@ -116,23 +114,8 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
     rootPane.getChildren().add(myBreadcrumbs);
 
-    myFilesTable = new ListView<>();
-    myFilesTable.setCellFactory(param -> new ListCell<WebDavResource>() {
-      @Override
-      protected void updateItem(WebDavResource item, boolean empty) {
-        if (item == null) {
-          setText("");
-        } else {
-          super.updateItem(item, empty);
-          if (empty) {
-            setGraphic(null);
-          } else {
-            setText(item.getName());
-          }
-        }
-      }
-    });
-    rootPane.getChildren().add(myFilesTable);
+    myListView = new WebdavResourceListView();
+    rootPane.getChildren().add(myListView.getListView());
     rootPane.getChildren().add(buttonBar);
 
     StackPane stackPane = new StackPane();
@@ -142,41 +125,43 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     myOnSelectCrumb = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, myFilesTable::setItems, myDialogUi);
+      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, myListView::setResources, myDialogUi);
     };
     myBreadcrumbs.setOnCrumbAction(value -> myOnSelectCrumb.accept(value.getSelectedCrumb()));
     myBreadcrumbs.setSelectedCrumb(rootItem);
     myOnSelectCrumb.accept(rootItem);
 
-    myFilesTable.setOnMouseClicked(event -> {
-      WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
-      try {
-        if (!selectedItem.isCollection()) {
-          myFilename.setValue(selectedItem.getName());
+    myListView.getListView().setOnMouseClicked(event -> {
+      myListView.getSelectedResource().ifPresent(selectedItem -> {
+        try {
+          if (!selectedItem.isCollection()) {
+            myFilename.setValue(selectedItem.getName());
+          }
+          if (event.getClickCount() == 2) {
+            openResource();
+          }
+        } catch (IOException | WebDavResource.WebDavException e) {
+          myDialogUi.error(e);
         }
-        if (event.getClickCount() == 2) {
-          openResource();
-        }
-      } catch (IOException | WebDavResource.WebDavException e) {
-        myDialogUi.error(e);
-      }
+      });
     });
 
     return stackPane;
   }
 
   private void openResource() throws WebDavResource.WebDavException, IOException {
-    WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
-    if (selectedItem.isCollection()) {
-      BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
-      TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
-      myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
-      myBreadcrumbs.setSelectedCrumb(treeItem);
-      myOnSelectCrumb.accept(treeItem);
-    } else {
-      myOpenDocument.accept(createDocument(selectedItem));
+    if (myListView.getSelectedResource().isPresent()) {
+      WebDavResource selectedItem = myListView.getSelectedResource().get();
+      if (selectedItem.isCollection()) {
+        BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
+        TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
+        myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
+        myBreadcrumbs.setSelectedCrumb(treeItem);
+        myOnSelectCrumb.accept(treeItem);
+      } else {
+        myOpenDocument.accept(createDocument(selectedItem));
+      }
     }
-
   }
 
   private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
