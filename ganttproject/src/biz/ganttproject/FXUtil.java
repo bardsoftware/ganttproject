@@ -1,6 +1,7 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -10,9 +11,12 @@ import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import net.sourceforge.ganttproject.GPLogger;
 import netscape.javascript.JSException;
 import org.w3c.dom.Node;
@@ -176,6 +180,30 @@ public class FXUtil {
 
     public void setOnReady(Runnable onReady) {
       myOnReady = onReady;
+    }
+  }
+
+  public static void transitionCenterPane(BorderPane borderPane, Pane newCenter, Runnable resizer) {
+    Runnable replacePane = () -> {
+      borderPane.setCenter(newCenter);
+      resizer.run();
+    };
+    if (borderPane.getCenter() == null) {
+      replacePane.run();
+    } else {
+      FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), borderPane);
+      fadeIn.setFromValue(0.0);
+      fadeIn.setToValue(1.0);
+
+      FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), borderPane);
+      fadeOut.setFromValue(1.0);
+      fadeOut.setToValue(0.1);
+      fadeOut.play();
+      fadeOut.setOnFinished(e -> {
+        replacePane.run();
+        fadeIn.setOnFinished(e1 -> resizer.run());
+        fadeIn.play();
+      });
     }
   }
 }

@@ -1,8 +1,8 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.cloud;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.StorageDialogBuilder;
-import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -13,7 +13,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.controlsfx.control.HyperlinkLabel;
@@ -27,19 +26,22 @@ import java.util.function.Consumer;
  */
 public class GPCloudStorage implements StorageDialogBuilder.Ui {
 
+
   interface PageUi {
     CompletableFuture<Pane> createPane();
   }
+
+  private final StorageDialogBuilder.Mode myMode;
   private final GPCloudStorageOptions myOptions;
   private final BorderPane myPane;
   private final HBox myButtonPane;
   private final Button myNextButton;
   private final Consumer<Document> myOpenDocument;
-  private final Consumer<Document> myReplaceDocument;
   private StorageDialogBuilder.DialogUi myDialogUi;
   private EventHandler<ActionEvent> myNextEventHandler;
 
-  public GPCloudStorage(GPCloudStorageOptions options, Consumer<Document> openDocument, Consumer<Document> replaceDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  public GPCloudStorage(StorageDialogBuilder.Mode mode, GPCloudStorageOptions options, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
+    myMode = mode;
     myOptions = options;
     myPane = new BorderPane();
     myButtonPane = new HBox();
@@ -50,7 +52,6 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     myNextButton.visibleProperty().setValue(false);
     myPane.setBottom(myButtonPane);
     myOpenDocument = openDocument;
-    myReplaceDocument = replaceDocument;
     myDialogUi = dialogUi;
   }
 
@@ -88,7 +89,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   private Pane doCreateUi() {
-    WebdavStorage webdavStorage = new WebdavStorage(myOpenDocument, myReplaceDocument, myDialogUi);
+    WebdavStorage webdavStorage = new WebdavStorage(myMode, myOpenDocument, myDialogUi);
     GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
     //GPCloudStartPane startPane = new GPCloudStartPane(this::nextPage, this::setNextButton, loginPane, signupPane);
@@ -108,29 +109,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   private Pane nextPage(Pane newPage) {
-    Runnable replacePane = () -> {
-      myNextButton.setDisable(true);
-      myNextButton.setVisible(false);
-      myPane.setCenter(newPage);
-      myDialogUi.resize();
-    };
-    if (myPane.getCenter() == null) {
-      replacePane.run();
-    } else {
-      FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), myPane);
-      fadeIn.setFromValue(0.0);
-      fadeIn.setToValue(1.0);
-
-      FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), myPane);
-      fadeOut.setFromValue(1.0);
-      fadeOut.setToValue(0.1);
-      fadeOut.play();
-      fadeOut.setOnFinished(e -> {
-        replacePane.run();
-        fadeIn.setOnFinished(e1 -> myDialogUi.resize());
-        fadeIn.play();
-      });
-    }
+    FXUtil.transitionCenterPane(myPane, newPage, myDialogUi::resize);
     return newPage;
   }
 }

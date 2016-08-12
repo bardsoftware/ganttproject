@@ -2,14 +2,16 @@
 package biz.ganttproject.storage.cloud;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -28,8 +30,9 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
+
+  private final StorageDialogBuilder.Mode myMode;
   private final Consumer<Document> myOpenDocument;
-  private final Consumer<Document> myReplaceDocument;
   private final StorageDialogBuilder.DialogUi myDialogUi;
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
@@ -37,10 +40,11 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private ListView<WebDavResource> myFilesTable;
   private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
   private WebDavResource myCurrentFolder;
+  private StringProperty myFilename;
 
-  public WebdavStorage(Consumer<Document> openDocument, Consumer<Document> replaceDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
+    myMode = mode;
     myOpenDocument = openDocument;
-    myReplaceDocument = replaceDocument;
     myDialogUi = dialogUi;
   }
 
@@ -70,32 +74,37 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
 
-    VBox buttonPane = new VBox();
+    HBox buttonBar = new HBox();
+    buttonBar.getStyleClass().add("webdav-button-pane");
+    TextField filename = new TextField();
+    myFilename = filename.textProperty();
 
-    buttonPane.getStyleClass().add("webdav-button-pane");
-    ButtonBar buttonBar = new ButtonBar("L+");
-
-    Button btnOpen = new Button("Open");
-    ButtonBar.setButtonData(btnOpen, ButtonBar.ButtonData.LEFT);
-    btnOpen.addEventHandler(ActionEvent.ACTION, event -> openResource());
-
-    Button btnSave = new Button("Save");
-    ButtonBar.setButtonData(btnSave, ButtonBar.ButtonData.LEFT);
-    btnSave.addEventHandler(ActionEvent.ACTION, event -> {
-      try {
-        Document document = createDocument(myLoadService.createResource(myCurrentFolder, "Foo.gan"));
-        myReplaceDocument.accept(document);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    });
-
-    Button btnSaveAs = new Button("Save As");
-    ButtonBar.setButtonData(btnSaveAs, ButtonBar.ButtonData.LEFT);
-
-    buttonBar.getButtons().addAll(btnOpen, btnSave, btnSaveAs);
-    buttonPane.getChildren().add(buttonBar);
-    rootPane.getChildren().add(buttonPane);
+    switch (myMode) {
+      case OPEN:
+        filename.setDisable(true);
+        Button btnOpen = new Button("Open");
+        btnOpen.addEventHandler(ActionEvent.ACTION, event -> {
+          try {
+            openResource();
+          } catch (IOException | WebDavResource.WebDavException e) {
+            myDialogUi.error(e);
+          }
+        });
+        buttonBar.getChildren().add(btnOpen);
+        break;
+      case SAVE:
+        Button btnSave = new Button("Save");
+        btnSave.addEventHandler(ActionEvent.ACTION, event -> {
+          try {
+            Document document = createDocument(myLoadService.createResource(myCurrentFolder, myFilename.getValue()));
+            myOpenDocument.accept(document);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        });
+        buttonBar.getChildren().add(filename);
+        buttonBar.getChildren().add(btnSave);
+    }
 
     myBreadcrumbs = new BreadCrumbBar<>();
     myBreadcrumbs.getStyleClass().add("breadcrumb");
@@ -119,6 +128,8 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
       }
     });
     rootPane.getChildren().add(myFilesTable);
+    rootPane.getChildren().add(buttonBar);
+
     StackPane stackPane = new StackPane();
     MaskerPane maskerPane = new MaskerPane();
     stackPane.getChildren().addAll(rootPane, maskerPane);
@@ -133,16 +144,23 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myOnSelectCrumb.accept(rootItem);
 
     myFilesTable.setOnMouseClicked(event -> {
-      if (event.getClickCount() == 2) {
-        openResource();
+      WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
+      try {
+        if (!selectedItem.isCollection()) {
+          myFilename.setValue(selectedItem.getName());
+        }
+        if (event.getClickCount() == 2) {
+          openResource();
+        }
+      } catch (IOException | WebDavResource.WebDavException e) {
+        myDialogUi.error(e);
       }
     });
 
     return stackPane;
   }
 
-  private void openResource() {
-    try {
+  private void openResource() throws WebDavResource.WebDavException, IOException {
       WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
       if (selectedItem.isCollection()) {
         BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
@@ -153,9 +171,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
       } else {
         myOpenDocument.accept(createDocument(selectedItem));
       }
-    } catch (IOException | WebDavResource.WebDavException e) {
-      myDialogUi.error(e);
-    }
 
   }
   private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {

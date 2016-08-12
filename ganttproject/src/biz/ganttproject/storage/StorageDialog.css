@@ -107,6 +107,13 @@
     -fx-wrap-text: true;
     -fx-pref-width: 400px;
 }
+.pane-storage {
+    -fx-min-height: 400;
+    -fx-min-width: 400;
+}
+.pane-storage .title-box {
+    -fx-spacing: 5;
+}
 .space-section {
     -fx-padding: 10px 0 10px 0;
 }
@@ -116,6 +123,7 @@
     -fx-font-weight: bold;
 }
 .webdav-button-pane {
-    -fx-padding: 0 0 20 0;
-    -fx-alignment: center-left;
+    -fx-padding: 5 0 0 0;
+    -fx-alignment: center-right;
+    -fx-spacing: 5;
 }

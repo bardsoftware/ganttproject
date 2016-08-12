@@ -1,37 +1,31 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage;
 
-import biz.ganttproject.storage.cloud.GPCloudStorage;
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -39,15 +33,16 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class StorageDialogBuilder {
+  private final IGanttProject myProject;
   private final GPCloudStorageOptions myCloudStorageOptions;
   private final Consumer<Document> myDocumentReceiver;
   private final Consumer<Document> myDocumentUpdater;
-  private Button myActiveBtn;
-  private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
-  private List<Ui> myStorageUiList = Lists.newArrayList();
+  private StatusBar myNotificationPane;
   private @Nullable Dialog myDialog = null;
   private EventHandler<ActionEvent> myOnNextClick;
-  private StatusBar myNotificationPane;
+  private Pane myOpenStorage;
+  private Pane mySaveStorage;
+
   private DialogUi myDialogUi = new DialogUi() {
     @Override
     public void error(Throwable e) {
@@ -129,57 +124,48 @@ public class StorageDialogBuilder {
       } else {
         project.getDocument().setMirror(document);
       }
+      try {
+        project.getDocument().write();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     };
-
+    myProject = project;
   }
 
-  private void onStorageChange(BorderPane borderPane, String storageId) {
-    Pane ui = myStorageUiMap.get(storageId).get();
-    borderPane.setCenter(ui);
-  }
 
   Dialog build() {
-    //ButtonType btnClose = new ButtonType("Close", ButtonBar.ButtonData.FINISH);
     Dialog<Void> dialog = new Dialog<>();
     myDialog = dialog;
     Window window = dialog.getDialogPane().getScene().getWindow();
     window.setOnCloseRequest(event -> window.hide());
-    //dialog.getDialogPane().getButtonTypes().add(btnClose);
+
+    dialog.getDialogPane().getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
+    dialog.getDialogPane().getStyleClass().add("body");
 
     BorderPane borderPane = new BorderPane();
+    borderPane.getStyleClass().add("pane-storage");
+    borderPane.setCenter(new Pane());
 
+    HBox titleBox = new HBox();
+    titleBox.getStyleClass().add("title-box");
+    Label projectName = new Label(myProject.getProjectName());
 
-    VBox servicesPane = new VBox();
-    servicesPane.getStyleClass().add("pane-service-buttons");
+    SegmentedButton buttonBar = new SegmentedButton();
+    buttonBar.getStyleClass().add(SegmentedButton.STYLE_CLASS_DARK);
+    ToggleButton btnOpen = new ToggleButton("Open other project");
+    btnOpen.addEventHandler(ActionEvent.ACTION, e -> showOpenStorageUi(borderPane));
 
-    myStorageUiList.add(new GPCloudStorage(myCloudStorageOptions, myDocumentReceiver, myDocumentUpdater, myDialogUi));
-    myStorageUiList.forEach(storageUi -> {
-      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-      Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
-      servicesPane.getChildren().addAll(btn);
-    });
+    ToggleButton btnSave = new ToggleButton("Save project as");
+    btnSave.addEventHandler(ActionEvent.ACTION, e -> showSaveStorageUi(borderPane));
+    buttonBar.getButtons().addAll(btnSave, btnOpen);
+    titleBox.getChildren().addAll(projectName, buttonBar);
+    borderPane.setTop(titleBox);
 
-
-    if (myStorageUiList.size() > 1) {
-      borderPane.setLeft(servicesPane);
-      Pane emptyPane = new Pane();
-      emptyPane.setPrefSize(600, 600);
-      borderPane.setCenter(emptyPane);
-    } else {
-      borderPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
-    }
     myNotificationPane = new StatusBar();
     myNotificationPane.getStyleClass().add("notification");
     myNotificationPane.setText("");
-//    Platform.runLater(() -> {
-//      Pane title = (Pane) myNotificationPane.lookup(".title");
-//      if (title != null) {
-//        title.setVisible(false);
-//      }
-//    });
     borderPane.setBottom(myNotificationPane);
-    dialog.getDialogPane().getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
-    dialog.getDialogPane().getStyleClass().add("body");
 
     dialog.getDialogPane().setContent(borderPane);
     dialog.initModality(Modality.WINDOW_MODAL);
@@ -190,20 +176,27 @@ public class StorageDialogBuilder {
     return dialog;
   }
 
-  private Button createButton(String key, EventHandler<ActionEvent> onClick) {
-    String label = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.label", key));
-    Button btnService = new Button(label);
-    btnService.addEventHandler(ActionEvent.ACTION, event -> {
-      btnService.getStyleClass().add("active");
-      if (myActiveBtn != null) {
-        myActiveBtn.getStyleClass().remove("active");
-      }
-      myActiveBtn = btnService;
-    });
-    btnService.addEventHandler(ActionEvent.ACTION, onClick);
-    btnService.getStyleClass().add("btn-service");
-    btnService.setMaxWidth(Double.MAX_VALUE);
-    return btnService;
+  private void showOpenStorageUi(BorderPane container) {
+    if (myOpenStorage == null) {
+      myOpenStorage = buildStoragePane(Mode.OPEN);
+    }
+    FXUtil.transitionCenterPane(container, myOpenStorage, myDialogUi::resize);
+  }
+
+  private void showSaveStorageUi(BorderPane container) {
+    if (mySaveStorage == null) {
+      mySaveStorage = buildStoragePane(Mode.SAVE);
+    }
+    FXUtil.transitionCenterPane(container, mySaveStorage, myDialogUi::resize);
+  }
+
+  private Pane buildStoragePane(Mode mode) {
+    StoragePane storagePane = new StoragePane(myCloudStorageOptions, myDocumentReceiver, myDocumentUpdater, myDialogUi);
+    return storagePane.buildStoragePane(mode);
+  }
+
+  public enum Mode {
+    OPEN, SAVE
   }
 
   public interface DialogUi {
