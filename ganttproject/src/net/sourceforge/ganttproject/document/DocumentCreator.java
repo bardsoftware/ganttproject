@@ -49,8 +49,6 @@ import com.google.common.collect.Lists;
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class DocumentCreator implements DocumentManager {
-  private static final ExecutorService ourExecutor = Executors.newSingleThreadExecutor();
-
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
@@ -162,14 +160,14 @@ public class DocumentCreator implements DocumentManager {
     return getDocument(tempFile.getAbsolutePath());
   }
 
-  public static void startAutosaveCleanup() {
+  public static Runnable createAutosaveCleanup() {
     long now = CalendarFactory.newCalendar().getTimeInMillis();
     final File tempDir = getTempDir();
     final long cutoff;
     try {
       File optionsFile = GanttOptions.getOptionsFile();
       if (!optionsFile.exists()) {
-        return;
+        return null;
       }
       GPLogger.log("Options file:" + optionsFile.getAbsolutePath());
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
@@ -177,9 +175,9 @@ public class DocumentCreator implements DocumentManager {
       cutoff = Math.min(accessTime.toMillis(), now);
     } catch (IOException e) {
       GPLogger.log(e);
-      return;
+      return null;
     }
-    ourExecutor.submit(new Runnable() {
+    return new Runnable() {
       @Override
       public void run() {
         GPLogger.log("Deleting old auto-save files");
@@ -198,7 +196,7 @@ public class DocumentCreator implements DocumentManager {
           f.deleteOnExit();
         }
       }
-    });
+    };
   }
 
   private FileSystem getAutosaveZipFs() {
