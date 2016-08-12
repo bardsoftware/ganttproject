@@ -6,13 +6,11 @@ import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.controlsfx.control.HyperlinkLabel;
@@ -38,7 +36,6 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   private final Button myNextButton;
   private final Consumer<Document> myOpenDocument;
   private StorageDialogBuilder.DialogUi myDialogUi;
-  private EventHandler<ActionEvent> myNextEventHandler;
 
   public GPCloudStorage(StorageDialogBuilder.Mode mode, GPCloudStorageOptions options, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
     myMode = mode;
@@ -58,7 +55,6 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   static Label newLabel(String key, String... classes) {
     Label label = new Label(key);
     label.getStyleClass().addAll(classes);
-    //label.setPrefWidth(400);
     return label;
   }
 
@@ -68,15 +64,6 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     result.getStyleClass().addAll(classes);
     return result;
   }
-
-  static Pane centered(Node... nodes) {
-    VBox centered = new VBox();
-    centered.setMaxWidth(Double.MAX_VALUE);
-    centered.getStyleClass().add("center");
-    centered.getChildren().addAll(nodes);
-    return centered;
-  }
-
 
   @Override
   public String getId() {
@@ -92,7 +79,6 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
     WebdavStorage webdavStorage = new WebdavStorage(myMode, myOpenDocument, myDialogUi);
     GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
-    //GPCloudStartPane startPane = new GPCloudStartPane(this::nextPage, this::setNextButton, loginPane, signupPane);
     Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();
     if (cloudServer.isPresent()) {
       WebDavServerDescriptor wevdavServer = cloudServer.get();

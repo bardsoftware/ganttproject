@@ -16,7 +16,7 @@ public class GPCloudStorageOptions {
   private static final Set<String> GANTTPROJECT_CLOUD_SERVERS = ImmutableSet.of(
       CANONICAL_GANTTPROJECT_CLOUD_URL, "https://webdav.ganttproject.biz", "https://webdav.ganttproject.cloud", "http://ganttproject-cloud.appspot.com/webdav"
   );
-//  private static final Set<String> GANTTPROJECT_CLOUD_SERVERS = ImmutableSet.of(
+  //  private static final Set<String> GANTTPROJECT_CLOUD_SERVERS = ImmutableSet.of(
 //    "https://webdav.yandex.ru"
 //  );
   private final ListOption<WebDavServerDescriptor> myWebdavServerListOption;

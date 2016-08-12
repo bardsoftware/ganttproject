@@ -18,6 +18,7 @@ public class WebdavLoadWorker {
   public WebdavLoadWorker(WebDavResource root) {
     myRoot = Preconditions.checkNotNull(root);
   }
+
   public Pair<WebDavResource, List<WebDavResource>> load() throws Exception {
     WebDavResource resource = myRoot;
     if (resource.exists() && resource.isCollection()) {
@@ -37,8 +38,7 @@ public class WebdavLoadWorker {
         if (child.exists()) {
           children.add(child);
         }
-      }
-      catch (WebDavResource.WebDavException e) {
+      } catch (WebDavResource.WebDavException e) {
         GPLogger.logToLogger(e);
       }
     }

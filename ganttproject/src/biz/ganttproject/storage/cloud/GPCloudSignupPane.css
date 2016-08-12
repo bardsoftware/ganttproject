@@ -1,15 +1,18 @@
 a {
     text-decoration: none;
 }
+
 body {
     min-width: 380px;
 }
+
 #body {
     font-family: Arial, Ubuntu, sans;
     font-size: medium;
     padding: 0;
     margin: 0;
 }
+
 .btn-action {
     background: #ffaf1a;
     border: solid #e69500 1px;
@@ -21,6 +24,7 @@ body {
     display: inline-block;
     margin: 20px 0 5px 0;
 }
+
 .btn-link {
     display: inline-block;
 }
@@ -34,30 +38,37 @@ h2 {
     padding: 10px 0px 0px;
     margin: 0;
 }
+
 .help {
     font-size: 80%;
     color: dimgray;
 }
+
 li:before {
     content: '✔';
     margin-left: -1em;
     margin-right: .5em;
 }
+
 p {
     color: dimgray;
     font-size: 90%;
 }
+
 table {
     font-size: 90%;
     margin-left: 10px;
     margin-top: 10px;
 }
+
 .text-center {
     text-align: center;
 }
+
 th {
     border-bottom: solid gray 1px;
 }
+
 ul {
     color: dimgray;
     font-size: 90%;

@@ -182,6 +182,7 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
     });
 
   }
+
   private OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> getCloudSettings(String pin) {
     HttpClient httpClient = new DefaultHttpClient();
     HttpPost pinApply = new HttpPost(PIN_APPLY_URL);

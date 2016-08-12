@@ -29,6 +29,7 @@ public class StorageDialogAction extends GPAction {
     myProjectUiFacade = projectUIFacade;
     myDocumentManager = documentManager;
   }
+
   @Override
   public void actionPerformed(ActionEvent actionEvent) {
     UIUtil.initJavaFx(() -> Platform.runLater(() -> {

@@ -27,6 +27,7 @@ public class GPCloudSignupPane implements GPCloudStorage.PageUi {
     myUpdateUi = updateUi;
     myLoginPane = loginPane;
   }
+
   public CompletableFuture<Pane> createPane() {
     CompletableFuture<Pane> result = new CompletableFuture<>();
     String msg = null;

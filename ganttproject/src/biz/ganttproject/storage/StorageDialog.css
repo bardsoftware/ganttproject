@@ -10,14 +10,17 @@
 .body {
     -fx-background-color: white;
 }
+
 .bordered {
     -fx-border-width: 1;
     -fx-border-style: dotted;
     -fx-border-color: red;
 }
+
 .btn-radio {
     -fx-padding: 3px 0 3px 0;
 }
+
 .btn-service {
     -fx-background-color: white;
     -fx-border-width: 0;
@@ -25,12 +28,15 @@
     -fx-border-radius: 0;
     -fx-cursor: hand;
 }
+
 .btn-service:hover {
     -fx-background-color: derive(white, -10%);
 }
+
 .btn-service.active {
     -fx-background-color: derive(orange, 20%);
 }
+
 .btn-signup {
     -fx-background-color: orangered;
     -fx-border-width: 1;
@@ -38,19 +44,24 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
+
 .button-pane {
     -fx-padding: 5px 0px 0px 0px;
 }
+
 .center {
     -fx-alignment: center;
     -fx-max-width: Infinity;
 }
+
 .control-label {
     -fx-padding: 10 0;
 }
+
 .control-row {
     -fx-padding: 5 0;
 }
+
 .help {
     -fx-font-size: 80%;
     -fx-padding: 0 0 0 0;
@@ -58,6 +69,7 @@
     -fx-max-width: 400px;
     -fx-wrap-text: true;
 }
+
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
@@ -68,6 +80,7 @@
     -fx-padding: 3px;
     -fx-text-fill: maroon;
 }
+
 .notification.alert-info {
     -fx-padding: 3px;
     -fx-text-fill: black;
@@ -79,27 +92,34 @@
     -fx-padding: 10;
     -fx-spacing: 8;
 }
+
 .pane-service-contents {
     -fx-padding: 10 10 0 10;
     -fx-font-family: Arial;
 }
+
 .pane-service-contents > * {
     -fx-font-family: Arial;
 }
+
 .pane-service-contents > TextField {
     -fx-padding: 5 0 5 0;
 }
+
 .pane-service-contents > RadioButton {
     -fx-padding: 5 0 5 0;
 }
+
 .pane-service-contents > .breadcrumb {
     -fx-padding: 0 0 5 0;
 }
+
 .pane-service-contents > .title {
     -fx-padding: 0 0 5 0;
     -fx-font-size: 130%;
     -fx-border-width: 0 0 1px 0;
 }
+
 .pane-service-contents > .title-help {
     -fx-padding: 0 5 10 5;
     -fx-font-size: 80%;
@@ -107,21 +127,26 @@
     -fx-wrap-text: true;
     -fx-pref-width: 400px;
 }
+
 .pane-storage {
     -fx-min-height: 400;
     -fx-min-width: 400;
 }
+
 .pane-storage .title-box {
     -fx-spacing: 5;
 }
+
 .space-section {
     -fx-padding: 10px 0 10px 0;
 }
+
 .subtitle {
     -fx-font-size: 110%;
     -fx-padding: 10 0 3 0;
     -fx-font-weight: bold;
 }
+
 .webdav-button-pane {
     -fx-padding: 5 0 0 0;
     -fx-alignment: center-right;

@@ -20,14 +20,14 @@ public class WebdavLoadTask extends Task<ObservableList<WebDavResource>> {
 
   @Override
   protected ObservableList<WebDavResource> call() throws Exception {
-      ObservableList<WebDavResource> result = FXCollections.observableArrayList();
-      updateMessage("Connecting to the server");
-      List<WebDavResource> resources = myWorker.load().second();
-      if (isCancelled()) {
-        updateMessage("Cancelled");
-        return null;
-      }
-      result.setAll(resources);
-      return result;
+    ObservableList<WebDavResource> result = FXCollections.observableArrayList();
+    updateMessage("Connecting to the server");
+    List<WebDavResource> resources = myWorker.load().second();
+    if (isCancelled()) {
+      updateMessage("Cancelled");
+      return null;
+    }
+    result.setAll(resources);
+    return result;
   }
 }

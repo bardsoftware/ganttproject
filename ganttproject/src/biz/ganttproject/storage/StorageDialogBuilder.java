@@ -6,8 +6,6 @@ import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Preconditions;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
@@ -38,7 +36,9 @@ public class StorageDialogBuilder {
   private final Consumer<Document> myDocumentReceiver;
   private final Consumer<Document> myDocumentUpdater;
   private StatusBar myNotificationPane;
-  private @Nullable Dialog myDialog = null;
+  private
+  @Nullable
+  Dialog myDialog = null;
   private EventHandler<ActionEvent> myOnNextClick;
   private Pane myOpenStorage;
   private Pane mySaveStorage;
@@ -82,23 +82,6 @@ public class StorageDialogBuilder {
       myDialog.getDialogPane().getScene().getWindow().sizeToScene();
     }
 
-    @Override
-    public void showNextButton(Runnable onClick) {
-      myDialog.getDialogPane().getButtonTypes().add(ButtonType.NEXT);
-      Node btn = myDialog.getDialogPane().lookupButton(ButtonType.NEXT);
-      if (myOnNextClick != null) {
-        btn.removeEventHandler(ActionEvent.ACTION, myOnNextClick);
-      }
-      myOnNextClick = (e) -> onClick.run();
-      btn.addEventHandler(ActionEvent.ACTION, myOnNextClick);
-    }
-
-    private Node createErrorPane(String message) {
-      Label result = new Label(message);
-      result.getStyleClass().add("label");
-      return result;
-    }
-
     private void setClass(String className) {
       myNotificationPane.getStyleClass().clear();
       myNotificationPane.getStyleClass().add(className);
@@ -132,7 +115,6 @@ public class StorageDialogBuilder {
     };
     myProject = project;
   }
-
 
   Dialog build() {
     Dialog<Void> dialog = new Dialog<>();
@@ -201,14 +183,19 @@ public class StorageDialogBuilder {
 
   public interface DialogUi {
     void resize();
-    void showNextButton(Runnable onClick);
+
     void error(Throwable e);
+
     void error(String s);
+
     void message(String message);
+
     void showBusyIndicator(boolean shown);
   }
+
   public interface Ui {
     String getId();
+
     Pane createUi();
   }
 }

@@ -38,32 +38,34 @@ public class StoragePane {
     myDocumentUpdater = updateDocument;
     myDialogUi = dialogUi;
   }
+
   BorderPane buildStoragePane(StorageDialogBuilder.Mode mode) {
-  BorderPane borderPane = new BorderPane();
+    BorderPane borderPane = new BorderPane();
 
 
-  VBox servicesPane = new VBox();
-  servicesPane.getStyleClass().add("pane-service-buttons");
+    VBox servicesPane = new VBox();
+    servicesPane.getStyleClass().add("pane-service-buttons");
 
-  Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
-  myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
-  myStorageUiList.forEach(storageUi -> {
-    myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-    Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
-    servicesPane.getChildren().addAll(btn);
-  });
+    Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
+    myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
+    myStorageUiList.forEach(storageUi -> {
+      myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
+      Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
+      servicesPane.getChildren().addAll(btn);
+    });
 
 
-  if (myStorageUiList.size() > 1) {
-    borderPane.setLeft(servicesPane);
-    Pane emptyPane = new Pane();
-    emptyPane.setPrefSize(600, 600);
-    borderPane.setCenter(emptyPane);
-  } else {
-    borderPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
+    if (myStorageUiList.size() > 1) {
+      borderPane.setLeft(servicesPane);
+      Pane emptyPane = new Pane();
+      emptyPane.setPrefSize(600, 600);
+      borderPane.setCenter(emptyPane);
+    } else {
+      borderPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
+    }
+    return borderPane;
   }
-  return borderPane;
-}
+
   private Button createButton(String key, EventHandler<ActionEvent> onClick) {
     String label = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.label", key));
     Button btnService = new Button(label);

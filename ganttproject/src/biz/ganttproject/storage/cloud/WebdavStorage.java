@@ -52,6 +52,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myLoadService = new WebdavLoadService(webdavServer);
     myServer = webdavServer;
   }
+
   @Override
   public String getId() {
     return null;
@@ -60,7 +61,11 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   static class BreadCrumbNode {
     private String path;
     private String label;
-    BreadCrumbNode(String path, String label) { this.path = path; this.label = label; }
+
+    BreadCrumbNode(String path, String label) {
+      this.path = path;
+      this.label = label;
+    }
 
     @Override
     public String toString() {
@@ -161,18 +166,19 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   private void openResource() throws WebDavResource.WebDavException, IOException {
-      WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
-      if (selectedItem.isCollection()) {
-        BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
-        TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
-        myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
-        myBreadcrumbs.setSelectedCrumb(treeItem);
-        myOnSelectCrumb.accept(treeItem);
-      } else {
-        myOpenDocument.accept(createDocument(selectedItem));
-      }
+    WebDavResource selectedItem = myFilesTable.getSelectionModel().getSelectedItem();
+    if (selectedItem.isCollection()) {
+      BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
+      TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
+      myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
+      myBreadcrumbs.setSelectedCrumb(treeItem);
+      myOnSelectCrumb.accept(treeItem);
+    } else {
+      myOpenDocument.accept(createDocument(selectedItem));
+    }
 
   }
+
   private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
     myLoadService.setPath(path);
     myCurrentFolder = myLoadService.createRootResource();
