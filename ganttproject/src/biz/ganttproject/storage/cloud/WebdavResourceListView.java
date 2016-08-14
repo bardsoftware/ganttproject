@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -43,7 +44,7 @@ public class WebdavResourceListView {
 
   private final ListView<ListViewItem> myListView;
 
-  WebdavResourceListView(StorageDialogBuilder.DialogUi dialogUi) {
+  WebdavResourceListView(StorageDialogBuilder.DialogUi dialogUi, Runnable onDeleteResource, Runnable onToggleLockResource) {
     myDialogUi = dialogUi;
     myListView = new ListView<>();
     myListView.setCellFactory(param -> new ListCell<ListViewItem>() {
@@ -84,12 +85,16 @@ public class WebdavResourceListView {
           HBox btnBox = new HBox();
           btnBox.getStyleClass().add("webdav-list-cell-button-pane");
           Button btnDelete = new Button("", new FontAwesomeIconView(FontAwesomeIcon.TRASH));
+          btnDelete.addEventHandler(ActionEvent.ACTION, event -> onDeleteResource.run());
+
           Button btnLock;
           if (isLocked) {
-            btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.LOCK));
-          } else {
             btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.UNLOCK));
+          } else {
+            btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.LOCK));
           }
+          btnLock.addEventHandler(ActionEvent.ACTION, event -> onToggleLockResource.run());
+
           btnBox.getChildren().addAll(btnLock, btnDelete);
           HBox.setHgrow(btnBox, Priority.ALWAYS);
           hbox.getChildren().add(btnBox);

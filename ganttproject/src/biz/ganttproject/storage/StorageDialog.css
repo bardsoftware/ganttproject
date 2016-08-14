@@ -98,17 +98,18 @@
 .pane-service-contents {
     -fx-padding: 10 10 0 10;
     -fx-font-family: Arial;
+    -fx-fill-width: true;
 }
 
 .pane-service-contents > * {
     -fx-font-family: Arial;
 }
 
-.pane-service-contents > TextField {
+.pane-service-contents > RadioButton {
     -fx-padding: 5 0 5 0;
 }
 
-.pane-service-contents > RadioButton {
+.pane-service-contents > TextField {
     -fx-padding: 5 0 5 0;
 }
 
@@ -134,11 +135,11 @@
     -fx-min-height: 400;
     -fx-min-width: 400;
 }
-
 .pane-storage .title-box {
     -fx-pref-width: 100%;
     -fx-fill-width: true;
     -fx-spacing: 5;
+    -fx-padding: 0 0 15 0;
 }
 
 .pane-storage .title-box Label {

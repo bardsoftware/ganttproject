@@ -113,7 +113,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
     rootPane.getChildren().add(myBreadcrumbs);
 
-    myListView = new WebdavResourceListView(myDialogUi);
+    myListView = new WebdavResourceListView(myDialogUi, this::deleteResource, this::toggleLockResource);
     rootPane.getChildren().add(myListView.getListView());
     rootPane.getChildren().add(buttonBar);
 
@@ -162,6 +162,29 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     }
   }
 
+  void deleteResource() {
+    myListView.getSelectedResource().ifPresent(resource -> {
+      try {
+        resource.delete();
+      } catch (WebDavResource.WebDavException e) {
+        myDialogUi.error(e);
+      }
+    });
+  }
+
+  void toggleLockResource() {
+    myListView.getSelectedResource().ifPresent(resource -> {
+      try {
+        if (resource.isLocked()) {
+          resource.unlock();
+        } else {
+          resource.lock(-1);
+        }
+      } catch (WebDavResource.WebDavException e) {
+        myDialogUi.error(e);
+      }
+    });
+  }
   private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
     myLoadService.setPath(path);
     myCurrentFolder = myLoadService.createRootResource();
