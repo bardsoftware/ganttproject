@@ -19,7 +19,6 @@ import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.controlsfx.control.BreadCrumbBar;
-import org.controlsfx.control.MaskerPane;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -114,18 +113,17 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
     rootPane.getChildren().add(myBreadcrumbs);
 
-    myListView = new WebdavResourceListView();
+    myListView = new WebdavResourceListView(myDialogUi);
     rootPane.getChildren().add(myListView.getListView());
     rootPane.getChildren().add(buttonBar);
 
     StackPane stackPane = new StackPane();
-    MaskerPane maskerPane = new MaskerPane();
-    stackPane.getChildren().addAll(rootPane, maskerPane);
+    stackPane.getChildren().addAll(rootPane);
 
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     myOnSelectCrumb = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, maskerPane::setVisible, myListView::setResources, myDialogUi);
+      loadFolder(selectedCrumb.getValue().path, myDialogUi::showBusyIndicator, myListView::setResources, myDialogUi);
     };
     myBreadcrumbs.setOnCrumbAction(value -> myOnSelectCrumb.accept(value.getSelectedCrumb()));
     myBreadcrumbs.setSelectedCrumb(rootItem);

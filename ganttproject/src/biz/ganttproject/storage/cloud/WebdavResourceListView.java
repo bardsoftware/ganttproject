@@ -1,6 +1,9 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.cloud;
 
+import biz.ganttproject.storage.StorageDialogBuilder;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -13,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 
@@ -22,6 +26,8 @@ import java.util.Optional;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavResourceListView {
+  private final StorageDialogBuilder.DialogUi myDialogUi;
+
   static class ListViewItem {
     final BooleanProperty isSelected = new SimpleBooleanProperty();
     final ObjectProperty<WebDavResource> resource;
@@ -37,26 +43,60 @@ public class WebdavResourceListView {
 
   private final ListView<ListViewItem> myListView;
 
-  WebdavResourceListView() {
+  WebdavResourceListView(StorageDialogBuilder.DialogUi dialogUi) {
+    myDialogUi = dialogUi;
     myListView = new ListView<>();
     myListView.setCellFactory(param -> new ListCell<ListViewItem>() {
       @Override
       protected void updateItem(ListViewItem item, boolean empty) {
+        try {
+          doUpdateItem(item, empty);
+        } catch (WebDavResource.WebDavException e) {
+          myDialogUi.error(e);
+        }
+      }
+      private void doUpdateItem(ListViewItem item, boolean empty) throws WebDavResource.WebDavException {
         if (item == null) {
           setText("");
+          setGraphic(null);
           return;
         }
         super.updateItem(item, empty);
         if (empty) {
+          setText("");
           setGraphic(null);
           return;
         }
         HBox hbox = new HBox();
-        Label label = new Label(item.resource.getValue().getName());
+        hbox.getStyleClass().add("webdav-list-cell");
+        boolean isLocked = item.resource.getValue().isLocked();
+        FontAwesomeIconView icon = isLocked
+            ?  new FontAwesomeIconView(FontAwesomeIcon.LOCK)
+            :  new FontAwesomeIconView(FontAwesomeIcon.FOLDER);
+        if (!item.resource.getValue().isCollection()) {
+          icon.getStyleClass().add("hide");
+        } else {
+          icon.getStyleClass().add("icon");
+        }
+        Label label = new Label(item.resource.getValue().getName(), icon);
         hbox.getChildren().add(label);
-        if (item.isSelected.getValue()) {
-          Button btn = new Button("Delete");
-          hbox.getChildren().addAll(btn);
+        if (item.isSelected.getValue() && !item.resource.getValue().isCollection()) {
+          HBox btnBox = new HBox();
+          btnBox.getStyleClass().add("webdav-list-cell-button-pane");
+          Button btnDelete = new Button("", new FontAwesomeIconView(FontAwesomeIcon.TRASH));
+          Button btnLock;
+          if (isLocked) {
+            btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.LOCK));
+          } else {
+            btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.UNLOCK));
+          }
+          btnBox.getChildren().addAll(btnLock, btnDelete);
+          HBox.setHgrow(btnBox, Priority.ALWAYS);
+          hbox.getChildren().add(btnBox);
+        } else {
+          Button placeholder = new Button("");
+          placeholder.getStyleClass().add("hide");
+          hbox.getChildren().add(placeholder);
         }
         setGraphic(hbox);
       }
@@ -75,14 +115,14 @@ public class WebdavResourceListView {
     return myListView;
   }
 
-  public void setResources(ObservableList<WebDavResource> webDavResources) {
+   void setResources(ObservableList<WebDavResource> webDavResources) {
     ObservableList<ListViewItem> items = FXCollections.observableArrayList(ListViewItem.asObservables());
     myListView.setItems(items);
     webDavResources.stream().map(ListViewItem::new).forEach(items::add);
   }
 
 
-  public Optional<WebDavResource> getSelectedResource() {
+  Optional<WebDavResource> getSelectedResource() {
     ListViewItem selectedItem = myListView.getSelectionModel().getSelectedItem();
     return selectedItem == null ? Optional.empty() : Optional.ofNullable(selectedItem.resource.getValue());
   }

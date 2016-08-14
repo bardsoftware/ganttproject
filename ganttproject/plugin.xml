@@ -46,7 +46,9 @@
       <library name="lib/core/ganttproject-jxbusycomponent-1.2.2.jar">
          <export name="*"/>
       </library>
-
+      <library name="lib/core/fontawesomefx-8.9.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/httpclient-4.2.1.jar">
          <export name="*"/>
       </library>

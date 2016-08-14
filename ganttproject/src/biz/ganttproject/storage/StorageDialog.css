@@ -69,7 +69,9 @@
     -fx-max-width: 400px;
     -fx-wrap-text: true;
 }
-
+.hide {
+    visibility: hidden;
+}
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
@@ -134,7 +136,19 @@
 }
 
 .pane-storage .title-box {
+    -fx-pref-width: 100%;
+    -fx-fill-width: true;
     -fx-spacing: 5;
+}
+
+.pane-storage .title-box Label {
+    -fx-font-weight: bold;
+    -fx-font-size: 130%;
+    -fx-padding: 0;
+}
+.pane-storage .title-box .open-save-buttons {
+    -fx-alignment: baseline-center;
+    -fx-font-size: 90%;
 }
 
 .space-section {
@@ -151,4 +165,13 @@
     -fx-padding: 5 0 0 0;
     -fx-alignment: center-right;
     -fx-spacing: 5;
+}
+.webdav-list-cell {
+    -fx-alignment: center-left;
+}
+.webdav-list-cell .icon {
+    -fx-text-fill: dimgrey;
+}
+.webdav-list-cell-button-pane {
+    -fx-alignment: center-right;
 }

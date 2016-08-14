@@ -12,6 +12,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -129,21 +130,26 @@ public class StorageDialogBuilder {
     borderPane.getStyleClass().add("pane-storage");
     borderPane.setCenter(new Pane());
 
-    HBox titleBox = new HBox();
-    titleBox.getStyleClass().add("title-box");
-    Label projectName = new Label(myProject.getProjectName());
+    {
+      VBox titleBox = new VBox();
+      titleBox.getStyleClass().add("title-box");
+      Label projectName = new Label(myProject.getProjectName());
 
-    SegmentedButton buttonBar = new SegmentedButton();
-    buttonBar.getStyleClass().add(SegmentedButton.STYLE_CLASS_DARK);
-    ToggleButton btnOpen = new ToggleButton("Open other project");
-    btnOpen.addEventHandler(ActionEvent.ACTION, e -> showOpenStorageUi(borderPane));
+      SegmentedButton buttonBar = new SegmentedButton();
+      buttonBar.getStyleClass().add(SegmentedButton.STYLE_CLASS_DARK);
+      ToggleButton btnOpen = new ToggleButton("Open other project");
+      btnOpen.addEventHandler(ActionEvent.ACTION, e -> showOpenStorageUi(borderPane));
+//
+      ToggleButton btnSave = new ToggleButton("Save project as");
+      btnSave.addEventHandler(ActionEvent.ACTION, e -> showSaveStorageUi(borderPane));
+      buttonBar.getButtons().addAll(btnSave, btnOpen);
+      HBox buttonWrapper = new HBox();
+      buttonWrapper.getStyleClass().addAll("open-save-buttons");
+      buttonWrapper.getChildren().add(buttonBar);
 
-    ToggleButton btnSave = new ToggleButton("Save project as");
-    btnSave.addEventHandler(ActionEvent.ACTION, e -> showSaveStorageUi(borderPane));
-    buttonBar.getButtons().addAll(btnSave, btnOpen);
-    titleBox.getChildren().addAll(projectName, buttonBar);
-    borderPane.setTop(titleBox);
-
+      titleBox.getChildren().addAll(projectName, buttonWrapper);
+      borderPane.setTop(titleBox);
+    }
     myNotificationPane = new StatusBar();
     myNotificationPane.getStyleClass().add("notification");
     myNotificationPane.setText("");
