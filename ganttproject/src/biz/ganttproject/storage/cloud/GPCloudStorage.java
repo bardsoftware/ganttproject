@@ -3,6 +3,7 @@ package biz.ganttproject.storage.cloud;
 
 import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.StorageDialogBuilder;
+import biz.ganttproject.storage.webdav.WebdavStorage;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;

@@ -3,6 +3,7 @@ package biz.ganttproject.storage.cloud;
 
 import biz.ganttproject.core.OperationStatus;
 import biz.ganttproject.storage.StorageDialogBuilder;
+import biz.ganttproject.storage.webdav.WebdavStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;

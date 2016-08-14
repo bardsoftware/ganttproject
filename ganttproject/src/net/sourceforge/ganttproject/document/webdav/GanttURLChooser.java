@@ -27,7 +27,7 @@ import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.storage.cloud.WebdavLoadWorker;
+import biz.ganttproject.storage.webdav.WebdavLoadWorker;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;

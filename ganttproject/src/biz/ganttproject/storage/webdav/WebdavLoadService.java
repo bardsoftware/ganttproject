@@ -1,5 +1,5 @@
 // Copyright (C) 2016 BarD Software
-package biz.ganttproject.storage.cloud;
+package biz.ganttproject.storage.webdav;
 
 import com.google.common.base.Preconditions;
 import javafx.collections.ObservableList;

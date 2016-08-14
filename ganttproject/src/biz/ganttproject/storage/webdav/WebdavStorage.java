@@ -1,5 +1,5 @@
 // Copyright (C) 2016 BarD Software
-package biz.ganttproject.storage.cloud;
+package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.beans.property.StringProperty;
@@ -45,7 +45,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myDialogUi = dialogUi;
   }
 
-  void setServer(WebDavServerDescriptor webdavServer) {
+  public void setServer(WebDavServerDescriptor webdavServer) {
     myLoadService = new WebdavLoadService(webdavServer);
     myServer = webdavServer;
   }
