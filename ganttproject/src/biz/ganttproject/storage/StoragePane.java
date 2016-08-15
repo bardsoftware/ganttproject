@@ -7,9 +7,12 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -48,6 +51,18 @@ public class StoragePane {
 
     Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
+    myStorageUiList.add(new StorageDialogBuilder.Ui() {
+
+      @Override
+      public String getId() {
+        return "desktop";
+      }
+
+      @Override
+      public Pane createUi() {
+        return new Pane();
+      }
+    });
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
@@ -68,7 +83,9 @@ public class StoragePane {
 
   private Button createButton(String key, EventHandler<ActionEvent> onClick) {
     String label = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.label", key));
-    Button btnService = new Button(label);
+    String iconName = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.icon", key));
+    Button btnService = FontAwesomeIconFactory.get().createIconButton(
+        FontAwesomeIcon.valueOf(iconName.toUpperCase()), "", "2em", "1em", ContentDisplay.TOP);
     btnService.addEventHandler(ActionEvent.ACTION, event -> {
       btnService.getStyleClass().add("active");
       if (myActiveBtn != null) {

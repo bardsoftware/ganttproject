@@ -29,6 +29,13 @@
     -fx-cursor: hand;
 }
 
+.btn-service {
+    -fx-font-size: 200%;
+}
+
+.btn-service > * {
+    -fx-font-size: 200%;
+}
 .btn-service:hover {
     -fx-background-color: derive(white, -10%);
 }
@@ -119,7 +126,7 @@
 
 .pane-service-contents > .title {
     -fx-padding: 0 0 5 0;
-    -fx-font-size: 130%;
+    -fx-font-size: 120%;
     -fx-border-width: 0 0 1px 0;
 }
 

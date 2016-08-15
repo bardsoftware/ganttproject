@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
@@ -18,6 +19,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.BreadCrumbBar;
 
 import java.io.IOException;
@@ -27,7 +29,7 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
-
+  private final GanttLanguage i18n = GanttLanguage.getInstance();
   private final StorageDialogBuilder.Mode myMode;
   private final Consumer<Document> myOpenDocument;
   private final StorageDialogBuilder.DialogUi myDialogUi;
@@ -75,6 +77,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
+
+    Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
+    title.getStyleClass().add("title");
+    rootPane.getChildren().add(title);
 
     HBox buttonBar = new HBox();
     buttonBar.getStyleClass().add("webdav-button-pane");
