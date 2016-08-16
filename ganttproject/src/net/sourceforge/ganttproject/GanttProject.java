@@ -84,6 +84,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -95,13 +96,16 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
  * Main frame of the project
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
+  private static final ExecutorService ourExecutor = Executors.newSingleThreadExecutor();
 
   /** The JTree part. */
   private GanttTree2 tree;
@@ -357,11 +361,17 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // twice)
     language.addListener(this);
 
-    System.err.println("7. changing look'n'feel ...");
-    getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
-    if (options.isLoaded()) {
-      setBounds(options.getX(), options.getY(), options.getWidth(), options.getHeight());
-    }
+    System.err.println("7. first attempt to restore bounds");
+    restoreBounds();
+    addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowOpened(WindowEvent e) {
+        System.err.println("Resizing window...");
+        GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
+        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
+        restoreBounds();
+      }
+    });
 
     System.err.println("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
@@ -377,6 +387,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
   }
 
+  private void restoreBounds() {
+    if (options.isLoaded()) {
+      Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
+      GPLogger.log(String.format("Setting bounds from options: %s", bounds));
+      setBounds(bounds);
+    }
+  }
   @Override
   public TaskContainmentHierarchyFacade getTaskContainment() {
     if (myFacadeInvalidator == null) {
@@ -842,12 +859,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return false;
     }
 
-    DocumentCreator.startAutosaveCleanup();
-    final GanttSplash splash = new GanttSplash();
+    Runnable autosaveCleanup = DocumentCreator.createAutosaveCleanup();
+
+    final AtomicReference<GanttSplash> splash = new AtomicReference<>(null);
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
-        splash.setVisible(true);
+        splash.set(new GanttSplash());
+        splash.get().setVisible(true);
       }
     });
     try {
@@ -867,7 +886,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             ganttFrame.openStartupDocument(mainArgs.file.get(0));
           }
           ganttFrame.setVisible(true);
-
+          GPLogger.log(String.format("Bounds after setVisible: %s", ganttFrame.getBounds()));
           if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
             OSXAdapter.registerMacOSXApplication(ganttFrame);
           }
@@ -878,22 +897,20 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         } catch (Throwable e) {
           e.printStackTrace();
         } finally {
-          splash.close();
+          splash.get().close();
           System.err.println("Splash closed");
-          SwingUtilities.invokeLater(new Runnable() {
+          Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
-            public void run() {
-              Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                  GPLogger.log(e);
-                }
-              });
+            public void uncaughtException(Thread t, Throwable e) {
+              GPLogger.log(e);
             }
           });
         }
       }
     });
+    if (autosaveCleanup != null) {
+      ourExecutor.submit(autosaveCleanup);
+    }
     return true;
   }
 

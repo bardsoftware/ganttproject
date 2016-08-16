@@ -18,16 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Toolkit;
-
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-
 import net.sourceforge.ganttproject.gui.UIFacade.Centering;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class DialogAligner {
   public static void center(JDialog dialog, Container parent) {
@@ -39,7 +33,7 @@ public class DialogAligner {
   }
 
   public static void center(JFrame frame) {
-    centerOnScreen(frame);
+    frame.setLocationRelativeTo(null);
   }
 
   public static void centerOnScreen(Component component) {

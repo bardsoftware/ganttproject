@@ -106,6 +106,7 @@ public interface WebDavResource {
    */
   List<WebDavResource> getChildResources() throws WebDavException;
 
+  boolean isLockSupported(boolean exclusive);
   /**
    * This method may or may not issue a request to a server. Implementation may decide to fetch
    * all required pieces of information before calling this method or to delay fetching

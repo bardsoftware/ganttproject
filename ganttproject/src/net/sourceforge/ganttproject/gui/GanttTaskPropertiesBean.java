@@ -18,35 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SpringLayout;
-
+import biz.ganttproject.core.chart.render.ShapeConstants;
+import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.base.Objects;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -64,23 +42,19 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.shape.JPaintCombo;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.util.BrowserControl;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
 
-import biz.ganttproject.core.chart.render.ShapeConstants;
-import biz.ganttproject.core.chart.render.ShapePaint;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
-
-import com.google.common.base.Objects;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * Real panel for editing task properties
@@ -411,7 +385,6 @@ public class GanttTaskPropertiesBean extends JPanel {
       if (originalName == null || !originalName.equals(getTaskName())) {
         mutator.setName(getTaskName());
       }
-      mutator.setProjectTask(false);
       if (originalWebLink == null || !originalWebLink.equals(getWebLink())) {
         mutator.setWebLink(getWebLink());
       }

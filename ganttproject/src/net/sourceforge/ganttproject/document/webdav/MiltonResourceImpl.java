@@ -127,6 +127,18 @@ public class MiltonResourceImpl implements WebDavResource {
   }
 
   @Override
+  public boolean isLockSupported(boolean exclusive) {
+    assertExists();
+    if (myImpl.getSupportedLock() == null) {
+      return false;
+    }
+    if (exclusive) {
+      return myImpl.getSupportedLock().exclusive;
+    }
+    return myImpl.getSupportedLock().shared;
+  }
+
+  @Override
   public List<String> getLockOwners() {
     String lockOwner = myImpl == null ? null : myImpl.getLockOwner();
     return lockOwner == null ? Collections.<String>emptyList() : ImmutableList.<String>of(lockOwner);
@@ -134,6 +146,9 @@ public class MiltonResourceImpl implements WebDavResource {
 
   public boolean canLock(String username) {
     assertExists();
+    if (!isLockSupported(true)) {
+      return false;
+    }
     List<String> lockOwners = getLockOwners();
     return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(username));
   }
@@ -305,6 +320,12 @@ public class MiltonResourceImpl implements WebDavResource {
   @Override
   public boolean canLock() throws WebDavException {
     assertExists();
+    if (myImpl.getSupportedLock() == null) {
+      return false;
+    }
+    if (!myImpl.getSupportedLock().exclusive) {
+      return false;
+    }
     List<String> lockOwners = getLockOwners();
     return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(getUsername()));
   }
