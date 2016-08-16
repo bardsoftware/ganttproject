@@ -85,7 +85,7 @@ public class StoragePane {
     String label = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.label", key));
     String iconName = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.icon", key));
     Button btnService = FontAwesomeIconFactory.get().createIconButton(
-        FontAwesomeIcon.valueOf(iconName.toUpperCase()), "", "2em", "1em", ContentDisplay.TOP);
+        FontAwesomeIcon.valueOf(iconName.toUpperCase()), label, "1em", "1em", ContentDisplay.LEFT);
     btnService.addEventHandler(ActionEvent.ACTION, event -> {
       btnService.getStyleClass().add("active");
       if (myActiveBtn != null) {

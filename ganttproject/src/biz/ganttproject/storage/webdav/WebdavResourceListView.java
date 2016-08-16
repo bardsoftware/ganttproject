@@ -44,7 +44,7 @@ public class WebdavResourceListView {
 
   private final ListView<ListViewItem> myListView;
 
-  WebdavResourceListView(StorageDialogBuilder.DialogUi dialogUi, Runnable onDeleteResource, Runnable onToggleLockResource) {
+  WebdavResourceListView(StorageDialogBuilder.DialogUi dialogUi, Runnable onDeleteResource, Runnable onToggleLockResource, BooleanProperty isLockingSupported) {
     myDialogUi = dialogUi;
     myListView = new ListView<>();
     myListView.setCellFactory(param -> new ListCell<ListViewItem>() {
@@ -71,6 +71,11 @@ public class WebdavResourceListView {
         HBox hbox = new HBox();
         hbox.getStyleClass().add("webdav-list-cell");
         boolean isLocked = item.resource.getValue().isLocked();
+        boolean isLockable = item.resource.getValue().isLockSupported(true);
+        if (isLockable && !isLockingSupported.getValue()) {
+          isLockingSupported.setValue(true);
+        }
+
         FontAwesomeIconView icon = isLocked
             ?  new FontAwesomeIconView(FontAwesomeIcon.LOCK)
             :  new FontAwesomeIconView(FontAwesomeIcon.FOLDER);
@@ -87,15 +92,17 @@ public class WebdavResourceListView {
           Button btnDelete = new Button("", new FontAwesomeIconView(FontAwesomeIcon.TRASH));
           btnDelete.addEventHandler(ActionEvent.ACTION, event -> onDeleteResource.run());
 
-          Button btnLock;
+          Button btnLock = null;
           if (isLocked) {
             btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.UNLOCK));
-          } else {
+          } else if (isLockable) {
             btnLock = new Button("", new FontAwesomeIconView(FontAwesomeIcon.LOCK));
           }
-          btnLock.addEventHandler(ActionEvent.ACTION, event -> onToggleLockResource.run());
-
-          btnBox.getChildren().addAll(btnLock, btnDelete);
+          if (btnLock != null) {
+            btnLock.addEventHandler(ActionEvent.ACTION, event -> onToggleLockResource.run());
+            btnBox.getChildren().add(btnLock);
+          }
+          btnBox.getChildren().add(btnDelete);
           HBox.setHgrow(btnBox, Priority.ALWAYS);
           hbox.getChildren().add(btnBox);
         } else {

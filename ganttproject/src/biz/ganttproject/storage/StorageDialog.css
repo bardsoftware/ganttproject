@@ -9,6 +9,8 @@
 
 .body {
     -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 0;
 }
 
 .bordered {
@@ -27,6 +29,7 @@
     -fx-text-fill: black;
     -fx-border-radius: 0;
     -fx-cursor: hand;
+    -fx-alignment: center-left;
 }
 
 .btn-service {
@@ -100,6 +103,7 @@
     -fx-border-color: derive(white, -15%);
     -fx-padding: 10;
     -fx-spacing: 8;
+    -fx-alignment: top-left;
 }
 
 .pane-service-contents {
@@ -124,12 +128,16 @@
     -fx-padding: 0 0 5 0;
 }
 
-.pane-service-contents > .title {
+.pane-service-contents .title-pane {
     -fx-padding: 0 0 5 0;
-    -fx-font-size: 120%;
-    -fx-border-width: 0 0 1px 0;
+    -fx-alignment: center-left;
 }
-
+.pane-service-contents .title-pane Button {
+    -fx-font-weight: bold;
+}
+.pane-service-contents .title-pane .title {
+    -fx-font-size: 120%;
+}
 .pane-service-contents > .title-help {
     -fx-padding: 0 5 10 5;
     -fx-font-size: 80%;
@@ -141,12 +149,16 @@
 .pane-storage {
     -fx-min-height: 400;
     -fx-min-width: 400;
+    -fx-padding: 0;
+    -fx-border-color: red;
 }
 .pane-storage .title-box {
     -fx-pref-width: 100%;
     -fx-fill-width: true;
     -fx-spacing: 5;
-    -fx-padding: 0 0 15 0;
+    -fx-padding: 15;
+    -fx-background-color: #eee;
+    -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
 }
 
 .pane-storage .title-box Label {

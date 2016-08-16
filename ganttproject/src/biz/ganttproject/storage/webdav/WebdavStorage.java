@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
@@ -12,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPLogger;
@@ -80,7 +82,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
     Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
     title.getStyleClass().add("title");
-    rootPane.getChildren().add(title);
 
     HBox buttonBar = new HBox();
     buttonBar.getStyleClass().add("webdav-button-pane");
@@ -114,14 +115,25 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
         buttonBar.getChildren().add(btnSave);
     }
 
+    HBox topPane = new HBox();
+    topPane.getStyleClass().add("title-pane");
+
+    topPane.getChildren().add(title);
+    HBox.setHgrow(buttonBar, Priority.ALWAYS);
+    topPane.getChildren().add(buttonBar);
+    rootPane.getChildren().add(topPane);
+
     myBreadcrumbs = new BreadCrumbBar<>();
     myBreadcrumbs.getStyleClass().add("breadcrumb");
 
     rootPane.getChildren().add(myBreadcrumbs);
 
-    myListView = new WebdavResourceListView(myDialogUi, this::deleteResource, this::toggleLockResource);
+    SimpleBooleanProperty isLockingSupported = new SimpleBooleanProperty();
+    isLockingSupported.addListener((observable, oldValue, newValue) -> {
+      System.err.println("is locking supported="+newValue);
+    });
+    myListView = new WebdavResourceListView(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
     rootPane.getChildren().add(myListView.getListView());
-    rootPane.getChildren().add(buttonBar);
 
     StackPane stackPane = new StackPane();
     stackPane.getChildren().addAll(rootPane);
