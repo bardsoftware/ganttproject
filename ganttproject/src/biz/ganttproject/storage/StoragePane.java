@@ -11,6 +11,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.layout.BorderPane;
@@ -34,6 +35,7 @@ public class StoragePane {
   private Button myActiveBtn;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
+  private Node myNotificationPane;
 
   StoragePane(GPCloudStorageOptions options, Consumer<Document> openDocument, Consumer<Document> updateDocument, StorageDialogBuilder.DialogUi dialogUi) {
     myCloudStorageOptions = options;
@@ -48,6 +50,8 @@ public class StoragePane {
 
     VBox servicesPane = new VBox();
     servicesPane.getStyleClass().add("pane-service-buttons");
+    servicesPane.setMaxHeight(Double.MAX_VALUE);
+
 
     Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
@@ -63,20 +67,20 @@ public class StoragePane {
         return new Pane();
       }
     });
+    BorderPane storageUiPane = new BorderPane();
+    storageUiPane.setBottom(myNotificationPane);
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-      Button btn = createButton(storageUi.getId(), event -> onStorageChange(borderPane, storageUi.getId()));
+      Button btn = createButton(storageUi.getId(), event -> onStorageChange(storageUiPane, storageUi.getId()));
       servicesPane.getChildren().addAll(btn);
     });
-
+    storageUiPane.setPrefSize(400, 400);
+    borderPane.setCenter(storageUiPane);
 
     if (myStorageUiList.size() > 1) {
       borderPane.setLeft(servicesPane);
-      Pane emptyPane = new Pane();
-      emptyPane.setPrefSize(600, 600);
-      borderPane.setCenter(emptyPane);
     } else {
-      borderPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
+      storageUiPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
     }
     return borderPane;
   }
@@ -101,7 +105,11 @@ public class StoragePane {
 
   private void onStorageChange(BorderPane borderPane, String storageId) {
     Pane ui = myStorageUiMap.get(storageId).get();
+    ui.getStyleClass().add("display-none");
     borderPane.setCenter(ui);
   }
 
+  public void setNotificationPane(Node notificationPane) {
+    myNotificationPane = notificationPane;
+  }
 }

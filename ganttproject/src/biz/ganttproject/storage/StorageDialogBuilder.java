@@ -153,13 +153,14 @@ public class StorageDialogBuilder {
     myNotificationPane = new StatusBar();
     myNotificationPane.getStyleClass().add("notification");
     myNotificationPane.setText("");
-    borderPane.setBottom(myNotificationPane);
+    //borderPane.setBottom(myNotificationPane);
 
     dialog.getDialogPane().setContent(borderPane);
     dialog.initModality(Modality.WINDOW_MODAL);
     dialog.setTitle("GanttProject Cloud");
     dialog.setResizable(true);
     dialog.getDialogPane().getScene().getWindow().sizeToScene();
+
     dialog.setOnShown(event -> dialog.getDialogPane().getScene().getWindow().sizeToScene());
     return dialog;
   }
@@ -180,6 +181,7 @@ public class StorageDialogBuilder {
 
   private Pane buildStoragePane(Mode mode) {
     StoragePane storagePane = new StoragePane(myCloudStorageOptions, myDocumentReceiver, myDocumentUpdater, myDialogUi);
+    storagePane.setNotificationPane(myNotificationPane);
     return storagePane.buildStoragePane(mode);
   }
 

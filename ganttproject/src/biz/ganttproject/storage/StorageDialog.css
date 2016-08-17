@@ -12,7 +12,9 @@
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
-
+.body > .button-bar {
+    -fx-pref-height: 0;
+}
 .bordered {
     -fx-border-width: 1;
     -fx-border-style: dotted;
@@ -24,7 +26,7 @@
 }
 
 .btn-service {
-    -fx-background-color: white;
+    -fx-background-color: #e5e5e5;
     -fx-border-width: 0;
     -fx-text-fill: black;
     -fx-border-radius: 0;
@@ -40,7 +42,7 @@
     -fx-font-size: 200%;
 }
 .btn-service:hover {
-    -fx-background-color: derive(white, -10%);
+    -fx-background-color: white;
 }
 
 .btn-service.active {
@@ -71,7 +73,6 @@
 .control-row {
     -fx-padding: 5 0;
 }
-
 .help {
     -fx-font-size: 80%;
     -fx-padding: 0 0 0 0;
@@ -99,8 +100,10 @@
 }
 
 .pane-service-buttons {
-    -fx-border-width: 0 1 0 0;
-    -fx-border-color: derive(white, -15%);
+    -fx-border-width: 0 1 1 0;
+    -fx-background-color: #e5e5e5;
+    -fx-background-insets: 4 0 0 0;
+    -fx-border-color: derive(#e5e5e5, -15%);
     -fx-padding: 10;
     -fx-spacing: 8;
     -fx-alignment: top-left;
@@ -150,7 +153,7 @@
     -fx-min-height: 400;
     -fx-min-width: 400;
     -fx-padding: 0;
-    -fx-border-color: red;
+    -fx-border-insets: 0;
 }
 .pane-storage .title-box {
     -fx-pref-width: 100%;
