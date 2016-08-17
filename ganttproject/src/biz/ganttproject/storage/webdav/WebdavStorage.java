@@ -14,7 +14,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
@@ -135,9 +134,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myListView = new WebdavResourceListView(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
     rootPane.getChildren().add(myListView.getListView());
 
-    StackPane stackPane = new StackPane();
-    stackPane.getChildren().addAll(rootPane);
-
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     myOnSelectCrumb = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
@@ -162,7 +158,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
       });
     });
 
-    return stackPane;
+    return rootPane;
   }
 
   private void openResource() throws WebDavResource.WebDavException, IOException {

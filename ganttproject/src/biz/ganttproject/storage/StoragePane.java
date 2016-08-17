@@ -3,11 +3,13 @@ package biz.ganttproject.storage;
 
 import biz.ganttproject.storage.cloud.GPCloudStorage;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
+import biz.ganttproject.storage.local.LocalStorage;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.document.Document;
@@ -48,37 +51,28 @@ public class StoragePane {
     BorderPane borderPane = new BorderPane();
 
 
-    VBox servicesPane = new VBox();
-    servicesPane.getStyleClass().add("pane-service-buttons");
-    servicesPane.setMaxHeight(Double.MAX_VALUE);
-
+    BorderPane storagePane = new BorderPane();
+    storagePane.getStyleClass().add("pane-service-buttons");
+    VBox storageButtons = new VBox();
+    storagePane.setCenter(storageButtons);
+    Button addStorage = new Button("New Storage", new FontAwesomeIconView(FontAwesomeIcon.PLUS));
+    storagePane.setBottom(new HBox(addStorage));
 
     Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
+    myStorageUiList.add(new LocalStorage());
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
-    myStorageUiList.add(new StorageDialogBuilder.Ui() {
-
-      @Override
-      public String getId() {
-        return "desktop";
-      }
-
-      @Override
-      public Pane createUi() {
-        return new Pane();
-      }
-    });
     BorderPane storageUiPane = new BorderPane();
     storageUiPane.setBottom(myNotificationPane);
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
       Button btn = createButton(storageUi.getId(), event -> onStorageChange(storageUiPane, storageUi.getId()));
-      servicesPane.getChildren().addAll(btn);
+      storageButtons.getChildren().addAll(btn);
     });
     storageUiPane.setPrefSize(400, 400);
     borderPane.setCenter(storageUiPane);
 
     if (myStorageUiList.size() > 1) {
-      borderPane.setLeft(servicesPane);
+      borderPane.setLeft(storagePane);
     } else {
       storageUiPane.setCenter(myStorageUiMap.get(myStorageUiList.get(0).getId()).get());
     }
