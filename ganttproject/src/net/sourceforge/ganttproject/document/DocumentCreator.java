@@ -154,6 +154,10 @@ public class DocumentCreator implements DocumentManager {
     return proxyDocument;
   }
 
+  public Document newUntitledDocument() throws IOException {
+    return newAutosaveDocument();
+  }
+
   @Override
   public Document newAutosaveDocument() throws IOException {
     File tempFile = File.createTempFile("_ganttproject_autosave", ".gan");

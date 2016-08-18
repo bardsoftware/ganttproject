@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.util.List;
@@ -35,13 +36,15 @@ public class StoragePane {
   private final Consumer<Document> myDocumentReceiver;
   private final Consumer<Document> myDocumentUpdater;
   private final StorageDialogBuilder.DialogUi myDialogUi;
+  private final ReadOnlyProxyDocument myCurrentDocument;
   private Button myActiveBtn;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
   private Node myNotificationPane;
 
-  StoragePane(GPCloudStorageOptions options, Consumer<Document> openDocument, Consumer<Document> updateDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  StoragePane(GPCloudStorageOptions options, ReadOnlyProxyDocument currentDocument, Consumer<Document> openDocument, Consumer<Document> updateDocument, StorageDialogBuilder.DialogUi dialogUi) {
     myCloudStorageOptions = options;
+    myCurrentDocument = currentDocument;
     myDocumentReceiver = openDocument;
     myDocumentUpdater = updateDocument;
     myDialogUi = dialogUi;
@@ -59,7 +62,7 @@ public class StoragePane {
     storagePane.setBottom(new HBox(addStorage));
 
     Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
-    myStorageUiList.add(new LocalStorage());
+    myStorageUiList.add(new LocalStorage(mode, myCurrentDocument, myDocumentReceiver));
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     BorderPane storageUiPane = new BorderPane();
     storageUiPane.setBottom(myNotificationPane);

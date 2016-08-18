@@ -149,6 +149,42 @@
     -fx-pref-width: 400px;
 }
 
+.pane-service-contents.local-storage HBox {
+    -fx-fill-width: true;
+    -fx-spacing: 5;
+}
+
+.pane-service-contents.local-storage HBox.title {
+    -fx-alignment: center-left;
+}
+
+.pane-service-contents.local-storage HBox.title Label {
+    -fx-font-size: 130%;
+}
+
+.pane-service-contents.local-storage HBox.open {
+    -fx-alignment: center-right;
+}
+.pane-service-contents.local-storage HBox.open Button {
+    -fx-font-weight: bold;
+}
+
+.pane-service-contents.local-storage .filename {
+    -fx-padding: 5 0 0 0;
+    -fx-font-size: 90%;
+}
+
+.pane-service-contents.local-storage HBox.browse {
+    -fx-alignment: center;
+    -fx-font-size: 90%;
+    -fx-padding: 3 0 0 0;
+}
+.pane-service-contents.local-storage HBox.browse Button {
+    -fx-background-radius: 20;
+    -fx-background-insets: 0,1,1;
+    -fx-text-fill: black;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
+}
 .pane-storage {
     -fx-min-height: 400;
     -fx-min-width: 400;

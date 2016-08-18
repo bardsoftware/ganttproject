@@ -18,14 +18,15 @@ import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.*;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -92,7 +93,7 @@ public class StorageDialogBuilder {
 
   public StorageDialogBuilder(@Nonnull IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, @Nonnull GPCloudStorageOptions cloudStorageOptions) {
     myCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions);
-    myDocumentReceiver = document -> {
+    myDocumentReceiver = document -> SwingUtilities.invokeLater(() -> {
       try {
         projectUi.openProject(documentManager.getProxyDocument(document), project);
       } catch (IOException e) {
@@ -100,9 +101,8 @@ public class StorageDialogBuilder {
       } catch (Document.DocumentException e) {
         e.printStackTrace();
       }
-      Objects.requireNonNull(myDialog, "Dialog is expected to be created by this moment").close();
-    };
-    myDocumentUpdater = document -> {
+    });
+    myDocumentUpdater = document -> SwingUtilities.invokeLater(() -> {
       if (project.getDocument() == null) {
         project.setDocument(documentManager.getProxyDocument(document));
       } else {
@@ -113,7 +113,7 @@ public class StorageDialogBuilder {
       } catch (IOException e) {
         e.printStackTrace();
       }
-    };
+    });
     myProject = project;
   }
 
@@ -180,7 +180,7 @@ public class StorageDialogBuilder {
   }
 
   private Pane buildStoragePane(Mode mode) {
-    StoragePane storagePane = new StoragePane(myCloudStorageOptions, myDocumentReceiver, myDocumentUpdater, myDialogUi);
+    StoragePane storagePane = new StoragePane(myCloudStorageOptions, new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
     storagePane.setNotificationPane(myNotificationPane);
     return storagePane.buildStoragePane(mode);
   }
