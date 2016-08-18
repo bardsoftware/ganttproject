@@ -37,6 +37,11 @@ public class LocalStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
+  public String getName() {
+    return "This Computer";
+  }
+
+  @Override
   public String getId() {
     return "desktop";
   }

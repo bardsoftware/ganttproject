@@ -67,6 +67,11 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
+  public String getName() {
+    return "GanttProject Cloud";
+  }
+
+  @Override
   public String getId() {
     return "cloud";
   }

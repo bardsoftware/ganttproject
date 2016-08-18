@@ -205,5 +205,7 @@ public class StorageDialogBuilder {
     String getId();
 
     Pane createUi();
+
+    String getName();
   }
 }

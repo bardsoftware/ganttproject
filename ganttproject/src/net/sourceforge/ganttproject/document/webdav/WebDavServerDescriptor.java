@@ -26,13 +26,14 @@ import com.google.common.base.Objects;
  * @author dbarashev (Dmitry Barashev)
  */
 public class WebDavServerDescriptor {
+
   public String name;
   private WebDavUri rootUri;
   public String username;
   String password = null;
   boolean savePassword = false;
 
-  WebDavServerDescriptor() {
+  public WebDavServerDescriptor() {
   }
 
   WebDavServerDescriptor(String name, String rootUrl, String username) {
@@ -55,6 +56,14 @@ public class WebDavServerDescriptor {
     return Objects.equal(this.getRootUrl(), that.getRootUrl());
   }
 
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public String getUsername() {
     return this.username;
   }
@@ -72,7 +81,7 @@ public class WebDavServerDescriptor {
   }
 
   public String getRootUrl() {
-    return rootUri.buildRootUrl();
+    return rootUri == null ? "" : rootUri.buildRootUrl();
   }
 
   public void setRootUrl(String rootUrl) {
@@ -80,5 +89,20 @@ public class WebDavServerDescriptor {
       rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
     }
     this.rootUri = new WebDavUri(this.name, rootUrl, "");
+  }
+
+  public boolean getSavePassword() {
+    return savePassword;
+  }
+
+  public void setSavePassword(boolean value) {
+    savePassword = value;
+  }
+
+  public void updateFrom(WebDavServerDescriptor other) {
+    this.username = other.username;
+    this.password = other.password;
+    this.name = other.name;
+    this.savePassword = other.savePassword;
   }
 }

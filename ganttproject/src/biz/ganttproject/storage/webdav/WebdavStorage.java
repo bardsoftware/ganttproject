@@ -54,8 +54,13 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
+  public String getName() {
+    return myServer.getName();
+  }
+
+  @Override
   public String getId() {
-    return null;
+    return "webdav";
   }
 
   static class BreadCrumbNode {
