@@ -19,10 +19,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
@@ -41,7 +38,7 @@ public class StoragePane {
   private final Consumer<Document> myDocumentUpdater;
   private final StorageDialogBuilder.DialogUi myDialogUi;
   private final ReadOnlyProxyDocument myCurrentDocument;
-  private Button myActiveBtn;
+  private Node myActiveStorageLabel;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
   private Node myNotificationPane;
@@ -79,8 +76,8 @@ public class StoragePane {
     storageUiPane.setBottom(myNotificationPane);
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-      Button btn = createButton(storageUi, event -> onStorageChange(storageUiPane, storageUi.getId()));
-      storageButtons.getChildren().addAll(btn);
+      Pane btnPane = createButton(storageUi, event -> onStorageChange(storageUiPane, storageUi.getId()));
+      storageButtons.getChildren().addAll(btnPane);
     });
     storageUiPane.setPrefSize(400, 400);
     borderPane.setCenter(storageUiPane);
@@ -93,22 +90,31 @@ public class StoragePane {
     return borderPane;
   }
 
-  private Button createButton(StorageDialogBuilder.Ui storageUi, EventHandler<ActionEvent> onClick) {
+  private Pane createButton(StorageDialogBuilder.Ui storageUi, EventHandler<ActionEvent> onClick) {
+    HBox result = new HBox();
+
     String label = GanttLanguage.getInstance().formatText(String.format("storageView.service.%s.label", storageUi.getId()), storageUi.getName());
     String iconName = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.icon", storageUi.getId()));
     Button btnService = FontAwesomeIconFactory.get().createIconButton(
         FontAwesomeIcon.valueOf(iconName.toUpperCase()), label, "1em", "1em", ContentDisplay.LEFT);
+    btnService.getStyleClass().add("storage-name");
     btnService.addEventHandler(ActionEvent.ACTION, event -> {
-      btnService.getStyleClass().add("active");
-      if (myActiveBtn != null) {
-        myActiveBtn.getStyleClass().remove("active");
+      btnService.getParent().getStyleClass().add("active");
+      if (myActiveStorageLabel != null) {
+        myActiveStorageLabel.getStyleClass().remove("active");
       }
-      myActiveBtn = btnService;
+      myActiveStorageLabel = btnService.getParent();
     });
     btnService.addEventHandler(ActionEvent.ACTION, onClick);
-    btnService.getStyleClass().add("btn-service");
     btnService.setMaxWidth(Double.MAX_VALUE);
-    return btnService;
+
+    Button btnSettings = FontAwesomeIconFactory.get().createIconButton(FontAwesomeIcon.COG);
+    btnSettings.getStyleClass().add("settings");
+    btnSettings.addEventHandler(ActionEvent.ACTION, event -> System.err.println("Settings!"));
+    HBox.setHgrow(btnService, Priority.ALWAYS);
+    result.getStyleClass().add("btn-service");
+    result.getChildren().addAll(btnService, btnSettings);
+    return result;
   }
 
   private void onStorageChange(BorderPane borderPane, String storageId) {

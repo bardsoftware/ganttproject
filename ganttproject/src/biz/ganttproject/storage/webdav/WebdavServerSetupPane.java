@@ -3,7 +3,7 @@ package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -78,7 +78,6 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
     HBox bottomBox = new HBox();
     bottomBox.getStyleClass().add("center");
     bottomBox.getChildren().addAll(btnDone);
-    Pane spacer = new Pane();
     VBox.setVgrow(propertySheet, Priority.SOMETIMES);
 
     centerBox.getChildren().addAll(propertySheet, bottomBox);
@@ -112,14 +111,12 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
       super(property, new PasswordField());
     }
 
-    @Override
-    protected ObservableValue<String> getObservableValue() {
-      return (ObservableValue<String>) getProperty().getObservableValue().get();
+    protected StringProperty getObservableValue() {
+      return this.getEditor().textProperty();
     }
 
-    @Override
-    public void setValue(String s) {
-      getProperty().setValue(s);
+    public void setValue(String value) {
+      this.getEditor().setText(value);
     }
   }
 }
