@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.BreadCrumbBar;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -225,4 +226,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private Document createDocument(WebDavResource resource) throws IOException {
     return new HttpDocument(resource, myServer.getUsername(), myServer.getPassword(), HttpDocument.NO_LOCK);
   }
+
+  @Override
+  public Optional<Pane> createSettingsUi() {
+    return Optional.of(new Pane());
+  }
+
 }

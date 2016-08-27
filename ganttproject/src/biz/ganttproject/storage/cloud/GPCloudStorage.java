@@ -72,6 +72,11 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
+  public Optional<Pane> createSettingsUi() {
+    return Optional.empty();
+  }
+
+  @Override
   public String getId() {
     return "cloud";
   }

@@ -108,12 +108,16 @@ public class StoragePane {
     btnService.addEventHandler(ActionEvent.ACTION, onClick);
     btnService.setMaxWidth(Double.MAX_VALUE);
 
-    Button btnSettings = FontAwesomeIconFactory.get().createIconButton(FontAwesomeIcon.COG);
-    btnSettings.getStyleClass().add("settings");
-    btnSettings.addEventHandler(ActionEvent.ACTION, event -> System.err.println("Settings!"));
     HBox.setHgrow(btnService, Priority.ALWAYS);
     result.getStyleClass().add("btn-service");
-    result.getChildren().addAll(btnService, btnSettings);
+    result.getChildren().addAll(btnService);
+
+    storageUi.createSettingsUi().ifPresent(settingsPane -> {
+      Button btnSettings = FontAwesomeIconFactory.get().createIconButton(FontAwesomeIcon.COG, "", "100%", "100%", ContentDisplay.GRAPHIC_ONLY);
+      btnSettings.getStyleClass().add("settings");
+      btnSettings.addEventHandler(ActionEvent.ACTION, event -> System.err.println("Settings!"));
+      result.getChildren().addAll(btnSettings);
+    });
     return result;
   }
 

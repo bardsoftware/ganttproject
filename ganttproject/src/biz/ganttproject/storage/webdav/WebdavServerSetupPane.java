@@ -94,6 +94,11 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
     return result;
   }
 
+  @Override
+  public Optional<Pane> createSettingsUi() {
+    return Optional.empty();
+  }
+
   private void onDone() {
     myOptions.addWebdavServer(myWebdavServer);
   }

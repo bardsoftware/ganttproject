@@ -17,6 +17,7 @@ import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -94,5 +95,10 @@ public class LocalStorage implements StorageDialogBuilder.Ui {
 
     rootPane.getChildren().addAll(titleBox, filename, browseBox);
     return rootPane;
+  }
+
+  @Override
+  public Optional<Pane> createSettingsUi() {
+    return Optional.empty();
   }
 }
