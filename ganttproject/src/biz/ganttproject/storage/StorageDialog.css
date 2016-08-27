@@ -130,16 +130,6 @@
     -fx-padding: 0 0 5 0;
 }
 
-.pane-service-contents .title-pane {
-    -fx-padding: 0 0 5 0;
-    -fx-alignment: center-left;
-}
-.pane-service-contents .title-pane Button {
-    -fx-font-weight: bold;
-}
-.pane-service-contents .title-pane .title {
-    -fx-font-size: 120%;
-}
 .pane-service-contents > .title-help {
     -fx-padding: 0 5 10 5;
     -fx-font-size: 80%;
@@ -148,24 +138,24 @@
     -fx-pref-width: 400px;
 }
 
-.pane-service-contents.local-storage HBox {
+.pane-service-contents HBox {
     -fx-fill-width: true;
     -fx-spacing: 5;
 }
 
-.pane-service-contents.local-storage HBox.title {
+.pane-service-contents HBox.title {
+    -fx-padding: 0 0 5 0;
     -fx-alignment: center-left;
 }
-
-.pane-service-contents.local-storage HBox.title Label {
+.pane-service-contents HBox.title Button {
+    -fx-font-weight: bold;
+}
+.pane-service-contents HBox.title Label {
     -fx-font-size: 130%;
 }
 
 .pane-service-contents.local-storage HBox.open {
     -fx-alignment: center-right;
-}
-.pane-service-contents.local-storage HBox.open Button {
-    -fx-font-weight: bold;
 }
 
 .pane-service-contents.local-storage .filename {
@@ -184,6 +174,10 @@
     -fx-text-fill: black;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
 }
+.pane-service-contents.webdav-server-setup > PropertySheet {
+    -fx-background-color: white;
+}
+
 .pane-storage {
     -fx-min-height: 400;
     -fx-min-width: 400;
@@ -208,6 +202,11 @@
 .pane-storage .title-box .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 90%;
+}
+
+.property-sheet {
+    -fx-background-color: white;
+    -fx-padding: 5px 0 0 0;
 }
 
 .space-section {

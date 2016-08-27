@@ -84,9 +84,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
 
-    Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
-    title.getStyleClass().add("title");
-
     HBox buttonBar = new HBox();
     buttonBar.getStyleClass().add("webdav-button-pane");
     TextField filename = new TextField();
@@ -120,9 +117,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     }
 
     HBox topPane = new HBox();
-    topPane.getStyleClass().add("title-pane");
-
+    topPane.getStyleClass().add("title");
+    Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
     topPane.getChildren().add(title);
+
     HBox.setHgrow(buttonBar, Priority.ALWAYS);
     topPane.getChildren().add(buttonBar);
     rootPane.getChildren().add(topPane);
