@@ -68,15 +68,16 @@ public class StoragePane {
     myStorageUiList.add(new LocalStorage(mode, myCurrentDocument, myDocumentReceiver));
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     for (WebDavServerDescriptor server : myCloudStorageOptions.getWebdavServers()) {
-      WebdavStorage webdavStorageUi = new WebdavStorage(mode, openDocument, myDialogUi);
-      webdavStorageUi.setServer(server);
+      WebdavStorage webdavStorageUi = new WebdavStorage(server, mode, openDocument, myDialogUi);
       myStorageUiList.add(webdavStorageUi);
     }
 
     storageUiPane.setBottom(myNotificationPane);
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-      Pane btnPane = createButton(storageUi, event -> onStorageChange(storageUiPane, storageUi.getId()));
+      Pane btnPane = createButton(storageUi,
+          event -> onStorageChange(storageUiPane, storageUi.getId()),
+          settingsPane -> FXUtil.transitionCenterPane(storageUiPane, settingsPane, myDialogUi::resize));
       storageButtons.getChildren().addAll(btnPane);
     });
     storageUiPane.setPrefSize(400, 400);
@@ -90,7 +91,7 @@ public class StoragePane {
     return borderPane;
   }
 
-  private Pane createButton(StorageDialogBuilder.Ui storageUi, EventHandler<ActionEvent> onClick) {
+  private Pane createButton(StorageDialogBuilder.Ui storageUi, EventHandler<ActionEvent> onClick, Consumer<Pane> onSettingsClick) {
     HBox result = new HBox();
 
     String label = GanttLanguage.getInstance().formatText(String.format("storageView.service.%s.label", storageUi.getId()), storageUi.getName());
@@ -115,7 +116,7 @@ public class StoragePane {
     storageUi.createSettingsUi().ifPresent(settingsPane -> {
       Button btnSettings = FontAwesomeIconFactory.get().createIconButton(FontAwesomeIcon.COG, "", "100%", "100%", ContentDisplay.GRAPHIC_ONLY);
       btnSettings.getStyleClass().add("settings");
-      btnSettings.addEventHandler(ActionEvent.ACTION, event -> System.err.println("Settings!"));
+      btnSettings.addEventHandler(ActionEvent.ACTION, event -> onSettingsClick.accept(settingsPane));
       result.getChildren().addAll(btnSettings);
     });
     return result;
@@ -130,7 +131,7 @@ public class StoragePane {
 
   private void onNewWebdavServer(BorderPane borderPane) {
     WebDavServerDescriptor newServer = new WebDavServerDescriptor();
-    WebdavServerSetupPane setupPane = new WebdavServerSetupPane(myCloudStorageOptions, newServer);
+    WebdavServerSetupPane setupPane = new WebdavServerSetupPane(newServer, myCloudStorageOptions::addWebdavServer);
     FXUtil.transitionCenterPane(borderPane, setupPane.createUi(), myDialogUi::resize);
   }
 

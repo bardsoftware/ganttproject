@@ -49,6 +49,11 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myDialogUi = dialogUi;
   }
 
+  public WebdavStorage(WebDavServerDescriptor server, StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
+    this(mode, openDocument, dialogUi);
+    setServer(server);
+  }
+
   public void setServer(WebDavServerDescriptor webdavServer) {
     myLoadService = new WebdavLoadService(webdavServer);
     myServer = webdavServer;
@@ -229,7 +234,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
   @Override
   public Optional<Pane> createSettingsUi() {
-    return Optional.of(new Pane());
+    return myServer == null ? Optional.of(new Pane()) : Optional.of(new WebdavServerSetupPane(myServer, server -> {}).createUi());
   }
 
 }

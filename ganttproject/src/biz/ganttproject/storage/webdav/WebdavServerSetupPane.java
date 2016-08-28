@@ -2,7 +2,6 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
@@ -19,17 +18,18 @@ import org.controlsfx.property.editor.PropertyEditor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
   private final WebDavServerDescriptor myWebdavServer;
-  private final GPCloudStorageOptions myOptions;
+  private final Consumer<WebDavServerDescriptor> myValueConsumer;
 
-  public WebdavServerSetupPane(GPCloudStorageOptions options, WebDavServerDescriptor webdavServer) {
-    myOptions = options;
+  public WebdavServerSetupPane(WebDavServerDescriptor webdavServer, Consumer<WebDavServerDescriptor> valueConsumer) {
     myWebdavServer = webdavServer;
+    myValueConsumer = valueConsumer;
   }
 
   @Override
@@ -100,7 +100,7 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
   }
 
   private void onDone() {
-    myOptions.addWebdavServer(myWebdavServer);
+    myValueConsumer.accept(myWebdavServer);
   }
 
   private static class WebDavPropertyDescriptor extends PropertyDescriptor {
