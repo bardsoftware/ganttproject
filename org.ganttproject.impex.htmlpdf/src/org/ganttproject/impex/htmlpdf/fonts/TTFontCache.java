@@ -18,8 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.fonts;
 
-import java.awt.Font;
-import java.awt.FontFormatException;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
+import com.itextpdf.awt.FontMapper;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.BaseFont;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.Platform;
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel;
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,22 +41,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
-
-import org.eclipse.core.runtime.Platform;
-import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel;
-import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
-import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
-
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
-import com.itextpdf.awt.FontMapper;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.BaseFont;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * This class collects True Type fonts from .ttf files in the registered
@@ -82,15 +77,6 @@ public class TTFontCache {
   }
 
   private void registerFonts(File dir) {
-    boolean runningUnderJava6;
-    try {
-      Font.class.getMethod("createFont", new Class[] { Integer.TYPE, File.class });
-      runningUnderJava6 = true;
-    } catch (SecurityException e) {
-      runningUnderJava6 = false;
-    } catch (NoSuchMethodException e) {
-      runningUnderJava6 = false;
-    }
     final File[] files = dir.listFiles();
     for (File f : files) {
       if (!f.canRead()) {
@@ -105,26 +91,22 @@ public class TTFontCache {
         continue;
       }
       try {
-        registerFontFile(f, runningUnderJava6);
+        registerFontFile(f);
       } catch (Throwable e) {
         GPLogger.getLogger(TTFontCache.class).log(Level.FINE, "Failed to register font from " + f.getAbsolutePath(), e);
       }
     }
   }
 
-  private static Font createAwtFont(File fontFile, boolean runningUnderJava6) throws IOException, FontFormatException {
-    return runningUnderJava6 ? Font.createFont(Font.TRUETYPE_FONT, fontFile) : Font.createFont(Font.TRUETYPE_FONT,
-        new FileInputStream(fontFile));
+  private static Font createAwtFont(File fontFile) throws IOException, FontFormatException {
+    try (FileInputStream istream = new FileInputStream(fontFile)) {
+      return Font.createFont(Font.TRUETYPE_FONT, istream);
+    }
   }
 
   private static class AwtFontSupplier implements Supplier<Font> {
-    private final boolean isJava6;
     private final List<File> myFiles = Lists.newArrayList();
     private Font myFont;
-
-    AwtFontSupplier(boolean isJava6) {
-      this.isJava6 = isJava6;
-    }
 
     void addFile(File f) {
       myFiles.add(f);
@@ -151,7 +133,7 @@ public class TTFontCache {
 
     private Font createFont(File fontFile) {
       try {
-        return createAwtFont(fontFile, isJava6);
+        return createAwtFont(fontFile);
       } catch (IOException e) {
         GPLogger.log(e);
       } catch (FontFormatException e) {
@@ -161,10 +143,10 @@ public class TTFontCache {
     }
   }
 
-  private void registerFontFile(final File fontFile, final boolean runningUnderJava6) throws FontFormatException,
+  private void registerFontFile(final File fontFile) throws FontFormatException,
       IOException {
     // FontFactory.register(fontFile.getAbsolutePath());
-    Font awtFont = createAwtFont(fontFile, runningUnderJava6);
+    Font awtFont = createAwtFont(fontFile);
     GPLogger.getLogger(getClass()).fine("Trying font file: " + fontFile.getAbsolutePath());
 
     final String family = awtFont.getFontName().toLowerCase();
@@ -186,7 +168,7 @@ public class TTFontCache {
     }
     GPLogger.getLogger(getClass()).fine("registering font: " + family);
     if (awtSupplier == null) {
-      awtSupplier = new AwtFontSupplier(runningUnderJava6);
+      awtSupplier = new AwtFontSupplier();
       myMap_Family_RegularFont.put(family, awtSupplier);
     }
     awtSupplier.addFile(fontFile);

@@ -29,7 +29,7 @@ Calendar contributed by Dmitry Barashev
         <date year="2016" month="1" date="6" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
         <date year="2016" month="1" date="7" type="HOLIDAY"><![CDATA[Рождество Христово]]></date>
         <date year="2016" month="1" date="8" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
-        <date year="2016" month="2" date="20" type="WORKING"><![CDATA[Выходной перенесен на 2016-02-22]]></date>
+        <date year="2016" month="2" date="20" type="WORKING_DAY"><![CDATA[Выходной перенесен на 2016-02-22]]></date>
         <date year="2016" month="2" date="22" type="HOLIDAY"><![CDATA[Перенесённый выходной (20 февраля)]]></date>
         <date year="2016" month="3" date="7" type="HOLIDAY"><![CDATA[Перенесённый выходной (3 января)]]></date>
         <date year="2016" month="5" date="2" type="HOLIDAY"><![CDATA[Перенесённый выходной (1 мая)]]></date>
@@ -40,5 +40,5 @@ Calendar contributed by Dmitry Barashev
 </calendar >
 
 
- 
+
 

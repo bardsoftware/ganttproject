@@ -67,6 +67,7 @@
           <include name="plugins/**/"/>
           <include name="*.jar"/>
           <include name="*.gan"/>
+          <include name="logging.properties"/>
         </tarfileset>
       </application-files>
     </ganttproject-base-deb>

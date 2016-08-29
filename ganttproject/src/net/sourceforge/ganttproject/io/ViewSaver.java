@@ -19,22 +19,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.util.Set;
-
-import javax.xml.transform.sax.TransformerHandler;
-
-import net.sourceforge.ganttproject.gui.GPColorChooser;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.Task;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import biz.ganttproject.core.table.ColumnList;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
+import net.sourceforge.ganttproject.gui.GPColorChooser;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.sax.TransformerHandler;
+import java.util.Set;
 
 /**
  * Serializes Gantt chart and resource chart view data to XML.
@@ -89,18 +85,12 @@ class ViewSaver extends SaverBase {
 
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    int totalWidth = 0;
-    for (int i = 0; i < visibleFields.getSize(); i++) {
-      if (visibleFields.getField(i).isVisible()) {
-        totalWidth += visibleFields.getField(i).getWidth();
-      }
-    }
     for (int i = 0; i < visibleFields.getSize(); i++) {
       ColumnList.Column field = visibleFields.getField(i);
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);
-        addAttribute("width", field.getWidth() * 100 / totalWidth, attrs);
+        addAttribute("width", field.getWidth(), attrs);
         addAttribute("order", field.getOrder(), attrs);
         emptyElement("field", attrs, handler);
       }

@@ -18,19 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.DialogAligner;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class GanttSplash extends JFrame {
 
@@ -46,7 +38,11 @@ public class GanttSplash extends JFrame {
   }
 
   @Override
-  public void setVisible(boolean b) {
+  protected void frameInit() {
+    super.frameInit();
+    ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
+    setIconImage(icon.getImage()); // set the ganttproject icon
+    setUndecorated(true);
     ImageIcon splashImage = new ImageIcon(getClass().getResource("/icons/splash.png"));
     mySplashComponent = new JLabel(splashImage) {
       @Override
@@ -61,28 +57,13 @@ public class GanttSplash extends JFrame {
         // drawTextWithShadow(g2, "ganttproject.biz", 40, 287);
       }
     };
-    if (b) {
-      getContentPane().add(mySplashComponent, BorderLayout.CENTER);
-      pack();
-      DialogAligner.center(this);
-    }
-    super.setVisible(b);
-  }
-
-  @Override
-  protected void frameInit() {
-    super.frameInit();
-    ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject.png"));
-    setIconImage(icon.getImage()); // set the ganttproject icon
-    setUndecorated(true);
+    getContentPane().add(mySplashComponent, BorderLayout.CENTER);
+    pack();
+    DialogAligner.center(this);
   }
 
   public void close() {
     setVisible(false);
     dispose();
-  }
-
-  public JLabel getSplashComponent() {
-    return mySplashComponent;
   }
 }

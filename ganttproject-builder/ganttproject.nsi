@@ -7,8 +7,8 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.8"
-!define VERSION_BUILD "2.8-r2016"
+!define VERSION "2.8.1"
+!define VERSION_BUILD "2.8.1-r2024"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -17,13 +17,13 @@ InstallDir $PROGRAMFILES\GanttProject-2.8
 
 
 !define MUI_ABORTWARNING
-  
+
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-  
+
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
@@ -63,11 +63,11 @@ Section "GanttProject"
 
   SectionIn RO ; read-only
   SetShellVarContext all
-  
+
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
 
-  
+
   ; Put file there
   File ganttproject_16.ico
   File ganttproject_32_2.ico
@@ -76,7 +76,7 @@ Section "GanttProject"
   File ganttproject.exe
   File HouseBuildingSample.gan
   File LICENSE
-  
+
   StrCpy $OUTDIR "$INSTDIR\plugins"
   File /r plugins\net.sourceforge.ganttproject
   File /r plugins\biz.ganttproject.core
@@ -89,15 +89,15 @@ Section "GanttProject"
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"
   WriteRegStr HKLM SOFTWARE\GanttProject "Version" "${VERSION}"
-  
+
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GanttProject" "DisplayName" "GanttProject"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GanttProject" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GanttProject" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GanttProject" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
-  
-  
+
+
   ; Associate .gan files with GP
   WriteRegStr HKCR ".gan" "" "GanttProject File"
   WriteRegStr HKCR ".gan\shell" "" "open"
@@ -131,7 +131,7 @@ Section /o "Open Microsoft Project files with GanttProject"
   WriteRegStr HKCR ".mpx\DefaultIcon" "" "$INSTDIR\ganttproject_32_2.ico,0"
   WriteRegStr HKCR ".mpx\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
-  
+
   WriteRegStr HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files" 1
 
 SectionEnd
@@ -144,7 +144,7 @@ Section "Uninstall"
 
   SetShellVarContext all
   ; Remove registry keys
-  ReadRegStr $1 HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files"  
+  ReadRegStr $1 HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files"
   ${If} $1 = 1
     DeleteRegKey HKCR ".mpp"
     DeleteRegKey HKCR ".mpx"
