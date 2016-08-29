@@ -18,46 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
-import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.swing.DefaultListModel;
-
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
-import net.sf.mpxj.DateRange;
-import net.sf.mpxj.Day;
-import net.sf.mpxj.Duration;
-import net.sf.mpxj.FieldType;
-import net.sf.mpxj.MPXJException;
-import net.sf.mpxj.Priority;
-import net.sf.mpxj.ProjectCalendar;
-import net.sf.mpxj.ProjectCalendarException;
-import net.sf.mpxj.ProjectCalendarHours;
-import net.sf.mpxj.ProjectFile;
-import net.sf.mpxj.Rate;
-import net.sf.mpxj.RelationType;
-import net.sf.mpxj.Resource;
-import net.sf.mpxj.ResourceField;
-import net.sf.mpxj.ResourceType;
-import net.sf.mpxj.TaskField;
-import net.sf.mpxj.TaskMode;
-import net.sf.mpxj.TimeUnit;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.IGanttProject;
+import net.sf.mpxj.*;
+import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -66,6 +34,14 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+
+import javax.swing.*;
+import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
@@ -134,9 +110,9 @@ class ProjectFileExporter {
 
   private void exportHolidays(ProjectCalendar calendar) {
     for (CalendarEvent h : getCalendar().getPublicHolidays()) {
-      if (!h.isRecurring) {
+      if (!h.isRecurring && h.getType() == CalendarEvent.Type.HOLIDAY) {
         Date d = h.myDate;
-        ProjectCalendarException calendarException = calendar.addCalendarException(d, d);
+        calendar.addCalendarException(d, d);
       }
     }
   }
