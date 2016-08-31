@@ -21,6 +21,9 @@
     -fx-border-color: red;
 }
 
+.btn-done {
+    -fx-font-weight: bold;
+}
 .btn-radio {
     -fx-padding: 3px 0 3px 0;
 }
@@ -203,6 +206,11 @@
 }
 .pane-service-contents.webdav-server-setup > PropertySheet {
     -fx-background-color: white;
+}
+
+.pane-service-contents.webdav-server-setup .button-bar {
+    -fx-padding: 10px 0px;
+    -fx-alignment: top-left;
 }
 
 .pane-storage {

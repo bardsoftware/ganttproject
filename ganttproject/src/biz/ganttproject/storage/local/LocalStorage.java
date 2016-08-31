@@ -43,7 +43,7 @@ public class LocalStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public String getId() {
+  public String getCategory() {
     return "desktop";
   }
 

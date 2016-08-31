@@ -203,8 +203,8 @@ public class StorageDialogBuilder {
   }
 
   public interface Ui {
-    String getId();
-
+    String getCategory();
+    default String getId() { return getCategory(); }
     Pane createUi();
 
     String getName();

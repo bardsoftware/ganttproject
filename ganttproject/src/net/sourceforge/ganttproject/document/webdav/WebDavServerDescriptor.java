@@ -99,10 +99,9 @@ public class WebDavServerDescriptor {
     savePassword = value;
   }
 
-  public void updateFrom(WebDavServerDescriptor other) {
-    this.username = other.username;
-    this.password = other.password;
-    this.name = other.name;
-    this.savePassword = other.savePassword;
+  public WebDavServerDescriptor clone() {
+    WebDavServerDescriptor result = new WebDavServerDescriptor(name, getRootUrl(), username, password);
+    result.setSavePassword(getSavePassword());
+    return result;
   }
 }

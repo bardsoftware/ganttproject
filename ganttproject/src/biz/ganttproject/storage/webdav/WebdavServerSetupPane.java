@@ -1,6 +1,7 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.webdav;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -26,10 +27,12 @@ import java.util.function.Consumer;
 public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
   private final WebDavServerDescriptor myWebdavServer;
   private final Consumer<WebDavServerDescriptor> myValueConsumer;
+  private final boolean myHasDelete;
 
-  public WebdavServerSetupPane(WebDavServerDescriptor webdavServer, Consumer<WebDavServerDescriptor> valueConsumer) {
-    myWebdavServer = webdavServer;
+  public WebdavServerSetupPane(WebDavServerDescriptor webdavServer, Consumer<WebDavServerDescriptor> valueConsumer, boolean hasDelete) {
+    myWebdavServer = webdavServer.clone();
     myValueConsumer = valueConsumer;
+    myHasDelete = hasDelete;
   }
 
   @Override
@@ -38,7 +41,7 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public String getId() {
+  public String getCategory() {
     return null;
   }
 
@@ -74,10 +77,21 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
     propertySheet.getItems().add(new BeanProperty(
         myWebdavServer, new WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")) );
     Button btnDone = new Button("Done");
+    btnDone.getStyleClass().add("btn-done");
+    FXUtil.createBreathingButton(btnDone);
     btnDone.addEventHandler(ActionEvent.ACTION, event -> onDone());
     HBox bottomBox = new HBox();
-    bottomBox.getStyleClass().add("center");
-    bottomBox.getChildren().addAll(btnDone);
+    bottomBox.getStyleClass().add("button-bar");
+
+
+    Pane spacerPane = new Pane();
+    HBox.setHgrow(spacerPane, Priority.ALWAYS);
+    bottomBox.getChildren().addAll(btnDone, spacerPane);
+    if (myHasDelete) {
+      Button btnDelete = new Button("Delete");
+      btnDelete.addEventHandler(ActionEvent.ACTION, event -> myValueConsumer.accept(null));
+      bottomBox.getChildren().add(btnDelete);
+    }
     VBox.setVgrow(propertySheet, Priority.SOMETIMES);
 
     centerBox.getChildren().addAll(propertySheet, bottomBox);
@@ -87,7 +101,8 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
 
     HBox titleBox = new HBox();
     titleBox.getStyleClass().add("title");
-    titleBox.getChildren().add(new Label("New WebDAV Server"));
+    Label title = myHasDelete ? new Label("Edit WebDAV Server") : new Label("New WebDAV Server");
+    titleBox.getChildren().add(title);
     result.setTop(titleBox);
     result.setCenter(centerBox);
 
@@ -124,4 +139,5 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
       this.getEditor().setText(value);
     }
   }
+
 }

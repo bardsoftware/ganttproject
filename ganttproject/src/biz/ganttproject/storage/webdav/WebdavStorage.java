@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.storage.StorageDialogBuilder;
+import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -35,6 +36,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private final StorageDialogBuilder.Mode myMode;
   private final Consumer<Document> myOpenDocument;
   private final StorageDialogBuilder.DialogUi myDialogUi;
+  private final GPCloudStorageOptions myOptions;
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
   private BreadCrumbBar<BreadCrumbNode> myBreadcrumbs;
@@ -43,14 +45,17 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private StringProperty myFilename;
   private WebdavResourceListView myListView;
 
-  public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
+                       StorageDialogBuilder.DialogUi dialogUi, GPCloudStorageOptions options) {
     myMode = mode;
     myOpenDocument = openDocument;
     myDialogUi = dialogUi;
+    myOptions = options;
   }
 
-  public WebdavStorage(WebDavServerDescriptor server, StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
-    this(mode, openDocument, dialogUi);
+  public WebdavStorage(WebDavServerDescriptor server, StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
+                       StorageDialogBuilder.DialogUi dialogUi, GPCloudStorageOptions options) {
+    this(mode, openDocument, dialogUi, options);
     setServer(server);
   }
 
@@ -65,8 +70,13 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public String getId() {
+  public String getCategory() {
     return "webdav";
+  }
+
+  @Override
+  public String getId() {
+    return myServer.getRootUrl();
   }
 
   static class BreadCrumbNode {
@@ -234,7 +244,17 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
   @Override
   public Optional<Pane> createSettingsUi() {
-    return myServer == null ? Optional.of(new Pane()) : Optional.of(new WebdavServerSetupPane(myServer, server -> {}).createUi());
+    if (myServer == null) {
+      return Optional.of(new Pane());
+    }
+    Consumer<WebDavServerDescriptor> updater = server -> {
+      if (server == null) {
+        myOptions.removeValue(myServer);
+      } else {
+        myOptions.updateValue(myServer, server);
+      }
+    };
+    return Optional.of(new WebdavServerSetupPane(myServer, updater, true).createUi());
   }
 
 }
