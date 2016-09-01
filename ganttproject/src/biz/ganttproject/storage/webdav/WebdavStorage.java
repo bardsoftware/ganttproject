@@ -1,8 +1,10 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.webdav;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
+import com.google.common.base.Strings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -12,10 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
@@ -44,6 +43,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
   private WebdavResourceListView myListView;
+  private BorderPane myBorderPane;
 
   public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
                        StorageDialogBuilder.DialogUi dialogUi, GPCloudStorageOptions options) {
@@ -96,9 +96,31 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
   @Override
   public Pane createUi() {
+    myBorderPane = new BorderPane();
+    if (Strings.isNullOrEmpty(myServer.getPassword())) {
+      myBorderPane.setCenter(createPasswordUi());
+    } else {
+      myBorderPane.setCenter(createStorageUi());
+    }
+    return myBorderPane;
+  }
+
+  private Pane createPasswordUi() {
+    WebdavPasswordPane passwordPane = new WebdavPasswordPane(myServer, this::onPasswordEntered);
+    return passwordPane.createUi();
+  }
+
+  private void onPasswordEntered(WebDavServerDescriptor server) {
+    setServer(server);
+    FXUtil.transitionCenterPane(myBorderPane, createUi(), myDialogUi::resize);
+  }
+
+
+  private Pane createStorageUi() {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
+
 
     HBox buttonBar = new HBox();
     buttonBar.getStyleClass().add("webdav-button-pane");

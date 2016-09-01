@@ -103,6 +103,14 @@
 .control-row {
     -fx-padding: 5 0;
 }
+
+HBox.title Button {
+    -fx-font-weight: bold;
+}
+HBox.title Label {
+    -fx-font-size: 130%;
+}
+
 .help {
     -fx-font-size: 80%;
     -fx-padding: 0 0 0 0;
@@ -177,12 +185,6 @@
     -fx-padding: 0 0 5 0;
     -fx-alignment: center-left;
 }
-.pane-service-contents HBox.title Button {
-    -fx-font-weight: bold;
-}
-.pane-service-contents HBox.title Label {
-    -fx-font-size: 130%;
-}
 
 .pane-service-contents.local-storage HBox.open {
     -fx-alignment: center-right;
@@ -203,6 +205,13 @@
     -fx-background-insets: 0,1,1;
     -fx-text-fill: black;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
+}
+.webdav-server-password {
+    -fx-alignment: center;
+    -fx-border-color: red;
+}
+.webdav-server-password HBox {
+    -fx-padding: 5px 10px 0px 10px;
 }
 .pane-service-contents.webdav-server-setup > PropertySheet {
     -fx-background-color: white;
