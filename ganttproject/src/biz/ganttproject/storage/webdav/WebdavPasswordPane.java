@@ -43,7 +43,7 @@ public class WebdavPasswordPane {
 
     VBox result = new VBox();
     result.getStyleClass().add("webdav-server-password");
-    result.getChildren().addAll(topPa.pane-service-contentsne, hbox);
+    result.getChildren().addAll(topPane, hbox);
 
     return result;
   }
