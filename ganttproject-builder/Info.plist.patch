@@ -40,6 +40,8 @@
 +          <string>GAN</string>
 +        </array>
 +      </dict>
+       <key>NSHighResolutionCapable</key>
+       <true/>
 +    </dict>
 +  </array>
  <key>CFBundleDevelopmentRegion</key>
