@@ -1,0 +1,35 @@
+import org.gradle.plugins.ide.idea.model.*
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+ext.distBinDir = file('dist-bin')
+ext.pluginsDir = file('dist-bin/plugins')
+
+def javaProjects() {
+    subprojects.findAll { project ->
+        project.name != rootProject.name && project.path != ':..'
+    }
+}
+
+clean {
+  delete += "dist-bin"
+}
+
+task copyPlugin(type: Copy) {
+  into(rootProject.distBinDir)
+  from(fileTree(".")) {
+    include "lib/javagalician.jar"
+    include "logging.properties"
+  }
+}
+task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) << {
+  println "== Finished building binary distro =="
+}
+
+idea {
+  project {
+    vcs = 'Git'
+    outputFile = new File(outputFile.parentFile, 'ganttproject.ipr')
+  }
+}

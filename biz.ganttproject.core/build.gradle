@@ -1,0 +1,28 @@
+apply plugin: 'java'
+
+dependencies {
+  compile fileTree(dir: 'lib', include: ['*.jar'])
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+        }
+    }
+}
+
+task copyPlugin(type: Copy) {
+    into(new File(rootProject.pluginsDir, project.name))
+    from(jar.outputs.getFiles().getFiles().flatten())
+    from(fileTree(".")) {
+      include "plugin.xml"
+      include "lib/**.jar"
+      include "resources/**"
+    }
+    doLast {
+      println "Copying $project.name to $rootProject.pluginsDir"
+    }
+}

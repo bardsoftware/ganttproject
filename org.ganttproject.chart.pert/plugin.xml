@@ -7,7 +7,7 @@
    provider-name="">
 
    <runtime>
-      <library name="pert.jar"/>
+      <library name="org.ganttproject.chart.pert.jar"/>
       <library name="resources/">
          <export name="*"/>
       </library>
