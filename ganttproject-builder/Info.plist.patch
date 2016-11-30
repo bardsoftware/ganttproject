@@ -1,6 +1,6 @@
 --- Info.plist	2014-04-16 04:09:33.605115769 +0400
 +++ Info.plist.new	2014-04-22 03:31:23.228938448 +0400
-@@ -2,6 +2,44 @@
+@@ -2,6 +2,46 @@
  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
  <plist version="1.0">
  <dict>
@@ -40,6 +40,8 @@
 +          <string>GAN</string>
 +        </array>
 +      </dict>
++      <key>NSHighResolutionCapable</key>
++      <true/>
 +    </dict>
 +  </array>
  <key>CFBundleDevelopmentRegion</key>
