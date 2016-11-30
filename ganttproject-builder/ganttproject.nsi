@@ -8,7 +8,7 @@ Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
 !define VERSION "2.8.2"
-!define VERSION_BUILD "2.8.2-r2027"
+!define VERSION_BUILD "2.8.2-r2030"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -56,6 +56,7 @@ InstallDir $PROGRAMFILES\GanttProject-2.8
 !insertmacro MUI_LANGUAGE "Lithuanian"
 !insertmacro MUI_LANGUAGE "Hebrew"
 !insertmacro MUI_LANGUAGE "Turkish"
+!insertmacro MUI_LANGUAGE "Ukrainian"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
