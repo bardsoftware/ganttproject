@@ -6,7 +6,7 @@
    provider-name="">
 
    <runtime>
-      <library name="ganttproject-core.jar">
+      <library name="biz.ganttproject.core.jar">
          <export name="*"/>
       </library>
       <library name="lib/ganttproject-guava.jar">

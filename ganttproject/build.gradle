@@ -1,0 +1,59 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+ext {
+  libDir = 'lib/core'
+}
+
+dependencies {
+  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+  compile project(':..:biz.ganttproject.core')
+  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
+  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
+  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
+  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
+}
+
+updateMavenDeps.doFirst {
+  into project.ext.libDir
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDirs = ["src"]
+            include "**/*.css"
+        }
+    }
+}
+
+task copyPluginFiles(type: Copy) {
+    into(new File(rootProject.pluginsDir, project.name))
+    from(jar.outputs.getFiles().getFiles().flatten())
+    from(fileTree(".")) {
+      include "plugin.xml"
+      include "lib/core/**.jar"
+      exclude "lib/core/eclipsito.jar"
+      include "data/resources/**.properties"
+      include "data/resources/calendar/**"
+      include "data/resources/icons/**"
+      include "data/resources/language/**"
+      include "data/resources/xslfo/**"
+      include "data/resources/xslt/**"
+    }
+}
+
+task copyEclipsito(type: Copy) {
+    into(rootProject.distBinDir)
+    from(fileTree("lib/core")) {
+      include "eclipsito.jar"
+    }
+    outputs.upToDateWhen {
+      new File(rootProject.distBinDir, "eclipsito.jar").exists()
+    }
+}
+
+task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }

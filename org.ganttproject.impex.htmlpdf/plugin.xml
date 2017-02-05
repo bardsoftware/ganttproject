@@ -7,7 +7,7 @@
    provider-name="ganttproject.org team">
 
    <runtime>
-      <library name="ganttproject-htmlpdf.jar">
+      <library name="org.ganttproject.impex.htmlpdf.jar">
          <export name="*"/>
       </library>
       <library name="lib/itextpdf-5.3.1.jar">
