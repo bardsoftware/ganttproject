@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="us.federal" name="United States Federal Holidays 2008-2016" type="country">
+<calendar id="us.federal" name="United States Federal Holidays 2008-2017" type="country">
 <!-- Data sources
 http://www.opm.gov/operating_status_schedules/fedhol/2012.asp -->
 http://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays/#url=2015 -->
-http://www.officeholidays.com/ics/subscribe_country.php?tbl_country=USA
+http://www.officeholidays.com/countries/usa/index.php
 -->
     <date year="2008" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
     <date year="2008" month="1" date="21" type="HOLIDAY"><![CDATA[Martin Luther King Day]]></date>
@@ -130,6 +130,24 @@ http://www.officeholidays.com/ics/subscribe_country.php?tbl_country=USA
     <date year="2016" month="11" date="24" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
     <date year="2016" month="11" date="25" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
     <date year="2016" month="12" date="26" type="HOLIDAY"><![CDATA[Christmas Day (in lieu)]]></date>
+
+    <date year="2017" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="2017" month="1" date="2" type="HOLIDAY"><![CDATA[New Years Day (in lieu)]]></date>
+    <date year="2017" month="1" date="16" type="HOLIDAY"><![CDATA[Martin Luther King Day]]></date>
+    <date year="2017" month="2" date="2" type="NEUTRAL"><![CDATA[Groundhog Day]]></date>
+    <date year="2017" month="2" date="20" type="HOLIDAY"><![CDATA[Presidents' Day]]></date>
+    <date year="2017" month="5" date="14" type="NEUTRAL"><![CDATA[Mother's Day]]></date>
+    <date year="2017" month="5" date="29" type="HOLIDAY"><![CDATA[Memorial Day]]></date>
+    <date year="2017" month="6" date="18" type="NEUTRAL"><![CDATA[Father's Day]]></date>
+    <date year="2017" month="7" date="4" type="HOLIDAY"><![CDATA[Independence Day]]></date>
+    <date year="2017" month="9" date="4" type="HOLIDAY"><![CDATA[Labor Day]]></date>
+    <date year="2017" month="10" date="9" type="HOLIDAY"><![CDATA[Columbus Day]]></date>
+    <date year="2017" month="11" date="10" type="HOLIDAY"><![CDATA[Veterans Day (in lieu)]]></date>
+    <date year="2017" month="11" date="11" type="HOLIDAY"><![CDATA[Veterans Day]]></date>
+    <date year="2017" month="11" date="23" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
+    <date year="2017" month="11" date="24" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
+    <date year="2017" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day]]></date>
+
 </calendar >
 
 
