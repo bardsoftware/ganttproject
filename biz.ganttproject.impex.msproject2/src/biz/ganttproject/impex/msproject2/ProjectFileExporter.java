@@ -55,11 +55,11 @@ class ProjectFileExporter {
   public ProjectFileExporter(IGanttProject nativeProject) {
     myNativeProject = nativeProject;
     myOutputProject = new ProjectFile();
-    myOutputProject.setAutoOutlineLevel(true);
-    myOutputProject.setAutoWBS(true);
-    myOutputProject.setAutoOutlineNumber(true);
-    myOutputProject.setAutoResourceUniqueID(false);
-    myOutputProject.setAutoTaskUniqueID(false);
+    myOutputProject.getProjectConfig().setAutoOutlineLevel(true);
+    myOutputProject.getProjectConfig().setAutoWBS(true);
+    myOutputProject.getProjectConfig().setAutoOutlineNumber(true);
+    myOutputProject.getProjectConfig().setAutoResourceUniqueID(false);
+    myOutputProject.getProjectConfig().setAutoTaskUniqueID(false);
   }
 
   ProjectFile run() throws MPXJException {
@@ -121,7 +121,7 @@ class ProjectFileExporter {
     Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
     collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
     for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
-      myOutputProject.setTaskFieldAlias((TaskField) e.getValue(), e.getKey().getName());
+      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
     }
     net.sf.mpxj.Task rootTask = myOutputProject.addTask();
     rootTask.setEffortDriven(false);
@@ -197,7 +197,7 @@ class ProjectFileExporter {
   }
 
   private Date convertStartTime(Date gpStartDate) {
-    Date startTime = myOutputProject.getCalendar().getStartTime(gpStartDate);
+    Date startTime = myOutputProject.getDefaultCalendar().getStartTime(gpStartDate);
     Calendar c = (Calendar) Calendar.getInstance().clone();
     c.setTime(gpStartDate);
     c.set(Calendar.HOUR, startTime.getHours());
@@ -209,7 +209,7 @@ class ProjectFileExporter {
     Calendar c = (Calendar) Calendar.getInstance().clone();
     c.setTime(gpFinishDate);
     c.add(Calendar.DAY_OF_YEAR, -1);
-    Date finishTime = myOutputProject.getCalendar().getFinishTime(c.getTime());
+    Date finishTime = myOutputProject.getDefaultCalendar().getFinishTime(c.getTime());
     if (finishTime != null) {
 	    c.set(Calendar.HOUR, finishTime.getHours());
 	    c.set(Calendar.MINUTE, finishTime.getMinutes());
@@ -306,7 +306,7 @@ class ProjectFileExporter {
     collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType,
         ResourceField.class);
     for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
-      myOutputProject.setResourceFieldAlias((ResourceField) e.getValue(), e.getKey().getName());
+      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
     }
     for (HumanResource hr : getResourceManager().getResources()) {
       exportResource(hr, id2mpxjResource, customProperty_fieldType);
@@ -408,7 +408,7 @@ class ProjectFileExporter {
       ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();
       resourceCalendar.addDefaultCalendarHours();
       exportWeekends(resourceCalendar);
-      resourceCalendar.setParent(myOutputProject.getCalendar());
+      resourceCalendar.setParent(myOutputProject.getDefaultCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
       for (int i = 0; i < daysOff.size(); i++) {
         GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
