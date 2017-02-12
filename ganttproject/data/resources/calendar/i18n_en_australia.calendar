@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="au" name="Australia National Holidays 2016" type="country">
+<calendar id="au" name="Australia National Holidays 2016-2017" type="country">
 <!-- http://www.australia.gov.au/about-australia/special-dates-and-events/public-holidays -->
 <!-- http://www.officeholidays.com/countries/australia/index.php -->
 <!-- http://www.timeanddate.com/holidays/australia/ -->
@@ -17,4 +17,9 @@
     <date year="2016" month="03" date="25" type="HOLIDAY"><![CDATA[Good Friday]]></date>
     <date year="2016" month="03" date="28" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
     <date year="2016" month="12" date="27" type="HOLIDAY"><![CDATA[Christmas Day (in lieu)]]></date>
+
+	<date year="2017" month="01" date="02" type="HOLIDAY"><![CDATA[New Year's Holiday]]></date>
+    <date year="2017" month="04" date="14" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2017" month="04" date="17" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+
 </calendar>
