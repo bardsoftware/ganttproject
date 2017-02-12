@@ -391,42 +391,21 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
       GPLogger.log(String.format("Bounds stored in the  options: %s", bounds));
 
-      double visibleAreaTotal = 0.0;
-      double maxVisibleArea = 0.0;
-      GraphicsConfiguration argmaxVisibleArea = null;
-      Rectangle currentBounds = this.getBounds();
-      GraphicsConfiguration currentDisplay = null;
-      GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
-
-      // Iterate through the screen devices and calculate how much of the stored
-      // rectangle fits on every device. Also calcualte the total visible area.
-      for (GraphicsDevice gd : e.getScreenDevices()) {
-        GraphicsConfiguration gc = gd.getDefaultConfiguration();
-        if (currentBounds.intersects(gc.getBounds())) {
-          currentDisplay = gc;
-        }
-        if (bounds.intersects(gc.getBounds())) {
-          Rectangle visibleHere = bounds.intersection(gc.getBounds());
-          double visibleArea = 1.0 * visibleHere.height * visibleHere.width / (bounds.height * bounds.width);
-          visibleAreaTotal += visibleArea;
-          if (visibleArea > maxVisibleArea) {
-            argmaxVisibleArea = gc;
-            maxVisibleArea = visibleArea;
-          }
-        }
-      }
-
+      UIUtil.MultiscreenFitResult fit = UIUtil.multiscreenFit(bounds);
       // If more than 1/4 of the rectangle is visible on screen devices then leave it where it is
-      if (visibleAreaTotal < 0.25 || Math.max(bounds.width, bounds.height) < 100) {
+      if (fit.totalVisibleArea < 0.25 || Math.max(bounds.width, bounds.height) < 100) {
         // Otherwise if it is visible on at least one device, try to fit it there
-        if (argmaxVisibleArea != null) {
-          bounds = fitBounds(argmaxVisibleArea, bounds);
-        } else if (currentDisplay != null) {
-          // If there are no devices where rectangle is visible, fit it on the current device
-          bounds = fitBounds(currentDisplay, bounds);
+        if (fit.argmaxVisibleArea != null) {
+          bounds = fitBounds(fit.argmaxVisibleArea, bounds);
         } else {
-          GPLogger.log(String.format("We have not found the display corresponding to bounds %s. Leaving the window where it is", bounds));
-          return;
+          UIUtil.MultiscreenFitResult currentFit = UIUtil.multiscreenFit(this.getBounds());
+          if (currentFit.argmaxVisibleArea != null) {
+            // If there are no devices where rectangle is visible, fit it on the current device
+            bounds = fitBounds(currentFit.argmaxVisibleArea, bounds);
+          } else {
+            GPLogger.log(String.format("We have not found the display corresponding to bounds %s. Leaving the window where it is", bounds));
+            return;
+          }
         }
       }
       setBounds(bounds);

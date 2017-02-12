@@ -36,13 +36,6 @@ public class DialogAligner {
     frame.setLocationRelativeTo(null);
   }
 
-  public static void centerOnScreen(Component component) {
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-    component.setLocation(screenSize.width / 2 - (component.getWidth() / 2),
-        screenSize.height / 2 - (component.getHeight() / 2));
-  }
-
   public static void center(JDialog dlg, Container parent, UIFacade.Centering centering) {
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     Point point = parent.getLocationOnScreen();
