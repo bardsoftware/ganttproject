@@ -18,30 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-
-import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskImpl;
-import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
@@ -56,11 +36,18 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.task.*;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -580,7 +567,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     if (myModel.getBaseline() != null) {
       rowHeight = rowHeight + 8;
     }
-    return rowHeight;
+    int appFontSize = myModel.getProjectConfig().getAppFontSize().get();
+    return Math.max(appFontSize, rowHeight);
   }
 
   private int getRectangleHeight() {

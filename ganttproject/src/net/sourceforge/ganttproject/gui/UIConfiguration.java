@@ -18,19 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.FontOption;
-import net.sourceforge.ganttproject.font.Fonts;
+import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.gui.taskproperties.DependencyTableModel.MyColumn;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author bard
@@ -68,7 +64,7 @@ public class UIConfiguration {
   private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
 
   private FontOption myChartFontOption;
-
+  private Supplier<Integer> myAppFontSize;
 
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
 //    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
@@ -82,6 +78,13 @@ public class UIConfiguration {
     myWeekEndColor = Color.GRAY;
     myDayOffColor = new Color(0.9f, 1f, 0.17f);
     myWeekendAlphaRenderingOption = new AlphaRenderingOption();
+    myAppFontSize = new Supplier<Integer>() {
+      @Override
+      public Integer get() {
+        Font tableFont = (Font) UIManager.get("Table.font");
+        return tableFont.getSize() + 8;
+      }
+    };
   }
 
 //  public Font getChartMainFont() {
@@ -217,6 +220,8 @@ public class UIConfiguration {
     return myChartFontOption;
   }
 
-
+  public Supplier<Integer> getAppFontSize() {
+    return myAppFontSize;
+  }
 
 }

@@ -321,17 +321,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
     getViewManager().toggleVisible(myResourceChartTabContent);
 
-    addWindowListener(new java.awt.event.WindowAdapter() {
-      @Override
-      public void windowClosing(java.awt.event.WindowEvent evt) {
-        quitApplication();
-      }
-
-      @Override
-      public void windowOpened(WindowEvent e) {
-        myRowHeightAligner.optionsChanged();
-      }
-    });
     addComponentListener(new ComponentAdapter() {
       @Override
       public void componentShown(ComponentEvent e) {
@@ -364,11 +353,17 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     restoreBounds();
     addWindowListener(new WindowAdapter() {
       @Override
+      public void windowClosing(WindowEvent windowEvent) {
+        quitApplication();
+      }
+
+      @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
+        myRowHeightAligner.optionsChanged();
       }
     });
 

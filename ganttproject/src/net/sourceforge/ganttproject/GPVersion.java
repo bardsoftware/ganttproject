@@ -43,7 +43,7 @@ public abstract class GPVersion {
   public static String OSTRAVA_2_7_2 = "2.7.2 Ostrava (build 1954)";
   public static String PILSEN = "2.8 Pilsen (build 2016)";
   public static String PILSEN_2_8_1 = "2.8.1 Pilsen (build 2024)";
-  public static String PILSEN_2_8_2 = "2.8.2 Pilsen (build 2030)";
+  public static String PILSEN_2_8_2 = "2.8.2 Pilsen (build 2048)";
   public static String CURRENT = PILSEN_2_8_2;
 
   public static String getCurrentVersionNumber() {
