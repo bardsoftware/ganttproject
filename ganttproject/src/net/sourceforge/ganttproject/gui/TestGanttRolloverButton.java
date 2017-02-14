@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -41,16 +41,13 @@ package net.sourceforge.ganttproject.gui;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.awt.EventQueue;
-import java.awt.Insets;
+import net.sourceforge.ganttproject.action.GPAction;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.SwingConstants;
 
 /**
  * Special button for tests on TaskPropertiesBeans
@@ -75,6 +72,15 @@ public class TestGanttRolloverButton extends JButton {
   public TestGanttRolloverButton(Action action) {
     this();
     setAction(action);
+    if (action instanceof GPAction) {
+      String fontawesomeLabel = UIUtil.getFontawesomeLabel((GPAction)action);
+      if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
+        setFont(UIUtil.FONTAWESOME_FONT);
+        setText(fontawesomeLabel);
+        setIcon(null);
+        return;
+      }
+    }
     Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
     if (smallIcon != null) {
       setIcon(smallIcon);
