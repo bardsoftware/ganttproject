@@ -73,11 +73,14 @@ public class TestGanttRolloverButton extends JButton {
     this();
     setAction(action);
     if (action instanceof GPAction) {
-      String fontawesomeLabel = UIUtil.getFontawesomeLabel((GPAction)action);
+      String fontawesomeLabel = ((GPAction)action).getFontawesomeLabel();
       if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
         setFont(UIUtil.FONTAWESOME_FONT);
         setText(fontawesomeLabel);
         setIcon(null);
+        setHorizontalAlignment(SwingConstants.CENTER);
+        setVerticalAlignment(SwingConstants.CENTER);
+        setForeground(UIUtil.PATINA_FOREGROUND);
         return;
       }
     }

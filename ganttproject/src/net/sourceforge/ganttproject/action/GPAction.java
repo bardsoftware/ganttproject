@@ -18,7 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.Toolkit;
+import com.google.common.base.Strings;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -29,18 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
-
-import com.google.common.base.Strings;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 /**
  * @author bard
@@ -258,6 +253,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
     }
     return (String) ourIconProperties.get(getID());
+  }
+
+  public String getFontawesomeLabel() {
+    return UIUtil.getFontawesomeLabel(this);
   }
 
   public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {

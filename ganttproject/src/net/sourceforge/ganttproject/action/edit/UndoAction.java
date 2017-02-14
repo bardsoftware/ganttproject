@@ -18,13 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.event.UndoableEditEvent;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import javax.swing.event.UndoableEditEvent;
+import java.awt.event.ActionEvent;
 
 /**
  * @author bard
@@ -56,13 +55,13 @@ public class UndoAction extends GPAction implements GPUndoListener {
   @Override
   public void undoableEditHappened(UndoableEditEvent e) {
     setEnabled(myUndoManager.canUndo());
-    updateAction();
+    updateTooltip();
   }
 
   @Override
   public void undoOrRedoHappened() {
     setEnabled(myUndoManager.canUndo());
-    updateAction();
+    updateTooltip();
   }
 
   @Override

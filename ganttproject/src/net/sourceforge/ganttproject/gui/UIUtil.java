@@ -83,6 +83,7 @@ public abstract class UIUtil {
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
   public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
   public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
+  public static final Color PATINA_FOREGROUND = new Color(102, 153, 153);
   public static Font FONTAWESOME_FONT = null;
   private static Properties FONTAWESOME_PROPERTIES = new Properties();
   static {

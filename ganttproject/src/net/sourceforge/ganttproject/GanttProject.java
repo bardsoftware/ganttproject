@@ -339,7 +339,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("5. calculating size and packing...");
     createContentPane();
-    addButtons(getToolBar());
+    final List<JButton> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
 
@@ -360,6 +360,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
+        resizeToolbar(buttons);
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
@@ -380,6 +381,28 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
   }
+
+  private void resizeToolbar(List<JButton> buttons) {
+    int maxWidth = 0;
+    int maxHeight = 0;
+    for (JButton b : buttons) {
+      if (b == null) {
+        continue;
+      }
+      maxWidth  = Math.max(maxWidth, b.getSize().width);
+      maxHeight = Math.max(maxHeight, b.getSize().height);
+    }
+    Dimension d = new Dimension(Math.max(maxHeight, maxWidth), Math.max(maxHeight, maxWidth));
+    for (JButton b : buttons) {
+      if (b == null) {
+        continue;
+      }
+      b.setMinimumSize(d);
+      b.setMaximumSize(d);
+      b.setPreferredSize(d);
+    }
+  }
+
 
   private void restoreBounds() {
     if (options.isLoaded()) {
@@ -512,7 +535,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /** Create the button on toolbar */
-  private void addButtons(JToolBar toolBar) {
+  private List<JButton> addButtons(JToolBar toolBar) {
     List<JButton> buttons = new ArrayList<JButton>();
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
@@ -594,21 +617,23 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         separator.setPreferredSize(new Dimension(24, 24));
         toolBar.add(separator);
       } else {
-        b.setAlignmentY(TOP_ALIGNMENT);
+        b.setAlignmentY(CENTER_ALIGNMENT);
         toolBar.add(b);
       }
     }
 
     JTextField searchBox = getSearchUi().getSearchField();
     searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
+    searchBox.setAlignmentY(CENTER_ALIGNMENT);
     JPanel tailPanel = new JPanel(new BorderLayout());
 
     JPanel searchPanel = new JPanel();
     searchPanel.add(searchBox);
     tailPanel.add(searchPanel, BorderLayout.EAST);
-    tailPanel.setAlignmentY(TOP_ALIGNMENT);
+    tailPanel.setAlignmentY(CENTER_ALIGNMENT);
     tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
     toolBar.add(tailPanel);
+    return buttons;
   }
 
   @Override
