@@ -57,6 +57,7 @@ public class TestGanttRolloverButton extends JButton {
   private int myAutoRepeatMilliseconds;
 
   private boolean myTextHidden = false;
+  private boolean isFontAwesome = false;
 
   public TestGanttRolloverButton() {
     setBorderPainted(false);
@@ -72,22 +73,12 @@ public class TestGanttRolloverButton extends JButton {
   public TestGanttRolloverButton(Action action) {
     this();
     setAction(action);
-    if (action instanceof GPAction) {
-      String fontawesomeLabel = ((GPAction)action).getFontawesomeLabel();
-      if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
-        setFont(UIUtil.FONTAWESOME_FONT);
-        setText(fontawesomeLabel);
-        setIcon(null);
-        setHorizontalAlignment(SwingConstants.CENTER);
-        setVerticalAlignment(SwingConstants.CENTER);
-        setForeground(UIUtil.PATINA_FOREGROUND);
-        return;
+    if (!setupFontAwesome()) {
+      Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
+      if (smallIcon != null) {
+        setIcon(smallIcon);
+        setTextHidden(true);
       }
-    }
-    Icon smallIcon = (Icon) action.getValue(Action.SMALL_ICON);
-    if (smallIcon != null) {
-      setIcon(smallIcon);
-      setTextHidden(true);
     }
   }
 
@@ -135,6 +126,33 @@ public class TestGanttRolloverButton extends JButton {
 
   public void setDefaultIcon(Icon iconOn) {
     setIcon(iconOn);
+  }
+
+  private boolean setupFontAwesome() {
+    Action action = getAction();
+    if (action instanceof GPAction) {
+      String fontawesomeLabel = ((GPAction) action).getFontawesomeLabel();
+      if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
+        isFontAwesome = true;
+        Font font = (Font) UIManager.get("FontAwesome.font");
+        setFont(font);
+        setText(fontawesomeLabel);
+        setIcon(null);
+        setHorizontalAlignment(SwingConstants.CENTER);
+        setVerticalAlignment(SwingConstants.CENTER);
+        setForeground(UIUtil.PATINA_FOREGROUND);
+        return true;
+      }
+    }
+    return false;
+  }
+  public Runnable onUpdateFont() {
+    return new Runnable() {
+      @Override
+      public void run() {
+        setupFontAwesome();
+      }
+    };
   }
 
   class MouseOverHandler extends MouseAdapter {

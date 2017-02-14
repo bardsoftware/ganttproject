@@ -339,7 +339,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("5. calculating size and packing...");
     createContentPane();
-    final List<JButton> buttons = addButtons(getToolBar());
+    final List<? extends JButton> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
 
@@ -382,7 +382,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
   }
 
-  private void resizeToolbar(List<JButton> buttons) {
+  private void resizeToolbar(List<? extends JButton> buttons) {
     int maxWidth = 0;
     int maxHeight = 0;
     for (JButton b : buttons) {
@@ -535,8 +535,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /** Create the button on toolbar */
-  private List<JButton> addButtons(JToolBar toolBar) {
-    List<JButton> buttons = new ArrayList<JButton>();
+  private List<? extends JButton> addButtons(JToolBar toolBar) {
+    List<TestGanttRolloverButton> buttons = new ArrayList<>();
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(null);
@@ -633,6 +633,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     tailPanel.setAlignmentY(CENTER_ALIGNMENT);
     tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
     toolBar.add(tailPanel);
+
+    for (TestGanttRolloverButton b : buttons) {
+      if (b == null) {
+        continue;
+      }
+      getUiFacadeImpl().addOnUpdateComponentTreeUi(b.onUpdateFont());
+    }
     return buttons;
   }
 

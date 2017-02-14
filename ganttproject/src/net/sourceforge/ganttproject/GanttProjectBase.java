@@ -219,6 +219,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
+  public void addOnUpdateComponentTreeUi(Runnable callback) {
+    myUIFacade.addOnUpdateComponentTreeUi(callback);
+  }
+
+  @Override
   public ScrollingManager getScrollingManager() {
     return myUIFacade.getScrollingManager();
   }

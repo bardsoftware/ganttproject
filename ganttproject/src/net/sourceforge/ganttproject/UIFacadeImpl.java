@@ -82,6 +82,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
+  private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
 
   private static Map<FontSpec.Size, String> getSizeLabels() {
     Map<FontSpec.Size, String> result = Maps.newHashMap();
@@ -558,6 +559,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     SwingUtilities.updateComponentTreeUI(myMainFrame);
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
+        for (Runnable r : myOnUpdateComponentTreeUiCallbacks) {
+          r.run();
+        }
         getGanttChart().reset();
         getResourceChart().reset();
       }
@@ -571,7 +575,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         String key = String.valueOf(keys.nextElement());
         Object obj = UIManager.get(key);
         if (obj instanceof Font) {
-          System.err.println(key);
           Font f = (Font) obj;
           myOriginalFonts.put(key, f);
         }
@@ -643,6 +646,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public GPOptionGroup[] getOptions() {
     return myOptionGroups.toArray(new GPOptionGroup[myOptionGroups.size()]);
+  }
+
+  @Override
+  public void addOnUpdateComponentTreeUi(Runnable callback) {
+    myOnUpdateComponentTreeUiCallbacks.add(callback);
   }
 
   @Override

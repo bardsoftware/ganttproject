@@ -18,16 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Image;
-import java.util.Collection;
-import java.util.Locale;
-
-import javax.swing.Action;
-
 import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -38,6 +29,11 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collection;
+import java.util.Locale;
 
 /**
  * @author bard
@@ -147,4 +143,6 @@ public interface UIFacade {
   DefaultEnumerationOption<Locale> getLanguageOption();
 
   GPOptionGroup[] getOptions();
+
+  void addOnUpdateComponentTreeUi(Runnable callback);
 }
