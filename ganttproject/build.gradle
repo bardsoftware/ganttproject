@@ -8,6 +8,7 @@ ext {
 dependencies {
   compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
+  compile files('data/resources')
   mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
