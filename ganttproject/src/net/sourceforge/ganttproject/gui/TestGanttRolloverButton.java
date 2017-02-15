@@ -132,6 +132,7 @@ public class TestGanttRolloverButton extends JButton {
     Action action = getAction();
     if (action instanceof GPAction) {
       String fontawesomeLabel = ((GPAction) action).getFontawesomeLabel();
+      System.err.println("action="+((GPAction) action).getID()+" label="+fontawesomeLabel);
       if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
         isFontAwesome = true;
         Font font = (Font) UIManager.get("FontAwesome.font");
@@ -141,6 +142,7 @@ public class TestGanttRolloverButton extends JButton {
         setHorizontalAlignment(SwingConstants.CENTER);
         setVerticalAlignment(SwingConstants.CENTER);
         setForeground(UIUtil.PATINA_FOREGROUND);
+        setBackground(UIManager.getColor("Label.background"));
         return true;
       }
     }

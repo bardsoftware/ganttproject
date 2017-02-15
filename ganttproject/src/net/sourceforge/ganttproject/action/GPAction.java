@@ -41,6 +41,8 @@ import java.util.Properties;
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+  private final String myIconSize;
+
   public enum IconSize {
     NO_ICON(null), SMALL("8"), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
 
@@ -86,6 +88,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   protected GPAction(String name, String iconSize) {
     super(name);
     myName = name;
+    myIconSize = iconSize;
     if (iconSize != null) {
       updateIcon(iconSize);
     }
@@ -226,7 +229,12 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
    * changed action name and/or description
    */
   public void updateAction() {
-    updateName();
+    if (IconSize.TOOLBAR_SMALL.asString().equals(myIconSize) && getFontawesomeLabel() != null) {
+      putValue(Action.SMALL_ICON, null);
+      putValue(Action.NAME, getFontawesomeLabel());
+    } else {
+      updateName();
+    }
     updateTooltip();
   }
 

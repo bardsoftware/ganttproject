@@ -18,21 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
-import javax.swing.event.ChangeEvent;
-
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
 import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -52,6 +38,14 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.List;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
     implements ResourceView, ResourceContext, AssignmentContext, ResourceTreeUIFacade {
@@ -95,8 +89,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   			return resourceDeleteAction;
   		}
   	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
-    setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(),
-        deleteAction);
+    setArtefactActions(myResourceActionSet.getResourceNewAction().withIcon(GPAction.IconSize.TOOLBAR_SMALL),
+        myResourceActionSet.getResourcePropertiesAction().withIcon(GPAction.IconSize.TOOLBAR_SMALL),
+        deleteAction.withIcon(GPAction.IconSize.TOOLBAR_SMALL));
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
         myResourceActionSet.getResourceMoveDownAction(), null, null, deleteAction,
         appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),

@@ -119,8 +119,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final ProjectMenu myProjectMenu;
 
-  private TestGanttRolloverButton bNew;
-
   /** The project filename */
   public Document projectDocument = null;
 
@@ -339,7 +337,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("5. calculating size and packing...");
     createContentPane();
-    final List<? extends JButton> buttons = addButtons(getToolBar());
+    final List<? extends JComponent> buttons = addButtons(getToolBar());
+    getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
+      @Override
+      public void run() {
+        resizeToolbar(buttons);
+      }
+    });
     // Chart tabs
     getTabs().setSelectedIndex(0);
 
@@ -382,10 +386,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
   }
 
-  private void resizeToolbar(List<? extends JButton> buttons) {
+  private void resizeToolbar(List<? extends JComponent> buttons) {
     int maxWidth = 0;
     int maxHeight = 0;
-    for (JButton b : buttons) {
+    for (JComponent b : buttons) {
       if (b == null) {
         continue;
       }
@@ -393,7 +397,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       maxHeight = Math.max(maxHeight, b.getSize().height);
     }
     Dimension d = new Dimension(Math.max(maxHeight, maxWidth), Math.max(maxHeight, maxWidth));
-    for (JButton b : buttons) {
+    for (JComponent b : buttons) {
       if (b == null) {
         continue;
       }
@@ -535,7 +539,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /** Create the button on toolbar */
-  private List<? extends JButton> addButtons(JToolBar toolBar) {
+  private List<? extends JComponent> addButtons(JToolBar toolBar) {
+    List<JComponent> result = new ArrayList<>();
     List<TestGanttRolloverButton> buttons = new ArrayList<>();
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
@@ -551,6 +556,25 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
         }
       }, new Action[] {taskNewAction, resourceNewAction});
+      final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
+      final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
+      buttons.add(bNewTask);
+      buttons.add(bnewResource);
+      getTabs().addChangeListener(new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent changeEvent) {
+          switch (getTabs().getSelectedIndex()) {
+            case UIFacade.GANTT_INDEX:
+              bNewTask.setVisible(true);
+              bnewResource.setVisible(false);
+              return;
+            case UIFacade.RESOURCES_INDEX:
+              bNewTask.setVisible(false);
+              bnewResource.setVisible(true);
+              return;
+          }
+        }
+      });
     }
 
     final ArtefactAction deleteAction;
@@ -594,8 +618,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    bNew = new TestGanttRolloverButton(newAction);
-    buttons.add(bNew);
     buttons.add(new TestGanttRolloverButton(deleteAction));
     buttons.add(null);
 
@@ -608,10 +630,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     buttons.add(new TestGanttRolloverButton(myEditMenu.getUndoAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
 
+    for (TestGanttRolloverButton b : buttons) {
+      result.add(b);
+      if (b == null) {
+        continue;
+      }
+      getUiFacadeImpl().addOnUpdateComponentTreeUi(b.onUpdateFont());
+    }
+
     JPanel paddingLeft = new JPanel();
     paddingLeft.setPreferredSize(new Dimension(12, 24));
     toolBar.add(paddingLeft);
-    for (JButton b : buttons) {
+    for (JComponent b : result) {
       if (b == null) {
         JPanel separator = new JPanel();
         separator.setPreferredSize(new Dimension(24, 24));
@@ -634,13 +664,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
     toolBar.add(tailPanel);
 
-    for (TestGanttRolloverButton b : buttons) {
-      if (b == null) {
-        continue;
-      }
-      getUiFacadeImpl().addOnUpdateComponentTreeUi(b.onUpdateFont());
-    }
-    return buttons;
+    return result;
   }
 
   @Override

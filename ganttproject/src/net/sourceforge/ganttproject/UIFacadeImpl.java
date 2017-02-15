@@ -520,9 +520,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
-        if (!doSetLookAndFeel(laf)) {
-          doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
-        }
+//        if (!doSetLookAndFeel(laf)) {
+//          doSetLookAndFeel(GanttLookAndFeels.getGanttLookAndFeels().getDefaultInfo());
+//        }
         if (myAppFontValueListener == null) {
           myAppFontValueListener = new ChangeValueListener() {
             @Override

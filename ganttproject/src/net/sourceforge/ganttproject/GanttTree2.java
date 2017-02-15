@@ -18,45 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TooManyListenersException;
-import java.util.logging.Level;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JScrollBar;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
+import biz.ganttproject.core.table.ColumnList;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskIndentAction;
@@ -79,7 +44,6 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -89,11 +53,33 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
-import biz.ganttproject.core.table.ColumnList;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TooManyListenersException;
+import java.util.logging.Level;
 
 /**
  * Class that generate the JTree
@@ -187,7 +173,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
     GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
 
-    setArtefactActions(newAction, propertiesAction, deleteAction);
+    setArtefactActions(newAction.withIcon(GPAction.IconSize.TOOLBAR_SMALL), propertiesAction.withIcon(GPAction.IconSize.TOOLBAR_SMALL), deleteAction.withIcon(GPAction.IconSize.TOOLBAR_SMALL));
     myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
     myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
     myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, this);
