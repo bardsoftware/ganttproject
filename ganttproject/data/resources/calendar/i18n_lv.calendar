@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="lv" name="Latvian Holidays 2017" type="country">
+<!-- Data sources http://www.vid.lv/kalendars_2017.html 
+Contributed by https://github.com/AndrejIT
+-->
+    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[Jaungada diena]]></date>
+    <date year="" month="5" date="1" type="HOLIDAY"><![CDATA[Darba svētki]]></date>
+    <date year="" month="5" date="4" type="HOLIDAY"><![CDATA[Latvijas Republikas Neatkarības deklarācijas pasludinašanas diena]]></date>
+    <date year="" month="6" date="23" type="HOLIDAY"><![CDATA[Līgo diena]]></date>
+    <date year="" month="6" date="24" type="HOLIDAY"><![CDATA[Jāņu diena]]></date>
+    <date year="" month="11" date="18" type="HOLIDAY"><![CDATA[Latvijas Republikas proklamēšanas diena]]></date>
+    <date year="" month="12" date="24" type="HOLIDAY"><![CDATA[Ziemassvētku vakars]]></date>
+    <date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Pirmie Ziemassvētki]]></date>
+    <date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Otrie Ziemassvētki]]></date>
+    <date year="" month="12" date="31" type="HOLIDAY"><![CDATA[Vecgada diena]]></date>
+    
+    <date year="2017" month="5" date="14" type="HOLIDAY"><![CDATA[Mātes diena]]></date>
+    <date year="2017" month="6" date="4" type="HOLIDAY"><![CDATA[Vasarsvētki]]></date>
+    
+    <date year="2017" month="4" date="14" type="HOLIDAY"><![CDATA[Lielā Piektdiena]]></date>
+    <date year="2017" month="4" date="16" type="HOLIDAY"><![CDATA[Pirmās Lieldienas]]></date>
+    <date year="2017" month="4" date="17" type="HOLIDAY"><![CDATA[Otrās Lieldienas]]></date>
+    
+    <date year="2017" month="11" date="20" type="HOLIDAY"><![CDATA[Pārceltā brīvdiena]]></date>
+</calendar>
