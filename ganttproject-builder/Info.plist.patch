@@ -40,10 +40,10 @@
 +          <string>GAN</string>
 +        </array>
 +      </dict>
-+      <key>NSHighResolutionCapable</key>
-+      <true/>
 +    </dict>
 +  </array>
++<key>NSHighResolutionCapable</key>
++<true/>
  <key>CFBundleDevelopmentRegion</key>
  <string>English</string>
  <key>CFBundleExecutable</key>

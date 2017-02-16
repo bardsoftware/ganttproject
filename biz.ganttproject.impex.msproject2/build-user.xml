@@ -8,8 +8,8 @@
     </path>
     <path id="mainproject.classpath">
         <pathelement location="bin"/>
-        <pathelement location="${plugin.src.dir}/lib/poi-3.6-20091214.jar"/>
-        <pathelement location="${plugin.src.dir}/lib/mpxj.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/poi-3.15.jar"/>
+        <pathelement location="${plugin.src.dir}/lib/mpxj-5.6.3.jar"/>
     </path>
     <path id="deps.classpath">
         <pathelement location="${net.sourceforge.ganttproject.src.dir}/bin"/>
