@@ -7,8 +7,6 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.8.2"
-!define VERSION_BUILD "2.8.2-r2030"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -79,7 +77,7 @@ Section "GanttProject"
   File LICENSE
 
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\net.sourceforge.ganttproject
+  File /r plugins\ganttproject
   File /r plugins\biz.ganttproject.core
   File /r plugins\biz.ganttproject.impex.ical
   File /r plugins\biz.ganttproject.impex.msproject2

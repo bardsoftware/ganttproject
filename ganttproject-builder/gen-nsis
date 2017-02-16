@@ -1,0 +1,5 @@
+#!/bin/bash
+rm ganttproject.nsi
+echo '!define VERSION "'"$1"'"' > ganttproject.nsi
+echo '!define VERSION_BUILD "'"$2"'"' >> ganttproject.nsi
+cat ganttproject.nsi.tpl >> ganttproject.nsi

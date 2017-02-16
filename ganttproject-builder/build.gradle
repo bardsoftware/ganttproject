@@ -12,7 +12,6 @@ apply plugin: 'idea'
 // Directories where we build the distro
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file('dist-bin/plugins')
-
 archivesBaseName = 'ganttproject'
 version = '2.8.2-r' + getBuildNum()
 
@@ -36,6 +35,7 @@ allprojects {
   apply plugin: 'java'
   ext {
     libDir = 'lib'
+    semver = '2.8.2'
   }
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
@@ -56,7 +56,10 @@ task copyPlugin(type: Copy) {
     include "lib/javagalician.jar"
     include "ganttproject"
     include "ganttproject.bat"
+    include "ganttproject.exe"
     include "ganttproject-eclipsito-config.xml"
+    include "HouseBuildingSample.gan"
+    include "LICENSE"
     include "logging.properties"
   }
 }
@@ -74,6 +77,36 @@ def getBuildNum() {
 task distZip(type: Zip, dependsOn: distBin) {
   from 'dist-bin'
   into archivesBaseName + '-' + version
+}
+
+task distWin(dependsOn: distBin) {
+  doLast {
+    exec {
+      workingDir '.'
+      commandLine './gen-nsis', '2.8.2', version
+    }
+    copy {
+      from 'dist-bin'
+      into 'dist-win'
+      include '**'
+    }
+    copy {
+      from '.'
+      into 'dist-win'
+      include 'ganttproject.nsi'
+      include "ganttproject_16.ico"
+      include "ganttproject_32_2.ico"
+    }
+    exec {
+      workingDir 'dist-win'
+      commandLine 'makensis', 'ganttproject.nsi'
+    }
+    copy {
+      from 'dist-win'
+      into new File(buildDir, '/distributions')
+      include 'ganttproject-' + version + '.exe'
+    }
+  }
 }
 
 task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
