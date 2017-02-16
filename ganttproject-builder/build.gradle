@@ -1,25 +1,32 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
 plugins {
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "com.jfrog.bintray" version "1.7"
+  id 'com.github.ben-manes.versions' version '0.13.0'
+  id "com.jfrog.bintray" version "1.7"
 }
 
 apply plugin: 'java'
-apply plugin: 'idea'
 
-
+// Path to launch4j binary
+ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file('dist-bin/plugins')
+ext.semver = '2.8.2'
+
 archivesBaseName = 'ganttproject'
-version = '2.8.2-r' + getBuildNum()
+version = "${semver}-r${getBuildNum()}"
 
 // What is counted as java project for the purposes of this build
 def javaProjects() {
     subprojects.findAll { project ->
         project.name != rootProject.name && project.path != ':..'
     }
+}
+
+def devNull = new OutputStream() {
+  @Override
+  public void write(int b) {}
 }
 
 // Config for all projects: deps come from Maven repository,
@@ -35,10 +42,9 @@ allprojects {
   apply plugin: 'java'
   ext {
     libDir = 'lib'
-    semver = '2.8.2'
   }
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
 
   task updateMavenDeps(type: Copy) {
     from configurations.mavenDeps
@@ -50,24 +56,27 @@ clean {
   delete += "dist-bin"
 }
 
-task copyPlugin(type: Copy) {
-  into(rootProject.distBinDir)
-  from(fileTree(".")) {
-    include "lib/javagalician.jar"
-    include "ganttproject"
-    include "ganttproject.bat"
-    include "ganttproject.exe"
-    include "ganttproject-eclipsito-config.xml"
-    include "HouseBuildingSample.gan"
-    include "LICENSE"
-    include "logging.properties"
+task copyPlugin {
+  doLast {
+    copy {
+      into(rootProject.distBinDir)
+      from(fileTree(".")) {
+        include "lib/javagalician.jar"
+        include "ganttproject"
+        include "ganttproject.bat"
+        include "ganttproject.exe"
+        include "ganttproject-eclipsito-config.xml"
+        include "HouseBuildingSample.gan"
+        include "LICENSE"
+        include "logging.properties"
+      }
+    }
   }
 }
 
 task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
-  doLast {
-    println "== Finished building binary distro =="
-  }
+  println "===== Building GanttProject ${version} ====="
+  println "===== Building generic binary distro ====="
 }
 
 def getBuildNum() {
@@ -81,10 +90,19 @@ task distZip(type: Zip, dependsOn: distBin) {
 
 task distWin(dependsOn: distBin) {
   doLast {
+    println '======== Building Windows Installer ========'
+    println '= Generating NSIS script ...'
     exec {
       workingDir '.'
-      commandLine './gen-nsis', '2.8.2', version
+      commandLine './gen-nsis', semver, version
     }
+    println '= Generating ganttproject.exe with launch4j ...'
+    exec {
+      workingDir '.'
+      commandLine launch4j, 'ganttproject-launch4j.xml'
+      standardOutput = devNull
+    }
+    println '= Copying required files to dist-win...'
     copy {
       from 'dist-bin'
       into 'dist-win'
@@ -97,15 +115,18 @@ task distWin(dependsOn: distBin) {
       include "ganttproject_16.ico"
       include "ganttproject_32_2.ico"
     }
+    println '= Building installer...'
     exec {
       workingDir 'dist-win'
       commandLine 'makensis', 'ganttproject.nsi'
+      standardOutput = devNull
     }
     copy {
       from 'dist-win'
       into new File(buildDir, '/distributions')
       include 'ganttproject-' + version + '.exe'
     }
+    println "===== Windows installer is ready in ${buildDir}/distributions ====="
   }
 }
 
@@ -120,10 +141,4 @@ task runApp(type: JavaExec, dependsOn: distBin) {
   classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar'])
   main = 'org.bardsoftware.eclipsito.Boot'
   args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir','plugins'
-}
-idea {
-  project {
-    vcs = 'Git'
-    outputFile = new File(outputFile.parentFile, 'ganttproject.ipr')
-  }
 }
