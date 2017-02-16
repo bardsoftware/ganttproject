@@ -556,6 +556,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   private void updateComponentTreeUI() {
     SwingUtilities.updateComponentTreeUI(myMainFrame);
+    myMainFrame.pack();
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         getGanttChart().reset();
