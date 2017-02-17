@@ -13,6 +13,7 @@ ext.launch4j = '/opt/launch4j/launch4j'
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file('dist-bin/plugins')
 ext.semver = '2.8.2'
+ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
 version = "${semver}-r${getBuildNum()}"
