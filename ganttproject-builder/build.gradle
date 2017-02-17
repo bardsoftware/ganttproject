@@ -6,6 +6,7 @@ plugins {
 }
 
 apply plugin: 'java'
+apply plugin: 'eclipse'
 
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
@@ -41,6 +42,7 @@ allprojects {
     jcenter()
   }
   apply plugin: 'java'
+  apply plugin: 'eclipse'
   ext {
     libDir = 'lib'
   }
@@ -81,7 +83,7 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
 }
 
 def getBuildNum() {
-  return "./hg-tip-rev.sh".execute().text.trim()
+  return "${projectDir}/hg-tip-rev.sh".execute().text.trim()
 }
 
 task distZip(type: Zip, dependsOn: distBin) {
