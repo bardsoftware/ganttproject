@@ -1,9 +1,76 @@
 <project name="GanttProject builder">
-    <target name="dist-deb" description="Builds DEB package" depends="make-package-name">
-        <ant antfile="build-deb.xml" inheritall="false">
-            <property name="package-version" value="${package.name.suffix}"></property>
-        </ant>
-        <copy todir="." file="${deb.dir}/${package.name.prefix}_${package.name.suffix}-1_all.deb"></copy>
+    <property file="build-deb.properties"/>
+    <path id="class.path">
+        <pathelement location="build-deb/classes"/>
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
+    <target name="compile-deb-tasks" description="Compile helper code">
+        <mkdir dir="build-deb/classes"/>
+        <javac
+                srcdir="src"
+                destdir="build-deb/classes"
+                classpathref="class.path"
+                target="1.4"
+                source="1.4"
+                debug="yes"
+        />
+        <copy todir="build-deb/classes">
+            <fileset dir="src" includes="**/*.properties"/>
+            <fileset dir="src" includes="**/*.xml"/>
+        </copy>
+    </target>
+
+    <taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
+    <taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="class.path"/>
+
+    <target name="distDeb" description="Builds DEB package" depends="distBin">
+        <description>Create a complete GanttProject deb package. Everything included.</description>
+        <desktopEntry
+                toFile="${distDebWork}/usr/share/applications/ganttproject.desktop"
+                name="GanttProject"
+                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
+                exec="/usr/bin/ganttproject %U"
+                mimetype="application/x-ganttproject;"
+                categories="Office;"
+                onlyshowin="GNOME;KDE;Unity;LXDE;"
+        >
+            <genericname value="GanttProject"/>
+        </desktopEntry>
+        <copy file="ganttproject.svg" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+        </copy>
+        <deb todir="${distDebPackage}"
+             package="${package.name}"
+             version="${version}"
+             homepage="http://ganttproject.biz/"
+             section="editors"
+             priority="optional"
+             depends="openjdk-7-jre | openjdk-8-jre | oracle-java7-jre | oracle-java8-jre | oracle-java8-installer"
+             conflicts="ganttproject-praha"
+             replaces="ganttproject-praha"
+             postrm="${distDebWork}/postrm"
+             postinst="${distDebWork}/postinst">
+            <version upstream="${version}"/>
+            <maintainer name="GanttProject Team" email="contact@ganttproject.biz"/>
+            <description synopsis="${package.synopsis}">
+                ${package.description}
+            </description>
+            <!-- GanttProject distro goes into /usr/share/ganttproject -->
+            <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
+                <include name="ganttproject"/>
+                <include name="plugins/**/"/>
+                <include name="*.jar"/>
+                <include name="*.gan"/>
+                <include name="logging.properties"/>
+            </tarfileset>
+            <!-- Some docs go into /usr/share/doc/ganttproject -->
+            <tarfileset dir="${distBin}/.." prefix="usr/share/doc/${package.name}">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="AUTHORS"/>
+            </tarfileset>
+            <!-- Icons, mime types and other stuff -->
+            <tarfileset dir="${distDebWork}/usr" prefix="usr"/>
+        </deb>
     </target>
 
     <taskdef name="bundleapp"
@@ -11,8 +78,8 @@
              classpath="lib/appbundler-1.0.jar"/>
 
     <target name="distMac" depends="distBin">
-        <mkdir dir="${distMacOut}"/>
-        <bundleapp outputdirectory="${distMacOut}"
+        <mkdir dir="${distMacWork}"/>
+        <bundleapp outputdirectory="${distMacWork}"
                    name="GanttProject"
                    displayname="GanttProject"
                    identifier="net.sourceforge.ganttproject"
@@ -35,17 +102,17 @@
             <option value="-Xmx512m"/>
             <option value="-ea"/>
         </bundleapp>
-        <copy todir="${distMacOut}/GanttProject.app/Contents/Java">
+        <copy todir="${distMacWork}/GanttProject.app/Contents/Java">
             <fileset dir="${distBin}">
                 <include name="eclipsito.jar"/>
                 <include name="plugins/**"/>
                 <include name="logging.properties"/>
             </fileset>
         </copy>
-        <patch patchfile="Info.plist.patch" originalfile="${distMacOut}/GanttProject.app/Contents/Info.plist"/>
-        <chmod perm="ugo+rx" file="${distMacOut}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+        <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
+        <chmod perm="ugo+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
         <zip destfile="${distMacZip}">
-            <zipfileset dir="${distMacOut}" includes="GanttProject.app/**">
+            <zipfileset dir="${distMacWork}" includes="GanttProject.app/**">
             </zipfileset>
         </zip>
     </target>
