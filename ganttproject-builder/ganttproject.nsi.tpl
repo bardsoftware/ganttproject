@@ -73,6 +73,7 @@ Section "GanttProject"
   File eclipsito.jar
   File ganttproject.bat
   File ganttproject.exe
+  File ganttproject.l4j.ini
   File HouseBuildingSample.gan
   File LICENSE
 

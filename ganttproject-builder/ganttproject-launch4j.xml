@@ -25,10 +25,6 @@
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
-    <initialHeapSize>32</initialHeapSize>
-    <maxHeapSize>512</maxHeapSize>
-    <opt>-ea</opt>
-    <opt>-Dsun.java2d.d3d=false</opt>
   </jre>
   <messages>
     <startupErr>GanttProject failed to start. Please refer to http://ganttproject.biz/discuss to get support</startupErr>

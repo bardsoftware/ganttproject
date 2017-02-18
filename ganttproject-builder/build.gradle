@@ -19,6 +19,14 @@ ext.buildNum = getBuildNum()
 archivesBaseName = 'ganttproject'
 version = "${semver}-r${getBuildNum()}"
 
+ant.importBuild 'build.xml'
+ant.properties.distBin = 'dist-bin'
+ant.properties.distMacOut = 'dist-mac'
+ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
+ant.properties.version = "${semver}"
+
+
+
 // What is counted as java project for the purposes of this build
 def javaProjects() {
     subprojects.findAll { project ->
@@ -59,7 +67,9 @@ clean {
   delete += "dist-bin"
 }
 
-task copyPlugin {
+task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
+  println "===== Building GanttProject ${version} ====="
+  println "===== Building generic binary distro ====="
   doLast {
     copy {
       into(rootProject.distBinDir)
@@ -68,18 +78,13 @@ task copyPlugin {
         include "ganttproject"
         include "ganttproject.bat"
         include "ganttproject.exe"
-        include "ganttproject-eclipsito-config.xml"
         include "HouseBuildingSample.gan"
         include "LICENSE"
         include "logging.properties"
       }
     }
+    "jar uf ${distBinDir}/eclipsito.jar ganttproject-eclipsito-config.xml".execute()
   }
-}
-
-task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
-  println "===== Building GanttProject ${version} ====="
-  println "===== Building generic binary distro ====="
 }
 
 def getBuildNum() {
@@ -114,6 +119,7 @@ task distWin(dependsOn: distBin) {
     copy {
       from '.'
       into 'dist-win'
+      include "ganttproject.l4j.ini"
       include 'ganttproject.nsi'
       include "ganttproject_16.ico"
       include "ganttproject_32_2.ico"
@@ -127,7 +133,7 @@ task distWin(dependsOn: distBin) {
     copy {
       from 'dist-win'
       into new File(buildDir, '/distributions')
-      include 'ganttproject-' + version + '.exe'
+      include "ganttproject-${version}.exe"
     }
     println "===== Windows installer is ready in ${buildDir}/distributions ====="
   }
