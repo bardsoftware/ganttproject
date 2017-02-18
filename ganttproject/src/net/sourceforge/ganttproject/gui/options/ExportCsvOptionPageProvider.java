@@ -18,11 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.Component;
-
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.GanttProject;
+
+import java.awt.*;
 
 public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
@@ -34,7 +33,9 @@ public class ExportCsvOptionPageProvider extends OptionPageProviderBase {
 
   @Override
   public void commit() {
-    myCsvSettings.applyChanges(false);
+    if (myCsvSettings != null) {
+      myCsvSettings.applyChanges(false);
+    }
   }
 
   @Override

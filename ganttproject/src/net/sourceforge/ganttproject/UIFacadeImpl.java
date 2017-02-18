@@ -572,7 +572,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         String key = String.valueOf(keys.nextElement());
         Object obj = UIManager.get(key);
         if (obj instanceof Font) {
-          System.err.println(key);
           Font f = (Font) obj;
           myOriginalFonts.put(key, f);
         }
