@@ -68,7 +68,7 @@
                 <include name="README"/>
                 <include name="AUTHORS"/>
             </tarfileset>
-            <!-- Icons, mime types and other stuff -->
+            <!-- Icons, mime types, docs and other stuff -->
             <tarfileset dir="${distDebWork}/usr" prefix="usr"/>
         </deb>
     </target>
@@ -110,7 +110,7 @@
             </fileset>
         </copy>
         <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
-        <chmod perm="ugo+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+        <chmod perm="a+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
         <zip destfile="${distMacZip}">
             <zipfileset dir="${distMacWork}" includes="GanttProject.app/**">
             </zipfileset>
