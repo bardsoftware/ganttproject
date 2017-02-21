@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- Brazilian Portuguese holiday calendar                              -->
-
-<calendar name="Brasil" type="country">
-<!-- http://www.brazil.org.hk/ehtml/national_public_holidays.htm -->
-<!-- http://www.officeholidays.com/countries/brazil/2012.asp -->
-<!-- http://brazil.usembassy.gov/holidays.html -->
+<calendar id="pt_br" name="Brazilian Holidays 2017" type="country">
+<!-- http://www.officeholidays.com/countries/brazil/index.php -->
+<!-- https://www.timeanddate.com/holidays/brazil/ -->
 
 	<!-- These are permanent national and world holidays -->
-	<date year="" month="01" date="01"/>       <!-- New Year -->
-	<date year="" month="04" date="21"/>       <!-- Tiradentes day -->
-	<date year="" month="05" date="01"/>       <!-- Labour day -->
-	<date year="" month="09" date="07"/>       <!-- Independence day -->
-	<date year="" month="10" date="12"/>       <!-- Lady of Aparecida -->
-	<date year="" month="11" date="01"/>       <!-- All Saints day -->
-	<date year="" month="11" date="02"/>       <!-- All Souls day -->
-	<date year="" month="11" date="15"/>       <!-- Republic day -->
-	<date year="" month="12" date="25"/>       <!-- Christmas -->
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="04" date="21"><![CDATA[Tiradentes Day]]></date>
+	<date year="" month="05" date="01"><![CDATA[Labor Day]]></date>
+	<date year="" month="09" date="07"><![CDATA[Independence Day]]></date>
+	<date year="" month="10" date="12"><![CDATA[Lady of Aparecida]]></date>
+	<date year="" month="11" date="01" type="NEUTRAL"><![CDATA[All Saints Day]]></date>
+	<date year="" month="11" date="02"><![CDATA[All Souls Days]]></date>
+	<date year="" month="11" date="15"><![CDATA[Republic Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas]]></date>
 
 	<!-- These are the national holidays that dates change -->
 	<date year="2012" month="02" date="20"/>  <!-- Carnival -->
@@ -36,7 +32,13 @@
 	<date year="2010" month="04" date="02"/>
 	<date year="2011" month="04" date="22"/>
 	<date year="2011" month="04" date="24"/>
-	
+
+    <date year="2017" month="2" date="25"><![CDATA[Carnival]]></date>
+    <date year="2017" month="2" date="26"><![CDATA[Carnival]]></date>
+    <date year="2017" month="2" date="27"><![CDATA[Carnival]]></date>
+    <date year="2017" month="2" date="28"><![CDATA[Carnival]]></date>
+    <date year="2017" month="4" date="14"><![CDATA[Good Friday]]></date>
+    <date year="2017" month="6" date="15"><![CDATA[Corpus Christi]]></date>
 
 </calendar >
 

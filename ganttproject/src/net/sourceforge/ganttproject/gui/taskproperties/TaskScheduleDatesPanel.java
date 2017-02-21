@@ -18,33 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import org.jdesktop.swingx.JXDatePicker;
-import org.jdesktop.swingx.JXHyperlink;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
@@ -52,8 +25,26 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
-
 import com.google.common.collect.ImmutableList;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXHyperlink;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Encapsulates start date/end date/duration field.
@@ -329,7 +320,7 @@ public class TaskScheduleDatesPanel {
       myLockLabel.setEnabled(false);
     } else {
       ourDurationLock.setValue(false);
-      ourEndDateLock.setValue(false);
+      ourStartDateLock.setValue(false);
       myLockHyperlink.setEnabled(true);
       ourPrevLock.setValue(true);
       myLockLabel.setEnabled(true);

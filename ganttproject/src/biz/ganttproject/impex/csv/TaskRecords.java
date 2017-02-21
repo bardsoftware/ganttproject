@@ -79,7 +79,7 @@ class TaskRecords extends RecordGroup {
   };
 
   /** List of known (and supported) Task attributes */
-  static enum TaskFields {
+  enum TaskFields {
     ID(TaskDefaultColumn.ID.getNameKey()),
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"),
     NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"),
@@ -87,7 +87,7 @@ class TaskRecords extends RecordGroup {
 
     private final String text;
 
-    private TaskFields(final String text) {
+    TaskFields(final String text) {
       this.text = text;
     }
 

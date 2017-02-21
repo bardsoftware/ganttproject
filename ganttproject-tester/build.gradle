@@ -1,0 +1,29 @@
+apply plugin: 'java'
+
+dependencies {
+  testCompile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+  testCompile project(':..:ganttproject')
+  testCompile 'junit:junit:4.12'
+}
+
+sourceSets {
+    test {
+        java {
+            srcDirs = ['test']
+        }
+    }
+}
+
+test {
+  doLast {
+        configurations.testRuntime.each { println it }
+   }
+  include '**'
+  testLogging {
+        exceptionFormat = 'full'
+    }
+  beforeTest { descriptor ->
+     logger.lifecycle("Running test: " + descriptor)
+  }
+}
+

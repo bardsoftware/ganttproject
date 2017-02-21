@@ -22,7 +22,7 @@ task copyPlugin(type: Copy) {
     from(fileTree(".")) {
       include "plugin.xml"
       include "lib/**.jar"
-      include "resource/**.jar"
+      include "resource/**"
     }
     doLast {
       println "Copying $project.name to $rootProject.pluginsDir"
