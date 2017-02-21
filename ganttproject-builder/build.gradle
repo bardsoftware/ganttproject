@@ -77,28 +77,21 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
       into(rootProject.distBinDir)
       from(fileTree(".")) {
         include "lib/javagalician.jar"
-        include "ganttproject"
         include "ganttproject.bat"
-        include "ganttproject.command"
         include "ganttproject.exe"
         include "HouseBuildingSample.gan"
         include "LICENSE"
         include "logging.properties"
       }
     }
-    //"jar uf ${distBinDir}/eclipsito.jar ganttproject-eclipsito-config.xml".execute()
-    "chmod a+x ${distBinDir}/ganttproject ${distBinDir}/ganttproject.command".execute()
     copy {
-      into('deb/usr/share/doc/ganttproject')
+      into(rootProject.distBinDir)
       from(fileTree(".")) {
-        include "AUTHORS"
-        include "CHANGELOG"
-        include "LICENSE"
-        include "README"
+        include "ganttproject"
+        include "ganttproject.command"
       }
+      fileMode 0755
     }
-    "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
-    "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
   }
 }
 
@@ -152,6 +145,20 @@ task distWin(dependsOn: distBin) {
     }
     println "===== Windows installer is ready in ${buildDir}/distributions ====="
   }
+}
+
+task distDebPre {
+  copy {
+    into('deb/usr/share/doc/ganttproject')
+    from(fileTree(".")) {
+      include "AUTHORS"
+      include "CHANGELOG"
+      include "LICENSE"
+      include "README"
+    }
+  }
+  "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
+  "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
 }
 
 task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
