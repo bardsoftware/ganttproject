@@ -56,12 +56,15 @@
             </description>
             <!-- GanttProject distro goes into /usr/share/ganttproject -->
             <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
-                <include name="ganttproject"/>
                 <include name="plugins/**/"/>
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
             </tarfileset>
+            <tarfileset dir="${distBin}" filemode="755" prefix="usr/share/${package.name}">
+                <include name="ganttproject"/>
+            </tarfileset>
+
             <!-- Some docs go into /usr/share/doc/ganttproject -->
             <tarfileset dir="${distBin}/.." prefix="usr/share/doc/${package.name}">
                 <include name="LICENSE"/>
