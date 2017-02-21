@@ -76,7 +76,6 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
       into(rootProject.distBinDir)
       from(fileTree(".")) {
         include "lib/javagalician.jar"
-        include "ganttproject"
         include "ganttproject.bat"
         include "ganttproject.exe"
         include "HouseBuildingSample.gan"
@@ -84,12 +83,19 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
         include "logging.properties"
       }
     }
-    "jar uf ${distBinDir}/eclipsito.jar ganttproject-eclipsito-config.xml".execute()
+    copy {
+      into(rootProject.distBinDir)
+      from(fileTree(".")) {
+        include "ganttproject"
+        include "ganttproject.command"
+      }
+      fileMode 0755
+    }
   }
 }
 
 def getBuildNum() {
-  return "${projectDir}/hg-tip-rev.sh".execute().text.trim()
+  return String.valueOf(Integer.valueOf("git rev-list --count ganttproject-2.7..".execute().text.trim()) + 1891)
 }
 
 task distZip(type: Zip, dependsOn: distBin) {
@@ -138,6 +144,20 @@ task distWin(dependsOn: distBin) {
     }
     println "===== Windows installer is ready in ${buildDir}/distributions ====="
   }
+}
+
+task distDebPre {
+  copy {
+    into('deb/usr/share/doc/ganttproject')
+    from(fileTree(".")) {
+      include "AUTHORS"
+      include "CHANGELOG"
+      include "LICENSE"
+      include "README"
+    }
+  }
+  "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
+  "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
 }
 
 task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {

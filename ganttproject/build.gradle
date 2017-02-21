@@ -60,9 +60,6 @@ task copyEclipsito(type: Copy) {
     from(fileTree("lib/core")) {
       include "eclipsito.jar"
     }
-    outputs.upToDateWhen {
-      new File(rootProject.distBinDir, "eclipsito.jar").exists()
-    }
 }
 
 task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }
