@@ -103,7 +103,7 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
 }
 
 def getBuildNum() {
-  return "${projectDir}/hg-tip-rev.sh".execute().text.trim()
+  return String.valueOf(Integer.valueOf("git rev-list --count ganttproject-2.7..".execute().text.trim()) + 1891)
 }
 
 task distZip(type: Zip, dependsOn: distBin) {
