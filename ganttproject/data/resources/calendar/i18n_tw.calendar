@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="tw" name="Taiwan Holidays 2017" type="country">
+<!-- Data sources
+http://www.officeholidays.com/countries/taiwan/index.php
+https://www.timeanddate.com/holidays/taiwan/
+-->
+    <date year="" month="1" date="1"><![CDATA[Republic Day/New Year's Day]]></date>
+    <date year="" month="2" date="28"><![CDATA[Peace Memorial Day]]></date>
+    <date year="" month="4" date="4"><![CDATA[Children's Day]]></date>
+    <date year="" month="5" date="1"><![CDATA[Labor Day]]></date>
+    <date year="" month="10" date="10"><![CDATA[National  Day]]></date>
+
+    <date year="2017" month="1" date="2"><![CDATA[Republic Day/New Year's Day]]></date>
+    <date year="2017" month="1" date="27"><![CDATA[Chinese New Year's Eve]]></date>
+    <date year="2017" month="1" date="28"><![CDATA[Chinese New Year's Day]]></date>
+    <date year="2017" month="1" date="29"><![CDATA[Chinese New Year Holiday]]></date>
+    <date year="2017" month="1" date="30"><![CDATA[Chinese New Year Holiday]]></date>
+    <date year="2017" month="1" date="31"><![CDATA[Chinese New Year Holiday]]></date>
+    <date year="2017" month="2" date="1"><![CDATA[Chinese New Year Holiday]]></date>
+    <date year="2017" month="4" date="3"><![CDATA[Tomb Sweeping Day]]></date>
+    <date year="2017" month="5" date="29"><![CDATA[Dragon Boat Festival Holiday]]></date>
+    <date year="2017" month="5" date="30"><![CDATA[Dragon Boat Festival]]></date>
+    <date year="2017" month="10" date="4"><![CDATA[Mid-Autumn Festival]]></date>
+    <date year="2017" month="10" date="9"><![CDATA[National Day Holiday]]></date>
+
+</calendar >
+
+
+
+

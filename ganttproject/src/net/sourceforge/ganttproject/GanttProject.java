@@ -321,17 +321,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
     getViewManager().toggleVisible(myResourceChartTabContent);
 
-    addWindowListener(new java.awt.event.WindowAdapter() {
-      @Override
-      public void windowClosing(java.awt.event.WindowEvent evt) {
-        quitApplication();
-      }
-
-      @Override
-      public void windowOpened(WindowEvent e) {
-        myRowHeightAligner.optionsChanged();
-      }
-    });
     addComponentListener(new ComponentAdapter() {
       @Override
       public void componentShown(ComponentEvent e) {
@@ -364,11 +353,17 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     restoreBounds();
     addWindowListener(new WindowAdapter() {
       @Override
+      public void windowClosing(WindowEvent windowEvent) {
+        quitApplication();
+      }
+
+      @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
+        myRowHeightAligner.optionsChanged();
       }
     });
 
@@ -389,10 +384,45 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private void restoreBounds() {
     if (options.isLoaded()) {
       Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
-      GPLogger.log(String.format("Setting bounds from options: %s", bounds));
+      GPLogger.log(String.format("Bounds stored in the  options: %s", bounds));
+
+      UIUtil.MultiscreenFitResult fit = UIUtil.multiscreenFit(bounds);
+      // If more than 1/4 of the rectangle is visible on screen devices then leave it where it is
+      if (fit.totalVisibleArea < 0.25 || Math.max(bounds.width, bounds.height) < 100) {
+        // Otherwise if it is visible on at least one device, try to fit it there
+        if (fit.argmaxVisibleArea != null) {
+          bounds = fitBounds(fit.argmaxVisibleArea, bounds);
+        } else {
+          UIUtil.MultiscreenFitResult currentFit = UIUtil.multiscreenFit(this.getBounds());
+          if (currentFit.argmaxVisibleArea != null) {
+            // If there are no devices where rectangle is visible, fit it on the current device
+            bounds = fitBounds(currentFit.argmaxVisibleArea, bounds);
+          } else {
+            GPLogger.log(String.format("We have not found the display corresponding to bounds %s. Leaving the window where it is", bounds));
+            return;
+          }
+        }
+      }
       setBounds(bounds);
     }
   }
+
+  static private Rectangle fitBounds(GraphicsConfiguration display, Rectangle bounds) {
+    Rectangle displayBounds = display.getBounds();
+    Rectangle visibleBounds = bounds.intersection(displayBounds);
+    int fitX = visibleBounds.x;
+    if (fitX + bounds.width > displayBounds.x + displayBounds.width) {
+      fitX = Math.max(displayBounds.x, displayBounds.x + displayBounds.width - bounds.width);
+    }
+    int fitY = visibleBounds.y;
+    if (fitY + bounds.height > displayBounds.y + displayBounds.height) {
+      fitY = Math.max(displayBounds.y, displayBounds.y + displayBounds.height - bounds.height);
+    }
+    return new Rectangle(fitX, fitY, bounds.width, bounds.height);
+
+  }
+
+
   @Override
   public TaskContainmentHierarchyFacade getTaskContainment() {
     if (myFacadeInvalidator == null) {

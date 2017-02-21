@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject;
 
 public abstract class GPVersion {
+  public static String BUILD = "2060"; // BUILD NUMBER
   public static String V2_0_1 = "2.0.1";
   public static String V2_0_2 = "2.0.2";
   public static String V2_0_3 = "2.0.3";
@@ -43,7 +44,8 @@ public abstract class GPVersion {
   public static String OSTRAVA_2_7_2 = "2.7.2 Ostrava (build 1954)";
   public static String PILSEN = "2.8 Pilsen (build 2016)";
   public static String PILSEN_2_8_1 = "2.8.1 Pilsen (build 2024)";
-  public static String CURRENT = PILSEN_2_8_1;
+  public static String PILSEN_2_8_2 = String.format("2.8.2 Pilsen (build %s)", BUILD);
+  public static String CURRENT = PILSEN_2_8_2;
 
   public static String getCurrentVersionNumber() {
     return CURRENT.split("\\s")[0];

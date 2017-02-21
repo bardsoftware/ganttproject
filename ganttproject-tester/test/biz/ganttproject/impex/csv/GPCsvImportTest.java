@@ -77,6 +77,16 @@ public class GPCsvImportTest extends TestCase {
     fail("Can't find " + dependee + " in the list of predecessors of " + dependant);
   }
 
+  private static void assertDependency(Task dependant, Task dependee, int lag) {
+    for (TaskDependency dep : dependant.getDependenciesAsDependant().toArray()) {
+      if (dep.getDependee() == dependee) {
+        assertEquals("Unexpected lag value", lag, dep.getDifference());
+        return;
+      }
+    }
+    fail("Can't find " + dependee + " in the list of predecessors of " + dependant);
+  }
+
   @Override
   protected void setUp() throws Exception {
     TaskDefaultColumn.setLocaleApi(new TaskDefaultColumn.LocaleApi() {
@@ -168,17 +178,23 @@ public class GPCsvImportTest extends TestCase {
     String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
     String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
     String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
+    String data4 = "4,t4,26/07/12,30/07/12,,,,,,1-FS=P1D";
+    String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3)),
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
         taskManager, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     Task t1 = taskMap.get("t1");
     Task t2 = taskMap.get("t2");
     Task t3 = taskMap.get("t3");
+    Task t4 = taskMap.get("t4");
+    Task t5 = taskMap.get("t5");
 
     assertDependency(t2, t1);
     assertDependency(t3, t1);
+    assertDependency(t4, t1, 1);
+    assertDependency(t5, t1, -1);
   }
 
   public void testMilestone() throws Exception {

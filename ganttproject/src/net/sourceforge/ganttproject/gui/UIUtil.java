@@ -90,16 +90,6 @@ public abstract class UIUtil {
     UIManager.put("JXMonthView.monthCurrent.image", calendarImage);
   }
 
-  public static void repackWindow(JComponent component) {
-    Window windowAncestor = SwingUtilities.getWindowAncestor(component);
-    if (windowAncestor != null) {
-      windowAncestor.invalidate();
-      windowAncestor.pack();
-      windowAncestor.repaint();
-    }
-    DialogAligner.centerOnScreen(windowAncestor);
-  }
-
   public static void setEnabledTree(JComponent root, final boolean isEnabled) {
     walkComponentTree(root, new Predicate<JComponent>() {
       @Override
@@ -605,5 +595,40 @@ public abstract class UIUtil {
           andThen.run();
       }
     });
+  }
+
+  public static class MultiscreenFitResult {
+    public final double totalVisibleArea;
+    public final double maxVisibleArea;
+    public final GraphicsConfiguration  argmaxVisibleArea;
+
+    public MultiscreenFitResult(double totalVisibleArea, double maxVisibleArea, GraphicsConfiguration argmaxVisibleArea) {
+      this.totalVisibleArea = totalVisibleArea;
+      this.maxVisibleArea = maxVisibleArea;
+      this.argmaxVisibleArea = argmaxVisibleArea;
+    }
+  }
+
+  public static MultiscreenFitResult multiscreenFit(Rectangle bounds)  {
+    double visibleAreaTotal = 0.0;
+    double maxVisibleArea = 0.0;
+    GraphicsConfiguration argmaxVisibleArea = null;
+    GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+    // Iterate through the screen devices and calculate how much of the stored
+    // rectangle fits on every device. Also calculate the total visible area.
+    for (GraphicsDevice gd : e.getScreenDevices()) {
+      GraphicsConfiguration gc = gd.getDefaultConfiguration();
+      if (bounds.intersects(gc.getBounds())) {
+        Rectangle visibleHere = bounds.intersection(gc.getBounds());
+        double visibleArea = 1.0 * visibleHere.height * visibleHere.width / (bounds.height * bounds.width);
+        visibleAreaTotal += visibleArea;
+        if (visibleArea > maxVisibleArea) {
+          argmaxVisibleArea = gc;
+          maxVisibleArea = visibleArea;
+        }
+      }
+    }
+    return new MultiscreenFitResult(visibleAreaTotal, maxVisibleArea, argmaxVisibleArea);
   }
 }

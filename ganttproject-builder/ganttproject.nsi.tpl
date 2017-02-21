@@ -7,8 +7,6 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.8.1"
-!define VERSION_BUILD "2.8.1-r2024"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -56,6 +54,7 @@ InstallDir $PROGRAMFILES\GanttProject-2.8
 !insertmacro MUI_LANGUAGE "Lithuanian"
 !insertmacro MUI_LANGUAGE "Hebrew"
 !insertmacro MUI_LANGUAGE "Turkish"
+!insertmacro MUI_LANGUAGE "Ukrainian"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -74,11 +73,12 @@ Section "GanttProject"
   File eclipsito.jar
   File ganttproject.bat
   File ganttproject.exe
+  File ganttproject.l4j.ini
   File HouseBuildingSample.gan
   File LICENSE
 
   StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\net.sourceforge.ganttproject
+  File /r plugins\ganttproject
   File /r plugins\biz.ganttproject.core
   File /r plugins\biz.ganttproject.impex.ical
   File /r plugins\biz.ganttproject.impex.msproject2

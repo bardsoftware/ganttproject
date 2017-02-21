@@ -18,28 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.task.algorithm;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
-
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -51,6 +32,24 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * A graph of dependencies between tasks which is used for scheduling algorithm.
@@ -656,8 +655,8 @@ public class DependencyGraph {
    * @param t task being added
    */
   public void addTask(Task t) {
-    assert t.getDependencies().toArray().length == 0;
-    assert myTaskHierarchy.get().hasNestedTasks(t) == false;
+    //assert t.getDependencies().toArray().length == 0 : "Task has deps:" + t.getDependencies().toArray();
+    //assert myTaskHierarchy.get().hasNestedTasks(t) == false : "Task has nested tasks: " + myTaskHierarchy.get().getNestedTasks(t);
     Node node = new Node(t, myTxn);
     myData.withTransaction().addToLevel(0, node);
     myNodeMap.put(t, node);
