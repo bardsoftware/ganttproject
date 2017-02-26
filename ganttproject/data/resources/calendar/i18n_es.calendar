@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="es" name="Spanish Holidays 2016" type="country">
+<calendar id="es" name="Spanish Holidays 2016-2017" type="country">
 <!-- http://en.wikipedia.org/wiki/Public_holidays_in_Spain -->
 <!-- http://www.officeholidays.com/countries/spain/index.php -->
 <!-- http://www.timeanddate.com/holidays/spain/ -->
-	<date year="" month="01" date="01"><![CDATA[New Years Day]]></date>
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
 	<date year="" month="01" date="06"><![CDATA[Epiphany]]></date>
 	<date year="" month="05" date="01"><![CDATA[Labour Day]]></date>
 	<date year="" month="08" date="15"><![CDATA[Assumption Day]]></date>
@@ -12,9 +12,12 @@
 	<date year="" month="12" date="06"><![CDATA[Constitution Day]]></date>
 	<date year="" month="12" date="08"><![CDATA[Immaculate Conception Day]]></date>
 	<date year="" month="12" date="25"><![CDATA[Christmas Day]]></date>
-	<date year="" month="12" date="26"><![CDATA[Christmas Day (in lieu)]]></date>
-	
+
 	<date year="2016" month="3" date="24" type="HOLIDAY"><![CDATA[Maundy Thursday]]></date>
 	<date year="2016" month="3" date="25" type="HOLIDAY"><![CDATA[Good Friday]]></date>
-	
+
+	<date year="2017" month="01" date="02" type="HOLIDAY"><![CDATA[New Year's Holiday]]></date>
+	<date year="2017" month="4" date="13" type="HOLIDAY"><![CDATA[Maundy Thursday]]></date>
+	<date year="2017" month="4" date="14" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+
 </calendar>

@@ -265,7 +265,7 @@ public class TaskProperties {
       public TaskDependency get() {
         if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
           TaskDependency dependency = taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint, hardness);
-          if (lag > 0) {
+          if (lag != 0) {
             dependency.setDifference(lag);
           }
           return dependency;

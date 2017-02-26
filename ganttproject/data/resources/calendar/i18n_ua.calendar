@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="ua" name="Ukrainian Holidays 2017" type="country">
+<!-- Data sources
+Calendar contributed by Andriy Ilechko
+-->
+
+        <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[Новий рік]]></date>
+        <date year="" month="1" date="7" type="HOLIDAY"><![CDATA[Різдво Христове]]></date>
+        <date year="" month="3" date="8" type="HOLIDAY"><![CDATA[Міжнародний жіночий день]]></date>
+        <date year="" month="5" date="1" type="HOLIDAY"><![CDATA[День міжнародної солідарності трудящих]]></date>
+        <date year="" month="5" date="2" type="HOLIDAY"><![CDATA[День міжнародної солідарності трудящих]]></date>
+        <date year="" month="5" date="9" type="HOLIDAY"><![CDATA[День Перемоги]]></date>
+	<date year="" month="6" date="4" type="HOLIDAY"><![CDATA[Трійця]]></date>
+        <date year="" month="6" date="28" type="HOLIDAY"><![CDATA[День Конституції України]]></date>
+	<date year="" month="8" date="24" type="HOLIDAY"><![CDATA[День незалежності України]]></date>
+        <date year="" month="10" date="14" type="HOLIDAY"><![CDATA[День захисника України]]></date>
+		
+        <date year="2017" month="1" date="1" type="HOLIDAY"><![CDATA[Новий рік]]></date>
+        <date year="2017" month="1" date="2" type="HOLIDAY"><![CDATA[Перенесений вихідний 01/01/2017]]></date>
+        <date year="2017" month="1" date="7" type="HOLIDAY"><![CDATA[Різдво Христове]]></date>
+        <date year="2017" month="1" date="9" type="HOLIDAY"><![CDATA[Перенесений вихідний 07/01/2017]]></date>
+        <date year="2017" month="3" date="8" type="HOLIDAY"><![CDATA[Міжнародний жіночий день]]></date>
+        <date year="2017" month="4" date="16" type="HOLIDAY"><![CDATA[Пасха]]></date>
+	<date year="2017" month="4" date="17" type="HOLIDAY"><![CDATA[Перенесений вихідний 16/04/2017]]></date>
+	<date year="2017" month="5" date="1" type="HOLIDAY"><![CDATA[День міжнародної солідарності трудящих]]></date>
+        <date year="2017" month="5" date="2" type="HOLIDAY"><![CDATA[День міжнародної солідарності трудящих]]></date>
+        <date year="2017" month="5" date="9" type="HOLIDAY"><![CDATA[День Перемоги]]></date>
+	<date year="2017" month="6" date="4" type="HOLIDAY"><![CDATA[Трійця]]></date>
+        <date year="2017" month="6" date="5" type="HOLIDAY"><![CDATA[Перенесений вихідний 04/06/2017]]></date>
+        <date year="2017" month="6" date="28" type="HOLIDAY"><![CDATA[День Конституції України]]></date>
+	<date year="2017" month="8" date="24" type="HOLIDAY"><![CDATA[День незалежності України]]></date>
+        <date year="2017" month="10" date="14" type="HOLIDAY"><![CDATA[День захисника України]]></date>
+	<date year="2017" month="10" date="16" type="HOLIDAY"><![CDATA[Перенесений вихідний 14/10/2017]]></date>
+</calendar >
+
+
+
+

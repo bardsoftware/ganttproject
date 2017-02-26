@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import java.awt.event.ActionEvent;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
@@ -53,6 +53,9 @@ public class PasteAction extends GPAction {
       @Override
       public void run() {
         ChartSelection selection = myViewmanager.getSelectedArtefacts();
+        if (selection.isEmpty()) {
+          return;
+        }
         myViewmanager.getActiveChart().paste(selection);
         selection.commitClipboardTransaction();
       }

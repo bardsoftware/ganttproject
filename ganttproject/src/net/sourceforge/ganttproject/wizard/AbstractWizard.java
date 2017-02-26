@@ -17,21 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.wizard;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import com.google.common.collect.Maps;
-
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -39,6 +25,13 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Centering;
 import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.options.TopPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A wizard abstraction capable of managing wizard pages and showing them in the UI
@@ -102,8 +95,8 @@ public class AbstractWizard {
         myCancelAction }, myTitle);
     addPageComponent(firstPage);
     myPages.add(firstPage);
-    myDialog.center(Centering.WINDOW);
     myDialog.layout();
+    myDialog.center(Centering.WINDOW);
     adjustButtonState();
   }
 

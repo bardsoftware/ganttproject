@@ -103,6 +103,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   public Component prepareEditor(TableCellEditor editor, int row, int column) {
     Component result = super.prepareEditor(editor, row, column);
     if (result instanceof JTextComponent) {
+      Object textFieldFont = UIManager.get("TextField.font");
+      if (textFieldFont instanceof Font) {
+        result.setFont((Font) textFieldFont);
+      }
       final Runnable command = TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result);
       SwingUtilities.invokeLater(new Runnable() {
         @Override

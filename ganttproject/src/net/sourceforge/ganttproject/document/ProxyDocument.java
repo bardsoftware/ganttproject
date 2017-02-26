@@ -305,22 +305,26 @@ class ProxyDocument implements Document {
       CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),
           getTaskManager());
       opener.addTagHandler(customPropHandler);
-      TaskDisplayColumnsTagHandler taskDisplayHandler = new TaskDisplayColumnsTagHandler(myTaskVisibleFields);
-      opener.addTagHandler(taskDisplayHandler);
-      opener.addParsingListener(taskDisplayHandler);
-      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), taskDisplayHandler));
+
+
+      TaskDisplayColumnsTagHandler pilsenTaskDisplayHandler = TaskDisplayColumnsTagHandler.createPilsenHandler();
+      TaskDisplayColumnsTagHandler legacyTaskDisplayHandler = TaskDisplayColumnsTagHandler.createLegacyHandler();
+
+      opener.addTagHandler(pilsenTaskDisplayHandler);
+      opener.addTagHandler(legacyTaskDisplayHandler);
+      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));
+      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), pilsenTaskDisplayHandler));
 
 
       TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
-          myResourceVisibleFields, "field", "id", "order", "width", "visible");
+          "field", "id", "order", "width", "visible");
       opener.addTagHandler(resourceFieldsHandler);
-      opener.addParsingListener(resourceFieldsHandler);
+      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
       opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
       opener.addTagHandler(taskHandler);
       opener.addParsingListener(taskHandler);
 
-      opener.addParsingListener(taskDisplayHandler);
       opener.addParsingListener(customPropHandler);
 
       opener.addTagHandler(opener.getDefaultTagHandler());

@@ -28,9 +28,8 @@ import java.util.List;
 /**
  * @author bbaranne
  */
-public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements ParsingListener {
+public class TaskDisplayColumnsTagHandler extends AbstractTagHandler {
 
-  private final ColumnList myVisibleFields;
   private final List<Column> myBuffer = new ArrayList<Column>();
   private final String myIDPropertyName;
   private final String myOrderPropertyName;
@@ -38,14 +37,9 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
   private final String myVisiblePropertyName;
   private boolean isEnabled;
 
-  public TaskDisplayColumnsTagHandler(ColumnList visibleFields) {
-    this(visibleFields, "field", "id", "order", "width", "visible");
-  }
-
-  public TaskDisplayColumnsTagHandler(ColumnList visibleFields, String tagName, String idPropertyName,
+  public TaskDisplayColumnsTagHandler(String tagName, String idPropertyName,
       String orderPropertyName, String widthPropertyName, String visiblePropertyName) {
     super(tagName);
-    myVisibleFields = visibleFields;
     myIDPropertyName = idPropertyName;
     myOrderPropertyName = orderPropertyName;
     myWidthPropertyName = widthPropertyName;
@@ -65,16 +59,6 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
     return true;
   }
 
-  @Override
-  public void parsingStarted() {
-    myVisibleFields.clear();
-  }
-
-  @Override
-  public void parsingFinished() {
-    myVisibleFields.importData(ColumnList.Immutable.fromList(myBuffer));
-  }
-
   private void loadTaskDisplay(Attributes atts) {
     String id = atts.getValue(myIDPropertyName);
     String orderStr = atts.getValue(myOrderPropertyName);
@@ -89,5 +73,45 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler implements 
       visible = Boolean.parseBoolean(atts.getValue(myVisiblePropertyName));
     }
     myBuffer.add(new ColumnList.ColumnStub(id, id, visible, order, width));
+  }
+
+  public static TaskDisplayColumnsTagHandler createPilsenHandler() {
+    return new TaskDisplayColumnsTagHandler("field", "id", "order", "width", "visible");
+  }
+
+  public static TaskDisplayColumnsTagHandler createLegacyHandler() {
+    TaskDisplayColumnsTagHandler result = new TaskDisplayColumnsTagHandler("displaycolumn", "property-id", "order", "width", "NONAME");
+    result.setEnabled(true);
+    return result;
+  }
+
+  public static ParsingListener createTaskDisplayColumnsWrapper(final ColumnList visibleFields, final TaskDisplayColumnsTagHandler pilsenHandler, final TaskDisplayColumnsTagHandler legacyHandler) {
+    return new ParsingListener() {
+      @Override
+      public void parsingStarted() {
+        visibleFields.clear();
+      }
+
+      @Override
+      public void parsingFinished() {
+        List<Column> buffer = pilsenHandler.myBuffer.isEmpty() ? legacyHandler.myBuffer : pilsenHandler.myBuffer;
+        visibleFields.importData(ColumnList.Immutable.fromList(buffer));
+      }
+
+    };
+  }
+
+  public static ParsingListener createTaskDisplayColumnsWrapper(final ColumnList visibleFields, final TaskDisplayColumnsTagHandler displayColumnsTagHandler) {
+    return new ParsingListener() {
+      @Override
+      public void parsingStarted() {
+        visibleFields.clear();
+      }
+
+      @Override
+      public void parsingFinished() {
+        visibleFields.importData(ColumnList.Immutable.fromList(displayColumnsTagHandler.myBuffer));
+      }
+    };
   }
 }

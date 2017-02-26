@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="ja" name="Japan Holidays 2016" type="country">
+<calendar id="ja" name="Japan Holidays 2016-2017" type="country">
 <!-- http://calendar.retira.eu/public-holidays/japan/2012/ -->
 <!-- http://www.officeholidays.com/countries/japan/ -->
 <!-- http://www.japanspecialist.co.uk/Travel-tips/Japan/National-holidays -->
@@ -14,8 +14,8 @@
 	<date year="" month="11" date="03" type="HOLIDAY"><![CDATA[Culture Day]]></date>
 	<date year="" month="11" date="23" type="HOLIDAY"><![CDATA[Labour Thanksgiving Day]]></date>
 	<date year="" month="12" date="23" type="HOLIDAY"><![CDATA[The Emperor's Birthday]]></date>
-	
-	
+
+
 	<date year="2006" month="01" date="09"/>
 	<date year="2006" month="07" date="17"/>
 	<date year="2006" month="10" date="9"/>
@@ -47,6 +47,14 @@
 	<date year="2016" month="09" date="19" type="HOLIDAY"><![CDATA[Respect for the Aged Day]]></date>
 	<date year="2016" month="09" date="22" type="HOLIDAY"><![CDATA[Autumnal Equinox Day]]></date>
     <date year="2016" month="10" date="10" type="HOLIDAY"><![CDATA[Health and Sports Day]]></date>
+
+	<date year="2017" month="1" date="2"><![CDATA[New Year's Day]]></date>
+	<date year="2017" month="1" date="9"><![CDATA[Coming of Age Day]]></date>
+	<date year="2017" month="3" date="20"><![CDATA[Vernal Equinox Day]]></date>
+	<date year="2017" month="7" date="17"><![CDATA[Marine Day]]></date>
+	<date year="2017" month="9" date="18"><![CDATA[Respect for the Aged Day]]></date>
+	<date year="2017" month="9" date="23"><![CDATA[Autumnal Equinox Day]]></date>
+    <date year="2017" month="10" date="9"><![CDATA[Health and Sports Day]]></date>
 
 
 </calendar >

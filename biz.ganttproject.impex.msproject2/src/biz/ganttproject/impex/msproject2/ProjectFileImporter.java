@@ -18,59 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import net.sf.mpxj.DateRange;
-import net.sf.mpxj.Day;
-import net.sf.mpxj.Duration;
-import net.sf.mpxj.FieldType;
-import net.sf.mpxj.MPXJException;
-import net.sf.mpxj.ProjectCalendar;
-import net.sf.mpxj.ProjectCalendarException;
-import net.sf.mpxj.ProjectFile;
-import net.sf.mpxj.Rate;
-import net.sf.mpxj.Relation;
-import net.sf.mpxj.Resource;
-import net.sf.mpxj.ResourceAssignment;
-import net.sf.mpxj.ResourceField;
-import net.sf.mpxj.Task;
-import net.sf.mpxj.TaskField;
-import net.sf.mpxj.TimeUnit;
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
+import com.beust.jcommander.internal.Maps;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import net.sf.mpxj.*;
 import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
 import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -85,21 +52,17 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.GanttDaysOff;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 
-import com.beust.jcommander.internal.Maps;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 class ProjectFileImporter {
   private final IGanttProject myNativeProject;
@@ -232,7 +195,7 @@ class ProjectFileImporter {
   }
 
   private void importCalendar(ProjectFile pf) {
-    ProjectCalendar defaultCalendar = pf.getCalendar();
+    ProjectCalendar defaultCalendar = pf.getDefaultCalendar();
     if (defaultCalendar == null) {
       return;
     }
@@ -316,7 +279,7 @@ class ProjectFileImporter {
       CustomPropertyDefinition def = myResourceCustomPropertyMapping.get(rf);
       if (def == null) {
         String typeAsString = convertDataType(rf);
-        String name = r.getParentFile().getResourceFieldAlias(rf);
+        String name = r.getParentFile().getCustomFields().getCustomField(rf).getAlias();
         if (name == null) {
           name = rf.getName();
         }
@@ -459,7 +422,7 @@ class ProjectFileImporter {
       CustomPropertyDefinition def = myTaskCustomPropertyMapping.get(tf);
       if (def == null) {
         String typeAsString = convertDataType(tf);
-        String name = t.getParentFile().getTaskFieldAlias(tf);
+        String name = t.getParentFile().getCustomFields().getCustomField(tf).getAlias();
         if (name == null) {
           name = tf.getName();
         }
@@ -593,7 +556,7 @@ class ProjectFileImporter {
           if (t.getMilestone()) {
             return Pair.create(getTaskManager().createLength(1), null);
           }
-          Duration dayUnits = t.getDuration().convertUnits(TimeUnit.DAYS, myProjectFile.getProjectHeader());
+          Duration dayUnits = t.getDuration().convertUnits(TimeUnit.DAYS, myProjectFile.getProjectProperties());
           TimeDuration gpDuration = getTaskManager().createLength(GPTimeUnitStack.DAY, (float) dayUnits.getDuration());
           Date endDate = getTaskManager().shift(t.getStart(), gpDuration);
           return getDurations(t.getStart(), endDate);
@@ -634,7 +597,7 @@ class ProjectFileImporter {
           dependency.setConstraint(convertConstraint(r));
           if (r.getLag().getDuration() != 0.0) {
             // TODO(dbarashev): get rid of days
-            dependency.setDifference((int) r.getLag().convertUnits(TimeUnit.DAYS, pf.getProjectHeader()).getDuration());
+            dependency.setDifference((int) r.getLag().convertUnits(TimeUnit.DAYS, pf.getProjectProperties()).getDuration());
           }
           dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));
         } catch (TaskDependencyException e) {

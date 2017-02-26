@@ -1,24 +1,43 @@
-import org.gradle.plugins.ide.idea.model.*
-
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
 plugins {
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "com.jfrog.bintray" version "1.7"
+  id 'com.github.ben-manes.versions' version '0.13.0'
+  id "com.jfrog.bintray" version "1.7"
 }
 
 apply plugin: 'java'
-apply plugin: 'idea'
+apply plugin: 'eclipse'
 
+// Path to launch4j binary
+ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file('dist-bin/plugins')
+ext.semver = '2.8.2'
+ext.buildNum = getBuildNum()
+
+archivesBaseName = 'ganttproject'
+version = "${semver}-r${getBuildNum()}"
+
+ant.importBuild 'build.xml'
+ant.properties.distBin = 'dist-bin'
+ant.properties.distDebWork = "deb"
+ant.properties.distDebPackage = "${buildDir}/distributions"
+ant.properties.distMacWork = 'dist-mac'
+ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
+ant.properties.version = "${semver}"
+
 
 // What is counted as java project for the purposes of this build
 def javaProjects() {
     subprojects.findAll { project ->
         project.name != rootProject.name && project.path != ':..'
     }
+}
+
+def devNull = new OutputStream() {
+  @Override
+  public void write(int b) {}
 }
 
 // Config for all projects: deps come from Maven repository,
@@ -32,6 +51,7 @@ allprojects {
     jcenter()
   }
   apply plugin: 'java'
+  apply plugin: 'eclipse'
   ext {
     libDir = 'lib'
   }
@@ -48,26 +68,115 @@ clean {
   delete += "dist-bin"
 }
 
-task copyPlugin(type: Copy) {
-  into(rootProject.distBinDir)
-  from(fileTree(".")) {
-    include "lib/javagalician.jar"
-    include "ganttproject"
-    include "ganttproject-eclipsito-config.xml"
-    include "logging.properties"
+task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
+  println "===== Building GanttProject ${version} ====="
+  println "===== Building generic binary distro ====="
+  doLast {
+    copy {
+      into(rootProject.distBinDir)
+      from(fileTree(".")) {
+        include "lib/javagalician.jar"
+        include "ganttproject.bat"
+        include "ganttproject.exe"
+        include "HouseBuildingSample.gan"
+        include "LICENSE"
+        include "logging.properties"
+      }
+    }
+    copy {
+      into(rootProject.distBinDir)
+      from(fileTree(".")) {
+        include "ganttproject"
+        include "ganttproject.command"
+      }
+      fileMode 0755
+    }
   }
 }
-task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) << {
-  println "== Finished building binary distro =="
-}
 
-task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) << {
-  println "== Finished updating libs =="
-}
-
-idea {
-  project {
-    vcs = 'Git'
-    outputFile = new File(outputFile.parentFile, 'ganttproject.ipr')
+def getBuildNum() {
+  def stdout = new ByteArrayOutputStream()
+  exec {
+    workingDir "."
+    commandLine "git", "rev-list", "--count", "ganttproject-2.7.."
+    standardOutput = stdout
   }
+  return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+}
+
+task distZip(type: Zip, dependsOn: distBin) {
+  from 'dist-bin'
+  into archivesBaseName + '-' + version
+}
+
+task distWin(dependsOn: distBin) {
+  doLast {
+    println '======== Building Windows Installer ========'
+    println '= Generating NSIS script ...'
+    exec {
+      workingDir '.'
+      commandLine './gen-nsis', semver, version
+    }
+    println '= Generating ganttproject.exe with launch4j ...'
+    exec {
+      workingDir '.'
+      commandLine launch4j, 'ganttproject-launch4j.xml'
+      standardOutput = devNull
+    }
+    println '= Copying required files to dist-win...'
+    copy {
+      from 'dist-bin'
+      into 'dist-win'
+      include '**'
+    }
+    copy {
+      from '.'
+      into 'dist-win'
+      include "ganttproject.l4j.ini"
+      include 'ganttproject.nsi'
+      include "ganttproject_16.ico"
+      include "ganttproject_32_2.ico"
+    }
+    println '= Building installer...'
+    exec {
+      workingDir 'dist-win'
+      commandLine 'makensis', 'ganttproject.nsi'
+      standardOutput = devNull
+    }
+    copy {
+      from 'dist-win'
+      into new File(buildDir, '/distributions')
+      include "ganttproject-${version}.exe"
+    }
+    println "===== Windows installer is ready in ${buildDir}/distributions ====="
+  }
+}
+
+task distDebPre {
+  doLast {
+    copy {
+      into('deb/usr/share/doc/ganttproject')
+      from(fileTree(".")) {
+        include "AUTHORS"
+        include "CHANGELOG"
+        include "LICENSE"
+        include "README"
+      }
+    }
+    "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
+    "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
+  }
+}
+
+task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
+  doLast {
+    println "== Finished updating libs =="
+  }
+}
+
+task runApp(type: JavaExec, dependsOn: distBin) {
+  workingDir = 'dist-bin'
+  classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar'])
+  main = 'org.bardsoftware.eclipsito.Boot'
+  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir','plugins'
 }

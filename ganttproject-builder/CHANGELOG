@@ -1,0 +1,5 @@
+ganttproject (2.8.2-1) unstable; urgency=low
+  * Bugfix Release. The list of closed issues is available at
+    https://github.com/bardsoftware/ganttproject/milestone/5?closed=1
+
+ -- Dmitry Barashev <contact@ganttproject.biz>  Mon, 20 Feb 2017 12:00:00 +0000
