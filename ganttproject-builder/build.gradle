@@ -180,3 +180,10 @@ task runApp(type: JavaExec, dependsOn: distBin) {
   main = 'org.bardsoftware.eclipsito.Boot'
   args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir','plugins'
 }
+task debugApp(type: JavaExec, dependsOn: distBin) {
+  workingDir = 'dist-bin'
+  classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar'])
+  main = 'org.bardsoftware.eclipsito.Boot'
+  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir','plugins'
+  jvmArgs  '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
+}
