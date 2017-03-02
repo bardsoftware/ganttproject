@@ -23,7 +23,7 @@
     <taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
     <taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="class.path"/>
 
-    <target name="distDeb" description="Builds DEB package" depends="distBin">
+    <target name="distDeb" description="Builds DEB package" depends="distBin,distDebPre">
         <description>Create a complete GanttProject deb package. Everything included.</description>
         <desktopEntry
                 toFile="${distDebWork}/usr/share/applications/ganttproject.desktop"
@@ -56,19 +56,22 @@
             </description>
             <!-- GanttProject distro goes into /usr/share/ganttproject -->
             <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
-                <include name="ganttproject"/>
                 <include name="plugins/**/"/>
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
             </tarfileset>
+            <tarfileset dir="${distBin}" filemode="755" prefix="usr/share/${package.name}">
+                <include name="ganttproject"/>
+            </tarfileset>
+
             <!-- Some docs go into /usr/share/doc/ganttproject -->
             <tarfileset dir="${distBin}/.." prefix="usr/share/doc/${package.name}">
                 <include name="LICENSE"/>
                 <include name="README"/>
                 <include name="AUTHORS"/>
             </tarfileset>
-            <!-- Icons, mime types and other stuff -->
+            <!-- Icons, mime types, docs and other stuff -->
             <tarfileset dir="${distDebWork}/usr" prefix="usr"/>
         </deb>
     </target>
@@ -110,7 +113,7 @@
             </fileset>
         </copy>
         <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
-        <chmod perm="ugo+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
+        <chmod perm="a+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
         <zip destfile="${distMacZip}">
             <zipfileset dir="${distMacWork}" includes="GanttProject.app/**">
             </zipfileset>
