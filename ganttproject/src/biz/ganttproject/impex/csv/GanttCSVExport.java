@@ -18,41 +18,40 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.csv;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
-
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.StringUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class to export the project in CSV text format
@@ -66,17 +65,26 @@ public class GanttCSVExport {
     }
   };
 
-  private final IGanttProject myProject;
-
   private final CSVOptions csvOptions;
+  private final TaskManager myTaskManager;
+  private final CustomPropertyManager myTaskCustomPropertyManager;
+  private final HumanResourceManager myHumanResourceManager;
+  private final CustomPropertyManager myHumanResourceCustomPropertyManager;
 
   private int iMaxSize = 0;
 
   public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
-    myProject = project;
-    this.csvOptions = csvOptions;
+    this(project.getTaskManager(),
+        project.getHumanResourceManager(), csvOptions);
   }
 
+  GanttCSVExport(TaskManager taskManager, HumanResourceManager resourceManager, CSVOptions csvOptions) {
+    myTaskManager = Preconditions.checkNotNull(taskManager);
+    myTaskCustomPropertyManager = Preconditions.checkNotNull(taskManager.getCustomPropertyManager());
+    myHumanResourceManager = Preconditions.checkNotNull(resourceManager);
+    myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());
+    this.csvOptions = Preconditions.checkNotNull(csvOptions);
+  }
   /**
    * Save the project as CSV on a stream
    *
@@ -101,7 +109,7 @@ public class GanttCSVExport {
 
     writeTasks(csvPrinter);
 
-    if (myProject.getHumanResourceManager().getResources().size() > 0) {
+    if (myHumanResourceManager.getResources().size() > 0) {
       csvPrinter.println();
       csvPrinter.println();
       writeResources(csvPrinter);
@@ -110,7 +118,8 @@ public class GanttCSVExport {
     writer.close();
   }
 
-  private void writeTaskHeaders(CSVPrinter writer) throws IOException {
+  private List<CustomPropertyDefinition> writeTaskHeaders(CSVPrinter writer) throws IOException {
+    List<CustomPropertyDefinition> defs = myTaskCustomPropertyManager.getDefinitions();
     for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
       TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
@@ -122,10 +131,11 @@ public class GanttCSVExport {
         writer.print(defaultColumn.getName());
       }
     }
-    for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
+    for (CustomPropertyDefinition def : defs) {
       writer.print(def.getName());
     }
     writer.println();
+    return defs;
   }
 
   private String i18n(String key) {
@@ -135,10 +145,8 @@ public class GanttCSVExport {
   /** Write all tasks.
    * @throws IOException */
   private void writeTasks(CSVPrinter writer) throws IOException {
-    writeTaskHeaders(writer);
-    Map<String, BooleanOption> options = csvOptions.getTaskOptions();
-    List<CustomPropertyDefinition> customFields = myProject.getTaskCustomColumnManager().getDefinitions();
-    for (Task task : myProject.getTaskManager().getTasks()) {
+    List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
+    for (Task task : myTaskManager.getTasks()) {
       for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
@@ -197,16 +205,11 @@ public class GanttCSVExport {
           }
         }
       }
-      CustomColumnsValues customValues = task.getCustomValues();
-      for (int j = 0; j < customFields.size(); j++) {
-        Object nextCustomFieldValue = customValues.getValue(customFields.get(j));
-        writer.print(nextCustomFieldValue == null ? "" : String.valueOf(nextCustomFieldValue));
-      }
-      writer.println();
+      writeCustomPropertyValues(writer, customFields, task.getCustomValues().getCustomProperties());
     }
   }
 
-  private void writeResourceHeaders(CSVPrinter writer) throws IOException {
+  private List<CustomPropertyDefinition> writeResourceHeaders(CSVPrinter writer) throws IOException {
     for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
@@ -222,20 +225,21 @@ public class GanttCSVExport {
         writer.print(defaultColumn.getName());
       }
     }
-    List<CustomPropertyDefinition> customFieldDefs = myProject.getResourceCustomPropertyManager().getDefinitions();
+    List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
     for (int i = 0; i < customFieldDefs.size(); i++) {
       CustomPropertyDefinition nextDef = customFieldDefs.get(i);
       writer.print(nextDef.getName());
     }
     writer.println();
+    return customFieldDefs;
   }
 
   /** write the resources.
    * @throws IOException */
   private void writeResources(CSVPrinter writer) throws IOException {
-    writeResourceHeaders(writer);
+    List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
     // parse all resources
-    for (HumanResource p : myProject.getHumanResourceManager().getResources()) {
+    for (HumanResource p : myHumanResourceManager.getResources()) {
       for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
@@ -271,15 +275,24 @@ public class GanttCSVExport {
           }
         }
       }
-      List<CustomProperty> customProps = p.getCustomProperties();
-      for (int j = 0; j < customProps.size(); j++) {
-        CustomProperty nextProperty = customProps.get(j);
-        writer.print(nextProperty.getValueAsString());
-      }
-      writer.println();
+      writeCustomPropertyValues(writer, customPropDefs, p.getCustomProperties());
     }
   }
 
+  private void writeCustomPropertyValues(CSVPrinter writer,
+                                         List<CustomPropertyDefinition> defs, List<CustomProperty> values) throws IOException {
+    Map<String, CustomProperty> definedProps = Maps.newHashMap();
+    for (CustomProperty prop : values) {
+      definedProps.put(prop.getDefinition().getID(), prop);
+    }
+    for (CustomPropertyDefinition def : defs) {
+      CustomProperty value = definedProps.get(def.getID());
+      String valueAsString = value == null ? null : Strings.nullToEmpty(value.getValueAsString());
+      writer.print(valueAsString);
+    }
+    writer.println();
+
+  }
   /** @return the name of task with the correct level. */
   private String getName(Task task) {
     if (csvOptions.bFixedSize) {
