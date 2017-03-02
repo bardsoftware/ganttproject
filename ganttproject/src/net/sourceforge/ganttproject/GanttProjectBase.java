@@ -19,17 +19,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOptionChangeListener;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
+import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.gui.*;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.GanttStatusBar;
+import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
@@ -40,7 +52,11 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.search.SearchUiImpl;
-import net.sourceforge.ganttproject.task.*;
+import net.sourceforge.ganttproject.task.CustomColumnsManager;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 
@@ -318,21 +334,22 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   protected static class RowHeightAligner implements GPOptionChangeListener {
-    private final ChartModelImpl myGanttViewModel;
+    private final ChartModelBase myChartModel;
 
-    private final GanttTree2 myTreeView;
+    private final TreeTableContainer myTreeView;
 
     // TODO: 1.12 refactor and get rid of using concrete implementations of
     // gantt view model and tree view
-    public RowHeightAligner(GanttTree2 treeView, ChartModelImpl ganttViewModel) {
-      myGanttViewModel = ganttViewModel;
+    public RowHeightAligner(TreeTableContainer treeView, ChartModelBase chartModel) {
+      myChartModel = chartModel;
       myTreeView = treeView;
+      myChartModel.addOptionChangeListener(this);
     }
 
     @Override
     public void optionsChanged() {
-      myTreeView.getTreeTable().setRowHeight(myGanttViewModel.calculateRowHeight());
-      AbstractTableModel model = (AbstractTableModel) myTreeView.getTable().getModel();
+      myTreeView.getTreeTable().setRowHeight(myChartModel.calculateRowHeight());
+      AbstractTableModel model = (AbstractTableModel) myTreeView.getTreeTable().getModel();
       model.fireTableStructureChanged();
       myTreeView.updateUI();
     }
