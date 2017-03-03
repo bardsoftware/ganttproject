@@ -259,11 +259,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(getProjectUIFacade().getOptionGroups());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(getRssFeedChecker().getOptions());
-    myRowHeightAligners.add(new RowHeightAligner(tree, area.getMyChartModel()));
 
     System.err.println("2. loading options");
     initOptions();
     getTree().setGraphicArea(area);
+    myRowHeightAligners.add(getTree().getRowHeightAligner());
+    getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        for (RowHeightAligner aligner : myRowHeightAligners) {
+          aligner.optionsChanged();
+        }
+      }
+    });
 
     getZoomManager().addZoomListener(area.getZoomListener());
 
@@ -365,9 +373,16 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
-        for (RowHeightAligner aligner : myRowHeightAligners) {
-          aligner.optionsChanged();
-        }
+        // It is important to run aligners after look and feel is set and font sizes
+        // in the UI manager updated.
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            for(RowHeightAligner aligner : myRowHeightAligners) {
+              aligner.optionsChanged();
+            }
+          }
+        });
       }
     });
 
@@ -799,14 +814,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     if (this.resp == null) {
       this.resp = new GanttResourcePanel(this, getUIFacade());
       this.resp.init();
-      final RowHeightAligner aligner = new RowHeightAligner(this.resp, this.resp.area.getChartModel());
-      getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
-        @Override
-        public void changeValue(ChangeValueEvent event) {
-          aligner.optionsChanged();
-        }
-      });
-      myRowHeightAligners.add(aligner);
+      myRowHeightAligners.add(this.resp.getRowHeightAligner());
       getHumanResourceManager().addView(this.resp);
     }
     return this.resp;
