@@ -11,9 +11,9 @@ apply plugin: 'eclipse'
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
+ext.semver = '2.8.3'
 ext.distBinDir = file('dist-bin')
-ext.pluginsDir = file('dist-bin/plugins')
-ext.semver = '2.8.2'
+ext.pluginsDir = file("dist-bin/plugins-${semver}")
 ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
