@@ -18,16 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JLabel;
-
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import com.google.common.collect.Lists;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
@@ -44,6 +36,7 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
+import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -59,20 +52,20 @@ import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.core.chart.canvas.Canvas.Shape;
-
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.List;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
   private final TaskManager myTaskManager;
@@ -127,14 +120,7 @@ public class GanttChartController extends AbstractChartImplementation implements
         getTaskManager()), new TaskChartModelFacade() {
       @Override
       public List<Rectangle> getTaskRectangles(Task t) {
-        List<Rectangle> result = new ArrayList<Rectangle>();
-        for (TaskActivity activity : t.getActivities()) {
-          Shape graphicPrimitive = myChartModel.getGraphicPrimitive(activity);
-          assert graphicPrimitive != null;
-          assert graphicPrimitive instanceof Rectangle;
-          result.add((Rectangle) graphicPrimitive);
-        }
-        return result;
+        return TaskRendererImpl2.getTaskRectangles(t, myChartModel);
       }
     }, getUIFacade()));
     setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
