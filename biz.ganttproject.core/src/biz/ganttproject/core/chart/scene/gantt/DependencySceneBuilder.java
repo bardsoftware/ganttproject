@@ -18,17 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene.gantt;
 
-import java.awt.Dimension;
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.BarChartConnector;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Renders dependency lines between tasks.
@@ -41,7 +40,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
   private final ChartApi myChartApi;
   private final TaskApi<T, D> myTaskApi;
 
-  public static interface TaskApi<T, D> {
+  public interface TaskApi<T, D> {
     boolean isMilestone(T task);
     Dimension getUnitVector(BarChartActivity<T> activity, D dependency);
     String getStyle(D dependency);
@@ -49,7 +48,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     List<T> getTasks();
   }
 
-  public static interface ChartApi {
+  public interface ChartApi {
     int getBarHeight();
   }
 
@@ -81,12 +80,12 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
         // or dependee.end <= dependant.end && dependency.type==FF
         // or dependee.start >= dependant.end && dependency.type==SF
         Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);
-        
+
         int xEntry = dependantVector.getPoint().x;
         int yEntry = dependantVector.getPoint().y;
         Point second = new Point(xEntry, dependeeVector.getPoint().y);
         Point third = new Point(xEntry, yEntry);
-        
+
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
         secondLine.setStyle(lineStyle);
@@ -144,25 +143,27 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     }
     if (!dependantRectangle.isVisible() && !dependeeRectangle.isVisible()) {
       return;
-    }    
-    
+    }
+    if (!dependeeRectangle.isVisible() && dependantRectangle.getWidth() == 0) {
+      return;
+    }
+
     final int ysign = Integer.signum(dependeeRectangle.getMiddleY() - dependantRectangle.getMiddleY());
-    
-    final Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector.getImpl());
+
+    final Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector);
     final int yDantEntry = ysign > 0 ? dependantRectangle.getBottomY() : dependantRectangle.getTopY();
     int xDantEntry;
     if (myTaskApi.isMilestone(dependant.getOwner())) {
       xDantEntry = dependantRectangle.getMiddleX();
     } else if (dependantDirection == Connector.Vector.WEST) {
-      xDantEntry = dependantRectangle.getLeftX() + 3;  
+      xDantEntry = dependantRectangle.getLeftX() + 3;
     } else if (dependantDirection == Connector.Vector.EAST) {
       xDantEntry = dependantRectangle.getRightX() - 3;
     } else {
       xDantEntry = dependantRectangle.getMiddleX();
     }
     Connector.Vector dependantVector = new Connector.Vector(new Point(xDantEntry, yDantEntry), dependantDirection);
-
-    Dimension dependeeDirection = myTaskApi.getUnitVector(dependee, connector.getImpl());
+    Dimension dependeeDirection = myTaskApi.getUnitVector(dependee, connector);
     int xDeeExit;
     int yDeeExit;
     if (myTaskApi.isMilestone(dependee.getOwner()) && xDantEntry == dependeeRectangle.getMiddleX()) {
@@ -179,7 +180,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
       }
     }
     Connector.Vector dependeeVector = new Connector.Vector(new Point(xDeeExit, yDeeExit), dependeeDirection);
-    
+
     result.add(new Connector(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));
   }
 }

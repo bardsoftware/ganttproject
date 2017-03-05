@@ -26,6 +26,7 @@ import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+import biz.ganttproject.core.chart.scene.BarChartConnector;
 import biz.ganttproject.core.chart.scene.gantt.Connector;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
@@ -40,13 +41,21 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.task.*;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
+import net.sourceforge.ganttproject.task.TaskActivity;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskImpl;
+import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -294,6 +303,69 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     renderDependencies();
   }
 
+  private class BarChartConnectorImpl implements BarChartConnector<Task, BarChartConnectorImpl> {
+    private final Task myTask;
+    private final TaskDependency myDep;
+
+    public BarChartConnectorImpl(Task task, TaskDependency d) {
+      myTask = Preconditions.checkNotNull(task);
+      myDep = Preconditions.checkNotNull(d);
+    }
+
+    @Override
+    public BarChartActivity<Task> getStart() {
+      TaskActivity startActivity = (TaskActivity) myDep.getStart();
+      List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(startActivity));
+      assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
+      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
+      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+        return splitActivities.get(splitActivities.size() - 1);
+      } else {
+        return splitActivities.get(0);
+      }
+    }
+
+    @Override
+    public BarChartActivity<Task> getEnd() {
+      TaskActivity endActivity = (TaskActivity) myDep.getEnd();
+      List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(endActivity));
+      assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
+      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
+      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+        return splitActivities.get(0);
+      } else {
+        return splitActivities.get(splitActivities.size() - 1);
+      }
+    }
+
+    @Override
+    public BarChartConnectorImpl getImpl() {
+      return this;
+    }
+
+    @Override
+    public Dimension getStartVector() {
+      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
+      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+        return Connector.Vector.EAST;
+      }
+      return Connector.Vector.WEST;
+    }
+
+    @Override
+    public Dimension getEndVector() {
+      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
+      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
+        return Connector.Vector.EAST;
+      }
+      return Connector.Vector.WEST;
+    }
+
+    TaskDependency getDependency() {
+      return myDep;
+    }
+  }
+
   private void renderDependencies() {
     DependencySceneBuilder.ChartApi chartApi = new DependencySceneBuilder.ChartApi() {
       @Override
@@ -301,40 +373,38 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return getRectangleHeight();
       }
     };
-    DependencySceneBuilder.TaskApi<Task, TaskDependency> taskApi = new DependencySceneBuilder.TaskApi<Task, TaskDependency>() {
+    DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl> taskApi = new DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl>() {
       @Override
       public boolean isMilestone(Task task) {
         return task.isMilestone();
       }
 
       @Override
-      public Dimension getUnitVector(BarChartActivity<Task> activity, TaskDependency dependency) {
-        ActivityBinding activityBinding = dependency.getActivityBinding();
-        TaskDependencyConstraint.Type type = dependency.getConstraint().getType();
-        if (activity == activityBinding.getDependeeActivity()) {
-          if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
-            return Connector.Vector.EAST;
-          }
-          return Connector.Vector.WEST;
-        } else if (activity == activityBinding.getDependantActivity()) {
-          if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
-            return Connector.Vector.EAST;
-          }
-          return Connector.Vector.WEST;
+      public Dimension getUnitVector(BarChartActivity<Task> activity, BarChartConnectorImpl connector) {
+        if (activity.equals(connector.getStart())) {
+          return connector.getStartVector();
+        } else if (activity.equals(connector.getEnd())) {
+          return connector.getEndVector();
         } else {
-          assert false : "Should not be here";
+          assert false : String.format("Should not be here. activity=%s, connector=%s", activity, connector);
           return null;
         }
       }
 
       @Override
-      public String getStyle(TaskDependency dependency) {
-        return dependency.getHardness() == TaskDependency.Hardness.STRONG ? "dependency.line.hard" : "dependency.line.rubber";
+      public String getStyle(BarChartConnectorImpl dependency) {
+        return dependency.getDependency().getHardness() == TaskDependency.Hardness.STRONG
+            ? "dependency.line.hard" : "dependency.line.rubber";
       }
 
       @Override
-      public Iterable<TaskDependency> getConnectors(Task task) {
-        return Arrays.asList(task.getDependencies().toArray());
+      public Iterable<BarChartConnectorImpl> getConnectors(Task task) {
+        TaskDependency[] deps = task.getDependencies().toArray();
+        List<BarChartConnectorImpl> result = Lists.newArrayListWithCapacity(deps.length);
+        for (TaskDependency d : deps) {
+          result.add(new BarChartConnectorImpl(task, d));
+        }
+        return result;
       }
 
       @Override
@@ -342,7 +412,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         return myModel.getVisibleTasks();
       }
     };
-    DependencySceneBuilder<Task, TaskDependency> dependencyRenderer = new DependencySceneBuilder<Task, TaskDependency>(
+    DependencySceneBuilder<Task, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
     dependencyRenderer.build();
   }
