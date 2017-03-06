@@ -77,14 +77,7 @@ Section "GanttProject"
   File HouseBuildingSample.gan
   File LICENSE
 
-  StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\ganttproject
-  File /r plugins\biz.ganttproject.core
-  File /r plugins\biz.ganttproject.impex.ical
-  File /r plugins\biz.ganttproject.impex.msproject2
-  File /r plugins\org.ganttproject.chart.pert
-  File /r plugins\org.ganttproject.impex.htmlpdf
-  SetOutPath $INSTDIR
+  File /r plugins-${VERSION}
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"

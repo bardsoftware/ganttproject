@@ -26,7 +26,7 @@ ant.properties.distDebPackage = "${buildDir}/distributions"
 ant.properties.distMacWork = 'dist-mac'
 ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
 ant.properties.version = "${semver}"
-
+ant.properties.version_build = "${version}"
 
 
 // What is counted as java project for the purposes of this build
