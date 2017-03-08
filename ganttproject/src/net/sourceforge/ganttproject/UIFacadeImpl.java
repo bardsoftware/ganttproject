@@ -105,8 +105,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       return UIFacadeImpl.getSizeLabels();
     }
   };
-  private static int DEFAULT_DPI = 96;
   private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
+  public IntegerOption getDpiOption() {
+    return myDpiOption;
+  }
+
 
   private ChangeValueListener myAppFontValueListener;
   private final LanguageOption myLanguageOption;
@@ -538,6 +541,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
           };
           myAppFontOption.addChangeValueListener(myAppFontValueListener);
+          myDpiOption.addChangeValueListener(myAppFontValueListener);
         }
       }
     });

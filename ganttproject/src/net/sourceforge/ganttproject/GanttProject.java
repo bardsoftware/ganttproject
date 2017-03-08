@@ -199,6 +199,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
+    myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
