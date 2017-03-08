@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -53,6 +54,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public final GanttProject appli;
 
   private final ResourceActionSet myResourceActionSet;
+  private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
   public ResourceLoadGraphicArea area;
 
@@ -117,11 +119,16 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     this.setBackground(new Color(0.0f, 0.0f, 0.0f));
     updateContextActions();
     // applyComponentOrientation(lang.getComponentOrientation());
+    myRowHeightAligner = new GanttProjectBase.RowHeightAligner(this, this.area.getChartModel());
   }
 
   @Override
   protected void init() {
     getTreeTable().initTreeTable();
+  }
+
+  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
+    return myRowHeightAligner;
   }
 
   private ProjectEventListener getProjectEventListener() {

@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
 import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
 import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -86,6 +87,7 @@ import java.util.logging.Level;
  */
 public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> implements
     /*DragSourceListener, DragGestureListener,*/ TaskTreeUIFacade {
+  private GanttProjectBase.RowHeightAligner myRowHeightAligner;
   private UIFacade myUIFacade;
 
   /** Pointer on graphic area */
@@ -324,6 +326,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   /** Change graphic part */
   public void setGraphicArea(ChartComponentBase area) {
     this.area = area;
+    myRowHeightAligner = new GanttProjectBase.RowHeightAligner(this, this.area.getChartModel());
   }
 
   @Override
@@ -443,6 +446,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         expandRefresh(moved.getChildAt(i));
       }
     }
+  }
+
+  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
+    return myRowHeightAligner;
   }
 
   /** Class for expansion and collapse of node */

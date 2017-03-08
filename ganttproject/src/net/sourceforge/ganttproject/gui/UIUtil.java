@@ -629,7 +629,6 @@ public abstract class UIUtil {
     double visibleAreaTotal = 0.0;
     double maxVisibleArea = 0.0;
     GraphicsConfiguration argmaxVisibleArea = null;
-    GraphicsConfiguration currentDisplay = null;
     GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
     // Iterate through the screen devices and calculate how much of the stored

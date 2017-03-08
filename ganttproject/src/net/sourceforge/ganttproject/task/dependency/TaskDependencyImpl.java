@@ -18,9 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.dependency;
 
+import biz.ganttproject.core.chart.scene.gantt.Connector;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+
+import java.awt.*;
 
 /**
  * @author bard
@@ -150,6 +153,15 @@ public class TaskDependencyImpl implements TaskDependency {
 //    return myStartActivity;
   }
 
+  @Override
+  public Dimension getStartVector() {
+    TaskDependencyConstraint.Type type = getConstraint().getType();
+    if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+      return Connector.Vector.EAST;
+    }
+    return Connector.Vector.WEST;
+  }
+
   public BarChartActivity<Task> getEnd() {
 //    if (myEndActivity == null) {
       ActivityBinding activityBinding = getConstraint().getActivityBinding();
@@ -159,7 +171,17 @@ public class TaskDependencyImpl implements TaskDependency {
 //    return myEndActivity;
   }
 
+  @Override
+  public Dimension getEndVector() {
+    TaskDependencyConstraint.Type type = getConstraint().getType();
+    if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
+      return Connector.Vector.EAST;
+    }
+    return Connector.Vector.WEST;
+  }
+
   public TaskDependency getImpl() {
     return this;
   }
+
 }

@@ -18,8 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
+import biz.ganttproject.core.chart.canvas.*;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.option.DefaultFontOption;
+import biz.ganttproject.core.option.FontSpec;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import io.milton.event.NewFolderEvent;
 
+import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -29,6 +36,7 @@ import com.google.common.collect.Lists;
 
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.chart.TaskRendererImpl2.VerticalPartitioning;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -151,6 +159,44 @@ public class TaskRendererImplTest extends TaskTestCase {
       assertEquals(TestSetupHelper.newMonday().getTime(), activities.get(1).getStart());
       assertEquals(TestSetupHelper.newWendesday().getTime(), activities.get(1).getEnd());
     }
+  }
+
+  public void testGetTaskRectangles() {
+    Task t = createTask(TestSetupHelper.newMonday());
+    {
+      t.setColor(Color.RED);
+      t.setDuration(getTaskManager().createLength(4));
+    }
+    ChartModelImpl chartModel;
+    {
+      // Setup chart with start date on Wednesday, size 200x200, weeks as big unit, days as small unit
+      UIConfiguration projectConfig = new UIConfiguration(Color.BLACK, false);
+      projectConfig.setChartFontOption(new DefaultFontOption("foo", new FontSpec("Foo", FontSpec.Size.HUGE), Collections.<String>emptyList()));
+      chartModel = new ChartModelImpl(getTaskManager(), new GPTimeUnitStack(), projectConfig);
+      chartModel.setStartDate(TestSetupHelper.newWendesday().getTime());
+      chartModel.setVisibleTasks(Lists.newArrayList(t));
+      chartModel.setBounds(new Dimension(200, 200));
+      chartModel.setTopTimeUnit(GPTimeUnitStack.WEEK);
+      chartModel.setBottomTimeUnit(GPTimeUnitStack.DAY);
+      chartModel.setBottomUnitWidth(20);
+    }
+    TaskRendererImpl2 renderer = new TaskRendererImpl2(chartModel);
+    chartModel.addRenderer(renderer);
+    renderer.render();
+
+    // We expect that renderer will create two rectangles for our task, one "invisible" (before chart start date)
+    // and one visible
+    List<Canvas.Rectangle> rectangles = TaskRendererImpl2.getTaskRectangles(t, chartModel);
+    assertEquals(2, rectangles.size());
+    TaskActivity part1 = (TaskActivity) rectangles.get(0).getModelObject();
+    assertNotNull(part1);
+    assertEquals(TestSetupHelper.newMonday().getTime(), part1.getStart());
+    assertEquals(TestSetupHelper.newWendesday().getTime(), part1.getEnd());
+
+    TaskActivity part2 = (TaskActivity) rectangles.get(1).getModelObject();
+    assertNotNull(part2);
+    assertEquals(TestSetupHelper.newWendesday().getTime(), part2.getStart());
+    assertEquals(2, part2.getDuration().getLength());
   }
 
 }

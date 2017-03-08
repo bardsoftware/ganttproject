@@ -106,6 +106,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       return UIFacadeImpl.getSizeLabels();
     }
   };
+  private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
+  public IntegerOption getDpiOption() {
+    return myDpiOption;
+  }
+
 
   private ChangeValueListener myAppFontValueListener;
   private final LanguageOption myLanguageOption;
@@ -195,7 +200,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 //    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
 //    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myChartFontOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption };
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
@@ -537,6 +542,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
           };
           myAppFontOption.addChangeValueListener(myAppFontValueListener);
+          myDpiOption.addChangeValueListener(myAppFontValueListener);
         }
       }
     });
@@ -557,6 +563,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   private void updateComponentTreeUI() {
     SwingUtilities.updateComponentTreeUI(myMainFrame);
+    myMainFrame.pack();
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         for (Runnable r : myOnUpdateComponentTreeUiCallbacks) {
@@ -583,7 +590,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     FontSpec currentSpec = myAppFontOption.getValue();
     if (currentSpec != null && !currentSpec.equals(myLastFontSpec)) {
       for (Map.Entry<String, Font> font : myOriginalFonts.entrySet()) {
-        float newSize = (font.getValue().getSize() * currentSpec.getSize().getFactor());
+        float dpiScale = myDpiOption.getValue().floatValue() / DEFAULT_DPI;
+        float newSize = (font.getValue().getSize() * currentSpec.getSize().getFactor() * dpiScale);
         Font newFont;
         if (Strings.isNullOrEmpty(currentSpec.getFamily())) {
           newFont = font.getValue().deriveFont(newSize);

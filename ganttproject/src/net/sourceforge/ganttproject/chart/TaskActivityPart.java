@@ -3,14 +3,13 @@
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.Date;
-import java.util.List;
-
+import biz.ganttproject.core.time.TimeDuration;
 import com.google.common.base.Preconditions;
-
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import biz.ganttproject.core.time.TimeDuration;
+
+import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -75,5 +74,20 @@ class TaskActivityPart implements TaskActivity {
   @Override
   public boolean isLast() {
     return myOriginal.isLast() && myEndDate.equals(myOriginal.getEnd());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TaskActivityPart that = (TaskActivityPart) o;
+    return Objects.equals(myEndDate, that.myEndDate) &&
+        Objects.equals(myStartDate, that.myStartDate) &&
+        Objects.equals(myDuration, that.myDuration);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(myEndDate, myStartDate, myDuration);
   }
 }

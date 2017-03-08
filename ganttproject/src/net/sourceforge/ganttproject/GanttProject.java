@@ -21,10 +21,13 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -153,7 +156,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private ResourceChartTabContentPanel myResourceChartTabContent;
 
-  private RowHeightAligner myRowHeightAligner;
+  private List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
 
   public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
 
@@ -194,6 +197,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
+    myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
@@ -244,7 +248,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     setIconImage(icon.getImage());
 
 
-    myFacadeInvalidator = new FacadeInvalidator(getTree().getModel());
+    myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
     getTree().init();
@@ -254,12 +258,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(getProjectUIFacade().getOptionGroups());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(getRssFeedChecker().getOptions());
-    myRowHeightAligner = new RowHeightAligner(tree, area.getMyChartModel());
-    area.getMyChartModel().addOptionChangeListener(myRowHeightAligner);
 
     System.err.println("2. loading options");
     initOptions();
     getTree().setGraphicArea(area);
+    myRowHeightAligners.add(getTree().getRowHeightAligner());
+    getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        for (RowHeightAligner aligner : myRowHeightAligners) {
+          aligner.optionsChanged();
+        }
+      }
+    });
 
     getZoomManager().addZoomListener(area.getZoomListener());
 
@@ -368,7 +379,16 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
-        myRowHeightAligner.optionsChanged();
+        // It is important to run aligners after look and feel is set and font sizes
+        // in the UI manager updated.
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            for(RowHeightAligner aligner : myRowHeightAligners) {
+              aligner.optionsChanged();
+            }
+          }
+        });
       }
     });
 
@@ -851,6 +871,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     if (this.resp == null) {
       this.resp = new GanttResourcePanel(this, getUIFacade());
       this.resp.init();
+      myRowHeightAligners.add(this.resp.getRowHeightAligner());
       getHumanResourceManager().addView(this.resp);
     }
     return this.resp;

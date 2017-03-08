@@ -8,8 +8,8 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    Copyright (C) 2003-2016, GanttProject Team
-    
+    Copyright (C) 2003-2017, GanttProject Team
+
 
 
 =======================================================================
@@ -687,4 +687,4 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
-    
+

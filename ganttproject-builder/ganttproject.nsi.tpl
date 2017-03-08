@@ -7,8 +7,6 @@ XPStyle on
 Icon "ganttproject_32_2.ico"
 
 !define MUI_ICON "ganttproject_32_2.ico"
-!define VERSION "2.8.2"
-!define VERSION_BUILD "2.8.2-r2030"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -75,17 +73,11 @@ Section "GanttProject"
   File eclipsito.jar
   File ganttproject.bat
   File ganttproject.exe
+  File ganttproject.l4j.ini
   File HouseBuildingSample.gan
   File LICENSE
 
-  StrCpy $OUTDIR "$INSTDIR\plugins"
-  File /r plugins\net.sourceforge.ganttproject
-  File /r plugins\biz.ganttproject.core
-  File /r plugins\biz.ganttproject.impex.ical
-  File /r plugins\biz.ganttproject.impex.msproject2
-  File /r plugins\org.ganttproject.chart.pert
-  File /r plugins\org.ganttproject.impex.htmlpdf
-  SetOutPath $INSTDIR
+  File /r plugins-${VERSION}
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"

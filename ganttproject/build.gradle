@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'idea'
 
 ext {
   libDir = 'lib/core'
@@ -31,6 +30,14 @@ sourceSets {
     }
 }
 
+task updateVersion {
+    doFirst {
+        def gpVersionFile = new File("${projectDir}/src/net/sourceforge/ganttproject/GPVersion.java")
+        def gpversion = gpVersionFile.getText('UTF-8')
+                .replaceAll('.*BUILD.NUMBER.*', "  public static String BUILD = \"${rootProject.buildNum}\"; // BUILD NUMBER")
+        gpVersionFile.write(gpversion, 'UTF-8')
+    }
+}
 task copyPluginFiles(type: Copy) {
     into(new File(rootProject.pluginsDir, project.name))
     from(jar.outputs.getFiles().getFiles().flatten())
@@ -52,9 +59,6 @@ task copyEclipsito(type: Copy) {
     into(rootProject.distBinDir)
     from(fileTree("lib/core")) {
       include "eclipsito.jar"
-    }
-    outputs.upToDateWhen {
-      new File(rootProject.distBinDir, "eclipsito.jar").exists()
     }
 }
 

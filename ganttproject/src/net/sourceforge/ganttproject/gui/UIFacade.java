@@ -57,6 +57,8 @@ public interface UIFacade {
     YES, NO, CANCEL, OK
   };
 
+  int DEFAULT_DPI = 96;
+
   public static final int GANTT_INDEX = 0;
 
   public static final int RESOURCES_INDEX = 1;

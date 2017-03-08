@@ -18,7 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
+import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
+import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
+import net.sourceforge.ganttproject.util.FileUtil;
+import org.eclipse.core.runtime.IStatus;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -27,47 +43,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
-import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskImpl;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
-import net.sourceforge.ganttproject.util.FileUtil;
-
-import org.eclipse.core.runtime.IStatus;
-import org.jdesktop.swingx.JXRadioGroup;
-
-import com.google.common.collect.Lists;
-
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.TimeDuration;
 
 public class ProjectUIFacadeImpl implements ProjectUIFacade {
   final UIFacade myWorkbenchFacade;
@@ -98,7 +73,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       GPLogger.getLogger(Document.class).log(Level.INFO, canWrite.getMessage(), canWrite.getException());
       String message = formatWriteStatusMessage(document, canWrite);
       List<Action> actions = new ArrayList<Action>();
-      actions.add(new GPAction("saveAsProject") {
+      actions.add(new GPAction("project.saveas") {
         @Override
         public void actionPerformed(ActionEvent e) {
           saveProjectAs(project);
