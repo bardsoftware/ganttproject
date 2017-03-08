@@ -88,7 +88,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final DocumentManager myDocumentManager;
   /** The tabbed pane with the different parts of the project */
   private final GanttTabbedPane myTabPane;
-  private final JToolBar myToolBar = new JToolBar();
+//  private final JToolBar myToolBar = new JToolBar();
   private final GPUndoManager myUndoManager;
 
   private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
@@ -99,13 +99,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("Gantt Chart");
-    myToolBar.setFloatable(false);
-    myToolBar.setBorderPainted(false);
-    myToolBar.setRollover(true);
+//    myToolBar.setFloatable(false);
+//    myToolBar.setBorderPainted(false);
+//    myToolBar.setRollover(true);
 
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
-    myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
+    myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
 
     myTimeUnitStack = new GPTimeUnitStack();
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
@@ -360,8 +360,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane() {
-    myContentPaneBuilder.build(getContentPane());
+  protected void createContentPane(JPanel toolbar) {
+    myContentPaneBuilder.build(toolbar, getContentPane());
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -375,9 +375,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myTabPane;
   }
 
-  protected JToolBar getToolBar() {
-    return myToolBar;
-  }
+//  protected JToolBar getToolBar() {
+//    return myToolBar;
+//  }
 
   public IGanttProject getProject() {
     return this;

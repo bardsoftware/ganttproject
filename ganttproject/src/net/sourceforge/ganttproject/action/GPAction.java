@@ -206,6 +206,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   }
 
   protected final void updateName() {
+    if (getFontawesomeLabel() != null) {
+      putValue(Action.NAME, getFontawesomeLabel());
+      return;
+    }
     String localizedName = getLocalizedName();
     if (localizedName == null) {
       localizedName = String.valueOf(getValue(Action.NAME));

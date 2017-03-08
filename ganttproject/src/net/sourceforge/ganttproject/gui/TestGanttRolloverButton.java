@@ -44,8 +44,6 @@ package net.sourceforge.ganttproject.gui;
 import net.sourceforge.ganttproject.action.GPAction;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -61,10 +59,12 @@ public class TestGanttRolloverButton extends JButton {
 
   public TestGanttRolloverButton() {
     setBorderPainted(false);
-    setMargin(new Insets(0, 0, 0, 0));
+    setContentAreaFilled(false);
+//    setMargin(new Insets(0, 0, 0, 0));
+
 
     addMouseListener(new MouseOverHandler());
-    addMouseListener(new AutoRepeatHandler());
+//    addMouseListener(new AutoRepeatHandler());
     setHorizontalTextPosition(SwingConstants.CENTER);
     setVerticalTextPosition(SwingConstants.BOTTOM);
     setRolloverEnabled(true);
@@ -135,8 +135,8 @@ public class TestGanttRolloverButton extends JButton {
       System.err.println("action="+((GPAction) action).getID()+" label="+fontawesomeLabel);
       if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
         isFontAwesome = true;
-        Font font = (Font) UIManager.get("FontAwesome.font");
-        setFont(font);
+        //Font font = (Font) UIManager.get("FontAwesome.font");
+        setFont(UIUtil.FONTAWESOME_FONT);
         setText(fontawesomeLabel);
         setIcon(null);
         setHorizontalAlignment(SwingConstants.CENTER);
@@ -162,56 +162,59 @@ public class TestGanttRolloverButton extends JButton {
     public void mouseEntered(MouseEvent e) {
       if (isEnabled()) {
         setBorderPainted(true);
+        setContentAreaFilled(true);
       }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
       setBorderPainted(false);
+      setContentAreaFilled(false);
+
     }
   }
-
-  class AutoRepeatHandler extends MouseAdapter {
-    private Worker myWorker;
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-      if (myAutoRepeatMilliseconds > 0) {
-        myWorker = new Worker(e);
-        myWorker.start();
-      }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-      if (myWorker != null) {
-        myWorker.interrupt();
-        myWorker = null;
-      }
-    }
-  }
-
-  class Worker extends Thread {
-    private ActionEvent myEvent;
-
-    Worker(MouseEvent e) {
-      myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getActionCommand(),
-          EventQueue.getMostRecentEventTime(), e.getModifiers());
-    }
-
-    @Override
-    public void run() {
-      while (true) {
-        try {
-          Thread.sleep(myAutoRepeatMilliseconds);
-        } catch (InterruptedException e) {
-          break;
-        }
-        if (isInterrupted()) {
-          break;
-        }
-        getAction().actionPerformed(myEvent);
-      }
-    }
-  }
+//
+//  class AutoRepeatHandler extends MouseAdapter {
+//    private Worker myWorker;
+//
+//    @Override
+//    public void mousePressed(MouseEvent e) {
+//      if (myAutoRepeatMilliseconds > 0) {
+//        myWorker = new Worker(e);
+//        myWorker.start();
+//      }
+//    }
+//
+//    @Override
+//    public void mouseReleased(MouseEvent e) {
+//      if (myWorker != null) {
+//        myWorker.interrupt();
+//        myWorker = null;
+//      }
+//    }
+//  }
+//
+//  class Worker extends Thread {
+//    private ActionEvent myEvent;
+//
+//    Worker(MouseEvent e) {
+//      myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getActionCommand(),
+//          EventQueue.getMostRecentEventTime(), e.getModifiers());
+//    }
+//
+//    @Override
+//    public void run() {
+//      while (true) {
+//        try {
+//          Thread.sleep(myAutoRepeatMilliseconds);
+//        } catch (InterruptedException e) {
+//          break;
+//        }
+//        if (isInterrupted()) {
+//          break;
+//        }
+//        getAction().actionPerformed(myEvent);
+//      }
+//    }
+//  }
 }

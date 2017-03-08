@@ -649,6 +649,9 @@ public abstract class UIUtil {
   }
 
   public static String getFontawesomeLabel(GPAction action) {
+    if (action.getID() == null) {
+      return null;
+    }
     Object value = FONTAWESOME_PROPERTIES.get(action.getID());
     return value == null ? null : String.valueOf(value);
   }
