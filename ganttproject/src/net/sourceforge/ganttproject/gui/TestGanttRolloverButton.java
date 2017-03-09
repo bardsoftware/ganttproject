@@ -44,6 +44,7 @@ package net.sourceforge.ganttproject.gui;
 import net.sourceforge.ganttproject.action.GPAction;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -128,6 +129,13 @@ public class TestGanttRolloverButton extends JButton {
     setIcon(iconOn);
   }
 
+  public void setScale(float scale) {
+    if (isFontAwesome) {
+      Font baseFont = UIUtil.FONTAWESOME_FONT;
+      Font scaledFont = baseFont.deriveFont(baseFont.getSize() * scale);
+      setFont(scaledFont);
+    }
+  }
   private boolean setupFontAwesome() {
     Action action = getAction();
     if (action instanceof GPAction) {
@@ -147,14 +155,6 @@ public class TestGanttRolloverButton extends JButton {
       }
     }
     return false;
-  }
-  public Runnable onUpdateFont() {
-    return new Runnable() {
-      @Override
-      public void run() {
-        setupFontAwesome();
-      }
-    };
   }
 
   class MouseOverHandler extends MouseAdapter {

@@ -83,6 +83,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final DialogBuilder myDialogBuilder;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
   private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
+  private float myLastScale = 0;
 
   private static Map<FontSpec.Size, String> getSizeLabels() {
     Map<FontSpec.Size, String> result = Maps.newHashMap();
@@ -542,7 +543,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
           };
           myAppFontOption.addChangeValueListener(myAppFontValueListener);
-          myDpiOption.addChangeValueListener(myAppFontValueListener);
+          myDpiOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+              if (myDpiOption.getValue() >= UIFacade.DEFAULT_DPI) {
+                updateFonts();
+              }
+            }
+          });
         }
       }
     });
@@ -588,9 +596,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     }
     FontSpec currentSpec = myAppFontOption.getValue();
-    if (currentSpec != null && !currentSpec.equals(myLastFontSpec)) {
+    float dpiScale = myDpiOption.getValue().floatValue() / DEFAULT_DPI;
+    if (currentSpec != null && (!currentSpec.equals(myLastFontSpec) || dpiScale != myLastScale)) {
       for (Map.Entry<String, Font> font : myOriginalFonts.entrySet()) {
-        float dpiScale = myDpiOption.getValue().floatValue() / DEFAULT_DPI;
         float newSize = (font.getValue().getSize() * currentSpec.getSize().getFactor() * dpiScale);
         Font newFont;
         if (Strings.isNullOrEmpty(currentSpec.getFamily())) {
@@ -601,6 +609,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         UIManager.put(font.getKey(), newFont);
       }
       myLastFontSpec = currentSpec;
+      myLastScale = dpiScale;
     }
   }
 

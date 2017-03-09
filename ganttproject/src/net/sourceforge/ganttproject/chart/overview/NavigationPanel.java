@@ -18,18 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
-import java.awt.Component;
-
-import javax.swing.AbstractAction;
-
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.scroll.ScrollTimeIntervalAction;
-import net.sourceforge.ganttproject.action.scroll.ScrollToEndAction;
-import net.sourceforge.ganttproject.action.scroll.ScrollToSelectionAction;
-import net.sourceforge.ganttproject.action.scroll.ScrollToStartAction;
-import net.sourceforge.ganttproject.action.scroll.ScrollToTodayAction;
+import net.sourceforge.ganttproject.action.scroll.*;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class NavigationPanel {
   private final TimelineChart myChart;
@@ -53,7 +48,7 @@ public class NavigationPanel {
 
   public Component getComponent() {
     return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addComboBox(
-        myScrollActions, myScrollActions[1]).addButton(myScrollBackAction).addButton(myScrollForwardAction).build();
+        myScrollActions, myScrollActions[1]).addButton(myScrollBackAction).addButton(myScrollForwardAction).build().getToolbar();
   }
 
 }

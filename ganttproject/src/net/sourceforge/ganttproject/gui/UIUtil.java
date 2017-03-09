@@ -98,7 +98,6 @@ public abstract class UIUtil {
     try (InputStream is = UIUtil.class.getResourceAsStream("/fontawesome-webfont.ttf")) {
       Font font = Font.createFont(Font.TRUETYPE_FONT, is);
       FONTAWESOME_FONT = font.deriveFont(Font.PLAIN, 24f);
-      UIManager.getDefaults().put("FontAwesome.font", FONTAWESOME_FONT);
     } catch (IOException | FontFormatException e) {
       FONTAWESOME_FONT = null;
     }

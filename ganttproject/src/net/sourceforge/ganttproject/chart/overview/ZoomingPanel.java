@@ -18,11 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
-import java.awt.Component;
-
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import java.awt.*;
 
 /**
  * Creates a panel containing buttons of the zoom actions
@@ -39,6 +39,6 @@ public class ZoomingPanel {
   public Component getComponent() {
     ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
     return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
-        zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
+        zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build().getToolbar();
   }
 }

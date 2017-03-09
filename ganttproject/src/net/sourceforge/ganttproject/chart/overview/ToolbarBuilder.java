@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.overview;
 
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
+import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
@@ -32,20 +34,23 @@ import java.text.MessageFormat;
 public class ToolbarBuilder {
   private final JPanel myToolbar;
   private Color myBackground;
+  private IntegerOption myDpiOption;
+  private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
 
   public ToolbarBuilder() {
     myToolbar = new JPanel();
     myToolbar.setLayout(new BoxLayout(myToolbar, BoxLayout.LINE_AXIS));
     myToolbar.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
     myBackground = myToolbar.getBackground();
-    // myToolbar.setBackground(myChart.getStyle().getSpanningHeaderBackgroundColor());
-//    myToolbar.setFloatable(false);
-//    myToolbar.setBorderPainted(false);
-//    myToolbar.setRollover(true);
   }
 
   public ToolbarBuilder withBackground(Color background) {
     myBackground = background;
+    return this;
+  }
+
+  public ToolbarBuilder withDpiOption(IntegerOption dpiOption) {
+    myDpiOption = dpiOption;
     return this;
   }
 
@@ -57,6 +62,7 @@ public class ToolbarBuilder {
     // } else {
     // button.setText("");
     // }
+    myButtons.add(button);
     myToolbar.add(button);
     return this;
   }
@@ -177,8 +183,9 @@ public class ToolbarBuilder {
     return this;
   }
 
-  public JPanel build() {
+  public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
-    return myToolbar;
+    GPToolbar result = new GPToolbar(myToolbar, myButtons, myDpiOption);
+    return result;
   }
 }

@@ -56,7 +56,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private Component createSchedulePanel() {
     return new ToolbarBuilder().withBackground(
         myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor()).addButton(myCriticalPathAction).addButton(
-        myBaselineAction).build();
+        myBaselineAction).build().getToolbar();
   }
 
   JComponent getComponent() {

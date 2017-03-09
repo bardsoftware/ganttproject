@@ -45,6 +45,7 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
@@ -199,6 +200,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
     myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
+
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
@@ -348,7 +350,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     });
 
     System.err.println("5. calculating size and packing...");
-    createContentPane(createToolbar());
+    final GPToolbar toolbar = createToolbar();
+    createContentPane(toolbar.getToolbar());
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
@@ -370,7 +373,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
-        //resizeToolbar(buttons);
+        toolbar.updateButtons();
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
@@ -379,9 +382,20 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
-            for(RowHeightAligner aligner : myRowHeightAligners) {
+            for (RowHeightAligner aligner : myRowHeightAligners) {
               aligner.optionsChanged();
             }
+          }
+        });
+        getUiFacadeImpl().getDpiOption().addChangeValueListener(new ChangeValueListener() {
+          @Override
+          public void changeValue(ChangeValueEvent event) {
+            SwingUtilities.invokeLater(new Runnable() {
+              @Override
+              public void run() {
+                getContentPane().doLayout();
+              }
+            });
           }
         });
       }
@@ -399,28 +413,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
-  }
-
-  private void resizeToolbar(List<? extends JComponent> buttons) {
-    int maxWidth = 0;
-    int maxHeight = 0;
-    for (JComponent b : buttons) {
-      if (b == null) {
-        continue;
-      }
-      System.out.println("maxW="+maxWidth+" maxH="+maxHeight+" bSize="+b.getSize()+" b="+b);
-      maxWidth  = Math.max(maxWidth, b.getSize().width);
-      maxHeight = Math.max(maxHeight, b.getSize().height);
-    }
-    Dimension d = new Dimension(Math.max(maxHeight, maxWidth), Math.max(maxHeight, maxWidth));
-    for (JComponent b : buttons) {
-      if (b == null) {
-        continue;
-      }
-      b.setMinimumSize(d);
-      b.setMaximumSize(d);
-      b.setPreferredSize(d);
-    }
   }
 
 
@@ -555,7 +547,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /** Create the button on toolbar */
-  private JPanel createToolbar() {
+  private GPToolbar createToolbar() {
     final List<JComponent> result = new ArrayList<>();
     List<TestGanttRolloverButton> buttons = new ArrayList<>();
 
@@ -563,7 +555,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //    actions.add(myProjectMenu.getOpenProjectAction());
 //    actions.add(myProjectMenu.getSaveProjectAction());
 //    actions.add(null);
-    buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
+    buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction()));
     buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
     buttons.add(null);
 
@@ -658,8 +650,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         continue;
       }
       builder = builder.addButton(b);
-      getUiFacadeImpl().addOnUpdateComponentTreeUi(b.onUpdateFont());
     }
+    builder = builder.withDpiOption(getUiFacadeImpl().getDpiOption());
 
     JPanel paddingLeft = new JPanel();
     paddingLeft.setPreferredSize(new Dimension(12, 24));
@@ -689,14 +681,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //toolBar.add(tailPanel);
 
     //return result;
+    final GPToolbar toolbar = builder.build();
     getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
       @Override
       public void run() {
-        resizeToolbar(result);
+        toolbar.resize();
       }
     });
-    JPanel toolbar = builder.build();
-    toolbar.setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
+    toolbar.getToolbar().setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     return toolbar;
   }
 
