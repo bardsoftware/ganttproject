@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static net.sourceforge.ganttproject.ResourceDefaultColumn.COST;
+
 /**
  * Class to export the project in CSV text format
  *
@@ -271,6 +273,9 @@ public class GanttCSVExport {
             break;
           case STANDARD_RATE:
             writer.print(p.getStandardPayRate().toPlainString());
+            break;
+          case COST:
+            writer.print(p.getTotalCost().toPlainString());
             break;
           }
         }
