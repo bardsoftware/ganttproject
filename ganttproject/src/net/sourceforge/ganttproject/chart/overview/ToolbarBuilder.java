@@ -20,8 +20,11 @@ package net.sourceforge.ganttproject.chart.overview;
 
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
 import javax.swing.*;
@@ -31,11 +34,33 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
 
+/**
+ * This class is a standard way of building toolbars in GanttProject.
+ *
+ * @author Dmitry Barashev (dbarashev@ganttproject.biz)
+ */
 public class ToolbarBuilder {
+
+  public static class Gaps {
+    public static Supplier<Component> VDASH = new Supplier<Component>() {
+      @Override
+      public Component get() {
+        return new JLabel(" | ");
+      }
+    };
+    public static Supplier<Component> RIGID = new Supplier<Component>() {
+      @Override
+      public Component get() {
+        return Box.createRigidArea(new Dimension(3, 0));
+      }
+    };
+  }
   private final JPanel myToolbar;
   private Color myBackground;
   private IntegerOption myDpiOption;
   private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
+  private Supplier<Component> myGapFactory;
+  private int myButtonWidth = 48;
 
   public ToolbarBuilder() {
     myToolbar = new JPanel();
@@ -49,30 +74,60 @@ public class ToolbarBuilder {
     return this;
   }
 
+  public ToolbarBuilder withButtonWidth(int width) {
+    myButtonWidth = width;
+    return this;
+  }
   public ToolbarBuilder withDpiOption(IntegerOption dpiOption) {
     myDpiOption = dpiOption;
     return this;
   }
 
+  public ToolbarBuilder withGapFactory(Supplier<Component> gapFactory) {
+    myGapFactory = Preconditions.checkNotNull(gapFactory);
+    return this;
+  }
+
   public ToolbarBuilder addButton(TestGanttRolloverButton button) {
-    button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
+    //button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
+    button.setIcon(null);
+    button.setRolloverIcon(null);
     button.setHorizontalTextPosition(SwingConstants.CENTER);
     button.setVerticalTextPosition(SwingConstants.CENTER);
     button.setTextHidden(false);
-    // } else {
-    // button.setText("");
-    // }
+    button.setAlignmentY(Component.CENTER_ALIGNMENT);
+    button.setMargin(new Insets(0, 0, 0, 0));
+//    System.out.println(String.format("Width of %s is %s", button.getText(), SwingUtilities.computeStringWidth(button.getGraphics().getFontMetrics(button.getFont()), button.getText())));
     myButtons.add(button);
+    addGap();
     myToolbar.add(button);
     return this;
   }
 
   public ToolbarBuilder addButton(Action action) {
-    if (myToolbar.getComponentCount() != 0) {
-      myToolbar.add(new JLabel(" | "));
-    }
     return addButton(new TestGanttRolloverButton(action));
   }
+
+  public ToolbarBuilder addPanel(JPanel panel) {
+    addGap();
+    panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+    myToolbar.add(panel);
+    return this;
+  }
+
+  private void addGap() {
+    if (myToolbar.getComponentCount() != 0 && myGapFactory != null) {
+      myToolbar.add(myGapFactory.get());
+    }
+  }
+
+  public ToolbarBuilder addWhitespace() {
+    float scale = myDpiOption == null ? 1.0f : myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI;
+    int whitespaceWidth = (int)(myButtonWidth * scale / 1.62f);
+    myToolbar.add(Box.createRigidArea(new Dimension(whitespaceWidth, 0)));
+    return this;
+  }
+
 
   public ToolbarBuilder addComboBox(final Action[] actions, final Action selected) {
     class MyComboBox extends TestGanttRolloverButton {
@@ -175,17 +230,15 @@ public class ToolbarBuilder {
       }
     }
     final MyComboBox button = new MyComboBox(actions);
-
-    if (myToolbar.getComponentCount() != 0) {
-      myToolbar.add(new JLabel(" | "));
-    }
+    addGap();
     myToolbar.add(button);
     return this;
   }
 
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
-    GPToolbar result = new GPToolbar(myToolbar, myButtons, myDpiOption);
+    GPToolbar result = new GPToolbar(myToolbar, myButtons, myButtonWidth, myDpiOption);
+    result.getToolbar().setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     return result;
   }
 }

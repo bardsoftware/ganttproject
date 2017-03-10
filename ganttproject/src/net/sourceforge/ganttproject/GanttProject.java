@@ -548,16 +548,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   /** Create the button on toolbar */
   private GPToolbar createToolbar() {
-    final List<JComponent> result = new ArrayList<>();
-    List<TestGanttRolloverButton> buttons = new ArrayList<>();
-
-//    List<Action> actions = new ArrayList<>();
-//    actions.add(myProjectMenu.getOpenProjectAction());
-//    actions.add(myProjectMenu.getSaveProjectAction());
-//    actions.add(null);
-    buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction()));
-    buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(null);
+    ToolbarBuilder builder = new ToolbarBuilder().withDpiOption(getUiFacadeImpl().getDpiOption()).withButtonWidth(40);
+    builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction()))
+        .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction()))
+        .addWhitespace();
 
     final ArtefactAction newAction;
     {
@@ -571,8 +565,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }, new Action[] {taskNewAction, resourceNewAction});
       final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
       final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
-      buttons.add(bNewTask);
-      buttons.add(bnewResource);
+      builder.addButton(bNewTask).addButton(bnewResource);
       getTabs().addChangeListener(new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent changeEvent) {
@@ -631,54 +624,28 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    buttons.add(new TestGanttRolloverButton(deleteAction));
-    buttons.add(null);
-
-    buttons.add(new TestGanttRolloverButton(propertiesAction));
-    buttons.add(new TestGanttRolloverButton(getCutAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(getCopyAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(getPasteAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(null);
-
-    buttons.add(new TestGanttRolloverButton(myEditMenu.getUndoAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
-
-    ToolbarBuilder builder = new ToolbarBuilder();
-    for (TestGanttRolloverButton b : buttons) {
-      result.add(b);
-      if (b == null) {
-        continue;
-      }
-      builder = builder.addButton(b);
-    }
-    builder = builder.withDpiOption(getUiFacadeImpl().getDpiOption());
-
-    JPanel paddingLeft = new JPanel();
-    paddingLeft.setPreferredSize(new Dimension(12, 24));
-
-    //toolBar.add(paddingLeft);
-//    for (JComponent b : result) {
-//      if (b == null) {
-////        JPanel separator = new JPanel();
-////        separator.setPreferredSize(new Dimension(24, 24));
-//        //toolBar.add(separator);
-//      } else {
-//        //b.setAlignmentY(CENTER_ALIGNMENT);
-//        //toolBar.add(b);
-//      }
-//    }
+    builder.addButton(new TestGanttRolloverButton(deleteAction))
+        .addWhitespace()
+        .addButton(new TestGanttRolloverButton(propertiesAction))
+        .addButton(new TestGanttRolloverButton(getCutAction()))
+        .addButton(new TestGanttRolloverButton(getCopyAction()))
+        .addButton(new TestGanttRolloverButton(getPasteAction()))
+        .addWhitespace()
+        .addButton(new TestGanttRolloverButton(myEditMenu.getUndoAction()))
+        .addButton(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
 
     JTextField searchBox = getSearchUi().getSearchField();
-    searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
+    //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
     searchBox.setAlignmentY(CENTER_ALIGNMENT);
     JPanel tailPanel = new JPanel(new BorderLayout());
 
-    JPanel searchPanel = new JPanel();
-    searchPanel.add(searchBox);
-    tailPanel.add(searchPanel, BorderLayout.EAST);
-    tailPanel.setAlignmentY(CENTER_ALIGNMENT);
-    tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-    //toolBar.add(tailPanel);
+    //JPanel searchPanel = new JPanel();
+    //searchPanel.add(searchBox);
+    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
+    tailPanel.add(searchBox, BorderLayout.EAST);
+    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
+    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+    builder.addPanel(tailPanel);
 
     //return result;
     final GPToolbar toolbar = builder.build();
@@ -688,7 +655,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         toolbar.resize();
       }
     });
-    toolbar.getToolbar().setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     return toolbar;
   }
 

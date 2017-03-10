@@ -47,8 +47,14 @@ public class NavigationPanel {
   }
 
   public Component getComponent() {
-    return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addComboBox(
-        myScrollActions, myScrollActions[1]).addButton(myScrollBackAction).addButton(myScrollForwardAction).build().getToolbar();
+    return new ToolbarBuilder()
+        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
+        .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
+        .addComboBox(myScrollActions, myScrollActions[1])
+        .addButton(myScrollBackAction)
+        .addButton(myScrollForwardAction)
+        .build()
+        .getToolbar();
   }
 
 }

@@ -57,11 +57,12 @@ public class TestGanttRolloverButton extends JButton {
 
   private boolean myTextHidden = false;
   private boolean isFontAwesome = false;
+  private Font myBaseFont;
 
   public TestGanttRolloverButton() {
     setBorderPainted(false);
     setContentAreaFilled(false);
-//    setMargin(new Insets(0, 0, 0, 0));
+    setMargin(new Insets(0, 0, 0, 0));
 
 
     addMouseListener(new MouseOverHandler());
@@ -109,7 +110,7 @@ public class TestGanttRolloverButton extends JButton {
 
   @Override
   public void setIcon(Icon icon) {
-    if (icon != null) {
+    if (icon != null && !isFontAwesome) {
       setRolloverIcon(icon);
     }
     super.setIcon(icon);
@@ -131,7 +132,7 @@ public class TestGanttRolloverButton extends JButton {
 
   public void setScale(float scale) {
     if (isFontAwesome) {
-      Font baseFont = UIUtil.FONTAWESOME_FONT;
+      Font baseFont = myBaseFont;
       Font scaledFont = baseFont.deriveFont(baseFont.getSize() * scale);
       setFont(scaledFont);
     }
@@ -140,9 +141,14 @@ public class TestGanttRolloverButton extends JButton {
     Action action = getAction();
     if (action instanceof GPAction) {
       String fontawesomeLabel = ((GPAction) action).getFontawesomeLabel();
-      System.err.println("action="+((GPAction) action).getID()+" label="+fontawesomeLabel);
       if (fontawesomeLabel != null && UIUtil.FONTAWESOME_FONT != null) {
         isFontAwesome = true;
+        action.putValue(Action.SMALL_ICON, null);
+        float iconScale = UIUtil.getFontawesomeScale((GPAction) action);
+        myBaseFont = (iconScale == 1f)
+            ? UIUtil.FONTAWESOME_FONT
+            : UIUtil.FONTAWESOME_FONT.deriveFont(UIUtil.FONTAWESOME_FONT.getSize() * iconScale);
+
         //Font font = (Font) UIManager.get("FontAwesome.font");
         setFont(UIUtil.FONTAWESOME_FONT);
         setText(fontawesomeLabel);

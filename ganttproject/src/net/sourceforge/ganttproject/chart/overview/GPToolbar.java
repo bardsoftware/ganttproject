@@ -19,11 +19,13 @@ public class GPToolbar {
   private final JPanel myToolbar;
   private final List<TestGanttRolloverButton> myButtons;
   private final IntegerOption myDpiOption;
+  private final int myButtonWidth;
   private Box.Filler myFiller;
 
-  GPToolbar(JPanel toolbar, java.util.List<TestGanttRolloverButton> buttons, IntegerOption dpiOption) {
+  GPToolbar(JPanel toolbar, List<TestGanttRolloverButton> buttons, int buttonWidth, IntegerOption dpiOption) {
     myToolbar = Preconditions.checkNotNull(toolbar);
     myButtons = Preconditions.checkNotNull(buttons);
+    myButtonWidth = buttonWidth;
     myDpiOption = dpiOption;
     if (myDpiOption != null) {
       myDpiOption.addChangeValueListener(new ChangeValueListener() {
@@ -58,7 +60,7 @@ public class GPToolbar {
   }
 
   private void resizeToolbar(List<? extends JComponent> buttons) {
-    int width = (int)(48 * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
+    int width = (int)(myButtonWidth * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
     Dimension d = new Dimension(width, width);
     for (JComponent b : buttons) {
       if (b == null) {

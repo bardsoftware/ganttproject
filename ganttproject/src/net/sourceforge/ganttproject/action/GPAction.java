@@ -200,11 +200,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return null;
   }
 
-  protected final void setIconVisible(boolean isVisible) {
-    iconVisible = isVisible;
-    putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
-  }
-
   protected final void updateName() {
     if (getFontawesomeLabel() != null) {
       putValue(Action.NAME, getFontawesomeLabel());
@@ -245,10 +240,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   protected void updateTooltip() {
     String description = getLocalizedDescription();
     putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);
-  }
-
-  public void isIconVisible(boolean isNull) {
-    setIconVisible(isNull);
   }
 
   @Override

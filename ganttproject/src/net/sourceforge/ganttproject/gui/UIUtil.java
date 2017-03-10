@@ -654,4 +654,12 @@ public abstract class UIUtil {
     Object value = FONTAWESOME_PROPERTIES.get(action.getID());
     return value == null ? null : String.valueOf(value);
   }
+
+  public static float getFontawesomeScale(GPAction action) {
+    if (action.getID() == null) {
+      return 1f;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".scale");
+    return value == null ? 1f : Float.valueOf(value.toString());
+  }
 }
