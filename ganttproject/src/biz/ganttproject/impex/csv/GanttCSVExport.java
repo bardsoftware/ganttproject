@@ -53,8 +53,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static net.sourceforge.ganttproject.ResourceDefaultColumn.COST;
-
 /**
  * Class to export the project in CSV text format
  *
