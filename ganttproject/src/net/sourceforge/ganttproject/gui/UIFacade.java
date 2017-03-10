@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -62,6 +63,8 @@ public interface UIFacade {
   public static final int GANTT_INDEX = 0;
 
   public static final int RESOURCES_INDEX = 1;
+
+  IntegerOption getDpiOption();
 
   ScrollingManager getScrollingManager();
 

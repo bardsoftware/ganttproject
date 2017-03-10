@@ -18,12 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
@@ -72,16 +74,28 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   @Override
   protected Component createButtonPanel() {
-    JToolBar buttonBar = new JToolBar();
-    buttonBar.setFloatable(false);
-    buttonBar.setBorderPainted(false);
+//    JToolBar buttonBar = new JToolBar();
+//    buttonBar.setFloatable(false);
+//    buttonBar.setBorderPainted(false);
+//    for (AbstractAction a : myTreeFacade.getTreeActions()) {
+//      buttonBar.add(new TestGanttRolloverButton(a));
+//    }
+//
+//    JPanel buttonPanel = new JPanel(new BorderLayout());
+//    buttonPanel.add(buttonBar, BorderLayout.WEST);
+//    return buttonPanel;
+    ToolbarBuilder builder = new ToolbarBuilder().withButtonWidth(24).withDpiOption(myWorkbenchFacade.getDpiOption());
     for (AbstractAction a : myTreeFacade.getTreeActions()) {
-      buttonBar.add(new TestGanttRolloverButton(a));
+      builder.addButton(a);
     }
-
-    JPanel buttonPanel = new JPanel(new BorderLayout());
-    buttonPanel.add(buttonBar, BorderLayout.WEST);
-    return buttonPanel;
+    final GPToolbar toolbar = builder.build();
+    myWorkbenchFacade.getDpiOption().addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        toolbar.updateButtons();
+      }
+    });
+    return toolbar.getToolbar();
   }
 
   @Override

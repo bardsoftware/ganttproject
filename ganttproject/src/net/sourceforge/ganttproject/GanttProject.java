@@ -548,7 +548,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   /** Create the button on toolbar */
   private GPToolbar createToolbar() {
-    ToolbarBuilder builder = new ToolbarBuilder().withDpiOption(getUiFacadeImpl().getDpiOption()).withButtonWidth(40);
+    ToolbarBuilder builder = new ToolbarBuilder()
+        .withDpiOption(getUiFacadeImpl().getDpiOption())
+        .withButtonWidth(40)
+        .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction()))
         .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction()))
         .addWhitespace();

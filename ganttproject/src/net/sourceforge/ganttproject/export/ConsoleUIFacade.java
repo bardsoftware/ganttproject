@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.export;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -41,6 +42,11 @@ public class ConsoleUIFacade implements UIFacade {
 
   ConsoleUIFacade(UIFacade realFacade) {
     myRealFacade = realFacade;
+  }
+
+  @Override
+  public IntegerOption getDpiOption() {
+    return null;
   }
 
   @Override

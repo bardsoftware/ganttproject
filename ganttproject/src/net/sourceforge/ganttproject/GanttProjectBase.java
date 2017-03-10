@@ -22,6 +22,7 @@ import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -227,6 +228,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   @Override
   public DefaultEnumerationOption<Locale> getLanguageOption() {
     return myUIFacade.getLanguageOption();
+  }
+
+  @Override
+  public IntegerOption getDpiOption() {
+    return myUIFacade.getDpiOption();
   }
 
   @Override

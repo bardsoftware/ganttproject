@@ -108,6 +108,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
   };
   private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
+  @Override
   public IntegerOption getDpiOption() {
     return myDpiOption;
   }

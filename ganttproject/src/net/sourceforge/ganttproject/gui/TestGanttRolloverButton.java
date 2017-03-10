@@ -150,7 +150,7 @@ public class TestGanttRolloverButton extends JButton {
             : UIUtil.FONTAWESOME_FONT.deriveFont(UIUtil.FONTAWESOME_FONT.getSize() * iconScale);
 
         //Font font = (Font) UIManager.get("FontAwesome.font");
-        setFont(UIUtil.FONTAWESOME_FONT);
+        setFont(myBaseFont);
         setText(fontawesomeLabel);
         setIcon(null);
         setHorizontalAlignment(SwingConstants.CENTER);

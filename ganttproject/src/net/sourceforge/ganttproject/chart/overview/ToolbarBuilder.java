@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -42,6 +43,7 @@ import java.text.MessageFormat;
 public class ToolbarBuilder {
 
   public static class Gaps {
+
     public static Supplier<Component> VDASH = new Supplier<Component>() {
       @Override
       public Component get() {
@@ -56,6 +58,7 @@ public class ToolbarBuilder {
     };
   }
   private final JPanel myToolbar;
+  private Border myBorder = BorderFactory.createEmptyBorder(2,2,2,2);
   private Color myBackground;
   private IntegerOption myDpiOption;
   private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
@@ -71,6 +74,11 @@ public class ToolbarBuilder {
 
   public ToolbarBuilder withBackground(Color background) {
     myBackground = background;
+    return this;
+  }
+
+  public ToolbarBuilder withBorder(Border border) {
+    myBorder = border;
     return this;
   }
 
@@ -238,7 +246,7 @@ public class ToolbarBuilder {
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
     GPToolbar result = new GPToolbar(myToolbar, myButtons, myButtonWidth, myDpiOption);
-    result.getToolbar().setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
+    result.getToolbar().setBorder(myBorder);
     return result;
   }
 }
