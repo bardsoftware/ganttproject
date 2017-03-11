@@ -18,30 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.border.Border;
-
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
 import net.sourceforge.ganttproject.gui.GanttImagePanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 abstract class ChartTabContentPanel {
   private JSplitPane mySplitPane;
@@ -60,7 +50,8 @@ abstract class ChartTabContentPanel {
     JPanel tabContentPanel = new JPanel(new BorderLayout());
     final JPanel left = new JPanel(new BorderLayout());
     Box treeHeader = Box.createVerticalBox();
-    final Component buttonPanel = createButtonPanel();
+    final JComponent buttonPanel = (JComponent) createButtonPanel();
+    buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
     treeHeader.add(buttonPanel);
 
     treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
@@ -79,6 +70,10 @@ abstract class ChartTabContentPanel {
         int maxHeight = Math.max(buttonPanel.getPreferredSize().height, chartPanels.getPreferredSize().height);
         if (buttonPanel.getHeight() < maxHeight) {
           left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
+        } else if (chartPanels.getHeight() < maxHeight) {
+          int diff = maxHeight - chartPanels.getHeight();
+          Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+          chartPanels.setBorder(emptyBorder);
         }
       }
     });

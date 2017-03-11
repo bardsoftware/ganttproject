@@ -105,7 +105,6 @@ public class ToolbarBuilder {
     button.setTextHidden(false);
     button.setAlignmentY(Component.CENTER_ALIGNMENT);
     button.setMargin(new Insets(0, 0, 0, 0));
-//    System.out.println(String.format("Width of %s is %s", button.getText(), SwingUtilities.computeStringWidth(button.getGraphics().getFontMetrics(button.getFont()), button.getText())));
     myButtons.add(button);
     addGap();
     myToolbar.add(button);
@@ -247,6 +246,7 @@ public class ToolbarBuilder {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
     GPToolbar result = new GPToolbar(myToolbar, myButtons, myButtonWidth, myDpiOption);
     result.getToolbar().setBorder(myBorder);
+    result.updateButtons();
     return result;
   }
 }

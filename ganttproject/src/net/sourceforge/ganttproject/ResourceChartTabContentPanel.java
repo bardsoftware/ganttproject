@@ -3,18 +3,15 @@
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.overview.GPToolbar;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
+
+import javax.swing.*;
+import java.awt.*;
 
 class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private ResourceTreeUIFacade myTreeFacade;
@@ -37,21 +34,11 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
 
   @Override
   protected Component createButtonPanel() {
-    JToolBar buttonBar = new JToolBar();
-    buttonBar.setFloatable(false);
-    buttonBar.setBorderPainted(false);
-
-    TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
-    upButton.setTextHidden(true);
-    buttonBar.add(upButton);
-
-    TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction());
-    downButton.setTextHidden(true);
-    buttonBar.add(downButton);
-
-    JPanel buttonPanel = new JPanel(new BorderLayout());
-    buttonPanel.add(buttonBar, BorderLayout.WEST);
-    return buttonPanel;
+    ToolbarBuilder builder = new ToolbarBuilder().withButtonWidth(24).withDpiOption(getUiFacade().getDpiOption())
+        .addButton(myTreeFacade.getMoveUpAction())
+        .addButton(myTreeFacade.getMoveDownAction());
+    final GPToolbar toolbar = builder.build();
+    return toolbar.getToolbar();
   }
 
   @Override
