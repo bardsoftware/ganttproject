@@ -253,8 +253,8 @@ public class XmlSerializer extends SaverBase {
     addAttribute("role", i18n("colRole"), attrs);
     addAttribute("mail", i18n("colMail"), attrs);
     addAttribute("phone", i18n("colPhone"), attrs);
-    addAttribute("rate", i18n("tableColResourceRate"), attrs);
-    addAttribute("cost", i18n("tableColResourceCost"), attrs);
+    addAttribute("rate", i18n("colStandardRate"), attrs);
+    addAttribute("cost", i18n("colTotalCost"), attrs);
     startPrefixedElement("resources", attrs, handler);
     {
       List<HumanResource> resources = resourceManager.getResources();
