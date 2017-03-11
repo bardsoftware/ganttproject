@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import net.sourceforge.ganttproject.gui.UIUtil;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -45,6 +47,7 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
       });
     }
     myDelegates = delegates;
+    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
     // Make action state equal to active delegate action state
     actionStateChanged();
   }

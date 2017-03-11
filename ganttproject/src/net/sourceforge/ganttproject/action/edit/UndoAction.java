@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.edit;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -76,5 +77,12 @@ public class UndoAction extends GPAction implements GPUndoListener {
   @Override
   protected String getIconFilePrefix() {
     return "undo_";
+  }
+
+  @Override
+  public UndoAction asToolbarAction() {
+    UndoAction result = new UndoAction(myUndoManager);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.action.edit;
 
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -60,5 +61,12 @@ public class PasteAction extends GPAction {
         selection.commitClipboardTransaction();
       }
     });
+  }
+
+  @Override
+  public PasteAction asToolbarAction() {
+    PasteAction result = new PasteAction(myViewmanager, myUndoManager);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

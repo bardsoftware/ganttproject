@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.resource;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -74,4 +75,10 @@ public class ResourceNewAction extends ResourceAction {
     super.updateAction();
   }
 
+  @Override
+  public ResourceNewAction asToolbarAction() {
+    ResourceNewAction result = new ResourceNewAction(getManager(), myRoleManager, myUIFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
+  }
 }

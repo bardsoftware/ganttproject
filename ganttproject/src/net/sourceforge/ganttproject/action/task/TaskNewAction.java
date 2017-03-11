@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.action.task;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
@@ -76,5 +77,12 @@ public class TaskNewAction extends GPAction {
   @Override
   public void updateAction() {
     super.updateAction();
+  }
+
+  @Override
+  public TaskNewAction asToolbarAction() {
+    TaskNewAction result = new TaskNewAction(myProject, myUiFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

@@ -28,13 +28,7 @@ import biz.ganttproject.core.time.TimeUnitStack;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.action.ActiveActionProvider;
-import net.sourceforge.ganttproject.action.ArtefactAction;
-import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
-import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
+import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -51,14 +45,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -74,22 +61,13 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
+import net.sourceforge.ganttproject.task.*;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -552,14 +530,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .withDpiOption(getUiFacadeImpl().getDpiOption())
         .withButtonWidth(40)
         .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
-    builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction()))
-        .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction()))
+    builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().asToolbarAction()))
         .addWhitespace();
 
     final ArtefactAction newAction;
     {
-      final GPAction taskNewAction = getTaskTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourceNewAction = getResourceTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskNewAction = getTaskTree().getNewAction().asToolbarAction();
+      final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
       newAction = new ArtefactNewAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
@@ -588,8 +566,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction deleteAction;
     {
-      final GPAction taskDeleteAction = getTaskTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskDeleteAction = getTaskTree().getDeleteAction().asToolbarAction();
+      final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
       deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
@@ -600,8 +578,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction propertiesAction;
     {
-      final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().asToolbarAction();
+      final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
       propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
@@ -630,12 +608,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     builder.addButton(new TestGanttRolloverButton(deleteAction))
         .addWhitespace()
         .addButton(new TestGanttRolloverButton(propertiesAction))
-        .addButton(new TestGanttRolloverButton(getCutAction()))
-        .addButton(new TestGanttRolloverButton(getCopyAction()))
-        .addButton(new TestGanttRolloverButton(getPasteAction()))
+        .addButton(new TestGanttRolloverButton(getCutAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(getCopyAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(getPasteAction().asToolbarAction()))
         .addWhitespace()
-        .addButton(new TestGanttRolloverButton(myEditMenu.getUndoAction()))
-        .addButton(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
+        .addButton(new TestGanttRolloverButton(myEditMenu.getUndoAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(myEditMenu.getRedoAction().asToolbarAction()));
 
     JTextField searchBox = getSearchUi().getSearchField();
     //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
