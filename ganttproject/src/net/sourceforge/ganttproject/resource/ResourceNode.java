@@ -80,7 +80,7 @@ public class ResourceNode extends ResourceTableNode {
     case EMAIL: return getEMail();
     case PHONE: return getPhone();
     case STANDARD_RATE: return getResource().getStandardPayRate();
-    case COST: return getResource().getTotalCost();
+    case TOTAL_COST: return getResource().getTotalCost();
     default: return "";
     }
   }
