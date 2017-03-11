@@ -19,14 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.DefaultMoneyOption;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.MoneyOption;
-import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.core.option.*;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
@@ -79,6 +72,7 @@ public class GanttDialogPerson {
     myGroup = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myRoleField });
     myGroup.setTitled(false);
 
+    ((GPAbstractOption)myTotalCostField).setWritable(false);
     myRateGroup = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRateField, myTotalCostField});
   }
 
