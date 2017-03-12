@@ -24,17 +24,10 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.AssignmentContext;
-import net.sourceforge.ganttproject.resource.AssignmentNode;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ResourceContext;
-import net.sourceforge.ganttproject.resource.ResourceEvent;
-import net.sourceforge.ganttproject.resource.ResourceNode;
-import net.sourceforge.ganttproject.resource.ResourceView;
+import net.sourceforge.ganttproject.resource.*;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -91,9 +84,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   			return resourceDeleteAction;
   		}
   	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
-    setArtefactActions(myResourceActionSet.getResourceNewAction().withIcon(GPAction.IconSize.TOOLBAR_SMALL),
-        myResourceActionSet.getResourcePropertiesAction().withIcon(GPAction.IconSize.TOOLBAR_SMALL),
-        deleteAction.withIcon(GPAction.IconSize.TOOLBAR_SMALL));
+    setArtefactActions(myResourceActionSet.getResourceNewAction(),
+        myResourceActionSet.getResourcePropertiesAction(),
+        deleteAction);
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
         myResourceActionSet.getResourceMoveDownAction(), null, null, deleteAction,
         appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),

@@ -51,8 +51,10 @@ abstract class ChartTabContentPanel {
     final JPanel left = new JPanel(new BorderLayout());
     Box treeHeader = Box.createVerticalBox();
     final JComponent buttonPanel = (JComponent) createButtonPanel();
-    buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-    treeHeader.add(buttonPanel);
+    JPanel buttonWrapper = new JPanel(new BorderLayout());
+    buttonWrapper.add(buttonPanel, BorderLayout.WEST);
+    //button.setAlignmentX(Component.LEFT_ALIGNMENT);
+    treeHeader.add(buttonWrapper);
 
     treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
     left.add(treeHeader, BorderLayout.NORTH);
@@ -115,17 +117,12 @@ abstract class ChartTabContentPanel {
   }
 
   private JComponent createChartPanels() {
-    JPanel result = new JPanel(new BorderLayout());
-
     Box panelsBox = Box.createHorizontalBox();
     for (Component panel : myPanels) {
       panelsBox.add(panel);
       panelsBox.add(Box.createHorizontalStrut(10));
     }
-    result.add(panelsBox, BorderLayout.WEST);
-    result.setBackground(new Color(0.93f, 0.93f, 0.93f));
-
-    return result;
+    return panelsBox;
   }
 
   protected void addChartPanel(Component panel) {
