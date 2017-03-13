@@ -3,7 +3,7 @@ Copyright (C) 2004-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -18,10 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene;
 
-import java.awt.Color;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
@@ -32,6 +28,10 @@ import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.time.TimeUnit;
+
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Renders chart timeline.
@@ -55,9 +55,10 @@ public class TimelineSceneBuilder extends AbstractSceneBuilder {
 
     TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position);
   }
-  
+
   public TimelineSceneBuilder(InputApi inputApi) {
     myInputApi = inputApi;
+    getCanvas().newLayer();
     getCanvas().newLayer();
     getCanvas().newLayer();
     getCanvas().newLayer();
