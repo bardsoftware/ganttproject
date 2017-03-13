@@ -21,6 +21,12 @@ import java.io.IOException;
  * @author dbarashev@bardsoftware.com
  */
 public class GPCsvExportTest extends TaskTestCase {
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    TaskDefaultColumn.setLocaleApi(null);
+  }
+
   public void testResourceCustomFields() throws IOException {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();

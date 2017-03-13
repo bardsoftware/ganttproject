@@ -2,7 +2,7 @@
 <plugin
    id="biz.ganttproject.impex.ical"
    name="GanttProject ICal import/export"
-   version="2.6.0"
+   version="2.8.4"
    provider-name="">
 
    <runtime>

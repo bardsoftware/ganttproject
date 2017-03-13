@@ -22,6 +22,8 @@ import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 
@@ -65,6 +67,7 @@ public class UIConfiguration {
 
   private FontOption myChartFontOption;
   private Supplier<Integer> myAppFontSize;
+  private IntegerOption myDpiOption;
 
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
 //    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
@@ -224,4 +227,11 @@ public class UIConfiguration {
     return myAppFontSize;
   }
 
+  public IntegerOption getDpiOption() {
+    return myDpiOption;
+  }
+
+  public void setDpiOption(IntegerOption dpiOption) {
+    myDpiOption = Preconditions.checkNotNull(dpiOption);
+  }
 }

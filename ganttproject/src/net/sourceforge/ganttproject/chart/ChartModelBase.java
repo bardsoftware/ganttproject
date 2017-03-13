@@ -18,40 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.image.BufferedImage;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
-import net.sourceforge.ganttproject.chart.item.ChartItem;
-import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
-import biz.ganttproject.core.chart.grid.Offset;
-import biz.ganttproject.core.chart.grid.OffsetBuilder;
-import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
-import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.grid.OffsetManager;
+import biz.ganttproject.core.chart.grid.*;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
@@ -60,27 +30,30 @@ import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultFontOption;
-import biz.ganttproject.core.option.FontOption;
-import biz.ganttproject.core.option.FontSpec;
-import biz.ganttproject.core.option.FontSpec.Size;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionChangeListener;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
+import net.sourceforge.ganttproject.chart.item.ChartItem;
+import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.List;
 
 /**
  * Controls painting of the common part of Gantt and resource charts (in
@@ -340,17 +313,23 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     addRenderer(myChartGrid);
     addRenderer(myTimelineLabelRenderer);
 
-    myChartFontOption.addChangeValueListener(new ChangeValueListener() {
+    ChangeValueListener fontChangeValueListener = new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
         setBaseFont(myChartFontOption.getValue());
       }
-    });
+    };
+    myChartFontOption.addChangeValueListener(fontChangeValueListener);
+    getProjectConfig().getDpiOption().addChangeValueListener(fontChangeValueListener);
     setBaseFont(myChartFontOption.getValue());
   }
 
   private void setBaseFont(FontSpec fontSpec) {
-    Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*fontSpec.getSize().getFactor()));
+    float scaleFactor = fontSpec.getSize().getFactor();
+    if (getProjectConfig().getDpiOption() != null) {
+      scaleFactor *= getProjectConfig().getDpiOption().getValue().floatValue() / UIFacade.DEFAULT_DPI;
+    }
+    Font font = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*scaleFactor));
     BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_BGR);
     Graphics2D g = (Graphics2D) dummyImage.getGraphics();
     TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl(g);
