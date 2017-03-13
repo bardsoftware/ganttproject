@@ -292,6 +292,16 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  public BigDecimal getTotalCost() {
+    BigDecimal cost = BigDecimal.ZERO;
+    for (ResourceAssignment assignment : myAssignments) {
+      int taskDuration = assignment.getTask().getDuration().getLength();
+      BigDecimal assignmentCost = new BigDecimal(taskDuration * assignment.getLoad() / 100).multiply(getStandardPayRate());
+      cost = cost.add(assignmentCost);
+    }
+    return cost;
+  }
+
   @Override
   public boolean equals(Object obj) {
     boolean result = false;

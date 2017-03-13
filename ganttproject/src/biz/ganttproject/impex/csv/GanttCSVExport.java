@@ -272,6 +272,9 @@ public class GanttCSVExport {
           case STANDARD_RATE:
             writer.print(p.getStandardPayRate().toPlainString());
             break;
+          case TOTAL_COST:
+            writer.print(p.getTotalCost().toPlainString());
+            break;
           }
         }
       }
