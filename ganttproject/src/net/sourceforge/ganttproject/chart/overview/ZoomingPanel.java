@@ -39,8 +39,10 @@ public class ZoomingPanel {
   public Component getComponent() {
     ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
     return new ToolbarBuilder()
+        .withDpiOption(myUIFacade.getDpiOption())
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
+        .withHeight(24)
         .addButton(zoomActionSet.getZoomInAction())
         .addButton(zoomActionSet.getZoomOutAction())
         .build()

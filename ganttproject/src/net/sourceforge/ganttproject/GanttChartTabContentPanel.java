@@ -55,8 +55,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   private Component createSchedulePanel() {
     return new ToolbarBuilder()
+        .withDpiOption(myWorkbenchFacade.getDpiOption())
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
+        .withHeight(24)
         .addButton(myCriticalPathAction)
         .addButton(myBaselineAction)
         .build()
@@ -72,7 +74,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   @Override
   protected Component createButtonPanel() {
-    ToolbarBuilder builder = new ToolbarBuilder().withButtonWidth(24).withDpiOption(myWorkbenchFacade.getDpiOption());
+    ToolbarBuilder builder = new ToolbarBuilder()
+        .withHeight(24)
+        .withSquareButtons()
+        .withDpiOption(myWorkbenchFacade.getDpiOption());
     for (AbstractAction a : myTreeFacade.getTreeActions()) {
       builder.addButton(a);
     }

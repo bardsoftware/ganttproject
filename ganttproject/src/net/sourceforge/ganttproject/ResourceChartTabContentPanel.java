@@ -34,7 +34,10 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
 
   @Override
   protected Component createButtonPanel() {
-    ToolbarBuilder builder = new ToolbarBuilder().withButtonWidth(24).withDpiOption(getUiFacade().getDpiOption())
+    ToolbarBuilder builder = new ToolbarBuilder()
+        .withHeight(24)
+        .withSquareButtons()
+        .withDpiOption(getUiFacade().getDpiOption())
         .addButton(myTreeFacade.getMoveUpAction())
         .addButton(myTreeFacade.getMoveDownAction());
     final GPToolbar toolbar = builder.build();

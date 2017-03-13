@@ -19,13 +19,15 @@ public class GPToolbar {
   private final JPanel myToolbar;
   private final List<TestGanttRolloverButton> myButtons;
   private final IntegerOption myDpiOption;
-  private final int myButtonWidth;
+  private final int myBaseHeight;
+  private final boolean myButtonsSquared;
   private Box.Filler myFiller;
 
-  GPToolbar(JPanel toolbar, List<TestGanttRolloverButton> buttons, int buttonWidth, IntegerOption dpiOption) {
+  GPToolbar(JPanel toolbar, List<TestGanttRolloverButton> buttons, int baseHeight, boolean buttonsSquared, IntegerOption dpiOption) {
     myToolbar = Preconditions.checkNotNull(toolbar);
     myButtons = Preconditions.checkNotNull(buttons);
-    myButtonWidth = buttonWidth;
+    myButtonsSquared = buttonsSquared;
+    myBaseHeight = baseHeight;
     myDpiOption = dpiOption;
     if (myDpiOption != null) {
       myDpiOption.addChangeValueListener(new ChangeValueListener() {
@@ -60,24 +62,26 @@ public class GPToolbar {
   }
 
   private void resizeToolbar(List<? extends JComponent> buttons) {
-    int width = (int)(myButtonWidth * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
-    Dimension d = new Dimension(width, width);
-    for (JComponent b : buttons) {
-      if (b == null) {
-        continue;
+    final int height = (int)(myBaseHeight * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
+    if (myButtonsSquared) {
+      Dimension d = new Dimension(height, height);
+      for (JComponent b : buttons) {
+        if (b == null) {
+          continue;
+        }
+        b.setMinimumSize(d);
+        b.setMaximumSize(d);
+        b.setPreferredSize(d);
+        b.updateUI();
       }
-      b.setMinimumSize(d);
-      b.setMaximumSize(d);
-      b.setPreferredSize(d);
-      b.updateUI();
     }
     Dimension toolbarSize = myToolbar.getSize();
-    if (d.height != toolbarSize.height) {
+    if (height != toolbarSize.height) {
       if (myFiller != null) {
         myToolbar.remove(myFiller);
       }
 
-      Dimension newSize = new Dimension(1, d.height);
+      Dimension newSize = new Dimension(1, height);
       myFiller = new Box.Filler(newSize, newSize, newSize);
       myToolbar.add(myFiller, 0);
     }

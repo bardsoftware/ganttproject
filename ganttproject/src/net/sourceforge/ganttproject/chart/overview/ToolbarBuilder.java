@@ -42,6 +42,8 @@ import java.text.MessageFormat;
  */
 public class ToolbarBuilder {
 
+
+
   public static class Gaps {
 
     public static Supplier<Component> VDASH = new Supplier<Component>() {
@@ -63,7 +65,8 @@ public class ToolbarBuilder {
   private IntegerOption myDpiOption;
   private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
   private Supplier<Component> myGapFactory;
-  private int myButtonWidth = 48;
+  private int myBaseHeight;
+  private boolean myButtonsSquared = false;
 
   public ToolbarBuilder() {
     myToolbar = new JPanel();
@@ -82,8 +85,8 @@ public class ToolbarBuilder {
     return this;
   }
 
-  public ToolbarBuilder withButtonWidth(int width) {
-    myButtonWidth = width;
+  public ToolbarBuilder withSquareButtons() {
+    myButtonsSquared = true;
     return this;
   }
   public ToolbarBuilder withDpiOption(IntegerOption dpiOption) {
@@ -93,6 +96,11 @@ public class ToolbarBuilder {
 
   public ToolbarBuilder withGapFactory(Supplier<Component> gapFactory) {
     myGapFactory = Preconditions.checkNotNull(gapFactory);
+    return this;
+  }
+
+  public ToolbarBuilder withHeight(int baseHeight) {
+    myBaseHeight = baseHeight;
     return this;
   }
 
@@ -130,7 +138,7 @@ public class ToolbarBuilder {
 
   public ToolbarBuilder addWhitespace() {
     float scale = myDpiOption == null ? 1.0f : myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI;
-    int whitespaceWidth = (int)(myButtonWidth * scale / 1.62f);
+    int whitespaceWidth = (int)(myBaseHeight * scale / 1.62f);
     myToolbar.add(Box.createRigidArea(new Dimension(whitespaceWidth, 0)));
     return this;
   }
@@ -244,7 +252,7 @@ public class ToolbarBuilder {
 
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
-    GPToolbar result = new GPToolbar(myToolbar, myButtons, myButtonWidth, myDpiOption);
+    GPToolbar result = new GPToolbar(myToolbar, myButtons, myBaseHeight, myButtonsSquared, myDpiOption);
     result.getToolbar().setBorder(myBorder);
     result.updateButtons();
     return result;

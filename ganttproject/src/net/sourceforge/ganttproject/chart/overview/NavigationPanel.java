@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.scroll.*;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -33,6 +34,7 @@ public class NavigationPanel {
   private final AbstractAction[] myScrollActions;
   private final AbstractAction myScrollBackAction;
   private final AbstractAction myScrollForwardAction;
+  private final IntegerOption myDpiOption;
 
   public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade uiFacade) {
     myProject = project;
@@ -44,10 +46,13 @@ public class NavigationPanel {
         uiFacade.getScrollingManager());
     myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", 1, myProject.getTaskManager(),
         chart.getModel(), uiFacade.getScrollingManager());
+    myDpiOption = uiFacade.getDpiOption();
   }
 
   public Component getComponent() {
     return new ToolbarBuilder()
+        .withDpiOption(myDpiOption)
+        .withHeight(24)
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
         .addComboBox(myScrollActions, myScrollActions[1])

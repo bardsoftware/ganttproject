@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
@@ -28,8 +30,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,20 +65,6 @@ abstract class ChartTabContentPanel {
 
     JPanel right = new JPanel(new BorderLayout());
     final JComponent chartPanels = createChartPanels();
-    chartPanels.addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        super.componentResized(e);
-        int maxHeight = Math.max(buttonPanel.getPreferredSize().height, chartPanels.getPreferredSize().height);
-        if (buttonPanel.getHeight() < maxHeight) {
-          left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
-        } else if (chartPanels.getHeight() < maxHeight) {
-          int diff = maxHeight - chartPanels.getHeight();
-          Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
-          chartPanels.setBorder(emptyBorder);
-        }
-      }
-    });
     right.add(chartPanels, BorderLayout.NORTH);
     right.setBackground(new Color(0.93f, 0.93f, 0.93f));
     right.add(getChartComponent(), BorderLayout.CENTER);
@@ -99,7 +85,37 @@ abstract class ChartTabContentPanel {
     mySplitPane.setOneTouchExpandable(true);
     mySplitPane.resetToPreferredSizes();
     tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
+
+    ChangeValueListener changeValueListener = new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            alignTopPanelHeights(buttonPanel, chartPanels);
+          }
+        });
+      }
+    };
+    myUiFacade.getDpiOption().addChangeValueListener(changeValueListener, 2);
     return tabContentPanel;
+  }
+
+  private void alignTopPanelHeights(JComponent buttonPanel, JComponent chartPanels) {
+    int maxHeight = Math.max(buttonPanel.getSize().height, chartPanels.getSize().height);
+    if (buttonPanel.getHeight() < maxHeight) {
+      //left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
+      int diff = maxHeight - buttonPanel.getHeight();
+      Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+      buttonPanel.setBorder(emptyBorder);
+    }
+    if (chartPanels.getHeight() < maxHeight) {
+      int diff = maxHeight - chartPanels.getHeight();
+      //Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+      //chartPanels.setBorder(emptyBorder);
+      chartPanels.remove(chartPanels.getComponent(chartPanels.getComponentCount() - 1));
+      chartPanels.add(Box.createRigidArea(new Dimension(0, diff)));
+    }
   }
 
   protected abstract Component getChartComponent();
