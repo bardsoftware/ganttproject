@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import com.google.common.base.Function;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -28,6 +29,7 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 
@@ -56,6 +58,12 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private Component createSchedulePanel() {
     return new ToolbarBuilder()
         .withDpiOption(myWorkbenchFacade.getDpiOption())
+        .withLafOption(getUiFacade().getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+          }
+        })
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
         .withHeight(24)
@@ -77,7 +85,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     ToolbarBuilder builder = new ToolbarBuilder()
         .withHeight(24)
         .withSquareButtons()
-        .withDpiOption(myWorkbenchFacade.getDpiOption());
+        .withDpiOption(myWorkbenchFacade.getDpiOption())
+        .withLafOption(myWorkbenchFacade.getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+          }
+        });
     for (AbstractAction a : myTreeFacade.getTreeActions()) {
       builder.addButton(a);
     }

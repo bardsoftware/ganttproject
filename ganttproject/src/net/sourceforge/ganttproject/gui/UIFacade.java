@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
@@ -60,11 +61,12 @@ public interface UIFacade {
 
   int DEFAULT_DPI = 96;
 
-  public static final int GANTT_INDEX = 0;
+  int GANTT_INDEX = 0;
 
-  public static final int RESOURCES_INDEX = 1;
+  int RESOURCES_INDEX = 1;
 
   IntegerOption getDpiOption();
+  GPOption<String> getLafOption();
 
   ScrollingManager getScrollingManager();
 

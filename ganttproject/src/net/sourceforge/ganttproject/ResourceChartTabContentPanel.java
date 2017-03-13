@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject;
 
+import com.google.common.base.Function;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
@@ -10,6 +11,7 @@ import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 
@@ -38,6 +40,12 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
         .withHeight(24)
         .withSquareButtons()
         .withDpiOption(getUiFacade().getDpiOption())
+        .withLafOption(getUiFacade().getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+          }
+        })
         .addButton(myTreeFacade.getMoveUpAction())
         .addButton(myTreeFacade.getMoveDownAction());
     final GPToolbar toolbar = builder.build();

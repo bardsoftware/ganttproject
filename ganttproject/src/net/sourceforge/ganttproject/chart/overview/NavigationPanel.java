@@ -18,12 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.Function;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.scroll.*;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 
@@ -35,6 +38,7 @@ public class NavigationPanel {
   private final AbstractAction myScrollBackAction;
   private final AbstractAction myScrollForwardAction;
   private final IntegerOption myDpiOption;
+  private final GPOption<String> myLafOption;
 
   public NavigationPanel(IGanttProject project, TimelineChart chart, UIFacade uiFacade) {
     myProject = project;
@@ -47,11 +51,18 @@ public class NavigationPanel {
     myScrollForwardAction = new ScrollTimeIntervalAction("scroll.forward", 1, myProject.getTaskManager(),
         chart.getModel(), uiFacade.getScrollingManager());
     myDpiOption = uiFacade.getDpiOption();
+    myLafOption = uiFacade.getLafOption();
   }
 
   public Component getComponent() {
     return new ToolbarBuilder()
         .withDpiOption(myDpiOption)
+        .withLafOption(myLafOption, new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+          }
+        })
         .withHeight(24)
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())

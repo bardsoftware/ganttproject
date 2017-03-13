@@ -19,8 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.overview;
 
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
@@ -63,6 +68,8 @@ public class ToolbarBuilder {
   private Border myBorder = BorderFactory.createEmptyBorder(2,2,2,2);
   private Color myBackground;
   private IntegerOption myDpiOption;
+  private GPOption<String> myLafOption;
+  private Function<String, Float> myButtonSizeScaling;
   private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
   private Supplier<Component> myGapFactory;
   private int myBaseHeight;
@@ -101,6 +108,12 @@ public class ToolbarBuilder {
 
   public ToolbarBuilder withHeight(int baseHeight) {
     myBaseHeight = baseHeight;
+    return this;
+  }
+
+  public ToolbarBuilder withLafOption(GPOption<String> lafOption, Function<String, Float> buttonSizeScaling) {
+    myLafOption = lafOption;
+    myButtonSizeScaling = Preconditions.checkNotNull(buttonSizeScaling);
     return this;
   }
 
@@ -252,7 +265,19 @@ public class ToolbarBuilder {
 
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
-    GPToolbar result = new GPToolbar(myToolbar, myButtons, myBaseHeight, myButtonsSquared, myDpiOption);
+    final GPToolbar result = new GPToolbar(myToolbar, myButtons, myBaseHeight, myButtonsSquared, myDpiOption);
+    if (myLafOption != null) {
+      ChangeValueListener lafListener = new ChangeValueListener() {
+        @Override
+        public void changeValue(ChangeValueEvent event) {
+          if (Strings.nullToEmpty(myLafOption.getValue()).toLowerCase().indexOf("nimbus") >= 0) {
+            result.setButtonSizeScaling(myButtonSizeScaling.apply(Strings.nullToEmpty(myLafOption.getValue()).toLowerCase()));
+          }
+        }
+      };
+      myLafOption.addChangeValueListener(lafListener);
+      lafListener.changeValue(null);
+    }
     result.getToolbar().setBorder(myBorder);
     result.updateButtons();
     return result;

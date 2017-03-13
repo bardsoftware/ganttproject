@@ -22,6 +22,7 @@ public class GPToolbar {
   private final int myBaseHeight;
   private final boolean myButtonsSquared;
   private Box.Filler myFiller;
+  private float myButtonSizeScaling = 1f;
 
   GPToolbar(JPanel toolbar, List<TestGanttRolloverButton> buttons, int baseHeight, boolean buttonsSquared, IntegerOption dpiOption) {
     myToolbar = Preconditions.checkNotNull(toolbar);
@@ -62,7 +63,7 @@ public class GPToolbar {
   }
 
   private void resizeToolbar(List<? extends JComponent> buttons) {
-    final int height = (int)(myBaseHeight * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
+    final int height = (int)(myButtonSizeScaling * myBaseHeight * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
     if (myButtonsSquared) {
       Dimension d = new Dimension(height, height);
       for (JComponent b : buttons) {
@@ -85,5 +86,9 @@ public class GPToolbar {
       myFiller = new Box.Filler(newSize, newSize, newSize);
       myToolbar.add(myFiller, 0);
     }
+  }
+
+  public void setButtonSizeScaling(float buttonSizeScaling) {
+    this.myButtonSizeScaling = buttonSizeScaling;
   }
 }

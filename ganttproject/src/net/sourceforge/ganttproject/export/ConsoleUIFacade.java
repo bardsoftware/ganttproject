@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
@@ -46,6 +47,11 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public IntegerOption getDpiOption() {
+    return null;
+  }
+
+  @Override
+  public GPOption<String> getLafOption() {
     return null;
   }
 

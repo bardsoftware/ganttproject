@@ -112,6 +112,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   public IntegerOption getDpiOption() {
     return myDpiOption;
   }
+  public GPOption<String> getLafOption() {
+    return myLafOption;
+  }
 
 
   private ChangeValueListener myAppFontValueListener;

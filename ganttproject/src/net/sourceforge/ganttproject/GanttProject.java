@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
@@ -63,6 +64,7 @@ import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.*;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -137,10 +139,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private ResourceChartTabContentPanel myResourceChartTabContent;
 
   private List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
-
-  public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
-
-  public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
 
   private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
@@ -242,7 +240,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("2. loading options");
     initOptions();
+    // Not a joke. This takes value from the option and applies it to the UI.
     getTree().setGraphicArea(area);
+    getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
     myRowHeightAligners.add(getTree().getRowHeightAligner());
     getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
       @Override
@@ -353,7 +353,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         System.err.println("Resizing window...");
         toolbar.updateButtons();
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
-        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
         // It is important to run aligners after look and feel is set and font sizes
         // in the UI manager updated.
@@ -529,6 +528,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ToolbarBuilder builder = new ToolbarBuilder()
         .withHeight(40)
         .withDpiOption(getUiFacadeImpl().getDpiOption())
+        .withLafOption(getUiFacadeImpl().getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 1.5f : 1f;
+          }
+        })
         .withSquareButtons()
         .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().asToolbarAction()))
