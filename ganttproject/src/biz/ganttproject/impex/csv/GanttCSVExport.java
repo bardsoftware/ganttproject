@@ -27,6 +27,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -52,6 +54,7 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to export the project in CSV text format
@@ -70,19 +73,18 @@ public class GanttCSVExport {
   private final CustomPropertyManager myTaskCustomPropertyManager;
   private final HumanResourceManager myHumanResourceManager;
   private final CustomPropertyManager myHumanResourceCustomPropertyManager;
-
-  private int iMaxSize = 0;
+  private final RoleManager myRoleManager;
 
   public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
-    this(project.getTaskManager(),
-        project.getHumanResourceManager(), csvOptions);
+    this(project.getTaskManager(), project.getHumanResourceManager(), project.getRoleManager(), csvOptions);
   }
 
-  GanttCSVExport(TaskManager taskManager, HumanResourceManager resourceManager, CSVOptions csvOptions) {
+  GanttCSVExport(TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager, CSVOptions csvOptions) {
     myTaskManager = Preconditions.checkNotNull(taskManager);
     myTaskCustomPropertyManager = Preconditions.checkNotNull(taskManager.getCustomPropertyManager());
     myHumanResourceManager = Preconditions.checkNotNull(resourceManager);
     myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());
+    myRoleManager = Preconditions.checkNotNull(roleManager);
     this.csvOptions = Preconditions.checkNotNull(csvOptions);
   }
   /**
@@ -237,6 +239,7 @@ public class GanttCSVExport {
   /** write the resources.
    * @throws IOException */
   private void writeResources(CSVPrinter writer) throws IOException {
+    Set<Role> projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
     // parse all resources
     for (HumanResource p : myHumanResourceManager.getResources()) {
@@ -263,7 +266,14 @@ public class GanttCSVExport {
             break;
           case ROLE:
             Role role = p.getRole();
-            String sRoleID = role == null ? "0" : role.getPersistentID();
+            final String sRoleID;
+            if (role == null) {
+              sRoleID = "0";
+            } else if (projectRoles.contains(role)) {
+              sRoleID = role.getName();
+            } else {
+              sRoleID = role.getPersistentID();
+            }
             writer.print(sRoleID);
             break;
           case ROLE_IN_TASK:
