@@ -18,22 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChartModelResource extends ChartModelBase {
 
@@ -173,6 +172,6 @@ public class ChartModelResource extends ChartModelBase {
 
   @Override
   public int calculateRowHeight() {
-    return getChartUIConfiguration().getRowHeight();
+    return Math.max(getChartUIConfiguration().getRowHeight(), getProjectConfig().getAppFontSize().get());
   }
 }

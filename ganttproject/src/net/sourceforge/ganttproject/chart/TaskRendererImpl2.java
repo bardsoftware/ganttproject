@@ -583,4 +583,19 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       Canvas canvas, TaskActivitySceneBuilder.ChartApi chartApi, TaskActivitySceneBuilder.Style style) {
     return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
   }
+
+  public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
+    List<Rectangle> result = new ArrayList<Rectangle>();
+    List<TaskActivity> originalActivities = t.getActivities();
+    List<TaskActivity> splitOnBounds = TaskRendererImpl2.splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
+    for (TaskActivity activity : splitOnBounds) {
+      assert activity != null : "Got null activity in task="+t;
+      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
+      assert graphicPrimitive != null : "Got null for activity="+activity;
+      assert graphicPrimitive instanceof Rectangle;
+      result.add((Rectangle) graphicPrimitive);
+    }
+    return result;
+
+  }
 }
