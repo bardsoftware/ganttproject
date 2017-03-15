@@ -41,6 +41,8 @@ import java.util.Locale;
  * @author bard
  */
 public interface UIFacade {
+  ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource("/icons/big.png"));
+
   public interface Dialog {
     void show();
 

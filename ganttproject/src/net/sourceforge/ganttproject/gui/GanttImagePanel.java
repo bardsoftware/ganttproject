@@ -21,17 +21,31 @@ package net.sourceforge.ganttproject.gui;
 import javax.swing.*;
 import java.awt.*;
 
-public class GanttImagePanel extends JPanel {
-  private final Image image;
+public class GanttImagePanel extends JLabel {
+  private final Image myOriginalImage;
+  private final Dimension myOriginalSize;
 
   public GanttImagePanel(Image image, int width, int height) {
-    super();
-    this.image = image.getScaledInstance(-1, height, Image.SCALE_DEFAULT);
-    setPreferredSize(new Dimension(width, height));
+    super("", new ImageIcon(image.getScaledInstance(-1, height, Image.SCALE_DEFAULT)), LEADING);
+
+    myOriginalSize = new Dimension(getIcon().getIconWidth(), getIcon().getIconHeight());
+    setPreferredSize(myOriginalSize);
+    setMinimumSize(myOriginalSize);
+    setMinimumSize(myOriginalSize);
+    myOriginalImage = image;
+    setBorder(BorderFactory.createLineBorder(Color.RED));
   }
 
-  @Override
-  public void paintComponent(Graphics g) {
-    g.drawImage(image,0, 0, null);
+  public void setScale(float scale) {
+    Dimension scaled = new Dimension(
+        (int)(myOriginalSize.width * scale),
+        (int)(myOriginalSize.height * scale));
+    setIcon(new ImageIcon(myOriginalImage.getScaledInstance(-1, scaled.height, Image.SCALE_DEFAULT)));
+    setPreferredSize(scaled);
+    setMinimumSize(scaled);
+    setMinimumSize(scaled);
+    Rectangle bounds = getBounds();
+    bounds.setSize(scaled);
+    setBounds(bounds);
   }
 }

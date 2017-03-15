@@ -46,6 +46,7 @@ abstract class ChartTabContentPanel {
   private final UIFacade myUiFacade;
   private int myImageHeight;
   private Supplier<Integer> myHeaderHeight;
+  private GanttImagePanel myImagePanel;
 
   protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
     NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
@@ -65,15 +66,20 @@ abstract class ChartTabContentPanel {
   protected JComponent createContentComponent() {
     JPanel tabContentPanel = new JPanel(new BorderLayout());
     final JPanel left = new JPanel(new BorderLayout());
-    Box treeHeader = Box.createVerticalBox();
+    final Box treeHeader = Box.createVerticalBox();
     final JComponent buttonPanel = (JComponent) createButtonPanel();
     JPanel buttonWrapper = new JPanel(new BorderLayout());
     buttonWrapper.add(buttonPanel, BorderLayout.WEST);
     //button.setAlignmentX(Component.LEFT_ALIGNMENT);
     treeHeader.add(buttonWrapper);
 
-    myImageHeight = buttonWrapper.getPreferredSize().height;
-    treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myImageHeight));
+    int defaultScaledHeight = (int)(UIFacade.DEFAULT_LOGO.getIconHeight() * myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
+    myImagePanel = new GanttImagePanel(myUiFacade.getLogo(), 300, defaultScaledHeight);
+    myImageHeight = myImagePanel.getPreferredSize().height;
+    JPanel imageWrapper = new JPanel(new BorderLayout());
+    imageWrapper.add(myImagePanel, BorderLayout.WEST);
+    //myImagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    treeHeader.add(imageWrapper);
 
     left.add(treeHeader, BorderLayout.NORTH);
 
@@ -93,11 +99,12 @@ abstract class ChartTabContentPanel {
       mySplitPane.setLeftComponent(left);
       mySplitPane.setRightComponent(right);
       mySplitPane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-      mySplitPane.setDividerLocation((int) left.getPreferredSize().getWidth());
+      mySplitPane.setDividerLocation(Math.min(300, left.getPreferredSize().width));
     } else {
       mySplitPane.setRightComponent(left);
       mySplitPane.setLeftComponent(right);
-      mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
+      mySplitPane.setDividerLocation(
+          Toolkit.getDefaultToolkit().getScreenSize().width - Math.min(300, left.getPreferredSize().width));
       mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
     }
     mySplitPane.setOneTouchExpandable(true);
@@ -111,6 +118,9 @@ abstract class ChartTabContentPanel {
           @Override
           public void run() {
             alignTopPanelHeights(buttonPanel, chartPanels);
+            myImagePanel.setScale(myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
+            myImageHeight = myImagePanel.getHeight();
+            updateTimelineHeight();
           }
         });
       }

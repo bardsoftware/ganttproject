@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
-  private static final ImageIcon LOGO = new ImageIcon(UIFacadeImpl.class.getResource("/icons/big.png"));
   private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
@@ -677,18 +676,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public Image getLogo() {
     if (myLogoOption.getValue() == null) {
-      return LOGO.getImage();
+      return DEFAULT_LOGO.getImage();
     }
     try {
       File imageFile = new File(myLogoOption.getValue());
       if (imageFile.exists() && imageFile.canRead()) {
-        return Objects.firstNonNull(ImageIO.read(imageFile), LOGO.getImage());
+        return Objects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
       }
       GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
     } catch (IOException e) {
       GPLogger.logToLogger(e);
     }
-    return LOGO.getImage();
+    return DEFAULT_LOGO.getImage();
   }
 
   void addOptions(GPOptionGroup options) {
