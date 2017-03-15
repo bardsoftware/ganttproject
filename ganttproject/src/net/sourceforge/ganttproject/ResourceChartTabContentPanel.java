@@ -7,7 +7,6 @@ import com.google.common.base.Function;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
 
@@ -16,15 +15,16 @@ import javax.swing.*;
 import java.awt.*;
 
 class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPView {
-  private ResourceTreeUIFacade myTreeFacade;
+  private TreeTableContainer myTreeFacade;
   private Component myResourceChart;
   private JComponent myTabContentPanel;
 
-  ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, ResourceTreeUIFacade resourceTree,
+  ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer resourceTree,
       Component resourceChart) {
     super(project, workbenchFacade, workbenchFacade.getResourceChart());
     myTreeFacade = resourceTree;
     myResourceChart = resourceChart;
+    addTableResizeListeners(resourceTree.getTreeComponent(), myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   JComponent getComponent() {
@@ -45,9 +45,10 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
           public Float apply(@Nullable String s) {
             return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
           }
-        })
-        .addButton(myTreeFacade.getMoveUpAction())
-        .addButton(myTreeFacade.getMoveDownAction());
+        });
+    for (AbstractAction a : myTreeFacade.getTreeActions()) {
+      builder.addButton(a);
+    }
     final GPToolbar toolbar = builder.build();
     return toolbar.getToolbar();
   }

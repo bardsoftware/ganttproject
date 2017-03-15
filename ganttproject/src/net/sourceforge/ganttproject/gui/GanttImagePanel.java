@@ -18,18 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.awt.*;
 
 public class GanttImagePanel extends JPanel {
   private final Image image;
 
   public GanttImagePanel(Image image, int width, int height) {
     super();
-    this.image = image;
+    this.image = image.getScaledInstance(-1, height, Image.SCALE_DEFAULT);
     setPreferredSize(new Dimension(width, height));
   }
 
@@ -37,5 +34,4 @@ public class GanttImagePanel extends JPanel {
   public void paintComponent(Graphics g) {
     g.drawImage(image,0, 0, null);
   }
-
 }

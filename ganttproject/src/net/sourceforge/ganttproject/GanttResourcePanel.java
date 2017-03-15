@@ -412,6 +412,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public void startDefaultEditing(HumanResource modelElement) {
   }
 
+  @Override
+  public AbstractAction[] getTreeActions() {
+    return new AbstractAction[] {getMoveUpAction(), getMoveDownAction()};
+  }
+
   public ResourceActionSet getResourceActionSet() {
     return myResourceActionSet;
   }

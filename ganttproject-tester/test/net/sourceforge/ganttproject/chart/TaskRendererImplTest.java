@@ -18,22 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
-import biz.ganttproject.core.chart.canvas.*;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import io.milton.event.NewFolderEvent;
-
-import java.awt.*;
-import java.util.Collections;
-import java.util.List;
-
-import junit.framework.TestCase;
-import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-
 import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.chart.TaskRendererImpl2.VerticalPartitioning;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -41,6 +30,10 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.awt.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author dbarashev (Dmitry Barashev)

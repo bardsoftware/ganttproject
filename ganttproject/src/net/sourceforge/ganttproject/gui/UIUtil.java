@@ -212,6 +212,7 @@ public abstract class UIUtil {
     return listener;
   }
 
+
   public static interface DateValidator extends Function<Date, Pair<Boolean, String>> {
     class Default {
       public static DateValidator aroundProjectStart(final Date projectStart) {
@@ -662,4 +663,13 @@ public abstract class UIUtil {
     Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".scale");
     return value == null ? 1f : Float.valueOf(value.toString());
   }
+
+  public static float getFontawesomeYShift(GPAction action) {
+    if (action.getID() == null) {
+      return 0f;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".yshift");
+    return value == null ? 0f : Float.valueOf(value.toString());
+  }
+
 }

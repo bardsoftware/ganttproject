@@ -24,7 +24,6 @@ import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
@@ -36,13 +35,13 @@ import java.awt.*;
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final Container myTaskTree;
   private final JComponent myGanttChart;
-  private final TaskTreeUIFacade myTreeFacade;
+  private final TreeTableContainer myTreeFacade;
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
   private JComponent myComponent;
 
-  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TaskTreeUIFacade treeFacade,
+  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
       JComponent ganttChart, UIConfiguration uiConfiguration) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
     myWorkbenchFacade = workbenchFacade;
@@ -53,6 +52,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
     addChartPanel(createSchedulePanel());
+    addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private Component createSchedulePanel() {

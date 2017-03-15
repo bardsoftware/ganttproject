@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
@@ -30,13 +32,20 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 abstract class ChartTabContentPanel {
+  private final TimelineChart myChart;
   private JSplitPane mySplitPane;
   private final List<Component> myPanels = new ArrayList<Component>();
   private final UIFacade myUiFacade;
+  private int myImageHeight;
+  private Supplier<Integer> myHeaderHeight;
 
   protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
     NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
@@ -44,6 +53,13 @@ abstract class ChartTabContentPanel {
     addChartPanel(zoomingPanel.getComponent());
     addChartPanel(navigationPanel.getComponent());
     myUiFacade = workbenchFacade;
+    myChart = Preconditions.checkNotNull(chart);
+    myUiFacade.getMainFrame().addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowOpened(WindowEvent windowEvent) {
+        updateTimelineHeight();
+      }
+    });
   }
 
   protected JComponent createContentComponent() {
@@ -56,7 +72,9 @@ abstract class ChartTabContentPanel {
     //button.setAlignmentX(Component.LEFT_ALIGNMENT);
     treeHeader.add(buttonWrapper);
 
-    treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
+    myImageHeight = buttonWrapper.getPreferredSize().height;
+    treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myImageHeight));
+
     left.add(treeHeader, BorderLayout.NORTH);
 
     left.add(getTreeComponent(), BorderLayout.CENTER);
@@ -148,4 +166,44 @@ abstract class ChartTabContentPanel {
   protected UIFacade getUiFacade() {
     return myUiFacade;
   }
+
+  protected void updateTimelineHeight() {
+    int timelineHeight = myHeaderHeight.get() + myImageHeight;
+    System.out.println("timeline height="+timelineHeight);
+    myChart.setTimelineHeight(timelineHeight);
+  }
+
+  protected void addTableResizeListeners(final Component tableContainer, final Component table) {
+    myHeaderHeight = new Supplier<Integer>() {
+      @Override
+      public Integer get() {
+        if (table.isShowing() && tableContainer.isShowing()) {
+          Point tableLocation = table.getLocationOnScreen();
+          Point containerLocation = tableContainer.getLocationOnScreen();
+          return tableLocation.y - containerLocation.y;
+        } else {
+          return 0;
+        }
+      }
+    };
+    ComponentAdapter componentListener = new ComponentAdapter() {
+      @Override
+      public void componentShown(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+
+      @Override
+      public void componentResized(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+
+      @Override
+      public void componentMoved(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+    };
+    tableContainer.addComponentListener(componentListener);
+    table.addComponentListener(componentListener);
+  }
+
 }

@@ -22,7 +22,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 
 public interface TimelineChart extends Chart {
-  public interface VScrollController {
+  interface VScrollController {
     boolean isScrollable();
 
     void scrollBy(int pixels);
@@ -56,5 +56,7 @@ public interface TimelineChart extends Chart {
   ChartUIConfiguration getStyle();
 
   void setStartOffset(int pixels);
+
+  void setTimelineHeight(int height);
 
 }

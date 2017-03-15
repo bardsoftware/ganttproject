@@ -63,13 +63,16 @@ public class GPToolbar {
   }
 
   private void resizeToolbar(List<? extends JComponent> buttons) {
-    final int height = (int)(myButtonSizeScaling * myBaseHeight * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
+    final int height = (int)(myBaseHeight * myDpiOption.getValue().floatValue() / UIFacade.DEFAULT_DPI);
     if (myButtonsSquared) {
       Dimension d = new Dimension(height, height);
       for (JComponent b : buttons) {
         if (b == null) {
           continue;
         }
+//        if (myButtonSizeScaling != 1f) {
+//          ((JButton) b).setMargin(new Insets(0, 0, 0, 0));
+//        }
         b.setMinimumSize(d);
         b.setMaximumSize(d);
         b.setPreferredSize(d);

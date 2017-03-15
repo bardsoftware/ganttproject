@@ -47,6 +47,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Special button for tests on TaskPropertiesBeans
@@ -58,6 +59,9 @@ public class TestGanttRolloverButton extends JButton {
   private boolean myTextHidden = false;
   private boolean isFontAwesome = false;
   private Font myBaseFont;
+  private String myFontAwesomeLabel;
+  private Rectangle myRect = new Rectangle();
+  private float myYshift = 0f;
 
   public TestGanttRolloverButton() {
     setBorderPainted(false);
@@ -145,13 +149,17 @@ public class TestGanttRolloverButton extends JButton {
         isFontAwesome = true;
         action.putValue(Action.SMALL_ICON, null);
         float iconScale = UIUtil.getFontawesomeScale((GPAction) action);
+        myYshift = UIUtil.getFontawesomeYShift((GPAction) action);
         myBaseFont = (iconScale == 1f)
             ? UIUtil.FONTAWESOME_FONT
             : UIUtil.FONTAWESOME_FONT.deriveFont(UIUtil.FONTAWESOME_FONT.getSize() * iconScale);
 
         //Font font = (Font) UIManager.get("FontAwesome.font");
         setFont(myBaseFont);
-        setText(fontawesomeLabel);
+        action.putValue(Action.NAME, null);
+        myFontAwesomeLabel = fontawesomeLabel;
+        setText(null);
+        setTextHidden(true);
         setIcon(null);
         setHorizontalAlignment(SwingConstants.CENTER);
         setVerticalAlignment(SwingConstants.CENTER);
@@ -161,6 +169,29 @@ public class TestGanttRolloverButton extends JButton {
       }
     }
     return false;
+  }
+
+  @Override
+  public void paintComponent(Graphics graphics) {
+    if (isFontAwesome) {
+      Graphics2D g2 = (Graphics2D) graphics;
+      Rectangle innerArea = SwingUtilities.calculateInnerArea(this, myRect);
+      Font f = getFont();
+      FontMetrics fontMetrics = g2.getFontMetrics(f);
+      Rectangle2D bounds = fontMetrics.getStringBounds(myFontAwesomeLabel, graphics);
+      int h = (int) bounds.getHeight();
+      int w = (int) bounds.getWidth();
+      setTextHidden(true);
+      super.paintComponent(graphics);
+      g2.setColor(isEnabled() ? UIUtil.PATINA_FOREGROUND : Color.GRAY);
+      g2.drawString(myFontAwesomeLabel,
+          innerArea.x + (innerArea.width - w)/2,
+          innerArea.y + innerArea.height - (innerArea.height - h)/2 + (h * myYshift));
+    }
+    else {
+      super.paintComponent(graphics);
+    }
+
   }
 
   class MouseOverHandler extends MouseAdapter {
