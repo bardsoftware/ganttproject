@@ -39,7 +39,7 @@ public class GoogleExportOptionPageProvider extends OptionPageProviderBase {
       public void actionPerformed(ActionEvent ev) {
         try {
           googleAuth.someSampleWork();
-        } catch(IOException e) {getUiFacade().showErrorDialog(e);};
+        } catch(Exception e) {getUiFacade().showErrorDialog(e);};
       }
     };
 

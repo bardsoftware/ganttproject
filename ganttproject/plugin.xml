@@ -80,6 +80,27 @@
       <library name="lib/core/swingx-1.6.4.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/google-api-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-api-services-calendar-v3-rev237-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-jetty-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-java6-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-http-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-http-client-jackson2-1.22.0.jar">
+         <export name="*"/>
+      </library>
       <library name="data/resources/">
          <export name="*"/>
       </library>
@@ -119,6 +140,7 @@
          <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
          <optionpageprovider class="net.sourceforge.ganttproject.document.webdav.WebDavOptionPageProvider"/>
+         <optionpageprovider class="biz.ganttproject.impex.google.GoogleExportOptionPageProvider"/>
    </extension>
 
    <extension
