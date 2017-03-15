@@ -9,6 +9,8 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -30,6 +32,7 @@ public class GPCsvExportTest extends TaskTestCase {
   public void testResourceCustomFields() throws IOException {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
+    RoleManager roleManager = new RoleManagerImpl();
     CSVOptions csvOptions = new CSVOptions();
     for (BooleanOption option : csvOptions.getResourceOptions().values()) {
       if (!"id".equals(option.getID())) {
@@ -49,7 +52,7 @@ public class GPCsvExportTest extends TaskTestCase {
     hrManager.getById(2).addCustomProperty(prop2, "2");
     hrManager.getById(3).addCustomProperty(prop1, "3");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, csvOptions);
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.save(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
@@ -63,6 +66,7 @@ public class GPCsvExportTest extends TaskTestCase {
   public void testTaskCustomFields() throws IOException {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
+    RoleManager roleManager = new RoleManagerImpl();
     CSVOptions csvOptions = new CSVOptions();
     for (BooleanOption option : csvOptions.getTaskOptions().values()) {
       if (!TaskDefaultColumn.ID.getStub().getID().equals(option.getID())) {
@@ -82,7 +86,7 @@ public class GPCsvExportTest extends TaskTestCase {
     task2.getCustomValues().addCustomProperty(prop2, "b");
     task3.getCustomValues().addCustomProperty(prop1, "c");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, csvOptions);
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.save(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");

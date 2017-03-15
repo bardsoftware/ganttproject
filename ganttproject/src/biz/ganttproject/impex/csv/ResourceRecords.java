@@ -18,17 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
-import java.util.List;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-
+import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleManager;
 import org.apache.commons.csv.CSVRecord;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import java.util.List;
 
 /**
  * Class responsible for processing resource records in CSV import
@@ -36,6 +37,7 @@ import com.google.common.collect.Sets;
  * @author dbarashev (Dmitry Barashev)
  */
 class ResourceRecords extends RecordGroup {
+
   public enum ResourceFields {
     ID("tableColID"), NAME("tableColResourceName"), EMAIL("tableColResourceEMail"), PHONE("tableColResourcePhone"), ROLE("tableColResourceRole");
 
@@ -53,14 +55,16 @@ class ResourceRecords extends RecordGroup {
   }
 
   private final HumanResourceManager resourceManager;
+  private final RoleManager myRoleManager;
 
-  ResourceRecords(HumanResourceManager resourceManager) {
+  ResourceRecords(HumanResourceManager resourceManager, RoleManager roleManager) {
     super("Resource group",
       Sets.union(
           Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),
           ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())),
       Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME)));
-    this.resourceManager = resourceManager;
+    this.resourceManager = Preconditions.checkNotNull(resourceManager);
+    myRoleManager = Preconditions.checkNotNull(roleManager);
   }
   @Override
   public void setHeader(List<String> header) {
@@ -77,12 +81,17 @@ class ResourceRecords extends RecordGroup {
       return false;
     }
     assert record.size() > 0;
+    String role = getOrNull(record, ResourceFields.ROLE.toString());
+    if (role != null && myRoleManager.getRole(role) == null) {
+      Role newRole = myRoleManager.getProjectRoleSet().createRole(role);
+      role = newRole.getPersistentID();
+    }
     HumanResource hr = resourceManager.newResourceBuilder()
         .withName(getOrNull(record, ResourceFields.NAME.toString()))
         .withID(getOrNull(record, ResourceFields.ID.toString()))
         .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
-        .withRole(getOrNull(record, ResourceFields.ROLE.toString()))
+        .withRole(role)
         .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build();
     for (String customField : getCustomFields()) {
