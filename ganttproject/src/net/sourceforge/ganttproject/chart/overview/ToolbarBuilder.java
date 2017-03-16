@@ -204,6 +204,7 @@ public class ToolbarBuilder {
       private void setSelectedAction(Action selected) {
         mySelectedAction = selected;
         getButton().setText(formatActionName(selected));
+        resetPreferredSize();
       }
 
       public void setText(String arg0) {
@@ -223,6 +224,7 @@ public class ToolbarBuilder {
 
       private String formatActionName(Action a) {
         String name = getActionName(a);
+        name = name.replace(" ", "&nbsp;");
         return MessageFormat.format("<html><b>{0}</b></html>", name);
       }
 
@@ -271,7 +273,7 @@ public class ToolbarBuilder {
         }
         int width = (int) (maxLength * 1.1) + 16 + getIconTextGap();
         Insets insets = getInsets();
-        myPreferredSize = new Dimension(width + insets.left + insets.right, d.height);
+        myPreferredSize = new Dimension(width + insets.left + insets.right, maxHeight);
         return myPreferredSize;
       }
 
