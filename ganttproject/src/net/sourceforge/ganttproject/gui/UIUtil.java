@@ -664,12 +664,13 @@ public abstract class UIUtil {
     return value == null ? 1f : Float.valueOf(value.toString());
   }
 
+  private static final float DEFAULT_YSHIFT = Float.valueOf(FONTAWESOME_PROPERTIES.get(".yshift").toString());
   public static float getFontawesomeYShift(GPAction action) {
     if (action.getID() == null) {
-      return 0f;
+      return DEFAULT_YSHIFT;
     }
     Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".yshift");
-    return value == null ? 0f : Float.valueOf(value.toString());
+    return DEFAULT_YSHIFT + (value == null ? 0f : Float.valueOf(value.toString()));
   }
 
 }
