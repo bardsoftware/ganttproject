@@ -53,18 +53,16 @@ public class GoogleAuth {
         new GoogleAuthorizationCodeFlow.Builder(
             HTTP_TRANSPORT, JSON_FACTORY, CLIENT_ID, CLIENT_SECRET, SCOPES)
             .build();
-    Credential credential = new AuthorizationCodeInstalledApp(
+    return new AuthorizationCodeInstalledApp(
         flow, new LocalServerReceiver()).authorize("ganttuser");
-    return credential;
   }
 
-  public Calendar
-  getCalendarService() throws Exception {
+  public Calendar getCalendarService() throws Exception {
     Credential credential = authorize();
-    return new com.google.api.services.calendar.Calendar.Builder(
-            HTTP_TRANSPORT, JSON_FACTORY, credential)
-            .setApplicationName(APPLICATION_NAME)
-            .build();
+    return new Calendar.Builder(
+        HTTP_TRANSPORT, JSON_FACTORY, credential)
+        .setApplicationName(APPLICATION_NAME)
+        .build();
   }
 
   public void someSampleWork() throws Exception {
