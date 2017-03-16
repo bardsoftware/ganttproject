@@ -33,7 +33,6 @@ public class GanttImagePanel extends JLabel {
     setMinimumSize(myOriginalSize);
     setMinimumSize(myOriginalSize);
     myOriginalImage = image;
-    setBorder(BorderFactory.createLineBorder(Color.RED));
   }
 
   public void setScale(float scale) {
