@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
+import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
@@ -68,16 +68,20 @@ public class ToolbarBuilder {
   private Color myBackground;
   private IntegerOption myDpiOption;
   private GPOption<String> myLafOption;
-  private Function<String, Float> myButtonSizeScaling;
   private final java.util.List<TestGanttRolloverButton> myButtons = Lists.newArrayList();
   private Supplier<Component> myGapFactory;
   private int myBaseHeight;
   private boolean myButtonsSquared = false;
+  private final java.util.List<ChangeValueListener> myOnUiChangeListeners = Lists.newArrayList();
 
   public ToolbarBuilder() {
     myToolbar = new JPanel() {
       @Override
       public Dimension getPreferredSize() {
+        // This is a hack which keeps the preferred height of the whole
+        // toolbar equal to the preferred height of its first button.
+        // It may help when one of the components initially is taller than other
+        // components and thus adds small padding between the box and button borders.
         Dimension d = super.getPreferredSize();
         Dimension first = getComponent(0).getPreferredSize();
         d.height = first.height;
@@ -120,7 +124,6 @@ public class ToolbarBuilder {
 
   public ToolbarBuilder withLafOption(GPOption<String> lafOption, Function<String, Float> buttonSizeScaling) {
     myLafOption = lafOption;
-    myButtonSizeScaling = Preconditions.checkNotNull(buttonSizeScaling);
     return this;
   }
 
@@ -169,7 +172,7 @@ public class ToolbarBuilder {
       private Action mySelectedAction = null;
       private final Action[] myActions;
       private Rectangle myIconRect;
-      //private Dimension myPreferredSize;
+      private Dimension myPreferredSize;
 
       private MyComboBox(Action[] actions) {
         myActions = actions;
@@ -183,9 +186,7 @@ public class ToolbarBuilder {
           @Override
           public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
             super.paintIcon(c, g, x, y);
-            //if (myIconRect == null) {
-              myIconRect = new Rectangle(x, y, 16, 16);
-            //}
+            myIconRect = new Rectangle(x, y, 16, 16);
           }
         });
         setHorizontalTextPosition(LEADING);
@@ -226,7 +227,6 @@ public class ToolbarBuilder {
       }
 
       protected void onMouseClicked(MouseEvent e) {
-        System.out.println("icon rect="+myIconRect+" e="+e.getPoint());
         if (myIconRect.contains(e.getX(), e.getY())) {
           showPopup();
         } else {
@@ -251,7 +251,6 @@ public class ToolbarBuilder {
       private JButton getButton() {
         return MyComboBox.this;
       }
-/*
       @Override
       public Dimension getPreferredSize() {
         if (myPreferredSize != null) {
@@ -263,44 +262,32 @@ public class ToolbarBuilder {
           return d;
         }
         int maxLength = 0;
+        int maxHeight = 0;
         TextLengthCalculatorImpl textLength = new TextLengthCalculatorImpl(g);
         for (Action a : myActions) {
-          int length = textLength.getTextLength(a.getValue(Action.NAME).toString());
-          if (maxLength < length) {
-            maxLength = length;
-          }
+          String text = a.getValue(Action.NAME).toString();
+          maxLength = Math.max(maxLength, textLength.getTextLength(text));
+          maxHeight = Math.max(maxHeight, textLength.getTextHeight(text));
         }
         int width = (int) (maxLength * 1.1) + 16 + getIconTextGap();
         Insets insets = getInsets();
         myPreferredSize = new Dimension(width + insets.left + insets.right, d.height);
         return myPreferredSize;
       }
-      */
+
+      void resetPreferredSize() {
+        myPreferredSize = null;
+      }
     }
     final MyComboBox button = new MyComboBox(actions);
     addGap();
     myToolbar.add(button);
-//    class FooBox extends JComboBox {
-//      FooBox(String... items) {
-//        super(items);
-//      }
-//      void setBorderPainted(boolean isPainted) {
-//        for (int i = 0; i < getComponentCount(); i++)
-//        {
-//          if (getComponent(i) instanceof JComponent) {
-//            ((JComponent) getComponent(i)).setBorder(new EmptyBorder(0, 0,0,0));
-//          }
-//
-//
-//          if (getComponent(i) instanceof AbstractButton) {
-//            ((AbstractButton) getComponent(i)).setBorderPainted(false);
-//          }
-//        }
-//      }
-//    }
-//    FooBox button = new FooBox("today", "yesterday", "project start");
-//    button.setBorderPainted(false);
-//    myToolbar.add(button);
+    myOnUiChangeListeners.add(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        button.resetPreferredSize();
+      }
+    });
     return this;
   }
 
@@ -313,13 +300,16 @@ public class ToolbarBuilder {
       ChangeValueListener lafListener = new ChangeValueListener() {
         @Override
         public void changeValue(ChangeValueEvent event) {
-          if (Strings.nullToEmpty(myLafOption.getValue()).toLowerCase().indexOf("nimbus") >= 0) {
-            result.setButtonSizeScaling(myButtonSizeScaling.apply(Strings.nullToEmpty(myLafOption.getValue()).toLowerCase()));
+          for (ChangeValueListener l : myOnUiChangeListeners) {
+            l.changeValue(event);
           }
         }
       };
       myLafOption.addChangeValueListener(lafListener);
       lafListener.changeValue(null);
+      if (myDpiOption != null) {
+        myDpiOption.addChangeValueListener(lafListener);
+      }
     }
     result.getToolbar().setBorder(myBorder);
     result.updateButtons();

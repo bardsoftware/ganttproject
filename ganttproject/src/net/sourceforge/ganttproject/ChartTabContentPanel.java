@@ -179,7 +179,6 @@ abstract class ChartTabContentPanel {
 
   protected void updateTimelineHeight() {
     int timelineHeight = myHeaderHeight.get() + myImageHeight;
-    System.out.println("timeline height="+timelineHeight);
     myChart.setTimelineHeight(timelineHeight);
   }
 
