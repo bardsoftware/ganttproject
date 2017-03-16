@@ -54,23 +54,20 @@ import java.awt.geom.Rectangle2D;
  */
 public class TestGanttRolloverButton extends JButton {
 
-  private int myAutoRepeatMilliseconds;
-
   private boolean myTextHidden = false;
   private boolean isFontAwesome = false;
   private Font myBaseFont;
   private String myFontAwesomeLabel;
   private Rectangle myRect = new Rectangle();
   private float myYshift = 0f;
+  private Dimension myPreferredSize = null;
 
   public TestGanttRolloverButton() {
     setBorderPainted(false);
     setContentAreaFilled(false);
     setMargin(new Insets(0, 0, 0, 0));
 
-
     addMouseListener(new MouseOverHandler());
-//    addMouseListener(new AutoRepeatHandler());
     setHorizontalTextPosition(SwingConstants.CENTER);
     setVerticalTextPosition(SwingConstants.BOTTOM);
     setRolloverEnabled(true);
@@ -91,13 +88,6 @@ public class TestGanttRolloverButton extends JButton {
   public TestGanttRolloverButton(Icon icon) {
     this();
     setIcon(icon);
-  }
-
-  public void setAutoRepeatMousePressedEvent(int milliseconds) {
-    myAutoRepeatMilliseconds = milliseconds;
-  }
-
-  public void setIconHidden(boolean isHidden) {
   }
 
   public void setTextHidden(boolean isHidden) {
@@ -130,10 +120,6 @@ public class TestGanttRolloverButton extends JButton {
     }
   }
 
-  public void setDefaultIcon(Icon iconOn) {
-    setIcon(iconOn);
-  }
-
   public void setScale(float scale) {
     if (isFontAwesome) {
       Font baseFont = myBaseFont;
@@ -154,7 +140,6 @@ public class TestGanttRolloverButton extends JButton {
             ? UIUtil.FONTAWESOME_FONT
             : UIUtil.FONTAWESOME_FONT.deriveFont(UIUtil.FONTAWESOME_FONT.getSize() * iconScale);
 
-        //Font font = (Font) UIManager.get("FontAwesome.font");
         setFont(myBaseFont);
         action.putValue(Action.NAME, null);
         myFontAwesomeLabel = fontawesomeLabel;
@@ -187,11 +172,20 @@ public class TestGanttRolloverButton extends JButton {
       g2.drawString(myFontAwesomeLabel,
           innerArea.x + (innerArea.width - w)/2,
           innerArea.y + innerArea.height - (innerArea.height - h)/2 + (h * myYshift));
+      Dimension buttonSize = getSize();
+      if (h > buttonSize.height || w > buttonSize.width) {
+        myPreferredSize = new Dimension(Math.max(h, w), Math.max(h, w));
+        System.out.println("Button="+ getText()+" Size was "+buttonSize+" set pref size to "+myPreferredSize);
+      }
     }
     else {
       super.paintComponent(graphics);
     }
+  }
 
+  @Override
+  public Dimension getPreferredSize() {
+    return (myPreferredSize == null) ? super.getPreferredSize() : myPreferredSize;
   }
 
   class MouseOverHandler extends MouseAdapter {
@@ -207,51 +201,6 @@ public class TestGanttRolloverButton extends JButton {
     public void mouseExited(MouseEvent e) {
       setBorderPainted(false);
       setContentAreaFilled(false);
-
     }
   }
-//
-//  class AutoRepeatHandler extends MouseAdapter {
-//    private Worker myWorker;
-//
-//    @Override
-//    public void mousePressed(MouseEvent e) {
-//      if (myAutoRepeatMilliseconds > 0) {
-//        myWorker = new Worker(e);
-//        myWorker.start();
-//      }
-//    }
-//
-//    @Override
-//    public void mouseReleased(MouseEvent e) {
-//      if (myWorker != null) {
-//        myWorker.interrupt();
-//        myWorker = null;
-//      }
-//    }
-//  }
-//
-//  class Worker extends Thread {
-//    private ActionEvent myEvent;
-//
-//    Worker(MouseEvent e) {
-//      myEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getActionCommand(),
-//          EventQueue.getMostRecentEventTime(), e.getModifiers());
-//    }
-//
-//    @Override
-//    public void run() {
-//      while (true) {
-//        try {
-//          Thread.sleep(myAutoRepeatMilliseconds);
-//        } catch (InterruptedException e) {
-//          break;
-//        }
-//        if (isInterrupted()) {
-//          break;
-//        }
-//        getAction().actionPerformed(myEvent);
-//      }
-//    }
-//  }
 }

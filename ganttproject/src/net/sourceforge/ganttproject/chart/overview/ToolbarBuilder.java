@@ -27,6 +27,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.gui.ActionUtil;
 import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -45,9 +46,6 @@ import java.text.MessageFormat;
  * @author Dmitry Barashev (dbarashev@ganttproject.biz)
  */
 public class ToolbarBuilder {
-
-
-
   public static class Gaps {
 
     public static Supplier<Component> VDASH = new Supplier<Component>() {
@@ -63,6 +61,7 @@ public class ToolbarBuilder {
       }
     };
   }
+
   private final JPanel myToolbar;
   private Border myBorder = BorderFactory.createEmptyBorder(2,2,2,2);
   private Color myBackground;
@@ -127,23 +126,42 @@ public class ToolbarBuilder {
     return this;
   }
 
+  public class ButtonBuilder {
+    private final TestGanttRolloverButton myButton;
+    ButtonBuilder(TestGanttRolloverButton button) {
+      myButton = Preconditions.checkNotNull(button);
+      button.setIcon(null);
+      button.setRolloverIcon(null);
+      button.setHorizontalTextPosition(SwingConstants.CENTER);
+      button.setVerticalTextPosition(SwingConstants.CENTER);
+      button.setTextHidden(false);
+      button.setAlignmentY(Component.CENTER_ALIGNMENT);
+      button.setMargin(new Insets(0, 0, 0, 0));
+    }
+
+    public ButtonBuilder withAutoRepeat(int millis) {
+      ActionUtil.setupAutoRepeat(myButton, millis);
+      return this;
+    }
+
+    public ToolbarBuilder add() {
+      myButtons.add(myButton);
+      addGap();
+      myToolbar.add(myButton);
+      return ToolbarBuilder.this;
+    }
+  }
+
   public ToolbarBuilder addButton(TestGanttRolloverButton button) {
-    //button.setIcon(new ImageIcon(getClass().getResource("/icons/blank_big.gif")));
-    button.setIcon(null);
-    button.setRolloverIcon(null);
-    button.setHorizontalTextPosition(SwingConstants.CENTER);
-    button.setVerticalTextPosition(SwingConstants.CENTER);
-    button.setTextHidden(false);
-    button.setAlignmentY(Component.CENTER_ALIGNMENT);
-    button.setMargin(new Insets(0, 0, 0, 0));
-    myButtons.add(button);
-    addGap();
-    myToolbar.add(button);
-    return this;
+    return new ButtonBuilder(button).add();
   }
 
   public ToolbarBuilder addButton(Action action) {
     return addButton(new TestGanttRolloverButton(action));
+  }
+
+  public ButtonBuilder button(Action action) {
+    return new ButtonBuilder(new TestGanttRolloverButton(action));
   }
 
   public ToolbarBuilder addPanel(JPanel panel) {
@@ -292,8 +310,6 @@ public class ToolbarBuilder {
     });
     return this;
   }
-
-
 
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);

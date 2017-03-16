@@ -67,8 +67,8 @@ public class NavigationPanel {
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
         .addComboBox(myScrollActions, myScrollActions[1])
-        .addButton(myScrollBackAction)
-        .addButton(myScrollForwardAction)
+        .button(myScrollBackAction).withAutoRepeat(200).add()
+        .button(myScrollForwardAction).withAutoRepeat(200).add()
         .build()
         .getToolbar();
   }
