@@ -75,7 +75,15 @@ public class ToolbarBuilder {
   private boolean myButtonsSquared = false;
 
   public ToolbarBuilder() {
-    myToolbar = new JPanel();
+    myToolbar = new JPanel() {
+      @Override
+      public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        Dimension first = getComponent(0).getPreferredSize();
+        d.height = first.height;
+        return d;
+      }
+    };
     myToolbar.setLayout(new BoxLayout(myToolbar, BoxLayout.LINE_AXIS));
     myToolbar.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
     myBackground = myToolbar.getBackground();
