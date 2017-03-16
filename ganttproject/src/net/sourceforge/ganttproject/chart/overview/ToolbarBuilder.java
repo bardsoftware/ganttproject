@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
-import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
@@ -162,7 +161,7 @@ public class ToolbarBuilder {
       private Action mySelectedAction = null;
       private final Action[] myActions;
       private Rectangle myIconRect;
-      private Dimension myPreferredSize;
+      //private Dimension myPreferredSize;
 
       private MyComboBox(Action[] actions) {
         myActions = actions;
@@ -176,9 +175,9 @@ public class ToolbarBuilder {
           @Override
           public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
             super.paintIcon(c, g, x, y);
-            if (myIconRect == null) {
+            //if (myIconRect == null) {
               myIconRect = new Rectangle(x, y, 16, 16);
-            }
+            //}
           }
         });
         setHorizontalTextPosition(LEADING);
@@ -198,6 +197,17 @@ public class ToolbarBuilder {
         getButton().setText(formatActionName(selected));
       }
 
+      public void setText(String arg0) {
+        super.setText(arg0);
+        FontMetrics metrics = getFontMetrics(getFont());
+        int width = metrics.stringWidth( getText() );
+        int height = metrics.getHeight();
+        Dimension newDimension = getPreferredSize();
+        newDimension.setSize(width+16, newDimension.height);
+        setPreferredSize(newDimension);
+        setBounds(new Rectangle(
+            getLocation(), getPreferredSize()));
+      }
       private String getActionName(Action a) {
         return a.getValue(Action.NAME).toString();
       }
@@ -208,6 +218,7 @@ public class ToolbarBuilder {
       }
 
       protected void onMouseClicked(MouseEvent e) {
+        System.out.println("icon rect="+myIconRect+" e="+e.getPoint());
         if (myIconRect.contains(e.getX(), e.getY())) {
           showPopup();
         } else {
@@ -232,7 +243,7 @@ public class ToolbarBuilder {
       private JButton getButton() {
         return MyComboBox.this;
       }
-
+/*
       @Override
       public Dimension getPreferredSize() {
         if (myPreferredSize != null) {
@@ -256,12 +267,36 @@ public class ToolbarBuilder {
         myPreferredSize = new Dimension(width + insets.left + insets.right, d.height);
         return myPreferredSize;
       }
+      */
     }
     final MyComboBox button = new MyComboBox(actions);
     addGap();
     myToolbar.add(button);
+//    class FooBox extends JComboBox {
+//      FooBox(String... items) {
+//        super(items);
+//      }
+//      void setBorderPainted(boolean isPainted) {
+//        for (int i = 0; i < getComponentCount(); i++)
+//        {
+//          if (getComponent(i) instanceof JComponent) {
+//            ((JComponent) getComponent(i)).setBorder(new EmptyBorder(0, 0,0,0));
+//          }
+//
+//
+//          if (getComponent(i) instanceof AbstractButton) {
+//            ((AbstractButton) getComponent(i)).setBorderPainted(false);
+//          }
+//        }
+//      }
+//    }
+//    FooBox button = new FooBox("today", "yesterday", "project start");
+//    button.setBorderPainted(false);
+//    myToolbar.add(button);
     return this;
   }
+
+
 
   public GPToolbar build() {
     UIUtil.setBackgroundTree(myToolbar, myBackground);
