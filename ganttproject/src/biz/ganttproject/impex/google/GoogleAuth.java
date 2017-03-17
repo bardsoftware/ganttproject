@@ -6,7 +6,6 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.LowLevelHttpRequest;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.DateTime;
@@ -14,41 +13,26 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
+import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 public class GoogleAuth {
 
-  //Client ID
   private static final String CLIENT_ID = "299608862260-vnb8d18h7cismqil9fbhf800jlnd3u6d.apps.googleusercontent.com";
 
-  //Client Secret
   private static final String CLIENT_SECRET = "LUcqnHuf4NCqmEkljaJM0giT";
 
-  // Application name
-  private static final String APPLICATION_NAME =
-          "Google Export for GanttProject";
+  private static final String APPLICATION_NAME = "Google Export for GanttProject";
 
-  // Global instance of the JSON factory
-  private final JsonFactory JSON_FACTORY =
-          JacksonFactory.getDefaultInstance();
+  private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-  // Global instance of the HTTP transport
-  private HttpTransport HTTP_TRANSPORT = new HttpTransport() {
-    @Override
-    protected LowLevelHttpRequest buildRequest(String method, String url) throws IOException {
-      return null;
-    }
-  };
+  private static final List<String> SCOPES = ImmutableList.of(CalendarScopes.CALENDAR_READONLY);
 
-  private static final List<String> SCOPES =
-          Arrays.asList(CalendarScopes.CALENDAR_READONLY);
-
-  public Credential authorize() throws Exception{
-      // Build flow and trigger user authorization request.
-    HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+  public Credential authorize() throws GeneralSecurityException, IOException {
+    HttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
     GoogleAuthorizationCodeFlow flow =
         new GoogleAuthorizationCodeFlow.Builder(
             HTTP_TRANSPORT, JSON_FACTORY, CLIENT_ID, CLIENT_SECRET, SCOPES)
@@ -57,18 +41,15 @@ public class GoogleAuth {
         flow, new LocalServerReceiver()).authorize("ganttuser");
   }
 
-  public Calendar getCalendarService() throws Exception {
-    Credential credential = authorize();
+  public Calendar getCalendarService(Credential credential) throws GeneralSecurityException, IOException {
+    HttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
     return new Calendar.Builder(
         HTTP_TRANSPORT, JSON_FACTORY, credential)
         .setApplicationName(APPLICATION_NAME)
         .build();
   }
 
-  public void someSampleWork() throws Exception {
-    // Build a new authorized API client service.
-    Calendar service = getCalendarService();
-
+  public void someSampleWork(Calendar service) throws IOException {
     // List the next 10 events from the primary calendar.
     DateTime now = new DateTime(System.currentTimeMillis());
     Events events = service.events().list("primary")
