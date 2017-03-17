@@ -93,10 +93,25 @@
       <library name="lib/core/google-oauth-client-java6-1.22.0.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/google-oauth-client-jetty-1.22.0.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/google-api-client-1.22.0.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/jackson-core-2.8.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jetty-6.1.26.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jetty-util-6.1.26.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/servlet-api-2.5-20081211.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-api-services-calendar-v3-rev237-1.22.0.jar">
          <export name="*"/>
       </library>
 

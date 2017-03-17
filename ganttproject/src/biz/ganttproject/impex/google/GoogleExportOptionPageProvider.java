@@ -4,6 +4,8 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -32,7 +34,7 @@ public class GoogleExportOptionPageProvider extends OptionPageProviderBase {
   public Component buildPageComponent() {
     JPanel result = new JPanel(new BorderLayout());
     result.setBorder(new EmptyBorder(5, 5, 5, 5));
-    JButton testConnectionButton = new JButton(new GPAction() {
+    JButton testConnectionButton = new JButton(new GPAction("googleConnect") {
       @Override
       public void actionPerformed(ActionEvent e) {
         try {
@@ -42,7 +44,7 @@ public class GoogleExportOptionPageProvider extends OptionPageProviderBase {
         }
       }
     });
-    result.add(testConnectionButton, BorderLayout.NORTH);
+    result.add(testConnectionButton, BorderLayout.SOUTH);
     return result;
   }
 }
