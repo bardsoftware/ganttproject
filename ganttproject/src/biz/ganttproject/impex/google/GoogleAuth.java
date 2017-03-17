@@ -32,19 +32,17 @@ public class GoogleAuth {
   private static final List<String> SCOPES = ImmutableList.of(CalendarScopes.CALENDAR_READONLY);
 
   public Credential authorize() throws GeneralSecurityException, IOException {
-    HttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+    HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
     GoogleAuthorizationCodeFlow flow =
         new GoogleAuthorizationCodeFlow.Builder(
-            HTTP_TRANSPORT, JSON_FACTORY, CLIENT_ID, CLIENT_SECRET, SCOPES)
+            httpTransport, JSON_FACTORY, CLIENT_ID, CLIENT_SECRET, SCOPES)
             .build();
-    return new AuthorizationCodeInstalledApp(
-        flow, new LocalServerReceiver()).authorize("ganttuser");
+    return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("ganttuser");
   }
 
   public Calendar getCalendarService(Credential credential) throws GeneralSecurityException, IOException {
-    HttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-    return new Calendar.Builder(
-        HTTP_TRANSPORT, JSON_FACTORY, credential)
+    HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+    return new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
         .setApplicationName(APPLICATION_NAME)
         .build();
   }
@@ -59,7 +57,7 @@ public class GoogleAuth {
         .setSingleEvents(true)
         .execute();
     List<Event> items = events.getItems();
-    if (items.size() == 0) {
+    if (items.isEmpty()) {
       System.out.println("No upcoming events found.");
     } else {
       System.out.println("Upcoming events");

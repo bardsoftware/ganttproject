@@ -38,10 +38,11 @@ public class GoogleExportOptionPageProvider extends OptionPageProviderBase {
         try {
           myAuth.someSampleWork(myAuth.getCalendarService(myAuth.authorize()));
         } catch (Exception e1) {
-          GPLogger.getLogger(GoogleExportOptionPageProvider.class).log(Level.WARNING, "Something went wrong", e1);}
+          GPLogger.getLogger(GoogleExportOptionPageProvider.class).log(Level.WARNING, "Something went wrong", e1);
+        }
       }
     });
-      result.add(testConnectionButton,BorderLayout.NORTH);
-      return result;
-    }
+    result.add(testConnectionButton, BorderLayout.NORTH);
+    return result;
   }
+}
