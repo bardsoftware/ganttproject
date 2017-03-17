@@ -42,13 +42,13 @@ import java.util.List;
 abstract class ChartTabContentPanel {
   private final TimelineChart myChart;
   private JSplitPane mySplitPane;
-  private final List<Component> myPanels = new ArrayList<Component>();
+  private final List<Component> myPanels = new ArrayList<>();
   private final UIFacade myUiFacade;
   private int myImageHeight;
   private Supplier<Integer> myHeaderHeight;
   private GanttImagePanel myImagePanel;
 
-  protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
+  ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
     NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
     ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
     addChartPanel(zoomingPanel.getComponent());
@@ -63,7 +63,7 @@ abstract class ChartTabContentPanel {
     });
   }
 
-  protected JComponent createContentComponent() {
+  JComponent createContentComponent() {
     JPanel tabContentPanel = new JPanel(new BorderLayout());
     final JPanel left = new JPanel(new BorderLayout());
     final Box treeHeader = Box.createVerticalBox();
@@ -152,11 +152,11 @@ abstract class ChartTabContentPanel {
 
   protected abstract Component createButtonPanel();
 
-  protected int getDividerLocation() {
+  int getDividerLocation() {
     return mySplitPane.getDividerLocation();
   }
 
-  protected void setDividerLocation(int location) {
+  void setDividerLocation(int location) {
     mySplitPane.setDividerLocation(location);
   }
 
@@ -169,7 +169,7 @@ abstract class ChartTabContentPanel {
     return panelsBox;
   }
 
-  protected void addChartPanel(Component panel) {
+  void addChartPanel(Component panel) {
     myPanels.add(panel);
   }
 
@@ -177,12 +177,12 @@ abstract class ChartTabContentPanel {
     return myUiFacade;
   }
 
-  protected void updateTimelineHeight() {
+  private void updateTimelineHeight() {
     int timelineHeight = myHeaderHeight.get() + myImageHeight;
     myChart.setTimelineHeight(timelineHeight);
   }
 
-  protected void addTableResizeListeners(final Component tableContainer, final Component table) {
+  void addTableResizeListeners(final Component tableContainer, final Component table) {
     myHeaderHeight = new Supplier<Integer>() {
       @Override
       public Integer get() {
@@ -215,4 +215,10 @@ abstract class ChartTabContentPanel {
     table.addComponentListener(componentListener);
   }
 
+  public void setActive(boolean active) {
+    if (active) {
+      getTreeComponent().requestFocus();
+      updateTimelineHeight();
+    }
+  }
 }
