@@ -114,6 +114,9 @@ abstract class ChartTabContentPanel {
     ChangeValueListener changeValueListener = new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
+        if (myUiFacade.getDpiOption().getValue() < 96) {
+          return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
