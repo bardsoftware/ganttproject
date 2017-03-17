@@ -13,11 +13,14 @@
                 target="1.4"
                 source="1.4"
                 debug="yes"
+                includeantruntime="true"
         />
         <copy todir="build-deb/classes">
             <fileset dir="src" includes="**/*.properties"/>
             <fileset dir="src" includes="**/*.xml"/>
         </copy>
+        <jar basedir="build-deb/classes" jarfile="lib/ganttproject-build-deb.jar" includes="**/*.class">
+        </jar>
     </target>
 
     <taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
@@ -32,11 +35,20 @@
                 exec="/usr/bin/ganttproject %U"
                 mimetype="application/x-ganttproject;"
                 categories="Office;"
-                onlyshowin="GNOME;KDE;Unity;LXDE;"
+                onlyshowin="GNOME;KDE;Unity;LXDE;MATE;Cinnamon;"
         >
             <genericname value="GanttProject"/>
         </desktopEntry>
         <copy file="ganttproject.svg" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+        </copy>
+        <!-- Some docs go into /usr/share/doc/ganttproject -->
+        <mkdir dir="${distDebWork}/usr/share/doc/${package.name}"/>
+        <copy todir="${distDebWork}/usr/share/doc/${package.name}">
+            <fileset dir=".">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="AUTHORS"/>
+            </fileset>
         </copy>
         <deb todir="${distDebPackage}"
              package="${package.name}"
@@ -56,7 +68,7 @@
             </description>
             <!-- GanttProject distro goes into /usr/share/ganttproject -->
             <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
-                <include name="plugins/**/"/>
+                <include name="plugins-${version}/**/"/>
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
@@ -65,15 +77,11 @@
                 <include name="ganttproject"/>
             </tarfileset>
 
-            <!-- Some docs go into /usr/share/doc/ganttproject -->
-            <tarfileset dir="${distBin}/.." prefix="usr/share/doc/${package.name}">
-                <include name="LICENSE"/>
-                <include name="README"/>
-                <include name="AUTHORS"/>
-            </tarfileset>
             <!-- Icons, mime types, docs and other stuff -->
             <tarfileset dir="${distDebWork}/usr" prefix="usr"/>
         </deb>
+        <rename src="${distDebPackage}/${package.name}_${version}-1_all.deb"
+               dest="${distDebPackage}/${package.name}_${version_build}-1_all.deb"/>
     </target>
 
     <taskdef name="bundleapp"
@@ -96,7 +104,7 @@
             <argument value="-app"/>
             <argument value="net.sourceforge.ganttproject.GanttProject"/>
             <argument value="-plugins-dir"/>
-            <argument value="$APP_ROOT/Contents/Java/plugins"/>
+            <argument value="$APP_ROOT/Contents/Java/plugins-${version}"/>
             <argument value="-log"/>
             <argument value="true"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
@@ -108,7 +116,7 @@
         <copy todir="${distMacWork}/GanttProject.app/Contents/Java">
             <fileset dir="${distBin}">
                 <include name="eclipsito.jar"/>
-                <include name="plugins/**"/>
+                <include name="plugins-${version}/**"/>
                 <include name="logging.properties"/>
             </fileset>
         </copy>

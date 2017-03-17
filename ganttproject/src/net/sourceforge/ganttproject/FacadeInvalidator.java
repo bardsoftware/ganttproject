@@ -18,16 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import com.google.common.base.Preconditions;
+
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
+import java.util.List;
 
 class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelListener {
+  private final List<GanttProjectBase.RowHeightAligner> myRowAligners;
   boolean isValid;
 
-  public FacadeInvalidator(TreeModel treeModel) {
+  public FacadeInvalidator(TreeModel treeModel, List<GanttProjectBase.RowHeightAligner> rowHeightAligners) {
     isValid = false;
     treeModel.addTreeModelListener(this);
+    myRowAligners = Preconditions.checkNotNull(rowHeightAligners);
   }
 
   boolean isValid() {
@@ -61,5 +66,12 @@ class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelLi
   @Override
   public void projectClosed() {
     isValid = false;
+  }
+
+  @Override
+  public void projectOpened() {
+    for (GanttProjectBase.RowHeightAligner aligner : myRowAligners) {
+      aligner.optionsChanged();
+    }
   }
 }

@@ -11,9 +11,9 @@ apply plugin: 'eclipse'
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
+ext.semver = '2.8.3'
 ext.distBinDir = file('dist-bin')
-ext.pluginsDir = file('dist-bin/plugins')
-ext.semver = '2.8.2'
+ext.pluginsDir = file("dist-bin/plugins-${semver}")
 ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
@@ -26,7 +26,7 @@ ant.properties.distDebPackage = "${buildDir}/distributions"
 ant.properties.distMacWork = 'dist-mac'
 ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
 ant.properties.version = "${semver}"
-
+ant.properties.version_build = "${version}"
 
 // What is counted as java project for the purposes of this build
 def javaProjects() {
@@ -178,5 +178,13 @@ task runApp(type: JavaExec, dependsOn: distBin) {
   workingDir = 'dist-bin'
   classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar'])
   main = 'org.bardsoftware.eclipsito.Boot'
-  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir','plugins'
+  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
+  jvmArgs '-ea'
+}
+task debugApp(type: JavaExec, dependsOn: distBin) {
+  workingDir = 'dist-bin'
+  classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar'])
+  main = 'org.bardsoftware.eclipsito.Boot'
+  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
+  jvmArgs  '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
 }

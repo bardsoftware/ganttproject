@@ -18,9 +18,51 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Point;
+import biz.ganttproject.core.table.ColumnList;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
+import net.sourceforge.ganttproject.action.task.TaskIndentAction;
+import net.sourceforge.ganttproject.action.task.TaskLinkAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveDownAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
+import net.sourceforge.ganttproject.action.task.TaskNewAction;
+import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
+import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
+import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartModelBase;
+import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskNode;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
+import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
+import org.jdesktop.swingx.decorator.Highlighter;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -40,66 +82,12 @@ import java.util.Map;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JScrollBar;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
-import net.sourceforge.ganttproject.action.task.TaskIndentAction;
-import net.sourceforge.ganttproject.action.task.TaskLinkAction;
-import net.sourceforge.ganttproject.action.task.TaskMoveDownAction;
-import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
-import net.sourceforge.ganttproject.action.task.TaskNewAction;
-import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
-import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
-import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskNode;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.decorator.ColorHighlighter;
-import org.jdesktop.swingx.decorator.ComponentAdapter;
-import org.jdesktop.swingx.decorator.HighlightPredicate;
-import org.jdesktop.swingx.decorator.Highlighter;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
-
-import biz.ganttproject.core.table.ColumnList;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 /**
  * Class that generate the JTree
  */
 public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> implements
     /*DragSourceListener, DragGestureListener,*/ TaskTreeUIFacade {
+  private GanttProjectBase.RowHeightAligner myRowHeightAligner;
   private UIFacade myUIFacade;
 
   /** Pointer on graphic area */
@@ -338,6 +326,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   /** Change graphic part */
   public void setGraphicArea(ChartComponentBase area) {
     this.area = area;
+    myRowHeightAligner = new GanttProjectBase.RowHeightAligner(this, this.area.getChartModel());
   }
 
   @Override
@@ -457,6 +446,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         expandRefresh(moved.getChildAt(i));
       }
     }
+  }
+
+  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
+    return myRowHeightAligner;
   }
 
   /** Class for expansion and collapse of node */

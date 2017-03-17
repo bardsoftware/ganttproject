@@ -22,7 +22,7 @@ public class DesktopEntry extends Task
     private List _localizedEntries = new ArrayList ();
 
     private static final Set VALID_ONLY_SHOW_IN = new HashSet (
-        Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old", "Unity", "LXDE"}));
+        Arrays.asList (new String[] {"GNOME", "KDE", "ROX", "XFCE", "Old", "Unity", "LXDE", "MATE", "Cinnamon"}));
 
     public static class LocalizedEntry
     {
@@ -308,6 +308,7 @@ public class DesktopEntry extends Task
     {
         try
         {
+            _toFile.getParentFile().mkdirs();
             log ("Generating desktop entry to: " + _toFile.getAbsolutePath ());
 
             for (int i = 0; i < _localizedEntries.size (); i++)

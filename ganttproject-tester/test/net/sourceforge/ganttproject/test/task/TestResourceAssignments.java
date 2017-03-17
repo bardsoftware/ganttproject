@@ -1,25 +1,24 @@
 package net.sourceforge.ganttproject.test.task;
 
-import junit.framework.TestCase;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.roles.RoleManager;
-
-import java.awt.Color;
-import java.net.URL;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import junit.framework.TestCase;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerConfig;
+
+import java.awt.*;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TestResourceAssignments extends TestCase {
     private TaskManager myTaskManager;
@@ -91,12 +90,11 @@ public class TestResourceAssignments extends TestCase {
     public void testAssignmentDisappearOnResourceDeletion() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
-        taskManager.registerTask(task);
         HumanResource res1 = getResourceManager().getById(1);
         task.getAssignmentCollection().addAssignment(res1);
         res1.delete();
         Set<HumanResource> resources = extractResources(task);
-        assertTrue("It is expecte that after resource deletion assignments disappear", resources.isEmpty());
+        assertTrue("It is expected that after resource deletion assignments disappear", resources.isEmpty());
     }
 
     private Set<HumanResource> extractResources(Task task) {

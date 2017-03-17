@@ -18,6 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
+import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
+
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -25,12 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import biz.ganttproject.core.time.GanttCalendar;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 /**
  * @author barmeier
@@ -262,13 +263,19 @@ public class HumanResourceManager {
   public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
     Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
     List<HumanResource> foreignResources = hrManager.getResources();
+    List<HumanResource> createdResources = Lists.newArrayList();
     for (int i = 0; i < foreignResources.size(); i++) {
       HumanResource foreignHR = foreignResources.get(i);
       HumanResource nativeHR = merger.findNative(foreignHR, this);
       if (nativeHR == null) {
-        nativeHR = create(foreignHR.getName(), nextFreeId);
+        nativeHR = new HumanResource(foreignHR.getName(), nextFreeId + createdResources.size(), this);
+        nativeHR.setRole(myDefaultRole);
+        createdResources.add(nativeHR);
       }
       foreign2native.put(foreignHR, nativeHR);
+    }
+    for (HumanResource created : createdResources) {
+      add(created);
     }
     merger.merge(foreign2native);
     return foreign2native;
