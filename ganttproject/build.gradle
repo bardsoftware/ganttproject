@@ -12,6 +12,10 @@ dependencies {
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
   mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
+  mavenDeps group: 'com.google.api-client', name: 'google-api-client', version: '1.22.0'
+  mavenDeps group: 'com.google.oauth-client', name: 'google-oauth-client-jetty', version: '1.22.0'
+  mavenDeps group: 'com.google.apis', name: 'google-api-services-calendar', version: 'v3-rev237-1.22.0'
+
 }
 
 updateMavenDeps.doFirst {
