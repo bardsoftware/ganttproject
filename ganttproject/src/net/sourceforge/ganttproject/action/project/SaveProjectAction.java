@@ -18,13 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil;
 
-class SaveProjectAction extends GPAction implements ProjectEventListener {
+import java.awt.event.ActionEvent;
+
+public class SaveProjectAction extends GPAction implements ProjectEventListener {
   private final GanttProject myMainFrame;
 
   SaveProjectAction(GanttProject mainFrame) {
@@ -76,5 +77,11 @@ class SaveProjectAction extends GPAction implements ProjectEventListener {
   @Override
   public void projectOpened() {
     setEnabled(false);
+  }
+
+  public SaveProjectAction asToolbarAction() {
+    SaveProjectAction result = new SaveProjectAction(myMainFrame);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

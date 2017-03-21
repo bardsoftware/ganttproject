@@ -18,18 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.List;
-
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
+import java.util.List;
+
 public class TaskLinkAction extends TaskActionBase {
   public TaskLinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
     super("task.link", taskManager, selectionManager, uiFacade, null);
+    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
   }
 
   @Override

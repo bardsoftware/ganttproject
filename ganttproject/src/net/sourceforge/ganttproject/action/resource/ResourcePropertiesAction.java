@@ -18,13 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
+
+import java.awt.event.ActionEvent;
 
 public class ResourcePropertiesAction extends ResourceAction {
   private final IGanttProject myProject;
@@ -53,5 +54,12 @@ public class ResourcePropertiesAction extends ResourceAction {
         myProject.setModified(true);
       }
     }
+  }
+
+  @Override
+  public ResourcePropertiesAction asToolbarAction() {
+    ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), myUIFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

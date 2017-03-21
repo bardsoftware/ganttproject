@@ -18,15 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 //TODO Add listener for changed resource selection, see TaskActionBase
 /**
@@ -54,6 +54,10 @@ abstract class ResourceAction extends GPAction implements ActionDelegate {
 
   protected HumanResourceManager getManager() {
     return myManager;
+  }
+
+  protected ResourceContext getContext() {
+    return myContext;
   }
 
   protected boolean hasResources() {

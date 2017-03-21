@@ -45,6 +45,7 @@ task copyPluginFiles(type: Copy) {
       include "plugin.xml"
       include "lib/core/**.jar"
       exclude "lib/core/eclipsito.jar"
+      include "data/resources/**.ttf"
       include "data/resources/**.properties"
       include "data/resources/calendar/**"
       include "data/resources/icons/**"

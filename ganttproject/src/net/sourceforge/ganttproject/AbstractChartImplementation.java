@@ -18,36 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.AWTEvent;
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.JComponent;
-import javax.swing.JLayer;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.plaf.LayerUI;
-
+import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -70,16 +46,23 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import biz.ganttproject.core.chart.grid.Offset;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import javax.swing.*;
+import javax.swing.plaf.LayerUI;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
@@ -448,41 +431,14 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myChartModel.getChartUIConfiguration();
   }
 
-  private Integer myCachedHeaderHeight = null;
+  private Integer myCachedHeaderHeight = 30;
   public int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
-    if (myCachedHeaderHeight == null) {
-      tableContainer.addComponentListener(new ComponentAdapter() {
-        @Override
-        public void componentMoved(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          tableContainer.removeComponentListener(this);
-        }
-        @Override
-        public void componentResized(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          tableContainer.removeComponentListener(this);
-        }
-      });
-      table.addComponentListener(new ComponentAdapter() {
-        @Override
-        public void componentMoved(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          table.removeComponentListener(this);
-        }
-        @Override
-        public void componentResized(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          table.removeComponentListener(this);
-        }
-      });
-      Point tableLocation = table.getLocationOnScreen();
-      Point containerLocation = tableContainer.getLocationOnScreen();
-
-      int height = tableLocation.y - containerLocation.y + myUiFacade.getLogo().getHeight(null);
-      myCachedHeaderHeight = height;
-    }
     return myCachedHeaderHeight;
   }
+  public void setTimelineHeight(int height) {
+    myCachedHeaderHeight = height;
+  }
+
 
   public static class ChartSelectionImpl implements ChartSelection {
     private List<Task> myTasks = new ArrayList<Task>();

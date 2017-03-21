@@ -18,17 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.List;
-
-import javax.swing.SwingUtilities;
-
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogProperties;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+
+import javax.swing.*;
+import java.util.List;
 
 public class TaskPropertiesAction extends TaskActionBase {
 
@@ -76,5 +76,12 @@ public class TaskPropertiesAction extends TaskActionBase {
   @Override
   protected String getIconFilePrefix() {
     return "properties_";
+  }
+
+  @Override
+  public TaskPropertiesAction asToolbarAction() {
+    TaskPropertiesAction result = new TaskPropertiesAction(myProject, getSelectionManager(), getUIFacade());
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }
