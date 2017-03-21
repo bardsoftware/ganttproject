@@ -33,7 +33,7 @@
       <library name="lib/core/concurrentlinkedhashmap-lru-1.3.2.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/controlsfx-8.40.11.jar">
+      <library name="lib/core/controlsfx-8.40.12.jar">
          <export name="*"/>
       </library>
 
@@ -61,10 +61,10 @@
       <library name="lib/core/jackson-annotations-2.8.0.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/jackson-core-2.8.1.jar">
+      <library name="lib/core/jackson-core-2.8.7.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/jackson-databind-2.8.1.jar">
+      <library name="lib/core/jackson-databind-2.8.7.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/jcommander-1.17.jar">
@@ -80,6 +80,9 @@
          <export name="*"/>
       </library>
       <library name="lib/core/jxlayer.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/kotlin-stdlib-1.1.1.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/milton-api-2.6.5.7.jar">

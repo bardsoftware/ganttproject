@@ -2,6 +2,8 @@
 package biz.ganttproject.storage;
 
 import biz.ganttproject.FXUtil;
+import biz.ganttproject.lib.fx.ComponentsKt;
+import biz.ganttproject.lib.fx.ListItemBuilder;
 import biz.ganttproject.storage.cloud.GPCloudStorage;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import biz.ganttproject.storage.local.LocalStorage;
@@ -13,15 +15,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
@@ -84,9 +87,10 @@ public class StoragePane {
     storageButtons.getChildren().clear();
     myStorageUiList.clear();
     myStorageUiMap.clear();
+    GanttLanguage i18n = GanttLanguage.getInstance();
 
     Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
-    myStorageUiList.add(new LocalStorage(mode, myCurrentDocument, myDocumentReceiver));
+    myStorageUiList.add(new LocalStorage(mode, myCurrentDocument, openDocument));
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     for (WebDavServerDescriptor server : myCloudStorageOptions.getWebdavServers()) {
       WebdavStorage webdavStorageUi = new WebdavStorage(server, mode, openDocument, myDialogUi, myCloudStorageOptions);
@@ -95,9 +99,33 @@ public class StoragePane {
 
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
-      Pane btnPane = createButton(storageUi,
+
+      String itemLabel = i18n.formatText(
+          String.format("storageView.service.%s.label", storageUi.getCategory()), storageUi.getName());
+      String itemIcon = i18n.getText(
+          String.format("storageView.service.%s.icon", storageUi.getCategory()));
+
+      Node listItemContent = ComponentsKt.buildFontAwesomeButton(
+          itemIcon,
+          itemLabel,
           event -> onStorageChange(storageUiPane, storageUi.getId()),
-          settingsPane -> FXUtil.transitionCenterPane(storageUiPane, settingsPane, myDialogUi::resize));
+          "storage-name");
+      ListItemBuilder builder = new ListItemBuilder(listItemContent);
+      builder.setOnSelectionChange(this::setSelected);
+
+      storageUi.createSettingsUi().ifPresent(settingsPane -> {
+        Node listItemOnHover = ComponentsKt.buildFontAwesomeButton(FontAwesomeIcon.COG.name(),
+            null,
+            event -> {
+              FXUtil.transitionCenterPane(storageUiPane, settingsPane, myDialogUi::resize);
+              return Unit.INSTANCE;
+            },
+            "settings"
+        );
+        builder.setHoverNode(listItemOnHover);
+      });
+      Pane btnPane = builder.build();
+      btnPane.getStyleClass().add("btn-service");
       btnPane.setId(storageUi.getId());
       storageButtons.getChildren().addAll(btnPane);
       if (selectedId.isPresent() && selectedId.get().equals(storageUi.getId())) {
@@ -107,42 +135,19 @@ public class StoragePane {
     selectedId.ifPresent(id -> onStorageChange(storageUiPane, id));
   }
 
-  private void setSelected(Parent pane) {
+  private Unit setSelected(Parent pane) {
     pane.getStyleClass().add("active");
     if (myActiveStorageLabel != null) {
       myActiveStorageLabel.getStyleClass().remove("active");
     }
     myActiveStorageLabel = pane;
+    return Unit.INSTANCE;
   }
 
-  private Pane createButton(StorageDialogBuilder.Ui storageUi, EventHandler<ActionEvent> onClick, Consumer<Pane> onSettingsClick) {
-    HBox result = new HBox();
-
-    String label = GanttLanguage.getInstance().formatText(String.format("storageView.service.%s.label", storageUi.getCategory()), storageUi.getName());
-    String iconName = GanttLanguage.getInstance().getText(String.format("storageView.service.%s.icon", storageUi.getCategory()));
-    Button btnService = FontAwesomeIconFactory.get().createIconButton(
-        FontAwesomeIcon.valueOf(iconName.toUpperCase()), label, "1em", "1em", ContentDisplay.LEFT);
-    btnService.getStyleClass().add("storage-name");
-    btnService.addEventHandler(ActionEvent.ACTION, event -> setSelected(btnService.getParent()));
-    btnService.addEventHandler(ActionEvent.ACTION, onClick);
-    btnService.setMaxWidth(Double.MAX_VALUE);
-
-    HBox.setHgrow(btnService, Priority.ALWAYS);
-    result.getStyleClass().add("btn-service");
-    result.getChildren().addAll(btnService);
-
-    storageUi.createSettingsUi().ifPresent(settingsPane -> {
-      Button btnSettings = FontAwesomeIconFactory.get().createIconButton(FontAwesomeIcon.COG, "", "100%", "100%", ContentDisplay.GRAPHIC_ONLY);
-      btnSettings.getStyleClass().add("settings");
-      btnSettings.addEventHandler(ActionEvent.ACTION, event -> onSettingsClick.accept(settingsPane));
-      result.getChildren().addAll(btnSettings);
-    });
-    return result;
-  }
-
-  private void onStorageChange(BorderPane borderPane, String storageId) {
+  private Unit onStorageChange(BorderPane borderPane, String storageId) {
     Pane ui = myStorageUiMap.get(storageId).get();
     FXUtil.transitionCenterPane(borderPane, ui, myDialogUi::resize);
+    return Unit.INSTANCE;
     //ui.getStyleClass().add("display-none");
     //borderPane.setCenter(ui);
   }

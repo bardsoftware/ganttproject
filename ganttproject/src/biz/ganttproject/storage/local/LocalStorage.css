@@ -1,0 +1,11 @@
+.local-storage .doclist {
+    -fx-padding: 1ex 0 1ex 0;
+}
+.local-storage .doclist-save {
+    -fx-background-color: teal;
+    -fx-text-fill: whitesmoke;
+    -fx-font-weight: bold;
+}
+.local-storage .doclist-browse Button {
+    -fx-padding: 1ex 1em;
+}
