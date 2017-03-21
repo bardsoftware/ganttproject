@@ -2,6 +2,8 @@
 package biz.ganttproject;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -9,7 +11,7 @@ import javafx.collections.ListChangeListener;
 import javafx.concurrent.Worker;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
-import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -93,6 +95,15 @@ public class FXUtil {
         }
       }
     });
+  }
+
+  public static void createBreathingButton(javafx.scene.control.Button button) {
+    ScaleTransition animation = new ScaleTransition(Duration.seconds(2), button);
+    animation.setAutoReverse(true);
+    animation.setCycleCount(Timeline.INDEFINITE);
+    animation.setByX(0.1);
+    animation.setByY(0.1);
+    animation.play();
   }
 
   public static final class WebViewFitContent extends Region {

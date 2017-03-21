@@ -18,7 +18,26 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.impex.csv;
 
-import static net.sourceforge.ganttproject.GPLogger.debug;
+import biz.ganttproject.core.time.TimeUnitStack;
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.util.collect.Pair;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,28 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import biz.ganttproject.core.time.TimeUnitStack;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import static net.sourceforge.ganttproject.GPLogger.debug;
 
 /**
  * Handles opening CSV files.
@@ -95,11 +93,13 @@ public class GanttCSVOpen {
   }
 
   public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager,
-      final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
-    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack), createResourceRecordGroup(resourceManager));
+      final HumanResourceManager resourceManager, RoleManager roleManager, TimeUnitStack timeUnitStack) {
+    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack),
+        createResourceRecordGroup(resourceManager, roleManager));
   }
 
-  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
+  public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager,
+                      final RoleManager roleManager, TimeUnitStack timeUnitStack) {
     this(new Supplier<Reader>() {
       @Override
       public Reader get() {
@@ -109,7 +109,7 @@ public class GanttCSVOpen {
           throw new RuntimeException(e);
         }
       }
-    }, taskManager, resourceManager, timeUnitStack);
+    }, taskManager, resourceManager, roleManager, timeUnitStack);
   }
 
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager,
@@ -123,8 +123,8 @@ public class GanttCSVOpen {
     }
   }
 
-  private static RecordGroup createResourceRecordGroup(HumanResourceManager resourceManager) {
-    return resourceManager == null ? null : new ResourceRecords(resourceManager);
+  private static RecordGroup createResourceRecordGroup(HumanResourceManager resourceManager, RoleManager roleManager) {
+    return resourceManager == null ? null : new ResourceRecords(resourceManager, roleManager);
   }
 
   private int doLoad(CSVParser parser, int numGroup, int linesToSkip) {

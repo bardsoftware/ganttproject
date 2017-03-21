@@ -21,6 +21,9 @@
     -fx-border-color: red;
 }
 
+.btn-done {
+    -fx-font-weight: bold;
+}
 .btn-radio {
     -fx-padding: 3px 0 3px 0;
 }
@@ -32,15 +35,17 @@
     -fx-border-radius: 0;
     -fx-cursor: hand;
     -fx-alignment: center-left;
+    -fx-padding: 5px 3px;
 }
 
 .btn-service {
-    -fx-font-size: 200%;
+    -fx-alignment: center-left;
 }
 
 .btn-service > * {
     -fx-font-size: 200%;
 }
+
 .btn-service:hover {
     -fx-background-color: white;
 }
@@ -49,6 +54,30 @@
     -fx-background-color: derive(orange, 20%);
 }
 
+.btn-service .storage-name {
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: black;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center-left;
+}
+
+.btn-service .settings {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 3px 0 0;
+    visibility: hidden;
+}
+.btn-service.active .settings {
+    visibility: visible;
+}
+.btn-service:hover .settings {
+    visibility: visible;
+}
 .btn-signup {
     -fx-background-color: orangered;
     -fx-border-width: 1;
@@ -56,6 +85,7 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
+
 
 .button-pane {
     -fx-padding: 5px 0px 0px 0px;
@@ -73,6 +103,14 @@
 .control-row {
     -fx-padding: 5 0;
 }
+
+HBox.title Button {
+    -fx-font-weight: bold;
+}
+HBox.title Label {
+    -fx-font-size: 130%;
+}
+
 .help {
     -fx-font-size: 80%;
     -fx-padding: 0 0 0 0;
@@ -130,16 +168,6 @@
     -fx-padding: 0 0 5 0;
 }
 
-.pane-service-contents .title-pane {
-    -fx-padding: 0 0 5 0;
-    -fx-alignment: center-left;
-}
-.pane-service-contents .title-pane Button {
-    -fx-font-weight: bold;
-}
-.pane-service-contents .title-pane .title {
-    -fx-font-size: 120%;
-}
 .pane-service-contents > .title-help {
     -fx-padding: 0 5 10 5;
     -fx-font-size: 80%;
@@ -148,24 +176,18 @@
     -fx-pref-width: 400px;
 }
 
-.pane-service-contents.local-storage HBox {
+.pane-service-contents HBox {
     -fx-fill-width: true;
     -fx-spacing: 5;
 }
 
-.pane-service-contents.local-storage HBox.title {
+.pane-service-contents HBox.title {
+    -fx-padding: 0 0 5 0;
     -fx-alignment: center-left;
-}
-
-.pane-service-contents.local-storage HBox.title Label {
-    -fx-font-size: 130%;
 }
 
 .pane-service-contents.local-storage HBox.open {
     -fx-alignment: center-right;
-}
-.pane-service-contents.local-storage HBox.open Button {
-    -fx-font-weight: bold;
 }
 
 .pane-service-contents.local-storage .filename {
@@ -184,11 +206,30 @@
     -fx-text-fill: black;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
 }
+.webdav-server-password {
+    -fx-alignment: center;
+    -fx-border-color: red;
+}
+.webdav-server-password HBox {
+    -fx-padding: 5px 10px 0px 10px;
+}
+.pane-service-contents.webdav-server-setup > PropertySheet {
+    -fx-background-color: white;
+}
+
+.pane-service-contents.webdav-server-setup .button-bar {
+    -fx-padding: 10px 0px;
+    -fx-alignment: top-left;
+}
+
 .pane-storage {
     -fx-min-height: 400;
     -fx-min-width: 400;
     -fx-padding: 0;
     -fx-border-insets: 0;
+}
+.pane-storage > * {
+    -fx-font-family: Arial;
 }
 .pane-storage .title-box {
     -fx-pref-width: 100%;
@@ -208,6 +249,11 @@
 .pane-storage .title-box .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 90%;
+}
+
+.property-sheet {
+    -fx-background-color: white;
+    -fx-padding: 5px 0 0 0;
 }
 
 .space-section {

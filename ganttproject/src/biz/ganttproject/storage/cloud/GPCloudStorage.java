@@ -72,7 +72,12 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public String getId() {
+  public Optional<Pane> createSettingsUi() {
+    return Optional.empty();
+  }
+
+  @Override
+  public String getCategory() {
     return "cloud";
   }
 
@@ -82,7 +87,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   private Pane doCreateUi() {
-    WebdavStorage webdavStorage = new WebdavStorage(myMode, myOpenDocument, myDialogUi);
+    WebdavStorage webdavStorage = new WebdavStorage(myMode, myOpenDocument, myDialogUi, myOptions);
     GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
     Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();

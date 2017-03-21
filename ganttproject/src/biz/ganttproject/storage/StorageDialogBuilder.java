@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -202,10 +203,12 @@ public class StorageDialogBuilder {
   }
 
   public interface Ui {
-    String getId();
-
+    String getCategory();
+    default String getId() { return getCategory(); }
     Pane createUi();
 
     String getName();
+
+    Optional<Pane> createSettingsUi();
   }
 }

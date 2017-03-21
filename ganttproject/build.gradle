@@ -30,7 +30,7 @@ sourceSets {
     }
 }
 
-classes {
+task updateVersion {
     doFirst {
         def gpVersionFile = new File("${projectDir}/src/net/sourceforge/ganttproject/GPVersion.java")
         def gpversion = gpVersionFile.getText('UTF-8')
@@ -59,9 +59,6 @@ task copyEclipsito(type: Copy) {
     into(rootProject.distBinDir)
     from(fileTree("lib/core")) {
       include "eclipsito.jar"
-    }
-    outputs.upToDateWhen {
-      new File(rootProject.distBinDir, "eclipsito.jar").exists()
     }
 }
 

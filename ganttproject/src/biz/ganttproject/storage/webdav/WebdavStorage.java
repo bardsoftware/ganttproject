@@ -1,7 +1,10 @@
 // Copyright (C) 2016 BarD Software
 package biz.ganttproject.storage.webdav;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.StorageDialogBuilder;
+import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
+import com.google.common.base.Strings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -11,10 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.BreadCrumbBar;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -34,6 +35,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private final StorageDialogBuilder.Mode myMode;
   private final Consumer<Document> myOpenDocument;
   private final StorageDialogBuilder.DialogUi myDialogUi;
+  private final GPCloudStorageOptions myOptions;
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
   private BreadCrumbBar<BreadCrumbNode> myBreadcrumbs;
@@ -41,11 +43,20 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
   private WebdavResourceListView myListView;
+  private BorderPane myBorderPane;
 
-  public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
+                       StorageDialogBuilder.DialogUi dialogUi, GPCloudStorageOptions options) {
     myMode = mode;
     myOpenDocument = openDocument;
     myDialogUi = dialogUi;
+    myOptions = options;
+  }
+
+  public WebdavStorage(WebDavServerDescriptor server, StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
+                       StorageDialogBuilder.DialogUi dialogUi, GPCloudStorageOptions options) {
+    this(mode, openDocument, dialogUi, options);
+    setServer(server);
   }
 
   public void setServer(WebDavServerDescriptor webdavServer) {
@@ -59,8 +70,13 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   }
 
   @Override
-  public String getId() {
+  public String getCategory() {
     return "webdav";
+  }
+
+  @Override
+  public String getId() {
+    return myServer.getRootUrl();
   }
 
   static class BreadCrumbNode {
@@ -80,12 +96,31 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
 
   @Override
   public Pane createUi() {
+    myBorderPane = new BorderPane();
+    if (Strings.isNullOrEmpty(myServer.getPassword())) {
+      myBorderPane.setCenter(createPasswordUi());
+    } else {
+      myBorderPane.setCenter(createStorageUi());
+    }
+    return myBorderPane;
+  }
+
+  private Pane createPasswordUi() {
+    WebdavPasswordPane passwordPane = new WebdavPasswordPane(myServer, this::onPasswordEntered);
+    return passwordPane.createUi();
+  }
+
+  private void onPasswordEntered(WebDavServerDescriptor server) {
+    setServer(server);
+    FXUtil.transitionCenterPane(myBorderPane, createUi(), myDialogUi::resize);
+  }
+
+
+  private Pane createStorageUi() {
     VBox rootPane = new VBox();
     rootPane.getStyleClass().add("pane-service-contents");
     rootPane.setPrefWidth(400);
 
-    Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
-    title.getStyleClass().add("title");
 
     HBox buttonBar = new HBox();
     buttonBar.getStyleClass().add("webdav-button-pane");
@@ -120,9 +155,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     }
 
     HBox topPane = new HBox();
-    topPane.getStyleClass().add("title-pane");
-
+    topPane.getStyleClass().add("title");
+    Label title = new Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name().toLowerCase()), myServer.name));
     topPane.getChildren().add(title);
+
     HBox.setHgrow(buttonBar, Priority.ALWAYS);
     topPane.getChildren().add(buttonBar);
     rootPane.getChildren().add(topPane);
@@ -227,4 +263,20 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private Document createDocument(WebDavResource resource) throws IOException {
     return new HttpDocument(resource, myServer.getUsername(), myServer.getPassword(), HttpDocument.NO_LOCK);
   }
+
+  @Override
+  public Optional<Pane> createSettingsUi() {
+    if (myServer == null) {
+      return Optional.of(new Pane());
+    }
+    Consumer<WebDavServerDescriptor> updater = server -> {
+      if (server == null) {
+        myOptions.removeValue(myServer);
+      } else {
+        myOptions.updateValue(myServer, server);
+      }
+    };
+    return Optional.of(new WebdavServerSetupPane(myServer, updater, true).createUi());
+  }
+
 }

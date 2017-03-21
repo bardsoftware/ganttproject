@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.project;
 
 import biz.ganttproject.storage.StorageDialogAction;
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
@@ -56,7 +55,7 @@ public class ProjectMenu extends JMenu {
 
     WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();
     StorageDialogAction cloudDialogAction = new StorageDialogAction(
-        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), new GPCloudStorageOptions(webdavStorage.getServersOption()));
+        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());
     add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);
