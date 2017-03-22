@@ -90,6 +90,7 @@
 
     <target name="distMac" depends="distBin">
         <mkdir dir="${distMacWork}"/>
+
         <bundleapp outputdirectory="${distMacWork}"
                    name="GanttProject"
                    displayname="GanttProject"
@@ -100,13 +101,16 @@
                    applicationCategory="public.app-category.productivity"
                    mainclassname="org.bardsoftware.eclipsito.Boot">
 
-            <classpath file="eclipsito.jar"/>
+            <classpath dir=".">
+              <include name="eclipsito.jar"/>
+            </classpath>
             <argument value="-app"/>
             <argument value="net.sourceforge.ganttproject.GanttProject"/>
             <argument value="-plugins-dir"/>
             <argument value="$APP_ROOT/Contents/Java/plugins-${version}"/>
             <argument value="-log"/>
             <argument value="true"/>
+            <option value="-cp $APP_ROOT/Contents/Java/eclipsito.jar:$APP_ROOT/Contents/Java"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
             <option value="-Xdock:name=GanttProject"/>
@@ -120,6 +124,7 @@
                 <include name="logging.properties"/>
             </fileset>
         </copy>
+        <copy todir="${distMacWork}" file="HouseBuildingSample.gan"/>
         <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
         <chmod perm="a+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
         <zip destfile="${distMacZip}">

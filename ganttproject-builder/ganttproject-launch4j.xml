@@ -16,7 +16,7 @@
   <icon>ganttproject_32_2.ico</icon>
   <classPath>
     <mainClass>org.bardsoftware.eclipsito.Boot</mainClass>
-    <cp>.</cp>
+    <cp>%EXEDIR%</cp>
   </classPath>
   <jre>
     <path></path>

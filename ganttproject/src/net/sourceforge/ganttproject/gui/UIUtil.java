@@ -656,12 +656,17 @@ public abstract class UIUtil {
     return value == null ? null : String.valueOf(value);
   }
 
+  public static boolean isFontawesomeSizePreferred() {
+    return UIManager.getLookAndFeel().getName().toLowerCase().contains("macosx");
+  }
+
   public static float getFontawesomeScale(GPAction action) {
+    float defaultScale = Float.valueOf(FONTAWESOME_PROPERTIES.get(".scale").toString());
     if (action.getID() == null) {
-      return 1f;
+      return defaultScale;
     }
     Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".scale");
-    return value == null ? 1f : Float.valueOf(value.toString());
+    return value == null ? defaultScale : defaultScale * Float.valueOf(value.toString());
   }
 
   private static final float DEFAULT_YSHIFT = Float.valueOf(FONTAWESOME_PROPERTIES.get(".yshift").toString());
