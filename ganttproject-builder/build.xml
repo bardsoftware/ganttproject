@@ -110,7 +110,6 @@
             <argument value="$APP_ROOT/Contents/Java/plugins-${version}"/>
             <argument value="-log"/>
             <argument value="true"/>
-            <option value="-cp $APP_ROOT/Contents/Java/eclipsito.jar:$APP_ROOT/Contents/Java"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
             <option value="-Xdock:name=GanttProject"/>
@@ -126,9 +125,12 @@
         </copy>
         <copy todir="${distMacWork}" file="HouseBuildingSample.gan"/>
         <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
+
+        <mkdir dir="${distMacWork}/GanttProject.app/Contents/Java/Classes"/>
+        <copy todir="${distMacWork}/GanttProject.app/Contents/Java/Classes" file="logging.properties"/>
         <chmod perm="a+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
         <zip destfile="${distMacZip}">
-            <zipfileset dir="${distMacWork}" includes="GanttProject.app/**">
+            <zipfileset dir="${distMacWork}" includes="**">
             </zipfileset>
         </zip>
     </target>
