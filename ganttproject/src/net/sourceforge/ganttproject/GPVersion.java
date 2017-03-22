@@ -46,7 +46,8 @@ public abstract class GPVersion {
   public static String PILSEN_2_8_1 = "2.8.1 Pilsen (build 2024)";
   public static String PILSEN_2_8_2 = "2.8.2 Pilsen (build 2069)";
   public static String PILSEN_2_8_3 = String.format("2.8.3 Pilsen (build %s)", BUILD);
-  public static String CURRENT = PILSEN_2_8_3;
+  public static String PILSEN_2_8_4 = String.format("2.8.4 Pilsen (work in progress)");
+  public static String CURRENT = PILSEN_2_8_4;
 
   public static String getCurrentVersionNumber() {
     return CURRENT.split("\\s")[0];

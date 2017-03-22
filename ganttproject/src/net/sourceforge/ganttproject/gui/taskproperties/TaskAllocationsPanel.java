@@ -18,26 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.math.BigDecimal;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-
-import org.jdesktop.swingx.JXMultiSplitPane;
-import org.jdesktop.swingx.MultiSplitLayout;
-
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultDoubleOption;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -45,8 +26,15 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.BooleanOption
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import org.jdesktop.swingx.JXMultiSplitPane;
+import org.jdesktop.swingx.MultiSplitLayout;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.*;
+import java.math.BigDecimal;
 
 /**
  * UI component in a task properties dialog: a table with resources assigned to
@@ -90,8 +78,8 @@ public class TaskAllocationsPanel {
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getResources().toArray());
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(4), myRoleManager.getEnabledRoles());
 
-    AbstractTableAndActionsComponent<TaskDependency> tableAndActions = new AbstractTableAndActionsComponent<TaskDependency>(
-        getTable()) {
+    AbstractTableAndActionsComponent<ResourceAssignment> tableAndActions =
+        new AbstractTableAndActionsComponent<ResourceAssignment>(getTable()) {
       @Override
       protected void onAddEvent() {
         getTable().editCellAt(myModel.getRowCount() - 1, 1);
@@ -99,11 +87,16 @@ public class TaskAllocationsPanel {
 
       @Override
       protected void onDeleteEvent() {
+        if (getTable().isEditing() && getTable().getCellEditor() != null) {
+          getTable().getCellEditor().stopCellEditing();
+        }
         myModel.delete(getTable().getSelectedRows());
       }
 
-      @Override
-      protected void onSelectionChanged() {
+      @Override @Nullable
+      protected ResourceAssignment getValue(int row) {
+        java.util.List<ResourceAssignment> values = myModel.getResourcesAssignments();
+        return (row >= 0 && row < values.size()) ? values.get(row) : null;
       }
     };
     JPanel tablePanel = CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());

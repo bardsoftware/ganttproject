@@ -18,11 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
-import java.awt.Component;
-
+import com.google.common.base.Function;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import javax.annotation.Nullable;
+import java.awt.*;
 
 /**
  * Creates a panel containing buttons of the zoom actions
@@ -38,7 +40,20 @@ public class ZoomingPanel {
 
   public Component getComponent() {
     ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
-    return new ToolbarBuilder().withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor()).addButton(
-        zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction()).build();
+    return new ToolbarBuilder()
+        .withDpiOption(myUIFacade.getDpiOption())
+        .withLafOption(myUIFacade.getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+          }
+        })
+        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
+        .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())
+        .withHeight(24)
+        .addButton(zoomActionSet.getZoomInAction())
+        .addButton(zoomActionSet.getZoomOutAction())
+        .build()
+        .getToolbar();
   }
 }

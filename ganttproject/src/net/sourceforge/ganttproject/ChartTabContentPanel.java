@@ -18,24 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.border.Border;
-
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel;
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel;
@@ -43,27 +29,58 @@ import net.sourceforge.ganttproject.gui.GanttImagePanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
-abstract class ChartTabContentPanel {
-  private JSplitPane mySplitPane;
-  private final List<Component> myPanels = new ArrayList<Component>();
-  private final UIFacade myUiFacade;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-  protected ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
+abstract class ChartTabContentPanel {
+  private final TimelineChart myChart;
+  private JSplitPane mySplitPane;
+  private final List<Component> myPanels = new ArrayList<>();
+  private final UIFacade myUiFacade;
+  private int myImageHeight;
+  private Supplier<Integer> myHeaderHeight;
+  private GanttImagePanel myImagePanel;
+
+  ChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TimelineChart chart) {
     NavigationPanel navigationPanel = new NavigationPanel(project, chart, workbenchFacade);
     ZoomingPanel zoomingPanel = new ZoomingPanel(workbenchFacade, chart);
     addChartPanel(zoomingPanel.getComponent());
     addChartPanel(navigationPanel.getComponent());
     myUiFacade = workbenchFacade;
+    myChart = Preconditions.checkNotNull(chart);
+    myUiFacade.getMainFrame().addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowOpened(WindowEvent windowEvent) {
+        updateTimelineHeight();
+      }
+    });
   }
 
-  protected JComponent createContentComponent() {
+  JComponent createContentComponent() {
     JPanel tabContentPanel = new JPanel(new BorderLayout());
     final JPanel left = new JPanel(new BorderLayout());
-    Box treeHeader = Box.createVerticalBox();
-    final Component buttonPanel = createButtonPanel();
-    treeHeader.add(buttonPanel);
+    final Box treeHeader = Box.createVerticalBox();
+    final JComponent buttonPanel = (JComponent) createButtonPanel();
+    JPanel buttonWrapper = new JPanel(new BorderLayout());
+    buttonWrapper.add(buttonPanel, BorderLayout.WEST);
+    //button.setAlignmentX(Component.LEFT_ALIGNMENT);
+    treeHeader.add(buttonWrapper);
 
-    treeHeader.add(new GanttImagePanel(myUiFacade.getLogo(), 300, myUiFacade.getLogo().getHeight(null)));
+    int defaultScaledHeight = (int)(UIFacade.DEFAULT_LOGO.getIconHeight() * myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
+    myImagePanel = new GanttImagePanel(myUiFacade.getLogo(), 300, defaultScaledHeight);
+    myImageHeight = myImagePanel.getPreferredSize().height;
+    JPanel imageWrapper = new JPanel(new BorderLayout());
+    imageWrapper.add(myImagePanel, BorderLayout.WEST);
+    //myImagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    treeHeader.add(imageWrapper);
+
     left.add(treeHeader, BorderLayout.NORTH);
 
     left.add(getTreeComponent(), BorderLayout.CENTER);
@@ -72,16 +89,6 @@ abstract class ChartTabContentPanel {
 
     JPanel right = new JPanel(new BorderLayout());
     final JComponent chartPanels = createChartPanels();
-    chartPanels.addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        super.componentResized(e);
-        int maxHeight = Math.max(buttonPanel.getPreferredSize().height, chartPanels.getPreferredSize().height);
-        if (buttonPanel.getHeight() < maxHeight) {
-          left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
-        }
-      }
-    });
     right.add(chartPanels, BorderLayout.NORTH);
     right.setBackground(new Color(0.93f, 0.93f, 0.93f));
     right.add(getChartComponent(), BorderLayout.CENTER);
@@ -92,17 +99,54 @@ abstract class ChartTabContentPanel {
       mySplitPane.setLeftComponent(left);
       mySplitPane.setRightComponent(right);
       mySplitPane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-      mySplitPane.setDividerLocation((int) left.getPreferredSize().getWidth());
+      mySplitPane.setDividerLocation(Math.min(300, left.getPreferredSize().width));
     } else {
       mySplitPane.setRightComponent(left);
       mySplitPane.setLeftComponent(right);
-      mySplitPane.setDividerLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - left.getPreferredSize().getWidth()));
+      mySplitPane.setDividerLocation(
+          Toolkit.getDefaultToolkit().getScreenSize().width - Math.min(300, left.getPreferredSize().width));
       mySplitPane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
     }
     mySplitPane.setOneTouchExpandable(true);
     mySplitPane.resetToPreferredSizes();
     tabContentPanel.add(mySplitPane, BorderLayout.CENTER);
+
+    ChangeValueListener changeValueListener = new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        if (myUiFacade.getDpiOption().getValue() < 96) {
+          return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            alignTopPanelHeights(buttonPanel, chartPanels);
+            myImagePanel.setScale(myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
+            myImageHeight = myImagePanel.getHeight();
+            updateTimelineHeight();
+          }
+        });
+      }
+    };
+    myUiFacade.getDpiOption().addChangeValueListener(changeValueListener, 2);
     return tabContentPanel;
+  }
+
+  private void alignTopPanelHeights(JComponent buttonPanel, JComponent chartPanels) {
+    int maxHeight = Math.max(buttonPanel.getSize().height, chartPanels.getSize().height);
+    if (buttonPanel.getHeight() < maxHeight) {
+      //left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
+      int diff = maxHeight - buttonPanel.getHeight();
+      Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+      buttonPanel.setBorder(emptyBorder);
+    }
+    if (chartPanels.getHeight() < maxHeight) {
+      int diff = maxHeight - chartPanels.getHeight();
+      //Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+      //chartPanels.setBorder(emptyBorder);
+      chartPanels.remove(chartPanels.getComponent(chartPanels.getComponentCount() - 1));
+      chartPanels.add(Box.createRigidArea(new Dimension(0, diff)));
+    }
   }
 
   protected abstract Component getChartComponent();
@@ -111,33 +155,73 @@ abstract class ChartTabContentPanel {
 
   protected abstract Component createButtonPanel();
 
-  protected int getDividerLocation() {
+  int getDividerLocation() {
     return mySplitPane.getDividerLocation();
   }
 
-  protected void setDividerLocation(int location) {
+  void setDividerLocation(int location) {
     mySplitPane.setDividerLocation(location);
   }
 
   private JComponent createChartPanels() {
-    JPanel result = new JPanel(new BorderLayout());
-
     Box panelsBox = Box.createHorizontalBox();
     for (Component panel : myPanels) {
       panelsBox.add(panel);
       panelsBox.add(Box.createHorizontalStrut(10));
     }
-    result.add(panelsBox, BorderLayout.WEST);
-    result.setBackground(new Color(0.93f, 0.93f, 0.93f));
-
-    return result;
+    return panelsBox;
   }
 
-  protected void addChartPanel(Component panel) {
+  void addChartPanel(Component panel) {
     myPanels.add(panel);
   }
 
   protected UIFacade getUiFacade() {
     return myUiFacade;
+  }
+
+  private void updateTimelineHeight() {
+    int timelineHeight = myHeaderHeight.get() + myImageHeight;
+    myChart.setTimelineHeight(timelineHeight);
+  }
+
+  void addTableResizeListeners(final Component tableContainer, final Component table) {
+    myHeaderHeight = new Supplier<Integer>() {
+      @Override
+      public Integer get() {
+        if (table.isShowing() && tableContainer.isShowing()) {
+          Point tableLocation = table.getLocationOnScreen();
+          Point containerLocation = tableContainer.getLocationOnScreen();
+          return tableLocation.y - containerLocation.y;
+        } else {
+          return 0;
+        }
+      }
+    };
+    ComponentAdapter componentListener = new ComponentAdapter() {
+      @Override
+      public void componentShown(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+
+      @Override
+      public void componentResized(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+
+      @Override
+      public void componentMoved(ComponentEvent componentEvent) {
+        updateTimelineHeight();
+      }
+    };
+    tableContainer.addComponentListener(componentListener);
+    table.addComponentListener(componentListener);
+  }
+
+  public void setActive(boolean active) {
+    if (active) {
+      getTreeComponent().requestFocus();
+      updateTimelineHeight();
+    }
   }
 }

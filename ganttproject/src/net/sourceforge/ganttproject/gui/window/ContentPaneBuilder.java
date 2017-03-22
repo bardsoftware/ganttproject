@@ -18,19 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.window;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.NotificationComponent;
 import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Builds a main frame's content pane and creates an animation host for the
@@ -41,18 +37,16 @@ import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 public class ContentPaneBuilder {
   private final GanttTabbedPane myTabbedPane;
   private final GanttStatusBar myStatusBar;
-  private final JToolBar myToolBar;
   private final AnimationHostImpl myAnimationHost = new AnimationHostImpl();
 
-  public ContentPaneBuilder(JToolBar toolBar, GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
+  public ContentPaneBuilder(GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
     myTabbedPane = tabbedPane;
     myStatusBar = statusBar;
-    myToolBar = toolBar;
   }
 
-  public void build(Container contentPane) {
+  public void build(Component toolbar, Container contentPane) {
     JPanel contentPanel = new JPanel(new BorderLayout());
-    contentPanel.add(myToolBar, BorderLayout.NORTH);
+    contentPanel.add(toolbar, BorderLayout.NORTH);
     contentPanel.add(myTabbedPane, BorderLayout.CENTER);
     contentPanel.add(myStatusBar, BorderLayout.SOUTH);
     contentPane.add(contentPanel);

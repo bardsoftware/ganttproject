@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
@@ -61,12 +62,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Properties;
 
 public abstract class UIUtil {
   public static final Highlighter ZEBRA_HIGHLIGHTER = new ColorHighlighter(new HighlightPredicate() {
@@ -79,7 +83,9 @@ public abstract class UIUtil {
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
   public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
   public static final Color INVALID_FIELD_COLOR = Color.RED.brighter();
-
+  public static final Color PATINA_FOREGROUND = new Color(102, 153, 153);
+  public static Font FONTAWESOME_FONT = null;
+  private static Properties FONTAWESOME_PROPERTIES = new Properties();
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
     ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
@@ -88,6 +94,15 @@ public abstract class UIUtil {
     UIManager.put("JXMonthView.monthUp.image", prevMonth);
     UIManager.put("JXMonthView.monthDown.image", nextMonth);
     UIManager.put("JXMonthView.monthCurrent.image", calendarImage);
+
+    try (InputStream is = UIUtil.class.getResourceAsStream("/fontawesome-webfont.ttf")) {
+      Font font = Font.createFont(Font.TRUETYPE_FONT, is);
+      FONTAWESOME_FONT = font.deriveFont(Font.PLAIN, 24f);
+    } catch (IOException | FontFormatException e) {
+      FONTAWESOME_FONT = null;
+    }
+    FONTAWESOME_PROPERTIES = new Properties();
+    PropertiesUtil.loadProperties(FONTAWESOME_PROPERTIES, "/fontawesome.properties");
   }
 
   public static void setEnabledTree(JComponent root, final boolean isEnabled) {
@@ -196,6 +211,7 @@ public abstract class UIUtil {
     textField.getDocument().addDocumentListener(listener);
     return listener;
   }
+
 
   public static interface DateValidator extends Function<Date, Pair<Boolean, String>> {
     class Default {
@@ -631,4 +647,30 @@ public abstract class UIUtil {
     }
     return new MultiscreenFitResult(visibleAreaTotal, maxVisibleArea, argmaxVisibleArea);
   }
+
+  public static String getFontawesomeLabel(GPAction action) {
+    if (action.getID() == null) {
+      return null;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID());
+    return value == null ? null : String.valueOf(value);
+  }
+
+  public static float getFontawesomeScale(GPAction action) {
+    if (action.getID() == null) {
+      return 1f;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".scale");
+    return value == null ? 1f : Float.valueOf(value.toString());
+  }
+
+  private static final float DEFAULT_YSHIFT = Float.valueOf(FONTAWESOME_PROPERTIES.get(".yshift").toString());
+  public static float getFontawesomeYShift(GPAction action) {
+    if (action.getID() == null) {
+      return DEFAULT_YSHIFT;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".yshift");
+    return DEFAULT_YSHIFT + (value == null ? 0f : Float.valueOf(value.toString()));
+  }
+
 }

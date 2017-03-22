@@ -18,38 +18,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Image;
-import java.util.Collection;
-import java.util.Locale;
-
-import javax.swing.Action;
-
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collection;
+import java.util.Locale;
+
 public class ConsoleUIFacade implements UIFacade {
   private final UIFacade myRealFacade;
 
   ConsoleUIFacade(UIFacade realFacade) {
     myRealFacade = realFacade;
+  }
+
+  @Override
+  public IntegerOption getDpiOption() {
+    return null;
+  }
+
+  @Override
+  public GPOption<String> getLafOption() {
+    return null;
   }
 
   @Override
@@ -235,6 +238,10 @@ public class ConsoleUIFacade implements UIFacade {
   public GPOptionGroup[] getOptions() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public void addOnUpdateComponentTreeUi(Runnable callback) {
   }
 
   @Override

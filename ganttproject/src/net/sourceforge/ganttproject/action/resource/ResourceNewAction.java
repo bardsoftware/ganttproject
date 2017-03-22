@@ -18,13 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.awt.event.ActionEvent;
-
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Action connected to the menu item for insert a new resource
@@ -47,6 +49,11 @@ public class ResourceNewAction extends ResourceAction {
   }
 
   @Override
+  public GPAction withIcon(IconSize size) {
+    return new ResourceNewAction(getManager(), myRoleManager, myUIFacade, size);
+  }
+
+  @Override
   public void actionPerformed(ActionEvent event) {
     final HumanResource resource = getManager().newHumanResource();
     resource.setRole(myRoleManager.getDefaultRole());
@@ -61,5 +68,17 @@ public class ResourceNewAction extends ResourceAction {
         }
       });
     }
+  }
+
+  @Override
+  public void updateAction() {
+    super.updateAction();
+  }
+
+  @Override
+  public ResourceNewAction asToolbarAction() {
+    ResourceNewAction result = new ResourceNewAction(getManager(), myRoleManager, myUIFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

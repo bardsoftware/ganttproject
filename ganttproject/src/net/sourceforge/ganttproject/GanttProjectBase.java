@@ -20,8 +20,10 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -88,7 +90,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final DocumentManager myDocumentManager;
   /** The tabbed pane with the different parts of the project */
   private final GanttTabbedPane myTabPane;
-  private final JToolBar myToolBar = new JToolBar();
   private final GPUndoManager myUndoManager;
 
   private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
@@ -98,14 +99,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final SearchUiImpl mySearchUi;
 
   protected GanttProjectBase() {
-    super("Gantt Chart");
-    myToolBar.setFloatable(false);
-    myToolBar.setBorderPainted(false);
-    myToolBar.setRollover(true);
+    super("GanttProject");
 
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
-    myContentPaneBuilder = new ContentPaneBuilder(myToolBar, getTabs(), getStatusBar());
+    myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
 
     myTimeUnitStack = new GPTimeUnitStack();
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
@@ -230,8 +228,23 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
+  public IntegerOption getDpiOption() {
+    return myUIFacade.getDpiOption();
+  }
+
+  @Override
+  public GPOption<String> getLafOption() {
+    return myUIFacade.getLafOption();
+  }
+
+  @Override
   public GPOptionGroup[] getOptions() {
     return myUIFacade.getOptions();
+  }
+
+  @Override
+  public void addOnUpdateComponentTreeUi(Runnable callback) {
+    myUIFacade.addOnUpdateComponentTreeUi(callback);
   }
 
   @Override
@@ -338,8 +351,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     private final TreeTableContainer myTreeView;
 
-    // TODO: 1.12 refactor and get rid of using concrete implementations of
-    // gantt view model and tree view
     public RowHeightAligner(TreeTableContainer treeView, ChartModelBase chartModel) {
       myChartModel = chartModel;
       myTreeView = treeView;
@@ -355,8 +366,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane() {
-    myContentPaneBuilder.build(getContentPane());
+  protected void createContentPane(JPanel toolbar) {
+    myContentPaneBuilder.build(toolbar, getContentPane());
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -368,10 +379,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   public GanttTabbedPane getTabs() {
     return myTabPane;
-  }
-
-  protected JToolBar getToolBar() {
-    return myToolBar;
   }
 
   public IGanttProject getProject() {
@@ -392,11 +399,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public CustomPropertyManager getResourceCustomPropertyManager() {
     return myResourceCustomPropertyManager;
   }
-
-  // @Override
-  // public CustomColumnsStorage getCustomColumnsStorage() {
-  // return myTaskCustomColumnStorage;
-  // }
 
   protected RssFeedChecker getRssFeedChecker() {
     return myRssChecker;

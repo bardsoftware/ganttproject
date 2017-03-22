@@ -18,22 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.action.GPAction;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
-import net.sourceforge.ganttproject.action.GPAction;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * It is a UI component consisting of a table and a set of actions. Default
@@ -51,11 +49,11 @@ import net.sourceforge.ganttproject.action.GPAction;
  *          type of objects stored in the table
  */
 public abstract class AbstractTableAndActionsComponent<T> {
-  public static final int ENABLED_WITH_EMPTY_SELECTION = 1;
-  public static final int DISABLED_WITH_MULTI_SELECTION = 2;
+  private static final int ENABLED_WITH_EMPTY_SELECTION = 1;
+  private static final int DISABLED_WITH_MULTI_SELECTION = 2;
   public static final String PROPERTY_IS_ENABLED_FUNCTION = AbstractTableAndActionsComponent.class.getName() + ".isEnabledFunction";
 
-  public Function<List<T>, Boolean> createIsEnabledFunction(final int flags) {
+  private Function<List<T>, Boolean> createIsEnabledFunction(final int flags) {
     return new Function<List<T>, Boolean>() {
       @Override
       public Boolean apply(List<T> input) {
@@ -68,12 +66,12 @@ public abstract class AbstractTableAndActionsComponent<T> {
         }
       }
     };
-  };
+  }
 
   private int myActionOrientation = SwingConstants.HORIZONTAL;
 
-  private final List<Action> myAdditionalActions = new ArrayList<Action>();
-  private final List<SelectionListener<T>> myListeners = new ArrayList<SelectionListener<T>>();
+  private final List<Action> myAdditionalActions = new ArrayList<>();
+  private final List<SelectionListener<T>> myListeners = new ArrayList<>();
   private final JTable myTable;
   private JPanel buttonBox;
   private final Action myDeleteAction = new GPAction("delete") {
@@ -99,13 +97,19 @@ public abstract class AbstractTableAndActionsComponent<T> {
         onSelectionChanged();
       }
     });
+    myTable.getModel().addTableModelListener(new TableModelListener() {
+      @Override
+      public void tableChanged(TableModelEvent e) {
+        onSelectionChanged();
+      }
+    });
   }
 
   public void addAction(Action action) {
     addAction(action, 0);
   }
 
-  public void addAction(Action action, int flags) {
+  private void addAction(Action action, int flags) {
     if (action.getValue(PROPERTY_IS_ENABLED_FUNCTION) == null) {
       action.putValue(PROPERTY_IS_ENABLED_FUNCTION, createIsEnabledFunction(flags));
     }
@@ -157,12 +161,20 @@ public abstract class AbstractTableAndActionsComponent<T> {
   }
 
   protected void onSelectionChanged() {
-    int[] selectedRows = myTable.getSelectedRows();
-    List<T> result = Lists.newArrayList();
-    for (int row : selectedRows) {
-      result.add(getValue(row));
-    }
-    fireSelectionChanged(result);
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        int[] selectedRows = myTable.getSelectedRows();
+        List<T> result = Lists.newArrayList();
+        for (int row : selectedRows) {
+          T value = getValue(row);
+          if (value != null) {
+            result.add(getValue(row));
+          }
+        }
+        fireSelectionChanged(result);
+      }
+    });
   }
 
   public JComponent getActionsComponent() {
@@ -179,7 +191,7 @@ public abstract class AbstractTableAndActionsComponent<T> {
     return buttonBox;
   }
 
-  public static interface SelectionListener<T> {
+  public interface SelectionListener<T> {
     void selectionChanged(List<T> selection);
   }
 
