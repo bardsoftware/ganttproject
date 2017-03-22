@@ -27,14 +27,9 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.action.ActiveActionProvider;
-import net.sourceforge.ganttproject.action.ArtefactAction;
-import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
-import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.GPAction.IconSize;
+import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -45,18 +40,13 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.overview.GPToolbar;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -72,22 +62,14 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
+import net.sourceforge.ganttproject.task.*;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -121,8 +103,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private final EditMenu myEditMenu;
 
   private final ProjectMenu myProjectMenu;
-
-  private TestGanttRolloverButton bNew;
 
   /** The project filename */
   public Document projectDocument = null;
@@ -160,10 +140,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
 
-  public static final String HUMAN_RESOURCE_MANAGER_ID = "HUMAN_RESOURCE";
-
-  public static final String ROLE_MANAGER_ID = "ROLE_MANAGER";
-
   private final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
 
   private ParserFactory myParserFactory;
@@ -200,6 +176,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
     myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
+
     class TaskManagerConfigImpl implements TaskManagerConfig {
       @Override
       public Color getDefaultColor() {
@@ -263,7 +240,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     System.err.println("2. loading options");
     initOptions();
+    // Not a joke. This takes value from the option and applies it to the UI.
     getTree().setGraphicArea(area);
+    getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
     myRowHeightAligners.add(getTree().getRowHeightAligner());
     getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
       @Override
@@ -322,7 +301,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     bar.add(helpMenu.createMenu());
 
     System.err.println("4. creating views...");
-    myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTaskTree(), area.getJComponent(),
+    myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTree(), area.getJComponent(),
         getUIConfiguration());
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);
@@ -349,8 +328,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     });
 
     System.err.println("5. calculating size and packing...");
-    createContentPane();
-    addButtons(getToolBar());
+    final GPToolbar toolbar = createToolbar();
+    createContentPane(toolbar.getToolbar());
+    //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
 
@@ -371,17 +351,28 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
+        toolbar.updateButtons();
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
-        getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
         restoreBounds();
         // It is important to run aligners after look and feel is set and font sizes
         // in the UI manager updated.
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
-            for(RowHeightAligner aligner : myRowHeightAligners) {
+            for (RowHeightAligner aligner : myRowHeightAligners) {
               aligner.optionsChanged();
             }
+          }
+        });
+        getUiFacadeImpl().getDpiOption().addChangeValueListener(new ChangeValueListener() {
+          @Override
+          public void changeValue(ChangeValueEvent event) {
+            SwingUtilities.invokeLater(new Runnable() {
+              @Override
+              public void run() {
+                getContentPane().doLayout();
+              }
+            });
           }
         });
       }
@@ -400,6 +391,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
   }
+
 
   private void restoreBounds() {
     if (options.isLoaded()) {
@@ -532,28 +524,56 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /** Create the button on toolbar */
-  private void addButtons(JToolBar toolBar) {
-    List<JButton> buttons = new ArrayList<JButton>();
-    buttons.add(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(null);
+  private GPToolbar createToolbar() {
+    ToolbarBuilder builder = new ToolbarBuilder()
+        .withHeight(40)
+        .withDpiOption(getUiFacadeImpl().getDpiOption())
+        .withLafOption(getUiFacadeImpl().getLafOption(), new Function<String, Float>() {
+          @Override
+          public Float apply(@Nullable String s) {
+            return (s.indexOf("nimbus") >= 0) ? 1.5f : 1f;
+          }
+        })
+        .withSquareButtons()
+        .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
+    builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().asToolbarAction()))
+        .addWhitespace();
 
     final ArtefactAction newAction;
     {
-      final GPAction taskNewAction = getTaskTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourceNewAction = getResourceTree().getNewAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskNewAction = getTaskTree().getNewAction().asToolbarAction();
+      final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
       newAction = new ArtefactNewAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
           return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
         }
       }, new Action[] {taskNewAction, resourceNewAction});
+      final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
+      final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
+      builder.addButton(bNewTask).addButton(bnewResource);
+      getTabs().addChangeListener(new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent changeEvent) {
+          switch (getTabs().getSelectedIndex()) {
+            case UIFacade.GANTT_INDEX:
+              bNewTask.setVisible(true);
+              bnewResource.setVisible(false);
+              return;
+            case UIFacade.RESOURCES_INDEX:
+              bNewTask.setVisible(false);
+              bnewResource.setVisible(true);
+              return;
+          }
+        }
+      });
     }
 
     final ArtefactAction deleteAction;
     {
-      final GPAction taskDeleteAction = getTaskTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskDeleteAction = getTaskTree().getDeleteAction().asToolbarAction();
+      final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
       deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
@@ -564,8 +584,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction propertiesAction;
     {
-      final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
-      final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().withIcon(IconSize.TOOLBAR_SMALL);
+      final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().asToolbarAction();
+      final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
       propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
         @Override
         public AbstractAction getActiveAction() {
@@ -591,44 +611,38 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    bNew = new TestGanttRolloverButton(newAction);
-    buttons.add(bNew);
-    buttons.add(new TestGanttRolloverButton(deleteAction));
-    buttons.add(null);
-
-    buttons.add(new TestGanttRolloverButton(propertiesAction));
-    buttons.add(new TestGanttRolloverButton(getCutAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(getCopyAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(getPasteAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(null);
-
-    buttons.add(new TestGanttRolloverButton(myEditMenu.getUndoAction().withIcon(IconSize.TOOLBAR_SMALL)));
-    buttons.add(new TestGanttRolloverButton(myEditMenu.getRedoAction().withIcon(IconSize.TOOLBAR_SMALL)));
-
-    JPanel paddingLeft = new JPanel();
-    paddingLeft.setPreferredSize(new Dimension(12, 24));
-    toolBar.add(paddingLeft);
-    for (JButton b : buttons) {
-      if (b == null) {
-        JPanel separator = new JPanel();
-        separator.setPreferredSize(new Dimension(24, 24));
-        toolBar.add(separator);
-      } else {
-        b.setAlignmentY(TOP_ALIGNMENT);
-        toolBar.add(b);
-      }
-    }
+    builder.addButton(new TestGanttRolloverButton(deleteAction))
+        .addWhitespace()
+        .addButton(new TestGanttRolloverButton(propertiesAction))
+        .addButton(new TestGanttRolloverButton(getCutAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(getCopyAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(getPasteAction().asToolbarAction()))
+        .addWhitespace()
+        .addButton(new TestGanttRolloverButton(myEditMenu.getUndoAction().asToolbarAction()))
+        .addButton(new TestGanttRolloverButton(myEditMenu.getRedoAction().asToolbarAction()));
 
     JTextField searchBox = getSearchUi().getSearchField();
-    searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
+    //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
+    searchBox.setAlignmentY(CENTER_ALIGNMENT);
     JPanel tailPanel = new JPanel(new BorderLayout());
 
-    JPanel searchPanel = new JPanel();
-    searchPanel.add(searchBox);
-    tailPanel.add(searchPanel, BorderLayout.EAST);
-    tailPanel.setAlignmentY(TOP_ALIGNMENT);
-    tailPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-    toolBar.add(tailPanel);
+    //JPanel searchPanel = new JPanel();
+    //searchPanel.add(searchBox);
+    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
+    tailPanel.add(searchBox, BorderLayout.EAST);
+    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
+    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+    builder.addPanel(tailPanel);
+
+    //return result;
+    final GPToolbar toolbar = builder.build();
+    getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
+      @Override
+      public void run() {
+        toolbar.resize();
+      }
+    });
+    return toolbar;
   }
 
   @Override

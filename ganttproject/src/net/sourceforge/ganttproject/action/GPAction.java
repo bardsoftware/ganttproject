@@ -18,7 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.Toolkit;
+import com.google.common.base.Strings;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -30,22 +36,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
-
-import com.google.common.base.Strings;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.util.PropertiesUtil;
-
 /**
  * @author bard
  */
 public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+  private final String myIconSize;
+  private String myFontAwesomeLabel;
+
   public enum IconSize {
     NO_ICON(null), SMALL("8"), MENU("16"), TOOLBAR_SMALL("24"), TOOLBAR_BIG("24");
 
@@ -66,8 +63,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   public static final String ICON_FILE_DIRECTORY = "/icons";
 
   protected boolean iconVisible = true;
-
-  private Icon myIcon = null;
 
   private final String myName;
 
@@ -91,6 +86,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   protected GPAction(String name, String iconSize) {
     super(name);
     myName = name;
+    myIconSize = iconSize;
     if (iconSize != null) {
       updateIcon(iconSize);
     }
@@ -133,15 +129,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return myKeyStroke;
   }
 
-  public Icon getIconOnMouseOver() {
-    return (Icon) getValue(Action.SMALL_ICON);
-  }
-
   private void updateIcon(String iconSize) {
     Icon icon = createIcon(iconSize);
     if (icon != null) {
       putValue(Action.SMALL_ICON, icon);
-      myIcon = icon;
     }
   }
 
@@ -189,11 +180,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return myName;
   }
 
-  protected String getActionName() {
-    String name = getLocalizedDescription();
-    return name == null ? "" : language.correctLabel(name);
-  }
-
   protected static String getI18n(String key) {
     return language.getText(key);
   }
@@ -202,12 +188,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return null;
   }
 
-  protected final void setIconVisible(boolean isVisible) {
-    iconVisible = isVisible;
-    putValue(Action.SMALL_ICON, iconVisible ? myIcon : null);
-  }
-
   protected final void updateName() {
+    if (getFontawesomeLabel() != null) {
+      putValue(Action.NAME, getFontawesomeLabel());
+      return;
+    }
     String localizedName = getLocalizedName();
     if (localizedName == null) {
       localizedName = String.valueOf(getValue(Action.NAME));
@@ -231,17 +216,18 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
    * changed action name and/or description
    */
   public void updateAction() {
-    updateName();
+    if (IconSize.TOOLBAR_SMALL.asString().equals(myIconSize) && getFontawesomeLabel() != null) {
+      putValue(Action.SMALL_ICON, null);
+      putValue(Action.NAME, getFontawesomeLabel());
+    } else {
+      updateName();
+    }
     updateTooltip();
   }
 
   protected void updateTooltip() {
     String description = getLocalizedDescription();
     putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);
-  }
-
-  public void isIconVisible(boolean isNull) {
-    setIconVisible(isNull);
   }
 
   @Override
@@ -258,6 +244,19 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       PropertiesUtil.loadProperties(ourIconProperties, "/icons.properties");
     }
     return (String) ourIconProperties.get(getID());
+  }
+
+  public String getFontawesomeLabel() {
+    return myFontAwesomeLabel;
+  }
+
+  protected void setFontAwesomeLabel(String label) {
+    myFontAwesomeLabel = label;
+    updateAction();
+  }
+
+  public GPAction asToolbarAction() {
+    return this;
   }
 
   public static List<KeyStroke> getAllKeyStrokes(String keystrokeID) {

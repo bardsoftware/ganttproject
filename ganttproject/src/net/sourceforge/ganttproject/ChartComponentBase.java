@@ -18,28 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.RenderedImage;
-import java.io.IOException;
-import java.util.Date;
-
-import javax.imageio.ImageIO;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLayer;
-import javax.swing.JPanel;
-
-import net.sourceforge.ganttproject.AbstractChartImplementation.MouseHoverLayerUi;
+import biz.ganttproject.core.calendar.GPCalendarListener;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitStack;
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
@@ -57,16 +40,17 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskManager;
-
 import org.eclipse.core.runtime.IStatus;
 
-import biz.ganttproject.core.calendar.GPCalendarListener;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitStack;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.RenderedImage;
+import java.io.IOException;
+import java.util.Date;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
   public static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
@@ -332,5 +316,8 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return new JLayer<>(this, getImplementation().createMouseHoverLayer());
   }
 
-
+  @Override
+  public void setTimelineHeight(int height) {
+    getImplementation().setTimelineHeight(height);
+  }
 }

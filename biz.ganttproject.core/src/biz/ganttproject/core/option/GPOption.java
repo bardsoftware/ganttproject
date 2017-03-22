@@ -30,6 +30,8 @@ public interface GPOption<T> {
 
   Runnable addChangeValueListener(ChangeValueListener listener);
 
+  Runnable addChangeValueListener(ChangeValueListener listener, int priority);
+
   boolean isWritable();
 
   void addPropertyChangeListener(PropertyChangeListener listener);
@@ -39,8 +41,8 @@ public interface GPOption<T> {
   boolean isScreened();
 
   void setScreened(boolean isScreened);
-  
+
   boolean hasUi();
-  
+
   void setHasUi(boolean hasUi);
 }

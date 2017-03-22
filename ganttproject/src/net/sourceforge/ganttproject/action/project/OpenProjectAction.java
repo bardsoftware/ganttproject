@@ -18,12 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
+
+import java.awt.event.ActionEvent;
 
 public class OpenProjectAction extends GPAction {
   private ProjectUIFacade myProjectUiFacade;
@@ -58,5 +59,11 @@ public class OpenProjectAction extends GPAction {
     } catch (Exception ex) {
       GPLogger.log(ex);
     }
+  }
+
+  public OpenProjectAction asToolbarAction() {
+    OpenProjectAction result = new OpenProjectAction(myProject, myProjectUiFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

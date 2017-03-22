@@ -18,14 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIUtil;
+
+import javax.swing.*;
 
 /**
  * Collection of actions present in the project menu
@@ -92,7 +89,7 @@ public class ProjectMenu extends JMenu {
     return myNewProjectAction;
   }
 
-  public GPAction getSaveProjectAction() {
+  public SaveProjectAction getSaveProjectAction() {
     return mySaveProjectAction;
   }
 
