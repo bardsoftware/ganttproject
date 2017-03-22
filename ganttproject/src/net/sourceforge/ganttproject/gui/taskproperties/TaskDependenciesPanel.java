@@ -18,15 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.TableColumn;
-
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
@@ -37,6 +28,13 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
 /**
  * UI component in a task properties dialog: a table with task predecessors
@@ -82,8 +80,11 @@ public class TaskDependenciesPanel {
         myModel.delete(getTable().getSelectedRows());
       }
 
+      @Nullable
       @Override
-      protected void onSelectionChanged() {
+      protected TaskDependency getValue(int row) {
+        List<TaskDependency> dependencies = myModel.getDependencies();
+        return (row >= 0 && row < dependencies.size()) ? dependencies.get(row) : null;
       }
     };
 

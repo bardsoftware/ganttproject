@@ -18,12 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.table.AbstractTableModel;
-
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -31,9 +25,15 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 
+import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Table model of a table of resources assigned to a task.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class ResourcesTableModel extends AbstractTableModel {
@@ -202,7 +202,7 @@ class ResourcesTableModel extends AbstractTableModel {
   }
 
   public List<ResourceAssignment> getResourcesAssignments() {
-    return myAssignments;
+    return Collections.unmodifiableList(myAssignments);
   }
 
   public void commit() {
@@ -216,7 +216,9 @@ class ResourcesTableModel extends AbstractTableModel {
   public void delete(int[] selectedRows) {
     List<ResourceAssignment> selected = new ArrayList<ResourceAssignment>();
     for (int row : selectedRows) {
-      selected.add(myAssignments.get(row));
+      if (row < myAssignments.size()) {
+        selected.add(myAssignments.get(row));
+      }
     }
     for (ResourceAssignment ra : selected) {
       ra.delete();
