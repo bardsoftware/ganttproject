@@ -30,7 +30,6 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import org.jdesktop.swingx.JXMultiSplitPane;
 import org.jdesktop.swingx.MultiSplitLayout;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,7 +92,7 @@ public class TaskAllocationsPanel {
         myModel.delete(getTable().getSelectedRows());
       }
 
-      @Override @Nullable
+      @Override
       protected ResourceAssignment getValue(int row) {
         java.util.List<ResourceAssignment> values = myModel.getResourcesAssignments();
         return (row >= 0 && row < values.size()) ? values.get(row) : null;
