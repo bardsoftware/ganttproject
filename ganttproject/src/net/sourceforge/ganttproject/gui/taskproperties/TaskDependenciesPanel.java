@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -80,7 +79,6 @@ public class TaskDependenciesPanel {
         myModel.delete(getTable().getSelectedRows());
       }
 
-      @Nullable
       @Override
       protected TaskDependency getValue(int row) {
         List<TaskDependency> dependencies = myModel.getDependencies();

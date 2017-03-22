@@ -169,13 +169,18 @@ public class TestGanttRolloverButton extends JButton {
       setTextHidden(true);
       super.paintComponent(graphics);
       g2.setColor(isEnabled() ? UIUtil.PATINA_FOREGROUND : Color.GRAY);
+      g2.setRenderingHint(
+          RenderingHints.KEY_TEXT_ANTIALIASING,
+          RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
       g2.drawString(myFontAwesomeLabel,
           innerArea.x + (innerArea.width - w)/2,
           innerArea.y + innerArea.height - (innerArea.height - h)/2 + (h * myYshift));
       Dimension buttonSize = getSize();
-      if (h > buttonSize.height || w > buttonSize.width) {
-        myPreferredSize = new Dimension(Math.max(h, w), Math.max(h, w));
-        System.out.println("Button="+ getText()+" Size was "+buttonSize+" set pref size to "+myPreferredSize);
+      if (UIUtil.isFontawesomeSizePreferred() || h > buttonSize.height || w > buttonSize.width) {
+        int maxDim = 10 + Math.max(h, w);
+        if (myPreferredSize.width != maxDim) {
+          myPreferredSize = new Dimension(maxDim, maxDim);
+        }
       }
     }
     else {
