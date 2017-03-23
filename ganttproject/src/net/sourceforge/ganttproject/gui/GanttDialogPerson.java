@@ -134,6 +134,7 @@ public class GanttDialogPerson {
         myUIFacade.getResourceTree().getVisibleFields());
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
+    tabbedPane.addTab(language.getText("assignments"), new ImageIcon(), new JPanel());
     // mainPage.requestDefaultFocus();
     // final FocusTraversalPolicy defaultPolicy =
     // mainPage.getFocusTraversalPolicy();
