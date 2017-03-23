@@ -25,6 +25,8 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
@@ -65,8 +67,17 @@ public class PasteAction extends GPAction {
 
   @Override
   public PasteAction asToolbarAction() {
-    PasteAction result = new PasteAction(myViewmanager, myUndoManager);
+    final PasteAction result = new PasteAction(myViewmanager, myUndoManager);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
     return result;
   }
 }
