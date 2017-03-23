@@ -57,7 +57,7 @@ public class Canvas {
   private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
 
   private final DummySpatialIndex<Polygon> myPolygonIndex = new DummySpatialIndex<Canvas.Polygon>();
-  
+
   /** Horizontal alignments for texts */
   public enum HAlignment {
     CENTER, LEFT, RIGHT
@@ -137,11 +137,11 @@ public class Canvas {
     public void setVisible(boolean visible) {
       isVisible = visible;
     }
-    
+
     public Float getOpacity() {
       return myOpacity;
     }
-    
+
     public void setOpacity(float opacity) {
       myOpacity = opacity;
     }
@@ -152,14 +152,14 @@ public class Canvas {
     private final int myRightX;
     private final int myTopY;
     private final int myBottomY;
-    
+
     private final int[] myPointsX;
     private final int[] myPointsY;
-    
+
     private Polygon(int... points) {
       myPointsX = new int[points.length / 2];
       myPointsY = new int[points.length / 2];
-      
+
       int leftX = Integer.MAX_VALUE;
       int topY = Integer.MAX_VALUE;
       int rightX = Integer.MIN_VALUE;
@@ -169,7 +169,7 @@ public class Canvas {
         rightX = Math.max(rightX, points[i * 2]);
         topY = Math.min(topY, points[i * 2 + 1]);
         bottomY = Math.max(bottomY, points[i * 2 + 1]);
-        
+
         myPointsX[i] = points[i * 2];
         myPointsY[i] = points[i * 2 + 1];
       }
@@ -178,31 +178,31 @@ public class Canvas {
       myTopY = topY;
       myBottomY = bottomY;
     }
-    
+
     public int[] getPointsX() {
       return myPointsX;
     }
-    
+
     public int[] getPointsY() {
       return myPointsY;
     }
-    
+
     public int getPointCount() {
       return myPointsX.length;
     }
-    
+
     public int getLeftX() {
       return myLeftX;
     }
-    
+
     public int getTopY() {
       return myTopY;
     }
-    
+
     public int getRightX() {
       return myRightX;
     }
-    
+
     public int getBottomY() {
       return myBottomY;
     }
@@ -214,7 +214,7 @@ public class Canvas {
     public int getWidth() {
       return myRightX - myLeftX;
     }
-    
+
     public int getMiddleY() {
       return myTopY + getHeight() / 2;
     }
@@ -228,10 +228,10 @@ public class Canvas {
       return "Polygon[" + myLeftX + "," + myTopY + ",w=" + getWidth() + ",h=" + getHeight() + ",style=" + getStyle() + "]";
     }
   }
-  
+
   public static class Rectangle extends Polygon {
     public Paint myPaint;
-    
+
     private Rectangle(int leftx, int topy, int width, int height) {
       super(leftx, topy, leftx + width, topy + height);
     }
@@ -239,15 +239,33 @@ public class Canvas {
     public Paint getBackgroundPaint() {
       return myPaint;
     }
-    
+
     public void setBackgroundPaint(Paint paint) {
       myPaint = paint;
     }
   }
 
-  public static class Line extends Shape {
-    public static enum Arrow { NONE, START, FINISH }
+  public static class Arrow extends Shape {
+    public static Arrow NONE = new Arrow(0, 0);
+    public static Arrow FINISH = new Arrow(7, 3);
+    private final int myLength;
+    private final int myWidth;
 
+    public Arrow(int length, int width) {
+      myLength = length;
+      myWidth = width;
+    }
+
+    public int getLength() {
+      return myLength;
+    }
+
+    public int getWidth() {
+      return myWidth;
+    }
+  }
+
+  public static class Line extends Shape {
     private final int myStartX;
 
     private final int myStartY;
@@ -531,7 +549,7 @@ public class Canvas {
     myPolygonIndex.put(result, result.getLeftX(), result.getBottomY(), result.getWidth(), result.getHeight());
     return result;
   }
-  
+
   public Rectangle createRectangle(int leftx, int topy, int width, int height) {
     Rectangle result = createDetachedRectangle(leftx, topy, width, height);
     myRectangles.add(result);
@@ -545,7 +563,7 @@ public class Canvas {
     }
     return new Rectangle(leftx + myDeltaX, topy + myDeltaY, width, height);
   }
-  
+
   public Line createLine(int startx, int starty, int finishx, int finishy) {
     Line result = new Line(startx + myDeltaX, starty + myDeltaY, finishx + myDeltaX, finishy + myDeltaY);
     myLines.add(result);

@@ -106,16 +106,18 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
       Offset offset = chartModel.getOffsetAt(myHoverPoint.x);
       g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .4f));
-      g2.setFont(chartModel.getChartUIConfiguration().getChartFont().deriveFont(9.0f));
+      Font chartFont = chartModel.getChartUIConfiguration().getChartFont();
+      g2.setFont(chartFont.deriveFont(0.9f * chartFont.getSize()));
       g2.setColor(Color.BLACK);
       int offsetMidPx = (offset.getStartPixels() + offset.getOffsetPixels()) / 2;
       int headerBottomPx = chartModel.getChartUIConfiguration().getHeaderHeight();
-      int[] xPoints = new int[] {offsetMidPx - 3, offsetMidPx, offsetMidPx + 3};
-      int[] yPoints = new int[] {headerBottomPx + 6, headerBottomPx, headerBottomPx + 6};
+      int pointerSize = (int)(chartModel.getChartUIConfiguration().getBaseFontSize() * 0.6f);
+      int[] xPoints = new int[] {offsetMidPx - pointerSize/2, offsetMidPx, offsetMidPx + pointerSize/2};
+      int[] yPoints = new int[] {headerBottomPx + pointerSize, headerBottomPx, headerBottomPx + pointerSize};
 
       g2.fillPolygon(xPoints, yPoints, 3);
       g2.drawString(GanttLanguage.getInstance().formatShortDate(CalendarFactory.createGanttCalendar(offset.getOffsetStart())),
-          offsetMidPx, headerBottomPx + 15);
+          offsetMidPx, headerBottomPx + (int)(chartModel.getChartUIConfiguration().getBaseFontSize() * 1.4f));
     }
   }
 
