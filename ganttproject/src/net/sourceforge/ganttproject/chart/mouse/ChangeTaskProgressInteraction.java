@@ -61,7 +61,8 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
   @Override
   public void apply(MouseEvent event) {
-    int newProgress = myChangeScale.getProgress(event.getX());
+    ChangeTaskProgressRuler.Progress progress = myChangeScale.getProgress(event.getX());
+    int newProgress = progress.toPercents();
     if (newProgress > 100) {
       newProgress = 100;
     }
@@ -69,8 +70,12 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
       newProgress = 0;
     }
     myMutator.setCompletionPercentage(newProgress);
-    double progressInUnits = getTask().getDuration().getLength()*newProgress/100.0;
-    String hintText = newProgress + "% (" + Double.toString(progressInUnits) + "d)";
+    String hintText =
+            newProgress +
+            "% (" +
+            progress.toUnits() +
+            getChartDateGrid().getTimeUnitStack().encode(getTask().getDuration().getTimeUnit()) +
+            ")";
     myLastNotes = new TaskInteractionHintRenderer(hintText, event.getX(), event.getY() - 30);
   }
 

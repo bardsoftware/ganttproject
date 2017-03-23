@@ -69,16 +69,16 @@ class ChangeTaskProgressRuler {
   /**
    * @return progress value corresponding to the given {@code pixels} value.
    */
-  int getProgress(int pixels) {
+  Progress getProgress(int pixels) {
     if (pixels < myMinPx) {
-      return 0;
+      return createProgress(0);
     }
     SortedMap<Integer, Integer> tailMap = myPixel2progress.tailMap(pixels);
     if (tailMap.isEmpty()) {
-      return 100;
+      return createProgress(100);
     }
     if (tailMap.firstKey().intValue() == pixels) {
-      return tailMap.get(pixels);
+      return createProgress(tailMap.get(pixels));
     }
 
     SortedMap<Integer, Integer> headMap = myPixel2progress.headMap(pixels);
@@ -88,6 +88,34 @@ class ChangeTaskProgressRuler {
     int upperProgress = tailMap.get(upperPx);
 
     float diffProgress = (upperProgress - lowerProgress) * ((float) (pixels - lowerPx) / (float) (upperPx - lowerPx));
-    return (int) (lowerProgress + diffProgress);
+    int overallProgress = (int)(lowerProgress + diffProgress);
+    return createProgress(overallProgress);
+  }
+
+  private Progress createProgress(int progressPercents) {
+    return new Progress() {
+      @Override
+      public int toPercents() {
+        return progressPercents;
+      }
+
+      @Override
+      public String toUnits() {
+        return convertPercentsToUnits(progressPercents);
+      }
+    };
+  }
+
+  String convertPercentsToUnits(int overallProgress) {
+    float taskDuration = myTask.getDuration().getValue();
+    float progressInUnits = overallProgress * taskDuration/100;
+    String wholeUnits = Integer.toString((int)progressInUnits);
+    String fractionIndicator = (overallProgress*myTask.getDuration().getLength()) % 100 == 0 ? "" : "+";
+    return wholeUnits + fractionIndicator;
+  }
+
+  interface Progress {
+    int toPercents();
+    String toUnits();
   }
 }
