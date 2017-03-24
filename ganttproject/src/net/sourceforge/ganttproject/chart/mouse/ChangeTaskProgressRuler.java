@@ -114,8 +114,8 @@ class ChangeTaskProgressRuler {
     return wholeUnits + fractionIndicator;
   }
 
-  interface Progress {
-    int toPercents();
-    String toUnits();
+  abstract class Progress {
+    abstract int toPercents();
+    abstract String toUnits();
   }
 }
