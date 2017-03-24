@@ -88,7 +88,7 @@ class ChangeTaskProgressRuler {
     int upperProgress = tailMap.get(upperPx);
 
     float diffProgress = (upperProgress - lowerProgress) * ((float) (pixels - lowerPx) / (float) (upperPx - lowerPx));
-    int overallProgress = (int)(lowerProgress + diffProgress);
+    int overallProgress = (int) (lowerProgress + diffProgress);
     return createProgress(overallProgress);
   }
 
@@ -108,14 +108,15 @@ class ChangeTaskProgressRuler {
 
   String convertPercentsToUnits(int overallProgress) {
     float taskDuration = myTask.getDuration().getValue();
-    float progressInUnits = overallProgress * taskDuration/100;
-    String wholeUnits = Integer.toString((int)progressInUnits);
-    String fractionIndicator = (overallProgress*myTask.getDuration().getLength()) % 100 == 0 ? "" : "+";
+    float progressInUnits = overallProgress * taskDuration / 100;
+    String wholeUnits = Integer.toString((int) progressInUnits);
+    String fractionIndicator = (overallProgress * myTask.getDuration().getLength()) % 100 == 0 ? "" : "+";
     return wholeUnits + fractionIndicator;
   }
 
   abstract class Progress {
     abstract int toPercents();
+
     abstract String toUnits();
   }
 }
