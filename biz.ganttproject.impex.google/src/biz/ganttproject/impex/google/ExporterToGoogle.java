@@ -91,7 +91,6 @@ public class ExporterToGoogle extends ExporterBase {
     return result;
   }
 
-
   @Override
   protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
     return new ExporterJob[0];
