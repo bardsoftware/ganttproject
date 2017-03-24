@@ -188,14 +188,13 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       //container.bind(nextRectangle, activity);
       Canvas.Rectangle rect = container.createDetachedRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
       int rectHeight = rect.getHeight();
-      int shift = (int)(rectHeight * 0.25f);
       int rectHalf = rectHeight / 2;
-
+      int middleX = rect.getLeftX() + 3; // This is important to draw dependencies to/from milestones properly
       Canvas.Polygon p = container.createPolygon(
-          rect.getLeftX() - shift, rect.getMiddleY(),
-          rect.getLeftX() + (rectHalf - shift), rect.getMiddleY() - rectHalf,
-          rect.getLeftX() + rectHeight - shift, rect.getMiddleY(),
-          rect.getLeftX() + (rectHalf - shift), rect.getMiddleY() + rectHalf);
+          middleX - rectHalf, rect.getMiddleY(),
+          middleX, rect.getMiddleY() - rectHalf,
+          middleX + rectHalf, rect.getMiddleY(),
+          middleX, rect.getMiddleY() + rectHalf);
       p.setStyle("task.milestone");
       //container.bind(p, activity);
       resultShape = p;
