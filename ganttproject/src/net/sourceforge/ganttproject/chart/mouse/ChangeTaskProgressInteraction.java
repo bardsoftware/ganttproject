@@ -76,7 +76,8 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
   }
 
   private String getHintText(int percents, String units) {
-    return GanttLanguage.getInstance().formatText("task.changeProgressHint", percents, units);
+    return GanttLanguage.getInstance().formatText("task.changeProgressHint", percents, units,
+        getChartDateGrid().getTimeUnitStack().encode(getTask().getDuration().getTimeUnit()));
   }
 
   @Override
