@@ -17,53 +17,82 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.google;
 
 import biz.ganttproject.core.option.GPOptionGroup;
+import com.google.api.services.calendar.model.CalendarListEntry;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
+import net.sourceforge.ganttproject.export.ExporterBase;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Builds option page for google authorization
+ * Exporter to google calendar
  *
  * @author Leonid Shatunov (shatuln@gmail.com)
  */
-public class GoogleExportOptionPageProvider extends OptionPageProviderBase {
+public class ExporterToGoogle extends ExporterBase {
 
   private GoogleAuth myAuth = new GoogleAuth();
+  private List<CalendarListEntry> myCalendars;
 
-  public GoogleExportOptionPageProvider() {
-    super("impex.google");
+  @Override
+  public String getFileTypeDescription() {
+    return language.getText("impex.google.description");
   }
 
   @Override
-  public GPOptionGroup[] getOptionGroups() {
-    return new GPOptionGroup[0];
+  public GPOptionGroup getOptions() {
+    return null;
   }
 
   @Override
-  public boolean hasCustomComponent() {
-    return true;
+  public List<GPOptionGroup> getSecondaryOptions() {
+    return null;
   }
 
-  public Component buildPageComponent() {
+  @Override
+  public String getFileNamePattern() {
+    return null;
+  }
+
+  @Override
+  public String proposeFileExtension() {
+    return null;
+  }
+
+  @Override
+  public String[] getFileExtensions() {
+    return new String[0];
+  }
+
+  @Override
+  public Component getCustomOptionsUI() {
     JPanel result = new JPanel(new BorderLayout());
     result.setBorder(new EmptyBorder(5, 5, 5, 5));
     JButton testConnectionButton = new JButton(new GPAction("googleConnect") {
       @Override
       public void actionPerformed(ActionEvent e) {
         try {
-          myAuth.someSampleWork(myAuth.getCalendarService(myAuth.authorize()));
+          myCalendars = myAuth.getAvaliableCalendarList(myAuth.getCalendarService(myAuth.authorize()));
+          for (CalendarListEntry i : myCalendars) {
+            System.out.println(i.getSummary());
+          }
         } catch (Exception e1) {
-          GPLogger.getLogger(GoogleExportOptionPageProvider.class).log(Level.WARNING, "Something went wrong", e1);
+          GPLogger.getLogger(ExporterToGoogle.class).log(Level.WARNING, "Something went wrong", e1);
         }
       }
     });
     result.add(testConnectionButton, BorderLayout.SOUTH);
     return result;
+  }
+
+  @Override
+  protected ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
+    return new ExporterJob[0];
   }
 }

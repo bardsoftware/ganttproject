@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="biz.ganttproject.impex.google"
+   name="Google prj"
+   version="2.8.4"
+   provider-name="">
+
+   <runtime>
+      <library name="lib/core/google-http-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-http-client-jackson2-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-java6-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-oauth-client-jetty-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-api-client-1.22.0.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jackson-core-2.8.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jetty-6.1.26.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/jetty-util-6.1.26.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/servlet-api-2.5-20081211.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/google-api-services-calendar-v3-rev237-1.22.0.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+   <requires>
+      <import plugin="biz.ganttproject.core"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="net.sourceforge.ganttproject"/>
+   </requires>
+
+   <extension point="net.sourceforge.ganttproject.exporter">
+      <exporter class="biz.ganttproject.impex.google.ExporterToGoogle"/>
+   </extension>
+</plugin>
