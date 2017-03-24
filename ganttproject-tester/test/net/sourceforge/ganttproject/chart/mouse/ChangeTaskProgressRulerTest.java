@@ -22,6 +22,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
@@ -50,7 +54,7 @@ public class ChangeTaskProgressRulerTest extends TestCase {
   }
 
   public void testProgressConversionToUnits() {
-    int taskDuration = 2;
+    TimeDuration taskDuration = new TimeDurationImpl(GPTimeUnitStack.DAY, 2);
     assertEquals("0", new ChangeTaskProgressRuler.Progress(0, taskDuration).toUnits());
     assertEquals("0+", new ChangeTaskProgressRuler.Progress(1, taskDuration).toUnits());
     assertEquals("1", new ChangeTaskProgressRuler.Progress(50, taskDuration).toUnits());
