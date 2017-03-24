@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
+import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -71,14 +72,14 @@ class ChangeTaskProgressRuler {
    */
   Progress getProgress(int pixels) {
     if (pixels < myMinPx) {
-      return new Progress(0, myTask.getDuration().getLength());
+      return new Progress(0, myTask.getDuration());
     }
     SortedMap<Integer, Integer> tailMap = myPixel2progress.tailMap(pixels);
     if (tailMap.isEmpty()) {
-      return new Progress(100, myTask.getDuration().getLength());
+      return new Progress(100, myTask.getDuration());
     }
     if (tailMap.firstKey().intValue() == pixels) {
-      return new Progress(tailMap.get(pixels), myTask.getDuration().getLength());
+      return new Progress(tailMap.get(pixels), myTask.getDuration());
     }
 
     SortedMap<Integer, Integer> headMap = myPixel2progress.headMap(pixels);
@@ -89,16 +90,16 @@ class ChangeTaskProgressRuler {
 
     float diffProgress = (upperProgress - lowerProgress) * ((float) (pixels - lowerPx) / (float) (upperPx - lowerPx));
     int overallProgress = (int) (lowerProgress + diffProgress);
-    return new Progress(overallProgress, myTask.getDuration().getLength());
+    return new Progress(overallProgress, myTask.getDuration());
   }
 
   static class Progress {
-    private int myPercents;
-    private int myTaskDuraton;
+    private final int myPercents;
+    private final TimeDuration myTaskDuration;
 
-    Progress(int percents, int taskDuration) {
+    Progress(int percents, TimeDuration taskDuration) {
       myPercents = percents;
-      myTaskDuraton = taskDuration;
+      myTaskDuration = taskDuration;
     }
 
     int toPercents() {
@@ -106,9 +107,9 @@ class ChangeTaskProgressRuler {
     }
 
     String toUnits() {
-      float progressInUnits = myPercents * myTaskDuraton / 100f;
+      float progressInUnits = myPercents * myTaskDuration.getLength() / 100f;
       String wholeUnits = Integer.toString((int) progressInUnits);
-      String fractionIndicator = (myPercents * myTaskDuraton) % 100 == 0 ? "" : "+";
+      String fractionIndicator = (myPercents * myTaskDuration.getLength()) % 100 == 0 ? "" : "+";
       return wholeUnits + fractionIndicator;
     }
   }
