@@ -20,7 +20,6 @@ package biz.ganttproject.core.chart.scene.gantt;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
-import biz.ganttproject.core.chart.canvas.Canvas.Line.Arrow;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.BarChartConnector;
 
@@ -39,6 +38,8 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
   private final Canvas myOutputCanvas;
   private final ChartApi myChartApi;
   private final TaskApi<T, D> myTaskApi;
+  private int myBarHeight;
+  private Canvas.Arrow myFinishArrow;
 
   public interface TaskApi<T, D> {
     boolean isMilestone(T task);
@@ -58,6 +59,8 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
     //myVisibleTasks = visibleTasks;
     myTaskCanvas = taskCanvas;
     myOutputCanvas = outputCanvas;
+    myFinishArrow = Canvas.Arrow.FINISH;
+    myBarHeight = -1;
   }
 
   public void build() {
@@ -67,6 +70,10 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
 
 
   public void drawDependencies(Collection<Connector> connectors) {
+    if (myChartApi.getBarHeight() != myBarHeight) {
+      myFinishArrow = new Canvas.Arrow((int)(0.7f * myChartApi.getBarHeight()), (int)(0.3f*myChartApi.getBarHeight()));
+      myBarHeight = myChartApi.getBarHeight();
+    }
     Canvas primitiveContainer = myOutputCanvas;
     for (Connector connector : connectors) {
       Connector.Vector dependantVector = connector.getEnd();
@@ -89,7 +96,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);
         secondLine.setStyle(lineStyle);
-        secondLine.setArrow(Arrow.FINISH);
+        secondLine.setArrow(myFinishArrow);
       } else if (dependantVector.getHProjection().reaches(dependeeVector.getHProjection().getPoint(3))) {
         Point first = dependeeVector.getPoint(3);
         Point second = new Point(first.x, dependantVector.getPoint().y);
@@ -99,7 +106,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
         Line line = primitiveContainer.createLine(second.x, second.y, dependantVector.getPoint().x,
             dependantVector.getPoint().y);
         line.setStyle(lineStyle);
-        line.setArrow(Line.Arrow.FINISH);
+        line.setArrow(myFinishArrow);
       } else {
         Point first = dependeeVector.getPoint(3);
         Point forth = dependantVector.getPoint(3);

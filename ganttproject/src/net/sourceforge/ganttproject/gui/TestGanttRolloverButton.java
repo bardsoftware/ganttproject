@@ -178,7 +178,7 @@ public class TestGanttRolloverButton extends JButton {
       Dimension buttonSize = getSize();
       if (UIUtil.isFontawesomeSizePreferred() || h > buttonSize.height || w > buttonSize.width) {
         int maxDim = 10 + Math.max(h, w);
-        if (myPreferredSize.width != maxDim) {
+        if (myPreferredSize == null || myPreferredSize.width != maxDim) {
           myPreferredSize = new Dimension(maxDim, maxDim);
         }
       }

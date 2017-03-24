@@ -657,7 +657,8 @@ public abstract class UIUtil {
   }
 
   public static boolean isFontawesomeSizePreferred() {
-    return UIManager.getLookAndFeel().getName().toLowerCase().contains("macosx");
+    String laf = UIManager.getLookAndFeel().getName().toLowerCase();
+    return laf.contains("macosx") || laf.contains("mac os x");
   }
 
   public static float getFontawesomeScale(GPAction action) {
