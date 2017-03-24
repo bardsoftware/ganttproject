@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -66,6 +67,20 @@ public class GoogleAuth {
     return new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
         .setApplicationName(APPLICATION_NAME)
         .build();
+  }
+
+  public List<CalendarListEntry> getAvaliableCalendarList(Calendar service) throws IOException {
+    List<CalendarListEntry> myCalendars = service.calendarList().list().execute().getItems();
+    Iterator<CalendarListEntry> iter = myCalendars.iterator();
+    while (iter.hasNext()) {
+      String role = iter.next().getAccessRole();
+      if (role.equals("owner") || role.equals("writer")) {
+        System.out.println("yeap");
+      } else {
+        iter.remove();
+      }
+    }
+    return myCalendars;
   }
 
   public void someSampleWork(Calendar service) throws IOException {
