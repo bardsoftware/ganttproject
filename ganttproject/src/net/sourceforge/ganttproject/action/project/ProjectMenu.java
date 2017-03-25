@@ -25,6 +25,8 @@ import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 
 import javax.swing.*;
 
+import javax.swing.*;
+
 /**
  * Collection of actions present in the project menu
  */
@@ -94,7 +96,7 @@ public class ProjectMenu extends JMenu {
     return myNewProjectAction;
   }
 
-  public GPAction getSaveProjectAction() {
+  public SaveProjectAction getSaveProjectAction() {
     return mySaveProjectAction;
   }
 

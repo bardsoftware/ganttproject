@@ -3,29 +3,26 @@
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.chart.overview.GPToolbar;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
 
+import javax.swing.*;
+import java.awt.*;
+
 class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPView {
-  private ResourceTreeUIFacade myTreeFacade;
+  private TreeTableContainer myTreeFacade;
   private Component myResourceChart;
   private JComponent myTabContentPanel;
 
-  ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, ResourceTreeUIFacade resourceTree,
+  ResourceChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer resourceTree,
       Component resourceChart) {
     super(project, workbenchFacade, workbenchFacade.getResourceChart());
     myTreeFacade = resourceTree;
     myResourceChart = resourceChart;
+    addTableResizeListeners(resourceTree.getTreeComponent(), myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   JComponent getComponent() {
@@ -37,21 +34,16 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
 
   @Override
   protected Component createButtonPanel() {
-    JToolBar buttonBar = new JToolBar();
-    buttonBar.setFloatable(false);
-    buttonBar.setBorderPainted(false);
-
-    TestGanttRolloverButton upButton = new TestGanttRolloverButton(myTreeFacade.getMoveUpAction());
-    upButton.setTextHidden(true);
-    buttonBar.add(upButton);
-
-    TestGanttRolloverButton downButton = new TestGanttRolloverButton(myTreeFacade.getMoveDownAction());
-    downButton.setTextHidden(true);
-    buttonBar.add(downButton);
-
-    JPanel buttonPanel = new JPanel(new BorderLayout());
-    buttonPanel.add(buttonBar, BorderLayout.WEST);
-    return buttonPanel;
+    ToolbarBuilder builder = new ToolbarBuilder()
+        .withHeight(24)
+        .withSquareButtons()
+        .withDpiOption(getUiFacade().getDpiOption())
+        .withLafOption(getUiFacade().getLafOption(), null);
+    for (AbstractAction a : myTreeFacade.getTreeActions()) {
+      builder.addButton(a);
+    }
+    final GPToolbar toolbar = builder.build();
+    return toolbar.getToolbar();
   }
 
   @Override
@@ -62,13 +54,6 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
   @Override
   protected Component getTreeComponent() {
     return myTreeFacade.getTreeComponent();
-  }
-
-  @Override
-  public void setActive(boolean active) {
-    if (active) {
-      getTreeComponent().requestFocus();
-    }
   }
 
   @Override

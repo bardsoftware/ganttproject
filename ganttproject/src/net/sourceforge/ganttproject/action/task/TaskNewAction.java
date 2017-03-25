@@ -18,14 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.awt.event.ActionEvent;
-import java.util.List;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class TaskNewAction extends GPAction {
   private final IGanttProject myProject;
@@ -71,5 +72,17 @@ public class TaskNewAction extends GPAction {
 
   protected UIFacade getUIFacade() {
     return myUiFacade;
+  }
+
+  @Override
+  public void updateAction() {
+    super.updateAction();
+  }
+
+  @Override
+  public TaskNewAction asToolbarAction() {
+    TaskNewAction result = new TaskNewAction(myProject, myUiFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

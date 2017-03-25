@@ -18,11 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-import com.google.common.base.Predicate;
-
 import biz.ganttproject.core.table.ColumnList;
+import com.google.common.base.Predicate;
 import net.sourceforge.ganttproject.action.GPAction;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -62,4 +63,6 @@ public interface TreeUiFacade<T> {
   GPAction getDeleteAction();
 
   void startDefaultEditing(T modelElement);
+
+  AbstractAction[] getTreeActions();
 }

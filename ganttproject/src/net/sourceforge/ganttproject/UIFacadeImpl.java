@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
-  private static final ImageIcon LOGO = new ImageIcon(UIFacadeImpl.class.getResource("/icons/big.png"));
   private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
@@ -82,6 +81,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final DialogBuilder myDialogBuilder;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
+  private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
+  private float myLastScale = 0;
 
   private static Map<FontSpec.Size, String> getSizeLabels() {
     Map<FontSpec.Size, String> result = Maps.newHashMap();
@@ -106,8 +107,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
   };
   private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
+  @Override
   public IntegerOption getDpiOption() {
     return myDpiOption;
+  }
+  public GPOption<String> getLafOption() {
+    return myLafOption;
   }
 
 
@@ -541,7 +546,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
             }
           };
           myAppFontOption.addChangeValueListener(myAppFontValueListener);
-          myDpiOption.addChangeValueListener(myAppFontValueListener);
+          myDpiOption.addChangeValueListener(new ChangeValueListener() {
+            @Override
+            public void changeValue(ChangeValueEvent event) {
+              if (myDpiOption.getValue() >= UIFacade.DEFAULT_DPI) {
+                updateFonts();
+              }
+            }
+          });
         }
       }
     });
@@ -562,9 +574,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   private void updateComponentTreeUI() {
     SwingUtilities.updateComponentTreeUI(myMainFrame);
-    myMainFrame.pack();
+    //myMainFrame.pack();
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
+        for (Runnable r : myOnUpdateComponentTreeUiCallbacks) {
+          r.run();
+        }
         getGanttChart().reset();
         getResourceChart().reset();
       }
@@ -584,9 +599,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
     }
     FontSpec currentSpec = myAppFontOption.getValue();
-    if (currentSpec != null && !currentSpec.equals(myLastFontSpec)) {
+    float dpiScale = myDpiOption.getValue().floatValue() / DEFAULT_DPI;
+    if (currentSpec != null && (!currentSpec.equals(myLastFontSpec) || dpiScale != myLastScale)) {
       for (Map.Entry<String, Font> font : myOriginalFonts.entrySet()) {
-        float dpiScale = myDpiOption.getValue().floatValue() / DEFAULT_DPI;
         float newSize = (font.getValue().getSize() * currentSpec.getSize().getFactor() * dpiScale);
         Font newFont;
         if (Strings.isNullOrEmpty(currentSpec.getFamily())) {
@@ -597,6 +612,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         UIManager.put(font.getKey(), newFont);
       }
       myLastFontSpec = currentSpec;
+      myLastScale = dpiScale;
     }
   }
 
@@ -653,20 +669,25 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
+  public void addOnUpdateComponentTreeUi(Runnable callback) {
+    myOnUpdateComponentTreeUiCallbacks.add(callback);
+  }
+
+  @Override
   public Image getLogo() {
     if (myLogoOption.getValue() == null) {
-      return LOGO.getImage();
+      return DEFAULT_LOGO.getImage();
     }
     try {
       File imageFile = new File(myLogoOption.getValue());
       if (imageFile.exists() && imageFile.canRead()) {
-        return Objects.firstNonNull(ImageIO.read(imageFile), LOGO.getImage());
+        return Objects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
       }
       GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
     } catch (IOException e) {
       GPLogger.logToLogger(e);
     }
-    return LOGO.getImage();
+    return DEFAULT_LOGO.getImage();
   }
 
   void addOptions(GPOptionGroup options) {

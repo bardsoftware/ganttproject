@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.awt.event.ActionEvent;
+import net.sourceforge.ganttproject.ResourceTreeTable;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil;
 
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-
-import net.sourceforge.ganttproject.ResourceTreeTable;
-import net.sourceforge.ganttproject.action.GPAction;
+import java.awt.event.ActionEvent;
 
 public class ResourceMoveUpAction extends GPAction implements TreeSelectionListener {
   private final ResourceTreeTable myTable;
@@ -33,6 +33,7 @@ public class ResourceMoveUpAction extends GPAction implements TreeSelectionListe
     super("resource.move.up");
     myTable = table;
     setEnabled(false);
+    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
     table.getTree().getTreeSelectionModel().addTreeSelectionListener(this);
   }
 

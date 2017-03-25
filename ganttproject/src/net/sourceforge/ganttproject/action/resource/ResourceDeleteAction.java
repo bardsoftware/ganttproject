@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.action.resource;
 
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
@@ -32,7 +33,7 @@ import java.awt.event.ActionEvent;
 public class ResourceDeleteAction extends ResourceAction {
   private final UIFacade myUIFacade;
 
-  private GanttProject myProject;
+  private final GanttProject myProject;
 
   public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
       UIFacade uiFacade) {
@@ -65,5 +66,12 @@ public class ResourceDeleteAction extends ResourceAction {
     for (HumanResource resource : resources) {
       resource.delete();
     }
+  }
+
+  @Override
+  public ResourceDeleteAction asToolbarAction() {
+    ResourceDeleteAction result = new ResourceDeleteAction(getManager(), getContext(), myProject, myUIFacade);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

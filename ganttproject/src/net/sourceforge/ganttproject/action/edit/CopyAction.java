@@ -18,10 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 //TODO Enable/Disable action on selection changes
 public class CopyAction extends GPAction {
@@ -35,5 +38,21 @@ public class CopyAction extends GPAction {
   @Override
   public void actionPerformed(ActionEvent e) {
     myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
+  }
+
+  @Override
+  public CopyAction asToolbarAction() {
+    final CopyAction result = new CopyAction(myViewmanager);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
+    return result;
   }
 }

@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -39,6 +41,8 @@ import java.util.Locale;
  * @author bard
  */
 public interface UIFacade {
+  ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource("/icons/big.png"));
+
   public interface Dialog {
     void show();
 
@@ -59,9 +63,12 @@ public interface UIFacade {
 
   int DEFAULT_DPI = 96;
 
-  public static final int GANTT_INDEX = 0;
+  int GANTT_INDEX = 0;
 
-  public static final int RESOURCES_INDEX = 1;
+  int RESOURCES_INDEX = 1;
+
+  IntegerOption getDpiOption();
+  GPOption<String> getLafOption();
 
   ScrollingManager getScrollingManager();
 
@@ -145,4 +152,6 @@ public interface UIFacade {
   DefaultEnumerationOption<Locale> getLanguageOption();
 
   GPOptionGroup[] getOptions();
+
+  void addOnUpdateComponentTreeUi(Runnable callback);
 }

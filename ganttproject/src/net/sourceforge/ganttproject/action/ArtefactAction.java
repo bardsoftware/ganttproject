@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import net.sourceforge.ganttproject.gui.UIUtil;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 
 /**
  * Abstract class which provides a base implementation for the artefact actions.
@@ -47,6 +47,7 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
       });
     }
     myDelegates = delegates;
+    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
     // Make action state equal to active delegate action state
     actionStateChanged();
   }
@@ -88,8 +89,14 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
     	setEnabled(false);
     } else {
 	    setEnabled(activeAction.isEnabled());
-	    putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
-	    updateTooltip();
+	    if (activeAction.getFontawesomeLabel() != null) {
+        putValue(Action.SMALL_ICON, null);
+        putValue(Action.NAME, activeAction.getFontawesomeLabel());
+      } else {
+        putValue(Action.SMALL_ICON, activeAction.getValue(Action.SMALL_ICON));
+        putValue(Action.NAME, getLocalizedName());
+      }
+      updateTooltip();
     }
   }
 }

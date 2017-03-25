@@ -18,25 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Collision;
+
+import java.util.*;
+import java.util.logging.Logger;
 
 public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
   private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);
@@ -183,7 +173,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
           }
 
           if (curNode.isCritical()) {
-            ourLogger.info("\n\nNode=" + curNode + " is critical\n\n");
+            ourLogger.fine("\n\nNode=" + curNode + " is critical\n\n");
             myResult.add(curNode.task);
           }
         } else {
@@ -195,11 +185,11 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
     }
 
     private void calculateLatestDates(Node curNode) {
-      ourLogger.info("Calculating latest dates for:" + curNode);
+      ourLogger.fine("Calculating latest dates for:" + curNode);
       curNode.lft = findLatestFinishTime(myTask_Node, curNode);
       curNode.lst = myCalendar.shiftDate(curNode.lft,
           myTaskManager.createLength(-curNode.task.getDuration().getLength()));
-      ourLogger.info("latest start date=" + curNode.lst);
+      ourLogger.fine("latest start date=" + curNode.lst);
     }
 
     private void enqueueDependees(LinkedList<Node> newQueue, Node curNode) {
@@ -230,7 +220,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
       if (result == null || result.after(myDeadlineNode.lft)) {
         result = myDeadlineNode.lft;
       }
-      ourLogger.info("latest finish time=" + result + " (defined by:" + resultNode + ")");
+      ourLogger.fine("latest finish time=" + result + " (defined by:" + resultNode + ")");
       return result;
     }
 
