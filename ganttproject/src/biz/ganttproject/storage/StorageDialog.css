@@ -85,6 +85,7 @@ HBox.title Button {
 }
 HBox.title Label {
     -fx-font-size: 130%;
+    -fx-font-weight: bold;
 }
 
 .help {

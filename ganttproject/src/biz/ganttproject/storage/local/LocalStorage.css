@@ -6,6 +6,30 @@
     -fx-text-fill: whitesmoke;
     -fx-font-weight: bold;
 }
+.local-storage .doclist-browse {
+    -fx-text-alignment: center;
+}
 .local-storage .doclist-browse Button {
     -fx-padding: 1ex 1em;
+}
+.local-storage .doclist-path {
+    -fx-background-color: white;
+}
+.local-storage .doclist-path.expanded {
+    -fx-background-color: #ddd;
+}
+
+.local-storage .doclist-path .list-item {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: #333;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center-left;
+}
+.local-storage .doclist-path .list-item:hover {
+    -fx-background-color: white;
+}
+.local-storage .doclist-path .list-item.active {
+    -fx-font-weight: bold;
 }
