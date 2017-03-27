@@ -1,7 +1,17 @@
+buildscript {
+    ext.kotlin_version = '1.1.1'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.1.1"
 }
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 ext {
   libDir = 'lib/core'
@@ -17,6 +27,7 @@ dependencies {
   mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
     compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.1"
     mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:1.1.1"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 }
 
 updateMavenDeps.doFirst {

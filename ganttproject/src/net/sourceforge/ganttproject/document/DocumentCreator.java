@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
@@ -64,6 +65,7 @@ public class DocumentCreator implements DocumentManager {
   private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);
   /** List containing the Most Recent Used documents */
   private final DocumentsMRU myMRU = new DocumentsMRU(5);
+  private final File myDocumentsFolder;
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
@@ -81,6 +83,21 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getWebDavReleaseLockOption(),
         myWebDavStorage.getProxyOption()
     });
+    File userHome = new File(System.getProperty("user.home"));
+    File documents = new File(userHome, "Documents");
+    File docsFolder;
+    if (!documents.exists() || !documents.canRead()) {
+      docsFolder = userHome;
+    } else {
+      File ganttProjectDocs = new File(documents, "GanttProject");
+      if (ganttProjectDocs.exists()) {
+        docsFolder =  ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;
+      } else {
+        ganttProjectDocs.mkdirs();
+        docsFolder = ganttProjectDocs.exists() && ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;
+      }
+    }
+    myDocumentsFolder = docsFolder;
   }
 
   /**
@@ -155,7 +172,14 @@ public class DocumentCreator implements DocumentManager {
   }
 
   public Document newUntitledDocument() throws IOException {
-    return newAutosaveDocument();
+    for (int i = 1;; i++) {
+      String filename = GanttLanguage.getInstance().formatText("document.storage.untitledDocument", i);
+      File untitledFile = new File(myDocumentsFolder, filename);
+      if (untitledFile.exists()) {
+        continue;
+      }
+      return getDocument(untitledFile.getAbsolutePath());
+    }
   }
 
   @Override
