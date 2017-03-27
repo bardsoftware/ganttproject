@@ -1,22 +1,40 @@
-// Copyright (C) 2016 BarD Software
+/*
+Copyright 2017 Dmitry Barashev, BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.storage.local
 
-import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.StorageDialogBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
-import javafx.scene.Node
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.TextField
+import javafx.geometry.Pos
+import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
+import javafx.util.Callback
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.controlsfx.control.textfield.CustomTextField
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -28,11 +46,9 @@ import java.util.function.Consumer
  */
 class LocalStorage(
     private val myMode: StorageDialogBuilder.Mode,
-    private var currentDocument: Document,
+    private val currentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
   private val i18n = GanttLanguage.getInstance()
-  private var myResult: File? = null
-  private var myWorkingDir: File? = null
 
   override fun getName(): String {
     return "This Computer"
@@ -46,12 +62,16 @@ class LocalStorage(
     return String.format(pattern, myMode.name.toLowerCase())
   }
 
-  fun changeWorkingDir(dir: File) {
-    println("Change workingdir=$dir")
-    myWorkingDir = dir
+  fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {
+    return path.root.resolve(path.subpath(0, end))
   }
 
   override fun createUi(): Pane {
+    val filePath = Paths.get(currentDocument.filePath)
+    val state = State(
+        CustomTextField(),
+        SimpleObjectProperty(absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
+        SimpleObjectProperty(absolutePrefix(filePath).toFile()))
     val rootPane = VBox()
     rootPane.styleClass.addAll("pane-service-contents", "local-storage")
     rootPane.prefWidth = 400.0
@@ -64,43 +84,38 @@ class LocalStorage(
     val docList = VBox()
     docList.styleClass.add("doclist")
 
-    val currentDocDir = createDirPane(currentDocument.filePath, this::changeWorkingDir)
-    val currentDocName = TextField(currentDocument.fileName)
-//    val currentDocLabel = Label(currentDocument.fileName)
-//    currentDocLabel.styleClass.add("doclist-doc")
-    docList.children.addAll(currentDocDir, currentDocName)
+    val currentDocDir = createDirPane(state, state.currentDir::set)
+    state.filename.text = currentDocument.fileName
+    state.filename.styleClass.add("filename")
+    docList.children.addAll(currentDocDir, state.filename)
 
     fun onBrowse() {
       val fileChooser = FileChooser()
-      println("working dir=$myWorkingDir")
-      fileChooser.initialDirectory = myWorkingDir
+      fileChooser.initialDirectory = state.currentDir.get()
       fileChooser.title = i18nKey("storageService.local.%s.fileChooser.title")
       fileChooser.extensionFilters.addAll(
           FileChooser.ExtensionFilter("GanttProject Files", "*.gan"))
-      myResult = fileChooser.showOpenDialog(null)
-      if (myResult != null) {
-        currentDocument = FileDocument(myResult)
-        currentDocName.text = currentDocument.fileName
+      val chosenFile = fileChooser.showOpenDialog(null)
+      if (chosenFile != null) {
+        state.currentFile.set(chosenFile)
+        state.filename.text = chosenFile.name
       }
     }
 
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", {onBrowse()}, "doclist-browse")
-//    val btnSave = buildFontAwesomeButton(
-//        iconName = i18n.getText(i18nKey("storageService.local.%s.icon")),
-//        label = i18n.getText(i18nKey("storageService.local.%s.actionLabel")),
-//        onClick = {myDocumentReceiver.accept(currentDocument)},
-//        styleClass = "doclist-save")
-    val btnSave = Button(i18n.getText(i18nKey("storageService.local.%s.actionLabel")))
-    btnSave.addEventHandler(ActionEvent.ACTION, {myDocumentReceiver.accept(currentDocument)})
-    btnSave.styleClass.add("doclist-save")
+    state.filename.right = btnBrowse
 
-    val browseAndSave = HBox()
-    browseAndSave.styleClass.add("doclist-browse")
-    browseAndSave.children.addAll(btnBrowse, btnSave)
+    val btnSave = Button(i18n.getText(i18nKey("storageService.local.%s.actionLabel")))
+    btnSave.addEventHandler(ActionEvent.ACTION, {myDocumentReceiver.accept(FileDocument(state.currentFile.get()))})
+    btnSave.styleClass.add("doclist-save")
+    val btnSaveBox = HBox()
+    btnSaveBox.alignment = Pos.CENTER
+    btnSaveBox.maxWidth = Double.MAX_VALUE
+    btnSaveBox.children.addAll(btnSave)
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
-    rootPane.children.addAll(titleBox, docList, browseAndSave)
+    rootPane.children.addAll(titleBox, docList, btnSaveBox)
     return rootPane
   }
 
@@ -108,44 +123,59 @@ class LocalStorage(
     return Optional.empty<Pane>()
   }
 
-  fun createDirPane(filePath: String, onClick: ((File) -> Unit)): Pane {
-    val result = VBox()
-    result.styleClass.add("doclist-path")
+  fun createDirPane(state: State, onClick: ((File) -> Unit)): Pane {
+    val path = state.currentFile.get().toPath()
+    val dropDown = ComboBox<Path>()
 
-    fun newPathNodeBuilder(path: Path): ListItemBuilder {
-      val label = if(path.nameCount >= 1) path.getName(path.nameCount - 1).toString() else path.toString()
-      val builder = ListItemBuilder(Button(label))
-      builder.onSelectionChange = {listItem ->
-        result.children.forEach { node -> node.styleClass.remove("active") }
-        listItem.styleClass.add("active")
-        onClick(path.toFile())
-      }
-      return builder
-    }
-    fun buildPathNode(path: Path): Node {
-      val builder = newPathNodeBuilder(path)
-      val result = builder.build()
-      result.style = "-fx-padding: 0.5ex 0 0.5ex ${path.nameCount}em"
-      return result
-    }
-
-    val path = Paths.get(filePath)
-    val builder = newPathNodeBuilder(path.subpath(0, path.nameCount - 1))
-
-    builder.hoverNode = buildFontAwesomeButton(
-        iconName = "level_down",
-        onClick = {_ ->
-          for (i in path.nameCount - 3 downTo 0) {
-            val dirPath = path.root.resolve(path.subpath(0, i + 1))
-            result.children.add(0, buildPathNode(dirPath))
+    dropDown.cellFactory = Callback<ListView<Path>, ListCell<Path>> { _ ->
+      object : ListCell<Path>() {
+        override fun updateItem(item: Path?, empty: Boolean) {
+          super.updateItem(item, empty)
+          if (item == null || empty) {
+            graphic = null
+          } else {
+            val label = Label(if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString())
+            label.style = "-fx-padding: 0.5ex 0 0.5ex ${item.nameCount}em"
+            graphic = label
           }
-          result.children.add(0, buildPathNode(path.root))
-          builder.contentNode.style = "-fx-padding: 0.5ex 0 0.5ex ${path.nameCount}em"
-          result.styleClass.add("expanded")
         }
-    )
+      }
+    }
+    dropDown.buttonCell = object : ListCell<Path>() {
+      override fun updateItem(item: Path?, empty: Boolean) {
+        super.updateItem(item, empty)
+        if (item == null || empty) {
+          text = ""
+        } else {
+          text = if (item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString()
+        }
+      }
+    }
+    dropDown.valueProperty().addListener { _, _, newValue -> onClick(newValue.toFile()) }
+    dropDown.styleClass.add("path-dropdown")
+    dropDown.maxWidth = Double.MAX_VALUE
 
-    result.children.addAll(builder.build())
-    return result
+    // Re-populates dropdown given path to the selected file
+    fun resetDropDown(filePath: Path) {
+      dropDown.items.clear()
+      dropDown.items.add(filePath.root)
+      for (i in 0..(filePath.nameCount - 2)) {
+        dropDown.items.add(absolutePrefix(filePath, i + 1))
+      }
+      dropDown.value = absolutePrefix(filePath, filePath.nameCount - 1)
+    }
+    resetDropDown(path)
+
+    state.currentFile.addListener { _, _, newValue -> resetDropDown(newValue.toPath()) }
+    val dropDownBox = HBox()
+    dropDownBox.children.addAll(dropDown)
+    HBox.setHgrow(dropDown, Priority.ALWAYS)
+    return dropDownBox
   }
 }
+
+class State(
+  val filename: CustomTextField,
+  var currentDir: SimpleObjectProperty<File>,
+  var currentFile: SimpleObjectProperty<File>
+)

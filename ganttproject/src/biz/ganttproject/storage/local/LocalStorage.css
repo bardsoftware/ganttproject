@@ -1,35 +1,24 @@
 .local-storage .doclist {
     -fx-padding: 1ex 0 1ex 0;
 }
+.local-storage .custom-text-field:right-node-visible {
+    -fx-padding: 0 0 0 .3em;
+}
+.local-storage .custom-text-field:right-node-visible .right-pane {
+    -fx-padding: 0 0 0 0;
+}
+.local-storage .path-dropdown {
+    -fx-background-color: derive(orange, 20%);
+    -fx-border-insets: 0 0 1em 0;
+    -fx-background-insets: 0 0 1em 0;
+    -fx-padding: 0 0 1em 0;
+}
+.local-storage .path-dropdown > .list-cell {
+    -fx-font-weight: bold;
+}
+
 .local-storage .doclist-save {
     -fx-background-color: teal;
     -fx-text-fill: whitesmoke;
-    -fx-font-weight: bold;
-}
-.local-storage .doclist-browse {
-    -fx-text-alignment: center;
-}
-.local-storage .doclist-browse Button {
-    -fx-padding: 1ex 1em;
-}
-.local-storage .doclist-path {
-    -fx-background-color: white;
-}
-.local-storage .doclist-path.expanded {
-    -fx-background-color: #ddd;
-}
-
-.local-storage .doclist-path .list-item {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-text-fill: #333;
-    -fx-border-radius: 0;
-    -fx-cursor: hand;
-    -fx-alignment: center-left;
-}
-.local-storage .doclist-path .list-item:hover {
-    -fx-background-color: white;
-}
-.local-storage .doclist-path .list-item.active {
     -fx-font-weight: bold;
 }
