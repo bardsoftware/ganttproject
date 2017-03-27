@@ -18,10 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.util.Date;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.TaskInteractionHintRenderer;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
@@ -30,6 +26,10 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.Date;
 
 public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase {
   private TaskInteractionHintRenderer myLastNotes;
@@ -52,7 +52,7 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
     if (myLastNotes == null) {
       myLastNotes = new TaskInteractionHintRenderer("", e.getX(), e.getY());
     }
-    myLastNotes.setString(getNotesText());
+    myLastNotes.setText(getNotesText());
     myLastNotes.setX(e.getX());
   }
 
@@ -87,7 +87,7 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
   @Override
   public void paint(Graphics g) {
     if (myLastNotes != null) {
-      myLastNotes.paint(g);
+      myLastNotes.paint((Graphics2D)g);
     }
   }
 

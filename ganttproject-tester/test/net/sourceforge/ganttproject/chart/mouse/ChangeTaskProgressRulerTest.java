@@ -22,6 +22,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
@@ -42,78 +46,88 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
  */
 public class ChangeTaskProgressRulerTest extends TestCase {
 
-    private static Task createTask(TaskManager taskManager) {
-        Task result = taskManager.createTask();
-        result.move(taskManager.getRootTask());
-        result.setName(String.valueOf(result.getTaskID()));
-        return result;
-    }
+  private static Task createTask(TaskManager taskManager) {
+    Task result = taskManager.createTask();
+    result.move(taskManager.getRootTask());
+    result.setName(String.valueOf(result.getTaskID()));
+    return result;
+  }
 
-    public void testSimpleRuler() {
-        TaskChartModelFacade mockChartModel = EasyMock.createMock(TaskChartModelFacade.class);
-        TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder()
-            .withCalendar(new WeekendCalendarImpl()).build();
-        Task task = createTask(taskManager);
-        task.setStart(TestSetupHelper.newMonday());
-        task.setDuration(taskManager.createLength(2));
+  public void testProgressConversionToUnits() {
+    TimeDuration taskDuration = new TimeDurationImpl(GPTimeUnitStack.DAY, 2);
+    assertEquals("0", new ChangeTaskProgressRuler.Progress(0, taskDuration).toUnits());
+    assertEquals("0+", new ChangeTaskProgressRuler.Progress(1, taskDuration).toUnits());
+    assertEquals("1", new ChangeTaskProgressRuler.Progress(50, taskDuration).toUnits());
+    assertEquals("1+", new ChangeTaskProgressRuler.Progress(51, taskDuration).toUnits());
+    assertEquals("1+", new ChangeTaskProgressRuler.Progress(99, taskDuration).toUnits());
+    assertEquals("2", new ChangeTaskProgressRuler.Progress(100, taskDuration).toUnits());
+  }
 
-        Canvas primitives = new Canvas();
-        Rectangle r = primitives.createRectangle(0, 0, 100, 10);
+  public void testSimpleRuler() {
+    TaskChartModelFacade mockChartModel = EasyMock.createMock(TaskChartModelFacade.class);
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder()
+        .withCalendar(new WeekendCalendarImpl()).build();
+    Task task = createTask(taskManager);
+    task.setStart(TestSetupHelper.newMonday());
+    task.setDuration(taskManager.createLength(2));
 
-        assertEquals(1, task.getActivities().size());
-        primitives.bind(r, task.getActivities().get(0));
+    Canvas primitives = new Canvas();
+    Rectangle r = primitives.createRectangle(0, 0, 100, 10);
 
-        EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Collections.singletonList(r));
-        EasyMock.replay(mockChartModel);
-        ChangeTaskProgressRuler ruler = new ChangeTaskProgressRuler(task, mockChartModel);
-        assertEquals(0, ruler.getProgress(-1));
-        assertEquals(0, ruler.getProgress(0));
-        assertEquals(1, ruler.getProgress(1));
-        assertEquals(50, ruler.getProgress(50));
-        assertEquals(99, ruler.getProgress(99));
-        assertEquals(100, ruler.getProgress(100));
-        assertEquals(100, ruler.getProgress(101));
-        EasyMock.verify(mockChartModel);
-    }
+    assertEquals(1, task.getActivities().size());
+    primitives.bind(r, task.getActivities().get(0));
 
-    public void testRulerOverWeekend() {
-        TaskChartModelFacade mockChartModel = EasyMock.createMock(TaskChartModelFacade.class);
-        TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder()
-            .withCalendar(new WeekendCalendarImpl()).build();
-        Task task = createTask(taskManager);
-        task.setStart(TestSetupHelper.newFriday());
-        task.setDuration(taskManager.createLength(2));
+    EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Collections.singletonList(r));
+    EasyMock.replay(mockChartModel);
+    ChangeTaskProgressRuler ruler = new ChangeTaskProgressRuler(task, mockChartModel);
+    assertEquals(0, ruler.getProgress(-1).toPercents());
+    assertEquals(0, ruler.getProgress(0).toPercents());
+    assertEquals(1, ruler.getProgress(1).toPercents());
+    assertEquals(50, ruler.getProgress(50).toPercents());
+    assertEquals(99, ruler.getProgress(99).toPercents());
+    assertEquals(100, ruler.getProgress(100).toPercents());
+    assertEquals(100, ruler.getProgress(101).toPercents());
+    EasyMock.verify(mockChartModel);
+  }
 
-        List<TaskActivity> activities = task.getActivities();
-        assertEquals(3, activities.size());
+  public void testRulerOverWeekend() {
+    TaskChartModelFacade mockChartModel = EasyMock.createMock(TaskChartModelFacade.class);
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder()
+        .withCalendar(new WeekendCalendarImpl()).build();
+    Task task = createTask(taskManager);
+    task.setStart(TestSetupHelper.newFriday());
+    task.setDuration(taskManager.createLength(2));
 
-        Canvas primitives = new Canvas();
-        Rectangle r0 = primitives.createRectangle(0, 0, 100, 10);
-        primitives.bind(r0, activities.get(0));
+    List<TaskActivity> activities = task.getActivities();
+    assertEquals(3, activities.size());
 
-        Rectangle r1 = primitives.createRectangle(100, 0, 10, 10);
-        primitives.bind(r1, activities.get(1));
+    Canvas primitives = new Canvas();
+    Rectangle r0 = primitives.createRectangle(0, 0, 100, 10);
+    primitives.bind(r0, activities.get(0));
 
-        Rectangle r2 = primitives.createRectangle(110, 0, 100, 10);
-        primitives.bind(r2, activities.get(2));
+    Rectangle r1 = primitives.createRectangle(100, 0, 10, 10);
+    primitives.bind(r1, activities.get(1));
 
-        EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Arrays.asList(r0, r1, r2));
-        EasyMock.replay(mockChartModel);
+    Rectangle r2 = primitives.createRectangle(110, 0, 100, 10);
+    primitives.bind(r2, activities.get(2));
 
-        ChangeTaskProgressRuler ruler = new ChangeTaskProgressRuler(task, mockChartModel);
-        assertEquals(0, ruler.getProgress(-1));
-        assertEquals(0, ruler.getProgress(0));
-        assertEquals(1, ruler.getProgress(2));
-        assertEquals(25, ruler.getProgress(50));
-        assertEquals(50, ruler.getProgress(100));
-        assertEquals(50, ruler.getProgress(101));
-        assertEquals(50, ruler.getProgress(109));
-        assertEquals(50, ruler.getProgress(110));
-        assertEquals(75, ruler.getProgress(160));
-        assertEquals(100, ruler.getProgress(219));
-        assertEquals(100, ruler.getProgress(211));
-        assertEquals(100, ruler.getProgress(212));
+    EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Arrays.asList(r0, r1, r2));
+    EasyMock.replay(mockChartModel);
 
-        EasyMock.verify(mockChartModel);
-    }
+    ChangeTaskProgressRuler ruler = new ChangeTaskProgressRuler(task, mockChartModel);
+    assertEquals(0, ruler.getProgress(-1).toPercents());
+    assertEquals(0, ruler.getProgress(0).toPercents());
+    assertEquals(1, ruler.getProgress(2).toPercents());
+    assertEquals(25, ruler.getProgress(50).toPercents());
+    assertEquals(50, ruler.getProgress(100).toPercents());
+    assertEquals(50, ruler.getProgress(101).toPercents());
+    assertEquals(50, ruler.getProgress(109).toPercents());
+    assertEquals(50, ruler.getProgress(110).toPercents());
+    assertEquals(75, ruler.getProgress(160).toPercents());
+    assertEquals(100, ruler.getProgress(219).toPercents());
+    assertEquals(100, ruler.getProgress(211).toPercents());
+    assertEquals(100, ruler.getProgress(212).toPercents());
+
+    EasyMock.verify(mockChartModel);
+  }
 }

@@ -3,7 +3,7 @@ Copyright 2010-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -18,12 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene.gantt;
 
-import java.awt.Color;
-import java.util.Date;
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
@@ -34,10 +28,15 @@ import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+import com.google.common.collect.Lists;
+
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Renders task activity rectangles on the Gantt chart.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
@@ -47,7 +46,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
   private final TaskApi<T, A> myTaskApi;
   private final ChartApi myChartApi;
   private final StyleApplier<T, A> myStyleApplier;
-  
+
   public static class Style {
     int marginTop;
 
@@ -94,19 +93,19 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
   static class StyleApplier<T, A> {
     private T myTask;
     private final TaskApi<T, A> myTaskApi;
-    
+
     StyleApplier(TaskApi<T, A> taskApi) {
       myTaskApi = taskApi;
     }
-    
+
     void setTask(T task) {
       myTask = task;
     }
-    
+
     /**
      * Depending on the context of the associated task, paint the color and
      * striping of a shape.
-     * 
+     *
      * @param shape the graphic component to paint
      */
     void applyStyle(Canvas.Shape shape) {
@@ -127,7 +126,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       }
     }
   }
-  
+
   public List<Polygon> renderActivities(int rowNum, List<A> activities, OffsetList offsets) {
     List<Polygon> rectangles = Lists.newArrayList();
     for (A activity : activities) {
@@ -182,16 +181,20 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
     Canvas container = myCanvas;
 
     Canvas.Polygon resultShape;
-    
+
     if (myTaskApi.isMilestone(nextTask)) {
       //nextRectangle.setVisible(false);
       //System.err.println("milestone rect=" + nextRectangle);
       //container.bind(nextRectangle, activity);
       Canvas.Rectangle rect = container.createDetachedRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
-      Canvas.Polygon p = container.createPolygon(rect.getLeftX() - 2, rect.getMiddleY(),
-          rect.getLeftX() + 3, rect.getMiddleY() - 5,
-          rect.getLeftX() + 8, rect.getMiddleY(),
-          rect.getLeftX() + 3, rect.getMiddleY() + 5);
+      int rectHeight = rect.getHeight();
+      int rectHalf = rectHeight / 2;
+      int middleX = rect.getLeftX() + 3; // This is important to draw dependencies to/from milestones properly
+      Canvas.Polygon p = container.createPolygon(
+          middleX - rectHalf, rect.getMiddleY(),
+          middleX, rect.getMiddleY() - rectHalf,
+          middleX + rectHalf, rect.getMiddleY(),
+          middleX, rect.getMiddleY() + rectHalf);
       p.setStyle("task.milestone");
       //container.bind(p, activity);
       resultShape = p;
@@ -202,16 +205,16 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         String prefix = myTaskApi.isProjectTask(nextTask) ? "task.projectTask" : "task.supertask";
         nextRectangle.setStyle(prefix);
         if (myTaskApi.isFirst(activity)) {
-          Canvas.Polygon ending = container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(), 
-              nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(), 
+          Canvas.Polygon ending = container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(),
+              nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(),
               nextRectangle.getLeftX(), nextRectangle.getBottomY());
           ending.setStyle(prefix + ".start");
           myStyleApplier.applyStyle(ending);
           polygons.add(ending);
         }
         if (myTaskApi.isLast(activity)) {
-          Canvas.Polygon ending = container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(), 
-              nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(), 
+          Canvas.Polygon ending = container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(),
+              nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(),
               nextRectangle.getRightX(), nextRectangle.getBottomY());
           ending.setStyle(prefix + ".end");
           myStyleApplier.applyStyle(ending);
@@ -232,7 +235,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         }
       }
     }
-    
+
     myStyleApplier.applyStyle(resultShape);
     container.bind(resultShape, activity);
     polygons.add(resultShape);

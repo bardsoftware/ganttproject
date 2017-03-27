@@ -130,6 +130,8 @@ public class StorageDialogBuilder {
     BorderPane borderPane = new BorderPane();
     borderPane.getStyleClass().add("pane-storage");
     borderPane.setCenter(new Pane());
+    ToggleButton btnSave = new ToggleButton("Save project as");
+    ToggleButton btnOpen = new ToggleButton("Open other project");
 
     {
       VBox titleBox = new VBox();
@@ -138,10 +140,8 @@ public class StorageDialogBuilder {
 
       SegmentedButton buttonBar = new SegmentedButton();
       buttonBar.getStyleClass().add(SegmentedButton.STYLE_CLASS_DARK);
-      ToggleButton btnOpen = new ToggleButton("Open other project");
       btnOpen.addEventHandler(ActionEvent.ACTION, e -> showOpenStorageUi(borderPane));
 //
-      ToggleButton btnSave = new ToggleButton("Save project as");
       btnSave.addEventHandler(ActionEvent.ACTION, e -> showSaveStorageUi(borderPane));
       buttonBar.getButtons().addAll(btnSave, btnOpen);
       HBox buttonWrapper = new HBox();
@@ -158,11 +158,20 @@ public class StorageDialogBuilder {
 
     dialog.getDialogPane().setContent(borderPane);
     dialog.initModality(Modality.WINDOW_MODAL);
-    dialog.setTitle("GanttProject Cloud");
+    dialog.setTitle("My Projects");
     dialog.setResizable(true);
     dialog.getDialogPane().getScene().getWindow().sizeToScene();
 
-    dialog.setOnShown(event -> dialog.getDialogPane().getScene().getWindow().sizeToScene());
+    dialog.setOnShown(event -> {
+      dialog.getDialogPane().getScene().getWindow().sizeToScene();
+      if (myProject.isModified()) {
+        //showSaveStorageUi(borderPane);//
+        btnSave.fire();
+      } else {
+        showOpenStorageUi(borderPane);
+        btnOpen.fire();
+      }
+    });
     return dialog;
   }
 

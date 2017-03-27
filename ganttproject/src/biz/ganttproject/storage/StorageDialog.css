@@ -54,30 +54,6 @@
     -fx-background-color: derive(orange, 20%);
 }
 
-.btn-service .storage-name {
-    -fx-border-radius: 0;
-    -fx-border-width: 0;
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-text-fill: black;
-    -fx-border-radius: 0;
-    -fx-cursor: hand;
-    -fx-alignment: center-left;
-}
-
-.btn-service .settings {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-border-insets: 0;
-    -fx-padding: 0 3px 0 0;
-    visibility: hidden;
-}
-.btn-service.active .settings {
-    visibility: visible;
-}
-.btn-service:hover .settings {
-    visibility: visible;
-}
 .btn-signup {
     -fx-background-color: orangered;
     -fx-border-width: 1;
@@ -109,6 +85,7 @@ HBox.title Button {
 }
 HBox.title Label {
     -fx-font-size: 130%;
+    -fx-font-weight: bold;
 }
 
 .help {

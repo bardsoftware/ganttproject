@@ -2,7 +2,7 @@
 GanttProject is an opensource project management tool.
 Copyright (C) 2012 Dmitry Barashev, GanttProject Team
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -17,15 +17,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.Graphics2D;
-import java.util.Properties;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.Line;
+
+import java.awt.*;
+import java.util.Properties;
 
 /**
  * Renders line shapes.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class LineRenderer {
@@ -39,7 +38,7 @@ public class LineRenderer {
   public void setGraphics(Graphics2D graphics) {
     myGraphics = graphics;
   }
-  
+
   public void renderLine(Canvas.Line line) {
     Graphics2D g = (Graphics2D) myGraphics.create();
     Style style = Style.getStyle(myProperties, line.getStyle());
@@ -48,11 +47,18 @@ public class LineRenderer {
     g.setColor(border == null ? java.awt.Color.BLACK : border.getTop().getColor());
     g.setStroke(border == null ? Style.DEFAULT_STROKE : border.getTop().getStroke());
     g.drawLine(line.getStartX(), line.getStartY(), line.getFinishX(), line.getFinishY());
-    if (line.getArrow() == Line.Arrow.FINISH) {
+    if (line.getArrow() != Canvas.Arrow.NONE) {
+      Canvas.Arrow arrow = line.getArrow();
       int xsign = Integer.signum(line.getFinishX() - line.getStartX());
       int ysign = Integer.signum(line.getFinishY() - line.getStartY());
-      int[] xpoints = new int[] {line.getFinishX(), line.getFinishX() - xsign * 7 - Math.abs(ysign) * 3, line.getFinishX() - xsign * 7 + Math.abs(ysign) * 3};
-      int[] ypoints = new int[] {line.getFinishY(), line.getFinishY() - ysign * 7 - Math.abs(xsign) * 3, line.getFinishY() - ysign * 7 + Math.abs(xsign) * 3};
+      int[] xpoints = new int[] {
+          line.getFinishX(),
+          line.getFinishX() - xsign * arrow.getLength() - Math.abs(ysign) * arrow.getWidth(),
+          line.getFinishX() - xsign * arrow.getLength() + Math.abs(ysign) * arrow.getWidth()};
+      int[] ypoints = new int[] {
+          line.getFinishY(),
+          line.getFinishY() - ysign * arrow.getLength() - Math.abs(xsign) * arrow.getWidth(),
+          line.getFinishY() - ysign * arrow.getLength() + Math.abs(xsign) * arrow.getWidth()};
       g.fillPolygon(xpoints, ypoints, 3);
     }
   }

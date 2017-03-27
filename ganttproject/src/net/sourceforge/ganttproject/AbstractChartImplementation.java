@@ -18,36 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.AWTEvent;
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.JComponent;
-import javax.swing.JLayer;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.plaf.LayerUI;
-
+import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -70,16 +46,23 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import biz.ganttproject.core.chart.grid.Offset;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import javax.swing.*;
+import javax.swing.plaf.LayerUI;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
@@ -123,16 +106,18 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
       Offset offset = chartModel.getOffsetAt(myHoverPoint.x);
       g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .4f));
-      g2.setFont(chartModel.getChartUIConfiguration().getChartFont().deriveFont(9.0f));
+      Font chartFont = chartModel.getChartUIConfiguration().getChartFont();
+      g2.setFont(chartFont.deriveFont(0.9f * chartFont.getSize()));
       g2.setColor(Color.BLACK);
       int offsetMidPx = (offset.getStartPixels() + offset.getOffsetPixels()) / 2;
       int headerBottomPx = chartModel.getChartUIConfiguration().getHeaderHeight();
-      int[] xPoints = new int[] {offsetMidPx - 3, offsetMidPx, offsetMidPx + 3};
-      int[] yPoints = new int[] {headerBottomPx + 6, headerBottomPx, headerBottomPx + 6};
+      int pointerSize = (int)(chartModel.getChartUIConfiguration().getBaseFontSize() * 0.6f);
+      int[] xPoints = new int[] {offsetMidPx - pointerSize/2, offsetMidPx, offsetMidPx + pointerSize/2};
+      int[] yPoints = new int[] {headerBottomPx + pointerSize, headerBottomPx, headerBottomPx + pointerSize};
 
       g2.fillPolygon(xPoints, yPoints, 3);
       g2.drawString(GanttLanguage.getInstance().formatShortDate(CalendarFactory.createGanttCalendar(offset.getOffsetStart())),
-          offsetMidPx, headerBottomPx + 15);
+          offsetMidPx, headerBottomPx + (int)(chartModel.getChartUIConfiguration().getBaseFontSize() * 1.4f));
     }
   }
 
@@ -448,41 +433,14 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     return myChartModel.getChartUIConfiguration();
   }
 
-  private Integer myCachedHeaderHeight = null;
+  private Integer myCachedHeaderHeight = 30;
   public int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
-    if (myCachedHeaderHeight == null) {
-      tableContainer.addComponentListener(new ComponentAdapter() {
-        @Override
-        public void componentMoved(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          tableContainer.removeComponentListener(this);
-        }
-        @Override
-        public void componentResized(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          tableContainer.removeComponentListener(this);
-        }
-      });
-      table.addComponentListener(new ComponentAdapter() {
-        @Override
-        public void componentMoved(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          table.removeComponentListener(this);
-        }
-        @Override
-        public void componentResized(ComponentEvent e) {
-          myCachedHeaderHeight = null;
-          table.removeComponentListener(this);
-        }
-      });
-      Point tableLocation = table.getLocationOnScreen();
-      Point containerLocation = tableContainer.getLocationOnScreen();
-
-      int height = tableLocation.y - containerLocation.y + myUiFacade.getLogo().getHeight(null);
-      myCachedHeaderHeight = height;
-    }
     return myCachedHeaderHeight;
   }
+  public void setTimelineHeight(int height) {
+    myCachedHeaderHeight = height;
+  }
+
 
   public static class ChartSelectionImpl implements ChartSelection {
     private List<Task> myTasks = new ArrayList<Task>();

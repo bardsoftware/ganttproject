@@ -18,24 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade.Choice;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskNode;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
-import com.google.common.collect.Lists;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class TaskDeleteAction extends TaskActionBase {
 
@@ -95,5 +94,12 @@ public class TaskDeleteAction extends TaskActionBase {
       }
     }
     forwardScheduling();
+  }
+
+  @Override
+  public TaskDeleteAction asToolbarAction() {
+    TaskDeleteAction result = new TaskDeleteAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree());
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    return result;
   }
 }

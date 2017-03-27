@@ -18,10 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.option;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
 
 public abstract class GPAbstractOption<T> implements GPOption<T> {
   public abstract static class I18N {
@@ -30,14 +32,14 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
     protected static void setI18N(I18N i18n) {
       ourInstance = i18n;
     }
-    
-    protected abstract String i18n(String key); 
+
+    protected abstract String i18n(String key);
   }
-  
+
   private final String myID;
 
-  private final List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
-
+  //private final List<ChangeValueListener> myListeners = new ArrayList<ChangeValueListener>();
+  private final Listeners myListeners = new Listeners();
   private final PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
 
   private boolean isWritable = true;
@@ -77,7 +79,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   public void setValue(T value, Object clientId) {
     resetValue(value, false, clientId);
   }
-  
+
   protected T getInitialValue() {
     return myInitialValue;
   }
@@ -116,19 +118,16 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
 
   @Override
   public Runnable addChangeValueListener(final ChangeValueListener listener) {
-    myListeners.add(listener);
-    return new Runnable() {
-      @Override
-      public void run() {
-        myListeners.remove(listener);
-      }
-    };
+    return myListeners.add(listener, Listeners.DEFAULT_PRIORITY);
+  }
+
+  @Override
+  public Runnable addChangeValueListener(final ChangeValueListener listener, int priority) {
+    return myListeners.add(listener, priority);
   }
 
   protected void fireChangeValueEvent(ChangeValueEvent event) {
-    for (ChangeValueListener listener : myListeners) {
-      listener.changeValue(event);
-    }
+    myListeners.fire(event);
   }
 
   @Override
@@ -164,7 +163,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   public boolean hasUi() {
     return myHasUi;
   }
-  
+
   public void setHasUi(boolean hasUi) {
     myHasUi = hasUi;
   }
@@ -175,5 +174,45 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
 
   protected static String i18n(String key) {
     return I18N.ourInstance.i18n(key);
+  }
+
+  static class Listeners {
+    public static final int DEFAULT_PRIORITY = 0;
+
+    class Entry implements Comparable {
+      final int priority;
+      final int ordinal;
+      final ChangeValueListener listener;
+
+      Entry(ChangeValueListener listener, int ordinal, int priority) {
+        this.listener = Preconditions.checkNotNull(listener);
+        this.ordinal = ordinal;
+        this.priority = priority;
+      }
+      @Override
+      public int compareTo(Object o) {
+        Preconditions.checkArgument(o instanceof Entry);
+        Entry that = (Entry) o;
+        int result = this.priority - that.priority;
+        return result != 0 ? result : this.ordinal - that.ordinal;
+      }
+    }
+    private SortedSet<Entry> myListeners = Sets.newTreeSet();
+    Runnable add(ChangeValueListener listener, int priority) {
+      final Entry e = new Entry(listener, myListeners.size(), priority);
+      myListeners.add(e);
+      return new Runnable() {
+        @Override
+        public void run() {
+          myListeners.remove(e);
+        }
+      };
+    }
+
+    void fire(ChangeValueEvent event) {
+      for (Entry e : myListeners) {
+        e.listener.changeValue(event);
+      }
+    }
   }
 }
