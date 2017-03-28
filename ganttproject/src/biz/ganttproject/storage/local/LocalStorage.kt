@@ -20,6 +20,7 @@ package biz.ganttproject.storage.local
 
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.StorageMode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
@@ -35,6 +36,10 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.textfield.CustomTextField
+import org.controlsfx.validation.ValidationResult
+import org.controlsfx.validation.ValidationSupport
+import org.controlsfx.validation.Validator
+import org.controlsfx.validation.decoration.StyleClassValidationDecoration
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -45,7 +50,7 @@ import java.util.function.Consumer
  * @author dbarashev@bardsoftware.com
  */
 class LocalStorage(
-    private val myMode: StorageDialogBuilder.Mode,
+    private val myMode: StorageMode,
     private val currentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
   private val i18n = GanttLanguage.getInstance()
@@ -72,6 +77,24 @@ class LocalStorage(
         CustomTextField(),
         SimpleObjectProperty(absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
         SimpleObjectProperty(absolutePrefix(filePath).toFile()))
+
+    state.validator = Validator<String> { control, value ->
+      if (value == null) {
+        return@Validator ValidationResult()
+      }
+      val file = File(state.currentDir.get(), value)
+      try {
+        myMode.tryFile(file)
+        return@Validator ValidationResult()
+      } catch (e: StorageMode.FileException) {
+        println(e.message)
+        return@Validator ValidationResult.fromError(control, i18n.formatText(e.message, e.args))
+      }
+    }
+    val validationSupport = ValidationSupport()
+    validationSupport.registerValidator(state.filename, state.validator)
+    validationSupport.validationDecorator = StyleClassValidationDecoration("error", "warning")
+
     val rootPane = VBox()
     rootPane.styleClass.addAll("pane-service-contents", "local-storage")
     rootPane.prefWidth = 400.0
@@ -112,6 +135,7 @@ class LocalStorage(
     btnSaveBox.alignment = Pos.CENTER
     btnSaveBox.maxWidth = Double.MAX_VALUE
     btnSaveBox.children.addAll(btnSave)
+    validationSupport.invalidProperty().addListener({ _, _, newValue -> btnSave.disableProperty().set(newValue) })
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
@@ -151,7 +175,11 @@ class LocalStorage(
         }
       }
     }
-    dropDown.valueProperty().addListener { _, _, newValue -> onClick(newValue.toFile()) }
+    dropDown.valueProperty().addListener { _, _, newValue ->
+      if (newValue != null) {
+        onClick(newValue.toFile())
+      }
+    }
     dropDown.styleClass.add("path-dropdown")
     dropDown.maxWidth = Double.MAX_VALUE
 
@@ -178,4 +206,6 @@ class State(
   val filename: CustomTextField,
   var currentDir: SimpleObjectProperty<File>,
   var currentFile: SimpleObjectProperty<File>
-)
+) {
+  lateinit var validator: Validator<String>
+}
