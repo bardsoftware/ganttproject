@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.awt.event.ActionEvent;
 
@@ -35,29 +36,32 @@ public class ResourceNewAction extends ResourceAction {
   private final UIFacade myUIFacade;
 
   private final RoleManager myRoleManager;
+  private final TaskManager myTaskManager;
 
-  public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade) {
+  public ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, TaskManager taskManager, UIFacade uiFacade) {
     super("resource.new", hrManager);
     myUIFacade = uiFacade;
     myRoleManager = roleManager;
+    myTaskManager =taskManager;
   }
 
-  private ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, UIFacade uiFacade, IconSize size) {
+  private ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, TaskManager taskManager, UIFacade uiFacade, IconSize size) {
     super("resource.new", hrManager, null, size);
     myUIFacade = uiFacade;
     myRoleManager = roleManager;
+    myTaskManager =taskManager;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new ResourceNewAction(getManager(), myRoleManager, myUIFacade, size);
+    return new ResourceNewAction(getManager(), myRoleManager, myTaskManager, myUIFacade, size);
   }
 
   @Override
   public void actionPerformed(ActionEvent event) {
     final HumanResource resource = getManager().newHumanResource();
     resource.setRole(myRoleManager.getDefaultRole());
-    GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);
+    GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myTaskManager, myUIFacade, resource);
     dp.setVisible(true);
     if (dp.result()) {
       myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
@@ -77,7 +81,7 @@ public class ResourceNewAction extends ResourceAction {
 
   @Override
   public ResourceNewAction asToolbarAction() {
-    ResourceNewAction result = new ResourceNewAction(getManager(), myRoleManager, myUIFacade);
+    ResourceNewAction result = new ResourceNewAction(getManager(), myRoleManager, myTaskManager, myUIFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }

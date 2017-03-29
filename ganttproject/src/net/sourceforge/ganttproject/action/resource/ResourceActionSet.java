@@ -52,7 +52,7 @@ public class ResourceActionSet {
   public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext,
       GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
     HumanResourceManager manager = projectFrame.getHumanResourceManager();
-    myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), uiFacade);
+    myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), projectFrame.getTaskManager(), uiFacade);
     myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);
     myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);
     myResourceMoveUpAction = new ResourceMoveUpAction(table);
