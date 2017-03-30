@@ -59,7 +59,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
   private final Map<Task, ResourceAssignmentMutator> myTask2MutatorMap = new HashMap<>();
 
 
-  public ResourceAssignmentsTableModel(HumanResource person) {
+  ResourceAssignmentsTableModel(HumanResource person) {
     myResource = person;
     myAssignments = new ArrayList<>(Arrays.asList(person.getAssignments()));
   }
@@ -76,13 +76,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int row, int col) {
-    if (row == myAssignments.size()) {
-      return true;
-    }
-    if (Column.UNIT.equals(Column.values()[col])) {
-      return true;
-    }
-    return false;
+    return row == myAssignments.size() || Column.UNIT.equals(Column.values()[col]);
   }
 
   @Override
@@ -165,7 +159,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
     return mutator;
   }
 
-  public List<ResourceAssignment> getResourcesAssignments() {
+  List<ResourceAssignment> getResourcesAssignments() {
     return Collections.unmodifiableList(myAssignments);
   }
 

@@ -41,7 +41,7 @@ public class ResourceAssignmentsPanel {
   private final HumanResource myPerson;
   private JTable myTable;
 
-  public ResourceAssignmentsPanel(HumanResource person, TaskManager taskManager) {
+  ResourceAssignmentsPanel(HumanResource person, TaskManager taskManager) {
     myPerson = person;
     myTaskManager = taskManager;
   }
@@ -76,8 +76,7 @@ public class ResourceAssignmentsPanel {
         return (row >= 0 && row < values.size()) ? values.get(row) : null;
       }
     };
-    JPanel tablePanel = AbstractTableAndActionsComponent.createDefaultTableAndActions(getTable(), tableAndActions.getActionsComponent());
-    return tablePanel;
+    return AbstractTableAndActionsComponent.createDefaultTableAndActions(getTable(), tableAndActions.getActionsComponent());
   }
 
   public void commit() {
@@ -87,11 +86,10 @@ public class ResourceAssignmentsPanel {
     myModel.commit();
   }
 
-  protected void setUpTasksComboColumn(TableColumn column, final JTable table) {
+  private void setUpTasksComboColumn(TableColumn column, final JTable table) {
     final JComboBox comboBox = new JComboBox();
     Task[] tasks = myTaskManager.getTasks();
-    for (int i = 0; i < tasks.length; i++) {
-      Task next = tasks[i];
+    for (Task next : tasks) {
       comboBox.addItem(next);
     }
     comboBox.setEditable(false);
