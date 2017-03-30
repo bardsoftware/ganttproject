@@ -34,7 +34,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
   enum Column {
     ID("id", String.class),
     NAME("taskname", String.class),
-    UNIT("unit", String.class);
+    UNIT("unit", Float.class);
 
     private final String myCaption;
     private final Class<?> myClass;
