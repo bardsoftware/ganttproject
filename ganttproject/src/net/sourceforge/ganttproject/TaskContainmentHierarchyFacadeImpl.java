@@ -18,32 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
-import net.sourceforge.ganttproject.task.TaskNode;
+import net.sourceforge.ganttproject.task.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.util.*;
 
 class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {
   private Map<Task, MutableTreeTableNode> myTask2treeNode = new HashMap<Task, MutableTreeTableNode>();
@@ -133,6 +121,52 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     }
     MutableTreeTableNode containerNode = (MutableTreeTableNode) treeNode.getParent();
     return containerNode == null ? null : (Task) containerNode.getUserObject();
+  }
+
+  @Override
+  public void sort(Comparator<Task> comparator) {
+    sortHelper(getRootTask(), comparator);
+  }
+
+  private void sortHelper(Task root, Comparator<Task> comparator) {
+    Task[] tasks = getNestedTasks(root);
+    // Bubble sort
+    for (int i = 0; i < tasks.length; i++) {
+      for (int j = 1; j < tasks.length - i; j++) {
+        if (comparator.compare(tasks[j - 1], tasks[j]) > 0) {
+          swap(tasks[j - 1], tasks[j]);
+          Task tmp = tasks[j - 1];
+          tasks[j - 1] = tasks[j];
+          tasks[j] = tmp;
+        }
+      }
+    }
+
+    for (Task t : tasks) {
+      sortHelper(t, comparator);
+    }
+  }
+
+  private void swap(Task t1, Task t2) {
+    MutableTreeTableNode node1 = myTask2treeNode.get(t1);
+    MutableTreeTableNode node2 = myTask2treeNode.get(t2);
+
+    MutableTreeTableNode parent1 = (MutableTreeTableNode) node1.getParent();
+    MutableTreeTableNode parent2 = (MutableTreeTableNode) node2.getParent();
+
+    int index1 = parent1.getIndex(node1);
+    int index2 = parent2.getIndex(node2);
+
+    myTree.getModel().removeNodeFromParent(node1);
+    myTree.getModel().removeNodeFromParent(node2);
+
+    if (index1 < index2) {
+      myTree.getModel().insertNodeInto(node2, parent1, index1);
+      myTree.getModel().insertNodeInto(node1, parent2, index2);
+    } else {
+      myTree.getModel().insertNodeInto(node1, parent2, index2);
+      myTree.getModel().insertNodeInto(node2, parent1, index1);
+    }
   }
 
   @Override

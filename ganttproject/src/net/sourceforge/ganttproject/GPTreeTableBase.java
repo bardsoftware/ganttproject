@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -30,6 +31,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import net.sourceforge.ganttproject.task.Task;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -44,10 +46,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
+import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -346,11 +345,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
+    private int sort;
 
     protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
       myTableColumn = tableColumn;
       myStub = stub;
+    }
+
+    public int getSort() {
+      return sort;
+    }
+
+    public void setSort(int sort) {
+      this.sort = sort;
     }
 
     private TreeTableModel getTableModel() {
@@ -528,9 +536,79 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     doInit();
   }
 
+  private static Comparator<Task> beginComparatorAsc = new Comparator<Task>() {
+    @Override
+    public int compare(Task t1, Task t2) {
+      return t1.getStart().compareTo(t2.getStart());
+    }
+  };
+
+  private static Comparator<Task> beginComparatorDesc = new Comparator<Task>() {
+    @Override
+    public int compare(Task t1, Task t2) {
+      return -t1.getStart().compareTo(t2.getStart());
+    }
+  };
+
+  private static Comparator<Task> endComparatorAsc = new Comparator<Task>() {
+    @Override
+    public int compare(Task t1, Task t2) {
+      return t1.getEnd().compareTo(t2.getEnd());
+    }
+  };
+
+  private static Comparator<Task> endComparatorDesc = new Comparator<Task>() {
+    @Override
+    public int compare(Task t1, Task t2) {
+      return -t1.getEnd().compareTo(t2.getEnd());
+    }
+  };
+  
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
+
+    getTree().getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+        myProject.getTaskManager().getTaskHierarchy().sort(new Comparator<Task>() {
+          @Override
+          public int compare(Task t1, Task t2) {
+            return t1.getStart().compareTo(t2.getStart());
+          }
+        });
+      }
+    });
+
+    getTree().getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+        int index = getTable().columnAtPoint(mouseEvent.getPoint());
+        ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
+
+
+        if (column.myStub.getID().equals(TaskDefaultColumn.BEGIN_DATE.getStub().getID())) {
+          if (column.getSort() > 0) {
+            column.setSort(-1);
+            myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorDesc);
+          } else  {
+            column.setSort(1);
+            myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorAsc);
+          }
+        }
+
+        if (column.myStub.getID().equals(TaskDefaultColumn.END_DATE.getStub().getID())) {
+          if (column.getSort() > 0) {
+            column.setSort(-1);
+            myProject.getTaskManager().getTaskHierarchy().sort(endComparatorDesc);
+          } else  {
+            column.setSort(1);
+            myProject.getTaskManager().getTaskHierarchy().sort(endComparatorAsc);
+          }
+        }
+
+      }
+    });
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
     getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {

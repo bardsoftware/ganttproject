@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.util.Collections;
-import java.util.List;
-
+import com.google.common.base.Predicate;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import com.google.common.base.Predicate;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author bard
@@ -38,6 +38,8 @@ public interface TaskContainmentHierarchyFacade {
   Task getRootTask();
 
   Task getContainer(Task nestedTask);
+
+  void sort(Comparator<Task> comparator);
 
   /**
    * @return the previous sibling or null if task is the first child of the
@@ -104,6 +106,10 @@ public interface TaskContainmentHierarchyFacade {
     @Override
     public Task getContainer(Task nestedTask) {
       return null;
+    }
+
+    @Override
+    public void sort(Comparator<Task> comparator) {
     }
 
     @Override

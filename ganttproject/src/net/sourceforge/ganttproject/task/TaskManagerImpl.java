@@ -4,22 +4,6 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
@@ -30,13 +14,7 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeDurationImpl;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitStack;
-
+import biz.ganttproject.core.time.*;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -45,13 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.ProjectEventListener;
+import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -59,34 +31,20 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
-import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
-import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
-import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.algorithm.*;
+import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollectionImpl;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
-import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListener;
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
+import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author bard
@@ -832,6 +790,11 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public Task getContainer(Task nestedTask) {
       return nestedTask.getSupertask();
+    }
+
+    @Override
+    public void sort(Comparator<Task> comparator) {
+      throw new UnsupportedOperationException("Sort is not available int this implementation. It is stateless!");
     }
 
     @Override
