@@ -93,7 +93,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
 
   @Override
   public Object getValueAt(int row, int col) {
-    assert row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount();
+    assert row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount(): "Column/row index is out of bounds";
     if (row == myAssignments.size()) {
       return null;
     }
