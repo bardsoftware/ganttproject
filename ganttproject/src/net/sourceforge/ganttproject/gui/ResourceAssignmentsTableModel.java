@@ -76,7 +76,11 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int row, int col) {
-    return row == myAssignments.size() && Column.NAME.equals(Column.values()[col]);
+    if (row == myAssignments.size()) {
+      return Column.NAME.equals(Column.values()[col]);
+    } else {
+      return Column.UNIT.equals(Column.values()[col]);
+    }
   }
 
   @Override
