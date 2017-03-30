@@ -140,7 +140,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
     ResourceAssignment ra = myAssignments.get(row);
     switch (column) {
       case UNIT:
-        ra.setLoad(Float.parseFloat(String.valueOf(val)));
+        ra.setLoad((Float)val);
         break;
     }
     fireTableCellUpdated(row, col);
