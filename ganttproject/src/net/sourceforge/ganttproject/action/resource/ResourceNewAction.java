@@ -42,14 +42,14 @@ public class ResourceNewAction extends ResourceAction {
     super("resource.new", hrManager);
     myUIFacade = uiFacade;
     myRoleManager = roleManager;
-    myTaskManager =taskManager;
+    myTaskManager = taskManager;
   }
 
   private ResourceNewAction(HumanResourceManager hrManager, RoleManager roleManager, TaskManager taskManager, UIFacade uiFacade, IconSize size) {
     super("resource.new", hrManager, null, size);
     myUIFacade = uiFacade;
     myRoleManager = roleManager;
-    myTaskManager =taskManager;
+    myTaskManager = taskManager;
   }
 
   @Override
