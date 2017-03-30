@@ -22,6 +22,7 @@ import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.StorageDialogBuilder
 import biz.ganttproject.storage.StorageMode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
@@ -45,6 +46,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
+import java.util.stream.Collectors
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -82,7 +84,12 @@ class LocalStorage(
       if (value == null) {
         return@Validator ValidationResult()
       }
-      val file = File(state.currentDir.get(), value)
+      val typedPath = Paths.get(value)
+      val file = if (typedPath.isAbsolute) {
+        typedPath.toFile()
+      } else {
+        File(state.currentDir.get(), value)
+      }
       try {
         myMode.tryFile(file)
         return@Validator ValidationResult()
@@ -114,7 +121,18 @@ class LocalStorage(
 
     fun onBrowse() {
       val fileChooser = FileChooser()
-      fileChooser.initialDirectory = state.currentDir.get()
+      val typedPath = Paths.get(state.filename.text)
+      var initialDir = if (typedPath.isAbsolute) {
+        typedPath.toFile()
+      } else {
+        state.currentDir.get().resolve(typedPath.toFile())
+      }
+      while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
+        initialDir = initialDir.parentFile
+      }
+      if (initialDir != null) {
+        fileChooser.initialDirectory = initialDir
+      }
       fileChooser.title = i18nKey("storageService.local.%s.fileChooser.title")
       fileChooser.extensionFilters.addAll(
           FileChooser.ExtensionFilter("GanttProject Files", "*.gan"))
@@ -128,6 +146,9 @@ class LocalStorage(
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", {onBrowse()}, "doclist-browse")
     state.filename.right = btnBrowse
 
+    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+    errorLabel.styleClass.addAll("hint", "noerror")
+
     val btnSave = Button(i18n.getText(i18nKey("storageService.local.%s.actionLabel")))
     btnSave.addEventHandler(ActionEvent.ACTION, {myDocumentReceiver.accept(FileDocument(state.currentFile.get()))})
     btnSave.styleClass.add("doclist-save")
@@ -135,12 +156,29 @@ class LocalStorage(
     btnSaveBox.alignment = Pos.CENTER
     btnSaveBox.maxWidth = Double.MAX_VALUE
     btnSaveBox.children.addAll(btnSave)
-    validationSupport.invalidProperty().addListener({ _, _, newValue -> btnSave.disableProperty().set(newValue) })
+    validationSupport.invalidProperty().addListener({ _, _, newValue ->
+      btnSave.disableProperty().set(newValue)
+    })
+    validationSupport.validationResultProperty().addListener({_, _, validationResult ->
+      if (validationSupport.isInvalid) {
+        errorLabel.text = formatError(validationResult)
+        errorLabel.styleClass.remove("noerror")
+        errorLabel.styleClass.add("error")
+      } else {
+        errorLabel.text = ""
+        errorLabel.styleClass.remove("error")
+        errorLabel.styleClass.add("noerror")
+      }
+    })
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
-    rootPane.children.addAll(titleBox, docList, btnSaveBox)
+    rootPane.children.addAll(titleBox, docList, errorLabel, btnSaveBox)
     return rootPane
+  }
+
+  private fun formatError(validation: ValidationResult): String {
+    return validation.errors.stream().map { error -> error.text }.collect(Collectors.joining("\n"))
   }
 
   override fun createSettingsUi(): Optional<Pane> {

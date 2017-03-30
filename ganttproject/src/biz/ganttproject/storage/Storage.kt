@@ -62,7 +62,7 @@ sealed class StorageMode(val name: String) {
                 throw FileException("document.storage.error.write.parentNotExists", file, file.parentFile)
             }
             if (!file.exists() && file.parentFile.exists() && !file.parentFile.canWrite()) {
-                throw FileException("document.storage.error.parentNotWritable", file, file.parentFile)
+                throw FileException("document.storage.error.write.parentNotWritable", file, file.parentFile)
             }
         }
 
