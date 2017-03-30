@@ -24,6 +24,8 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 //TODO Enable/Disable action on selection changes
 public class CutAction extends GPAction {
@@ -48,8 +50,17 @@ public class CutAction extends GPAction {
 
   @Override
   public CutAction asToolbarAction() {
-    CutAction result = new CutAction(myViewmanager, myUndoManager);
+    final CutAction result = new CutAction(myViewmanager, myUndoManager);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
     return result;
   }
 }

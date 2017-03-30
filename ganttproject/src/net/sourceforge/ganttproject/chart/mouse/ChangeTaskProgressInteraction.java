@@ -18,16 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskInteractionHintRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
 
 public class ChangeTaskProgressInteraction extends MouseInteractionBase implements MouseInteraction {
   private final TaskProgressChartItem myTaskProgrssItem;
@@ -61,7 +62,8 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
   @Override
   public void apply(MouseEvent event) {
-    int newProgress = myChangeScale.getProgress(event.getX());
+    ChangeTaskProgressRuler.Progress progress = myChangeScale.getProgress(event.getX());
+    int newProgress = progress.toPercents();
     if (newProgress > 100) {
       newProgress = 100;
     }
@@ -69,7 +71,13 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
       newProgress = 0;
     }
     myMutator.setCompletionPercentage(newProgress);
-    myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
+    String hintText = getHintText(newProgress, progress.toUnits());
+    myLastNotes = new TaskInteractionHintRenderer(hintText, event.getX(), event.getY() - 30);
+  }
+
+  private String getHintText(int percents, String units) {
+    return GanttLanguage.getInstance().formatText("task.changeProgressHint", percents, units,
+        getChartDateGrid().getTimeUnitStack().encode(getTask().getDuration().getTimeUnit()));
   }
 
   @Override
@@ -92,7 +100,7 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
   @Override
   public void paint(Graphics g) {
     if (myLastNotes != null) {
-      myLastNotes.paint(g);
+      myLastNotes.paint((Graphics2D)g);
     }
   }
 }

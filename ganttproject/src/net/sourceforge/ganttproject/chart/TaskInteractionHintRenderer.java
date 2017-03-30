@@ -1,9 +1,9 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2017 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,57 +18,43 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 
-/** Note paint of the graphic Area */
+import java.awt.*;
 
+/**
+ * Renders a small "hint" (text in a little framed box) at the specified position.
+ * Used for rendering tooltips when changing task progress or boundaries on Gantt chart.
+ */
 public class TaskInteractionHintRenderer {
-  private Color myColor = new Color((float) 0.930, (float) 0.930, (float) 0.930);
+  private static final Color FG_COLOR = new Color((float) 0.930, (float) 0.930, (float) 0.930);
 
-  /** The notes to paint */
-
-  String n = new String();
-
-  /** The coords */
-  int x, y;
-
-  boolean draw;
-
-  public TaskInteractionHintRenderer() {
-    draw = false;
-  }
+  private String myText;
+  private int x, y;
 
   public TaskInteractionHintRenderer(String s, int x, int y) {
-    this.n = s;
+    this.myText = s;
     this.x = x;
     this.y = y;
-    this.draw = true;
-  }
-
-  public void setDraw(boolean d) {
-    draw = d;
-  }
-
-  public boolean getDraw() {
-    return draw;
   }
 
   public void setX(int x) {
     this.x = x;
   }
 
-  public void setString(String s) {
-    n = s;
+  public void setText(String s) {
+    myText = s;
   }
 
-  public void paint(Graphics g) {
-    if (draw) {
-      g.setColor(myColor);
-      g.fillRect(x - 2, y, 70, 16);
-      g.setColor(Color.black);
-      g.drawRect(x - 2, y, 70, 16);
-      g.drawString(n, x, y + 12);
-    }
+  public void paint(Graphics2D g) {
+    TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl(g);
+    int lengthPx = calculator.getTextLength(myText) + 4;
+    int heightPx = calculator.getTextHeight(myText) + 4;
+
+    g.setColor(FG_COLOR);
+    g.fillRect(x - 2, y, lengthPx, heightPx);
+    g.setColor(Color.black);
+    g.drawRect(x - 2, y, lengthPx, heightPx);
+    g.drawString(myText, x, y + heightPx - 2);
   }
 }
