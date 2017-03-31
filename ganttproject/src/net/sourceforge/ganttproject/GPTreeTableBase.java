@@ -592,6 +592,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
 
         if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+          for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+            if (c != column) {
+              c.setSort(SortOrder.UNSORTED);
+            }
+          }
+
           if (column.getSort() == SortOrder.ASCENDING) {
             column.setSort(SortOrder.DESCENDING);
             myProject.getTaskManager().getTaskHierarchy().sort(
