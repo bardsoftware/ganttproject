@@ -32,6 +32,11 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
+import net.sourceforge.ganttproject.task.event.TaskListener;
+import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
+import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
+import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -576,6 +581,65 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     };
   }
 
+  private final TaskListener myRemoveOrderListener = new TaskListener() {
+
+    private void removeOrder() {
+      for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+        c.setSort(SortOrder.UNSORTED);
+      }
+    }
+
+    @Override
+    public void taskScheduleChanged(TaskScheduleEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void dependencyAdded(TaskDependencyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void dependencyRemoved(TaskDependencyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void dependencyChanged(TaskDependencyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskAdded(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskRemoved(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskMoved(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskPropertiesChanged(TaskPropertyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskProgressChanged(TaskPropertyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskModelReset() {
+      removeOrder();
+    }
+  };
+
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
@@ -610,6 +674,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         }
       }
     });
+
+    myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
     getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
