@@ -557,13 +557,37 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   };
 
-  private static Comparator<Task> endComparatorDesc = new Comparator<Task>() {
+  private Comparator<Task> endComparatorDesc = new Comparator<Task>() {
     @Override
     public int compare(Task t1, Task t2) {
       return -t1.getEnd().compareTo(t2.getEnd());
     }
   };
-  
+
+  private class SortTableHeaderRenderer implements TableCellRenderer {
+    private Icon ascIcon;
+    private Icon descIcon;
+    private TableCellRenderer defaultRenderer;
+    SortTableHeaderRenderer(JTable t) {
+      defaultRenderer = t.getTableHeader().getDefaultRenderer();
+      ascIcon = UIManager.getIcon("Table.ascendingSortIcon");
+      descIcon = UIManager.getIcon("Table.descendingSortIcon");
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+      Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+      ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(col);
+      if (column.getSort() > 0) {
+        ((JLabel) c).setIcon(ascIcon);
+      }
+      if (column.getSort() < 0) {
+        ((JLabel) c).setIcon(descIcon);
+      }
+      return c;
+    }
+  }
+
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
@@ -572,14 +596,18 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
         int index = getTable().columnAtPoint(mouseEvent.getPoint());
+        if (index == -1) return;
+
         ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
 
         if (column.myStub.getID().equals(TaskDefaultColumn.BEGIN_DATE.getStub().getID())) {
           if (column.getSort() > 0) {
             column.setSort(-1);
+            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorDesc);
           } else  {
             column.setSort(1);
+            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorAsc);
           }
         }
@@ -587,9 +615,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (column.myStub.getID().equals(TaskDefaultColumn.END_DATE.getStub().getID())) {
           if (column.getSort() > 0) {
             column.setSort(-1);
+            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(endComparatorDesc);
           } else  {
             column.setSort(1);
+            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(endComparatorAsc);
           }
         }
