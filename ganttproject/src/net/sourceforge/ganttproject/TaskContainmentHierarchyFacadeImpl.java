@@ -125,54 +125,31 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
 
   @Override
   public void sort(Comparator<Task> comparator) {
+    Task[] tasks = getDeepNestedTasks(getRootTask());
+    HashMap<Task, Boolean> expanded = new HashMap<>();
+    for (Task t : tasks) {
+      expanded.put(t, myTree.isExpanded(t));
+    }
+
     sortHelper(getRootTask(), comparator);
+
+    for (Task t : tasks) {
+      myTree.setExpanded(t, expanded.get(t));
+    }
   }
 
   private void sortHelper(Task root, Comparator<Task> comparator) {
     Task[] tasks = getNestedTasks(root);
-    // Bubble sort
-    for (int i = 0; i < tasks.length; i++) {
-      for (int j = 1; j < tasks.length - i; j++) {
-        if (comparator.compare(tasks[j - 1], tasks[j]) > 0) {
-          swap(tasks[j - 1], tasks[j]);
-          Task tmp = tasks[j - 1];
-          tasks[j - 1] = tasks[j];
-          tasks[j] = tmp;
-        }
-      }
-    }
+    Arrays.sort(tasks, comparator);
 
     for (Task t : tasks) {
-      sortHelper(t, comparator);
-    }
-  }
-
-  private void swap(Task t1, Task t2) {
-    MutableTreeTableNode node1 = myTask2treeNode.get(t1);
-    MutableTreeTableNode node2 = myTask2treeNode.get(t2);
-
-    MutableTreeTableNode parent1 = (MutableTreeTableNode) node1.getParent();
-    MutableTreeTableNode parent2 = (MutableTreeTableNode) node2.getParent();
-
-    int index1 = parent1.getIndex(node1);
-    int index2 = parent2.getIndex(node2);
-
-    boolean isExpanded1 = myTree.isExpanded(t1);
-    boolean isExpanded2 = myTree.isExpanded(t2);
-
-    myTree.getModel().removeNodeFromParent(node1);
-    myTree.getModel().removeNodeFromParent(node2);
-
-    if (index1 < index2) {
-      myTree.getModel().insertNodeInto(node2, parent1, index1);
-      myTree.getModel().insertNodeInto(node1, parent2, index2);
-    } else {
-      myTree.getModel().insertNodeInto(node1, parent2, index2);
-      myTree.getModel().insertNodeInto(node2, parent1, index1);
+      myTree.getModel().removeNodeFromParent(myTask2treeNode.get(t));
     }
 
-    myTree.setExpanded(t1, isExpanded1);
-    myTree.setExpanded(t2, isExpanded2);
+    for (int i = 0; i < tasks.length; i++) {
+      myTree.getModel().insertNodeInto(myTask2treeNode.get(tasks[i]), myTask2treeNode.get(root), i);
+      sortHelper(tasks[i], comparator);
+    }
   }
 
   @Override
