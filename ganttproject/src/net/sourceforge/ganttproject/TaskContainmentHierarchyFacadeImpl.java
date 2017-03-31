@@ -157,6 +157,9 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     int index1 = parent1.getIndex(node1);
     int index2 = parent2.getIndex(node2);
 
+    boolean isExpanded1 = myTree.isExpanded(t1);
+    boolean isExpanded2 = myTree.isExpanded(t2);
+
     myTree.getModel().removeNodeFromParent(node1);
     myTree.getModel().removeNodeFromParent(node2);
 
@@ -167,6 +170,9 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
       myTree.getModel().insertNodeInto(node1, parent2, index2);
       myTree.getModel().insertNodeInto(node2, parent1, index1);
     }
+
+    myTree.setExpanded(t1, isExpanded1);
+    myTree.setExpanded(t2, isExpanded2);
   }
 
   @Override
