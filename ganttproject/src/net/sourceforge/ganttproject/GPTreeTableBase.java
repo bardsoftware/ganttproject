@@ -571,21 +571,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     getTree().getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
-        myProject.getTaskManager().getTaskHierarchy().sort(new Comparator<Task>() {
-          @Override
-          public int compare(Task t1, Task t2) {
-            return t1.getStart().compareTo(t2.getStart());
-          }
-        });
-      }
-    });
-
-    getTree().getTableHeader().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent mouseEvent) {
         int index = getTable().columnAtPoint(mouseEvent.getPoint());
         ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
-
 
         if (column.myStub.getID().equals(TaskDefaultColumn.BEGIN_DATE.getStub().getID())) {
           if (column.getSort() > 0) {
