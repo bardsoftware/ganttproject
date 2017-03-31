@@ -345,7 +345,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
-    private int sort;
+    private SortOrder sort;
 
     protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
@@ -353,11 +353,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       myStub = stub;
     }
 
-    public int getSort() {
+    public SortOrder getSort() {
       return sort;
     }
 
-    public void setSort(int sort) {
+    public void setSort(SortOrder sort) {
       this.sort = sort;
     }
 
@@ -578,10 +578,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
       ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(col);
-      if (column.getSort() > 0) {
+      if (column.getSort() == SortOrder.ASCENDING) {
         ((JLabel) c).setIcon(ascIcon);
       }
-      if (column.getSort() < 0) {
+      if (column.getSort() == SortOrder.DESCENDING) {
         ((JLabel) c).setIcon(descIcon);
       }
       return c;
@@ -601,24 +601,24 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
 
         if (column.myStub.getID().equals(TaskDefaultColumn.BEGIN_DATE.getStub().getID())) {
-          if (column.getSort() > 0) {
-            column.setSort(-1);
+          if (column.getSort() == SortOrder.ASCENDING) {
+            column.setSort(SortOrder.DESCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorDesc);
           } else  {
-            column.setSort(1);
+            column.setSort(SortOrder.ASCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorAsc);
           }
         }
 
         if (column.myStub.getID().equals(TaskDefaultColumn.END_DATE.getStub().getID())) {
-          if (column.getSort() > 0) {
-            column.setSort(-1);
+          if (column.getSort() == SortOrder.ASCENDING) {
+            column.setSort(SortOrder.DESCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(endComparatorDesc);
           } else  {
-            column.setSort(1);
+            column.setSort(SortOrder.ASCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(endComparatorAsc);
           }
