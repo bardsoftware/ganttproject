@@ -58,7 +58,14 @@ import javax.swing.event.TableColumnModelListener;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Comparator;
 
 /**
  * This class is the model for GanttTreeTable to display tasks.
