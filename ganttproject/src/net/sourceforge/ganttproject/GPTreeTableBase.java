@@ -536,34 +536,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     doInit();
   }
 
-  private static Comparator<Task> beginComparatorAsc = new Comparator<Task>() {
-    @Override
-    public int compare(Task t1, Task t2) {
-      return t1.getStart().compareTo(t2.getStart());
-    }
-  };
-
-  private static Comparator<Task> beginComparatorDesc = new Comparator<Task>() {
-    @Override
-    public int compare(Task t1, Task t2) {
-      return -t1.getStart().compareTo(t2.getStart());
-    }
-  };
-
-  private static Comparator<Task> endComparatorAsc = new Comparator<Task>() {
-    @Override
-    public int compare(Task t1, Task t2) {
-      return t1.getEnd().compareTo(t2.getEnd());
-    }
-  };
-
-  private Comparator<Task> endComparatorDesc = new Comparator<Task>() {
-    @Override
-    public int compare(Task t1, Task t2) {
-      return -t1.getEnd().compareTo(t2.getEnd());
-    }
-  };
-
   private class SortTableHeaderRenderer implements TableCellRenderer {
     private final Icon myAscIcon;
     private final Icon myDescIcon;
@@ -592,6 +564,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
+  private <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
+    return new Comparator<T>() {
+      @Override
+      public int compare(T t1, T t2) {
+        return -comparator.compare(t1, t2);
+      }
+    };
+  }
+
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
@@ -603,31 +584,21 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (index == -1) return;
 
         ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
+        TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
 
-        if (column.myStub.getID().equals(TaskDefaultColumn.BEGIN_DATE.getStub().getID())) {
+        if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
           if (column.getSort() == SortOrder.ASCENDING) {
             column.setSort(SortOrder.DESCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
-            myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorDesc);
+            myProject.getTaskManager().getTaskHierarchy().sort(
+                reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
+            );
           } else  {
             column.setSort(SortOrder.ASCENDING);
             getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
-            myProject.getTaskManager().getTaskHierarchy().sort(beginComparatorAsc);
+            myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
           }
         }
-
-        if (column.myStub.getID().equals(TaskDefaultColumn.END_DATE.getStub().getID())) {
-          if (column.getSort() == SortOrder.ASCENDING) {
-            column.setSort(SortOrder.DESCENDING);
-            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
-            myProject.getTaskManager().getTaskHierarchy().sort(endComparatorDesc);
-          } else  {
-            column.setSort(SortOrder.ASCENDING);
-            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
-            myProject.getTaskManager().getTaskHierarchy().sort(endComparatorAsc);
-          }
-        }
-
       }
     });
 
