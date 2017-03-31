@@ -345,7 +345,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
-    private SortOrder sort;
+    private SortOrder mySort = SortOrder.UNSORTED;
 
     protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
@@ -354,11 +354,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     public SortOrder getSort() {
-      return sort;
+      return mySort;
     }
 
     public void setSort(SortOrder sort) {
-      this.sort = sort;
+      this.mySort = sort;
     }
 
     private TreeTableModel getTableModel() {
@@ -565,24 +565,28 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   };
 
   private class SortTableHeaderRenderer implements TableCellRenderer {
-    private Icon ascIcon;
-    private Icon descIcon;
-    private TableCellRenderer defaultRenderer;
+    private final Icon myAscIcon;
+    private final Icon myDescIcon;
+    private final TableCellRenderer myDefaultRenderer;
     SortTableHeaderRenderer(JTable t) {
-      defaultRenderer = t.getTableHeader().getDefaultRenderer();
-      ascIcon = UIManager.getIcon("Table.ascendingSortIcon");
-      descIcon = UIManager.getIcon("Table.descendingSortIcon");
+      myDefaultRenderer = t.getTableHeader().getDefaultRenderer();
+      myAscIcon = UIManager.getIcon("Table.ascendingSortIcon");
+      myDescIcon = UIManager.getIcon("Table.descendingSortIcon");
     }
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-      Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+      Component c = myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
       ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(col);
       if (column.getSort() == SortOrder.ASCENDING) {
-        ((JLabel) c).setIcon(ascIcon);
+        if (c instanceof JLabel) {
+            ((JLabel) c).setIcon(myAscIcon);
+        }
       }
       if (column.getSort() == SortOrder.DESCENDING) {
-        ((JLabel) c).setIcon(descIcon);
+        if (c instanceof JLabel) {
+          ((JLabel) c).setIcon(myDescIcon);
+        }
       }
       return c;
     }
