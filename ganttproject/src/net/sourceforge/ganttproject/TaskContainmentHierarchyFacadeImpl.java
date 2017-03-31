@@ -18,20 +18,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.task.*;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.util.collect.Pair;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.Arrays;
+
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import java.util.*;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
+import net.sourceforge.ganttproject.task.TaskNode;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {
   private Map<Task, MutableTreeTableNode> myTask2treeNode = new HashMap<Task, MutableTreeTableNode>();

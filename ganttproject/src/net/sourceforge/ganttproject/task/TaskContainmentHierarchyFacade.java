@@ -18,12 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import com.google.common.base.Predicate;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import net.sourceforge.ganttproject.util.collect.Pair;
+
+import com.google.common.base.Predicate;
 
 /**
  * @author bard
