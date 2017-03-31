@@ -577,6 +577,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
 
+    tableHeader.setDefaultRenderer(new SortTableHeaderRenderer(getTable()));
+
     getTree().getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
@@ -589,13 +591,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
           if (column.getSort() == SortOrder.ASCENDING) {
             column.setSort(SortOrder.DESCENDING);
-            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort(
                 reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
             );
           } else  {
             column.setSort(SortOrder.ASCENDING);
-            getTree().getColumn(index).setHeaderRenderer(new SortTableHeaderRenderer(getTable()));
             myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
           }
         }
