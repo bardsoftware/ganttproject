@@ -49,7 +49,11 @@ public class StoragePane {
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
   private Node myNotificationPane;
   private BorderPane storageUiPane = new BorderPane();
-  StoragePane(GPCloudStorageOptions options, ReadOnlyProxyDocument currentDocument, Consumer<Document> openDocument, Consumer<Document> updateDocument, StorageDialogBuilder.DialogUi dialogUi) {
+  StoragePane(GPCloudStorageOptions options,
+              ReadOnlyProxyDocument currentDocument,
+              Consumer<Document> openDocument,
+              Consumer<Document> updateDocument,
+              StorageDialogBuilder.DialogUi dialogUi) {
     myCloudStorageOptions = options;
     myCurrentDocument = currentDocument;
     myDocumentReceiver = openDocument;
@@ -89,7 +93,15 @@ public class StoragePane {
     myStorageUiMap.clear();
     GanttLanguage i18n = GanttLanguage.getInstance();
 
-    Consumer<Document> openDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
+    Consumer<Document> doOpenDocument = mode == StorageDialogBuilder.Mode.OPEN ? myDocumentReceiver : myDocumentUpdater;
+    Consumer<Document> openDocument = document -> {
+      try {
+        doOpenDocument.accept(document);
+        myDialogUi.close();
+      } catch (Exception e) {
+        myDialogUi.error(e);
+      }
+    };
     myStorageUiList.add(new LocalStorage(mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(), myCurrentDocument, openDocument));
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     for (WebDavServerDescriptor server : myCloudStorageOptions.getWebdavServers()) {

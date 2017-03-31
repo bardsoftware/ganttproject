@@ -81,6 +81,12 @@ public class StorageDialogBuilder {
     }
 
     @Override
+    public void close() {
+      myDialog.setResult(Boolean.TRUE);
+      myDialog.close();
+    }
+
+    @Override
     public void resize() {
       myDialog.getDialogPane().getScene().getWindow().sizeToScene();
     }
@@ -200,6 +206,8 @@ public class StorageDialogBuilder {
   }
 
   public interface DialogUi {
+    void close();
+
     void resize();
 
     void error(Throwable e);

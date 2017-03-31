@@ -80,18 +80,21 @@ class LocalStorage(
         SimpleObjectProperty(absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
         SimpleObjectProperty(absolutePrefix(filePath).toFile()))
 
+    fun resolveFile(typedString: String): File {
+      val typedPath = Paths.get(typedString)
+      return if (typedPath.isAbsolute) {
+        typedPath.toFile()
+      } else {
+        File(state.currentDir.get(), typedString)
+      }
+    }
+
     state.validator = Validator<String> { control, value ->
       if (value == null) {
         return@Validator ValidationResult()
       }
-      val typedPath = Paths.get(value)
-      val file = if (typedPath.isAbsolute) {
-        typedPath.toFile()
-      } else {
-        File(state.currentDir.get(), value)
-      }
       try {
-        myMode.tryFile(file)
+        myMode.tryFile(resolveFile(value))
         return@Validator ValidationResult()
       } catch (e: StorageMode.FileException) {
         println(e.message)
@@ -121,12 +124,7 @@ class LocalStorage(
 
     fun onBrowse() {
       val fileChooser = FileChooser()
-      val typedPath = Paths.get(state.filename.text)
-      var initialDir = if (typedPath.isAbsolute) {
-        typedPath.toFile()
-      } else {
-        state.currentDir.get().resolve(typedPath.toFile())
-      }
+      var initialDir = resolveFile(state.filename.text)
       while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
         initialDir = initialDir.parentFile
       }
@@ -168,6 +166,7 @@ class LocalStorage(
         errorLabel.text = ""
         errorLabel.styleClass.remove("error")
         errorLabel.styleClass.add("noerror")
+        state.currentFile.set(resolveFile(state.filename.text))
       }
     })
 
