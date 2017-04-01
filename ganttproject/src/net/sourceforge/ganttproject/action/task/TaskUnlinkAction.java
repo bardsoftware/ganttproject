@@ -18,19 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 public class TaskUnlinkAction extends TaskActionBase {
 
   public TaskUnlinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
     super("task.unlink", taskManager, selectionManager, uiFacade, null);
-    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
   }
 
   @Override
@@ -55,5 +57,21 @@ public class TaskUnlinkAction extends TaskActionBase {
     }
     // Update (un)link buttons
     getSelectionManager().fireSelectionChanged();
+  }
+
+  @Override
+  public GPAction asToolbarAction() {
+    final TaskUnlinkAction result = new TaskUnlinkAction(getTaskManager(), getSelectionManager(), getUIFacade());
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
+    return result;
   }
 }

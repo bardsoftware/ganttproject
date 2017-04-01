@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -415,6 +416,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   public AbstractAction[] getTreeActions() {
     return new AbstractAction[] {getMoveUpAction(), getMoveDownAction()};
+  }
+
+  @Override
+  public void addToolbarActions(ToolbarBuilder builder) {
+    builder.addButton(myResourceActionSet.getResourceMoveUpAction().asToolbarAction())
+        .addButton(myResourceActionSet.getResourceMoveDownAction().asToolbarAction());
   }
 
   public ResourceActionSet getResourceActionSet() {

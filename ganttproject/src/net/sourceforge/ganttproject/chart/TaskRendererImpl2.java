@@ -38,24 +38,18 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskImpl;
-import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 
+import javax.annotation.Nullable;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -567,11 +561,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
   }
 
+  private static Predicate<Canvas.Polygon> REMOVE_SUPERTASK_ENDINGS = new Predicate<Canvas.Polygon>() {
+    @Override
+    public boolean apply(@Nullable Canvas.Polygon shape) {
+      return !shape.hasStyle("task.ending");
+    }
+  };
   private List<Polygon> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
       OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Canvas.Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
-    if (areVisible && !getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone()) {
-      renderProgressBar(rectangles);
+    if (areVisible && !getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
+      renderProgressBar(Lists.newArrayList(Iterables.filter(rectangles, REMOVE_SUPERTASK_ENDINGS)));
     }
     if (areVisible && myTaskApi.hasNotes(t)) {
       Rectangle notes = getPrimitiveContainer().createRectangle(myModel.getBounds().width - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
