@@ -32,11 +32,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListener;
-import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
+import net.sourceforge.ganttproject.task.event.*;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -366,7 +362,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     public void setSort(SortOrder sort) {
-      this.mySort = sort;
+      mySort = sort;
     }
 
     private TreeTableModel getTableModel() {
@@ -558,21 +554,17 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
       Component c = myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
       ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(col);
-      if (column.getSort() == SortOrder.ASCENDING) {
-        if (c instanceof JLabel) {
-            ((JLabel) c).setIcon(myAscIcon);
-        }
+      if (column.getSort() == SortOrder.ASCENDING && c instanceof JLabel) {
+        ((JLabel) c).setIcon(myAscIcon);
       }
-      if (column.getSort() == SortOrder.DESCENDING) {
-        if (c instanceof JLabel) {
-          ((JLabel) c).setIcon(myDescIcon);
-        }
+      if (column.getSort() == SortOrder.DESCENDING && c instanceof JLabel) {
+        ((JLabel) c).setIcon(myDescIcon);
       }
       return c;
     }
   }
 
-  private <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
+  private static <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
     return new Comparator<T>() {
       @Override
       public int compare(T t1, T t2) {
@@ -581,7 +573,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     };
   }
 
-  private final TaskListener myRemoveOrderListener = new TaskListener() {
+  private final TaskListener myRemoveOrderListener = new TaskListenerAdapter() {
 
     private void removeOrder() {
       for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
@@ -593,22 +585,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     public void taskScheduleChanged(TaskScheduleEvent e) {
       removeOrder();
     }
-
-    @Override
-    public void dependencyAdded(TaskDependencyEvent e) {
-      removeOrder();
-    }
-
-    @Override
-    public void dependencyRemoved(TaskDependencyEvent e) {
-      removeOrder();
-    }
-
-    @Override
-    public void dependencyChanged(TaskDependencyEvent e) {
-      removeOrder();
-    }
-
     @Override
     public void taskAdded(TaskHierarchyEvent e) {
       removeOrder();
@@ -625,16 +601,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     @Override
-    public void taskPropertiesChanged(TaskPropertyEvent e) {
-      removeOrder();
-    }
-
-    @Override
-    public void taskProgressChanged(TaskPropertyEvent e) {
-      removeOrder();
-    }
-
-    @Override
     public void taskModelReset() {
       removeOrder();
     }
@@ -644,9 +610,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
 
-    tableHeader.setDefaultRenderer(new SortTableHeaderRenderer(getTable()));
+    getTableHeader().setDefaultRenderer(new SortTableHeaderRenderer(this));
 
-    getTree().getTableHeader().addMouseListener(new MouseAdapter() {
+    getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
         int index = getTable().columnAtPoint(mouseEvent.getPoint());
@@ -677,8 +643,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 
-    getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
-    getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+    getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
+    getColumnModel().addColumnModelListener(new TableColumnModelListener() {
       @Override
       public void columnMoved(TableColumnModelEvent e) {
         if (e.getFromIndex() != e.getToIndex()) {

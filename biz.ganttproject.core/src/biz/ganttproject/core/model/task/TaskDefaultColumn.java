@@ -82,8 +82,8 @@ public enum TaskDefaultColumn {
     return mySortComparator;
   }
 
-  public void setSortComparator(Comparator<?> mySortComparator) {
-    this.mySortComparator = mySortComparator;
+  public void setSortComparator(Comparator<?> sortComparator) {
+    mySortComparator = sortComparator;
   }
 
   public Column getStub() {
