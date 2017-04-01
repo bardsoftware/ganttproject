@@ -209,6 +209,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
               nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(),
               nextRectangle.getLeftX(), nextRectangle.getBottomY());
           ending.setStyle(prefix + ".start");
+          ending.addStyle("task.ending");
           myStyleApplier.applyStyle(ending);
           polygons.add(ending);
         }
@@ -217,6 +218,7 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
               nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(),
               nextRectangle.getRightX(), nextRectangle.getBottomY());
           ending.setStyle(prefix + ".end");
+          ending.addStyle("task.ending");
           myStyleApplier.applyStyle(ending);
           polygons.add(ending);
         }
