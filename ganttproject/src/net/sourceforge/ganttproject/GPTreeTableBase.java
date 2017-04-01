@@ -643,8 +643,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 
-    getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
-    getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+    getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
+    getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
       @Override
       public void columnMoved(TableColumnModelEvent e) {
         if (e.getFromIndex() != e.getToIndex()) {
