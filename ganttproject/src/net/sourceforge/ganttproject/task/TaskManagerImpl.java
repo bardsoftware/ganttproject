@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Comparator;
 
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
@@ -832,6 +833,11 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public Task getContainer(Task nestedTask) {
       return nestedTask.getSupertask();
+    }
+
+    @Override
+    public void sort(Comparator<Task> comparator) {
+      throw new UnsupportedOperationException("Sort is not available int this implementation. It is stateless!");
     }
 
     @Override

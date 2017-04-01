@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
+import java.util.Arrays;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -133,6 +135,35 @@ class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFaca
     }
     MutableTreeTableNode containerNode = (MutableTreeTableNode) treeNode.getParent();
     return containerNode == null ? null : (Task) containerNode.getUserObject();
+  }
+
+  @Override
+  public void sort(Comparator<Task> comparator) {
+    Task[] tasks = getDeepNestedTasks(getRootTask());
+    HashMap<Task, Boolean> expanded = new HashMap<>();
+    for (Task t : tasks) {
+      expanded.put(t, myTree.isExpanded(t));
+    }
+
+    sortHelper(getRootTask(), comparator);
+
+    for (Task t : tasks) {
+      myTree.setExpanded(t, expanded.get(t));
+    }
+  }
+
+  private void sortHelper(Task root, Comparator<Task> comparator) {
+    Task[] tasks = getNestedTasks(root);
+    Arrays.sort(tasks, comparator);
+
+    for (Task t : tasks) {
+      myTree.getModel().removeNodeFromParent(myTask2treeNode.get(t));
+    }
+
+    for (int i = 0; i < tasks.length; i++) {
+      myTree.getModel().insertNodeInto(myTask2treeNode.get(tasks[i]), myTask2treeNode.get(root), i);
+      sortHelper(tasks[i], comparator);
+    }
   }
 
   @Override

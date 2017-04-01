@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -30,6 +31,8 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.event.*;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -346,11 +349,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
+    private SortOrder mySort = SortOrder.UNSORTED;
 
     protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
       myTableColumn = tableColumn;
       myStub = stub;
+    }
+
+    public SortOrder getSort() {
+      return mySort;
+    }
+
+    public void setSort(SortOrder sort) {
+      mySort = sort;
     }
 
     private TreeTableModel getTableModel() {
@@ -528,9 +540,108 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     doInit();
   }
 
+  private class SortTableHeaderRenderer implements TableCellRenderer {
+    private final Icon myAscIcon;
+    private final Icon myDescIcon;
+    private final TableCellRenderer myDefaultRenderer;
+    SortTableHeaderRenderer(JTable t) {
+      myDefaultRenderer = t.getTableHeader().getDefaultRenderer();
+      myAscIcon = UIManager.getIcon("Table.ascendingSortIcon");
+      myDescIcon = UIManager.getIcon("Table.descendingSortIcon");
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+      Component c = myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+      ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(col);
+      if (column.getSort() == SortOrder.ASCENDING && c instanceof JLabel) {
+        ((JLabel) c).setIcon(myAscIcon);
+      }
+      if (column.getSort() == SortOrder.DESCENDING && c instanceof JLabel) {
+        ((JLabel) c).setIcon(myDescIcon);
+      }
+      return c;
+    }
+  }
+
+  private static <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
+    return new Comparator<T>() {
+      @Override
+      public int compare(T t1, T t2) {
+        return -comparator.compare(t1, t2);
+      }
+    };
+  }
+
+  private final TaskListener myRemoveOrderListener = new TaskListenerAdapter() {
+
+    private void removeOrder() {
+      for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+        c.setSort(SortOrder.UNSORTED);
+      }
+    }
+
+    @Override
+    public void taskScheduleChanged(TaskScheduleEvent e) {
+      removeOrder();
+    }
+    @Override
+    public void taskAdded(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskRemoved(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskMoved(TaskHierarchyEvent e) {
+      removeOrder();
+    }
+
+    @Override
+    public void taskModelReset() {
+      removeOrder();
+    }
+  };
+
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
+
+    getTableHeader().setDefaultRenderer(new SortTableHeaderRenderer(this));
+
+    getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+        int index = getTable().columnAtPoint(mouseEvent.getPoint());
+        if (index == -1) return;
+
+        ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
+        TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
+
+        if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+          for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+            if (c != column) {
+              c.setSort(SortOrder.UNSORTED);
+            }
+          }
+
+          if (column.getSort() == SortOrder.ASCENDING) {
+            column.setSort(SortOrder.DESCENDING);
+            myProject.getTaskManager().getTaskHierarchy().sort(
+                reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
+            );
+          } else  {
+            column.setSort(SortOrder.ASCENDING);
+            myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
+          }
+        }
+      }
+    });
+
+    myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
     getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
