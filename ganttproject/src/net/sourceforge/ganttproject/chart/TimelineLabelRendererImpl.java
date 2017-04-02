@@ -48,14 +48,14 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
   /**
    * This class dependencies interface
    */
-  protected static interface ChartModelApi {
+  protected interface ChartModelApi {
     int getTimelineTopLineHeight();
     List<Offset> getDefaultUnitOffsets();
     Date getStartDate();
     Collection<Task> getTimelineTasks();
   }
 
-  public TimelineLabelRendererImpl(ChartModelApi chartModel) {
+  TimelineLabelRendererImpl(ChartModelApi chartModel) {
     super(null);
     myChartModel = chartModel;
     myOffsetLookup = new OffsetLookup();
@@ -84,7 +84,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     }
   }
 
-  public Text createTimelineLabel(int leftX, final Task task) {
+  private Text createTimelineLabel(int leftX, final Task task) {
     final Text text = myLabelsLayer.createText(leftX, myChartModel.getTimelineTopLineHeight(), "");
     text.setSelector(new TextSelector() {
       @Override
@@ -106,7 +106,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     return text;
   }
 
-  public Canvas getLabelLayer() {
+  Canvas getLabelLayer() {
     return myLabelsLayer;
   }
 }
