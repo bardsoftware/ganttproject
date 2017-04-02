@@ -23,7 +23,6 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -67,7 +66,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -81,7 +79,7 @@ import java.util.Properties;
  * @author dbarashev (Dmitry Barashev)
  */
 class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
-  static List<String> ourSizes = new ArrayList<String>();
+  private static List<String> ourSizes = new ArrayList<>();
   static {
     for (Field field : PageSize.class.getDeclaredFields()) {
       if (field.getType().equals(Rectangle.class)) {
@@ -108,11 +106,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     protected void applyLocale(Locale locale) {
     }
   };
-  private final GPOptionGroup myLanguageOptions = new GPOptionGroup("export.itext.language", new GPOption[] {myLanguageOption});
-  private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", new GPOption[] { myPageSizeOption,
-      myLandscapeOption });
+  private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", myPageSizeOption,
+      myLandscapeOption);
   private final GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data",
-      new GPOption[] { myShowNotesOption });
+      myShowNotesOption);
   private boolean isColontitleEnabled = false;
   private final Properties myProperties;
   private FontSubstitutionModel mySubstitutionModel;
@@ -131,8 +128,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
     myFontCache.setProperties(myProperties);
     I18N i18n = new OptionsPageBuilder.I18N();
-    myLanguageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myLanguageOptions), "language");
-    myLanguageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
+    GPOptionGroup languageOptions = new GPOptionGroup("export.itext.language", myLanguageOption);
+    languageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(languageOptions), "language");
+    languageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
 
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
@@ -153,7 +151,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     myDataOptions.commit();
   }
 
-  public GPOptionGroup[] getOptions() {
+  GPOptionGroup[] getOptions() {
     return new GPOptionGroup[] { myDataOptions, myPageOptions };
   }
 
@@ -161,7 +159,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     return myProject;
   }
 
-  protected UIFacade getUIFacade() {
+  private UIFacade getUIFacade() {
     return myUIFacade;
   }
 
@@ -185,15 +183,15 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     return mySubstitutionModel.getSubstitution(getOriginalFontName()).getSubstitutionFamily();
   }
 
-  protected Font getSansRegular(float size) {
+  private Font getSansRegular(float size) {
     return myFontCache.getFont(getFontName(), getCharset(), Font.NORMAL, size);
   }
 
-  protected Font getSansItalic(float size) {
+  private Font getSansItalic(float size) {
     return myFontCache.getFont(getFontName(), getCharset(), Font.ITALIC, size);
   }
 
-  protected Font getSansRegularBold(float size) {
+  private Font getSansRegularBold(float size) {
     return myFontCache.getFont(getFontName(), getCharset(), Font.BOLD, size);
   }
 
@@ -242,7 +240,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
   }
 
-  public void writeProject() throws Exception {
+  private void writeProject() throws Exception {
     writeTitlePage();
     myDoc.newPage();
     isColontitleEnabled = true;
@@ -258,8 +256,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private void writeAttributes(PdfPTable table, LinkedHashMap<String, String> attrs) {
-    for (Iterator<Entry<String, String>> entries = attrs.entrySet().iterator(); entries.hasNext();) {
-      Map.Entry<String, String> nextEntry = entries.next();
+    for (Entry<String, String> nextEntry : attrs.entrySet()) {
       {
         Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));
         PdfPCell cell = new PdfPCell(p);
@@ -289,7 +286,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       head.addCell(cell);
     }
     addEmptyRow(head, 20);
-    LinkedHashMap<String, String> attrs = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> attrs = new LinkedHashMap<>();
     attrs.put(i18n("label.project_manager"), buildManagerString());
     attrs.put(i18n("label.dates"), buildProjectDatesString());
     attrs.put(" ", " ");
@@ -325,11 +322,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     if (managerRole == null) {
       return "";
     }
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     String delimiter = "";
     List<HumanResource> resources = getProject().getHumanResourceManager().getResources();
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource resource = resources.get(i);
+    for (HumanResource resource : resources) {
       if (resource.getRole().equals(managerRole)) {
         result.append(delimiter).append(resource.getName());
         delimiter = ", ";
@@ -342,8 +338,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     DateFormat dateFormat = GanttLanguage.getInstance().getMediumDateFormat();
     return MessageFormat.format(
         "{0} - {1}\n",
-        new Object[] { dateFormat.format(getProject().getTaskManager().getProjectStart()),
-            dateFormat.format(getProject().getTaskManager().getProjectEnd()) });
+        dateFormat.format(getProject().getTaskManager().getProjectStart()),
+        dateFormat.format(getProject().getTaskManager().getProjectEnd()));
   }
 
   private void writeGanttChart() {
@@ -366,7 +362,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     resourceChartWriter.write();
   }
 
-  protected PdfPTable createTableHeader(ColumnList tableHeader, ArrayList<Column> orderedColumns) {
+  private PdfPTable createTableHeader(ColumnList tableHeader, ArrayList<Column> orderedColumns) {
     for (int i = 0; i < tableHeader.getSize(); i++) {
       Column c = tableHeader.getField(i);
       if (c.isVisible()) {
@@ -390,8 +386,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
     PdfPTable table = new PdfPTable(widths);
     table.setWidthPercentage(95);
-    for (int i = 0; i < orderedColumns.size(); i++) {
-      Column field = orderedColumns.get(i);
+    for (Column field : orderedColumns) {
       if (field.isVisible()) {
         PdfPCell cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(12f)));
         cell.setPaddingTop(4);
@@ -409,7 +404,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     return table;
   }
 
-  protected void addEmptyRow(PdfPTable table, float height) {
+  private void addEmptyRow(PdfPTable table, float height) {
     PdfPCell emptyCell = new PdfPCell(new Paragraph("  ", getSansRegular(height)));
     emptyCell.setBorderWidth(0);
     for (int i = 0; i < table.getNumberOfColumns(); i++) {
@@ -417,10 +412,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
   }
 
-  protected void writeProperties(ArrayList<Column> orderedColumns, Map<String, String> id2value, PdfPTable table,
-      Map<String, PdfPCell> id2cell) {
-    for (int i = 0; i < orderedColumns.size(); i++) {
-      Column column = orderedColumns.get(i);
+  private void writeProperties(ArrayList<Column> orderedColumns, Map<String, String> id2value, PdfPTable table,
+                               Map<String, PdfPCell> id2cell) {
+    for (Column column : orderedColumns) {
       PdfPCell cell = id2cell.get(column.getID());
       if (cell == null) {
         String value = id2value.get(column.getID());
@@ -442,7 +436,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
   private void writeTasks() throws Exception {
     ColumnList visibleFields = getUIFacade().getTaskTree().getVisibleFields();
-    final ArrayList<Column> orderedColumns = new ArrayList<Column>();
+    final ArrayList<Column> orderedColumns = new ArrayList<>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
 
     TaskVisitor taskVisitor = new TaskVisitor() {
@@ -474,9 +468,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (addEmptyRow) {
           addEmptyRow(table, 10);
         }
-        HashMap<String, String> id2value = new HashMap<String, String>();
+        HashMap<String, String> id2value = new HashMap<>();
         myTaskProperty.getTaskAttributes(t, id2value);
-        HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
+        HashMap<String, PdfPCell> id2cell = new HashMap<>();
 
         PdfPCell nameCell;
         if (myShowNotesOption.isChecked() && t.getNotes() != null && !"".equals(t.getNotes())) {
@@ -516,23 +510,22 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
   private void writeResources() throws Exception {
     ColumnList visibleFields = getUIFacade().getResourceTree().getVisibleFields();
-    final ArrayList<Column> orderedColumns = new ArrayList<Column>();
+    final ArrayList<Column> orderedColumns = new ArrayList<>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
     List<HumanResource> resources = getProject().getHumanResourceManager().getResources();
 
     PropertyFetcher propFetcher = new PropertyFetcher(getProject());
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource resource = resources.get(i);
-      HashMap<String, String> id2value = new HashMap<String, String>();
+    for (HumanResource resource : resources) {
+      HashMap<String, String> id2value = new HashMap<>();
       propFetcher.getResourceAttributes(resource, id2value);
-      HashMap<String, PdfPCell> id2cell = new HashMap<String, PdfPCell>();
+      HashMap<String, PdfPCell> id2cell = new HashMap<>();
       writeProperties(orderedColumns, id2value, table, id2cell);
     }
     myDoc.add(table);
 
   }
 
-  PdfPTable createColontitleTable(String topLeft, String topRight, String bottomLeft, String bottomRight) {
+  private PdfPTable createColontitleTable(String topLeft, String topRight, String bottomLeft, String bottomRight) {
     PdfPTable head = new PdfPTable(2);
     {
       PdfPCell cell = new PdfPCell();
