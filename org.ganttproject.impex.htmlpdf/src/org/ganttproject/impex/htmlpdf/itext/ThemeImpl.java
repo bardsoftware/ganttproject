@@ -18,6 +18,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.table.ColumnList.Column;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEvent;
+import com.itextpdf.text.pdf.PdfWriter;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.export.ExporterBase;
+import net.sourceforge.ganttproject.export.TaskVisitor;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.language.LanguageOption;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.task.Task;
+import org.ganttproject.impex.htmlpdf.PropertyFetcher;
+import org.ganttproject.impex.htmlpdf.StylesheetImpl;
+import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -36,47 +74,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
-import net.sourceforge.ganttproject.export.ExporterBase;
-import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.export.TaskVisitor;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.LanguageOption;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.task.Task;
-
-import org.ganttproject.impex.htmlpdf.PropertyFetcher;
-import org.ganttproject.impex.htmlpdf.StylesheetImpl;
-import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
-
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.table.ColumnList.Column;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfPageEvent;
-import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * Implements Sortavala iText theme.
@@ -459,16 +456,17 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         boolean addEmptyRow = false;
         if (depth == 0) {
           addEmptyRow = myPreviousChildTaskCount > 0;
+          boolean hasNested = getProject().getTaskManager().getTaskHierarchy().hasNestedTasks(t);
           if (!addEmptyRow) {
-            boolean hasNested = getProject().getTaskManager().getTaskHierarchy().hasNestedTasks(t);
             if (hasNested) {
               addEmptyRow = myPreviousChildlessTaskCount > 0;
               myPreviousChildlessTaskCount = 0;
-            } else {
-              myPreviousChildlessTaskCount++;
             }
           }
           myPreviousChildTaskCount = 0;
+          if (!hasNested) {
+            myPreviousChildlessTaskCount++;
+          }
         } else {
           myPreviousChildTaskCount++;
           myPreviousChildlessTaskCount = 0;
