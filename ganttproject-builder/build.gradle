@@ -62,7 +62,7 @@ allprojects {
   task updateMavenDeps(type: Copy) {
     doFirst {
       mkdir project.ext.mvnDir
-      delete project.ext.mvnDir, '*'
+      delete project.ext.mvnDir
     }
     from configurations.mavenDeps
     into project.ext.mvnDir
