@@ -54,13 +54,18 @@ allprojects {
   apply plugin: 'eclipse'
   ext {
     libDir = 'lib'
+    mvnDir = 'lib/mvn'
   }
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
   task updateMavenDeps(type: Copy) {
+    doFirst {
+      mkdir project.ext.mvnDir
+      delete project.ext.mvnDir, '*'
+    }
     from configurations.mavenDeps
-    into project.ext.libDir
+    into project.ext.mvnDir
   }
 }
 
