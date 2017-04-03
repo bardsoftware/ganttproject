@@ -19,11 +19,6 @@
                name="*">
          </export>
       </library>
-      <library name="lib/poi-3.15.jar">
-         <export
-               name="*">
-         </export>
-      </library>
       <library name="lib/rtfparserkit-1.10.0.jar">
          <export
                name="*">
