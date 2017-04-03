@@ -28,6 +28,8 @@ sourceSets {
     }
 }
 
+assemble.dependsOn += updateMavenDeps
+
 task updateVersion {
     doFirst {
         def gpVersionFile = new File("${projectDir}/src/net/sourceforge/ganttproject/GPVersion.java")
