@@ -34,6 +34,7 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import net.sourceforge.ganttproject.export.FileExtensionEnum;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -67,7 +68,7 @@ public class GanttCSVExport {
   };
 
 
-  private CSVOptions csvOptions;
+  private CSVOptions myCsvOptions;
   private final TaskManager myTaskManager;
   private final CustomPropertyManager myTaskCustomPropertyManager;
   private final HumanResourceManager myHumanResourceManager;
@@ -84,35 +85,35 @@ public class GanttCSVExport {
     myHumanResourceManager = Preconditions.checkNotNull(resourceManager);
     myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());
     myRoleManager = Preconditions.checkNotNull(roleManager);
-    this.csvOptions = csvOptions;
+    myCsvOptions = Preconditions.checkNotNull(csvOptions);;
   }
 
 
   private CSVFormat getFormatForWriter() {
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
-    if (csvOptions.sSeparatedChar.length() == 1) {
-      format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
+    if (myCsvOptions.sSeparatedChar.length() == 1) {
+      format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0));
     }
-    if (csvOptions.sSeparatedTextChar.length() == 1) {
-      format = format.withQuote(csvOptions.sSeparatedTextChar.charAt(0));
+    if (myCsvOptions.sSeparatedTextChar.length() == 1) {
+      format = format.withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));
     }
 
     return format;
   }
 
-  private SpreadsheetWriter getWriter(OutputStream stream, String formatName) throws IOException {
-    if (formatName != null && formatName.length() > 0) {
-      switch (formatName) {
-        case "csv":
+  private SpreadsheetWriter getWriter(OutputStream stream, FileExtensionEnum extension) throws IOException {
+    if (extension != null ) {
+      switch (extension) {
+        case CSV:
           return getCsvWriter(stream);
-        case "xls":
+        case XLS:
           return getXlsWriter(stream);
         default:
-          throw new IllegalArgumentException("Unsupported formatName == " + formatName + "!");
+          throw new IllegalArgumentException("Unsupported extension == " + extension + "!");
       }
     }
 
-    throw new IllegalArgumentException("formatName == null!");
+    throw new IllegalArgumentException("extension == null!");
   }
 
 
@@ -124,8 +125,8 @@ public class GanttCSVExport {
     return new XlsWriterImpl(stream, getFormatForWriter());
   }
 
-  public void save(OutputStream stream, String formatName) throws IOException {
-    SpreadsheetWriter xlsWriter = getWriter(stream, formatName);
+  public void save(OutputStream stream, FileExtensionEnum extension) throws IOException {
+    SpreadsheetWriter xlsWriter = getWriter(stream, extension);
     save(xlsWriter);
   }
 
@@ -148,7 +149,7 @@ public class GanttCSVExport {
   public void saveCsv(OutputStream stream) throws IOException {
     SpreadsheetWriter csvPrinter = getCsvWriter(stream);
 
-//    if (csvOptions.bFixedSize) {
+//    if (myCsvOptions.bFixedSize) {
 //      // TODO The CVS library we use is lacking support for fixed size
 //      getMaxSize();
 //    }
@@ -176,7 +177,7 @@ public class GanttCSVExport {
 
   private List<CustomPropertyDefinition> writeTaskHeaders(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> defs = myTaskCustomPropertyManager.getDefinitions();
-    for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+    for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
       TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
         continue;
@@ -206,7 +207,7 @@ public class GanttCSVExport {
   private void writeTasks(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
-      for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+      for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
         }
@@ -269,7 +270,7 @@ public class GanttCSVExport {
   }
 
   private List<CustomPropertyDefinition> writeResourceHeaders(SpreadsheetWriter writer) throws IOException {
-    for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+    for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
         continue;
@@ -303,7 +304,7 @@ public class GanttCSVExport {
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
     // parse all resources
     for (HumanResource p : myHumanResourceManager.getResources()) {
-      for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+      for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
         }
@@ -371,7 +372,7 @@ public class GanttCSVExport {
    * @return the name of task with the correct level.
    */
   private String getName(Task task) {
-    if (csvOptions.bFixedSize) {
+    if (myCsvOptions.bFixedSize) {
       return task.getName();
     }
     int depth = task.getManager().getTaskHierarchy().getDepth(task) - 1;
@@ -393,7 +394,7 @@ public class GanttCSVExport {
     ResourceAssignment[] assignment = task.getAssignments();
     for (int i = 0; i < assignment.length; i++) {
       res += (assignment[i].getResource() + (i == assignment.length - 1 ? ""
-          : csvOptions.sSeparatedChar.equals(";") ? "," : ";"));
+          : myCsvOptions.sSeparatedChar.equals(";") ? "," : ";"));
     }
     return res;
   }
