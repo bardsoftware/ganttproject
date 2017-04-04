@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.io.CSVOptionsHandler;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -58,7 +59,8 @@ public class GPCsvExportTest extends TaskTestCase {
     hrManager.getById(3).addCustomProperty(prop1, "3");
 
     File xlsTemp = File.createTempFile("exportToXls", ".xls");
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
+    CSVOptionsHandler csvOptionsHandler = new CSVOptionsHandler(csvOptions, csvOptions);
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptionsHandler);
     FileOutputStream fileOutputStream = new FileOutputStream(xlsTemp);
     exporter.saveXls(fileOutputStream);
     System.out.println(xlsTemp.getAbsolutePath());
@@ -106,7 +108,8 @@ public class GPCsvExportTest extends TaskTestCase {
     hrManager.getById(2).addCustomProperty(prop2, "2");
     hrManager.getById(3).addCustomProperty(prop1, "3");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
+    CSVOptionsHandler csvOptionsHandler = new CSVOptionsHandler(csvOptions, csvOptions);
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptionsHandler);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.saveCsv(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
@@ -140,7 +143,8 @@ public class GPCsvExportTest extends TaskTestCase {
     task2.getCustomValues().addCustomProperty(prop2, "b");
     task3.getCustomValues().addCustomProperty(prop1, "c");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
+    CSVOptionsHandler csvOptionsHandler = new CSVOptionsHandler(csvOptions, csvOptions);
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptionsHandler);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.saveCsv(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");

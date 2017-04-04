@@ -32,6 +32,8 @@ import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.GPOption;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.io.CSVOptionsHandler;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.eclipse.core.runtime.IStatus;
@@ -47,7 +49,7 @@ public class ExporterToCSV extends ExporterBase {
     static final String[] FILE_EXTENSION = new String[] { "csv", "xls" };
 
     FileTypeOption() {
-      super("impex.csv.fileformat");
+      super("impex.csv.fileformat", "impex.csv.fileformat.csv");
     }
 
     @Override
@@ -128,9 +130,12 @@ public class ExporterToCSV extends ExporterBase {
         try {
           outputFile.createNewFile();
           outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+          CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
+          CSVOptions xlsOptions = ((GanttProject) getProject()).getGanttOptions().getXlsOptions();
+          CSVOptionsHandler csvOptionsHandler = new CSVOptionsHandler(csvOptions, xlsOptions);
+
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
-          GanttCSVExport exporter = new GanttCSVExport(getProject(),
-              ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
+          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptionsHandler);
           exporter.save(outputStream, myFileTypeOption.proposeFileExtension());
         } catch (IOException e) {
           getUIFacade().showErrorDialog(e);
