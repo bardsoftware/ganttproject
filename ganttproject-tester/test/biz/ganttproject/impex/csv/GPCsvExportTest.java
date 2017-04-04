@@ -52,7 +52,8 @@ public class GPCsvExportTest extends TaskTestCase {
     hrManager.getById(2).addCustomProperty(prop2, "2");
     hrManager.getById(3).addCustomProperty(prop1, "3");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
+    TestIGanttProjectImpl project = new TestIGanttProjectImpl(taskManager, hrManager, roleManager);
+    GanttCSVExport exporter = new GanttCSVExport(project, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.save(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
@@ -86,7 +87,8 @@ public class GPCsvExportTest extends TaskTestCase {
     task2.getCustomValues().addCustomProperty(prop2, "b");
     task3.getCustomValues().addCustomProperty(prop1, "c");
 
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
+    TestIGanttProjectImpl project = new TestIGanttProjectImpl(taskManager, hrManager, roleManager);
+    GanttCSVExport exporter = new GanttCSVExport(project, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     exporter.save(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
