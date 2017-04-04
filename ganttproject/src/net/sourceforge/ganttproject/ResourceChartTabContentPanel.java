@@ -39,9 +39,7 @@ class ResourceChartTabContentPanel extends ChartTabContentPanel implements GPVie
         .withSquareButtons()
         .withDpiOption(getUiFacade().getDpiOption())
         .withLafOption(getUiFacade().getLafOption(), null);
-    for (AbstractAction a : myTreeFacade.getTreeActions()) {
-      builder.addButton(a);
-    }
+    myTreeFacade.addToolbarActions(builder);
     final GPToolbar toolbar = builder.build();
     return toolbar.getToolbar();
   }

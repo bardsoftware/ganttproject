@@ -92,9 +92,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
             return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
           }
         });
-    for (AbstractAction a : myTreeFacade.getTreeActions()) {
-      builder.addButton(a);
-    }
+    myTreeFacade.addToolbarActions(builder);
     final GPToolbar toolbar = builder.build();
     return toolbar.getToolbar();
   }

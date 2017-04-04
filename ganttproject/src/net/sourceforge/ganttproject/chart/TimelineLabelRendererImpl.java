@@ -18,22 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.TextMetrics;
-import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
-
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Renders labels on the timeline.
@@ -49,19 +48,19 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
   /**
    * This class dependencies interface
    */
-  protected static interface ChartModelApi {
+  protected interface ChartModelApi {
     int getTimelineTopLineHeight();
     List<Offset> getDefaultUnitOffsets();
     Date getStartDate();
     Collection<Task> getTimelineTasks();
   }
 
-  public TimelineLabelRendererImpl(ChartModelApi chartModel) {
+  TimelineLabelRendererImpl(ChartModelApi chartModel) {
     super(null);
     myChartModel = chartModel;
     myOffsetLookup = new OffsetLookup();
-    getPrimitiveContainer().createLayers(4);
-    myLabelsLayer = getPrimitiveContainer().getLayer(3);
+    getPrimitiveContainer().createLayers(5);
+    myLabelsLayer = getPrimitiveContainer().getLayer(4);
   }
 
   @Override
@@ -85,7 +84,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     }
   }
 
-  public Text createTimelineLabel(int leftX, final Task task) {
+  private Text createTimelineLabel(int leftX, final Task task) {
     final Text text = myLabelsLayer.createText(leftX, myChartModel.getTimelineTopLineHeight(), "");
     text.setSelector(new TextSelector() {
       @Override
@@ -107,7 +106,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
     return text;
   }
 
-  public Canvas getLabelLayer() {
+  Canvas getLabelLayer() {
     return myLabelsLayer;
   }
 }

@@ -25,6 +25,8 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class ResourceMoveDownAction extends GPAction implements TreeSelectionListener {
   private final ResourceTreeTable myTable;
@@ -33,7 +35,6 @@ public class ResourceMoveDownAction extends GPAction implements TreeSelectionLis
     super("resource.move.down");
     myTable = table;
     setEnabled(false);
-    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
     table.getTree().getTreeSelectionModel().addTreeSelectionListener(this);
   }
 
@@ -50,5 +51,22 @@ public class ResourceMoveDownAction extends GPAction implements TreeSelectionLis
   @Override
   public void actionPerformed(ActionEvent e) {
     myTable.downResource();
+  }
+
+  @Override
+  public GPAction asToolbarAction() {
+    final ResourceMoveDownAction result  = new ResourceMoveDownAction(myTable);
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
+    return result;
+
   }
 }

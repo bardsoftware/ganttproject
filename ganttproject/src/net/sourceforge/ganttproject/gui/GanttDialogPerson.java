@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,6 +40,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
 public class GanttDialogPerson {
+  private final TaskManager myTaskManager;
   private boolean change;
 
   private HumanResource person;
@@ -57,10 +59,12 @@ public class GanttDialogPerson {
   private GPOptionGroup myRateGroup;
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
+  private ResourceAssignmentsPanel myAssignmentsPanel;
 
 
-  public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
+  public GanttDialogPerson(CustomPropertyManager customPropertyManager, TaskManager taskManager, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
+    myTaskManager = taskManager;
     myUIFacade = uiFacade;
     this.person = person;
     Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
@@ -69,7 +73,7 @@ public class GanttDialogPerson {
       roleFieldValues[i] = enabledRoles[i].getName();
     }
     myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
-    myGroup = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myRoleField });
+    myGroup = new GPOptionGroup("", new GPOption[]{myNameField, myPhoneField, myMailField, myRoleField});
     myGroup.setTitled(false);
 
     ((GPAbstractOption)myTotalCostField).setWritable(false);
@@ -134,6 +138,9 @@ public class GanttDialogPerson {
         myUIFacade.getResourceTree().getVisibleFields());
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
+    constructAssignmentsPanel();
+    tabbedPane.addTab(language.getText("assignments"), new ImageIcon(getClass().getResource("/icons/copy_16.gif")),
+        myAssignmentsPanel.getComponent()); //todo change icon
     // mainPage.requestDefaultFocus();
     // final FocusTraversalPolicy defaultPolicy =
     // mainPage.getFocusTraversalPolicy();
@@ -178,6 +185,10 @@ public class GanttDialogPerson {
     return tabbedPane;
   }
 
+  private void constructAssignmentsPanel() {
+    myAssignmentsPanel = new ResourceAssignmentsPanel(person, myTaskManager);
+  }
+
   private void okButtonActionPerformed() {
     if (person.getId() != -1) {
       // person ID is -1 when it is new one
@@ -207,6 +218,7 @@ public class GanttDialogPerson {
       person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));
     }
     person.setStandardPayRate(myStandardRateField.getValue());
+    myAssignmentsPanel.commit();
     // FIXME change = false;? (after applying changed they are not changes
     // anymore...)
   }

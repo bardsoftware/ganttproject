@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.task.*;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -534,6 +535,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
           myLinkTasksAction, myUnlinkTasksAction };
     }
     return myTreeActions;
+  }
+
+  @Override
+  public void addToolbarActions(ToolbarBuilder builder) {
+    builder.addButton(myUnindentAction.asToolbarAction()).addButton(myIndentAction.asToolbarAction())
+        .addButton(myMoveUpAction.asToolbarAction()).addButton(myMoveDownAction.asToolbarAction())
+        .addButton(myLinkTasksAction.asToolbarAction()).addButton(myUnlinkTasksAction.asToolbarAction());
   }
 
   @Override
