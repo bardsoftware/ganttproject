@@ -58,17 +58,28 @@ public class GPCsvExportTest extends TaskTestCase {
     hrManager.getById(3).addCustomProperty(prop1, "3");
 
     File xlsTemp = File.createTempFile("exportToXls", ".xls");
-
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     FileOutputStream fileOutputStream = new FileOutputStream(xlsTemp);
     exporter.saveXls(fileOutputStream);
-
     System.out.println(xlsTemp.getAbsolutePath());
 
     File csvTemp = File.createTempFile("exportToCsv", ".csv");
     fileOutputStream = new FileOutputStream(csvTemp);
     exporter.saveCsv(fileOutputStream);
     System.out.println(csvTemp.getAbsolutePath());
+
+    File csvTemp2 = File.createTempFile("exportToCsv", ".csv");
+    fileOutputStream = new FileOutputStream(csvTemp2);
+    exporter.save(fileOutputStream, "csv");
+    System.out.println(csvTemp2.getAbsolutePath());
+
+    File xlsTemp2 = File.createTempFile("exportToXls", ".xls");
+    fileOutputStream = new FileOutputStream(xlsTemp2);
+    exporter.save(fileOutputStream, "xls");
+    System.out.println(xlsTemp2.getAbsolutePath());
+
+
+
 
   }
 

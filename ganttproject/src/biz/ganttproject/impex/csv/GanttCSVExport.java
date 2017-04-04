@@ -92,12 +92,33 @@ public class GanttCSVExport {
       return format;
   }
 
+  private CommonWriter getWriter (OutputStream stream, String formatName) throws IOException {
+    if (formatName!=null && formatName.length()>0) {
+      switch (formatName) {
+        case "csv":
+          return getCsvWriter(stream);
+        case "xls":
+          return getXlsWriter(stream);
+        default:
+          throw new IllegalArgumentException("Unsupported formatName == " + formatName + "!");
+      }
+    }
+
+    throw new IllegalArgumentException("formatName == null!");
+  }
+
+
   private CommonWriter getCsvWriter(OutputStream stream) throws IOException {
     return new CsvWriterImpl(stream,getFormatForWriter());
   }
 
   private CommonWriter getXlsWriter(OutputStream stream) {
     return new XlsWriterImpl(stream,getFormatForWriter());
+  }
+
+  public void save(OutputStream stream, String formatName) throws IOException {
+    CommonWriter xlsWriter = getWriter(stream, formatName);
+    save(xlsWriter);
   }
 
   /**
@@ -107,12 +128,6 @@ public class GanttCSVExport {
    */
   public void saveXls(OutputStream stream) throws IOException {
     XlsWriter xlsWriter = (XlsWriter) getXlsWriter(stream);
-
-//    if (csvOptions.bFixedSize) {
-//      // TODO The CVS library we use is lacking support for fixed size
-//      getMaxSize();
-//    }
-
     save(xlsWriter);
   }
 
