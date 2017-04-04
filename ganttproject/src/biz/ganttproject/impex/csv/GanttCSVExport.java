@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
-import net.sourceforge.ganttproject.export.FileExtensionEnum;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -61,6 +60,22 @@ import java.util.Set;
  * @author athomas
  */
 public class GanttCSVExport {
+
+  public enum FileExtensionEnum {
+    CSV() {
+      @Override
+      public String toString() {
+        return "csv";
+      }
+    },
+    XLS() {
+      @Override
+      public String toString() {
+        return "xls";
+      }
+    };
+  }
+
   private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = new Predicate<ResourceAssignment>() {
     public boolean apply(ResourceAssignment arg) {
       return arg.isCoordinator();

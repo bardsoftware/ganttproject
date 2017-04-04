@@ -43,7 +43,9 @@ public class ExporterToCSV extends ExporterBase {
   static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
     static final String[] FILE_FORMAT_IDS = new String[]{"impex.csv.fileformat.csv", "impex.csv.fileformat.xls"};
 
-    static final FileExtensionEnum[] FILE_EXTENSIONS = new FileExtensionEnum[]{FileExtensionEnum.CSV, FileExtensionEnum.XLS};
+    static final GanttCSVExport.FileExtensionEnum[] FILE_EXTENSIONS = new GanttCSVExport.FileExtensionEnum[]{
+        GanttCSVExport.FileExtensionEnum.CSV
+        , GanttCSVExport.FileExtensionEnum.XLS};
 
     FileTypeOption() {
       super("impex.csv.fileformat", "impex.csv.fileformat.csv");
@@ -54,7 +56,7 @@ public class ExporterToCSV extends ExporterBase {
       return FileTypeOption.FILE_FORMAT_IDS;
     }
 
-    FileExtensionEnum proposeFileExtension() {
+    GanttCSVExport.FileExtensionEnum proposeFileExtension() {
       for (int i = 0; i < FileTypeOption.FILE_FORMAT_IDS.length; i++) {
         if (getValue().equals(FileTypeOption.FILE_FORMAT_IDS[i])) {
           return FileTypeOption.FILE_EXTENSIONS[i];
@@ -159,7 +161,7 @@ public class ExporterToCSV extends ExporterBase {
   public String[] getFileExtensions() {
     int i = 0;
     String[] result = new String[FileTypeOption.FILE_EXTENSIONS.length];
-    for (FileExtensionEnum extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
+    for (GanttCSVExport.FileExtensionEnum extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
       result[i++] = extensionEnum.toString();
     }
     return result;
