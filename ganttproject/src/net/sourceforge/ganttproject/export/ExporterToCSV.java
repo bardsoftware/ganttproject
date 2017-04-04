@@ -83,7 +83,7 @@ public class ExporterToCSV extends ExporterBase {
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
           GanttCSVExport exporter = new GanttCSVExport(getProject(),
               ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
-          exporter.save(outputStream);
+          exporter.saveCsv(outputStream);
           outputStream.flush();
         } catch (IOException e) {
           getUIFacade().showErrorDialog(e);

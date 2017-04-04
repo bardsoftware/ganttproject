@@ -20,20 +20,11 @@ package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
+import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -46,7 +37,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -87,40 +77,81 @@ public class GanttCSVExport {
     myRoleManager = Preconditions.checkNotNull(roleManager);
     this.csvOptions = Preconditions.checkNotNull(csvOptions);
   }
+
+
+
+  private CSVFormat getFormatForWriter() {
+      CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
+      if (csvOptions.sSeparatedChar.length() == 1) {
+          format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
+      }
+      if (csvOptions.sSeparatedTextChar.length() == 1) {
+          format = format.withQuote(csvOptions.sSeparatedTextChar.charAt(0));
+      }
+
+      return format;
+  }
+
+  private CommonWriter getCsvWriter(OutputStream stream) throws IOException {
+    return new CsvWriterImpl(stream,getFormatForWriter());
+  }
+
+  private CommonWriter getXlsWriter(OutputStream stream) {
+    return new XlsWriterImpl(stream,getFormatForWriter());
+  }
+
   /**
-   * Save the project as CSV on a stream
+   * Save the project as XLS on a stream
    *
    * @throws IOException
    */
-  public void save(OutputStream stream) throws IOException {
-    OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
-    CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
-    if (csvOptions.sSeparatedChar.length() == 1) {
-      format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
-    }
-    if (csvOptions.sSeparatedTextChar.length() == 1) {
-      format = format.withQuote(csvOptions.sSeparatedTextChar.charAt(0));
-    }
-
-    CSVPrinter csvPrinter = new CSVPrinter(writer, format);
+  public void saveXls(OutputStream stream) throws IOException {
+    XlsWriter xlsWriter = (XlsWriter) getXlsWriter(stream);
 
 //    if (csvOptions.bFixedSize) {
 //      // TODO The CVS library we use is lacking support for fixed size
 //      getMaxSize();
 //    }
 
-    writeTasks(csvPrinter);
+    save(xlsWriter);
+  }
+
+
+  /**
+   * Save the project as CSV on a stream
+   *
+   * @throws IOException
+   */
+  public void saveCsv(OutputStream stream) throws IOException {
+    CsvWriter csvPrinter = (CsvWriter) getCsvWriter(stream);
+
+//    if (csvOptions.bFixedSize) {
+//      // TODO The CVS library we use is lacking support for fixed size
+//      getMaxSize();
+//    }
+
+    save(csvPrinter);
+  }
+
+  /**
+   * Save the project as CSV/XLS on a stream
+   *
+   * @throws IOException
+   */
+
+  private void save(CommonWriter writer) throws IOException {
+    writeTasks(writer);
 
     if (myHumanResourceManager.getResources().size() > 0) {
-      csvPrinter.println();
-      csvPrinter.println();
-      writeResources(csvPrinter);
+      writer.println();
+      writer.println();
+      writeResources(writer);
     }
     writer.flush();
     writer.close();
   }
 
-  private List<CustomPropertyDefinition> writeTaskHeaders(CSVPrinter writer) throws IOException {
+  private List<CustomPropertyDefinition> writeTaskHeaders(CommonWriter writer) throws IOException {
     List<CustomPropertyDefinition> defs = myTaskCustomPropertyManager.getDefinitions();
     for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
       TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
@@ -146,7 +177,7 @@ public class GanttCSVExport {
 
   /** Write all tasks.
    * @throws IOException */
-  private void writeTasks(CSVPrinter writer) throws IOException {
+  private void writeTasks(CommonWriter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
       for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
@@ -211,7 +242,7 @@ public class GanttCSVExport {
     }
   }
 
-  private List<CustomPropertyDefinition> writeResourceHeaders(CSVPrinter writer) throws IOException {
+  private List<CustomPropertyDefinition> writeResourceHeaders(CommonWriter writer) throws IOException {
     for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
@@ -238,7 +269,7 @@ public class GanttCSVExport {
 
   /** write the resources.
    * @throws IOException */
-  private void writeResources(CSVPrinter writer) throws IOException {
+  private void writeResources(CommonWriter writer) throws IOException {
     Set<Role> projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
     // parse all resources
@@ -292,7 +323,7 @@ public class GanttCSVExport {
     }
   }
 
-  private void writeCustomPropertyValues(CSVPrinter writer,
+  private void writeCustomPropertyValues(CommonWriter writer,
                                          List<CustomPropertyDefinition> defs, List<CustomProperty> values) throws IOException {
     Map<String, CustomProperty> definedProps = Maps.newHashMap();
     for (CustomProperty prop : values) {
