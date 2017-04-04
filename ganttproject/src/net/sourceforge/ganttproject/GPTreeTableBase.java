@@ -46,20 +46,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import javax.annotation.Nullable;
-import javax.swing.Action;
-import javax.swing.DefaultCellEditor;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -72,12 +59,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -136,13 +118,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       if (textFieldFont instanceof Font) {
         result.setFont((Font) textFieldFont);
       }
-      final Runnable command = TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result);
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          command.run();
-        }
-      });
+
+      if (Boolean.TRUE == getClientProperty("JTable.autoStartsEdit")) {
+        ((JTextComponent) result).setText("");
+      } else {
+        SwingUtilities.invokeLater(TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result));
+      }
     }
     return result;
   }
@@ -463,7 +444,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   @Override
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-    if (e.isAltDown() || e.isControlDown()) {
+    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
+      return false;
+    }
+    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
       putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
     }
     boolean result = super.processKeyBinding(ks, e, condition, pressed);
@@ -513,9 +497,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         onProjectCreated();
       }
     });
+    setSurrendersFocusOnKeystroke(true);
   }
 
-  @Override
   protected void createDefaultEditors() {
     super.createDefaultEditors();
 
