@@ -17,25 +17,21 @@ You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.sourceforge.ganttproject.io;
+package biz.ganttproject.impex.csv;
+
+import java.io.Closeable;
+import java.io.Flushable;
+import java.io.IOException;
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public class CSVOptionsHandler {
-  private CSVOptions csvOptions;
-  private CSVOptions xlsOptions;
+public interface SpreadsheetWriter extends Flushable, Closeable {
+  void print(String value) throws IOException;
 
-  public CSVOptionsHandler(CSVOptions csvOptions, CSVOptions xlsOptions) {
-    this.csvOptions = csvOptions;
-    this.xlsOptions = xlsOptions;
-  }
+  void println() throws IOException;
 
-  public CSVOptions getCsvOptions() {
-    return csvOptions;
-  }
+  void close() throws IOException;
 
-  public CSVOptions getXlsOptions() {
-    return xlsOptions;
-  }
+  void flush() throws IOException;
 }

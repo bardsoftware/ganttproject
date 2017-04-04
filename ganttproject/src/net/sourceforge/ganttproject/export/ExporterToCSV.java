@@ -18,7 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.impex.csv.GanttCSVExport;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.io.CSVOptionsHandler;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import java.awt.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,26 +40,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPAbstractOption;
-import biz.ganttproject.core.option.GPOption;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.io.CSVOptionsHandler;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.impex.csv.GanttCSVExport;
-
 public class ExporterToCSV extends ExporterBase {
   static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
-    static final String[] FILE_FORMAT_ID = new String[] { "impex.csv.fileformat.csv", "impex.xls.fileformat.xls" };
+    static final String[] FILE_FORMAT_ID = new String[]{"impex.csv.fileformat.csv", "impex.xls.fileformat.xls"};
 
-    static final String[] FILE_EXTENSION = new String[] { "csv", "xls" };
+    static final String[] FILE_EXTENSION = new String[]{"csv", "xls"};
 
     FileTypeOption() {
       super("impex.csv.fileformat", "impex.csv.fileformat.csv");
@@ -64,7 +62,7 @@ public class ExporterToCSV extends ExporterBase {
         }
       }
       throw new IllegalStateException("Selected format=" + getValue() + " has not been found in known formats:"
-              + Arrays.asList(FileTypeOption.FILE_FORMAT_ID));
+          + Arrays.asList(FileTypeOption.FILE_FORMAT_ID));
     }
 
     @Override
@@ -83,7 +81,7 @@ public class ExporterToCSV extends ExporterBase {
   }
 
   private final FileTypeOption myFileTypeOption = new FileTypeOption();
-  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[] { myFileTypeOption });
+  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFileTypeOption});
 
 
   public ExporterToCSV() {
@@ -119,7 +117,7 @@ public class ExporterToCSV extends ExporterBase {
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createCVSExportJob(outputFile);
     resultFiles.add(outputFile);
-    return new ExporterJob[] { job };
+    return new ExporterJob[]{job};
   }
 
   private ExporterJob createCVSExportJob(final File outputFile) {

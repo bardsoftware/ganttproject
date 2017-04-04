@@ -24,8 +24,6 @@ import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.GeneralOptionPanel;
-import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jdesktop.swingx.JXTable;
@@ -69,8 +67,8 @@ public class XLSSettingsPanel extends GeneralOptionPanel {
     result.add(cbTextSeparator);
 
     result.add(new JLabel(language.getText("separatedFields")));
-    myFieldSeparatorCombo = new JComboBox(new String[] { language.getText("fixedWidth"), language.getText("doubledot"),
-        language.getText("dotComa"), language.getText("coma") });
+    myFieldSeparatorCombo = new JComboBox(new String[]{language.getText("fixedWidth"), language.getText("doubledot"),
+        language.getText("dotComa"), language.getText("coma")});
     myFieldSeparatorCombo.setEditable(false);
     result.add(myFieldSeparatorCombo);
     SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
@@ -95,13 +93,14 @@ public class XLSSettingsPanel extends GeneralOptionPanel {
     ExportFieldsTableModel(List<BooleanOption> options) {
       myOptions = options;
     }
+
     @Override
     public Class<?> getColumnClass(int columnIndex) {
       switch (columnIndex) {
-      case 0:
-        return String.class;
-      case 1:
-        return Boolean.class;
+        case 0:
+          return String.class;
+        case 1:
+          return Boolean.class;
       }
       return null;
     }
@@ -126,11 +125,11 @@ public class XLSSettingsPanel extends GeneralOptionPanel {
     public Object getValueAt(int row, int column) {
       if (row >= 0 && row < getRowCount()) {
         switch (column) {
-        case 0:
-          String id = myOptions.get(row).getID();
-          return getOptionName(id);
-        case 1:
-          return myOptions.get(row).getValue();
+          case 0:
+            String id = myOptions.get(row).getID();
+            return getOptionName(id);
+          case 1:
+            return myOptions.get(row).getValue();
         }
       }
       return null;
@@ -139,7 +138,7 @@ public class XLSSettingsPanel extends GeneralOptionPanel {
     @Override
     public void setValueAt(Object aValue, int row, int column) {
       if (row >= 0 && row < getRowCount()) {
-        myOptions.get(row).setValue((Boolean)aValue);
+        myOptions.get(row).setValue((Boolean) aValue);
       }
     }
 

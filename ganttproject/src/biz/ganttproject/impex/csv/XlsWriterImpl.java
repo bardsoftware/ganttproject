@@ -1,3 +1,22 @@
+/*
+Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package biz.ganttproject.impex.csv;
 
 import org.apache.commons.csv.CSVFormat;
@@ -7,60 +26,59 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public class XlsWriterImpl implements XlsWriter {
-    private Workbook workbook;
-    private Sheet sheet;
-    private final OutputStream stream;
+public class XlsWriterImpl implements SpreadsheetWriter {
+  private Workbook myWorkbook;
+  private Sheet mySheet;
+  private final OutputStream myStream;
 
 
-    private Row currentRow = null;
-    private int nextRowInd = 0;
-    private int nextCellInd = 0;
+  private Row myCurrentRow = null;
+  private int myNextRowInd = 0;
+  private int myNextCellInd = 0;
 
 
-    public XlsWriterImpl(OutputStream stream, CSVFormat format) {
-        this.stream = stream;
-        workbook = new HSSFWorkbook();
-        sheet = workbook.createSheet();
+  public XlsWriterImpl(OutputStream myStream, CSVFormat format) {
+    this.myStream = myStream;
+    myWorkbook = new HSSFWorkbook();
+    mySheet = myWorkbook.createSheet();
+  }
+
+  @Override
+  public void print(String value) throws IOException {
+    if (myCurrentRow == null) {
+      createNewRow();
     }
 
-    @Override
-    public void print(Object value) throws IOException {
-        if (currentRow == null) {
-            createNewRow();
-        }
-
-        Cell cell = currentRow.createCell(nextCellInd++);
-        if (value!=null) {
-            cell.setCellValue(value.toString());
-        }
+    Cell cell = myCurrentRow.createCell(myNextCellInd++);
+    if (value != null) {
+      cell.setCellValue(value);
     }
+  }
 
-    @Override
-    public void println() throws IOException {
-        createNewRow();
-        nextCellInd = 0;
-    }
+  @Override
+  public void println() throws IOException {
+    createNewRow();
+    myNextCellInd = 0;
+  }
 
-    @Override
-    public void close() throws IOException {
-        workbook.close();
-        stream.close();
-    }
+  @Override
+  public void close() throws IOException {
+    myWorkbook.close();
+    myStream.close();
+  }
 
-    @Override
-    public void flush() throws IOException {
-        workbook.write(stream);
-    }
+  @Override
+  public void flush() throws IOException {
+    myWorkbook.write(myStream);
+  }
 
-    private void createNewRow() {
-        currentRow = sheet.createRow(nextRowInd++);
-    }
+  private void createNewRow() {
+    myCurrentRow = mySheet.createRow(myNextRowInd++);
+  }
 }

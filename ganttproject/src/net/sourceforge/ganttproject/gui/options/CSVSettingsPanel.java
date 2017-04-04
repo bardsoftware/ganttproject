@@ -175,6 +175,8 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     };
   }
 
+
+
   @Override
   public boolean applyChanges(boolean askForApply) {
     CSVOptions csvOptions = getCsvOptions();
