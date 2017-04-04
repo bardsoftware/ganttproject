@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * @author Oleg Kushnikov
  */
-public class ResourceAssignmentsTableModel<T> extends TableModelExt {
+public class ResourceAssignmentsTableModel extends TableModelExt<ResourceAssignment> {
   enum Column {
     ID("id", String.class),
     NAME("taskname", String.class),
@@ -184,8 +184,8 @@ public class ResourceAssignmentsTableModel<T> extends TableModelExt {
   }
 
   @Override
-  public List<T> getAllValues() {
-    return (List<T>) myAssignments;
+  public List<ResourceAssignment> getAllValues() {
+    return myAssignments;
   }
 
   public void commit() {

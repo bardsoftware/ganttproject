@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class ResourcesTableModel<T> extends TableModelExt
+class ResourcesTableModel extends TableModelExt<ResourceAssignment>
 {
 
   static enum Column {
@@ -229,8 +229,8 @@ class ResourcesTableModel<T> extends TableModelExt
   }
 
   @Override
-  public List<T> getAllValues() {
-    return (List<T>) myAssignments;
+  public List<ResourceAssignment> getAllValues() {
+    return myAssignments;
   }
 
 }
