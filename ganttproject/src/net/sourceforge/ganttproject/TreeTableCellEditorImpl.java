@@ -105,7 +105,7 @@ class TreeTableCellEditorImpl implements TableCellEditor {
   }
 
   static Runnable createSelectAllCommand(final JTextComponent textComponent) {
-    Runnable selectAll = new Runnable() {
+    final Runnable selectAll = new Runnable() {
       @Override
       public void run() {
         textComponent.selectAll();
