@@ -46,11 +46,11 @@ public class GPCsvExportTest extends TaskTestCase {
       }
     }
     CustomPropertyDefinition prop1 = hrManager.getCustomPropertyManager().createDefinition(
-            CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
+        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
     CustomPropertyDefinition prop2 = hrManager.getCustomPropertyManager().createDefinition(
-            CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
+        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
     CustomPropertyDefinition prop3 = hrManager.getCustomPropertyManager().createDefinition(
-            CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
+        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
     hrManager.add(new HumanResource("HR1", 1, hrManager));
     hrManager.add(new HumanResource("HR2", 2, hrManager));
     hrManager.add(new HumanResource("HR3", 3, hrManager));
@@ -79,8 +79,6 @@ public class GPCsvExportTest extends TaskTestCase {
     fileOutputStream = new FileOutputStream(xlsTemp2);
     exporter.save(fileOutputStream, "xls");
     System.out.println(xlsTemp2.getAbsolutePath());
-
-
 
 
   }

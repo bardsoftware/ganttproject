@@ -130,10 +130,9 @@ public class ExporterToCSV extends ExporterBase {
           outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
           CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
           CSVOptions xlsOptions = ((GanttProject) getProject()).getGanttOptions().getXlsOptions();
-          CSVOptionsHandler csvOptionsHandler = new CSVOptionsHandler(csvOptions, xlsOptions);
-
+          
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
-          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptionsHandler);
+          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
           exporter.save(outputStream, myFileTypeOption.proposeFileExtension());
         } catch (IOException e) {
           getUIFacade().showErrorDialog(e);
