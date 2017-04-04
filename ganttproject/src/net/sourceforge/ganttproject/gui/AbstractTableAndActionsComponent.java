@@ -37,14 +37,16 @@ import java.util.List;
  * It is a UI component consisting of a table and a set of actions. Default
  * actions are "add" and "delete" which add a new row to and delete a row the
  * table. One may add other actions.
- * <p>
+ *
  * Actions are represented as buttons and this class creates a UI panel holding
  * all actions.
- * <p>
+ *
  * A few abstract methods are called when some events happen.
  *
- * @param <T> type of objects stored in the table
  * @author dbarashev (Dmitry Barashev)
+ *
+ * @param <T>
+ *          type of objects stored in the table
  */
 public abstract class AbstractTableAndActionsComponent<T> {
   private static final int ENABLED_WITH_EMPTY_SELECTION = 1;
