@@ -109,7 +109,7 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String getFileNamePattern() {
-    return proposeFileExtension().toString();
+    return proposeFileExtension();
   }
 
   @Override
