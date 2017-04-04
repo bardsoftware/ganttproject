@@ -26,7 +26,6 @@ import biz.ganttproject.impex.csv.GanttCSVExport;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.io.CSVOptionsHandler;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -44,7 +43,7 @@ public class ExporterToCSV extends ExporterBase {
   static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
     static final String[] FILE_FORMAT_ID = new String[]{"impex.csv.fileformat.csv", "impex.xls.fileformat.xls"};
 
-    static final String[] FILE_EXTENSION = new String[]{"csv", "xls"};
+    static final String[] FILE_EXTENSIONS = new String[]{"csv", "xls"};
 
     FileTypeOption() {
       super("impex.csv.fileformat", "impex.csv.fileformat.csv");
@@ -58,7 +57,7 @@ public class ExporterToCSV extends ExporterBase {
     String proposeFileExtension() {
       for (int i = 0; i < FileTypeOption.FILE_FORMAT_ID.length; i++) {
         if (getValue().equals(FileTypeOption.FILE_FORMAT_ID[i])) {
-          return FileTypeOption.FILE_EXTENSION[i];
+          return FileTypeOption.FILE_EXTENSIONS[i];
         }
       }
       throw new IllegalStateException("Selected format=" + getValue() + " has not been found in known formats:"
@@ -129,8 +128,7 @@ public class ExporterToCSV extends ExporterBase {
           outputFile.createNewFile();
           outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
           CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
-          CSVOptions xlsOptions = ((GanttProject) getProject()).getGanttOptions().getXlsOptions();
-          
+
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
           GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
           exporter.save(outputStream, myFileTypeOption.proposeFileExtension());
@@ -159,6 +157,6 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String[] getFileExtensions() {
-    return FileTypeOption.FILE_EXTENSION;
+    return FileTypeOption.FILE_EXTENSIONS;
   }
 }

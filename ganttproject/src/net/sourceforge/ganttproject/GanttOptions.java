@@ -907,13 +907,6 @@ public class GanttOptions extends SaverBase {
   }
 
   /**
-   * @return the xlsOptions.
-   */
-  public CSVOptions getXlsOptions() {
-    return xlsOptions;
-  }
-
-  /**
    * @return the toolbar position.
    */
   public int getToolBarPosition() {

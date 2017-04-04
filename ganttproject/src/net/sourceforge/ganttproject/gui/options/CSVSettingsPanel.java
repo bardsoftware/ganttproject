@@ -61,7 +61,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     super(uiFacade, language.getCorrectedLabel("csvexport"), language.getText("settingsCSVExport"));
     myCsvOptions = csvOptions;
 
-    vb.add(createSeparatorSettingsPanel("separatorSettings"));
+    vb.add(createSeparatorSettingsPanel());
     vb.add(Box.createVerticalStrut(15));
     vb.add(createTaskExportFieldsPanel(createTaskPropertiesTableModel(), "taskFields"));
     vb.add(Box.createVerticalStrut(15));
@@ -70,7 +70,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     applyComponentOrientation(language.getComponentOrientation());
   }
 
-  JComponent createSeparatorSettingsPanel(String id) {
+  JComponent createSeparatorSettingsPanel() {
     JPanel result = new JPanel(new SpringLayout());
     result.add(new JLabel(language.getText("textSeparator")));
     cbTextSeparator = new JComboBox(getCsvOptions().getSeparatedTextChars());
@@ -82,7 +82,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     myFieldSeparatorCombo.setEditable(false);
     result.add(myFieldSeparatorCombo);
     SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
-    UIUtil.createTitle(result, language.getText(id));
+    UIUtil.createTitle(result, language.getText("separatorSettings"));
     return result;
   }
 

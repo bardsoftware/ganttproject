@@ -33,8 +33,8 @@ import java.io.OutputStream;
  * @author akurutin on 04.04.2017.
  */
 public class XlsWriterImpl implements SpreadsheetWriter {
-  private Workbook myWorkbook;
-  private Sheet mySheet;
+  private final Workbook myWorkbook;
+  private final Sheet mySheet;
   private final OutputStream myStream;
 
 
@@ -43,8 +43,8 @@ public class XlsWriterImpl implements SpreadsheetWriter {
   private int myNextCellInd = 0;
 
 
-  public XlsWriterImpl(OutputStream myStream, CSVFormat format) {
-    this.myStream = myStream;
+  public XlsWriterImpl(OutputStream stream, CSVFormat format) {
+    myStream = stream;
     myWorkbook = new HSSFWorkbook();
     mySheet = myWorkbook.createSheet();
   }
