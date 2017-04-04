@@ -31,7 +31,4 @@ public interface SpreadsheetWriter extends Flushable, Closeable {
 
   void println() throws IOException;
 
-  void close() throws IOException;
-
-  void flush() throws IOException;
 }
