@@ -24,13 +24,12 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 import net.sourceforge.ganttproject.task.Task;
 
-import javax.swing.table.AbstractTableModel;
 import java.util.*;
 
 /**
  * @author Oleg Kushnikov
  */
-public class ResourceAssignmentsTableModel extends AbstractTableModel {
+public class ResourceAssignmentsTableModel extends TableModelExt<ResourceAssignment> {
   enum Column {
     ID("id", String.class),
     NAME("taskname", String.class),
@@ -168,6 +167,7 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
     return Collections.unmodifiableList(myAssignments);
   }
 
+  @Override
   public void delete(int[] selectedRows) {
     List<ResourceAssignment> selected = new ArrayList<>();
     for (int row : selectedRows) {
@@ -181,6 +181,11 @@ public class ResourceAssignmentsTableModel extends AbstractTableModel {
     }
     myAssignments.removeAll(selected);
     fireTableDataChanged();
+  }
+
+  @Override
+  public List<ResourceAssignment> getAllValues() {
+    return myAssignments;
   }
 
   public void commit() {

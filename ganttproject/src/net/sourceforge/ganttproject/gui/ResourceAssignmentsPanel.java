@@ -55,28 +55,7 @@ public class ResourceAssignmentsPanel {
     myTable = new JTable(myModel);
     UIUtil.setupTableUI(getTable());
     setUpTasksComboColumn(getTable().getColumnModel().getColumn(ResourceAssignmentsTableModel.Column.NAME.ordinal()), getTable());
-    AbstractTableAndActionsComponent<ResourceAssignment> tableAndActions =
-        new AbstractTableAndActionsComponent<ResourceAssignment>(getTable()) {
-      @Override
-      protected void onAddEvent() {
-        getTable().editCellAt(myModel.getRowCount() - 1, 1);
-      }
-
-      @Override
-      protected void onDeleteEvent() {
-        if (getTable().isEditing() && getTable().getCellEditor() != null) {
-          getTable().getCellEditor().stopCellEditing();
-        }
-        myModel.delete(getTable().getSelectedRows());
-      }
-
-      @Override
-      protected ResourceAssignment getValue(int row) {
-        java.util.List<ResourceAssignment> values = myModel.getResourcesAssignments();
-        return (row >= 0 && row < values.size()) ? values.get(row) : null;
-      }
-    };
-    return AbstractTableAndActionsComponent.createDefaultTableAndActions(getTable(), tableAndActions.getActionsComponent());
+    return AbstractTableAndActionsComponent.createDefaultTableAndActions(getTable(), myModel);
   }
 
   public void commit() {
