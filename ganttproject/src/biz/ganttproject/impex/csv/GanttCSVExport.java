@@ -140,33 +140,6 @@ public class GanttCSVExport {
   }
 
   /**
-   * Save the project as XLS on a stream
-   *
-   * @throws IOException
-   */
-  public void saveXls(OutputStream stream) throws IOException {
-    SpreadsheetWriter xlsWriter = getXlsWriter(stream);
-    save(xlsWriter);
-  }
-
-
-  /**
-   * Save the project as CSV on a stream
-   *
-   * @throws IOException
-   */
-  public void saveCsv(OutputStream stream) throws IOException {
-    SpreadsheetWriter csvPrinter = getCsvWriter(stream);
-
-//    if (myCsvOptions.bFixedSize) {
-//      // TODO The CVS library we use is lacking support for fixed size
-//      getMaxSize();
-//    }
-
-    save(csvPrinter);
-  }
-
-  /**
    * Save the project as CSV/XLS on a stream
    *
    * @throws IOException

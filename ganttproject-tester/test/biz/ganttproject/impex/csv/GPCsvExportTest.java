@@ -15,12 +15,8 @@ import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
-import org.junit.Ignore;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -32,7 +28,7 @@ public class GPCsvExportTest extends TaskTestCase {
     TaskDefaultColumn.setLocaleApi(null);
   }
 
-  public void testResourceCustomFields() throws IOException {
+  public void testResourceCustomFields() throws Exception {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
     RoleManager roleManager = new RoleManagerImpl();
@@ -57,7 +53,9 @@ public class GPCsvExportTest extends TaskTestCase {
 
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    exporter.saveCsv(outputStream);
+    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, GanttCSVExport.Format.CSV)) {
+      exporter.save(writer);
+    }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
     assertEquals(7, lines.length);
     assertEquals("ID,prop1,prop2,prop3", lines[3].trim());
@@ -66,7 +64,7 @@ public class GPCsvExportTest extends TaskTestCase {
     assertEquals("3,3,,", lines[6].trim());
   }
 
-  public void testTaskCustomFields() throws IOException {
+  public void testTaskCustomFields() throws Exception {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
     RoleManager roleManager = new RoleManagerImpl();
@@ -91,7 +89,9 @@ public class GPCsvExportTest extends TaskTestCase {
 
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    exporter.saveCsv(outputStream);
+    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, GanttCSVExport.Format.CSV)) {
+      exporter.save(writer);
+    }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
     assertEquals(4, lines.length);
     assertEquals("tableColID,prop1,prop2,prop3", lines[0].trim());
