@@ -41,8 +41,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Tests CSV import with GP semantics.
@@ -104,10 +103,20 @@ public class GPCsvImportTest extends TestCase {
     HumanResourceManager resourceManager = builder.getResourceManager();
     RoleManager roleManager = new RoleManagerImpl();
 
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.RESOURCES,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.COMPLETION,
+            TaskRecords.TaskFields.WEB_LINK,
+            TaskRecords.TaskFields.NOTES,
+            TaskRecords.TaskFields.PREDECESSORS,
+            TaskRecords.TaskFields.ID);
     String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,,,";
 
-    String header2 = "Name,ID,e-mail,Phone,Default role";
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME,ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
         taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
@@ -132,10 +141,20 @@ public class GPCsvImportTest extends TestCase {
     HumanResourceManager resourceManager = builder.getResourceManager();
     RoleManager roleManager = new RoleManagerImpl();
 
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.RESOURCES,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.COMPLETION,
+            TaskRecords.TaskFields.WEB_LINK,
+            TaskRecords.TaskFields.NOTES,
+            TaskRecords.TaskFields.PREDECESSORS,
+            TaskRecords.TaskFields.ID);
     String data1 = "";
 
-    String header2 = "Name,ID,Default role";
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME,ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,Default:1";
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
         taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
@@ -147,13 +166,23 @@ public class GPCsvImportTest extends TestCase {
         return input.getName();
       }
     });
-    assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+    assertEquals(1, resourceMap.get("Joe").getRole().getID());
   }
 
   public void testCustomFields() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
-    String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
+    
+    String header1 = "Field1," + buildTaskHeader(TaskRecords.TaskFields.ID,
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.PREDECESSORS,
+            TaskRecords.TaskFields.RESOURCES,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.COMPLETION,
+            TaskRecords.TaskFields.WEB_LINK,
+            TaskRecords.TaskFields.NOTES) + ",Field2" ;
     String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
@@ -172,11 +201,44 @@ public class GPCsvImportTest extends TestCase {
     assertEquals("value2", t1.getCustomValues().getValue(def2));
   }
 
+  private String buildTaskHeader(TaskRecords.TaskFields... taskFields) {
+    StringBuilder sb = new StringBuilder();
+    String prefix = "";
+    for(TaskRecords.TaskFields taskField : taskFields) {
+      sb.append(prefix);
+      prefix = ",";
+      sb.append(taskField);
+    }
+    return sb.toString();
+  }
+
+  private String buildResourceHeader(ResourceRecords.ResourceFields... resourceFields)
+  {
+    StringBuilder sb = new StringBuilder();
+    String prefix = "";
+    for(ResourceRecords.ResourceFields resourceField : resourceFields) {
+      sb.append(prefix);
+      prefix = ",";
+      sb.append(resourceField);
+    }
+    return sb.toString();
+  }
+
   public void testDependencies() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.ID,
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.RESOURCES,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.COMPLETION,
+            TaskRecords.TaskFields.WEB_LINK,
+            TaskRecords.TaskFields.NOTES,
+            TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
     String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
     String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
@@ -203,7 +265,17 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date,Duration,Resources,Completion,Web Link,Notes,Predecessors";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.ID,
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.RESOURCES,
+            TaskRecords.TaskFields.COMPLETION,
+            TaskRecords.TaskFields.WEB_LINK,
+            TaskRecords.TaskFields.NOTES,
+            TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
@@ -221,15 +293,20 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date,Duration,Outline number";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.ID,
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE,
+            TaskRecords.TaskFields.DURATION,
+            TaskRecords.TaskFields.OUTLINE_NUMBER);
     String data1 = "1,t1,23/07/12,26/07/12,1,1";
     String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
     String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack());
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)), taskManager, null, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
@@ -248,7 +325,11 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date";
+    String header1 = buildTaskHeader(
+            TaskRecords.TaskFields.ID,
+            TaskRecords.TaskFields.NAME,
+            TaskRecords.TaskFields.BEGIN_DATE,
+            TaskRecords.TaskFields.END_DATE);
     String data1 = "1,t1,23/07/12,26/07/12";
 
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
