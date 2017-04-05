@@ -32,53 +32,6 @@ public class GPCsvExportTest extends TaskTestCase {
     TaskDefaultColumn.setLocaleApi(null);
   }
 
-
-  @Ignore
-  public void testResourceCustomFieldsCsvXls() throws IOException {
-    HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
-    TaskManager taskManager = getTaskManager();
-    RoleManager roleManager = new RoleManagerImpl();
-    CSVOptions csvOptions = new CSVOptions();
-    for (BooleanOption option : csvOptions.getResourceOptions().values()) {
-      if (!"id".equals(option.getID())) {
-        option.setValue(false);
-      }
-    }
-    CustomPropertyDefinition prop1 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
-    CustomPropertyDefinition prop2 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
-    CustomPropertyDefinition prop3 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
-    hrManager.add(new HumanResource("HR1", 1, hrManager));
-    hrManager.add(new HumanResource("HR2", 2, hrManager));
-    hrManager.add(new HumanResource("HR3", 3, hrManager));
-    hrManager.getById(1).addCustomProperty(prop3, "1");
-    hrManager.getById(2).addCustomProperty(prop2, "2");
-    hrManager.getById(3).addCustomProperty(prop1, "3");
-
-    File xlsTemp = File.createTempFile("exportToXls", ".xls");
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
-    FileOutputStream fileOutputStream = new FileOutputStream(xlsTemp);
-    exporter.saveXls(fileOutputStream);
-    System.out.println(xlsTemp.getAbsolutePath());
-
-    File csvTemp = File.createTempFile("exportToCsv", ".csv");
-    fileOutputStream = new FileOutputStream(csvTemp);
-    exporter.saveCsv(fileOutputStream);
-    System.out.println(csvTemp.getAbsolutePath());
-
-    File csvTemp2 = File.createTempFile("exportToCsv", ".csv");
-    fileOutputStream = new FileOutputStream(csvTemp2);
-    exporter.save(fileOutputStream, "csv");
-    System.out.println(csvTemp2.getAbsolutePath());
-
-    File xlsTemp2 = File.createTempFile("exportToXls", ".xls");
-    fileOutputStream = new FileOutputStream(xlsTemp2);
-    exporter.save(fileOutputStream, "xls");
-    System.out.println(xlsTemp2.getAbsolutePath());
-  }
-
   public void testResourceCustomFields() throws IOException {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();

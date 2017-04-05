@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.GPOption;
@@ -40,12 +41,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ExporterToCSV extends ExporterBase {
+  static class FormatOption extends DefaultEnumerationOption<GanttCSVExport.Format> {
+    FormatOption() {
+      super("impex.csv.format", GanttCSVExport.Format.values());
+      setSelectedValue(GanttCSVExport.Format.CSV);
+    }
+  }
+
+  private final FormatOption myFormatOption = new FormatOption();
+
+
   static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
     static final String[] FILE_FORMAT_IDS = new String[]{"impex.csv.fileformat.csv", "impex.csv.fileformat.xls"};
 
-    static final GanttCSVExport.FileExtensionEnum[] FILE_EXTENSIONS = new GanttCSVExport.FileExtensionEnum[]{
-        GanttCSVExport.FileExtensionEnum.CSV
-        , GanttCSVExport.FileExtensionEnum.XLS};
+    static final GanttCSVExport.Format[] FILE_EXTENSIONS = new GanttCSVExport.Format[]{
+        GanttCSVExport.Format.CSV
+        , GanttCSVExport.Format.XLS};
 
     FileTypeOption() {
       super("impex.csv.fileformat", "impex.csv.fileformat.csv");
@@ -56,7 +67,7 @@ public class ExporterToCSV extends ExporterBase {
       return FileTypeOption.FILE_FORMAT_IDS;
     }
 
-    GanttCSVExport.FileExtensionEnum proposeFileExtension() {
+    GanttCSVExport.Format proposeFileExtension() {
       for (int i = 0; i < FileTypeOption.FILE_FORMAT_IDS.length; i++) {
         if (getValue().equals(FileTypeOption.FILE_FORMAT_IDS[i])) {
           return FileTypeOption.FILE_EXTENSIONS[i];
@@ -154,14 +165,14 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String proposeFileExtension() {
-    return myFileTypeOption.proposeFileExtension().toString();
+    return myFormatOption.getSelectedValue().getExtension();
   }
 
   @Override
   public String[] getFileExtensions() {
     int i = 0;
     String[] result = new String[FileTypeOption.FILE_EXTENSIONS.length];
-    for (GanttCSVExport.FileExtensionEnum extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
+    for (GanttCSVExport.Format extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
       result[i++] = extensionEnum.toString();
     }
     return result;

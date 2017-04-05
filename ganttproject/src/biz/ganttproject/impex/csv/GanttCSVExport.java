@@ -27,7 +27,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -60,20 +59,22 @@ import java.util.Set;
  * @author athomas
  */
 public class GanttCSVExport {
+  public enum Format {
+    CSV("csv"), XLS("xls");
+    private final String myExtension;
 
-  public enum FileExtensionEnum {
-    CSV() {
-      @Override
-      public String toString() {
-        return "csv";
-      }
-    },
-    XLS() {
-      @Override
-      public String toString() {
-        return "xls";
-      }
-    };
+    Format(String extension) {
+      myExtension = extension;
+    }
+
+    @Override
+    public String toString() {
+      return "impex.csv.fileFormat" + name().toLowerCase();
+    }
+
+    public String getExtension() {
+      return myExtension;
+    }
   }
 
   private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = new Predicate<ResourceAssignment>() {
@@ -100,7 +101,7 @@ public class GanttCSVExport {
     myHumanResourceManager = Preconditions.checkNotNull(resourceManager);
     myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());
     myRoleManager = Preconditions.checkNotNull(roleManager);
-    myCsvOptions = Preconditions.checkNotNull(csvOptions);;
+    myCsvOptions = Preconditions.checkNotNull(csvOptions);
   }
 
 
@@ -116,19 +117,17 @@ public class GanttCSVExport {
     return format;
   }
 
-  private SpreadsheetWriter getWriter(OutputStream stream, FileExtensionEnum extension) throws IOException {
-    if (extension != null ) {
-      switch (extension) {
-        case CSV:
-          return getCsvWriter(stream);
-        case XLS:
-          return getXlsWriter(stream);
-        default:
-          throw new IllegalArgumentException("Unsupported extension == " + extension + "!");
-      }
-    }
+  private SpreadsheetWriter getWriter(OutputStream stream, Format format) throws IOException {
+    format = Preconditions.checkNotNull(format);
 
-    throw new IllegalArgumentException("extension == null!");
+    switch (format) {
+      case CSV:
+        return getCsvWriter(stream);
+      case XLS:
+        return getXlsWriter(stream);
+      default:
+        throw new IllegalArgumentException("Unsupported format == " + format + "!");
+    }
   }
 
 
@@ -140,7 +139,7 @@ public class GanttCSVExport {
     return new XlsWriterImpl(stream, getFormatForWriter());
   }
 
-  public void save(OutputStream stream, FileExtensionEnum extension) throws IOException {
+  public void save(OutputStream stream, Format extension) throws IOException {
     SpreadsheetWriter xlsWriter = getWriter(stream, extension);
     save(xlsWriter);
   }
