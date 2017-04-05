@@ -22,6 +22,7 @@ dependencies {
   compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
   compile files('data/resources')
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
   mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
   mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
   // https://mvnrepository.com/artifact/org.apache.poi/poi
