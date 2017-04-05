@@ -77,11 +77,7 @@ public class GanttCSVExport {
     }
   }
 
-  private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = new Predicate<ResourceAssignment>() {
-    public boolean apply(ResourceAssignment arg) {
-      return arg.isCoordinator();
-    }
-  };
+  private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = arg -> arg.isCoordinator();
 
 
   private CSVOptions myCsvOptions;
@@ -139,11 +135,6 @@ public class GanttCSVExport {
     return new XlsWriterImpl(stream);
   }
 
-  /**
-   * Save the project as CSV/XLS on a stream
-   *
-   * @throws IOException
-   */
   public void save(SpreadsheetWriter writer) throws IOException {
     writeTasks(writer);
 
@@ -178,11 +169,6 @@ public class GanttCSVExport {
     return GanttLanguage.getInstance().getText(key);
   }
 
-  /**
-   * Write all tasks.
-   *
-   * @throws IOException
-   */
   private void writeTasks(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
@@ -265,19 +251,13 @@ public class GanttCSVExport {
       }
     }
     List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
-    for (int i = 0; i < customFieldDefs.size(); i++) {
-      CustomPropertyDefinition nextDef = customFieldDefs.get(i);
+    for (CustomPropertyDefinition nextDef : customFieldDefs) {
       writer.print(nextDef.getName());
     }
     writer.println();
     return customFieldDefs;
   }
 
-  /**
-   * write the resources.
-   *
-   * @throws IOException
-   */
   private void writeResources(SpreadsheetWriter writer) throws IOException {
     Set<Role> projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
@@ -369,12 +349,14 @@ public class GanttCSVExport {
    * @return the list of the assignment for the resources.
    */
   private String getAssignments(Task task) {
-    String res = "";
+    StringBuilder res = new StringBuilder();
     ResourceAssignment[] assignment = task.getAssignments();
     for (int i = 0; i < assignment.length; i++) {
-      res += (assignment[i].getResource() + (i == assignment.length - 1 ? ""
-          : myCsvOptions.sSeparatedChar.equals(";") ? "," : ";"));
+      String assignmentDelimiter = i == assignment.length - 1
+              ? ""
+              : myCsvOptions.sSeparatedChar.equals(";") ? "," : ";";
+      res.append(assignment[i].getResource()).append(assignmentDelimiter);
     }
-    return res;
+    return res.toString();
   }
 }
