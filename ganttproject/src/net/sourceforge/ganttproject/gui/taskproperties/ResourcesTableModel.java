@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
+import net.sourceforge.ganttproject.gui.TableModelExt;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -25,7 +26,6 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 
-import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +36,8 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class ResourcesTableModel extends AbstractTableModel {
+class ResourcesTableModel extends TableModelExt<ResourceAssignment>
+{
 
   static enum Column {
     ID("id", String.class), NAME("resourcename", String.class), UNIT("unit", String.class), COORDINATOR("coordinator",
@@ -225,6 +226,11 @@ class ResourcesTableModel extends AbstractTableModel {
     }
     myAssignments.removeAll(selected);
     fireTableDataChanged();
+  }
+
+  @Override
+  public List<ResourceAssignment> getAllValues() {
+    return myAssignments;
   }
 
 }
