@@ -448,9 +448,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
       return false;
     }
-//    if (e.getID() != KeyEvent.KEY_TYPED) {
-//
-//    }
     if (e.getID() != KeyEvent.KEY_PRESSED) {
       putClientProperty("GPTreeTableBase.clearText", false);
       putClientProperty("GPTreeTableBase.selectAll", false);
@@ -458,18 +455,21 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-      //putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
-      //setAutoStartEditOnKeyStroke(false);
+      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
+        return false;
+      }
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    if (e.isMetaDown() || e.isControlDown()) {
       putClientProperty("GPTreeTableBase.selectAll", true);
       putClientProperty("GPTreeTableBase.clearText", false);
       return super.processKeyBinding(ks, e, condition, pressed);
     }
     putClientProperty("GPTreeTableBase.clearText", true);
     putClientProperty("GPTreeTableBase.selectAll", false);
-    boolean result = super.processKeyBinding(ks, e, condition, pressed);
-    //setAutoStartEditOnKeyStroke(true);
-    //putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-    return result;
+    return super.processKeyBinding(ks, e, condition, pressed);
   }
 
   @Override
