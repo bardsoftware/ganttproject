@@ -119,9 +119,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         result.setFont((Font) textFieldFont);
       }
 
-      if (Boolean.TRUE == getClientProperty("JTable.autoStartsEdit")) {
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.clearText")) {
         ((JTextComponent) result).setText("");
-      } else {
+      }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.selectAll")) {
         SwingUtilities.invokeLater(TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result));
       }
     }
@@ -447,11 +448,27 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
       return false;
     }
-    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-      putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+//    if (e.getID() != KeyEvent.KEY_TYPED) {
+//
+//    }
+    if (e.getID() != KeyEvent.KEY_PRESSED) {
+      putClientProperty("GPTreeTableBase.clearText", false);
+      putClientProperty("GPTreeTableBase.selectAll", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
     }
+
+    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+      //putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+      //setAutoStartEditOnKeyStroke(false);
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    putClientProperty("GPTreeTableBase.clearText", true);
+    putClientProperty("GPTreeTableBase.selectAll", false);
     boolean result = super.processKeyBinding(ks, e, condition, pressed);
-    putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
+    //setAutoStartEditOnKeyStroke(true);
+    //putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
     return result;
   }
 
@@ -497,6 +514,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         onProjectCreated();
       }
     });
+    setAutoStartEditOnKeyStroke(true);
     setSurrendersFocusOnKeystroke(true);
   }
 
