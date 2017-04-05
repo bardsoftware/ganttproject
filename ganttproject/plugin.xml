@@ -81,9 +81,6 @@
       <library name="lib/core/swingx-1.6.4.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/poi-3.15.jar">
-         <export name="*"/>
-      </library>
       <library name="data/resources/">
          <export name="*"/>
       </library>
