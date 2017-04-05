@@ -125,6 +125,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       if (Boolean.TRUE == getClientProperty("GPTreeTableBase.selectAll")) {
         SwingUtilities.invokeLater(TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result));
       }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.unselectAll")) {
+        SwingUtilities.invokeLater(TreeTableCellEditorImpl.createUnselectAllCommand((JTextComponent) result));
+        putClientProperty("GPTreeTableBase.unselectAll", false);
+      }
     }
     return result;
   }
@@ -469,6 +473,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
     putClientProperty("GPTreeTableBase.clearText", true);
     putClientProperty("GPTreeTableBase.selectAll", false);
+    if (UIManager.getLookAndFeel().getName().toLowerCase().indexOf("osx") >= 0) {
+      putClientProperty("GPTreeTableBase.unselectAll", true);
+    }
     return super.processKeyBinding(ks, e, condition, pressed);
   }
 
