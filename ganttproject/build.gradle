@@ -15,10 +15,6 @@ dependencies {
   mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.15'
 }
 
-updateMavenDeps.doFirst {
-  into project.ext.libDir
-}
-
 sourceSets {
     main {
         java {
@@ -30,6 +26,8 @@ sourceSets {
         }
     }
 }
+
+assemble.dependsOn += updateMavenDeps
 
 task updateVersion {
     doFirst {
@@ -47,6 +45,7 @@ task copyPluginFiles(type: Copy) {
       include "plugin.xml"
       include "lib/core/**.jar"
       exclude "lib/core/eclipsito.jar"
+      include "lib/mvn/**.jar"
       include "data/resources/**.ttf"
       include "data/resources/**.properties"
       include "data/resources/calendar/**"
