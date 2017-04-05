@@ -69,7 +69,7 @@ public class GanttCSVExport {
 
     @Override
     public String toString() {
-      return "impex.csv.fileFormat" + name().toLowerCase();
+      return "impex.csv.fileformat." + name().toLowerCase();
     }
 
     public String getExtension() {
@@ -105,7 +105,7 @@ public class GanttCSVExport {
   }
 
 
-  private CSVFormat getFormatForWriter() {
+  private CSVFormat getCSVFormat() {
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (myCsvOptions.sSeparatedChar.length() == 1) {
       format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0));
@@ -117,7 +117,7 @@ public class GanttCSVExport {
     return format;
   }
 
-  private SpreadsheetWriter getWriter(OutputStream stream, Format format) throws IOException {
+  public SpreadsheetWriter createWriter(OutputStream stream, Format format) throws IOException {
     format = Preconditions.checkNotNull(format);
 
     switch (format) {
@@ -132,16 +132,11 @@ public class GanttCSVExport {
 
 
   private SpreadsheetWriter getCsvWriter(OutputStream stream) throws IOException {
-    return new CsvWriterImpl(stream, getFormatForWriter());
+    return new CsvWriterImpl(stream, getCSVFormat());
   }
 
   private SpreadsheetWriter getXlsWriter(OutputStream stream) {
-    return new XlsWriterImpl(stream, getFormatForWriter());
-  }
-
-  public void save(OutputStream stream, Format extension) throws IOException {
-    SpreadsheetWriter xlsWriter = getWriter(stream, extension);
-    save(xlsWriter);
+    return new XlsWriterImpl(stream);
   }
 
   /**
@@ -176,8 +171,7 @@ public class GanttCSVExport {
    *
    * @throws IOException
    */
-
-  private void save(SpreadsheetWriter writer) throws IOException {
+  public void save(SpreadsheetWriter writer) throws IOException {
     writeTasks(writer);
 
     if (myHumanResourceManager.getResources().size() > 0) {
@@ -185,8 +179,6 @@ public class GanttCSVExport {
       writer.println();
       writeResources(writer);
     }
-    writer.flush();
-    writer.close();
   }
 
   private List<CustomPropertyDefinition> writeTaskHeaders(SpreadsheetWriter writer) throws IOException {

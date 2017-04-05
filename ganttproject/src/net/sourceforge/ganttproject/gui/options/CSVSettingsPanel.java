@@ -18,8 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
-import java.util.List;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.jdesktop.swingx.JXTable;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -30,19 +37,8 @@ import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
-
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.jdesktop.swingx.JXTable;
-
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-
-import com.google.common.collect.Lists;
+import java.awt.BorderLayout;
+import java.util.List;
 
 /**
  * Panel to edit the text export parameters
@@ -82,7 +78,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     myFieldSeparatorCombo.setEditable(false);
     result.add(myFieldSeparatorCombo);
     SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
-    UIUtil.createTitle(result, language.getText("separatorSettings"));
+    UIUtil.createTitle(result, language.getText("optionPage.impex.csv.group.csv.label"));
     return result;
   }
 

@@ -19,11 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.impex.csv.GanttCSVExport;
+import biz.ganttproject.impex.csv.SpreadsheetWriter;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.io.CSVOptions;
@@ -37,8 +36,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ExporterToCSV extends ExporterBase {
   static class FormatOption extends DefaultEnumerationOption<GanttCSVExport.Format> {
@@ -51,49 +50,7 @@ public class ExporterToCSV extends ExporterBase {
   private final FormatOption myFormatOption = new FormatOption();
 
 
-  static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
-    static final String[] FILE_FORMAT_IDS = new String[]{"impex.csv.fileformat.csv", "impex.csv.fileformat.xls"};
-
-    static final GanttCSVExport.Format[] FILE_EXTENSIONS = new GanttCSVExport.Format[]{
-        GanttCSVExport.Format.CSV
-        , GanttCSVExport.Format.XLS};
-
-    FileTypeOption() {
-      super("impex.csv.fileformat", "impex.csv.fileformat.csv");
-    }
-
-    @Override
-    public String[] getAvailableValues() {
-      return FileTypeOption.FILE_FORMAT_IDS;
-    }
-
-    GanttCSVExport.Format proposeFileExtension() {
-      for (int i = 0; i < FileTypeOption.FILE_FORMAT_IDS.length; i++) {
-        if (getValue().equals(FileTypeOption.FILE_FORMAT_IDS[i])) {
-          return FileTypeOption.FILE_EXTENSIONS[i];
-        }
-      }
-      throw new IllegalStateException("Selected format=" + getValue() + " has not been found in known formats:"
-          + Arrays.asList(FileTypeOption.FILE_FORMAT_IDS));
-    }
-
-    @Override
-    public String getPersistentValue() {
-      return null;
-    }
-
-    @Override
-    public void loadPersistentValue(String value) {
-    }
-
-    @Override
-    public boolean isChanged() {
-      return false;
-    }
-  }
-
-  private final FileTypeOption myFileTypeOption = new FileTypeOption();
-  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFileTypeOption});
+  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFormatOption});
 
 
   public ExporterToCSV() {
@@ -144,8 +101,10 @@ public class ExporterToCSV extends ExporterBase {
 
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
           GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
-          exporter.save(outputStream, myFileTypeOption.proposeFileExtension());
-        } catch (IOException e) {
+          try (SpreadsheetWriter writer = exporter.createWriter(outputStream, myFormatOption.getSelectedValue())) {
+            exporter.save(writer);
+          }
+        } catch (Exception e) {
           getUIFacade().showErrorDialog(e);
           return Status.CANCEL_STATUS;
         } finally {
@@ -170,11 +129,6 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String[] getFileExtensions() {
-    int i = 0;
-    String[] result = new String[FileTypeOption.FILE_EXTENSIONS.length];
-    for (GanttCSVExport.Format extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
-      result[i++] = extensionEnum.toString();
-    }
-    return result;
+    return Stream.of(GanttCSVExport.Format.values()).map(f -> f.getExtension()).toArray(String[]::new);
   }
 }

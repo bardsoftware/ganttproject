@@ -19,14 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package biz.ganttproject.impex.csv;
 
-import java.io.Closeable;
-import java.io.Flushable;
 import java.io.IOException;
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public interface SpreadsheetWriter extends Flushable, Closeable {
+public interface SpreadsheetWriter extends AutoCloseable {
   void print(String value) throws IOException;
 
   void println() throws IOException;

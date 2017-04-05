@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package biz.ganttproject.impex.csv;
 
-import org.apache.commons.csv.CSVFormat;
+import com.google.common.base.Preconditions;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -43,8 +43,8 @@ public class XlsWriterImpl implements SpreadsheetWriter {
   private int myNextCellInd = 0;
 
 
-  public XlsWriterImpl(OutputStream stream, CSVFormat format) {
-    myStream = stream;
+  XlsWriterImpl(OutputStream stream) {
+    myStream = Preconditions.checkNotNull(stream);
     myWorkbook = new HSSFWorkbook();
     mySheet = myWorkbook.createSheet();
   }
@@ -69,13 +69,9 @@ public class XlsWriterImpl implements SpreadsheetWriter {
 
   @Override
   public void close() throws IOException {
+    myWorkbook.write(myStream);
     myWorkbook.close();
     myStream.close();
-  }
-
-  @Override
-  public void flush() throws IOException {
-    myWorkbook.write(myStream);
   }
 
   private void createNewRow() {

@@ -33,7 +33,7 @@ import java.io.OutputStreamWriter;
 public class CsvWriterImpl implements SpreadsheetWriter {
   private final CSVPrinter myCsvPrinter;
 
-  public CsvWriterImpl(OutputStream stream, CSVFormat format) throws IOException {
+  CsvWriterImpl(OutputStream stream, CSVFormat format) throws IOException {
     OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
     myCsvPrinter = new CSVPrinter(writer, format);
   }
@@ -50,11 +50,7 @@ public class CsvWriterImpl implements SpreadsheetWriter {
 
   @Override
   public void close() throws IOException {
-    myCsvPrinter.close();
-  }
-
-  @Override
-  public void flush() throws IOException {
     myCsvPrinter.flush();
+    myCsvPrinter.close();
   }
 }
