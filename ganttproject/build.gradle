@@ -12,7 +12,6 @@ dependencies {
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
   mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
   mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
-  // https://mvnrepository.com/artifact/org.apache.poi/poi
   mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.15'
 }
 

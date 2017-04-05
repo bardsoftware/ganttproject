@@ -82,6 +82,7 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
     myFieldSeparatorCombo.setEditable(false);
     result.add(myFieldSeparatorCombo);
     SpringUtilities.makeCompactGrid(result, 2, 2, 0, 0, 3, 3);
+    UIUtil.createTitle(result, language.getText("separatorSettings"));
     return result;
   }
 
@@ -174,6 +175,8 @@ public class CSVSettingsPanel extends GeneralOptionPanel {
       }
     };
   }
+
+
 
   @Override
   public boolean applyChanges(boolean askForApply) {

@@ -18,27 +18,87 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.impex.csv.GanttCSVExport;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import java.awt.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.impex.csv.GanttCSVExport;
-
 public class ExporterToCSV extends ExporterBase {
-  /** List of available/associated extensions */
-  private static String[] FILE_EXTENSIONS = new String[] { "csv" };
+  static class FormatOption extends DefaultEnumerationOption<GanttCSVExport.Format> {
+    FormatOption() {
+      super("impex.csv.format", GanttCSVExport.Format.values());
+      setSelectedValue(GanttCSVExport.Format.CSV);
+    }
+  }
+
+  private final FormatOption myFormatOption = new FormatOption();
+
+
+  static class FileTypeOption extends GPAbstractOption<String> implements EnumerationOption {
+    static final String[] FILE_FORMAT_IDS = new String[]{"impex.csv.fileformat.csv", "impex.csv.fileformat.xls"};
+
+    static final GanttCSVExport.Format[] FILE_EXTENSIONS = new GanttCSVExport.Format[]{
+        GanttCSVExport.Format.CSV
+        , GanttCSVExport.Format.XLS};
+
+    FileTypeOption() {
+      super("impex.csv.fileformat", "impex.csv.fileformat.csv");
+    }
+
+    @Override
+    public String[] getAvailableValues() {
+      return FileTypeOption.FILE_FORMAT_IDS;
+    }
+
+    GanttCSVExport.Format proposeFileExtension() {
+      for (int i = 0; i < FileTypeOption.FILE_FORMAT_IDS.length; i++) {
+        if (getValue().equals(FileTypeOption.FILE_FORMAT_IDS[i])) {
+          return FileTypeOption.FILE_EXTENSIONS[i];
+        }
+      }
+      throw new IllegalStateException("Selected format=" + getValue() + " has not been found in known formats:"
+          + Arrays.asList(FileTypeOption.FILE_FORMAT_IDS));
+    }
+
+    @Override
+    public String getPersistentValue() {
+      return null;
+    }
+
+    @Override
+    public void loadPersistentValue(String value) {
+    }
+
+    @Override
+    public boolean isChanged() {
+      return false;
+    }
+  }
+
+  private final FileTypeOption myFileTypeOption = new FileTypeOption();
+  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFileTypeOption});
+
+
+  public ExporterToCSV() {
+    myOptions.setTitled(false);
+  }
 
   @Override
   public String getFileTypeDescription() {
@@ -47,7 +107,7 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public GPOptionGroup getOptions() {
-    return null;
+    return myOptions;
   }
 
   @Override
@@ -62,14 +122,14 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String getFileNamePattern() {
-    return FILE_EXTENSIONS[0];
+    return proposeFileExtension();
   }
 
   @Override
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createCVSExportJob(outputFile);
     resultFiles.add(outputFile);
-    return new ExporterJob[] { job };
+    return new ExporterJob[]{job};
   }
 
   private ExporterJob createCVSExportJob(final File outputFile) {
@@ -80,11 +140,11 @@ public class ExporterToCSV extends ExporterBase {
         try {
           outputFile.createNewFile();
           outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+          CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
+
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
-          GanttCSVExport exporter = new GanttCSVExport(getProject(),
-              ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
-          exporter.save(outputStream);
-          outputStream.flush();
+          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
+          exporter.save(outputStream, myFileTypeOption.proposeFileExtension());
         } catch (IOException e) {
           getUIFacade().showErrorDialog(e);
           return Status.CANCEL_STATUS;
@@ -105,11 +165,16 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String proposeFileExtension() {
-    return FILE_EXTENSIONS[0];
+    return myFormatOption.getSelectedValue().getExtension();
   }
 
   @Override
   public String[] getFileExtensions() {
-    return FILE_EXTENSIONS;
+    int i = 0;
+    String[] result = new String[FileTypeOption.FILE_EXTENSIONS.length];
+    for (GanttCSVExport.Format extensionEnum : FileTypeOption.FILE_EXTENSIONS) {
+      result[i++] = extensionEnum.toString();
+    }
+    return result;
   }
 }
