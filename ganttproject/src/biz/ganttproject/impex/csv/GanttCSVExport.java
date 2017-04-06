@@ -20,7 +20,6 @@ package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -46,11 +45,9 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -62,13 +59,32 @@ import java.util.Set;
  * @author athomas
  */
 public class GanttCSVExport {
+  public enum Format {
+    CSV("csv"), XLS("xls");
+    private final String myExtension;
+
+    Format(String extension) {
+      myExtension = extension;
+    }
+
+    @Override
+    public String toString() {
+      return "impex.csv.fileformat." + name().toLowerCase();
+    }
+
+    public String getExtension() {
+      return myExtension;
+    }
+  }
+
   private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = new Predicate<ResourceAssignment>() {
     public boolean apply(ResourceAssignment arg) {
       return arg.isCoordinator();
     }
   };
 
-  private final CSVOptions csvOptions;
+
+  private CSVOptions myCsvOptions;
   private final TaskManager myTaskManager;
   private final CustomPropertyManager myTaskCustomPropertyManager;
   private final HumanResourceManager myHumanResourceManager;
@@ -85,44 +101,62 @@ public class GanttCSVExport {
     myHumanResourceManager = Preconditions.checkNotNull(resourceManager);
     myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());
     myRoleManager = Preconditions.checkNotNull(roleManager);
-    this.csvOptions = Preconditions.checkNotNull(csvOptions);
+    myCsvOptions = Preconditions.checkNotNull(csvOptions);
   }
+
+
+  private CSVFormat getCSVFormat() {
+    CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
+    if (myCsvOptions.sSeparatedChar.length() == 1) {
+      format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0));
+    }
+    if (myCsvOptions.sSeparatedTextChar.length() == 1) {
+      format = format.withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));
+    }
+
+    return format;
+  }
+
+  public SpreadsheetWriter createWriter(OutputStream stream, Format format) throws IOException {
+    format = Preconditions.checkNotNull(format);
+
+    switch (format) {
+      case CSV:
+        return getCsvWriter(stream);
+      case XLS:
+        return getXlsWriter(stream);
+      default:
+        throw new IllegalArgumentException("Unsupported format == " + format + "!");
+    }
+  }
+
+
+  private SpreadsheetWriter getCsvWriter(OutputStream stream) throws IOException {
+    return new CsvWriterImpl(stream, getCSVFormat());
+  }
+
+  private SpreadsheetWriter getXlsWriter(OutputStream stream) {
+    return new XlsWriterImpl(stream);
+  }
+
   /**
-   * Save the project as CSV on a stream
+   * Save the project as CSV/XLS on a stream
    *
    * @throws IOException
    */
-  public void save(OutputStream stream) throws IOException {
-    OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
-    CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
-    if (csvOptions.sSeparatedChar.length() == 1) {
-      format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
-    }
-    if (csvOptions.sSeparatedTextChar.length() == 1) {
-      format = format.withQuote(csvOptions.sSeparatedTextChar.charAt(0));
-    }
-
-    CSVPrinter csvPrinter = new CSVPrinter(writer, format);
-
-//    if (csvOptions.bFixedSize) {
-//      // TODO The CVS library we use is lacking support for fixed size
-//      getMaxSize();
-//    }
-
-    writeTasks(csvPrinter);
+  public void save(SpreadsheetWriter writer) throws IOException {
+    writeTasks(writer);
 
     if (myHumanResourceManager.getResources().size() > 0) {
-      csvPrinter.println();
-      csvPrinter.println();
-      writeResources(csvPrinter);
+      writer.println();
+      writer.println();
+      writeResources(writer);
     }
-    writer.flush();
-    writer.close();
   }
 
-  private List<CustomPropertyDefinition> writeTaskHeaders(CSVPrinter writer) throws IOException {
+  private List<CustomPropertyDefinition> writeTaskHeaders(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> defs = myTaskCustomPropertyManager.getDefinitions();
-    for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+    for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
       TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
         continue;
@@ -144,12 +178,15 @@ public class GanttCSVExport {
     return GanttLanguage.getInstance().getText(key);
   }
 
-  /** Write all tasks.
-   * @throws IOException */
-  private void writeTasks(CSVPrinter writer) throws IOException {
+  /**
+   * Write all tasks.
+   *
+   * @throws IOException
+   */
+  private void writeTasks(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
-      for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+      for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
         }
@@ -165,45 +202,45 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-          case ID:
-            writer.print(String.valueOf(task.getTaskID()));
-            break;
-          case NAME:
-            writer.print(getName(task));
-            break;
-          case BEGIN_DATE:
-            writer.print(task.getStart().toString());
-            break;
-          case END_DATE:
-            writer.print(task.getDisplayEnd().toString());
-            break;
-          case DURATION:
-            writer.print(String.valueOf(task.getDuration().getLength()));
-            break;
-          case COMPLETION:
-            writer.print(String.valueOf(task.getCompletionPercentage()));
-            break;
-          case OUTLINE_NUMBER:
-            List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
-            writer.print(Joiner.on('.').join(outlinePath));
-            break;
-          case COORDINATOR:
-            ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
-            writer.print(coordinator == null ? "" : coordinator.getResource().getName());
-            break;
-          case PREDECESSORS:
-            writer.print(TaskProperties.formatPredecessors(task, ";", true));
-            break;
-          case RESOURCES:
-            writer.print(getAssignments(task));
-            break;
-          case COST:
-            writer.print(task.getCost().getValue().toPlainString());
-            break;
-          case INFO:
-          case PRIORITY:
-          case TYPE:
-            break;
+            case ID:
+              writer.print(String.valueOf(task.getTaskID()));
+              break;
+            case NAME:
+              writer.print(getName(task));
+              break;
+            case BEGIN_DATE:
+              writer.print(task.getStart().toString());
+              break;
+            case END_DATE:
+              writer.print(task.getDisplayEnd().toString());
+              break;
+            case DURATION:
+              writer.print(String.valueOf(task.getDuration().getLength()));
+              break;
+            case COMPLETION:
+              writer.print(String.valueOf(task.getCompletionPercentage()));
+              break;
+            case OUTLINE_NUMBER:
+              List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
+              writer.print(Joiner.on('.').join(outlinePath));
+              break;
+            case COORDINATOR:
+              ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
+              writer.print(coordinator == null ? "" : coordinator.getResource().getName());
+              break;
+            case PREDECESSORS:
+              writer.print(TaskProperties.formatPredecessors(task, ";", true));
+              break;
+            case RESOURCES:
+              writer.print(getAssignments(task));
+              break;
+            case COST:
+              writer.print(task.getCost().getValue().toPlainString());
+              break;
+            case INFO:
+            case PRIORITY:
+            case TYPE:
+              break;
           }
         }
       }
@@ -211,8 +248,8 @@ public class GanttCSVExport {
     }
   }
 
-  private List<CustomPropertyDefinition> writeResourceHeaders(CSVPrinter writer) throws IOException {
-    for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+  private List<CustomPropertyDefinition> writeResourceHeaders(SpreadsheetWriter writer) throws IOException {
+    for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
         continue;
@@ -236,14 +273,17 @@ public class GanttCSVExport {
     return customFieldDefs;
   }
 
-  /** write the resources.
-   * @throws IOException */
-  private void writeResources(CSVPrinter writer) throws IOException {
+  /**
+   * write the resources.
+   *
+   * @throws IOException
+   */
+  private void writeResources(SpreadsheetWriter writer) throws IOException {
     Set<Role> projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
     // parse all resources
     for (HumanResource p : myHumanResourceManager.getResources()) {
-      for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+      for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
         if (!entry.getValue().isChecked()) {
           continue;
         }
@@ -255,36 +295,36 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-          case NAME:
-            writer.print(p.getName());
-            break;
-          case EMAIL:
-            writer.print(p.getMail());
-            break;
-          case PHONE:
-            writer.print(p.getPhone());
-            break;
-          case ROLE:
-            Role role = p.getRole();
-            final String sRoleID;
-            if (role == null) {
-              sRoleID = "0";
-            } else if (projectRoles.contains(role)) {
-              sRoleID = role.getName();
-            } else {
-              sRoleID = role.getPersistentID();
-            }
-            writer.print(sRoleID);
-            break;
-          case ROLE_IN_TASK:
-            writer.print("");
-            break;
-          case STANDARD_RATE:
-            writer.print(p.getStandardPayRate().toPlainString());
-            break;
-          case TOTAL_COST:
-            writer.print(p.getTotalCost().toPlainString());
-            break;
+            case NAME:
+              writer.print(p.getName());
+              break;
+            case EMAIL:
+              writer.print(p.getMail());
+              break;
+            case PHONE:
+              writer.print(p.getPhone());
+              break;
+            case ROLE:
+              Role role = p.getRole();
+              final String sRoleID;
+              if (role == null) {
+                sRoleID = "0";
+              } else if (projectRoles.contains(role)) {
+                sRoleID = role.getName();
+              } else {
+                sRoleID = role.getPersistentID();
+              }
+              writer.print(sRoleID);
+              break;
+            case ROLE_IN_TASK:
+              writer.print("");
+              break;
+            case STANDARD_RATE:
+              writer.print(p.getStandardPayRate().toPlainString());
+              break;
+            case TOTAL_COST:
+              writer.print(p.getTotalCost().toPlainString());
+              break;
           }
         }
       }
@@ -292,7 +332,7 @@ public class GanttCSVExport {
     }
   }
 
-  private void writeCustomPropertyValues(CSVPrinter writer,
+  private void writeCustomPropertyValues(SpreadsheetWriter writer,
                                          List<CustomPropertyDefinition> defs, List<CustomProperty> values) throws IOException {
     Map<String, CustomProperty> definedProps = Maps.newHashMap();
     for (CustomProperty prop : values) {
@@ -306,27 +346,34 @@ public class GanttCSVExport {
     writer.println();
 
   }
-  /** @return the name of task with the correct level. */
+
+  /**
+   * @return the name of task with the correct level.
+   */
   private String getName(Task task) {
-    if (csvOptions.bFixedSize) {
+    if (myCsvOptions.bFixedSize) {
       return task.getName();
     }
     int depth = task.getManager().getTaskHierarchy().getDepth(task) - 1;
     return StringUtils.padLeft(task.getName(), depth * 2);
   }
 
-  /** @return the link of the task. */
+  /**
+   * @return the link of the task.
+   */
   private String getWebLink(GanttTask task) {
     return (task.getWebLink() == null || task.getWebLink().equals("http://") ? "" : task.getWebLink());
   }
 
-  /** @return the list of the assignment for the resources. */
+  /**
+   * @return the list of the assignment for the resources.
+   */
   private String getAssignments(Task task) {
     String res = "";
     ResourceAssignment[] assignment = task.getAssignments();
     for (int i = 0; i < assignment.length; i++) {
       res += (assignment[i].getResource() + (i == assignment.length - 1 ? ""
-          : csvOptions.sSeparatedChar.equals(";") ? "," : ";"));
+          : myCsvOptions.sSeparatedChar.equals(";") ? "," : ";"));
     }
     return res;
   }
