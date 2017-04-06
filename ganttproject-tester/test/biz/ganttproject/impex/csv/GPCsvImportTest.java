@@ -41,7 +41,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Tests CSV import with GP semantics.
@@ -104,16 +106,16 @@ public class GPCsvImportTest extends TestCase {
     RoleManager roleManager = new RoleManagerImpl();
 
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.RESOURCES,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.COMPLETION,
-            TaskRecords.TaskFields.WEB_LINK,
-            TaskRecords.TaskFields.NOTES,
-            TaskRecords.TaskFields.PREDECESSORS,
-            TaskRecords.TaskFields.ID);
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.ID);
     String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,,,";
 
     String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME,ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
@@ -202,26 +204,12 @@ public class GPCsvImportTest extends TestCase {
   }
 
   private String buildTaskHeader(TaskRecords.TaskFields... taskFields) {
-    StringBuilder sb = new StringBuilder();
-    String prefix = "";
-    for(TaskRecords.TaskFields taskField : taskFields) {
-      sb.append(prefix);
-      prefix = ",";
-      sb.append(taskField);
-    }
-    return sb.toString();
+    return Joiner.on(',').join(Stream.of(taskFields).map(TaskRecords.TaskFields::toString).iterator());
   }
 
   private String buildResourceHeader(ResourceRecords.ResourceFields... resourceFields)
   {
-    StringBuilder sb = new StringBuilder();
-    String prefix = "";
-    for(ResourceRecords.ResourceFields resourceField : resourceFields) {
-      sb.append(prefix);
-      prefix = ",";
-      sb.append(resourceField);
-    }
-    return sb.toString();
+    return Joiner.on(',').join(Stream.of(resourceFields).map(ResourceRecords.ResourceFields::toString).iterator());
   }
 
   public void testDependencies() throws Exception {
@@ -306,7 +294,8 @@ public class GPCsvImportTest extends TestCase {
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)), taskManager, null, null, builder.getTimeUnitStack());
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
+        taskManager, null, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
