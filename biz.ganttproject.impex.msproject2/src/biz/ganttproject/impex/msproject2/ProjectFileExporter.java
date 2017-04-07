@@ -118,8 +118,9 @@ class ProjectFileExporter {
   }
 
   private void exportTasks(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
-    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
-    collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
+//    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
+//    collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
+    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getTaskManager());
     for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
       myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
     }
@@ -302,9 +303,10 @@ class ProjectFileExporter {
   }
 
   private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
-    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
-    collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType,
-        ResourceField.class);
+//    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
+//    collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType,
+//        ResourceField.class);
+    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getResourceManager());
     for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
       myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
     }
@@ -335,6 +337,7 @@ class ProjectFileExporter {
     });
     id2mpxjResource.put(hr.getId(), mpxjResource);
   }
+
 
   private static <T extends Enum<T>> void collectCustomProperties(CustomPropertyManager customPropertyManager,
       Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, Class<T> fieldTypeClass) {
