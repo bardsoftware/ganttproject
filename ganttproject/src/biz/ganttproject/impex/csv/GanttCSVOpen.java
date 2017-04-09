@@ -19,12 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.time.TimeUnitStack;
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -36,15 +34,8 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -52,10 +43,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
+import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
 import static net.sourceforge.ganttproject.GPLogger.debug;
 
 /**
- * Handles opening CSV files.
+ * Handles opening CSV and XLS files.
  */
 public class GanttCSVOpen {
   static Collection<String> getFieldNames(Enum... fieldsEnum) {
@@ -69,20 +62,17 @@ public class GanttCSVOpen {
 
   static final GanttLanguage language = GanttLanguage.getInstance();
 
-  private final List<RecordGroup> myRecordGroups;
+  private final Supplier<InputStream> myInputSupplier;
 
-  private final Supplier<Reader> myInputSupplier;
+  private final SpreadsheetFormat myFormat;
+
+  private final List<RecordGroup> myRecordGroups;
 
   private int mySkippedLine;
 
   private CSVOptions myCsvOptions;
 
-  public GanttCSVOpen(Supplier<Reader> inputSupplier, RecordGroup group) {
-    myInputSupplier = inputSupplier;
-    myRecordGroups = ImmutableList.of(group);
-  }
-
-  public GanttCSVOpen(Supplier<Reader> inputSupplier, RecordGroup... groups) {
+  public GanttCSVOpen(Supplier<InputStream> inputSupplier, SpreadsheetFormat format, RecordGroup... groups) {
     myInputSupplier = inputSupplier;
     myRecordGroups = Lists.newArrayList();
     for (RecordGroup group : groups) {
@@ -90,26 +80,24 @@ public class GanttCSVOpen {
         myRecordGroups.add(group);
       }
     }
+    myFormat = format;
   }
 
-  public GanttCSVOpen(Supplier<Reader> inputSupplier, final TaskManager taskManager,
-      final HumanResourceManager resourceManager, RoleManager roleManager, TimeUnitStack timeUnitStack) {
-    this(inputSupplier, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack),
+  public GanttCSVOpen(Supplier<InputStream> inputSupplier, final TaskManager taskManager, final HumanResourceManager resourceManager,
+      RoleManager roleManager, TimeUnitStack timeUnitStack, SpreadsheetFormat format) {
+    this(inputSupplier, format, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack),
         createResourceRecordGroup(resourceManager, roleManager));
   }
 
   public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager,
-                      final RoleManager roleManager, TimeUnitStack timeUnitStack) {
-    this(new Supplier<Reader>() {
-      @Override
-      public Reader get() {
-        try {
-          return new InputStreamReader(new FileInputStream(file), Charsets.UTF_8);
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        }
+      final RoleManager roleManager, TimeUnitStack timeUnitStack) {
+    this(() -> {
+      try {
+        return new FileInputStream(file);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
       }
-    }, taskManager, resourceManager, roleManager, timeUnitStack);
+    }, taskManager, resourceManager, roleManager, timeUnitStack, createSpreadsheetFormat(file));
   }
 
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager,
@@ -127,7 +115,7 @@ public class GanttCSVOpen {
     return resourceManager == null ? null : new ResourceRecords(resourceManager, roleManager);
   }
 
-  private int doLoad(CSVParser parser, int numGroup, int linesToSkip) {
+  private int doLoad(SpreadsheetReader reader, int numGroup, int linesToSkip) {
     final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
     int lineCounter = 0;
     RecordGroup currentGroup = myRecordGroups.get(numGroup);
@@ -139,8 +127,8 @@ public class GanttCSVOpen {
       numGroup++;
     }
 
-    for (Iterator<CSVRecord> it = parser.iterator(); it.hasNext();) {
-      CSVRecord record = it.next();
+    for (Iterator<SpreadsheetRecord> it = reader.iterator(); it.hasNext(); ) {
+      SpreadsheetRecord record = it.next();
       lineCounter++;
       if (linesToSkip-- > 0) {
         continue;
@@ -172,14 +160,13 @@ public class GanttCSVOpen {
     }
     return 0;
   }
+
   /**
    * Create tasks from file.
    *
-   * @throws IOException
-   *           on parse error or input read-failure
+   * @throws IOException on parse error or input read-failure
    */
   public List<Pair<Level, String>> load() throws IOException {
-    final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
     final List<Pair<Level, String>> errors = Lists.newArrayList();
     for (RecordGroup group : myRecordGroups) {
       group.setErrorOutput(errors);
@@ -187,20 +174,16 @@ public class GanttCSVOpen {
     int idxCurrentGroup = 0;
     int idxNextGroup;
     int skipHeadLines = 0;
+    List<String> headers;
     do {
       idxNextGroup = idxCurrentGroup;
-      CSVFormat format = CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true);
-      if (myCsvOptions != null) {
-        format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0)).withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));
-      }
       RecordGroup currentGroup = myRecordGroups.get(idxCurrentGroup);
-      if (currentGroup.getHeader() != null) {
-        format = format.withHeader(currentGroup.getHeader().toArray(new String[0]));
+      headers = currentGroup.getHeader();
+      if (headers != null) {
         idxNextGroup++;
       }
-      try (Reader reader = myInputSupplier.get()) {
-        CSVParser parser = new CSVParser(reader, format);
-        skipHeadLines = doLoad(parser, idxCurrentGroup, skipHeadLines);
+      try (SpreadsheetReader reader = createReader(myInputSupplier.get(), headers)) {
+        skipHeadLines = doLoad(reader, idxCurrentGroup, skipHeadLines);
       }
       idxCurrentGroup = idxNextGroup;
     } while (skipHeadLines > 0);
@@ -216,5 +199,35 @@ public class GanttCSVOpen {
 
   public void setOptions(CSVOptions csvOptions) {
     myCsvOptions = csvOptions;
+  }
+
+  private SpreadsheetReader createReader(InputStream is, List<String> headers) throws IOException {
+    if (myFormat == CSV) {
+      return new CsvReaderImpl(is, createCSVFormat(headers));
+    }
+    if (myFormat == XLS) {
+      return new XlsReaderImpl(is, headers);
+    }
+    throw new IllegalArgumentException("Unsupported format: " + myFormat);
+  }
+
+  private CSVFormat createCSVFormat(List<String> headers) {
+    CSVFormat format = CSVFormat.DEFAULT.withIgnoreEmptyLines(false).withIgnoreSurroundingSpaces(true);
+    if (myCsvOptions != null) {
+      format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0)).withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));
+    }
+    if (headers != null) {
+      format = format.withHeader(headers.toArray(new String[0]));
+    }
+    return format;
+  }
+
+  private static SpreadsheetFormat createSpreadsheetFormat(File file) {
+    int lastDot = file.getName().lastIndexOf('.');
+    if (lastDot == file.getName().length() - 1) {
+      throw new IllegalArgumentException("No file extension!");
+    }
+    String fileExt = file.getName().substring(lastDot + 1).toLowerCase();
+    return SpreadsheetFormat.getSpreadsheetFormat(fileExt);
   }
 }

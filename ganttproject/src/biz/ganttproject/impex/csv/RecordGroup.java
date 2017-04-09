@@ -27,8 +27,6 @@ import java.util.logging.Level;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import org.apache.commons.csv.CSVRecord;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -60,7 +58,7 @@ public abstract class RecordGroup {
     myMandatoryFields = mandatoryFields;
   }
 
-  boolean isHeader(CSVRecord record) {
+  boolean isHeader(SpreadsheetRecord record) {
     Set<String> thoseFields = Sets.newHashSet();
     for (Iterator<String> it = record.iterator(); it.hasNext();) {
       thoseFields.add(it.next());
@@ -68,7 +66,7 @@ public abstract class RecordGroup {
     return thoseFields.containsAll(myMandatoryFields);
   }
 
-  boolean process(CSVRecord record) {
+  boolean process(SpreadsheetRecord record) {
     assert record.size() > 0;
     boolean allEmpty = true;
     for (Iterator<String> it = record.iterator(); it.hasNext();) {
@@ -88,7 +86,7 @@ public abstract class RecordGroup {
     }
   }
 
-  protected boolean hasMandatoryFields(CSVRecord record) {
+  protected boolean hasMandatoryFields(SpreadsheetRecord record) {
     for (String s : myMandatoryFields) {
       if (!record.isSet(s)) {
         return false;
@@ -100,14 +98,14 @@ public abstract class RecordGroup {
     return true;
   }
 
-  protected String getOrNull(CSVRecord record, String columnName) {
+  protected String getOrNull(SpreadsheetRecord record, String columnName) {
     if (!record.isMapped(columnName)) {
       return null;
     }
     return record.get(columnName);
   }
 
-  protected boolean doProcess(CSVRecord record) {
+  protected boolean doProcess(SpreadsheetRecord record) {
     return (myHeader != null);
   }
 

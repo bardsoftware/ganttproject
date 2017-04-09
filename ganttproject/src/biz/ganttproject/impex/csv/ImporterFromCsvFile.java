@@ -53,7 +53,7 @@ public class ImporterFromCsvFile extends ImporterBase {
 
   @Override
   public String getFileNamePattern() {
-    return "csv";
+    return "csv|xls|xlsx";
   }
 
   @Override
