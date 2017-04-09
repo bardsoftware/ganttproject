@@ -36,7 +36,7 @@ import static com.google.common.base.Charsets.UTF_8;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class SpreadsheetImportTest extends TestCase {
+public class CsvImportTest extends TestCase {
 
   private Supplier<InputStream> createSupplier(String data) {
     return createSupplier(data.getBytes(UTF_8));
