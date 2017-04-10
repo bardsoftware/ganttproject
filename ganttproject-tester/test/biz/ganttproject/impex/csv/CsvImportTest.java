@@ -51,14 +51,48 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
 
-    doTestBasic(header, data);
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
+        }
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+    }
   }
 
   public void testSkipEmptyLine() throws Exception {
     String header = "A, B";
     String data = "a1, b1";
 
-    doTestSkipEmptyLine(header, "", data);
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, "", data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
+        }
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+    }
   }
 
   public void testTwoGroups() throws Exception {
@@ -68,77 +102,7 @@ public class CsvImportTest extends TestCase {
     String header2 = "C, D, E";
     String data2 = "c1, d1, e1";
 
-    doTestTwoGroups(header1, data1, "", header2, data2);
-  }
-
-  public void testIncompleteHeader() throws Exception {
-    String header = "A, B";
-    String data = "a1, b1";
-
-    doTestIncompleteHeader(header, data);
-  }
-
-  public void testSkipUntilFirstHeader() throws Exception {
-    String notHeader = "FOO, BAR, A";
-    String header = "A, B";
-    String data = "a1, b1";
-
-    doTestSkipUntilFirstHeader(notHeader, header, data);
-  }
-
-  public void testSkipLinesWithEmptyMandatoryFields() throws Exception {
-    String header = "A, B, C";
-    String data1 = "a1,,c1";
-    String data2 = "a2,b2,c2";
-    String data3 = ",b3,c3";
-
-    doTestSkipLinesWithEmptyMandatoryFields(header, data1, data2, data3);
-  }
-
-  private void doTestBasic(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
-          if (!super.doProcess(record)) {
-            return false;
-          }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
-        }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
-    }
-  }
-
-  private void doTestSkipEmptyLine(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
-          if (!super.doProcess(record)) {
-            return false;
-          }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
-        }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
-    }
-  }
-
-  private void doTestTwoGroups(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
       final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
       RecordGroup recordGroup1 = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
         @Override
@@ -174,8 +138,11 @@ public class CsvImportTest extends TestCase {
     }
   }
 
-  private void doTestIncompleteHeader(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testIncompleteHeader() throws Exception {
+    String header = "A, B";
+    String data = "a1, b1";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data)) {
       final AtomicBoolean wasCalled = new AtomicBoolean(false);
       RecordGroup recordGroup = new RecordGroup("ABC",
           ImmutableSet.of("A", "B", "C"), // all fields
@@ -197,8 +164,12 @@ public class CsvImportTest extends TestCase {
     }
   }
 
-  private void doTestSkipUntilFirstHeader(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testSkipUntilFirstHeader() throws Exception {
+    String notHeader = "FOO, BAR, A";
+    String header = "A, B";
+    String data = "a1, b1";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(notHeader, header, data)) {
       final AtomicBoolean wasCalled = new AtomicBoolean(false);
       RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B")) {
         @Override
@@ -219,8 +190,13 @@ public class CsvImportTest extends TestCase {
     }
   }
 
-  private void doTestSkipLinesWithEmptyMandatoryFields(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testSkipLinesWithEmptyMandatoryFields() throws Exception {
+    String header = "A, B, C";
+    String data1 = "a1,,c1";
+    String data2 = "a2,b2,c2";
+    String data3 = ",b3,c3";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data1, data2, data3)) {
       final AtomicBoolean wasCalled = new AtomicBoolean(false);
       RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
         @Override

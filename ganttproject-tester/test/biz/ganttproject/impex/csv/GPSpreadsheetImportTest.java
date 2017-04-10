@@ -107,81 +107,7 @@ public class GPSpreadsheetImportTest extends TestCase {
     String header2 = "Name,ID,e-mail,Phone,Default role";
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
 
-    doTestImportAssignments(header1, data1, "", header2, data2);
-  }
-
-  public void testImportResourceRole() throws Exception {
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
-    String data1 = "";
-
-    String header2 = "Name,ID,Default role";
-    String data2 = "Joe,1,Default:1";
-
-    doTestImportResourceRole(header1, data1, "", header2, data2);
-  }
-
-  public void testCustomFields() throws Exception {
-    String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
-    String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
-
-    doTestCustomFields(header1, data1);
-  }
-
-  public void testDependencies() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors";
-    String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
-    String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
-    String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
-    String data4 = "4,t4,26/07/12,30/07/12,,,,,,1-FS=P1D";
-    String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
-
-    doTestDependencies(header1, data1, data2, data3, data4, data5);
-  }
-
-  public void testMilestone() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Duration,Resources,Completion,Web Link,Notes,Predecessors";
-    String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
-    String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
-
-    doTestMilestone(header1, data1, data2);
-  }
-
-  public void testHierarchy() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Duration,Outline number";
-    String data1 = "1,t1,23/07/12,26/07/12,1,1";
-    String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
-    String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
-    String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
-    String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
-
-    doTestHierarchy(header1, data1, data2, data3, data4, data5);
-  }
-
-  public void testUseEndDateInsteadOfDuration() throws Exception {
-    String header1 = "ID,Name,Begin date,End date";
-    String data1 = "1,t1,23/07/12,26/07/12";
-
-    doTestUseEndDateInsteadOfDuration(header1, data1);
-  }
-
-  private static void assertOrder(String first, String second) {
-    assertEquals(-1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, second));
-    assertEquals(1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, first));
-    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
-    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
-  }
-
-  public void testOutlineNumberComparator() {
-    assertOrder("1", "2");
-    assertOrder("1", "1.1");
-    assertOrder("1.1", "1.2");
-    assertOrder("1.1", "2");
-    assertOrder("1.2", "1.10");
-    assertOrder("2", "10");
-  }
-
-  private void doTestImportAssignments(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       HumanResourceManager resourceManager = builder.getResourceManager();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
@@ -193,8 +119,14 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestImportResourceRole(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testImportResourceRole() throws Exception {
+    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String data1 = "";
+
+    String header2 = "Name,ID,Default role";
+    String data2 = "Joe,1,Default:1";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       HumanResourceManager resourceManager = builder.getResourceManager();
       doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
@@ -203,8 +135,11 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestCustomFields(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testCustomFields() throws Exception {
+    String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
+    String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       TaskManager taskManager = builder.build();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
@@ -221,8 +156,15 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestDependencies(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testDependencies() throws Exception {
+    String header1 = "ID,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors";
+    String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
+    String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
+    String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
+    String data4 = "4,t4,26/07/12,30/07/12,,,,,,1-FS=P1D";
+    String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
       Task t1 = taskMap.get("t1");
@@ -238,8 +180,12 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestMilestone(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testMilestone() throws Exception {
+    String header1 = "ID,Name,Begin date,End date,Duration,Resources,Completion,Web Link,Notes,Predecessors";
+    String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
+    String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
       Task t1 = taskMap.get("t1");
@@ -249,8 +195,15 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestHierarchy(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testHierarchy() throws Exception {
+    String header1 = "ID,Name,Begin date,End date,Duration,Outline number";
+    String data1 = "1,t1,23/07/12,26/07/12,1,1";
+    String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
+    String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
+    String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
+    String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       TaskManager taskManager = builder.build();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
@@ -267,12 +220,31 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
-  private void doTestUseEndDateInsteadOfDuration(String... data) throws Exception {
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+  public void testUseEndDateInsteadOfDuration() throws Exception {
+    String header1 = "ID,Name,Begin date,End date";
+    String data1 = "1,t1,23/07/12,26/07/12";
+
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
       assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
     }
+  }
+
+  private static void assertOrder(String first, String second) {
+    assertEquals(-1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, second));
+    assertEquals(1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, first));
+    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
+    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
+  }
+
+  public void testOutlineNumberComparator() {
+    assertOrder("1", "2");
+    assertOrder("1", "1.1");
+    assertOrder("1.1", "1.2");
+    assertOrder("1.1", "2");
+    assertOrder("1.2", "1.10");
+    assertOrder("2", "10");
   }
 
   private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
