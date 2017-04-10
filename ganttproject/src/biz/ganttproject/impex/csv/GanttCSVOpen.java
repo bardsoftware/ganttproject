@@ -35,7 +35,11 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.apache.commons.csv.CSVFormat;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -43,9 +47,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
-import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
 import static net.sourceforge.ganttproject.GPLogger.debug;
+import static net.sourceforge.ganttproject.util.FileUtil.getExtension;
 
 /**
  * Handles opening CSV and XLS files.
@@ -83,8 +86,8 @@ public class GanttCSVOpen {
     myFormat = format;
   }
 
-  public GanttCSVOpen(Supplier<InputStream> inputSupplier, final TaskManager taskManager, final HumanResourceManager resourceManager,
-      RoleManager roleManager, TimeUnitStack timeUnitStack, SpreadsheetFormat format) {
+  public GanttCSVOpen(Supplier<InputStream> inputSupplier, SpreadsheetFormat format, final TaskManager taskManager,
+      final HumanResourceManager resourceManager, RoleManager roleManager, TimeUnitStack timeUnitStack) {
     this(inputSupplier, format, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack),
         createResourceRecordGroup(resourceManager, roleManager));
   }
@@ -97,7 +100,7 @@ public class GanttCSVOpen {
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
       }
-    }, taskManager, resourceManager, roleManager, timeUnitStack, createSpreadsheetFormat(file));
+    }, createSpreadsheetFormat(file), taskManager, resourceManager, roleManager, timeUnitStack);
   }
 
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager,
@@ -202,13 +205,14 @@ public class GanttCSVOpen {
   }
 
   private SpreadsheetReader createReader(InputStream is, List<String> headers) throws IOException {
-    if (myFormat == CSV) {
-      return new CsvReaderImpl(is, createCSVFormat(headers));
+    switch (myFormat) {
+      case CSV:
+        return new CsvReaderImpl(is, createCSVFormat(headers));
+      case XLS:
+        return new XlsReaderImpl(is, headers);
+      default:
+        throw new IllegalArgumentException("Unsupported format: " + myFormat);
     }
-    if (myFormat == XLS) {
-      return new XlsReaderImpl(is, headers);
-    }
-    throw new IllegalArgumentException("Unsupported format: " + myFormat);
   }
 
   private CSVFormat createCSVFormat(List<String> headers) {
@@ -223,11 +227,10 @@ public class GanttCSVOpen {
   }
 
   private static SpreadsheetFormat createSpreadsheetFormat(File file) {
-    int lastDot = file.getName().lastIndexOf('.');
-    if (lastDot == file.getName().length() - 1) {
+    String extension = getExtension(file);
+    if (extension.isEmpty()) {
       throw new IllegalArgumentException("No file extension!");
     }
-    String fileExt = file.getName().substring(lastDot + 1).toLowerCase();
-    return SpreadsheetFormat.getSpreadsheetFormat(fileExt);
+    return SpreadsheetFormat.getSpreadsheetFormat(extension);
   }
 }

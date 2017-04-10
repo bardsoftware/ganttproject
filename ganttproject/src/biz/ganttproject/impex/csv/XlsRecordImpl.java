@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+Copyright 2017 Roman Torkhov, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -59,7 +59,8 @@ class XlsRecordImpl implements SpreadsheetRecord {
 
   @Override
   public boolean isSet(String name) {
-    return isMapped(name) && myMapping.get(name) < myValues.size();
+    int index = myMapping.get(name);
+    return isMapped(name) && index >= 0 && index < myValues.size();
   }
 
   @Override

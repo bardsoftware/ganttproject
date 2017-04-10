@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+Copyright 2017 Roman Torkhov, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.collect.Iterators;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -47,23 +48,6 @@ class CsvReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    final Iterator<CSVRecord> iterator = myParser.iterator();
-    return new Iterator<SpreadsheetRecord>() {
-
-      @Override
-      public boolean hasNext() {
-        return iterator.hasNext();
-      }
-
-      @Override
-      public SpreadsheetRecord next() {
-        return new CsvRecordImpl(iterator.next());
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
+    return Iterators.transform(myParser.iterator(), (CSVRecord input) -> new CsvRecordImpl(input));
   }
 }

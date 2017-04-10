@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+Copyright 2017 Roman Torkhov, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -33,13 +35,11 @@ import java.util.*;
 class XlsReaderImpl implements SpreadsheetReader {
 
   private final Workbook myBook;
-  private final List<String> myColumnHeaders;
   private final Map<String, Integer> myHeaders;
 
   XlsReaderImpl(InputStream is, List<String> columnHeaders) throws IOException {
     myBook = new HSSFWorkbook(is);
-    myColumnHeaders = columnHeaders;
-    myHeaders = initializeHeader();
+    myHeaders = initializeHeader(columnHeaders);
   }
 
   @Override
@@ -49,37 +49,22 @@ class XlsReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    final Iterator<Row> iterator = myBook.getSheetAt(0).iterator();
-    return new Iterator<SpreadsheetRecord>() {
-
-      @Override
-      public boolean hasNext() {
-        return iterator.hasNext();
-      }
-
-      @Override
-      public SpreadsheetRecord next() {
-        return new XlsRecordImpl(getCellValues(iterator.next()), myHeaders);
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
+    return Iterators.transform(myBook.getSheetAt(0).iterator(), (Row input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
   }
 
   private List<String> getCellValues(Row row) {
-    List<String> values = new ArrayList<>();
-    for (Cell cell : row) {
-      values.add(cell.getStringCellValue());
-    }
-    return values;
+    return Lists.newArrayList(Iterators.transform(row.iterator(), (Cell input) -> input.getStringCellValue()));
   }
 
-  private Map<String, Integer> initializeHeader() {
+  /**
+   * This method was taken from {@link org.apache.commons.csv.CSVParser#initializeHeader}
+   * Create the name to index mapping if the column headers not {@code null}.
+   * @param columnHeaders column headers
+   * @return the name to index mapping
+   */
+  private Map<String, Integer> initializeHeader(List<String> columnHeaders) {
     Map<String, Integer> hdrMap = null;
-    List<String> formatHeader = myColumnHeaders;
+    List<String> formatHeader = columnHeaders;
     if (formatHeader != null) {
       hdrMap = new LinkedHashMap<>();
       List<String> headerRecord = null;

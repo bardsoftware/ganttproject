@@ -264,8 +264,8 @@ public class CsvImportTest extends TestCase {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
       for (String row : rows) {
-        for (String cel : row.split(",")) {
-          writer.print(cel.trim());
+        for (String cell : row.split(",")) {
+          writer.print(cell.trim());
         }
         writer.println();
       }

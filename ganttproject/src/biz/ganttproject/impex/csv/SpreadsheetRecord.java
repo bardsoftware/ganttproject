@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+Copyright 2017 Roman Torkhov, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 

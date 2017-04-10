@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
@@ -39,6 +38,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -55,25 +55,16 @@ import static com.google.common.base.Charsets.UTF_8;
  */
 public class GPSpreadsheetImportTest extends TestCase {
 
-  private Supplier<InputStream> createSupplier(String data) {
-    return createSupplier(data.getBytes(UTF_8));
-  }
-
   private Supplier<InputStream> createSupplier(final byte[] data) {
     return () -> new ByteArrayInputStream(data);
   }
 
   private static Map<String, Task> buildTaskMap(TaskManager taskManager) {
-    return Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), new Function<Task, String>() {
-      @Override
-      public String apply(Task input) {
-        return input.getName();
-      }
-    });
+    return Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), Task::getName);
   }
 
   private Map<String, HumanResource> buildResourceMap(HumanResourceManager resourceManager) {
-    return Maps.uniqueIndex(resourceManager.getResources(), (HumanResource input) -> getName());
+    return Maps.uniqueIndex(resourceManager.getResources(), HumanResource::getName);
   }
 
   private static void assertDependency(Task dependant, Task dependee) {
@@ -114,13 +105,9 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
     HumanResourceManager resourceManager = builder.getResourceManager();
-    RoleManager roleManager = new RoleManagerImpl();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, "", header2, data2),
+        CSV, builder, null, resourceManager, new RoleManagerImpl());
     Task t1 = taskMap.get("t1");
     assertNotNull(t1);
     Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
@@ -128,13 +115,9 @@ public class GPSpreadsheetImportTest extends TestCase {
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
 
     builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
     resourceManager = builder.getResourceManager();
-    roleManager = new RoleManagerImpl();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1, "", header2, data2),
+        XLS, builder, null, resourceManager, new RoleManagerImpl());
     t1 = taskMap.get("t1");
     assertNotNull(t1);
     resourceMap = buildResourceMap(resourceManager);
@@ -150,22 +133,15 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data2 = "Joe,1,Default:1";
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
     HumanResourceManager resourceManager = builder.getResourceManager();
-    RoleManager roleManager = new RoleManagerImpl();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack(), CSV);
-    importer.load();
+    doTestImportAssignments(Joiner.on('\n').join(header1, data1, "", header2, data2),
+        CSV, builder, null, resourceManager, new RoleManagerImpl());
     Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
     assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
 
     builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
     resourceManager = builder.getResourceManager();
-    roleManager = new RoleManagerImpl();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack(), XLS);
-    importer.load();
+    doTestImportAssignments(createXls(header1, data1, "", header2, data2), XLS, builder, null, resourceManager, new RoleManagerImpl());
     resourceMap = buildResourceMap(resourceManager);
     assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
   }
@@ -176,10 +152,7 @@ public class GPSpreadsheetImportTest extends TestCase {
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1), CSV, builder, taskManager, null, null);
     Task t1 = taskMap.get("t1");
     assertNotNull(t1);
 
@@ -193,10 +166,7 @@ public class GPSpreadsheetImportTest extends TestCase {
 
     builder = TestSetupHelper.newTaskManagerBuilder();
     taskManager = builder.build();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1), XLS, builder, taskManager, null, null);
     t1 = taskMap.get("t1");
     assertNotNull(t1);
 
@@ -218,11 +188,8 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5),
+        CSV, builder, null, null, null);
     Task t1 = taskMap.get("t1");
     Task t2 = taskMap.get("t2");
     Task t3 = taskMap.get("t3");
@@ -235,11 +202,7 @@ public class GPSpreadsheetImportTest extends TestCase {
     assertDependency(t5, t1, -1);
 
     builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1, data2, data3, data4, data5), XLS, builder, null, null, null);
     t1 = taskMap.get("t1");
     t2 = taskMap.get("t2");
     t3 = taskMap.get("t3");
@@ -258,22 +221,14 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2)),
-        taskManager, null, null, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2), CSV, builder, null, null, null);
     Task t1 = taskMap.get("t1");
     Task t2 = taskMap.get("t2");
     assertFalse(t1.isMilestone());
     assertTrue(t2.isMilestone());
 
     builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, data2)),
-        taskManager, null, null, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1, data2), XLS, builder, null, null, null);
     t1 = taskMap.get("t1");
     t2 = taskMap.get("t2");
     assertFalse(t1.isMilestone());
@@ -290,10 +245,8 @@ public class GPSpreadsheetImportTest extends TestCase {
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5),
+        CSV, builder, taskManager, null, null);
     TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
     Task t1 = taskMap.get("t1");
     Task t2 = taskMap.get("t2");
@@ -307,10 +260,7 @@ public class GPSpreadsheetImportTest extends TestCase {
 
     builder = TestSetupHelper.newTaskManagerBuilder();
     taskManager = builder.build();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1, data2, data3, data4, data5), XLS, builder, taskManager, null, null);
     hierarchy = taskManager.getTaskHierarchy();
     t1 = taskMap.get("t1");
     t2 = taskMap.get("t2");
@@ -328,19 +278,11 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data1 = "1,t1,23/07/12,26/07/12";
 
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack(), CSV);
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1), CSV, builder, null, null, null);
     assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
 
     builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack(), XLS);
-    importer.load();
-    taskMap = buildTaskMap(taskManager);
+    taskMap = doTestImportAssignments(createXls(header1, data1), XLS, builder, null, null, null);
     assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
   }
 
@@ -360,12 +302,28 @@ public class GPSpreadsheetImportTest extends TestCase {
     assertOrder("2", "10");
   }
 
+  private Map<String, Task> doTestImportAssignments(byte[] data, SpreadsheetFormat format, TaskManagerBuilder builder,
+      TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager) throws IOException {
+    if (taskManager == null) {
+      taskManager = builder.build();
+    }
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(data), format, taskManager, resourceManager,
+        roleManager, builder.getTimeUnitStack());
+    importer.load();
+    return buildTaskMap(taskManager);
+  }
+
+  private Map<String, Task> doTestImportAssignments(String data, SpreadsheetFormat format, TaskManagerBuilder builder,
+      TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager) throws IOException {
+    return doTestImportAssignments(data.getBytes(UTF_8), format, builder, taskManager, resourceManager, roleManager);
+  }
+
   private byte[] createXls(String... rows) throws Exception {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
       for (String row : rows) {
-        for (String cel : row.split(",")) {
-          writer.print(cel.trim());
+        for (String cell : row.split(",")) {
+          writer.print(cell.trim());
         }
         writer.println();
       }
