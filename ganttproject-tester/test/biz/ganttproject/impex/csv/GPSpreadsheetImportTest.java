@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
@@ -35,18 +36,20 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
-import static com.google.common.base.Charsets.UTF_8;
 
 /**
  * Tests spreadsheet (CSV and XLS) import with GP semantics.
@@ -104,25 +107,7 @@ public class GPSpreadsheetImportTest extends TestCase {
     String header2 = "Name,ID,e-mail,Phone,Default role";
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    HumanResourceManager resourceManager = builder.getResourceManager();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, "", header2, data2),
-        CSV, builder, null, resourceManager, new RoleManagerImpl());
-    Task t1 = taskMap.get("t1");
-    assertNotNull(t1);
-    Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    resourceManager = builder.getResourceManager();
-    taskMap = doTestImportAssignments(createXls(header1, data1, "", header2, data2),
-        XLS, builder, null, resourceManager, new RoleManagerImpl());
-    t1 = taskMap.get("t1");
-    assertNotNull(t1);
-    resourceMap = buildResourceMap(resourceManager);
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+    doTestImportAssignments(header1, data1, "", header2, data2);
   }
 
   public void testImportResourceRole() throws Exception {
@@ -132,51 +117,14 @@ public class GPSpreadsheetImportTest extends TestCase {
     String header2 = "Name,ID,Default role";
     String data2 = "Joe,1,Default:1";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    HumanResourceManager resourceManager = builder.getResourceManager();
-    doTestImportAssignments(Joiner.on('\n').join(header1, data1, "", header2, data2),
-        CSV, builder, null, resourceManager, new RoleManagerImpl());
-    Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
-    assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    resourceManager = builder.getResourceManager();
-    doTestImportAssignments(createXls(header1, data1, "", header2, data2), XLS, builder, null, resourceManager, new RoleManagerImpl());
-    resourceMap = buildResourceMap(resourceManager);
-    assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+    doTestImportResourceRole(header1, data1, "", header2, data2);
   }
 
   public void testCustomFields() throws Exception {
     String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
     String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1), CSV, builder, taskManager, null, null);
-    Task t1 = taskMap.get("t1");
-    assertNotNull(t1);
-
-    CustomPropertyDefinition def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
-    CustomPropertyDefinition def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
-    assertNotNull(def1);
-    assertNotNull(def2);
-
-    assertEquals("value1", t1.getCustomValues().getValue(def1));
-    assertEquals("value2", t1.getCustomValues().getValue(def2));
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
-    taskMap = doTestImportAssignments(createXls(header1, data1), XLS, builder, taskManager, null, null);
-    t1 = taskMap.get("t1");
-    assertNotNull(t1);
-
-    def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
-    def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
-    assertNotNull(def1);
-    assertNotNull(def2);
-
-    assertEquals("value1", t1.getCustomValues().getValue(def1));
-    assertEquals("value2", t1.getCustomValues().getValue(def2));
+    doTestCustomFields(header1, data1);
   }
 
   public void testDependencies() throws Exception {
@@ -187,32 +135,7 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data4 = "4,t4,26/07/12,30/07/12,,,,,,1-FS=P1D";
     String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5),
-        CSV, builder, null, null, null);
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    Task t3 = taskMap.get("t3");
-    Task t4 = taskMap.get("t4");
-    Task t5 = taskMap.get("t5");
-
-    assertDependency(t2, t1);
-    assertDependency(t3, t1);
-    assertDependency(t4, t1, 1);
-    assertDependency(t5, t1, -1);
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    taskMap = doTestImportAssignments(createXls(header1, data1, data2, data3, data4, data5), XLS, builder, null, null, null);
-    t1 = taskMap.get("t1");
-    t2 = taskMap.get("t2");
-    t3 = taskMap.get("t3");
-    t4 = taskMap.get("t4");
-    t5 = taskMap.get("t5");
-
-    assertDependency(t2, t1);
-    assertDependency(t3, t1);
-    assertDependency(t4, t1, 1);
-    assertDependency(t5, t1, -1);
+    doTestDependencies(header1, data1, data2, data3, data4, data5);
   }
 
   public void testMilestone() throws Exception {
@@ -220,19 +143,7 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2), CSV, builder, null, null, null);
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    assertFalse(t1.isMilestone());
-    assertTrue(t2.isMilestone());
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    taskMap = doTestImportAssignments(createXls(header1, data1, data2), XLS, builder, null, null, null);
-    t1 = taskMap.get("t1");
-    t2 = taskMap.get("t2");
-    assertFalse(t1.isMilestone());
-    assertTrue(t2.isMilestone());
+    doTestMilestone(header1, data1, data2);
   }
 
   public void testHierarchy() throws Exception {
@@ -243,47 +154,14 @@ public class GPSpreadsheetImportTest extends TestCase {
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5),
-        CSV, builder, taskManager, null, null);
-    TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    Task t3 = taskMap.get("t3");
-    Task t4 = taskMap.get("t4");
-    Task t5 = taskMap.get("t5");
-    assertEquals(t3, hierarchy.getContainer(t5));
-    assertEquals(t3, hierarchy.getContainer(t4));
-    assertEquals(t1, hierarchy.getContainer(t3));
-    assertEquals(t1, hierarchy.getContainer(t2));
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    taskManager = builder.build();
-    taskMap = doTestImportAssignments(createXls(header1, data1, data2, data3, data4, data5), XLS, builder, taskManager, null, null);
-    hierarchy = taskManager.getTaskHierarchy();
-    t1 = taskMap.get("t1");
-    t2 = taskMap.get("t2");
-    t3 = taskMap.get("t3");
-    t4 = taskMap.get("t4");
-    t5 = taskMap.get("t5");
-    assertEquals(t3, hierarchy.getContainer(t5));
-    assertEquals(t3, hierarchy.getContainer(t4));
-    assertEquals(t1, hierarchy.getContainer(t3));
-    assertEquals(t1, hierarchy.getContainer(t2));
+    doTestHierarchy(header1, data1, data2, data3, data4, data5);
   }
 
   public void testUseEndDateInsteadOfDuration() throws Exception {
     String header1 = "ID,Name,Begin date,End date";
     String data1 = "1,t1,23/07/12,26/07/12";
 
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    Map<String, Task> taskMap = doTestImportAssignments(Joiner.on('\n').join(header1, data1), CSV, builder, null, null, null);
-    assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
-
-    builder = TestSetupHelper.newTaskManagerBuilder();
-    taskMap = doTestImportAssignments(createXls(header1, data1), XLS, builder, null, null, null);
-    assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+    doTestUseEndDateInsteadOfDuration(header1, data1);
   }
 
   private static void assertOrder(String first, String second) {
@@ -302,20 +180,116 @@ public class GPSpreadsheetImportTest extends TestCase {
     assertOrder("2", "10");
   }
 
-  private Map<String, Task> doTestImportAssignments(byte[] data, SpreadsheetFormat format, TaskManagerBuilder builder,
+  private void doTestImportAssignments(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      HumanResourceManager resourceManager = builder.getResourceManager();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
+      Task t1 = taskMap.get("t1");
+      assertNotNull(t1);
+      Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
+      assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
+      assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+    }
+  }
+
+  private void doTestImportResourceRole(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      HumanResourceManager resourceManager = builder.getResourceManager();
+      doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
+      Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
+      assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+    }
+  }
+
+  private void doTestCustomFields(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      TaskManager taskManager = builder.build();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
+      Task t1 = taskMap.get("t1");
+      assertNotNull(t1);
+
+      CustomPropertyDefinition def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
+      CustomPropertyDefinition def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
+      assertNotNull(def1);
+      assertNotNull(def2);
+
+      assertEquals("value1", t1.getCustomValues().getValue(def1));
+      assertEquals("value2", t1.getCustomValues().getValue(def2));
+    }
+  }
+
+  private void doTestDependencies(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      Task t3 = taskMap.get("t3");
+      Task t4 = taskMap.get("t4");
+      Task t5 = taskMap.get("t5");
+
+      assertDependency(t2, t1);
+      assertDependency(t3, t1);
+      assertDependency(t4, t1, 1);
+      assertDependency(t5, t1, -1);
+    }
+  }
+
+  private void doTestMilestone(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      assertFalse(t1.isMilestone());
+      assertTrue(t2.isMilestone());
+    }
+  }
+
+  private void doTestHierarchy(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      TaskManager taskManager = builder.build();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
+      TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      Task t3 = taskMap.get("t3");
+      Task t4 = taskMap.get("t4");
+      Task t5 = taskMap.get("t5");
+      assertEquals(t3, hierarchy.getContainer(t5));
+      assertEquals(t3, hierarchy.getContainer(t4));
+      assertEquals(t1, hierarchy.getContainer(t3));
+      assertEquals(t1, hierarchy.getContainer(t2));
+    }
+  }
+
+  private void doTestUseEndDateInsteadOfDuration(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+    }
+  }
+
+  private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
+    List<Pair<SpreadsheetFormat, Supplier<InputStream>>> pairs = new ArrayList<>();
+    pairs.add(Pair.create(CSV, createSupplier(Joiner.on('\n').join(data).getBytes(Charsets.UTF_8))));
+    pairs.add(Pair.create(XLS, createSupplier(createXls(data))));
+    return pairs;
+  }
+
+  private Map<String, Task> doTestImportAssignments(Supplier<InputStream> supplier, SpreadsheetFormat format, TaskManagerBuilder builder,
       TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager) throws IOException {
     if (taskManager == null) {
       taskManager = builder.build();
     }
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(data), format, taskManager, resourceManager,
-        roleManager, builder.getTimeUnitStack());
+    GanttCSVOpen importer = new GanttCSVOpen(supplier, format, taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
     importer.load();
     return buildTaskMap(taskManager);
-  }
-
-  private Map<String, Task> doTestImportAssignments(String data, SpreadsheetFormat format, TaskManagerBuilder builder,
-      TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager) throws IOException {
-    return doTestImportAssignments(data.getBytes(UTF_8), format, builder, taskManager, resourceManager, roleManager);
   }
 
   private byte[] createXls(String... rows) throws Exception {

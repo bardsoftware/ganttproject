@@ -18,18 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.impex.csv;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 
 import junit.framework.TestCase;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
-import static com.google.common.base.Charsets.UTF_8;
 
 /**
  * Tests for spreadsheet (CSV and XLS) import.
@@ -37,10 +42,6 @@ import static com.google.common.base.Charsets.UTF_8;
  * @author dbarashev (Dmitry Barashev)
  */
 public class CsvImportTest extends TestCase {
-
-  private Supplier<InputStream> createSupplier(String data) {
-    return createSupplier(data.getBytes(UTF_8));
-  }
 
   private Supplier<InputStream> createSupplier(final byte[] data) {
     return () -> new ByteArrayInputStream(data);
@@ -50,77 +51,31 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
 
-    AtomicBoolean wasCalled = new AtomicBoolean(false);
-    RecordGroup recordGroup = createBasicRecordGroup(wasCalled);
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data)), CSV, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-
-    wasCalled = new AtomicBoolean(false);
-    recordGroup = createBasicRecordGroup(wasCalled);
-    importer = new GanttCSVOpen(createSupplier(createXls(header, data)), XLS, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
+    doTestBasic(header, data);
   }
 
   public void testSkipEmptyLine() throws Exception {
     String header = "A, B";
     String data = "a1, b1";
 
-    AtomicBoolean wasCalled = new AtomicBoolean(false);
-    RecordGroup recordGroup = createBasicRecordGroup(wasCalled);
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, "", data)), CSV, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-
-    wasCalled = new AtomicBoolean(false);
-    recordGroup = createBasicRecordGroup(wasCalled);
-    importer = new GanttCSVOpen(createSupplier(createXls(header, "", data)), XLS, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
+    doTestSkipEmptyLine(header, "", data);
   }
 
   public void testTwoGroups() throws Exception {
     String header1 = "A, B";
     String data1 = "a1, b1";
-    AtomicBoolean wasCalled1 = new AtomicBoolean(false);
-    RecordGroup recordGroup1 = createTwoGroupsFirstRecordGroup(wasCalled1);
 
     String header2 = "C, D, E";
     String data2 = "c1, d1, e1";
-    AtomicBoolean wasCalled2 = new AtomicBoolean(false);
-    RecordGroup recordGroup2 = createTwoGroupsSecondRecordGroup(wasCalled2);
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
-        CSV, recordGroup1, recordGroup2);
-    importer.load();
-    assertTrue(wasCalled1.get() && wasCalled2.get());
-
-    wasCalled1 = new AtomicBoolean(false);
-    recordGroup1 = createTwoGroupsFirstRecordGroup(wasCalled1);
-    wasCalled2 = new AtomicBoolean(false);
-    recordGroup2 = createTwoGroupsSecondRecordGroup(wasCalled2);
-    importer = new GanttCSVOpen(createSupplier(createXls(header1, data1, "", header2, data2)),
-        XLS, recordGroup1, recordGroup2);
-    importer.load();
-    assertTrue(wasCalled1.get() && wasCalled2.get());
+    doTestTwoGroups(header1, data1, "", header2, data2);
   }
 
   public void testIncompleteHeader() throws Exception {
     String header = "A, B";
     String data = "a1, b1";
 
-    AtomicBoolean wasCalled = new AtomicBoolean(false);
-    RecordGroup recordGroup = createIncompleteHeaderRecordGroup(wasCalled);
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data)), CSV, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-
-    wasCalled = new AtomicBoolean(false);
-    recordGroup = createIncompleteHeaderRecordGroup(wasCalled);
-    importer = new GanttCSVOpen(createSupplier(createXls(header, data)), XLS, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
+    doTestIncompleteHeader(header, data);
   }
 
   public void testSkipUntilFirstHeader() throws Exception {
@@ -128,19 +83,7 @@ public class CsvImportTest extends TestCase {
     String header = "A, B";
     String data = "a1, b1";
 
-    AtomicBoolean wasCalled = new AtomicBoolean(false);
-    RecordGroup recordGroup = createSkipUntilFirstHeaderRecordGroup(wasCalled);
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(notHeader, header, data)), CSV, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-    assertEquals(1, importer.getSkippedLineCount());
-
-    wasCalled = new AtomicBoolean(false);
-    recordGroup = createSkipUntilFirstHeaderRecordGroup(wasCalled);
-    importer = new GanttCSVOpen(createSupplier(createXls(notHeader, header, data)), XLS, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-    assertEquals(1, importer.getSkippedLineCount());
+    doTestSkipUntilFirstHeader(notHeader, header, data);
   }
 
   public void testSkipLinesWithEmptyMandatoryFields() throws Exception {
@@ -149,115 +92,163 @@ public class CsvImportTest extends TestCase {
     String data2 = "a2,b2,c2";
     String data3 = ",b3,c3";
 
-    AtomicBoolean wasCalled = new AtomicBoolean(false);
-    RecordGroup recordGroup = createSkipLinesWithEmptyMandatoryFieldsRecordGroup(wasCalled);
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header, data1, data2, data3)), CSV, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-    assertEquals(2, importer.getSkippedLineCount());
-
-    wasCalled = new AtomicBoolean(false);
-    recordGroup = createSkipLinesWithEmptyMandatoryFieldsRecordGroup(wasCalled);
-    importer = new GanttCSVOpen(createSupplier(createXls(header, data1, data2, data3)), XLS, recordGroup);
-    importer.load();
-    assertTrue(wasCalled.get());
-    assertEquals(2, importer.getSkippedLineCount());
+    doTestSkipLinesWithEmptyMandatoryFields(header, data1, data2, data3);
   }
 
-  private RecordGroup createBasicRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestBasic(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
         }
-        wasCalled.set(true);
-        assertEquals("a1", record.get("A"));
-        assertEquals("b1", record.get("B"));
-        return true;
-      }
-    };
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+    }
   }
 
-  private RecordGroup createTwoGroupsFirstRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestSkipEmptyLine(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
         }
-        assertEquals("a1", record.get("A"));
-        assertEquals("b1", record.get("B"));
-        wasCalled.set(true);
-        return true;
-      }
-    };
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+    }
   }
 
-  private RecordGroup createTwoGroupsSecondRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestTwoGroups(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
+      RecordGroup recordGroup1 = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          wasCalled1.set(true);
+          return true;
         }
-        assertEquals("c1", record.get("C"));
-        assertEquals("d1", record.get("D"));
-        assertEquals("e1", record.get("E"));
-        wasCalled.set(true);
-        return true;
-      }
-    };
+      };
+
+      final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
+      RecordGroup recordGroup2 = new RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          assertEquals("c1", record.get("C"));
+          assertEquals("d1", record.get("D"));
+          assertEquals("e1", record.get("E"));
+          wasCalled2.set(true);
+          return true;
+        }
+      };
+
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup1, recordGroup2);
+      importer.load();
+      assertTrue(wasCalled1.get() && wasCalled2.get());
+    }
   }
 
-  private RecordGroup createIncompleteHeaderRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("ABC",
-        ImmutableSet.of("A", "B", "C"), // all fields
-        ImmutableSet.of("A", "B")) { // mandatory fields
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestIncompleteHeader(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("ABC",
+          ImmutableSet.of("A", "B", "C"), // all fields
+          ImmutableSet.of("A", "B")) { // mandatory fields
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
         }
-        wasCalled.set(true);
-        assertEquals("a1", record.get("A"));
-        assertEquals("b1", record.get("B"));
-        return true;
-      }
-    };
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+    }
   }
 
-  private RecordGroup createSkipUntilFirstHeaderRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("ABC", ImmutableSet.of("A", "B")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestSkipUntilFirstHeader(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a1", record.get("A"));
+          assertEquals("b1", record.get("B"));
+          return true;
         }
-        wasCalled.set(true);
-        assertEquals("a1", record.get("A"));
-        assertEquals("b1", record.get("B"));
-        return true;
-      }
-    };
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+      assertEquals(1, importer.getSkippedLineCount());
+    }
   }
 
-  private RecordGroup createSkipLinesWithEmptyMandatoryFieldsRecordGroup(final AtomicBoolean wasCalled) {
-    return new RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
-        if (!super.doProcess(record)) {
-          return false;
+  private void doTestSkipLinesWithEmptyMandatoryFields(String... data) throws Exception {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(data)) {
+      final AtomicBoolean wasCalled = new AtomicBoolean(false);
+      RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
+        @Override
+        protected boolean doProcess(SpreadsheetRecord record) {
+          if (!super.doProcess(record)) {
+            return false;
+          }
+          if (!hasMandatoryFields(record)) {
+            return false;
+          }
+          wasCalled.set(true);
+          assertEquals("a2", record.get("A"));
+          assertEquals("b2", record.get("B"));
+          return true;
         }
-        if (!hasMandatoryFields(record)) {
-          return false;
-        }
-        wasCalled.set(true);
-        assertEquals("a2", record.get("A"));
-        assertEquals("b2", record.get("B"));
-        return true;
-      }
-    };
+      };
+      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
+      importer.load();
+      assertTrue(wasCalled.get());
+      assertEquals(2, importer.getSkippedLineCount());
+    }
+  }
+
+  private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
+    List<Pair<SpreadsheetFormat, Supplier<InputStream>>> pairs = new ArrayList<>();
+    pairs.add(Pair.create(CSV, createSupplier(Joiner.on('\n').join(data).getBytes(Charsets.UTF_8))));
+    pairs.add(Pair.create(XLS, createSupplier(createXls(data))));
+    return pairs;
   }
 
   private byte[] createXls(String... rows) throws Exception {

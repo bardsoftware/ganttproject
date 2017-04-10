@@ -18,17 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterators;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
-
-import static com.google.common.base.Charsets.UTF_8;
 
 /**
  * @author torkhov
@@ -38,7 +36,7 @@ class CsvReaderImpl implements SpreadsheetReader {
   private final CSVParser myParser;
 
   CsvReaderImpl(InputStream is, CSVFormat format) throws IOException {
-    myParser = new CSVParser(new InputStreamReader(is, UTF_8), format);
+    myParser = new CSVParser(new InputStreamReader(is, Charsets.UTF_8), format);
   }
 
   @Override
@@ -48,6 +46,6 @@ class CsvReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    return Iterators.transform(myParser.iterator(), (CSVRecord input) -> new CsvRecordImpl(input));
+    return Iterators.transform(myParser.iterator(), CsvRecordImpl::new);
   }
 }

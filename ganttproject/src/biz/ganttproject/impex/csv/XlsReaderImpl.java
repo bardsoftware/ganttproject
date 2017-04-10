@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -27,7 +28,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author torkhov
@@ -49,11 +53,11 @@ class XlsReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    return Iterators.transform(myBook.getSheetAt(0).iterator(), (Row input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+    return Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
   }
 
   private List<String> getCellValues(Row row) {
-    return Lists.newArrayList(Iterators.transform(row.iterator(), (Cell input) -> input.getStringCellValue()));
+    return Lists.newArrayList(Iterables.transform(row, Cell::getStringCellValue));
   }
 
   /**
