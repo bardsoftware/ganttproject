@@ -268,10 +268,12 @@ public class GPSpreadsheetImportTest extends TestCase {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
       for (String row : rows) {
-        for (String cell : row.split(",")) {
-          writer.print(cell.trim());
+        for (String line : row.split("\n", -1)) {
+          for (String cell : line.split(",", -1)) {
+            writer.print(cell.trim());
+          }
+          writer.println();
         }
-        writer.println();
       }
     }
     return stream.toByteArray();

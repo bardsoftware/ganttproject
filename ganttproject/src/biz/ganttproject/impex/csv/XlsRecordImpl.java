@@ -59,8 +59,7 @@ class XlsRecordImpl implements SpreadsheetRecord {
 
   @Override
   public boolean isSet(String name) {
-    int index = myMapping.get(name);
-    return isMapped(name) && index >= 0 && index < myValues.size();
+    return isMapped(name) && myMapping.get(name) >= 0 && myMapping.get(name) < myValues.size();
   }
 
   @Override
