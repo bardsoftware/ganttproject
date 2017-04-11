@@ -41,7 +41,7 @@ import java.util.SortedSet;
  * @author dbarashev@bardsoftware.com
  */
 class CustomPropertyMapping {
-  private static final String MSPROJECT_TYPE = "MSPROJECT_TYPE";
+  static final String MSPROJECT_TYPE = "MSPROJECT_TYPE";
 
   static Map<CustomPropertyDefinition, FieldType> buildMapping(TaskManager taskManager) {
     final SortedSet<TaskField> taskFields = Sets.newTreeSet(new Comparator<TaskField>() {

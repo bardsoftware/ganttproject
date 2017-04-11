@@ -284,6 +284,7 @@ class ProjectFileImporter {
           name = rf.getName();
         }
         def = myNativeProject.getResourceCustomPropertyManager().createDefinition(typeAsString, name, null);
+        def.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name());
         myResourceCustomPropertyMapping.put(rf, def);
       }
       nativeResource.setCustomField(def, convertDataValue(rf, r.getCurrentValue(rf)));
@@ -428,6 +429,7 @@ class ProjectFileImporter {
         }
 
         def = myNativeProject.getTaskCustomColumnManager().createDefinition(typeAsString, name, null);
+        def.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, tf.name());
         myTaskCustomPropertyMapping.put(tf, def);
       }
       try {
