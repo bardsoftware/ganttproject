@@ -37,7 +37,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import org.apache.commons.csv.CSVRecord;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -131,7 +130,7 @@ class TaskRecords extends RecordGroup {
     return result;
   }
   @Override
-  protected boolean doProcess(CSVRecord record) {
+  protected boolean doProcess(SpreadsheetRecord record) {
     if (!super.doProcess(record)) {
       return false;
     }

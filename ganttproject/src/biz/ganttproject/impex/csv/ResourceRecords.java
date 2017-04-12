@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import org.apache.commons.csv.CSVRecord;
 
 import java.util.List;
 
@@ -73,7 +72,7 @@ class ResourceRecords extends RecordGroup {
   }
 
   @Override
-  protected boolean doProcess(CSVRecord record) {
+  protected boolean doProcess(SpreadsheetRecord record) {
     if (!super.doProcess(record)) {
       return false;
     }
@@ -86,6 +85,7 @@ class ResourceRecords extends RecordGroup {
       Role newRole = myRoleManager.getProjectRoleSet().createRole(role);
       role = newRole.getPersistentID();
     }
+
     HumanResource hr = resourceManager.newResourceBuilder()
         .withName(getOrNull(record, ResourceFields.NAME.toString()))
         .withID(getOrNull(record, ResourceFields.ID.toString()))

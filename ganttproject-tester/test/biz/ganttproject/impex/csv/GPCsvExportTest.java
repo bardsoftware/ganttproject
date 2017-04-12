@@ -18,6 +18,8 @@ import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
 import java.io.ByteArrayOutputStream;
 
+import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -53,7 +55,7 @@ public class GPCsvExportTest extends TaskTestCase {
 
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, GanttCSVExport.Format.CSV)) {
+    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, CSV)) {
       exporter.save(writer);
     }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
@@ -89,7 +91,7 @@ public class GPCsvExportTest extends TaskTestCase {
 
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, roleManager, csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, GanttCSVExport.Format.CSV)) {
+    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, CSV)) {
       exporter.save(writer);
     }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");

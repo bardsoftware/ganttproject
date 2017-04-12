@@ -59,24 +59,6 @@ import java.util.Set;
  * @author athomas
  */
 public class GanttCSVExport {
-  public enum Format {
-    CSV("csv"), XLS("xls");
-    private final String myExtension;
-
-    Format(String extension) {
-      myExtension = extension;
-    }
-
-    @Override
-    public String toString() {
-      return "impex.csv.fileformat." + name().toLowerCase();
-    }
-
-    public String getExtension() {
-      return myExtension;
-    }
-  }
-
   private static final Predicate<ResourceAssignment> COORDINATOR_PREDICATE = arg -> arg.isCoordinator();
 
 
@@ -113,7 +95,7 @@ public class GanttCSVExport {
     return format;
   }
 
-  public SpreadsheetWriter createWriter(OutputStream stream, Format format) throws IOException {
+  public SpreadsheetWriter createWriter(OutputStream stream, SpreadsheetFormat format) throws IOException {
     format = Preconditions.checkNotNull(format);
 
     switch (format) {
