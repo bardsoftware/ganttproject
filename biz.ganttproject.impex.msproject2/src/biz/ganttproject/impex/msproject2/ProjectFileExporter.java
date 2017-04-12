@@ -117,7 +117,7 @@ class ProjectFileExporter {
     }
   }
 
-  private void exportTasks(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) {
+  private void exportTasks(Map<Integer, net.sf.mpxj.Task> id2mpxjTask) throws MPXJException {
 //    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
 //    collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
     Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getTaskManager());
@@ -303,9 +303,6 @@ class ProjectFileExporter {
   }
 
   private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
-//    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
-//    collectCustomProperties(getResourceManager().getCustomPropertyManager(), customProperty_fieldType,
-//        ResourceField.class);
     Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getResourceManager());
     for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
       myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
@@ -336,51 +333,6 @@ class ProjectFileExporter {
       }
     });
     id2mpxjResource.put(hr.getId(), mpxjResource);
-  }
-
-
-  private static <T extends Enum<T>> void collectCustomProperties(CustomPropertyManager customPropertyManager,
-      Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, Class<T> fieldTypeClass) {
-    Map<String, Integer> typeCounter = new HashMap<String, Integer>();
-    for (CustomPropertyDefinition def : customPropertyManager.getDefinitions()) {
-      Integer count = typeCounter.get(def.getTypeAsString());
-      if (count == null) {
-        count = 1;
-      } else {
-        count++;
-      }
-      typeCounter.put(def.getTypeAsString(), count);
-      FieldType ft = getFieldType(fieldTypeClass, def, count);
-      customProperty_fieldType.put(def, ft);
-    }
-  }
-
-  private static <T extends Enum<T>> FieldType getFieldType(Class<T> enumClass, CustomPropertyDefinition def,
-      Integer count) {
-    String name;
-    switch (def.getPropertyClass()) {
-    case BOOLEAN:
-      name = "FLAG";
-      break;
-    case INTEGER:
-    case DOUBLE:
-      name = "NUMBER";
-      break;
-    case TEXT:
-      name = "TEXT";
-      break;
-    case DATE:
-      name = "DATE";
-      break;
-    default:
-      assert false : "Should not be here";
-      name = "TEXT";
-    }
-    try {
-      return (FieldType) Enum.valueOf(enumClass, name + count);
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
   }
 
   private static interface CustomPropertySetter {

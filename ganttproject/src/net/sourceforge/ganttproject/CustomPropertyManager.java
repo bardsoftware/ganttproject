@@ -61,7 +61,7 @@ public interface CustomPropertyManager {
         result = "int";
       } else if (fieldType.equals(Double.class)) {
         result = "double";
-      } else if (fieldType.isAssignableFrom(GregorianCalendar.class)) {
+      } else if (GregorianCalendar.class.isAssignableFrom(fieldType)) {
         result = "date";
       }
       return result;

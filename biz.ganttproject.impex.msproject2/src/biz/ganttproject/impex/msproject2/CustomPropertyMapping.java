@@ -19,8 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.msproject2;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.sf.mpxj.FieldType;
+import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ResourceField;
 import net.sf.mpxj.TaskField;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -34,6 +37,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
@@ -43,7 +47,7 @@ import java.util.SortedSet;
 class CustomPropertyMapping {
   static final String MSPROJECT_TYPE = "MSPROJECT_TYPE";
 
-  static Map<CustomPropertyDefinition, FieldType> buildMapping(TaskManager taskManager) {
+  static Map<CustomPropertyDefinition, FieldType> buildMapping(TaskManager taskManager) throws MPXJException {
     final SortedSet<TaskField> taskFields = Sets.newTreeSet(new Comparator<TaskField>() {
       @Override
       public int compare(TaskField o1, TaskField o2) {
@@ -54,7 +58,7 @@ class CustomPropertyMapping {
     return buildMapping(taskManager.getCustomPropertyManager(), taskFields, TaskField.class);
   }
 
-  static Map<CustomPropertyDefinition, FieldType> buildMapping(HumanResourceManager resourceManager) {
+  static Map<CustomPropertyDefinition, FieldType> buildMapping(HumanResourceManager resourceManager) throws MPXJException {
     final SortedSet<ResourceField> taskFields = Sets.newTreeSet(new Comparator<ResourceField>() {
       @Override
       public int compare(ResourceField o1, ResourceField o2) {
@@ -67,8 +71,8 @@ class CustomPropertyMapping {
 
   private static <T extends Enum<T>, S extends FieldType> Map<CustomPropertyDefinition, FieldType> buildMapping(
       final CustomPropertyManager customPropertyManager,
-      final SortedSet<S> taskFields,
-      final Class<T> enumClass) {
+      final SortedSet<S> mpxjFields,
+      final Class<T> enumClass) throws MPXJException {
 
     final Map<CustomPropertyDefinition, FieldType> result = new HashMap<>();
     class Filter {
@@ -89,7 +93,7 @@ class CustomPropertyMapping {
               FieldType tf = fxnTaskField.apply(def);
               if (tf != null) {
                 result.put(def, tf);
-                taskFields.remove(tf);
+                mpxjFields.remove(tf);
                 it.remove();
               }
             } catch (IllegalArgumentException e) {
@@ -137,16 +141,24 @@ class CustomPropertyMapping {
             assert false : "Should not be here";
             name = "TEXT";
         }
-        S tf1 = (S)Enum.valueOf(enumClass, name + "1");
-        SortedSet<S> tailSet = taskFields.tailSet(tf1);
-        if (tailSet.isEmpty()) {
-          return null;
+        for (int i = 1; i <= 30; i++) {
+          S tf1 = (S)Enum.valueOf(enumClass, name + String.valueOf(i));
+          if (mpxjFields.contains(tf1)) {
+            return tf1;
+          }
         }
-        tf1 = tailSet.first();
-        return (tf1.name().startsWith(name)) ? tf1 : null;
+        return null;
       }
     });
-    assert f.allDefs.isEmpty();
+    if (!f.allDefs.isEmpty()) {
+      List<String> remainingColumns = Lists.newArrayList(Iterables.transform(f.allDefs, new Function<CustomPropertyDefinition, String>() {
+        @Override
+        public String apply(@Nullable CustomPropertyDefinition def) {
+          return def.getName();
+        }
+      }));
+      throw new MPXJException(String.format("Some of the custom columns failed to export: %s", remainingColumns));
+    }
     return result;
   }
 }
