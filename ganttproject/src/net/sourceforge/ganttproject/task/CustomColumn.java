@@ -26,6 +26,10 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
+
 public class CustomColumn implements CustomPropertyDefinition {
   private String id = null;
 
@@ -36,6 +40,7 @@ public class CustomColumn implements CustomPropertyDefinition {
   private final CustomColumnsManager myManager;
 
   private CustomPropertyClass myPropertyClass;
+  private final Map<String, String> myAttributes = new HashMap<>();
 
   CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClass propertyClass, Object colDefaultValue) {
     name = colName;
@@ -68,6 +73,13 @@ public class CustomColumn implements CustomPropertyDefinition {
     defaultValue = stub.getDefaultValue();
   }
 
+  @Nonnull
+  @Override
+  public Map<String, String> getAttributes() {
+    return myAttributes;
+  }
+
+  @Nonnull
   @Override
   public String getName() {
     return name;
@@ -80,6 +92,7 @@ public class CustomColumn implements CustomPropertyDefinition {
     myManager.fireDefinitionChanged(this, oldName);
   }
 
+  @Nonnull
   @Override
   public CustomPropertyClass getPropertyClass() {
     return myPropertyClass;

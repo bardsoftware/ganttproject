@@ -18,19 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.xml.transform.sax.TransformerHandler;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.sax.TransformerHandler;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 class ResourceSaver extends SaverBase {
   void save(IGanttProject project, TransformerHandler handler) throws SAXException {
@@ -102,6 +101,9 @@ class ResourceSaver extends SaverBase {
       addAttribute("name", nextDefinition.getName(), attrs);
       addAttribute("type", nextDefinition.getTypeAsString(), attrs);
       addAttribute("default-value", nextDefinition.getDefaultValueAsString(), attrs);
+      for (Map.Entry<String,String> kv : nextDefinition.getAttributes().entrySet()) {
+        addAttribute(kv.getKey(), kv.getValue(), attrs);
+      }
       emptyElement("custom-property-definition", attrs, handler);
     }
     // endElement("custom-properties-definition", handler);

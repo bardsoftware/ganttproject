@@ -18,12 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.io.File;
-import java.util.List;
-import java.util.logging.Level;
-
-import org.osgi.service.prefs.Preferences;
-
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.GPLogger;
@@ -33,6 +27,11 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import net.sourceforge.ganttproject.wizard.WizardPage;
+import org.osgi.service.prefs.Preferences;
+
+import java.io.File;
+import java.util.List;
+import java.util.logging.Level;
 
 public abstract class ImporterBase implements Importer {
   private final String myID;
@@ -124,6 +123,10 @@ public abstract class ImporterBase implements Importer {
   }
 
   protected void reportErrors(List<Pair<Level, String>> errors, String loggerName) {
+    reportErrors(getUiFacade(), errors, loggerName);
+  }
+
+  public static void reportErrors(UIFacade uiFacade, List<Pair<Level, String>> errors, String loggerName) {
     if (!errors.isEmpty()) {
       StringBuilder builder = new StringBuilder("<table><tr><th>Severity</th><th>Message</th></tr>");
       for (Pair<Level, String> message : errors) {
@@ -131,7 +134,7 @@ public abstract class ImporterBase implements Importer {
         builder.append(String.format("<tr><td valign=top><b>%s</b></td><td valign=top>%s</td></tr>", message.first().getName(), message.second()));
       }
       builder.append("</table>");
-      getUiFacade().showNotificationDialog(NotificationChannel.WARNING,
+      uiFacade.showNotificationDialog(NotificationChannel.WARNING,
           GanttLanguage.getInstance().formatText("impex." + loggerName.toLowerCase() + ".importErrorReport", builder.toString()));
     }
   }

@@ -18,14 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
-import javax.xml.transform.sax.TransformerHandler;
-
+import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
@@ -34,14 +28,18 @@ import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.ColorConvertion;
-
 import org.w3c.util.DateParser;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.google.common.base.Charsets;
-
-import biz.ganttproject.core.time.GanttCalendar;
+import javax.xml.transform.sax.TransformerHandler;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Map;
 
 class TaskSaver extends SaverBase {
   void save(IGanttProject project, TransformerHandler handler) throws SAXException, IOException {
@@ -151,11 +149,11 @@ class TaskSaver extends SaverBase {
 
   private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType)
       throws SAXException {
-    writeTaskProperty(handler, id, name, type, valueType, null);
+    writeTaskProperty(handler, id, name, type, valueType, null, Collections.<String,String>emptyMap());
   }
 
   private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType,
-      String defaultValue) throws SAXException {
+                                 String defaultValue, Map<String, String> attributes) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("id", id, attrs);
     addAttribute("name", name, attrs);
@@ -163,6 +161,9 @@ class TaskSaver extends SaverBase {
     addAttribute("valuetype", valueType, attrs);
     if (defaultValue != null) {
       addAttribute("defaultvalue", defaultValue, attrs);
+    }
+    for (Map.Entry<String,String> kv : attributes.entrySet()) {
+      addAttribute(kv.getKey(), kv.getValue(), attrs);
     }
     emptyElement("taskproperty", attrs, handler);
   }
@@ -198,7 +199,7 @@ class TaskSaver extends SaverBase {
       }
       String idcStr = cc.getID();
       writeTaskProperty(handler, idcStr, cc.getName(), "custom", valueType,
-          defVal == null ? null : String.valueOf(defVal));
+          defVal == null ? null : String.valueOf(defVal), cc.getAttributes());
     }
   }
 
