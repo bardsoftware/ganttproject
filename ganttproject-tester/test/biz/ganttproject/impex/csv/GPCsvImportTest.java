@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
@@ -56,7 +57,7 @@ import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class GPSpreadsheetImportTest extends TestCase {
+public class GPCsvImportTest extends TestCase {
 
   private Supplier<InputStream> createSupplier(final byte[] data) {
     return () -> new ByteArrayInputStream(data);
@@ -101,10 +102,20 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testImportAssignments() throws Exception {
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.ID);
     String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,,,";
 
-    String header2 = "Name,ID,e-mail,Phone,Default role";
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME, ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
 
     for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
@@ -120,10 +131,20 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testImportResourceRole() throws Exception {
-    String header1 = "Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors,ID";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.ID);
     String data1 = "";
 
-    String header2 = "Name,ID,Default role";
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME, ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,Default:1";
 
     for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
@@ -136,7 +157,16 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testCustomFields() throws Exception {
-    String header1 = "Field1,ID,Name,Begin date,End date,Predecessors,Resources,Duration,Completion,Web Link,Notes,Field2";
+    String header1 = "Field1," + buildTaskHeader(TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES) + ",Field2";
     String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
     for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
@@ -156,8 +186,26 @@ public class GPSpreadsheetImportTest extends TestCase {
     }
   }
 
+  private String buildTaskHeader(TaskRecords.TaskFields... taskFields) {
+    return Joiner.on(',').join(Stream.of(taskFields).map(TaskRecords.TaskFields::toString).iterator());
+  }
+
+  private String buildResourceHeader(ResourceRecords.ResourceFields... resourceFields) {
+    return Joiner.on(',').join(Stream.of(resourceFields).map(ResourceRecords.ResourceFields::toString).iterator());
+  }
+
   public void testDependencies() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Resources,Duration,Completion,Web Link,Notes,Predecessors";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
     String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
     String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
@@ -181,7 +229,17 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testMilestone() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Duration,Resources,Completion,Web Link,Notes,Predecessors";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
@@ -196,7 +254,13 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testHierarchy() throws Exception {
-    String header1 = "ID,Name,Begin date,End date,Duration,Outline number";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.OUTLINE_NUMBER);
     String data1 = "1,t1,23/07/12,26/07/12,1,1";
     String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
     String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
@@ -221,7 +285,11 @@ public class GPSpreadsheetImportTest extends TestCase {
   }
 
   public void testUseEndDateInsteadOfDuration() throws Exception {
-    String header1 = "ID,Name,Begin date,End date";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE);
     String data1 = "1,t1,23/07/12,26/07/12";
 
     for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
@@ -268,10 +336,12 @@ public class GPSpreadsheetImportTest extends TestCase {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
       for (String row : rows) {
-        for (String cell : row.split(",")) {
-          writer.print(cell.trim());
+        for (String line : row.split("\n", -1)) {
+          for (String cell : line.split(",", -1)) {
+            writer.print(cell.trim());
+          }
+          writer.println();
         }
-        writer.println();
       }
     }
     return stream.toByteArray();
