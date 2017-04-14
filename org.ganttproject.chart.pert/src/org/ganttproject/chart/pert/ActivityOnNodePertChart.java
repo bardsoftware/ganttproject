@@ -188,6 +188,16 @@ public class ActivityOnNodePertChart extends PertChart {
     myScrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
   }
 
+  public int getTextPaddingX() {
+    return (int) (textPaddingX * getDpi());
+  }
+
+
+  public int getTextPaddingY() {
+    return (int) (textPaddingY * getDpi());
+  }
+
+
   /** Graphical nodes width. */
   private int getNodeWidth() {
     return (int) (NODE_WIDTH * getDpi());
@@ -727,9 +737,9 @@ public class ActivityOnNodePertChart extends PertChart {
   private final static Color defaultBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
 
   private final static Color defaultCriticalColor = new Color(250, 250, 115).brighter();
-  private static int xName = 10;
+  private static int textPaddingX = 10;
 
-  private static int yName = 0;
+  private static int textPaddingY = 0;
 
 
 
@@ -817,27 +827,27 @@ public class ActivityOnNodePertChart extends PertChart {
       g.drawRoundRect(x, y, getNodeWidth(), getNodeHeight(), 16, 16);
       g.drawRoundRect(x + 1, y + 1, getNodeWidth() - 2, getNodeHeight() - 2, 14, 14);
 
-      g.drawLine(x, y + yName + fontMetrics.getHeight() + getYOffset(), x + getNodeWidth(), y + yName + fontMetrics.getHeight()
+      g.drawLine(x, y + getTextPaddingY() + fontMetrics.getHeight() + getYOffset(), x + getNodeWidth(), y + getTextPaddingY() + fontMetrics.getHeight()
           + getYOffset());
 
       g.setColor(Color.BLACK);
       String name = node.getName();
 
-      g.drawString(StringUtils.getTruncatedString(name, getNodeWidth() - xName, fontMetrics), x + xName, y + yName
+      g.drawString(StringUtils.getTruncatedString(name, getNodeWidth() - getTextPaddingX(), fontMetrics), x + getTextPaddingX(), y + getTextPaddingY()
           + fontMetrics.getHeight());
 
       g.setFont(getBaseFont());
       fontMetrics = g.getFontMetrics(g.getFont());
 
       g.setColor(Color.BLACK);
-      g.drawString(language.getText("start") + ": " + node.getStartDate().toString(), x + xName,
-          (int) (y + yName + 2.3 * fontMetrics.getHeight()));
-      g.drawString(language.getText("end") + ": " + node.getEndDate().toString(), x + xName,
-          (int) (y + yName + 3.3 * fontMetrics.getHeight()));
+      g.drawString(language.getText("start") + ": " + node.getStartDate().toString(), x + getTextPaddingX(),
+          (int) (y + getTextPaddingY() + 2.3 * fontMetrics.getHeight()));
+      g.drawString(language.getText("end") + ": " + node.getEndDate().toString(), x + getTextPaddingX(),
+          (int) (y + getTextPaddingY() + 3.3 * fontMetrics.getHeight()));
 
       if (node.getDuration() != null)
-        g.drawString(language.getText("duration") + ": " + node.getDuration().getLength(), x + xName,
-            (int) (y + yName + 4.3 * fontMetrics.getHeight()));
+        g.drawString(language.getText("duration") + ": " + node.getDuration().getLength(), x + getTextPaddingX(),
+            (int) (y + getTextPaddingY() + 4.3 * fontMetrics.getHeight()));
       g.setFont(f);
     }
 
