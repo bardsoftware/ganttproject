@@ -18,12 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.chart.pert;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import net.sourceforge.ganttproject.GanttExportSettings;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.StringUtils;
+import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,19 +37,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.util.StringUtils;
-
-import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
 
 /**
  * PERT chart implementation where nodes are tasks and links succession
@@ -74,11 +65,8 @@ public class ActivityOnNodePertChart extends PertChart {
   /** PERT chart abstraction used to build graph. */
   private PertChartAbstraction myPertAbstraction;
 
-  /**
-   * Max and min coordinates in the graphics that paints the graphical nodes and
-   * arrows.
-   */
-  private int myMaxX = 1, myMaxY = 1;
+  private int myMaxX = 1;
+  private int myMaxY = 1;
 
   /** The currently mouse pressed graphical node. */
   private GraphicalNode myPressedGraphicalNode;
@@ -87,20 +75,16 @@ public class ActivityOnNodePertChart extends PertChart {
    * Offset between the mouse pointer when clicked on a graphical node and the
    * top left corner of this same node.
    */
-  int myXClickedOffset, myYClickedOffset;
+  private int myXClickedOffset, myYClickedOffset;
 
   private final static GanttLanguage language = GanttLanguage.getInstance();
 
-  /** Graphical nodes width. */
   private final static int NODE_WIDTH = 110;// 205;
 
-  /** Graphical nodes height. */
   private final static int NODE_HEIGHT = 70;
 
-  /** Gap between two TaskGraphNodes with the same X coordinate. */
   private final static int X_GAP = 30;// 60;
 
-  /** Gap between two TaskGraphNodes with the same Y coordinate. */
   private final static int Y_GAP = 15;// 30;
 
   private final static int ARROW_HEIGHT = 10;
@@ -109,10 +93,8 @@ public class ActivityOnNodePertChart extends PertChart {
 
   private final static int ARROW_CORNER_WIDTH = 6;
 
-  /** X offset for the top left task graph node. */
   private final static int X_OFFSET = 5;
 
-  /** Y offset for the top left task graph node. */
   private final static int Y_OFFSET = 5;
 
   /** Color of the border of normal tasks. */
@@ -139,13 +121,13 @@ public class ActivityOnNodePertChart extends PertChart {
           myPressedGraphicalNode.x = e.getX() - myXClickedOffset;
           myPressedGraphicalNode.y = e.getY() - myYClickedOffset;
           if (e.getX() > getPreferredSize().getWidth()) {
-            ActivityOnNodePertChart.this.setPreferredSize(new Dimension(myPressedGraphicalNode.x + NODE_WIDTH + X_GAP,
+            ActivityOnNodePertChart.this.setPreferredSize(new Dimension(myPressedGraphicalNode.x + getNodeWidth() + getxGap(),
                 (int) getPreferredSize().getHeight()));
             revalidate();
           }
           if (e.getY() > getPreferredSize().getHeight()) {
             ActivityOnNodePertChart.this.setPreferredSize(new Dimension((int) getPreferredSize().getWidth(),
-                myPressedGraphicalNode.y + NODE_HEIGHT + Y_GAP));
+                myPressedGraphicalNode.y + getNodeHeight() + getyGap()));
             revalidate();
           }
           repaint();
@@ -190,11 +172,11 @@ public class ActivityOnNodePertChart extends PertChart {
       public void mouseReleased(MouseEvent e) {
         if (myPressedGraphicalNode != null) {
           if (myPressedGraphicalNode.node.isCritical()) {
-            myPressedGraphicalNode.backgroundColor = GraphicalNode.defaultCriticalColor;
+            myPressedGraphicalNode.backgroundColor = defaultCriticalColor;
           } else {
-            myPressedGraphicalNode.backgroundColor = GraphicalNode.defaultBackgroundColor;
+            myPressedGraphicalNode.backgroundColor = defaultBackgroundColor;
           }
-          myPressedGraphicalNode.x = getGridX(e.getX() - myXClickedOffset + NODE_WIDTH / 2);
+          myPressedGraphicalNode.x = getGridX(e.getX() - myXClickedOffset + getNodeWidth() / 2);
           myPressedGraphicalNode.y = getGridY(e.getY());
           myPressedGraphicalNode = null;
           repaint();
@@ -207,20 +189,62 @@ public class ActivityOnNodePertChart extends PertChart {
     myScrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
   }
 
+  /** Graphical nodes width. */
+  private int getNodeWidth() {
+    return (int) (NODE_WIDTH * getDpi());
+  }
+
+  /** Graphical nodes height. */
+  private  int getNodeHeight() {
+    return (int) (NODE_HEIGHT * getDpi());
+  }
+
+  /** Gap between two TaskGraphNodes with the same X coordinate. */
+  private int getxGap() {
+    return (int) (X_GAP * getDpi());
+  }
+
+  /** Gap between two TaskGraphNodes with the same Y coordinate. */
+  private int getyGap() {
+    return (int) (Y_GAP * getDpi());
+  }
+
+  private int getArrowHeight() {
+    return (int) (ARROW_HEIGHT * getDpi());
+  }
+
+  private int getArrowWidth() {
+    return (int) (ARROW_WIDTH * getDpi());
+  }
+
+  private int getArrowCornerWidth() {
+    return (int) (ARROW_CORNER_WIDTH * getDpi());
+  }
+
+  /** X offset for the top left task graph node. */
+  private int getxOffset() {
+    return (int) (X_OFFSET * getDpi());
+  }
+
+  /** Y offset for the top left task graph node. */
+  private int getYOffset() {
+    return (int) (Y_OFFSET * getDpi());
+  }
+
   /** Recalculate preferred size so that graphics fit with nodes positions. */
   private void recalculatPreferredSize() {
     int maxX = 0;
     int maxY = 0;
 
     for (GraphicalNode gn : myGraphicalNodes) {
-      int x = gn.x + NODE_WIDTH;
-      int y = gn.y + NODE_HEIGHT;
+      int x = gn.x + getNodeWidth();
+      int y = gn.y + getNodeHeight();
       maxX = Math.max(maxX, x);
       maxY = Math.max(maxY, y);
     }
     setPreferredSize(new Dimension(maxX, maxY));
-    myMaxX = maxX;
-    myMaxY = maxY;
+    setMaxX(maxX);
+    setMaxY(maxY);
   }
 
   /**
@@ -240,7 +264,7 @@ public class ActivityOnNodePertChart extends PertChart {
    */
   private GraphicalNode getGraphicalNode(int x, int y) {
     for (GraphicalNode gn : myGraphicalNodes) {
-      if (isInRectancle(x, y, gn.x, gn.y, NODE_WIDTH, NODE_HEIGHT)) {
+      if (isInRectancle(x, y, gn.x, gn.y, getNodeWidth(), getNodeHeight())) {
         return gn;
       }
     }
@@ -266,7 +290,7 @@ public class ActivityOnNodePertChart extends PertChart {
       removeEmptyColumn();
       calculateGraphicalNodesCoordinates();
       calculateArrowsCoordinates();
-      setPreferredSize(new Dimension(myMaxX, myMaxY));
+      setPreferredSize(new Dimension(getMaxX(), getMaxY()));
     } else {
       myPertAbstraction = new PertChartAbstraction(myTaskManager);
       myTaskGraphNodes = myPertAbstraction.getTaskGraphNodes();
@@ -295,22 +319,22 @@ public class ActivityOnNodePertChart extends PertChart {
     return true;
   }
 
-  private static int getGridX(int x) {
-    int res = X_OFFSET;
+  private int getGridX(int x) {
+    int res = getxOffset();
     int tmp = 0;
     while (res < x) {
       tmp = res;
-      res += NODE_WIDTH + X_GAP;
+      res += getNodeWidth() + getxGap();
     }
     return tmp;
   }
 
-  private static int getGridY(int y) {
-    int res = Y_OFFSET;
+  private int getGridY(int y) {
+    int res = getYOffset();
     int tmp = 0;
     while (res < y) {
       tmp = res;
-      res += NODE_HEIGHT + Y_GAP;
+      res += getNodeHeight() + getyGap();
     }
     return tmp;
   }
@@ -615,9 +639,9 @@ public class ActivityOnNodePertChart extends PertChart {
 
   @Override
   public RenderedImage getRenderedImage(GanttExportSettings settings) {
-    BufferedImage image = new BufferedImage(myMaxX, myMaxY, BufferedImage.TYPE_INT_RGB);
+    BufferedImage image = new BufferedImage(getMaxX(), getMaxY(), BufferedImage.TYPE_INT_RGB);
     Graphics g = image.getGraphics();
-    g.fillRect(0, 0, myMaxX, myMaxY);
+    g.fillRect(0, 0, getMaxX(), getMaxY());
     paint(g);
     return image;
   }
@@ -645,18 +669,18 @@ public class ActivityOnNodePertChart extends PertChart {
   }
 
   private void calculateGraphicalNodesCoordinates() {
-    myMaxX = 0;
-    myMaxY = 0;
+    setMaxX(0);
+    setMaxY(0);
     for (GraphicalNode gnode : myGraphicalNodes) {
-      gnode.x += (NODE_WIDTH + X_GAP) * gnode.col;
-      gnode.y += (NODE_HEIGHT + Y_GAP) * gnode.row;
+      gnode.x += (getNodeWidth() + getxGap()) * gnode.col;
+      gnode.y += (getNodeHeight() + getyGap()) * gnode.row;
 
-      myMaxX = gnode.x > myMaxX ? gnode.x : myMaxX;
-      myMaxY = gnode.y > myMaxY ? gnode.y : myMaxY;
+      setMaxX(gnode.x > getMaxX() ? gnode.x : getMaxX());
+      setMaxY(gnode.y > getMaxY() ? gnode.y : getMaxY());
     }
 
-    myMaxX += NODE_WIDTH + X_GAP;
-    myMaxY += NODE_HEIGHT + Y_GAP;
+    setMaxX(getMaxX() + getNodeWidth() + getxGap());
+    setMaxY(getMaxY() + getNodeHeight() + getyGap());
   }
 
   private void calculateArrowsCoordinates() {
@@ -686,27 +710,48 @@ public class ActivityOnNodePertChart extends PertChart {
   }
 
   /**
+   * Max and min coordinates in the graphics that paints the graphical nodes and
+   * arrows.
+   */
+  private int getMaxX() {
+    return myMaxX;
+  }
+
+  private void setMaxX(int myMaxX) {
+    this.myMaxX = myMaxX;
+  }
+
+  private int getMaxY() {
+    return myMaxY;
+  }
+
+  private void setMaxY(int myMaxY) {
+    this.myMaxY = myMaxY;
+  }
+
+  private final static Color defaultBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
+
+  private final static Color defaultCriticalColor = new Color(250, 250, 115).brighter();
+  private static int xName = 10;
+
+  private static int yName = 0;
+
+
+
+  /**
    * Graphical node that is rendered on graphics.
    *
    * @author bbaranne
    */
-  private static class GraphicalNode extends JComponent {
-    static int xName = 10;
-
-    static int yName = 0;
-
+  private class GraphicalNode extends JComponent {
     private TaskGraphNode node;
 
     private int col = -1; // determines X
     private int row = -1;
 
-    private final static Color defaultBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
-
-    private final static Color defaultCriticalColor = new Color(250, 250, 115).brighter();
-
     private Color backgroundColor = null;
 
-    int x = X_OFFSET, y = X_OFFSET;
+    int x = getxOffset(), y = getxOffset();
 
     GraphicalNode(TaskGraphNode node) {
       this.row = -1;
@@ -724,7 +769,7 @@ public class ActivityOnNodePertChart extends PertChart {
      * @param node
      *          new linked abstract node.
      */
-    public void updateData(TaskGraphNode node) {
+    void updateData(TaskGraphNode node) {
       this.node = node;
     }
 
@@ -751,7 +796,8 @@ public class ActivityOnNodePertChart extends PertChart {
      *          Graphics where the graphical node is to be painted.
      */
     private void paintMe(Graphics g) {
-      g.setFont(g.getFont().deriveFont(11f).deriveFont(Font.BOLD));
+      Font f = g.getFont();
+      g.setFont(getBoldFont());
       FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
 
       int type = this.node.getType();
@@ -771,21 +817,21 @@ public class ActivityOnNodePertChart extends PertChart {
       }
       g.setColor(this.backgroundColor);
 
-      g.fillRoundRect(x, y, NODE_WIDTH, NODE_HEIGHT, 16, 16);
+      g.fillRoundRect(x, y, getNodeWidth(), getNodeHeight(), 16, 16);
       g.setColor(color);
-      g.drawRoundRect(x, y, NODE_WIDTH, NODE_HEIGHT, 16, 16);
-      g.drawRoundRect(x + 1, y + 1, NODE_WIDTH - 2, NODE_HEIGHT - 2, 14, 14);
+      g.drawRoundRect(x, y, getNodeWidth(), getNodeHeight(), 16, 16);
+      g.drawRoundRect(x + 1, y + 1, getNodeWidth() - 2, getNodeHeight() - 2, 14, 14);
 
-      g.drawLine(x, y + yName + fontMetrics.getHeight() + Y_OFFSET, x + NODE_WIDTH, y + yName + fontMetrics.getHeight()
-          + Y_OFFSET);
+      g.drawLine(x, y + yName + fontMetrics.getHeight() + getYOffset(), x + getNodeWidth(), y + yName + fontMetrics.getHeight()
+          + getYOffset());
 
       g.setColor(Color.BLACK);
       String name = node.getName();
 
-      g.drawString(StringUtils.getTruncatedString(name, NODE_WIDTH - xName, fontMetrics), x + xName, y + yName
+      g.drawString(StringUtils.getTruncatedString(name, getNodeWidth() - xName, fontMetrics), x + xName, y + yName
           + fontMetrics.getHeight());
 
-      g.setFont(g.getFont().deriveFont(Font.PLAIN));
+      g.setFont(getBaseFont());
       fontMetrics = g.getFontMetrics(g.getFont());
 
       g.setColor(Color.BLACK);
@@ -797,6 +843,7 @@ public class ActivityOnNodePertChart extends PertChart {
       if (node.getDuration() != null)
         g.drawString(language.getText("duration") + ": " + node.getDuration().getLength(), x + xName,
             (int) (y + yName + 4.3 * fontMetrics.getHeight()));
+      g.setFont(f);
     }
 
     @Override
@@ -818,7 +865,7 @@ public class ActivityOnNodePertChart extends PertChart {
    *
    * @author bbaranne
    */
-  private static class GraphicalArrow {
+  private class GraphicalArrow {
     GraphicalNode from;
 
     GraphicalNode to;
@@ -834,28 +881,28 @@ public class ActivityOnNodePertChart extends PertChart {
       int arrowFromX, arrowFromY;
       int arrowToX, arrowToY;
 
-      arrowFromX = from.x + NODE_WIDTH;
-      arrowFromY = from.y + NODE_HEIGHT / 2;
+      arrowFromX = from.x + getNodeWidth();
+      arrowFromY = from.y + getNodeHeight() / 2;
       arrowToX = to.x;
-      arrowToY = to.y + NODE_HEIGHT / 2;
+      arrowToY = to.y + getNodeHeight() / 2;
 
-      int[] xS = { arrowToX, arrowToX - ARROW_WIDTH, arrowToX - ARROW_WIDTH };
-      int[] yS = { arrowToY, arrowToY - ARROW_HEIGHT / 2, arrowToY + ARROW_HEIGHT / 2 };
+      int[] xS = { arrowToX, arrowToX - getArrowWidth(), arrowToX - getArrowWidth()};
+      int[] yS = { arrowToY, arrowToY - getArrowHeight() / 2, arrowToY + getArrowHeight() / 2 };
       int nb = xS.length;
 
       g.fillPolygon(xS, yS, nb); // flèche
 
       if (arrowFromY != arrowToY) {
-        int[] middleLineX = { arrowFromX + X_GAP / 2 - ARROW_CORNER_WIDTH, arrowFromX + X_GAP / 2,
-            arrowFromX + X_GAP / 2, arrowFromX + X_GAP / 2 + ARROW_CORNER_WIDTH };
+        int[] middleLineX = { arrowFromX + getxGap() / 2 - getArrowCornerWidth(), arrowFromX + getxGap() / 2,
+            arrowFromX + getxGap() / 2, arrowFromX + getxGap() / 2 + getArrowCornerWidth()};
         int[] middleLineY = { arrowFromY,
-            (arrowFromY < arrowToY ? arrowFromY + ARROW_CORNER_WIDTH : arrowFromY - ARROW_CORNER_WIDTH),
-            (arrowFromY < arrowToY ? arrowToY - ARROW_CORNER_WIDTH : arrowToY + ARROW_CORNER_WIDTH), arrowToY };
+            (arrowFromY < arrowToY ? arrowFromY + getArrowCornerWidth() : arrowFromY - getArrowCornerWidth()),
+            (arrowFromY < arrowToY ? arrowToY - getArrowCornerWidth() : arrowToY + getArrowCornerWidth()), arrowToY };
         int middleLineNb = middleLineX.length;
         g.drawPolyline(middleLineX, middleLineY, middleLineNb);
 
         g.drawLine(arrowFromX, arrowFromY, middleLineX[0], middleLineY[0]);
-        g.drawLine(arrowFromX + X_GAP / 2 + ARROW_CORNER_WIDTH, arrowToY, arrowToX - ARROW_WIDTH, arrowToY);
+        g.drawLine(arrowFromX + getxGap() / 2 + getArrowCornerWidth(), arrowToY, arrowToX - getArrowWidth(), arrowToY);
       } else {
         g.drawLine(arrowFromX, arrowFromY, arrowToX, arrowToY);
       }

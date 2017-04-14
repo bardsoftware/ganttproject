@@ -18,31 +18,57 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ganttproject.chart.pert;
 
-import java.util.Date;
-
-import javax.swing.JPanel;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.GPOptionGroup;
-
+import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.Preconditions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.task.TaskManager;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Date;
+
+import static net.sourceforge.ganttproject.gui.UIFacade.DEFAULT_DPI;
 
 public abstract class PertChart extends JPanel implements Chart {
   /** Task manager used to build PERT chart. It provides data. */
   protected TaskManager myTaskManager;
+  private IntegerOption myDpi;
+  private FontOption myChartFontOption;
+  private Font myBaseFont;
+  private Font myBoldFont;
 
   public PertChart() {
   }
 
   @Override
-  public void init(IGanttProject project) {
+  public void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption) {
     myTaskManager = project.getTaskManager();
+    myDpi = Preconditions.checkNotNull(dpiOption);
+    myChartFontOption = chartFontOption;
+    myChartFontOption.addChangeValueListener(new ChangeValueListener() {
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        updateFonts();
+      }
+    });
+    updateFonts();
+  }
+
+  private void updateFonts() {
+    FontSpec fontSpec = myChartFontOption.getValue();
+    float scaleFactor = fontSpec.getSize().getFactor() * getDpi();
+    myBaseFont = new Font(fontSpec.getFamily(), Font.PLAIN, (int)(10*scaleFactor));
+    myBoldFont = myBaseFont.deriveFont(Font.BOLD);
   }
 
   @Override
@@ -100,5 +126,17 @@ public abstract class PertChart extends JPanel implements Chart {
   @Override
   public void removeSelectionListener(ChartSelectionListener listener) {
     // No listeners are implemented
+  }
+
+  protected float getDpi() {
+    return myDpi.getValue().floatValue() / DEFAULT_DPI;
+  }
+
+  protected Font getBaseFont() {
+    return myBaseFont;
+  }
+
+  protected Font getBoldFont() {
+    return myBoldFont;
   }
 }

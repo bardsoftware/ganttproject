@@ -18,13 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.view;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.util.List;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-
+import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.IntegerOption;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
@@ -33,11 +28,15 @@ import net.sourceforge.ganttproject.gui.view.GPView;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
 /**
  * Collection of actions present in the view menu
  */
 public class ViewMenu extends JMenu {
-  public ViewMenu(final IGanttProject project, GPViewManager viewManager, String key) {
+  public ViewMenu(final IGanttProject project, GPViewManager viewManager, IntegerOption dpiOption, FontOption chartFontOption, String key) {
     super(GPAction.createVoidAction(key));
 
     List<Chart> charts = PluginManager.getCharts();
@@ -45,7 +44,7 @@ public class ViewMenu extends JMenu {
       setEnabled(false);
     }
     for (Chart chart : charts) {
-      chart.init(project);
+      chart.init(project, dpiOption, chartFontOption);
       GPView view = new GPViewImpl(chart);
       viewManager.createView(view, null);
       add(new JCheckBoxMenuItem(new ViewToggleAction(chart, viewManager, view)));

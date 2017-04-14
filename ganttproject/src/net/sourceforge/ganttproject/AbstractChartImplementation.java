@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -153,7 +155,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
 
   @Override
-  public void init(IGanttProject project) {
+  public void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption) {
     // Skip as we already have a project instance.
   }
 
