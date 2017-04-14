@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import com.google.common.base.Function;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
@@ -36,37 +36,39 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.util.collect.Pair;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
+import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
+
 /**
- * Tests CSV import with GP semantics.
+ * Tests spreadsheet (CSV and XLS) import with GP semantics.
  *
  * @author dbarashev (Dmitry Barashev)
  */
 public class GPCsvImportTest extends TestCase {
-  private Supplier<Reader> createSupplier(final String data) {
-    return new Supplier<Reader>() {
-      @Override
-      public Reader get() {
-        return new StringReader(data);
-      }
-    };
+
+  private Supplier<InputStream> createSupplier(final byte[] data) {
+    return () -> new ByteArrayInputStream(data);
   }
 
   private static Map<String, Task> buildTaskMap(TaskManager taskManager) {
-    return Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), new Function<Task, String>() {
-      @Override
-      public String apply(Task input) {
-        return input.getName();
-      }
-    });
+    return Maps.uniqueIndex(Arrays.asList(taskManager.getTasks()), Task::getName);
+  }
+
+  private Map<String, HumanResource> buildResourceMap(HumanResourceManager resourceManager) {
+    return Maps.uniqueIndex(resourceManager.getResources(), HumanResource::getName);
   }
 
   private static void assertDependency(Task dependant, Task dependee) {
@@ -100,11 +102,6 @@ public class GPCsvImportTest extends TestCase {
   }
 
   public void testImportAssignments() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    HumanResourceManager resourceManager = builder.getResourceManager();
-    RoleManager roleManager = new RoleManagerImpl();
-
     String header1 = buildTaskHeader(
         TaskRecords.TaskFields.NAME,
         TaskRecords.TaskFields.BEGIN_DATE,
@@ -118,214 +115,188 @@ public class GPCsvImportTest extends TestCase {
         TaskRecords.TaskFields.ID);
     String data1 = "t1,23/07/12,25/07/12,Joe;John,,,,,,";
 
-    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME,ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME, ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
-    importer.load();
 
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    Task t1 = taskMap.get("t1");
-    assertNotNull(t1);
-    Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-      @Override
-      public String apply(HumanResource input) {
-        return input.getName();
-      }
-    });
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      HumanResourceManager resourceManager = builder.getResourceManager();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
+      Task t1 = taskMap.get("t1");
+      assertNotNull(t1);
+      Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
+      assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
+      assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+    }
   }
 
   public void testImportResourceRole() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    HumanResourceManager resourceManager = builder.getResourceManager();
-    RoleManager roleManager = new RoleManagerImpl();
-
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.RESOURCES,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.COMPLETION,
-            TaskRecords.TaskFields.WEB_LINK,
-            TaskRecords.TaskFields.NOTES,
-            TaskRecords.TaskFields.PREDECESSORS,
-            TaskRecords.TaskFields.ID);
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.ID);
     String data1 = "";
 
-    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME,ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
+    String header2 = buildResourceHeader(ResourceRecords.ResourceFields.NAME, ResourceRecords.ResourceFields.ID, ResourceRecords.ResourceFields.ROLE);
     String data2 = "Joe,1,Default:1";
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
-        taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
-    importer.load();
 
-    Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-      @Override
-      public String apply(HumanResource input) {
-        return input.getName();
-      }
-    });
-    assertEquals(1, resourceMap.get("Joe").getRole().getID());
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      HumanResourceManager resourceManager = builder.getResourceManager();
+      doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
+      Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
+      assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+    }
   }
 
   public void testCustomFields() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    
     String header1 = "Field1," + buildTaskHeader(TaskRecords.TaskFields.ID,
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.PREDECESSORS,
-            TaskRecords.TaskFields.RESOURCES,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.COMPLETION,
-            TaskRecords.TaskFields.WEB_LINK,
-            TaskRecords.TaskFields.NOTES) + ",Field2" ;
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.PREDECESSORS,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES) + ",Field2";
     String data1 = "value1,,t1,23/07/12,25/07/12,,,,,,,value2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack());
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    Task t1 = taskMap.get("t1");
-    assertNotNull(t1);
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      TaskManager taskManager = builder.build();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
+      Task t1 = taskMap.get("t1");
+      assertNotNull(t1);
 
-    CustomPropertyDefinition def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
-    CustomPropertyDefinition def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
-    assertNotNull(def1);
-    assertNotNull(def2);
+      CustomPropertyDefinition def1 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field1");
+      CustomPropertyDefinition def2 = taskManager.getCustomPropertyManager().getCustomPropertyDefinition("Field2");
+      assertNotNull(def1);
+      assertNotNull(def2);
 
-    assertEquals("value1", t1.getCustomValues().getValue(def1));
-    assertEquals("value2", t1.getCustomValues().getValue(def2));
+      assertEquals("value1", t1.getCustomValues().getValue(def1));
+      assertEquals("value2", t1.getCustomValues().getValue(def2));
+    }
   }
 
   private String buildTaskHeader(TaskRecords.TaskFields... taskFields) {
     return Joiner.on(',').join(Stream.of(taskFields).map(TaskRecords.TaskFields::toString).iterator());
   }
 
-  private String buildResourceHeader(ResourceRecords.ResourceFields... resourceFields)
-  {
+  private String buildResourceHeader(ResourceRecords.ResourceFields... resourceFields) {
     return Joiner.on(',').join(Stream.of(resourceFields).map(ResourceRecords.ResourceFields::toString).iterator());
   }
 
   public void testDependencies() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.ID,
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.RESOURCES,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.COMPLETION,
-            TaskRecords.TaskFields.WEB_LINK,
-            TaskRecords.TaskFields.NOTES,
-            TaskRecords.TaskFields.PREDECESSORS);
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,25/07/12,,,,,,";
     String data2 = "2,t2,26/07/12,27/07/12,,,,,,1";
     String data3 = "3,t3,26/07/12,30/07/12,,,,,,1";
     String data4 = "4,t4,26/07/12,30/07/12,,,,,,1-FS=P1D";
     String data5 = "5,t5,26/07/12,30/07/12,,,,,,1-FS=P-1D";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack());
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    Task t3 = taskMap.get("t3");
-    Task t4 = taskMap.get("t4");
-    Task t5 = taskMap.get("t5");
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      Task t3 = taskMap.get("t3");
+      Task t4 = taskMap.get("t4");
+      Task t5 = taskMap.get("t5");
 
-    assertDependency(t2, t1);
-    assertDependency(t3, t1);
-    assertDependency(t4, t1, 1);
-    assertDependency(t5, t1, -1);
+      assertDependency(t2, t1);
+      assertDependency(t3, t1);
+      assertDependency(t4, t1, 1);
+      assertDependency(t5, t1, -1);
+    }
   }
 
   public void testMilestone() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.ID,
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.RESOURCES,
-            TaskRecords.TaskFields.COMPLETION,
-            TaskRecords.TaskFields.WEB_LINK,
-            TaskRecords.TaskFields.NOTES,
-            TaskRecords.TaskFields.PREDECESSORS);
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.RESOURCES,
+        TaskRecords.TaskFields.COMPLETION,
+        TaskRecords.TaskFields.WEB_LINK,
+        TaskRecords.TaskFields.NOTES,
+        TaskRecords.TaskFields.PREDECESSORS);
     String data1 = "1,t1,23/07/12,24/07/12,1,,,,,";
     String data2 = "2,t2,26/07/12,26/07/12,0,,,,,";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2)),
-        taskManager, null, null, builder.getTimeUnitStack());
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    assertFalse(t1.isMilestone());
-    assertTrue(t2.isMilestone());
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      assertFalse(t1.isMilestone());
+      assertTrue(t2.isMilestone());
+    }
   }
 
-  public void testHierarchy() throws IOException {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-
+  public void testHierarchy() throws Exception {
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.ID,
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE,
-            TaskRecords.TaskFields.DURATION,
-            TaskRecords.TaskFields.OUTLINE_NUMBER);
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.OUTLINE_NUMBER);
     String data1 = "1,t1,23/07/12,26/07/12,1,1";
     String data2 = "2,t2,23/07/12,24/07/12,1,1.1";
     String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, data4, data5)),
-        taskManager, null, null, builder.getTimeUnitStack());
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
-    Task t1 = taskMap.get("t1");
-    Task t2 = taskMap.get("t2");
-    Task t3 = taskMap.get("t3");
-    Task t4 = taskMap.get("t4");
-    Task t5 = taskMap.get("t5");
-    assertEquals(t3, hierarchy.getContainer(t5));
-    assertEquals(t3, hierarchy.getContainer(t4));
-    assertEquals(t1, hierarchy.getContainer(t3));
-    assertEquals(t1, hierarchy.getContainer(t2));
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      TaskManager taskManager = builder.build();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
+      TaskContainmentHierarchyFacade hierarchy = taskManager.getTaskHierarchy();
+      Task t1 = taskMap.get("t1");
+      Task t2 = taskMap.get("t2");
+      Task t3 = taskMap.get("t3");
+      Task t4 = taskMap.get("t4");
+      Task t5 = taskMap.get("t5");
+      assertEquals(t3, hierarchy.getContainer(t5));
+      assertEquals(t3, hierarchy.getContainer(t4));
+      assertEquals(t1, hierarchy.getContainer(t3));
+      assertEquals(t1, hierarchy.getContainer(t2));
+    }
   }
 
   public void testUseEndDateInsteadOfDuration() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-
     String header1 = buildTaskHeader(
-            TaskRecords.TaskFields.ID,
-            TaskRecords.TaskFields.NAME,
-            TaskRecords.TaskFields.BEGIN_DATE,
-            TaskRecords.TaskFields.END_DATE);
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE);
     String data1 = "1,t1,23/07/12,26/07/12";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
-        taskManager, null, null, builder.getTimeUnitStack());
-    importer.load();
-    Map<String, Task> taskMap = buildTaskMap(taskManager);
-    assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1)) {
+      TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+      Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, null, null, null);
+      assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+    }
   }
 
   private static void assertOrder(String first, String second) {
@@ -334,6 +305,7 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
     assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
   }
+
   public void testOutlineNumberComparator() {
     assertOrder("1", "2");
     assertOrder("1", "1.1");
@@ -341,5 +313,37 @@ public class GPCsvImportTest extends TestCase {
     assertOrder("1.1", "2");
     assertOrder("1.2", "1.10");
     assertOrder("2", "10");
+  }
+
+  private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
+    List<Pair<SpreadsheetFormat, Supplier<InputStream>>> pairs = new ArrayList<>();
+    pairs.add(Pair.create(CSV, createSupplier(Joiner.on('\n').join(data).getBytes(Charsets.UTF_8))));
+    pairs.add(Pair.create(XLS, createSupplier(createXls(data))));
+    return pairs;
+  }
+
+  private Map<String, Task> doTestImportAssignments(Supplier<InputStream> supplier, SpreadsheetFormat format, TaskManagerBuilder builder,
+      TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager) throws IOException {
+    if (taskManager == null) {
+      taskManager = builder.build();
+    }
+    GanttCSVOpen importer = new GanttCSVOpen(supplier, format, taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
+    importer.load();
+    return buildTaskMap(taskManager);
+  }
+
+  private byte[] createXls(String... rows) throws Exception {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
+      for (String row : rows) {
+        for (String line : row.split("\n", -1)) {
+          for (String cell : line.split(",", -1)) {
+            writer.print(cell.trim());
+          }
+          writer.println();
+        }
+      }
+    }
+    return stream.toByteArray();
   }
 }

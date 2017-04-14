@@ -22,6 +22,7 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.impex.csv.GanttCSVExport;
+import biz.ganttproject.impex.csv.SpreadsheetFormat;
 import biz.ganttproject.impex.csv.SpreadsheetWriter;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
@@ -40,10 +41,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class ExporterToCSV extends ExporterBase {
-  static class FormatOption extends DefaultEnumerationOption<GanttCSVExport.Format> {
+  static class FormatOption extends DefaultEnumerationOption<SpreadsheetFormat> {
     FormatOption() {
-      super("impex.csv.format", GanttCSVExport.Format.values());
-      setSelectedValue(GanttCSVExport.Format.CSV);
+      super("impex.csv.format", SpreadsheetFormat.values());
+      setSelectedValue(SpreadsheetFormat.CSV);
     }
   }
 
@@ -129,6 +130,6 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String[] getFileExtensions() {
-    return Stream.of(GanttCSVExport.Format.values()).map(f -> f.getExtension()).toArray(String[]::new);
+    return Stream.of(SpreadsheetFormat.values()).map(f -> f.getExtension()).toArray(String[]::new);
   }
 }
