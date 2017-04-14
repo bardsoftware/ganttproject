@@ -45,7 +45,6 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import org.eclipse.core.runtime.IStatus;
@@ -57,9 +56,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +66,7 @@ import java.util.TimerTask;
 public class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
   private final IGanttProject myProject;
-  private Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<ChartSelectionListener>();
+  private Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<>();
   private final ChartComponentBase myChartComponent;
   private MouseInteraction myActiveInteraction;
   private final UIFacade myUiFacade;
@@ -301,7 +298,6 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         return myGraphics;
       }
     }
-    ;
     ChartImageVisitorImpl visitor = new ChartImageVisitorImpl();
     buildImage(settings, visitor);
     return visitor.myRenderedImage;
@@ -408,9 +404,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     mySelectionListeners.remove(listener);
   }
 
-  protected void fireSelectionChanged() {
-    for (Iterator<ChartSelectionListener> listeners = mySelectionListeners.iterator(); listeners.hasNext();) {
-      ChartSelectionListener nextListener = listeners.next();
+  private void fireSelectionChanged() {
+    for (ChartSelectionListener nextListener : mySelectionListeners) {
       nextListener.selectionChanged();
     }
   }
@@ -436,7 +431,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   private Integer myCachedHeaderHeight = 30;
-  public int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
+  int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
     return myCachedHeaderHeight;
   }
   public void setTimelineHeight(int height) {
@@ -444,15 +439,11 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
 
-  public static class ChartSelectionImpl implements ChartSelection {
-    private List<Task> myTasks = new ArrayList<Task>();
-    private List<HumanResource> myHumanResources = new ArrayList<HumanResource>();
+  public abstract static class ChartSelectionImpl implements ChartSelection {
     private boolean isTransactionRunning;
 
     @Override
-    public boolean isEmpty() {
-      return myTasks.isEmpty() && myHumanResources.isEmpty();
-    }
+    public abstract boolean isEmpty();
 
     @Override
     public IStatus isDeletable() {
@@ -487,7 +478,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
   }
 
-  public MouseHoverLayerUi createMouseHoverLayer() {
+  MouseHoverLayerUi createMouseHoverLayer() {
     return new MouseHoverLayerUi();
   }
 }

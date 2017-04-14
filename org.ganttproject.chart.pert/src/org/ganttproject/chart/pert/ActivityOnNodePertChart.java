@@ -33,7 +33,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -276,8 +275,8 @@ public class ActivityOnNodePertChart extends PertChart {
     if (myPertAbstraction == null) {
       myPertAbstraction = new PertChartAbstraction(myTaskManager);
       myTaskGraphNodes = myPertAbstraction.getTaskGraphNodes();
-      myGraphicalNodes = new ArrayList<GraphicalNode>();
-      myGraphicalArrows = new ArrayList<GraphicalArrow>();
+      myGraphicalNodes = new ArrayList<>();
+      myGraphicalArrows = new ArrayList<>();
       // myMapPositionListOfNodes = new HashMap();
       // rowsList = new HashMap();
       nbCols = 0;
@@ -380,8 +379,9 @@ public class ActivityOnNodePertChart extends PertChart {
 
   private void moveDown(GraphicalNode graphicalNode) {
     int row = graphicalNode.row;
-    while (this.isOccupied(++row, graphicalNode.col))
-      ;
+    while (this.isOccupied(++row, graphicalNode.col)) {
+      // yup, the body is empty. But there is ++row above.
+    }
     graphicalNode.row = row;
   }
 
@@ -474,7 +474,7 @@ public class ActivityOnNodePertChart extends PertChart {
       return null;
     }
 
-    List<TaskGraphNode> res = new ArrayList<TaskGraphNode>();
+    List<TaskGraphNode> res = new ArrayList<>();
     for (GraphicalNode gn : graphicaleNodes) {
       res.addAll(gn.node.getSuccessors());
     }
@@ -490,7 +490,7 @@ public class ActivityOnNodePertChart extends PertChart {
    * @return the list of GraphicalNode in the col
    */
   private List<GraphicalNode> getNodeInColumn(int col) {
-    List<GraphicalNode> list = new ArrayList<GraphicalNode>();
+    List<GraphicalNode> list = new ArrayList<>();
     for (GraphicalNode gnode : myGraphicalNodes) {
       if (gnode.col == col) {
         list.add(gnode);
@@ -509,7 +509,7 @@ public class ActivityOnNodePertChart extends PertChart {
   }
 
   private List<TaskGraphNode> getAncestor(TaskGraphNode tgn) {
-    List<TaskGraphNode> ancestors = new ArrayList<TaskGraphNode>();
+    List<TaskGraphNode> ancestors = new ArrayList<>();
     for (TaskGraphNode tnode : myTaskGraphNodes) {
       List<TaskGraphNode> successor = tnode.getSuccessors();
       if (successor.contains(tgn)) {
@@ -660,11 +660,11 @@ public class ActivityOnNodePertChart extends PertChart {
   public void paint(Graphics g) {
     this.buildPertChart();
     super.paint(g);
-    for (int i = 0; i < myGraphicalNodes.size(); i++) {
-      myGraphicalNodes.get(i).paint(g);
+    for (GraphicalNode myGraphicalNode : myGraphicalNodes) {
+      myGraphicalNode.paint(g);
     }
-    for (int i = 0; i < myGraphicalArrows.size(); i++) {
-      myGraphicalArrows.get(i).paintMe(g);
+    for (GraphicalArrow myGraphicalArrow : myGraphicalArrows) {
+      myGraphicalArrow.paintMe(g);
     }
   }
 
@@ -691,11 +691,6 @@ public class ActivityOnNodePertChart extends PertChart {
         myGraphicalArrows.add(arrow);
       }
     }
-  }
-
-  public Icon getIcon() {
-    URL iconUrl = getClass().getResource("/icons/pert_16.gif");
-    return iconUrl == null ? null : new ImageIcon(iconUrl);
   }
 
   @Override

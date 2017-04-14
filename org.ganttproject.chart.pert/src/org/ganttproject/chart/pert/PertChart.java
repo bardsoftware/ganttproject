@@ -41,13 +41,13 @@ import static net.sourceforge.ganttproject.gui.UIFacade.DEFAULT_DPI;
 
 public abstract class PertChart extends JPanel implements Chart {
   /** Task manager used to build PERT chart. It provides data. */
-  protected TaskManager myTaskManager;
+  TaskManager myTaskManager;
   private IntegerOption myDpi;
   private FontOption myChartFontOption;
   private Font myBaseFont;
   private Font myBoldFont;
 
-  public PertChart() {
+  PertChart() {
   }
 
   @Override
@@ -89,11 +89,6 @@ public abstract class PertChart extends JPanel implements Chart {
     throw new UnsupportedOperationException();
   }
 
-  /** Sets the task manager. */
-  public void setTaskManager(TaskManager taskManager) {
-    myTaskManager = taskManager;
-  }
-
   @Override
   public GPOptionGroup[] getOptionGroups() {
     return null;
@@ -128,15 +123,15 @@ public abstract class PertChart extends JPanel implements Chart {
     // No listeners are implemented
   }
 
-  protected float getDpi() {
+  float getDpi() {
     return myDpi.getValue().floatValue() / DEFAULT_DPI;
   }
 
-  protected Font getBaseFont() {
+  Font getBaseFont() {
     return myBaseFont;
   }
 
-  protected Font getBoldFont() {
+  Font getBoldFont() {
     return myBoldFont;
   }
 }
