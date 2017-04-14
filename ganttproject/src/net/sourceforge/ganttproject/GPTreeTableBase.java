@@ -119,10 +119,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         result.setFont((Font) textFieldFont);
       }
 
-      if (Boolean.TRUE == getClientProperty("JTable.autoStartsEdit")) {
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.clearText")) {
         ((JTextComponent) result).setText("");
-      } else {
+      }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.selectAll")) {
         SwingUtilities.invokeLater(TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result));
+      }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.unselectAll")) {
+        SwingUtilities.invokeLater(TreeTableCellEditorImpl.createUnselectAllCommand((JTextComponent) result));
+        putClientProperty("GPTreeTableBase.unselectAll", false);
       }
     }
     return result;
@@ -447,12 +452,31 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
       return false;
     }
-    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-      putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    if (e.getID() != KeyEvent.KEY_PRESSED) {
+      putClientProperty("GPTreeTableBase.clearText", false);
+      putClientProperty("GPTreeTableBase.selectAll", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
     }
-    boolean result = super.processKeyBinding(ks, e, condition, pressed);
-    putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-    return result;
+
+    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
+        return false;
+      }
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    if (e.isMetaDown() || e.isControlDown()) {
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    putClientProperty("GPTreeTableBase.clearText", true);
+    putClientProperty("GPTreeTableBase.selectAll", false);
+    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
+      putClientProperty("GPTreeTableBase.unselectAll", true);
+    }
+    return super.processKeyBinding(ks, e, condition, pressed);
   }
 
   @Override
@@ -497,6 +521,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         onProjectCreated();
       }
     });
+    setAutoStartEditOnKeyStroke(true);
     setSurrendersFocusOnKeystroke(true);
   }
 

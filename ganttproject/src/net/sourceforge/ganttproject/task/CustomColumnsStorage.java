@@ -18,6 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import com.google.common.base.Objects;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyListener;
+import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,17 +32,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Objects;
-
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
-import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
 /**
  * TODO Remove the map Name->customColum to keep only the map Id -> CustomColumn
  * This class stores the CustomColumns.
- * 
+ *
  * @author bbaranne (Benoit Baranne) Mar 2, 2005
  */
 public class CustomColumnsStorage {
@@ -110,6 +109,7 @@ public class CustomColumnsStorage {
       if (thisColumn == null || !thisColumn.getPropertyClass().equals(thatColumn.getPropertyClass())) {
         thisColumn = new CustomColumn(myManager, thatColumn.getName(), thatColumn.getPropertyClass(), thatColumn.getDefaultValue());
         thisColumn.setId(createId());
+        thisColumn.getAttributes().putAll(thatColumn.getAttributes());
         addCustomColumn(thisColumn);
       }
       result.put(thatColumn, thisColumn);

@@ -105,17 +105,29 @@ class TreeTableCellEditorImpl implements TableCellEditor {
   }
 
   static Runnable createSelectAllCommand(final JTextComponent textComponent) {
-    Runnable selectAll = new Runnable() {
+    return createOnFocusGained(textComponent, new Runnable() {
       @Override
       public void run() {
         textComponent.selectAll();
       }
-    };
+    });
+  }
+
+  public static Runnable createUnselectAllCommand(final JTextComponent textComponent) {
+    return createOnFocusGained(textComponent, new Runnable() {
+      @Override
+      public void run() {
+        textComponent.select(Integer.MAX_VALUE, Integer.MAX_VALUE);
+      }
+    });
+  }
+
+  private static Runnable createOnFocusGained(final JTextComponent textComponent, final Runnable onFocusGained) {
     final FocusListener focusListener = new FocusAdapter() {
       @Override
       public void focusGained(FocusEvent arg0) {
         super.focusGained(arg0);
-        SwingUtilities.invokeLater(selectAll);
+        SwingUtilities.invokeLater(onFocusGained);
         textComponent.removeFocusListener(this);
       }
     };
