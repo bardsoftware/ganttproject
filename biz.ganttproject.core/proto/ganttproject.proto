@@ -1,0 +1,42 @@
+syntax = "proto3";
+package tutorial;
+
+option java_package = "biz.ganttproject.core";
+option java_outer_classname = "GanttProjectProtos";
+
+message Task {
+  int32 id = 1;
+  string name = 2;
+  string begin_date = 3;
+  string duration = 4;
+
+  string earliest_begin = 5;
+  int32 completion = 6;
+  enum Priority {
+    LOW = 0;
+    NORMAL = 1;
+    HIGH = 2;
+    LOWEST = 3;
+    HIGHEST = 4;
+  }
+  Priority priority = 7;
+  bool milestone = 8;
+  bool subproject = 9;
+
+  message Cost {
+    bool calculated = 1;
+    double value = 2;
+  }
+  Cost cost = 10;
+
+
+  string color = 11;
+  repeated int32 shape = 12;
+
+
+
+
+}
+message Project {
+  repeated Task tasks = 1;
+}

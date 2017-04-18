@@ -12,6 +12,9 @@
       <library name="lib/ganttproject-guava.jar">
          <export name="*"/>
       </library>
+      <library name="lib/mvn/*.jar">
+         <export name="*"/>
+      </library>
       <library name="resources/">
          <export name="*"/>
       </library>

@@ -1,12 +1,27 @@
-apply plugin: 'java'
+plugins {
+    id "java"
+    id "com.google.protobuf" version "0.8.1"
+}
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
+  compile fileTree(dir: 'lib', include: ['**/*.jar'])
   mavenDeps group: 'com.google.guava', name: 'guava', version: '19.0'
+  // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+  mavenDeps group: 'com.google.protobuf', name: 'protobuf-java', version: '3.2.0'
+}
+
+protobuf {
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
 }
 
 sourceSets {
     main {
+        proto {
+            srcDir 'proto'
+        }
         java {
             srcDir 'src'
         }
@@ -21,6 +36,7 @@ task copyPlugin(type: Copy) {
     from(fileTree(".")) {
       include "plugin.xml"
       include "lib/**.jar"
+      include "lib/mvn/*.jar"
       include "resources/**"
     }
     doLast {
