@@ -1,5 +1,6 @@
 syntax = "proto3";
-package tutorial;
+
+package ganttproject_core;
 
 option java_package = "biz.ganttproject.core";
 option java_outer_classname = "GanttProjectProtos";
@@ -7,11 +8,16 @@ option java_outer_classname = "GanttProjectProtos";
 message Task {
   int32 id = 1;
   string name = 2;
-  string begin_date = 3;
-  string duration = 4;
+
+  message Activity {
+    int32 id = 1;
+    string begin_date = 2;
+    string duration = 3;
+  }
+  Activity schedule = 3;
 
   string earliest_begin = 5;
-  int32 completion = 6;
+  float completion = 6;
   enum Priority {
     LOW = 0;
     NORMAL = 1;
@@ -32,11 +38,77 @@ message Task {
 
   string color = 11;
   repeated int32 shape = 12;
+  repeated Task child_task = 13;
 
-
-
-
+  map<string, string> custom_value = 14;
 }
+
+message Dependency {
+  enum Type {
+    FS = 0;
+    FF = 1;
+    SF = 2;
+    SS = 3;
+  }
+  int32 predecessor_id = 1;
+  int32 successor_id = 2;
+  Type type = 3;
+
+  enum LagType {
+    EQ = 0;
+    GT = 1;
+  }
+  string lag = 5;
+  LagType lag_type = 6;
+}
+
+message Role {
+  string id = 1;
+  string title = 2;
+}
+
+message Worker {
+  int32 id = 1;
+  string name = 2;
+  int32 role_id = 3;
+  string email = 4;
+  string phone = 5;
+
+  message PaymentRate {
+    string name = 1;
+    double value = 2;
+  }
+
+  repeated PaymentRate rate = 6;
+
+  message Job {
+    int32 task_id = 1;
+    int32 activity_id = 2;
+    float units = 3;
+    string role_id = 4;
+    bool is_coordinator = 5;
+  }
+  repeated Job job = 7;
+  map<string, string> custom_value = 8;
+}
+
+message CustomProperty {
+  enum Type {
+    TEXT = 0;
+    INTEGER = 1;
+    DOUBLE = 2;
+    DATE = 3;
+    BOOLEAN = 4;
+  }
+  string id = 1;
+  Type type = 2;
+  string default_value = 3;
+}
+
 message Project {
-  repeated Task tasks = 1;
+  repeated Task root_task = 1;
+  map<int32, Worker> worker = 2;
+  repeated Dependency dependency = 3;
+  map<string, CustomProperty> task_custom_property = 4;
+  map<string, CustomProperty> worker_custom_property = 5;
 }

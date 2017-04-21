@@ -28,6 +28,8 @@ dependencies {
   // https://mvnrepository.com/artifact/org.apache.poi/poi
   mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.15'
   mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+  // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util
+  mavenDeps group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.2.0'
 }
 
 

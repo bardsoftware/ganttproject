@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "idea"
     id "com.google.protobuf" version "0.8.1"
 }
 
@@ -11,9 +12,22 @@ dependencies {
 }
 
 protobuf {
+    generatedFilesBaseDir = "${projectDir}/gen-proto"
     protoc {
         // Download from repositories
         artifact = 'com.google.protobuf:protoc:3.0.0'
+
+    }
+}
+clean {
+    delete protobuf.generatedFilesBaseDir
+}
+
+idea {
+    module {
+        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java");
+        // If you have additional sourceSets and/or codegen plugins, add all of them
+        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/grpc");
     }
 }
 

@@ -18,20 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
-import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.export.ExporterBase;
-import net.sourceforge.ganttproject.gui.UIFacade;
-
-import org.osgi.service.prefs.Preferences;
-
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.export.ExporterBase;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.io.ExportSerializer;
+import net.sourceforge.ganttproject.io.ModelSerializerKt;
+import org.osgi.service.prefs.Preferences;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class StylesheetExporterBase extends ExporterBase {
 
@@ -77,6 +77,7 @@ public abstract class StylesheetExporterBase extends ExporterBase {
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
     super.setContext(project, uiFacade, prefs);
     createStylesheetOption(getStylesheets());
+    System.out.println(ModelSerializerKt.asJson(new ExportSerializer(project).write()));
   }
 
   private void createStylesheetOption(List<Stylesheet> stylesheets) {
@@ -94,15 +95,15 @@ public abstract class StylesheetExporterBase extends ExporterBase {
       List<Stylesheet> stylesheets = getStylesheets();
 
       // Set the first entry of list as default
-      setSelectedStylesheet(stylesheets.get(0));                      
+      setSelectedStylesheet(stylesheets.get(0));
 
       // Test if a style is present in the arguments from command line
       // Iterate the list of style sheets to find it
       if (getPreferences().get("stylesheet", null) != null) {
         for (Stylesheet sheet : stylesheets) {
           if (sheet.getLocalizedName().compareTo(getPreferences().get("stylesheet", null)) == 0) {
-            setSelectedStylesheet(sheet);                      
-            break;                          
+            setSelectedStylesheet(sheet);
+            break;
           }
         }
       }
