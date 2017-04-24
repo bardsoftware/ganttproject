@@ -42,8 +42,8 @@ class FileChooserPage extends AbstractFileChooserPage {
   private final Importer myImporter;
   private File myFile;
 
-  public FileChooserPage(UIFacade uiFacade, Importer importer, Preferences prefs) {
-    super(uiFacade, prefs, GanttLanguage.getInstance().getText("importerFileChooserPageTitle"), createFileFilter(importer), createOptions(importer), false);
+  public FileChooserPage(UIFacade uiFacade, Importer importer, Preferences prefs, File defaultFolder) {
+    super(uiFacade, prefs, GanttLanguage.getInstance().getText("importerFileChooserPageTitle"), createFileFilter(importer), createOptions(importer), false, defaultFolder);
     myImporter = importer;
   }
 

@@ -18,14 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
+import net.sourceforge.ganttproject.IGanttProject;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -40,15 +41,17 @@ import net.sourceforge.ganttproject.wizard.WizardPage;
  */
 class ImporterChooserPage implements WizardPage {
   private final List<Importer> myImporters;
+  private final IGanttProject myProject;
   private AbstractWizard myWizard;
   private final UIFacade myUiFacade;
   private final Preferences myPrefs;
   private int mySelectedIndex;
 
-  ImporterChooserPage(List<Importer> importers, UIFacade uiFacade, Preferences preferences) {
+  ImporterChooserPage(List<Importer> importers, UIFacade uiFacade, IGanttProject project, Preferences preferences) {
     myImporters = importers;
     myUiFacade = uiFacade;
     myPrefs = preferences;
+    myProject = project;
   }
 
   @Override
@@ -79,8 +82,12 @@ class ImporterChooserPage implements WizardPage {
 
   protected void onSelectImporter(Importer importer) {
     assert myWizard != null : "It is a bug: importer chooser has not been initialized properly";
-    WizardPage filePage = new FileChooserPage(myUiFacade, importer, myPrefs.node(importer.getID()));
+    WizardPage filePage = new FileChooserPage(myUiFacade, importer, myPrefs.node(importer.getID()), getDefaultFolder());
     myWizard.setNextPage(filePage);
+  }
+
+  private File getDefaultFolder() {
+    return new File(myProject.getDocumentManager().getWorkingDirectory());
   }
 
   @Override
