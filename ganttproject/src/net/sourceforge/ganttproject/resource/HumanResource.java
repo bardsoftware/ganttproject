@@ -1,19 +1,25 @@
 /*
- * HumanResource.java
- *
- * Created on 27.05.2003
- */
+Copyright 2003 GanttProject Team
 
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.resource;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.DefaultListModel;
-
 import biz.ganttproject.core.calendar.GanttDaysOff;
+import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
@@ -24,6 +30,12 @@ import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+
+import javax.swing.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author barmeier
@@ -50,9 +62,9 @@ public class HumanResource implements CustomPropertyHolder {
 
   private BigDecimal myStandardPayRate;
 
-  private final DefaultListModel myDaysOffList = new DefaultListModel();
+  private final DefaultListModel<GanttDaysOff> myDaysOffList = new DefaultListModel<>();
 
-  private final List<ResourceAssignment> myAssignments = new ArrayList<ResourceAssignment>();
+  private final List<ResourceAssignment> myAssignments = new ArrayList<>();
 
   private final CustomColumnsValues myCustomProperties;
 
@@ -82,7 +94,7 @@ public class HumanResource implements CustomPropertyHolder {
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
     myManager = copy.myManager;
-    DefaultListModel copyDaysOff = copy.getDaysOff();
+    DefaultListModel<GanttDaysOff> copyDaysOff = copy.getDaysOff();
     for (int i = 0; i < copyDaysOff.getSize(); i++) {
       myDaysOffList.addElement(copyDaysOff.get(i));
     }
@@ -95,9 +107,9 @@ public class HumanResource implements CustomPropertyHolder {
    * associated to it's Tasks
    */
   private void removeAllAssignments() {
-    List<ResourceAssignment> copy = new ArrayList<ResourceAssignment>(myAssignments);
-    for (int i = 0; i < copy.size(); i++) {
-      ResourceAssignmentImpl next = (ResourceAssignmentImpl) copy.get(i);
+    List<ResourceAssignment> copy = new ArrayList<>(myAssignments);
+    for (ResourceAssignment aCopy : copy) {
+      ResourceAssignmentImpl next = (ResourceAssignmentImpl) aCopy;
       next.myAssignmentToTask.delete();
     }
     resetLoads();
@@ -125,7 +137,7 @@ public class HumanResource implements CustomPropertyHolder {
   }
 
   public String getName() {
-    return name;
+    return Strings.nullToEmpty(name);
   }
 
   public void setDescription(String description) {
@@ -178,11 +190,11 @@ public class HumanResource implements CustomPropertyHolder {
     fireResourceChanged();
   }
 
-  public DefaultListModel getDaysOff() {
+  public DefaultListModel<GanttDaysOff> getDaysOff() {
     return myDaysOffList;
   }
 
-  public Object getCustomField(CustomPropertyDefinition def) {
+  Object getCustomField(CustomPropertyDefinition def) {
     return myCustomProperties.getValue(def);
   }
 
@@ -218,7 +230,7 @@ public class HumanResource implements CustomPropertyHolder {
     }
   }
 
-  protected void fireAssignmentsChanged() {
+  private void fireAssignmentsChanged() {
     if (areEventsEnabled) {
       myManager.fireAssignmentsChanged(this);
     }
@@ -241,7 +253,7 @@ public class HumanResource implements CustomPropertyHolder {
     private CustomPropertyDefinition myDefinition;
     private Object myValue;
 
-    public CustomPropertyImpl(CustomPropertyDefinition definition, Object value) {
+    CustomPropertyImpl(CustomPropertyDefinition definition, Object value) {
       myDefinition = definition;
       myValue = value;
     }
@@ -273,7 +285,7 @@ public class HumanResource implements CustomPropertyHolder {
     return myLoadDistribution;
   }
 
-  private void fireAssignmentChanged(ResourceAssignmentImpl resourceAssignmentImpl) {
+  private void fireAssignmentChanged() {
     resetLoads();
     fireAssignmentsChanged();
   }
@@ -349,14 +361,14 @@ public class HumanResource implements CustomPropertyHolder {
     @Override
     public void setLoad(float load) {
       myLoad = load;
-      HumanResource.this.fireAssignmentChanged(this);
+      HumanResource.this.fireAssignmentChanged();
     }
 
     /** Removes all related assignments */
     @Override
     public void delete() {
       HumanResource.this.myAssignments.remove(this);
-      HumanResource.this.fireAssignmentChanged(this);
+      HumanResource.this.fireAssignmentChanged();
     }
 
     @Override

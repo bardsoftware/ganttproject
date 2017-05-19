@@ -674,26 +674,31 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         int index = getTable().columnAtPoint(mouseEvent.getPoint());
         if (index == -1) return;
 
-        ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
-        TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
+        final ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
+        final TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
 
-        if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
-          for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
-            if (c != column) {
-              c.setSort(SortOrder.UNSORTED);
+        myUiFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
+          @Override
+          public void run() {
+            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+              for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+                if (c != column) {
+                  c.setSort(SortOrder.UNSORTED);
+                }
+              }
+
+              if (column.getSort() == SortOrder.ASCENDING) {
+                column.setSort(SortOrder.DESCENDING);
+                myProject.getTaskManager().getTaskHierarchy().sort(
+                    reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
+                );
+              } else  {
+                column.setSort(SortOrder.ASCENDING);
+                myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
+              }
             }
           }
-
-          if (column.getSort() == SortOrder.ASCENDING) {
-            column.setSort(SortOrder.DESCENDING);
-            myProject.getTaskManager().getTaskHierarchy().sort(
-                reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
-            );
-          } else  {
-            column.setSort(SortOrder.ASCENDING);
-            myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
-          }
-        }
+        });
       }
     });
 
