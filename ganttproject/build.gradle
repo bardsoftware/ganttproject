@@ -1,5 +1,5 @@
 buildscript {
-  ext.kotlin_version = '1.1.1'
+  ext.kotlin_version = '1.1.2-4'
   repositories {
     mavenCentral()
   }
@@ -84,3 +84,6 @@ task copyEclipsito(type: Copy) {
 }
 
 task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }
+repositories {
+    mavenCentral()
+}

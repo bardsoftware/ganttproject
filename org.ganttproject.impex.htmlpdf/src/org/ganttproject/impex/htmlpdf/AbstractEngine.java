@@ -21,12 +21,13 @@ package org.ganttproject.impex.htmlpdf;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-
+import net.sourceforge.ganttproject.io.ExportSerializer;
+import net.sourceforge.ganttproject.io.ModelSerializerKt;
 import org.osgi.service.prefs.Preferences;
 
 /**
  * Simple base class for the rendering engines.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class AbstractEngine {
@@ -38,6 +39,7 @@ public class AbstractEngine {
     myProject = project;
     myUiFacade = uiFacade;
     myPreferences = preferences;
+    System.out.println(ModelSerializerKt.asJson(new ExportSerializer(project).write()));
   }
 
   protected UIFacade getUiFacade() {

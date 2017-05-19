@@ -77,7 +77,6 @@ public abstract class StylesheetExporterBase extends ExporterBase {
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
     super.setContext(project, uiFacade, prefs);
     createStylesheetOption(getStylesheets());
-    System.out.println(ModelSerializerKt.asJson(new ExportSerializer(project).write()));
   }
 
   private void createStylesheetOption(List<Stylesheet> stylesheets) {

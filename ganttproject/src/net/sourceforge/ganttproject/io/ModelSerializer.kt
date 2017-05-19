@@ -96,7 +96,7 @@ class ExportSerializer(project: IGanttProject) : ModelSerializer(project) {
             completion = project.taskManager.projectCompletion.toFloat()
         }
         writeChildTasks(project.taskManager.rootTask, rootTaskProtoBuilder)
-        projectProtoBuilder.rootTask = rootTaskProtoBuilder.build()
+        projectProtoBuilder.addRootTask(rootTaskProtoBuilder.build())
 
         projectProtoBuilder.putAllWorker(writeWorkers().map { it.id to it }.toMap())
         return projectProtoBuilder.build()
