@@ -7,6 +7,8 @@ option java_package = "biz.ganttproject.impex";
 option java_outer_classname = "ExportProtos";
 
 message Project {
-    repeated ganttproject_core.Task root_task = 1;
+    // The list of tasks selected for the export.
+    ganttproject_core.TaskNode project_node = 1;
+    // The list of workers selected for the export.
     map<int32, ganttproject_core.Worker> worker = 2;
 }

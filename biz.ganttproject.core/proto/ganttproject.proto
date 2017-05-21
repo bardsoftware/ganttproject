@@ -38,10 +38,15 @@ message Task {
 
   string color = 11;
   repeated int32 shape = 12;
-  repeated Task child_task = 13;
 
   map<string, string> custom_value = 14;
 }
+
+message TaskNode {
+  Task task = 1;
+  repeated TaskNode child_node = 2;
+}
+
 
 message Dependency {
   enum Type {

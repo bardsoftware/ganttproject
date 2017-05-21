@@ -38,7 +38,7 @@ open class ModelSerializer(val project: IGanttProject) {
     fun encodeDuration(duration: TimeDuration) = "${duration.length}${project.timeUnitStack.encode(duration.timeUnit)}"
 
 
-    fun writeChildTasks(rootTask: Task, protoTask: GanttProjectProtos.Task.Builder) {
+    fun writeChildTasks(rootTask: Task, taskNode: GanttProjectProtos.TaskNode.Builder) {
         for (task in project.taskManager.taskHierarchy.getNestedTasks(rootTask)) {
 
             val taskProtoBuilder = GanttProjectProtos.Task.newBuilder().apply {
@@ -61,8 +61,10 @@ open class ModelSerializer(val project: IGanttProject) {
                                     .setCalculated(false).setValue(task.cost.manualValue.toDouble()).build()
                         }
             }
-            writeChildTasks(task, taskProtoBuilder)
-            protoTask.addChildTask(taskProtoBuilder.build())
+            val taskNodeBuilder = GanttProjectProtos.TaskNode.newBuilder()
+            taskNodeBuilder.task = taskProtoBuilder.build()
+            writeChildTasks(task, taskNodeBuilder)
+            taskNode.addChildNode(taskNodeBuilder.build())
         }
     }
 
@@ -95,8 +97,11 @@ class ExportSerializer(project: IGanttProject) : ModelSerializer(project) {
                     .build()
             completion = project.taskManager.projectCompletion.toFloat()
         }
-        writeChildTasks(project.taskManager.rootTask, rootTaskProtoBuilder)
-        projectProtoBuilder.addRootTask(rootTaskProtoBuilder.build())
+        val projectNodeBuilder = GanttProjectProtos.TaskNode.newBuilder().apply {
+            task = rootTaskProtoBuilder.build()
+        }
+        writeChildTasks(project.taskManager.rootTask, projectNodeBuilder)
+        projectProtoBuilder.projectNode = projectNodeBuilder.build()
 
         projectProtoBuilder.putAllWorker(writeWorkers().map { it.id to it }.toMap())
         return projectProtoBuilder.build()
