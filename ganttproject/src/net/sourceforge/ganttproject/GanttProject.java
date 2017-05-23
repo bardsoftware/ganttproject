@@ -902,7 +902,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return false;
     }
     if (mainArgs.log && "auto".equals(mainArgs.logFile)) {
-      mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log";
+      mainArgs.logFile = System.getProperty("user.home")+ File.separator + ".ganttproject.d" + File.separator + "ganttproject.log";
     }
     if (mainArgs.log && !mainArgs.logFile.trim().isEmpty()) {
       try {
