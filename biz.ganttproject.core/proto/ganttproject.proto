@@ -44,7 +44,8 @@ message Task {
 
 message TaskNode {
   Task task = 1;
-  repeated TaskNode child_node = 2;
+  int32 task_id = 2;
+  repeated TaskNode child_node = 3;
 }
 
 
@@ -111,9 +112,11 @@ message CustomProperty {
 }
 
 message Project {
-  repeated Task root_task = 1;
+  map<int32, Task> task = 1;
   map<int32, Worker> worker = 2;
   repeated Dependency dependency = 3;
   map<string, CustomProperty> task_custom_property = 4;
   map<string, CustomProperty> worker_custom_property = 5;
+  TaskNode root_task = 6;
+
 }

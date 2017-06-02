@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.io
 
 import biz.ganttproject.core.GanttProjectProtos
-import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.impex.ExportProtos
 import com.google.protobuf.Message
 import com.google.protobuf.TextFormat
@@ -29,63 +28,55 @@ import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.task.Task
 import org.w3c.util.DateParser
 
-/**
- * This class converts IGanttProject to protocol buffers suitable for serializing as text, json or in binary format.
- *
- * @author Dmitry Barashev
- */
-open class ModelSerializer(val project: IGanttProject) {
-    fun encodeDuration(duration: TimeDuration) = "${duration.length}${project.timeUnitStack.encode(duration.timeUnit)}"
-
-
-    fun writeChildTasks(rootTask: Task, taskNode: GanttProjectProtos.TaskNode.Builder) {
-        for (task in project.taskManager.taskHierarchy.getNestedTasks(rootTask)) {
-
-            val taskProtoBuilder = GanttProjectProtos.Task.newBuilder().apply {
-                id = task.taskID
-                name = task.name
-                schedule = GanttProjectProtos.Task.Activity.newBuilder()
-                        .setBeginDate(task.start.toXMLString())
-                        .setDuration(encodeDuration(task.duration))
-                        .build()
-                task.third?.let { earliestBegin = task.third.toXMLString() }
-                completion = task.completionPercentage.toFloat()
-                priority = GanttProjectProtos.Task.Priority.valueOf(task.priority.name)
-                milestone = task.isMilestone
-                subproject = task.isProjectTask
-                cost =
-                        if (task.cost.isCalculated) {
-                            GanttProjectProtos.Task.Cost.newBuilder().setCalculated(true).build()
-                        } else {
-                            GanttProjectProtos.Task.Cost.newBuilder()
-                                    .setCalculated(false).setValue(task.cost.manualValue.toDouble()).build()
-                        }
-            }
-            val taskNodeBuilder = GanttProjectProtos.TaskNode.newBuilder()
-            taskNodeBuilder.task = taskProtoBuilder.build()
-            writeChildTasks(task, taskNodeBuilder)
-            taskNode.addChildNode(taskNodeBuilder.build())
-        }
+fun writeTask(task: Task): GanttProjectProtos.Task {
+    val taskProtoBuilder = GanttProjectProtos.Task.newBuilder().apply {
+        id = task.taskID
+        name = task.name
+        schedule = GanttProjectProtos.Task.Activity.newBuilder()
+                .setBeginDate(task.start.toXMLString())
+                .setDuration(task.manager.encode(task.duration))
+                .build()
+        task.third?.let { earliestBegin = task.third.toXMLString() }
+        completion = task.completionPercentage.toFloat()
+        priority = GanttProjectProtos.Task.Priority.valueOf(task.priority.name)
+        milestone = task.isMilestone
+        subproject = task.isProjectTask
+        cost =
+                if (task.cost.isCalculated) {
+                    GanttProjectProtos.Task.Cost.newBuilder().setCalculated(true).build()
+                } else {
+                    GanttProjectProtos.Task.Cost.newBuilder()
+                            .setCalculated(false).setValue(task.cost.manualValue.toDouble()).build()
+                }
     }
+    return taskProtoBuilder.build()
+}
 
-    fun writeWorker(hr: HumanResource): GanttProjectProtos.Worker {
-        val builder = GanttProjectProtos.Worker.newBuilder().apply {
-            id = hr.id
-            name = hr.name
-            email = hr.mail
-            phone = hr.phone
-        }
-        return builder.build()
+fun writeWorker(hr: HumanResource): GanttProjectProtos.Worker {
+    val builder = GanttProjectProtos.Worker.newBuilder().apply {
+        id = hr.id
+        name = hr.name
+        email = hr.mail
+        phone = hr.phone
     }
-
-    fun writeWorkers(): List<GanttProjectProtos.Worker> = project.humanResourceManager.resources.map { writeWorker(it) }.toList()
+    return builder.build()
 }
 
 /**
  * This class converts IGanttProject to ExportProtos.Project protocol buffer suitable for serializing to JSON
  * for export purposes.
  */
-class ExportSerializer(project: IGanttProject) : ModelSerializer(project) {
+class ExportSerializer(val project: IGanttProject) {
+    fun writeChildTasks(rootTask: Task, taskNode: GanttProjectProtos.TaskNode.Builder) {
+        for (task in project.taskManager.taskHierarchy.getNestedTasks(rootTask)) {
+
+            val taskNodeBuilder = GanttProjectProtos.TaskNode.newBuilder()
+            taskNodeBuilder.task = writeTask(task)
+            writeChildTasks(task, taskNodeBuilder)
+            taskNode.addChildNode(taskNodeBuilder.build())
+        }
+    }
+
     fun write(): ExportProtos.Project {
         val projectProtoBuilder = ExportProtos.Project.newBuilder()
         val rootTaskProtoBuilder = GanttProjectProtos.Task.newBuilder().apply {
@@ -93,7 +84,7 @@ class ExportSerializer(project: IGanttProject) : ModelSerializer(project) {
             name = project.projectName
             schedule = GanttProjectProtos.Task.Activity.newBuilder()
                     .setBeginDate(DateParser.getIsoDateNoHours(project.taskManager.projectStart))
-                    .setDuration(encodeDuration(project.taskManager.projectLength))
+                    .setDuration(project.taskManager.encode(project.taskManager.projectLength))
                     .build()
             completion = project.taskManager.projectCompletion.toFloat()
         }
@@ -103,7 +94,8 @@ class ExportSerializer(project: IGanttProject) : ModelSerializer(project) {
         writeChildTasks(project.taskManager.rootTask, projectNodeBuilder)
         projectProtoBuilder.projectNode = projectNodeBuilder.build()
 
-        projectProtoBuilder.putAllWorker(writeWorkers().map { it.id to it }.toMap())
+        val workers = project.humanResourceManager.resources.map { writeWorker(it) }.toList()
+        projectProtoBuilder.putAllWorker(workers.map { it.id to it }.toMap())
         return projectProtoBuilder.build()
     }
 }
