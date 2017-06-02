@@ -54,9 +54,12 @@ public class GanttDialogPerson {
   private final StringOption myMailField = new DefaultStringOption("colMail");
   private final MoneyOption myStandardRateField = new DefaultMoneyOption("colStandardRate");
   private final MoneyOption myTotalCostField = new DefaultMoneyOption("colTotalCost");
+  private final MoneyOption myStandardRate2Field = new DefaultMoneyOption("colStandardRate2");
+  private final MoneyOption myTotalCost2Field = new DefaultMoneyOption("colTotalCost2");
   private final EnumerationOption myRoleField;
   private final GPOptionGroup myGroup;
   private GPOptionGroup myRateGroup;
+  private GPOptionGroup myRate2Group;
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
   private ResourceAssignmentsPanel myAssignmentsPanel;
@@ -78,6 +81,7 @@ public class GanttDialogPerson {
 
     ((GPAbstractOption)myTotalCostField).setWritable(false);
     myRateGroup = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRateField, myTotalCostField});
+    myRate2Group = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRate2Field, myTotalCost2Field});
   }
 
   public boolean result() {
@@ -116,6 +120,8 @@ public class GanttDialogPerson {
     }
     myStandardRateField.setValue(person.getStandardPayRate());
     myTotalCostField.setValue(person.getTotalCost());
+    myStandardRate2Field.setValue(person.getStandardPayRate2());
+    myTotalCost2Field.setValue(person.getTotalCost2());
   }
 
   private Component getComponent() {
@@ -127,7 +133,7 @@ public class GanttDialogPerson {
       }
     };
     builder.setI18N(i18n);
-    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup });
+    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup, myRate2Group });
     mainPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     tabbedPane = new JTabbedPane();
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
@@ -218,6 +224,7 @@ public class GanttDialogPerson {
       person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));
     }
     person.setStandardPayRate(myStandardRateField.getValue());
+    person.setStandardPayRate2(myStandardRate2Field.getValue());
     myAssignmentsPanel.commit();
     // FIXME change = false;? (after applying changed they are not changes
     // anymore...)

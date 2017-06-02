@@ -200,6 +200,14 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
     } else {
       task.getCost().setCalculated(true);
     }
+    String cost2Value = attrs.getValue("cost2-manual-value");
+    String cost2Calculated = attrs.getValue("cost2-calculated");
+    if (cost2Calculated != null) {
+      task.getCost2().setCalculated(Boolean.valueOf(cost2Calculated));
+      task.getCost2().setValue(new BigDecimal(cost2Value));
+    } else {
+      task.getCost2().setCalculated(true);
+    }
     myContext.pushTask(task);
   }
 

@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
+import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl2;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
@@ -129,6 +130,7 @@ public class TaskImpl implements Task {
   private List<TaskActivity> myMilestoneActivity;
 
   private final CostImpl myCost = new CostImpl();
+  private final CostImpl2 myCost2 = new CostImpl2();
 
   private boolean isUnplugged = false;
 
@@ -186,7 +188,8 @@ public class TaskImpl implements Task {
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
     myCost.setValue(copy.myCost);
-
+    myCost2.setValue(copy.myCost2);
+    
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
@@ -1277,4 +1280,51 @@ public class TaskImpl implements Task {
   public Cost getCost() {
     return myCost;
   }
+
+
+  private class CostImpl2 implements Cost {
+    private BigDecimal myValue = BigDecimal.ZERO;
+    private boolean isCalculated = true;
+
+    @Override
+    public BigDecimal getValue() {
+      return (isCalculated) ? getCalculatedValue() : getManualValue();
+    }
+
+    @Override
+    public BigDecimal getManualValue() {
+      return myValue;
+    }
+
+    @Override
+    public BigDecimal getCalculatedValue() {
+      return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
+    }
+
+    @Override
+    public void setValue(BigDecimal value) {
+      myValue = value;
+    }
+
+    public void setValue(Cost copy) {
+      myValue = copy.getValue();
+      isCalculated = copy.isCalculated();
+    }
+
+    @Override
+    public boolean isCalculated() {
+      return isCalculated;
+    }
+
+    @Override
+    public void setCalculated(boolean calculated) {
+      isCalculated = calculated;
+    }
+  }
+
+  @Override
+  public Cost getCost2() {
+    return myCost2;
+  }
+
 }

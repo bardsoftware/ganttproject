@@ -63,6 +63,7 @@ public interface TaskManager {
     Priority myPriority;
     Task myPrototype;
     BigDecimal myCost;
+    BigDecimal myCost2;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;

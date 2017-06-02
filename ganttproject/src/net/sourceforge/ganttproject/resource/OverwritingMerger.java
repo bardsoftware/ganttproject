@@ -57,6 +57,7 @@ public class OverwritingMerger implements HumanResourceMerger {
     mergeTo.setPhone(mergeFrom.getPhone());
     mergeTo.setRole(mergeFrom.getRole());
     mergeTo.setStandardPayRate(mergeFrom.getStandardPayRate());
+    mergeTo.setStandardPayRate2(mergeFrom.getStandardPayRate2());
     List<CustomProperty> customProperties = mergeFrom.getCustomProperties();
     for (int i = 0; i < customProperties.size(); i++) {
       CustomProperty nextProperty = customProperties.get(i);

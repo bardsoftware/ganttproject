@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableSet;
 
 /** Class to parse the attribute of resources handler */
 public class ResourceTagHandler extends AbstractTagHandler implements ParsingListener {
-  private final Set<String> TAGS = ImmutableSet.of("resource", "custom-property", "custom-property-definition", "rate");
+  private final Set<String> TAGS = ImmutableSet.of("resource", "custom-property", "custom-property-definition", "rate", "rate2");
   private final CustomPropertyManager myCustomPropertyManager;
 
   private HumanResource myCurrentResource;
@@ -97,6 +97,9 @@ public class ResourceTagHandler extends AbstractTagHandler implements ParsingLis
     if ("rate".equals(qName)) {
       loadRate(attrs);
     }
+    if ("rate2".equals(qName)) {
+      loadRate2(attrs);
+    }
   }
 
 
@@ -113,6 +116,18 @@ public class ResourceTagHandler extends AbstractTagHandler implements ParsingLis
     }
   }
 
+  private void loadRate2(Attributes attrs) {
+    String name = attrs.getValue("name");
+    if (!"standard2".equals(name)) {
+      return;
+    }
+    try {
+      BigDecimal value = new BigDecimal(attrs.getValue("value"));
+      myCurrentResource.setStandardPayRate2(value);
+    } catch (NumberFormatException e) {
+      GPLogger.log(e);
+    }
+  }
   private void loadCustomProperty(Attributes attrs) {
     String id = attrs.getValue("definition-id");
     String value = attrs.getValue("value");

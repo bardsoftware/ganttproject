@@ -393,6 +393,10 @@ public class TaskManagerImpl implements TaskManager {
           task.getCost().setCalculated(false);
           task.getCost().setValue(myCost);
         }
+        if (myCost2 != null) {
+          task.getCost2().setCalculated(false);
+          task.getCost2().setValue(myCost2);
+        }
         registerTask(task);
 
 
@@ -1082,6 +1086,7 @@ public class TaskManagerImpl implements TaskManager {
       nextImported.setExpand(nested[i].getExpand());
       nextImported.setMilestone(nested[i].isMilestone());
       nextImported.getCost().setValue(that.getCost());
+      nextImported.getCost2().setValue(that.getCost2());
       if (nested[i].getThird() != null) {
         nextImported.setThirdDate(nested[i].getThird().clone());
         nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());

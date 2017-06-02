@@ -61,6 +61,12 @@ class ResourceSaver extends SaverBase {
       addAttribute("value", p.getStandardPayRate().toPlainString(), attrs);
       emptyElement("rate", attrs, handler);
     }
+    if (!BigDecimal.ZERO.equals(p.getStandardPayRate2())) {
+      AttributesImpl attrs = new AttributesImpl();
+      addAttribute("name", "standard2", attrs);
+      addAttribute("value", p.getStandardPayRate2().toPlainString(), attrs);
+      emptyElement("rate2", attrs, handler);
+    }
   }
 
   private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler)
