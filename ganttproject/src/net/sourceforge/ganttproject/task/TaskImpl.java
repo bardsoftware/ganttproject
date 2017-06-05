@@ -1298,7 +1298,7 @@ public class TaskImpl implements Task {
 
     @Override
     public BigDecimal getCalculatedValue() {
-      return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
+      return new CostAlgorithmImpl2().getCalculatedCost(TaskImpl.this);
     }
 
     @Override

@@ -81,7 +81,7 @@ public class GanttDialogPerson {
 
     ((GPAbstractOption)myTotalCostField).setWritable(false);
     myRateGroup = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRateField, myTotalCostField});
-    myRate2Group = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRate2Field, myTotalCost2Field});
+    myRate2Group = new GPOptionGroup("resourceRate2", new GPOption[] {myStandardRate2Field, myTotalCost2Field});
   }
 
   public boolean result() {

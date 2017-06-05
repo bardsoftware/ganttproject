@@ -144,6 +144,11 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withCost2(BigDecimal value) {
+      myCost2 = value;
+      return this;
+    }
+
     public abstract Task build();
   }
 

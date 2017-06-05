@@ -44,7 +44,7 @@ public class CSVOptions {
   public CSVOptions() {
     List<TaskDefaultColumn> orderedColumns = ImmutableList.of(
         TaskDefaultColumn.ID, TaskDefaultColumn.NAME, TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE,
-        TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION, TaskDefaultColumn.COST);
+        TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION, TaskDefaultColumn.COST, TaskDefaultColumn.COST2);
     LinkedHashSet<TaskDefaultColumn> columns = Sets.newLinkedHashSet(Arrays.asList(TaskDefaultColumn.values()));
     columns.removeAll(orderedColumns);
     for (TaskDefaultColumn taskColumn : orderedColumns) {

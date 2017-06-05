@@ -93,6 +93,7 @@ class ResourceRecords extends RecordGroup {
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
         .withRole(role)
         .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))
+	.withStandardRate2(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE2.getName()))
         .build();
     for (String customField : getCustomFields()) {
       String value = getOrNull(record, customField);

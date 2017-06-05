@@ -181,7 +181,7 @@ class TaskRecords extends RecordGroup {
       try {
         String cost = record.get(TaskDefaultColumn.COST2.getName());
         if (!Strings.isNullOrEmpty(cost)) {
-          builder = builder.withCost(new BigDecimal(cost));
+          builder = builder.withCost2(new BigDecimal(cost));
         }
       } catch (NumberFormatException e) {
         GPLogger.logToLogger(e);
