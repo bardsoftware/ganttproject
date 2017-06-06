@@ -144,6 +144,7 @@ public class HumanResourceManager {
         result.setPhone(myPhone);
         result.setMail(myEmail);
         result.setStandardPayRate(myStandardRate);
+        result.setStandardPayRate2(myStandardRate2);
         add(result);
         return result;
       }

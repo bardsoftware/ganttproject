@@ -60,7 +60,8 @@ class ResourceRecords extends RecordGroup {
     super("Resource group",
       Sets.union(
           Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),
-          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())),
+          Sets.union(ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName()),
+          ImmutableSet.of(ResourceDefaultColumn.TOTAL_COST.getName()))),
       Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME)));
     this.resourceManager = Preconditions.checkNotNull(resourceManager);
     myRoleManager = Preconditions.checkNotNull(roleManager);

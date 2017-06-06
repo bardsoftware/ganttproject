@@ -41,8 +41,8 @@ public enum ResourceDefaultColumn {
   ROLE_IN_TASK(new ColumnList.ColumnStub("4", null, false, -1, 75), String.class, "tableColResourceRoleForTask", true),
   STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), Double.class, "tableColResourceRate", true),
   TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), Double.class, "tableColResourceCost", false),
-  STANDARD_RATE2(new ColumnList.ColumnStub("5", null, false, -1, 75), Double.class, "tableColResourceRate2", true),
-  TOTAL_COST2(new ColumnList.ColumnStub("6", null, false, -1, 50), Double.class, "tableColResourceCost2", false);
+  STANDARD_RATE2(new ColumnList.ColumnStub("7", null, false, -1, 75), Double.class, "tableColResourceRate2", true),
+  TOTAL_COST2(new ColumnList.ColumnStub("8", null, false, -1, 50), Double.class, "tableColResourceCost2", false);
 
   private final Column myDelegate;
   private final boolean isEditable;

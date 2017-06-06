@@ -41,7 +41,7 @@ public class CostAlgorithmImpl2 {
     }
     for (ResourceAssignment assignment : t.getAssignments()) {
       HumanResource resource = assignment.getResource();
-      total = total.add(resource.getStandardPayRate()
+      total = total.add(resource.getStandardPayRate2()
           .multiply(BigDecimal.valueOf(assignment.getLoad()))
           .divide(BigDecimal.valueOf(100))
           .multiply(BigDecimal.valueOf(t.getDuration().getLength())));
