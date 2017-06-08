@@ -18,20 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-
+import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.StringUtils;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
-import biz.ganttproject.core.time.CalendarFactory;
+import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
 
 public interface CustomPropertyManager {
   List<CustomPropertyDefinition> getDefinitions();
@@ -61,14 +61,14 @@ public interface CustomPropertyManager {
         result = "int";
       } else if (fieldType.equals(Double.class)) {
         result = "double";
-      } else if (fieldType.isAssignableFrom(GregorianCalendar.class)) {
+      } else if (GregorianCalendar.class.isAssignableFrom(fieldType)) {
         result = "date";
       }
       return result;
     }
 
-    public static CustomPropertyDefinition decodeTypeAndDefaultValue(final String typeAsString,
-        final String valueAsString) {
+    public static CustomPropertyDefinition decodeTypeAndDefaultValue(
+        final String typeAsString, final String valueAsString) {
       final CustomPropertyClass propertyClass;
       final Object defaultValue;
       if (typeAsString.equals("text")) {
@@ -128,11 +128,18 @@ public interface CustomPropertyManager {
           throw new UnsupportedOperationException();
         }
 
+        @Nonnull
+        @Override
+        public Map<String, String> getAttributes() {
+          return Collections.emptyMap();
+        }
+
         @Override
         public String getID() {
           return null;
         }
 
+        @Nonnull
         @Override
         public String getName() {
           return null;
@@ -153,6 +160,7 @@ public interface CustomPropertyManager {
           return typeAsString;
         }
 
+        @Nonnull
         @Override
         public CustomPropertyClass getPropertyClass() {
           return propertyClass;

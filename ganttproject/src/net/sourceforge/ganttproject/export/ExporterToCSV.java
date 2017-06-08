@@ -18,27 +18,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.impex.csv.GanttCSVExport;
+import biz.ganttproject.impex.csv.SpreadsheetFormat;
+import biz.ganttproject.impex.csv.SpreadsheetWriter;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.io.CSVOptions;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import java.awt.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.impex.csv.GanttCSVExport;
+import java.util.stream.Stream;
 
 public class ExporterToCSV extends ExporterBase {
-  /** List of available/associated extensions */
-  private static String[] FILE_EXTENSIONS = new String[] { "csv" };
+  static class FormatOption extends DefaultEnumerationOption<SpreadsheetFormat> {
+    FormatOption() {
+      super("impex.csv.format", SpreadsheetFormat.values());
+      setSelectedValue(SpreadsheetFormat.CSV);
+    }
+  }
+
+  private final FormatOption myFormatOption = new FormatOption();
+
+
+  private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFormatOption});
+
+
+  public ExporterToCSV() {
+    myOptions.setTitled(false);
+  }
 
   @Override
   public String getFileTypeDescription() {
@@ -47,7 +65,7 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public GPOptionGroup getOptions() {
-    return null;
+    return myOptions;
   }
 
   @Override
@@ -62,14 +80,14 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String getFileNamePattern() {
-    return FILE_EXTENSIONS[0];
+    return proposeFileExtension();
   }
 
   @Override
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createCVSExportJob(outputFile);
     resultFiles.add(outputFile);
-    return new ExporterJob[] { job };
+    return new ExporterJob[]{job};
   }
 
   private ExporterJob createCVSExportJob(final File outputFile) {
@@ -80,12 +98,14 @@ public class ExporterToCSV extends ExporterBase {
         try {
           outputFile.createNewFile();
           outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+          CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
+
           // TODO Fix this ugly hack!! Ie make the settings available in a proper way
-          GanttCSVExport exporter = new GanttCSVExport(getProject(),
-              ((GanttProject) getProject()).getGanttOptions().getCSVOptions());
-          exporter.save(outputStream);
-          outputStream.flush();
-        } catch (IOException e) {
+          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
+          try (SpreadsheetWriter writer = exporter.createWriter(outputStream, myFormatOption.getSelectedValue())) {
+            exporter.save(writer);
+          }
+        } catch (Exception e) {
           getUIFacade().showErrorDialog(e);
           return Status.CANCEL_STATUS;
         } finally {
@@ -105,11 +125,11 @@ public class ExporterToCSV extends ExporterBase {
 
   @Override
   public String proposeFileExtension() {
-    return FILE_EXTENSIONS[0];
+    return myFormatOption.getSelectedValue().getExtension();
   }
 
   @Override
   public String[] getFileExtensions() {
-    return FILE_EXTENSIONS;
+    return Stream.of(SpreadsheetFormat.values()).map(f -> f.getExtension()).toArray(String[]::new);
   }
 }

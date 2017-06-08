@@ -23,8 +23,6 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.CellEditorListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -107,33 +105,32 @@ class TreeTableCellEditorImpl implements TableCellEditor {
   }
 
   static Runnable createSelectAllCommand(final JTextComponent textComponent) {
+    return createOnFocusGained(textComponent, new Runnable() {
+      @Override
+      public void run() {
+        textComponent.selectAll();
+      }
+    });
+  }
+
+  public static Runnable createUnselectAllCommand(final JTextComponent textComponent) {
+    return createOnFocusGained(textComponent, new Runnable() {
+      @Override
+      public void run() {
+        textComponent.select(Integer.MAX_VALUE, Integer.MAX_VALUE);
+      }
+    });
+  }
+
+  private static Runnable createOnFocusGained(final JTextComponent textComponent, final Runnable onFocusGained) {
     final FocusListener focusListener = new FocusAdapter() {
       @Override
       public void focusGained(FocusEvent arg0) {
         super.focusGained(arg0);
-        SwingUtilities.invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            textComponent.selectAll();
-          }
-        });
+        SwingUtilities.invokeLater(onFocusGained);
         textComponent.removeFocusListener(this);
       }
     };
-    textComponent.getDocument().addDocumentListener(new DocumentListener() {
-      @Override
-      public void removeUpdate(DocumentEvent arg0) {
-        textComponent.removeFocusListener(focusListener);
-      }
-      @Override
-      public void insertUpdate(DocumentEvent arg0) {
-        textComponent.removeFocusListener(focusListener);
-      }
-      @Override
-      public void changedUpdate(DocumentEvent arg0) {
-        textComponent.removeFocusListener(focusListener);
-      }
-    });
     textComponent.addFocusListener(focusListener);
     return new Runnable() {
       @Override

@@ -187,14 +187,17 @@ public class TestTaskDependencyCommon extends TaskTestCase {
         assertNull("Created the dependency between the SuperTask and Task2!", dep2);
     }
 
-    public void testDefaultHardness() {
+    public void testDefaultHardnessStrong() {
+        TaskManager taskMgr = getTaskManager();
+        Task task1 = taskMgr.createTask();
+        Task task2 = taskMgr.createTask();
+        TaskDependency strongDependency = taskMgr.getDependencyCollection().createDependency(task1, task2);
+        assertEquals(TaskDependency.Hardness.STRONG, strongDependency.getHardness());
+    }
+    public void testDefualtHardnessRubber()
+    {
       TaskManager taskMgr = getTaskManager();
-      Task task1 = taskMgr.createTask();
-      Task task2 = taskMgr.createTask();
-      TaskDependency strongDependency = taskMgr.getDependencyCollection().createDependency(task1, task2);
-      assertEquals(TaskDependency.Hardness.STRONG, strongDependency.getHardness());
-
-      taskMgr.getDependencyHardnessOption().setValue(TaskDependency.Hardness.RUBBER.toString());
+      taskMgr.getDependencyHardnessOption().setValue(TaskDependency.Hardness.RUBBER.getIdentifier());
       Task task3 = taskMgr.createTask();
       Task task4 = taskMgr.createTask();
       TaskDependency rubberDependency = taskMgr.getDependencyCollection().createDependency(task3, task4);

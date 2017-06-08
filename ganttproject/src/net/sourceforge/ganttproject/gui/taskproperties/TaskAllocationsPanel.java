@@ -77,28 +77,7 @@ public class TaskAllocationsPanel {
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getResources().toArray());
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(4), myRoleManager.getEnabledRoles());
 
-    AbstractTableAndActionsComponent<ResourceAssignment> tableAndActions =
-        new AbstractTableAndActionsComponent<ResourceAssignment>(getTable()) {
-      @Override
-      protected void onAddEvent() {
-        getTable().editCellAt(myModel.getRowCount() - 1, 1);
-      }
-
-      @Override
-      protected void onDeleteEvent() {
-        if (getTable().isEditing() && getTable().getCellEditor() != null) {
-          getTable().getCellEditor().stopCellEditing();
-        }
-        myModel.delete(getTable().getSelectedRows());
-      }
-
-      @Override
-      protected ResourceAssignment getValue(int row) {
-        java.util.List<ResourceAssignment> values = myModel.getResourcesAssignments();
-        return (row >= 0 && row < values.size()) ? values.get(row) : null;
-      }
-    };
-    JPanel tablePanel = CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
+    JPanel tablePanel = CommonPanel.createTableAndActions(myTable, myModel);
     String layoutDef = "(ROW weight=1.0 (LEAF name=resources weight=0.5) (LEAF name=cost weight=0.5))";
 
     JXMultiSplitPane result = new JXMultiSplitPane();

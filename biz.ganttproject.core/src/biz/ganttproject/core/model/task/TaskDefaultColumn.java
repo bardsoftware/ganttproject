@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.model.task;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -64,6 +65,7 @@ public enum TaskDefaultColumn {
   private final Class<?> myValueClass;
   private Predicate<? extends Object> myIsEditablePredicate;
   private final String myNameKey;
+  private Comparator<?> mySortComparator;
 
   private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
     this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);
@@ -74,6 +76,14 @@ public enum TaskDefaultColumn {
     myValueClass = valueClass;
     myIsEditablePredicate= isEditable;
     myNameKey = nameKey;
+  }
+
+  public Comparator<?> getSortComparator() {
+    return mySortComparator;
+  }
+
+  public void setSortComparator(Comparator<?> sortComparator) {
+    mySortComparator = sortComparator;
   }
 
   public Column getStub() {

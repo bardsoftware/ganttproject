@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.GPCalendarListener;
+import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -105,7 +107,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   }
 
   @Override
-  public void init(IGanttProject project) {
+  public void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption) {
     // Skip as we already have a project instance.
   }
 

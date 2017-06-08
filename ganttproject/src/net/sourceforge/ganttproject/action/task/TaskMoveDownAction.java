@@ -27,6 +27,8 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
@@ -36,7 +38,6 @@ public class TaskMoveDownAction extends TaskActionBase {
   public TaskMoveDownAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
       GanttTree2 tree) {
     super("task.move.down", taskManager, selectionManager, uiFacade, tree);
-    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
   }
 
   @Override
@@ -78,5 +79,20 @@ public class TaskMoveDownAction extends TaskActionBase {
     // TODO Ideally this should get done by the move method as it modifies the
     // document
     getUIFacade().getGanttChart().getProject().setModified();
+  }
+
+  public TaskMoveDownAction asToolbarAction() {
+    final TaskMoveDownAction result = new TaskMoveDownAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree());
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
+    return result;
   }
 }

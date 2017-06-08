@@ -18,9 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -30,12 +33,19 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
+import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
+import net.sourceforge.ganttproject.task.event.TaskListener;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -99,6 +109,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   };
 
+
   @Override
   public Component prepareEditor(TableCellEditor editor, int row, int column) {
     Component result = super.prepareEditor(editor, row, column);
@@ -107,13 +118,17 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       if (textFieldFont instanceof Font) {
         result.setFont((Font) textFieldFont);
       }
-      final Runnable command = TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result);
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          command.run();
-        }
-      });
+
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.clearText")) {
+        ((JTextComponent) result).setText("");
+      }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.selectAll")) {
+        SwingUtilities.invokeLater(TreeTableCellEditorImpl.createSelectAllCommand((JTextComponent) result));
+      }
+      if (Boolean.TRUE == getClientProperty("GPTreeTableBase.unselectAll")) {
+        SwingUtilities.invokeLater(TreeTableCellEditorImpl.createUnselectAllCommand((JTextComponent) result));
+        putClientProperty("GPTreeTableBase.unselectAll", false);
+      }
     }
     return result;
   }
@@ -132,8 +147,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   protected class TableHeaderUiFacadeImpl implements ColumnList {
-    private final List<Column> myDefaultColumnStubs = new ArrayList<Column>();
-    private final List<ColumnImpl> myColumns = new ArrayList<ColumnImpl>();
+    private final List<Column> myDefaultColumnStubs = new ArrayList<>();
+    private final List<ColumnImpl> myColumns = new ArrayList<>();
 
     TableHeaderUiFacadeImpl() {
       GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
@@ -269,7 +284,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return -1;
     }
 
-    protected void createDefaultColumns(List<ColumnList.Column> stubs) {
+    void createDefaultColumns(List<ColumnList.Column> stubs) {
       myDefaultColumnStubs.clear();
       for (Column stub : stubs) {
         myDefaultColumnStubs.add(new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
@@ -277,7 +292,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
 
-    protected ColumnImpl createColumn(int modelIndex, ColumnList.Column stub) {
+    ColumnImpl createColumn(int modelIndex, ColumnList.Column stub) {
       TableColumnExt tableColumn = newTableColumnExt(modelIndex);
       tableColumn.setPreferredWidth(stub.getWidth());
       tableColumn.setIdentifier(stub.getID());
@@ -286,12 +301,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return result;
     }
 
-    protected void insertColumnIntoUi(ColumnImpl column) {
+    void insertColumnIntoUi(ColumnImpl column) {
       getTable().addColumn(column.myTableColumn);
       column.setWidth(column.getStub().getWidth());
     }
 
-    protected void renameColumn(CustomPropertyDefinition definition) {
+    void renameColumn(CustomPropertyDefinition definition) {
       ColumnImpl c = findColumnByID(definition.getID());
       if (c == null) {
         return;
@@ -299,7 +314,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       c.setName(definition.getName());
     }
 
-    protected void updateType(CustomPropertyDefinition def) {
+    void updateType(CustomPropertyDefinition def) {
       ColumnImpl c = findColumnByID(def.getID());
       if (c == null) {
         return;
@@ -308,7 +323,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       c.getTableColumnExt().setCellEditor(createCellEditor(def.getType()));
     }
 
-    protected void deleteColumn(CustomPropertyDefinition definition) {
+    void deleteColumn(CustomPropertyDefinition definition) {
       ColumnImpl c = findColumnByID(definition.getID());
       if (c == null) {
         return;
@@ -322,7 +337,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
 
-    protected ColumnImpl findColumnByID(String id) {
+    ColumnImpl findColumnByID(String id) {
       for (ColumnImpl c : myColumns) {
         if (c.getID().equals(id)) {
           return c;
@@ -331,7 +346,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return null;
     }
 
-    protected ColumnImpl findColumnByViewIndex(int index) {
+    ColumnImpl findColumnByViewIndex(int index) {
       for (ColumnImpl c : myColumns) {
         if (c.getOrder() == index) {
           return c;
@@ -346,11 +361,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final JXTreeTable myTable;
     private final TableColumnExt myTableColumn;
     private final Column myStub;
+    private SortOrder mySort = SortOrder.UNSORTED;
 
-    protected ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
+    ColumnImpl(JXTreeTable table, TableColumnExt tableColumn, ColumnList.Column stub) {
       myTable = table;
       myTableColumn = tableColumn;
       myStub = stub;
+    }
+
+    public SortOrder getSort() {
+      return mySort;
+    }
+
+    public void setSort(SortOrder sort) {
+      mySort = sort;
     }
 
     private TreeTableModel getTableModel() {
@@ -405,7 +429,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return myStub;
     }
 
-    protected TableColumnExt getTableColumnExt() {
+    TableColumnExt getTableColumnExt() {
       return myTableColumn;
     }
 
@@ -425,12 +449,34 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   @Override
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-    if (e.isAltDown() || e.isControlDown()) {
-      putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
+      return false;
     }
-    boolean result = super.processKeyBinding(ks, e, condition, pressed);
-    putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-    return result;
+    if (e.getID() != KeyEvent.KEY_PRESSED) {
+      putClientProperty("GPTreeTableBase.clearText", false);
+      putClientProperty("GPTreeTableBase.selectAll", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+
+    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
+        return false;
+      }
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    if (e.isMetaDown() || e.isControlDown()) {
+      putClientProperty("GPTreeTableBase.selectAll", true);
+      putClientProperty("GPTreeTableBase.clearText", false);
+      return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    putClientProperty("GPTreeTableBase.clearText", true);
+    putClientProperty("GPTreeTableBase.selectAll", false);
+    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
+      putClientProperty("GPTreeTableBase.unselectAll", true);
+    }
+    return super.processKeyBinding(ks, e, condition, pressed);
   }
 
   @Override
@@ -475,19 +521,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         onProjectCreated();
       }
     });
-//    JXTree.DelegatingRenderer treeCellRenderer = (DelegatingRenderer) getTreeCellRenderer();
-//    treeCellRenderer.setDelegateRenderer(new DefaultTreeCellRenderer() {
-//      @Override
-//      public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
-//          boolean leaf, int row, boolean hasFocus) {
-//        JLabel result = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-//        result.setIcon(new ImageIcon(getClass().getResource("/icons/alert1_16.gif")));
-//        return result;
-//      }
-//    });
+    setAutoStartEditOnKeyStroke(true);
+    setSurrendersFocusOnKeystroke(true);
   }
 
-  @Override
   protected void createDefaultEditors() {
     super.createDefaultEditors();
 
@@ -524,13 +561,148 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()));
   }
 
-  protected void initTreeTable() {
+  void initTreeTable() {
     doInit();
   }
+
+  private static class SortTableHeaderRenderer implements TableCellRenderer {
+    private final Icon myAscIcon;
+    private final Icon myDescIcon;
+    private final Function<Integer, ColumnImpl> myColumnByViewIndex;
+    private final TableCellRenderer myDefaultRenderer;
+
+    SortTableHeaderRenderer(JTable table, Function<Integer, ColumnImpl> columnByViewIndex) {
+      myAscIcon = UIManager.getIcon("Table.ascendingSortIcon");
+      myDescIcon = UIManager.getIcon("Table.descendingSortIcon");
+      myColumnByViewIndex = Preconditions.checkNotNull(columnByViewIndex);
+      myDefaultRenderer = Preconditions.checkNotNull(table.getTableHeader().getDefaultRenderer());
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(
+        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+      Component c = myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+      if (c instanceof JLabel == false) {
+        return c;
+      }
+      ColumnImpl column = myColumnByViewIndex.apply(col);
+      if (column == null) {
+        return c;
+      }
+      JLabel label = (JLabel) c;
+      if (column.getSort() == SortOrder.ASCENDING) {
+        label.setIcon(myAscIcon);
+      }
+      if (column.getSort() == SortOrder.DESCENDING) {
+        label.setIcon(myDescIcon);
+      }
+      return label;
+    }
+  }
+
+  private static <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
+    return new Comparator<T>() {
+      @Override
+      public int compare(T t1, T t2) {
+        return -comparator.compare(t1, t2);
+      }
+    };
+  }
+
+  private final TaskListener myRemoveOrderListener = new TaskListenerAdapter() {
+
+    private void clearOrdering() {
+      for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+        c.setSort(SortOrder.UNSORTED);
+      }
+    }
+
+    @Override
+    public void dependencyAdded(TaskDependencyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void dependencyRemoved(TaskDependencyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void dependencyChanged(TaskDependencyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void taskScheduleChanged(TaskScheduleEvent e) {
+      clearOrdering();
+    }
+    @Override
+    public void taskAdded(TaskHierarchyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void taskRemoved(TaskHierarchyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void taskMoved(TaskHierarchyEvent e) {
+      clearOrdering();
+    }
+
+    @Override
+    public void taskModelReset() {
+      clearOrdering();
+    }
+  };
 
   protected void doInit() {
     setRootVisible(false);
     myCustomPropertyManager.addListener(this);
+
+    getTableHeader().setDefaultRenderer(new SortTableHeaderRenderer(this, new Function<Integer, ColumnImpl>() {
+      @Override
+      public ColumnImpl apply(@Nullable Integer idxColumn) {
+        return myTableHeaderFacade.findColumnByViewIndex(idxColumn);
+      }
+    }));
+
+    getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+        int index = getTable().columnAtPoint(mouseEvent.getPoint());
+        if (index == -1) return;
+
+        final ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
+        final TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
+
+        myUiFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
+          @Override
+          public void run() {
+            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+              for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
+                if (c != column) {
+                  c.setSort(SortOrder.UNSORTED);
+                }
+              }
+
+              if (column.getSort() == SortOrder.ASCENDING) {
+                column.setSort(SortOrder.DESCENDING);
+                myProject.getTaskManager().getTaskHierarchy().sort(
+                    reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
+                );
+              } else  {
+                column.setSort(SortOrder.ASCENDING);
+                myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
+              }
+            }
+          }
+        });
+      }
+    });
+
+    myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 
     getTable().getTableHeader().addMouseListener(new HeaderMouseListener(myCustomPropertyManager));
     getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
@@ -601,7 +773,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     getTable().setFillsViewportHeight(true);
   }
 
-  protected void onCellSelectionChanged() {
+  private void onCellSelectionChanged() {
     if (!getTable().isEditing()) {
       int row = getTable().getSelectedRow();
       int col = getTable().getSelectedColumn();
@@ -643,7 +815,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return getTableHeaderUiFacade();
   }
 
-  protected TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
+  TableHeaderUiFacadeImpl getTableHeaderUiFacade() {
     return myTableHeaderFacade;
   }
 
@@ -669,7 +841,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return result;
   }
 
-  TableCellRenderer createCellRenderer(Class<?> columnClass) {
+  private TableCellRenderer createCellRenderer(Class<?> columnClass) {
 
     // TODO(dbarashev): make sure that icon and boolean values render fine
     // if (Icon.class.equals(columnClass) || Boolean.class.equals(columnClass))
@@ -680,7 +852,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return getTreeTable().getDefaultRenderer(columnClass);
   }
 
-  TableCellEditor createCellEditor(Class<?> columnClass) {
+  private TableCellEditor createCellEditor(Class<?> columnClass) {
     TableCellEditor editor = columnClass.equals(GregorianCalendar.class) ? UIUtil.newDateCellEditor(myProject, false)
         : getTreeTable().getDefaultEditor(columnClass);
     return editor == null ? null : wrapEditor(editor);
@@ -710,7 +882,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return getScrollPane().createHorizontalScrollBar();
   }
 
-  protected JScrollPane getScrollPane() {
+  JScrollPane getScrollPane() {
     return myScrollPane;
   }
 
@@ -731,7 +903,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     private final boolean isMod;
     private final TimelineChart myChart;
 
-    protected VscrollAdjustmentListener(TimelineChart chart, boolean calculateMod) {
+    VscrollAdjustmentListener(TimelineChart chart, boolean calculateMod) {
       isMod = calculateMod;
       myChart = chart;
     }
@@ -771,7 +943,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   /** Adds keyStroke to the given action (if action is null nothing happens) */
-  void addAction(Action action, KeyStroke keyStroke) {
+  private void addAction(Action action, KeyStroke keyStroke) {
     if (action != null) {
       InputMap inputMap = getInputMap();
       inputMap.put(keyStroke, action.getValue(Action.NAME));
@@ -780,7 +952,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   /** Adds an action to the object and makes it active */
-  public void addActionWithAccelleratorKey(GPAction action) {
+  void addActionWithAccelleratorKey(GPAction action) {
     if (action != null) {
       for (KeyStroke ks : GPAction.getAllKeyStrokes(action.getID())) {
         addAction(action, ks);
@@ -796,9 +968,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   private class HeaderMouseListener extends MouseAdapter {
     private final CustomPropertyManager myCustomPropertyManager;
-    private final LinkedList<Column> myRecentlyHiddenColumns = new LinkedList<Column>();
+    private final LinkedList<Column> myRecentlyHiddenColumns = new LinkedList<>();
 
-    public HeaderMouseListener(CustomPropertyManager customPropertyManager) {
+    HeaderMouseListener(CustomPropertyManager customPropertyManager) {
       super();
       myCustomPropertyManager = customPropertyManager;
     }
@@ -825,7 +997,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     private Collection<Action> createPopupActions(final MouseEvent mouseEvent) {
-      List<Action> result = new ArrayList<Action>();
+      List<Action> result = new ArrayList<>();
       final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
       final ColumnImpl column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
 
@@ -869,7 +1041,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         result.add(hideAction);
       }
       if (!myRecentlyHiddenColumns.isEmpty()) {
-        List<GPAction> showActions = new ArrayList<GPAction>();
+        List<GPAction> showActions = new ArrayList<>();
         for (ListIterator<Column> it = myRecentlyHiddenColumns.listIterator(myRecentlyHiddenColumns.size()); it.hasPrevious();) {
           final Column hidden = it.previous();
           GPAction action = new GPAction("columns.show.label") {
@@ -891,7 +1063,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
-  public void autoFitColumns() {
+  void autoFitColumns() {
     int visibleWidth = 0;
     int headerHeight = 0;
     for (ColumnImpl column : getTableHeaderUiFacade().getColumns()) {

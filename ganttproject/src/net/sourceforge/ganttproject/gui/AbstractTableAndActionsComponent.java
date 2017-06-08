@@ -218,6 +218,30 @@ public abstract class AbstractTableAndActionsComponent<T> {
     return result;
   }
 
+  public static <T> JPanel createDefaultTableAndActions(JTable table, TableModelExt<T> modelExt) {
+    AbstractTableAndActionsComponent<T> component = new AbstractTableAndActionsComponent<T>(table) {
+      @Override
+      protected void onAddEvent() {
+        getTable().editCellAt(modelExt.getRowCount() - 1, 1);
+      }
+
+      @Override
+      protected void onDeleteEvent() {
+        if (getTable().isEditing() && getTable().getCellEditor() != null) {
+          getTable().getCellEditor().stopCellEditing();
+        }
+        modelExt.delete(getTable().getSelectedRows());
+      }
+
+      @Override
+      protected T getValue(int row) {
+        List<T> values = modelExt.getAllValues();
+        return (row >= 0 && row < values.size()) ? values.get(row) : null;
+      }
+    };
+    return createDefaultTableAndActions(table, component.getActionsComponent());
+  }
+
   public JTable getTable() {
     return myTable;
   }

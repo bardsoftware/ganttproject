@@ -21,6 +21,10 @@ package net.sourceforge.ganttproject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
+
 public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition {
   private String myName;
   private final String myID;
@@ -28,6 +32,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   private String myDefaultValueAsString;
   private CustomPropertyClass myPropertyClass;
   private String myTypeAsString;
+  private final Map<String, String> myAttributes = new HashMap<>();
 
   public DefaultCustomPropertyDefinition(String name) {
     myName = name;
@@ -65,11 +70,18 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     myDefaultValueAsString = stub.getDefaultValueAsString();
   }
 
+  @Nonnull
+  @Override
+  public Map<String, String> getAttributes() {
+    return myAttributes;
+  }
+
   @Override
   public String getID() {
     return myID;
   }
 
+  @Nonnull
   @Override
   public String getName() {
     return myName;
@@ -85,6 +97,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     return myPropertyClass.getJavaClass();
   }
 
+  @Nonnull
   @Override
   public CustomPropertyClass getPropertyClass() {
     return myPropertyClass;

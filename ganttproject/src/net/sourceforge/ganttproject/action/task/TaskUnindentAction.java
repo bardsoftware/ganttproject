@@ -27,6 +27,8 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
@@ -37,7 +39,6 @@ public class TaskUnindentAction extends TaskActionBase {
   public TaskUnindentAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
       GanttTree2 tree) {
     super("task.unindent", taskManager, selectionManager, uiFacade, tree);
-    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
   }
 
   @Override
@@ -67,5 +68,20 @@ public class TaskUnindentAction extends TaskActionBase {
         }
       });
     }
+  }
+
+  public TaskUnindentAction asToolbarAction() {
+    final TaskUnindentAction result = new TaskUnindentAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree());
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    this.addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled((Boolean)evt.getNewValue());
+        }
+      }
+    });
+    result.setEnabled(this.isEnabled());
+    return result;
   }
 }

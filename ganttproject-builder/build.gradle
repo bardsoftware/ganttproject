@@ -11,7 +11,7 @@ apply plugin: 'eclipse'
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
-ext.semver = '2.8.4'
+ext.semver = '2.8.5'
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file("dist-bin/plugins-${semver}")
 ext.buildNum = getBuildNum()
@@ -54,13 +54,18 @@ allprojects {
   apply plugin: 'eclipse'
   ext {
     libDir = 'lib'
+    mvnDir = 'lib/mvn'
   }
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
   task updateMavenDeps(type: Copy) {
+    doFirst {
+      mkdir project.ext.mvnDir
+      delete project.ext.mvnDir
+    }
     from configurations.mavenDeps
-    into project.ext.libDir
+    into project.ext.mvnDir
   }
 }
 
