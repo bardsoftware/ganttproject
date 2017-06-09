@@ -102,6 +102,7 @@ public interface Task extends MutableTask {
   }
 
   Cost getCost();
+  Cost getCost2();
 
   TaskMutator createMutator();
 

@@ -314,6 +314,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       case COST:
         res = t.getCost().getValue();
         break;
+      case COST2:
+        res = t.getCost2().getValue();
+        break;
       case RESOURCES:
     	List<String> resources = Lists.transform(Arrays.asList(t.getAssignments()), new Function<ResourceAssignment, String>() {
 			@Override
@@ -425,6 +428,15 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         BigDecimal cost = new BigDecimal(String.valueOf(value));
         task.getCost().setCalculated(false);
         task.getCost().setValue(cost);
+      } catch (NumberFormatException e) {
+        throw new ValidationException(MessageFormat.format("Can't parse {0} as number", value));
+      }
+      break;
+    case COST2:
+      try {
+        BigDecimal cost = new BigDecimal(String.valueOf(value));
+        task.getCost2().setCalculated(false);
+        task.getCost2().setValue(cost);
       } catch (NumberFormatException e) {
         throw new ValidationException(MessageFormat.format("Can't parse {0} as number", value));
       }

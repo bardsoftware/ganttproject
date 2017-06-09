@@ -80,7 +80,9 @@ public class ResourceNode extends ResourceTableNode {
     case EMAIL: return getEMail();
     case PHONE: return getPhone();
     case STANDARD_RATE: return getResource().getStandardPayRate();
+    case STANDARD_RATE2: return getResource().getStandardPayRate2();
     case TOTAL_COST: return getResource().getTotalCost();
+    case TOTAL_COST2: return getResource().getTotalCost2();
     default: return "";
     }
   }
@@ -103,6 +105,9 @@ public class ResourceNode extends ResourceTableNode {
     case STANDARD_RATE:
       assert value instanceof Double : "Rate accepts numeric values";
       getResource().setStandardPayRate(BigDecimal.valueOf((Double)value));
+    case STANDARD_RATE2:
+      assert value instanceof Double : "Rate accepts numeric values";
+      getResource().setStandardPayRate2(BigDecimal.valueOf((Double)value));
     }
   }
 

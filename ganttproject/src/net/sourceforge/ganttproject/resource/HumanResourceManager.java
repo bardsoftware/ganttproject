@@ -45,6 +45,7 @@ public class HumanResourceManager {
     String myPhone;
     String myRole;
     BigDecimal myStandardRate;
+    BigDecimal myStandardRate2;
 
     public ResourceBuilder withName(String name) {
       myName = name;
@@ -77,6 +78,16 @@ public class HumanResourceManager {
           myStandardRate = new BigDecimal(rate);
         } catch (NumberFormatException e) {
           myStandardRate = null;
+        }
+      }
+      return this;
+    }
+    public ResourceBuilder withStandardRate2(String rate) {
+      if (rate != null) {
+        try {
+          myStandardRate2 = new BigDecimal(rate);
+        } catch (NumberFormatException e) {
+          myStandardRate2 = null;
         }
       }
       return this;
@@ -133,6 +144,7 @@ public class HumanResourceManager {
         result.setPhone(myPhone);
         result.setMail(myEmail);
         result.setStandardPayRate(myStandardRate);
+        result.setStandardPayRate2(myStandardRate2);
         add(result);
         return result;
       }

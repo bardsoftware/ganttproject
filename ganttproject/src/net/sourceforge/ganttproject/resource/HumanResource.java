@@ -61,6 +61,7 @@ public class HumanResource implements CustomPropertyHolder {
   private LoadDistribution myLoadDistribution;
 
   private BigDecimal myStandardPayRate;
+  private BigDecimal myStandardPayRate2;
 
   private final DefaultListModel<GanttDaysOff> myDaysOffList = new DefaultListModel<>();
 
@@ -93,6 +94,7 @@ public class HumanResource implements CustomPropertyHolder {
     setPhone(copy.getPhone());
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
+    setStandardPayRate2(copy.getStandardPayRate2());
     myManager = copy.myManager;
     DefaultListModel<GanttDaysOff> copyDaysOff = copy.getDaysOff();
     for (int i = 0; i < copyDaysOff.getSize(); i++) {
@@ -299,9 +301,15 @@ public class HumanResource implements CustomPropertyHolder {
   public void setStandardPayRate(BigDecimal rate) {
     myStandardPayRate = rate;
   }
+  public void setStandardPayRate2(BigDecimal rate) {
+    myStandardPayRate2 = rate;
+  }
 
   public BigDecimal getStandardPayRate() {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
+  }
+  public BigDecimal getStandardPayRate2() {
+    return myStandardPayRate2 == null ? BigDecimal.ZERO : myStandardPayRate2;
   }
 
   public BigDecimal getTotalCost() {
@@ -312,6 +320,15 @@ public class HumanResource implements CustomPropertyHolder {
       cost = cost.add(assignmentCost);
     }
     return cost;
+  }
+  public BigDecimal getTotalCost2() {
+    BigDecimal cost2 = BigDecimal.ZERO;
+    for (ResourceAssignment assignment : myAssignments) {
+      int taskDuration = assignment.getTask().getDuration().getLength();
+      BigDecimal assignmentCost2 = new BigDecimal(taskDuration * assignment.getLoad() / 100).multiply(getStandardPayRate2());
+      cost2 = cost2.add(assignmentCost2);
+    }
+    return cost2;
   }
 
   @Override

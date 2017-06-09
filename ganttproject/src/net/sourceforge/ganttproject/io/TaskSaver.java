@@ -98,6 +98,10 @@ class TaskSaver extends SaverBase {
       addAttribute("cost-manual-value", task.getCost().getManualValue().toPlainString(), attrs);
       addAttribute("cost-calculated", task.getCost().isCalculated(), attrs);
     }
+    if (!(task.getCost2().isCalculated() && task.getCost2().getManualValue() == BigDecimal.ZERO)) {
+      addAttribute("cost2-manual-value", task.getCost2().getManualValue().toPlainString(), attrs);
+      addAttribute("cost2-calculated", task.getCost2().isCalculated(), attrs);
+    }
     startElement("task", attrs, handler);
 
     if (task.getNotes() != null && task.getNotes().length() > 0) {
