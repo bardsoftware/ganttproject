@@ -102,7 +102,16 @@ public class StoragePane {
         myDialogUi.error(e);
       }
     };
-    myStorageUiList.add(new LocalStorage(mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(), myCurrentDocument, openDocument));
+    myStorageUiList.add(new LocalStorage(
+        mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(),
+        myCurrentDocument,
+        openDocument)
+    );
+    myStorageUiList.add(new RecentProjects(
+        mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(),
+        myCurrentDocument,
+        openDocument)
+    );
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     for (WebDavServerDescriptor server : myCloudStorageOptions.getWebdavServers()) {
       WebdavStorage webdavStorageUi = new WebdavStorage(server, mode, openDocument, myDialogUi, myCloudStorageOptions);

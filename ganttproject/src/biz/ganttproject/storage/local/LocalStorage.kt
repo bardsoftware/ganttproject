@@ -47,6 +47,7 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -94,6 +95,9 @@ class LocalStorage(
         return@Validator ValidationResult()
       }
       try {
+        if (value == "") {
+          return@Validator ValidationResult.fromWarning(control, "Type file name")
+        }
         myMode.tryFile(resolveFile(value))
         return@Validator ValidationResult()
       } catch (e: StorageMode.FileException) {
@@ -118,7 +122,11 @@ class LocalStorage(
     docList.styleClass.add("doclist")
 
     val currentDocDir = createDirPane(state, state.currentDir::set)
-    state.filename.text = currentDocument.fileName
+    state.filename.text = when (myMode) {
+      is StorageMode.Open -> ""
+      is StorageMode.Save -> currentDocument.fileName
+    }
+
     state.filename.styleClass.add("filename")
     docList.children.addAll(currentDocDir, state.filename)
 
@@ -158,13 +166,23 @@ class LocalStorage(
       btnSave.disableProperty().set(newValue)
     })
     validationSupport.validationResultProperty().addListener({_, _, validationResult ->
-      if (validationSupport.isInvalid) {
+      if (validationResult.errors.size + validationResult.warnings.size > 0) {
+        btnSave.disableProperty().set(true)
         errorLabel.text = formatError(validationResult)
         errorLabel.styleClass.remove("noerror")
-        errorLabel.styleClass.add("error")
+        if (validationResult.errors.size > 0) {
+          errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
+          errorLabel.styleClass.remove("warning")
+          errorLabel.styleClass.add("error")
+        } else if (validationResult.warnings.size > 0) {
+          errorLabel.graphic = null
+          errorLabel.styleClass.remove("error")
+          errorLabel.styleClass.add("warning")
+        }
       } else {
+        btnSave.disableProperty().set(false)
         errorLabel.text = ""
-        errorLabel.styleClass.remove("error")
+        errorLabel.styleClass.removeAll("error", "warning")
         errorLabel.styleClass.add("noerror")
         state.currentFile.set(resolveFile(state.filename.text))
       }
@@ -177,7 +195,9 @@ class LocalStorage(
   }
 
   private fun formatError(validation: ValidationResult): String {
-    return validation.errors.stream().map { error -> error.text }.collect(Collectors.joining("\n"))
+    return Stream.concat(validation.errors.stream(), validation.warnings.stream())
+            .map { error -> error.text }
+            .collect(Collectors.joining("\n"))
   }
 
   override fun createSettingsUi(): Optional<Pane> {
@@ -195,7 +215,9 @@ class LocalStorage(
           if (item == null || empty) {
             graphic = null
           } else {
-            val label = Label(if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString())
+            val label = Label(
+                    if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString(),
+                    FontAwesomeIconView(FontAwesomeIcon.FOLDER))
             label.style = "-fx-padding: 0.5ex 0 0.5ex ${item.nameCount}em"
             graphic = label
           }
@@ -206,9 +228,13 @@ class LocalStorage(
       override fun updateItem(item: Path?, empty: Boolean) {
         super.updateItem(item, empty)
         if (item == null || empty) {
-          text = ""
+          graphic = null
         } else {
-          text = if (item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString()
+          val label = Label(
+                  if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString(),
+                  FontAwesomeIconView(FontAwesomeIcon.FOLDER))
+          label.style = "-fx-text-fill: black"
+          graphic = label
         }
       }
     }

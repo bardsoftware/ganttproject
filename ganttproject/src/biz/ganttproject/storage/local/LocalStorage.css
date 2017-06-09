@@ -13,6 +13,10 @@
     -fx-text-fill: derive(darkred, +10%);
     visibility: visible;
 }
+.hint.warning {
+    -fx-text-fill: derive(darkgray, +20%);
+    visibility: visible;
+}
 .hint.noerror {
     visibility: hidden;
 }
@@ -38,6 +42,10 @@
     -fx-background-insets: 0 0 1em 0;
     -fx-padding: 0 0 1em 0;
 }
+.local-storage .path-dropdown > .button-cell  {
+    -fx-text-fill: black;
+}
+
 .local-storage .path-dropdown > .list-cell {
     -fx-font-weight: bold;
 }
