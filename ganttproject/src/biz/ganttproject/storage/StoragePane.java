@@ -44,17 +44,20 @@ public class StoragePane {
   private final Consumer<Document> myDocumentUpdater;
   private final StorageDialogBuilder.DialogUi myDialogUi;
   private final ReadOnlyProxyDocument myCurrentDocument;
+  private final List<String> myRecentDocuments;
   private Node myActiveStorageLabel;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
   private Node myNotificationPane;
   private BorderPane storageUiPane = new BorderPane();
   StoragePane(GPCloudStorageOptions options,
+              List<String> recentDocuments,
               ReadOnlyProxyDocument currentDocument,
               Consumer<Document> openDocument,
               Consumer<Document> updateDocument,
               StorageDialogBuilder.DialogUi dialogUi) {
     myCloudStorageOptions = options;
+    myRecentDocuments = recentDocuments;
     myCurrentDocument = currentDocument;
     myDocumentReceiver = openDocument;
     myDocumentUpdater = updateDocument;
@@ -109,6 +112,7 @@ public class StoragePane {
     );
     myStorageUiList.add(new RecentProjects(
         mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(),
+        myRecentDocuments,
         myCurrentDocument,
         openDocument)
     );

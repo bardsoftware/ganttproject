@@ -18,7 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import javafx.scene.control.ListView
 import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.util.*
@@ -28,9 +30,10 @@ import java.util.function.Consumer
  * @author dbarashev@bardsoftware.com
  */
 class RecentProjects(
-    private val myMode: StorageMode,
-    private val myCurrentDocument: Document,
-    private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+        val myMode: StorageMode,
+        val myRecentDocs: MutableList<String>,
+        val myCurrentDocument: Document,
+        val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
   private val i18n = GanttLanguage.getInstance()
 
@@ -43,7 +46,16 @@ class RecentProjects(
   }
 
   override fun createUi(): Pane {
-    return Pane()
+    val rootPane = VBox()
+    rootPane.styleClass.add("pane-service-contents")
+    rootPane.prefWidth = 400.0
+
+    val listView = ListView<String>()
+    for (doc in myRecentDocs) {
+      listView.items.add(doc)
+    }
+    rootPane.children.add(listView)
+    return rootPane
   }
 
   override fun getName(): String {
