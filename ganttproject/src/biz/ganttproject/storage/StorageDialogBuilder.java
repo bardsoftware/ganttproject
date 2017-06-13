@@ -196,7 +196,7 @@ public class StorageDialogBuilder {
   }
 
   private Pane buildStoragePane(Mode mode) {
-    StoragePane storagePane = new StoragePane(myCloudStorageOptions, myProject.getDocumentManager().getRecentDocuments(), new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
+    StoragePane storagePane = new StoragePane(myCloudStorageOptions, myProject.getDocumentManager(), new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
     storagePane.setNotificationPane(myNotificationPane);
     return storagePane.buildStoragePane(mode);
   }

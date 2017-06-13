@@ -18,10 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import javafx.event.EventHandler
+import javafx.geometry.Pos
+import javafx.scene.control.Label
+import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
+import javafx.util.Callback
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.util.*
 import java.util.function.Consumer
@@ -31,7 +38,7 @@ import java.util.function.Consumer
  */
 class RecentProjects(
         val myMode: StorageMode,
-        val myRecentDocs: MutableList<String>,
+        val myDocumentManager: DocumentManager,
         val myCurrentDocument: Document,
         val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
@@ -51,8 +58,35 @@ class RecentProjects(
     rootPane.prefWidth = 400.0
 
     val listView = ListView<String>()
-    for (doc in myRecentDocs) {
+    listView.cellFactory = Callback  {param -> object: ListCell<String>() {
+      override fun updateItem(item: String?, empty: Boolean) {
+        if (item == null) {
+          text = ""
+          graphic = null
+          return
+        }
+        super.updateItem(item, empty)
+        if (empty) {
+          text = ""
+          graphic = null
+          return
+        }
+        val pane = StackPane()
+        pane.minWidth = 0.0
+        pane.prefWidth = 1.0
+        val label = Label(item)
+        StackPane.setAlignment(label, Pos.BOTTOM_LEFT)
+        pane.children.add(label)
+        graphic = pane
+      }
+    }}
+    for (doc in myDocumentManager.recentDocuments) {
       listView.items.add(doc)
+    }
+    listView.onMouseClicked = EventHandler { event ->
+      if (event.clickCount == 2 && listView.selectionModel.selectedItem != null) {
+        myDocumentReceiver.accept(myDocumentManager.getDocument(listView.selectionModel.selectedItem))
+      }
     }
     rootPane.children.add(listView)
     return rootPane
