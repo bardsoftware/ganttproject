@@ -30,6 +30,8 @@ import javafx.util.Callback
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
 
@@ -54,12 +56,13 @@ class RecentProjects(
 
   override fun createUi(): Pane {
     val rootPane = VBox()
+    rootPane.stylesheets.add("biz/ganttproject/storage/RecentProjects.css")
     rootPane.styleClass.add("pane-service-contents")
     rootPane.prefWidth = 400.0
 
-    val listView = ListView<String>()
-    listView.cellFactory = Callback  {param -> object: ListCell<String>() {
-      override fun updateItem(item: String?, empty: Boolean) {
+    val listView = ListView<Path>()
+    listView.cellFactory = Callback  {param -> object: ListCell<Path>() {
+      override fun updateItem(item: Path?, empty: Boolean) {
         if (item == null) {
           text = ""
           graphic = null
@@ -74,18 +77,23 @@ class RecentProjects(
         val pane = StackPane()
         pane.minWidth = 0.0
         pane.prefWidth = 1.0
-        val label = Label(item)
-        StackPane.setAlignment(label, Pos.BOTTOM_LEFT)
-        pane.children.add(label)
+        val pathLabel = Label(item.parent.normalize().toString())
+        pathLabel.styleClass.add("list-item-path")
+        val nameLabel = Label(item.fileName.toString())
+        nameLabel.styleClass.add("list-item-filename")
+        val labelBox = VBox()
+        labelBox.children.addAll(pathLabel, nameLabel)
+        StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
+        pane.children.add(labelBox)
         graphic = pane
       }
     }}
     for (doc in myDocumentManager.recentDocuments) {
-      listView.items.add(doc)
+      listView.items.add(Paths.get(doc))
     }
     listView.onMouseClicked = EventHandler { event ->
       if (event.clickCount == 2 && listView.selectionModel.selectedItem != null) {
-        myDocumentReceiver.accept(myDocumentManager.getDocument(listView.selectionModel.selectedItem))
+        myDocumentReceiver.accept(myDocumentManager.getDocument(listView.selectionModel.selectedItem.toString()))
       }
     }
     rootPane.children.add(listView)
