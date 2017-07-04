@@ -9,18 +9,6 @@
     -fx-padding: 0 0 0 0;
 }
 
-.hint.error {
-    -fx-text-fill: derive(darkred, +10%);
-    visibility: visible;
-}
-.hint.warning {
-    -fx-text-fill: derive(darkgray, +20%);
-    visibility: visible;
-}
-.hint.noerror {
-    visibility: hidden;
-}
-
 .custom-text-field.error {
     -fx-effect: dropshadow(three-pass-box, red, 7, 0, 0, 0);
 }
@@ -50,10 +38,3 @@
     -fx-font-weight: bold;
 }
 
-.local-storage .doclist-save {
-    -fx-background-color: teal;
-    -fx-text-fill: whitesmoke;
-    -fx-font-weight: bold;
-    -fx-font-size: 120%;
-    -fx-padding: 1ex 2em 1ex 2em;
-}

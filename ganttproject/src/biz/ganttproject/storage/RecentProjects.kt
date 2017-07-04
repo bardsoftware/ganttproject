@@ -18,11 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.storage.local.State
+import biz.ganttproject.storage.local.ValidationHelper
+import biz.ganttproject.storage.local.setupErrorLabel
+import biz.ganttproject.storage.local.setupSaveButton
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
 import javafx.geometry.Pos
-import javafx.scene.control.Label
-import javafx.scene.control.ListCell
-import javafx.scene.control.ListView
+import javafx.scene.control.*
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
@@ -45,6 +50,7 @@ class RecentProjects(
         val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
   private val i18n = GanttLanguage.getInstance()
+  private val  myUtil = StorageUtil(myMode)
 
   override fun getCategory(): String {
     return "desktop"
@@ -55,13 +61,20 @@ class RecentProjects(
   }
 
   override fun createUi(): Pane {
+    val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
+    val filePath = Paths.get(myCurrentDocument.filePath)
+    val state = State(
+        SimpleObjectProperty(myUtil.absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
+        SimpleObjectProperty(myUtil.absolutePrefix(filePath).toFile()))
+
     val rootPane = VBox()
+    rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/RecentProjects.css")
     rootPane.styleClass.add("pane-service-contents")
     rootPane.prefWidth = 400.0
 
     val listView = ListView<Path>()
-    listView.cellFactory = Callback  {param -> object: ListCell<Path>() {
+    listView.cellFactory = Callback  {_ -> object: ListCell<Path>() {
       override fun updateItem(item: Path?, empty: Boolean) {
         if (item == null) {
           text = ""
@@ -88,15 +101,22 @@ class RecentProjects(
         graphic = pane
       }
     }}
+    listView.items.add(Paths.get(myCurrentDocument.path))
     for (doc in myDocumentManager.recentDocuments) {
       listView.items.add(Paths.get(doc))
     }
+    val fakeTextField = TextField()
     listView.onMouseClicked = EventHandler { event ->
-      if (event.clickCount == 2 && listView.selectionModel.selectedItem != null) {
-        myDocumentReceiver.accept(myDocumentManager.getDocument(listView.selectionModel.selectedItem.toString()))
+      if (listView.selectionModel.selectedItem != null) {
+        fakeTextField.text = listView.selectionModel.selectedItem.toString()
       }
     }
-    rootPane.children.add(listView)
+
+    val validationHelper = ValidationHelper(fakeTextField, state, myMode)
+    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver, validationHelper)
+    val errorLabel = Label("foo", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+    setupErrorLabel(errorLabel, validationHelper)
+    rootPane.children.addAll(listView, errorLabel, btnSaveBox)
     return rootPane
   }
 
@@ -107,6 +127,5 @@ class RecentProjects(
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
   }
-
-
 }
+

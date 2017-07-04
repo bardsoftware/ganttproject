@@ -21,11 +21,12 @@ package biz.ganttproject.storage.local
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.StorageDialogBuilder
 import biz.ganttproject.storage.StorageMode
+import biz.ganttproject.storage.StorageUtil
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -57,6 +58,7 @@ class LocalStorage(
     private val currentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
   private val i18n = GanttLanguage.getInstance()
+  private val myUtil = StorageUtil(myMode)
 
   override fun getName(): String {
     return "This Computer"
@@ -66,48 +68,13 @@ class LocalStorage(
     return "desktop"
   }
 
-  private fun i18nKey(pattern: String): String {
-    return String.format(pattern, myMode.name.toLowerCase())
-  }
-
-  fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {
-    return path.root.resolve(path.subpath(0, end))
-  }
-
   override fun createUi(): Pane {
     val filePath = Paths.get(currentDocument.filePath)
+    val filenameControl = CustomTextField()
     val state = State(
-        CustomTextField(),
-        SimpleObjectProperty(absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
-        SimpleObjectProperty(absolutePrefix(filePath).toFile()))
-
-    fun resolveFile(typedString: String): File {
-      val typedPath = Paths.get(typedString)
-      return if (typedPath.isAbsolute) {
-        typedPath.toFile()
-      } else {
-        File(state.currentDir.get(), typedString)
-      }
-    }
-
-    state.validator = Validator<String> { control, value ->
-      if (value == null) {
-        return@Validator ValidationResult()
-      }
-      try {
-        if (value == "") {
-          return@Validator ValidationResult.fromWarning(control, "Type file name")
-        }
-        myMode.tryFile(resolveFile(value))
-        return@Validator ValidationResult()
-      } catch (e: StorageMode.FileException) {
-        println(e.message)
-        return@Validator ValidationResult.fromError(control, i18n.formatText(e.message, e.args))
-      }
-    }
-    val validationSupport = ValidationSupport()
-    validationSupport.registerValidator(state.filename, state.validator)
-    validationSupport.validationDecorator = StyleClassValidationDecoration("error", "warning")
+        SimpleObjectProperty(myUtil.absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
+        SimpleObjectProperty(myUtil.absolutePrefix(filePath).toFile()))
+    val validationHelper = ValidationHelper(filenameControl, state, myMode)
 
     val rootPane = VBox()
     rootPane.styleClass.addAll("pane-service-contents", "local-storage")
@@ -115,89 +82,61 @@ class LocalStorage(
 
     val titleBox = HBox()
     titleBox.styleClass.add("title")
-    val title = Label(i18n.getText(i18nKey("storageService.local.%s.title")))
+    val title = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.title")))
     titleBox.children.add(title)
 
     val docList = VBox()
     docList.styleClass.add("doclist")
 
     val currentDocDir = createDirPane(state, state.currentDir::set)
-    state.filename.text = when (myMode) {
+    filenameControl.text = when (myMode) {
       is StorageMode.Open -> ""
       is StorageMode.Save -> currentDocument.fileName
     }
 
-    state.filename.styleClass.add("filename")
-    docList.children.addAll(currentDocDir, state.filename)
+    filenameControl.styleClass.add("filename")
+    docList.children.addAll(currentDocDir, filenameControl)
 
     fun onBrowse() {
       val fileChooser = FileChooser()
-      var initialDir = resolveFile(state.filename.text)
+      var initialDir = state.resolveFile(filenameControl.text)
       while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
         initialDir = initialDir.parentFile
       }
       if (initialDir != null) {
         fileChooser.initialDirectory = initialDir
       }
-      fileChooser.title = i18nKey("storageService.local.%s.fileChooser.title")
+      fileChooser.title = myUtil.i18nKey("storageService.local.%s.fileChooser.title")
       fileChooser.extensionFilters.addAll(
           FileChooser.ExtensionFilter("GanttProject Files", "*.gan"))
       val chosenFile = fileChooser.showOpenDialog(null)
       if (chosenFile != null) {
         state.currentFile.set(chosenFile)
-        state.filename.text = chosenFile.name
+        filenameControl.text = chosenFile.name
       }
     }
 
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", {onBrowse()}, "doclist-browse")
-    state.filename.right = btnBrowse
+    filenameControl.right = btnBrowse
 
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
-    errorLabel.styleClass.addAll("hint", "noerror")
+    setupErrorLabel(errorLabel, validationHelper)
 
-    val btnSave = Button(i18n.getText(i18nKey("storageService.local.%s.actionLabel")))
-    btnSave.addEventHandler(ActionEvent.ACTION, {myDocumentReceiver.accept(FileDocument(state.currentFile.get()))})
-    btnSave.styleClass.add("doclist-save")
-    val btnSaveBox = HBox()
-    btnSaveBox.alignment = Pos.CENTER
-    btnSaveBox.maxWidth = Double.MAX_VALUE
-    btnSaveBox.children.addAll(btnSave)
-    validationSupport.invalidProperty().addListener({ _, _, newValue ->
-      btnSave.disableProperty().set(newValue)
-    })
-    validationSupport.validationResultProperty().addListener({_, _, validationResult ->
-      if (validationResult.errors.size + validationResult.warnings.size > 0) {
-        btnSave.disableProperty().set(true)
-        errorLabel.text = formatError(validationResult)
-        errorLabel.styleClass.remove("noerror")
-        if (validationResult.errors.size > 0) {
-          errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
-          errorLabel.styleClass.remove("warning")
-          errorLabel.styleClass.add("error")
-        } else if (validationResult.warnings.size > 0) {
-          errorLabel.graphic = null
-          errorLabel.styleClass.remove("error")
-          errorLabel.styleClass.add("warning")
-        }
-      } else {
-        btnSave.disableProperty().set(false)
-        errorLabel.text = ""
-        errorLabel.styleClass.removeAll("error", "warning")
-        errorLabel.styleClass.add("noerror")
-        state.currentFile.set(resolveFile(state.filename.text))
+    val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
+    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver, validationHelper)
+    validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
+      if (validationResult.errors.size + validationResult.warnings.size == 0) {
+        state.currentFile.set(state.resolveFile(filenameControl.text))
       }
+    })
+    validationHelper.validationSupport.invalidProperty().addListener({ _, _, newValue ->
+      btnSave.disableProperty().set(newValue)
     })
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
     rootPane.children.addAll(titleBox, docList, errorLabel, btnSaveBox)
     return rootPane
-  }
-
-  private fun formatError(validation: ValidationResult): String {
-    return Stream.concat(validation.errors.stream(), validation.warnings.stream())
-            .map { error -> error.text }
-            .collect(Collectors.joining("\n"))
   }
 
   override fun createSettingsUi(): Optional<Pane> {
@@ -251,9 +190,9 @@ class LocalStorage(
       dropDown.items.clear()
       dropDown.items.add(filePath.root)
       for (i in 0..(filePath.nameCount - 2)) {
-        dropDown.items.add(absolutePrefix(filePath, i + 1))
+        dropDown.items.add(myUtil.absolutePrefix(filePath, i + 1))
       }
-      dropDown.value = absolutePrefix(filePath, filePath.nameCount - 1)
+      dropDown.value = myUtil.absolutePrefix(filePath, filePath.nameCount - 1)
     }
     resetDropDown(path)
 
@@ -265,10 +204,88 @@ class LocalStorage(
   }
 }
 
+class ValidationHelper(val filename: Control, val state: State, val mode: StorageMode) {
+  val validator: Validator<String> = Validator { control, value ->
+    if (value == null) {
+      return@Validator ValidationResult()
+    }
+    try {
+      if (value == "") {
+        return@Validator ValidationResult.fromWarning(control, "Type file name")
+      }
+      mode.tryFile(state.resolveFile(value))
+      return@Validator ValidationResult()
+    } catch (e: StorageMode.FileException) {
+      println(e.message)
+      return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+    }
+  }
+  val validationSupport = ValidationSupport().apply {
+    registerValidator(filename, validator)
+    validationDecorator = StyleClassValidationDecoration("error", "warning")
+  }
+}
+
 class State(
-  val filename: CustomTextField,
-  var currentDir: SimpleObjectProperty<File>,
-  var currentFile: SimpleObjectProperty<File>
+    var currentDir: SimpleObjectProperty<File>,
+    var currentFile: SimpleObjectProperty<File>
 ) {
-  lateinit var validator: Validator<String>
+
+  fun resolveFile(typedString: String): File {
+    val typedPath = Paths.get(typedString)
+    return if (typedPath.isAbsolute) {
+      typedPath.toFile()
+    } else {
+      File(this.currentDir.get(), typedString)
+    }
+  }
+}
+
+fun setupSaveButton(btnSave: Button, state: State, receiver: Consumer<Document>, validationHelper: ValidationHelper): Node {
+  btnSave.addEventHandler(ActionEvent.ACTION, {receiver.accept(FileDocument(state.currentFile.get()))})
+  btnSave.styleClass.add("doclist-save")
+  val btnSaveBox = HBox()
+  btnSaveBox.styleClass.add("doclist-save-box")
+  btnSaveBox.maxWidth = Double.MAX_VALUE
+  btnSaveBox.children.addAll(btnSave)
+  validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
+    if (validationResult.errors.size + validationResult.warnings.size > 0) {
+      btnSave.disableProperty().set(true)
+    } else {
+      btnSave.disableProperty().set(false)
+    }
+  })
+  validationHelper.validationSupport.invalidProperty().addListener({ _, _, newValue ->
+    btnSave.disableProperty().set(newValue)
+  })
+  return btnSaveBox
+}
+
+private fun formatError(validation: ValidationResult): String {
+  return Stream.concat(validation.errors.stream(), validation.warnings.stream())
+      .map { error -> error.text }
+      .collect(Collectors.joining("\n"))
+}
+
+fun setupErrorLabel(errorLabel: Label, validationHelper: ValidationHelper) {
+  errorLabel.styleClass.addAll("hint", "noerror")
+  validationHelper.validationSupport.validationResultProperty().addListener({_, _, validationResult ->
+    if (validationResult.errors.size + validationResult.warnings.size > 0) {
+      errorLabel.text = formatError(validationResult)
+      errorLabel.styleClass.remove("noerror")
+      if (validationResult.errors.isNotEmpty()) {
+        errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
+        errorLabel.styleClass.remove("warning")
+        errorLabel.styleClass.add("error")
+      } else if (validationResult.warnings.isNotEmpty()) {
+        errorLabel.graphic = null
+        errorLabel.styleClass.remove("error")
+        errorLabel.styleClass.add("warning")
+      }
+    } else {
+      errorLabel.text = ""
+      errorLabel.styleClass.removeAll("error", "warning")
+      errorLabel.styleClass.add("noerror")
+    }
+  })
 }

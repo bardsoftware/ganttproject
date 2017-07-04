@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import java.io.File
+import java.nio.file.Path
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -67,4 +68,14 @@ sealed class StorageMode(val name: String) {
         }
 
     }
+}
+
+class StorageUtil(val myMode: StorageMode) {
+  internal fun i18nKey(pattern: String): String {
+    return String.format(pattern, myMode.name.toLowerCase())
+  }
+
+  fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {
+    return path.root.resolve(path.subpath(0, end))
+  }
 }

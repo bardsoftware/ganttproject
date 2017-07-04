@@ -67,6 +67,7 @@
     -fx-padding: 5px 0px 0px 0px;
 }
 
+
 .center {
     -fx-alignment: center;
     -fx-max-width: Infinity;
@@ -78,6 +79,18 @@
 
 .control-row {
     -fx-padding: 5 0;
+}
+
+.doclist-save {
+    -fx-background-color: teal;
+    -fx-text-fill: whitesmoke;
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-padding: 1ex 2em 1ex 2em;
+}
+.doclist-save-box {
+    -fx-alignment: center;
+    -fx-padding: 1ex 0em;
 }
 
 HBox.title Button {
@@ -98,6 +111,18 @@ HBox.title Label {
 .hide {
     visibility: hidden;
 }
+.hint.error {
+    -fx-text-fill: derive(darkred, +10%);
+    visibility: visible;
+}
+.hint.warning {
+    -fx-text-fill: derive(darkgray, +20%);
+    visibility: visible;
+}
+.hint.noerror {
+    visibility: hidden;
+}
+
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);

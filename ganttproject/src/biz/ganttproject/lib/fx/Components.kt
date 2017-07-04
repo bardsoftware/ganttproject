@@ -72,14 +72,14 @@ fun buildFontAwesomeButton(iconName: String, label: String? = null, onClick: ((E
 fun test(): Pane {
   val builder = ListItemBuilder(buildFontAwesomeButton(
       iconName = "cloud", label = "Foo",
-      onClick = fun(event: Event) {
+      onClick = fun(_) {
         System.out.println("!!!")
       }))
   builder.onSelectionChange = { node: Node -> println(node) }
   builder.hoverNode = buildFontAwesomeButton(
       iconName = "cog",
       styleClass = "settings",
-      onClick = { event -> println("settings clicked") })
+      onClick = { _ -> println("settings clicked") })
 
   return builder.build()
 }
