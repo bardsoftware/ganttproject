@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.FXUtil;
+import biz.ganttproject.storage.FolderView;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Strings;
@@ -42,7 +43,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
-  private WebdavResourceListView myListView;
+  private FolderView myListView;
   private BorderPane myBorderPane;
 
   public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
@@ -172,7 +173,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     isLockingSupported.addListener((observable, oldValue, newValue) -> {
       System.err.println("is locking supported="+newValue);
     });
-    myListView = new WebdavResourceListView(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
+    myListView = new FolderView(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
     rootPane.getChildren().add(myListView.getListView());
 
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));

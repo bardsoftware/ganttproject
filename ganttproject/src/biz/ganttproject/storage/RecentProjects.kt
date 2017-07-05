@@ -114,7 +114,7 @@ class RecentProjects(
 
     val validationHelper = ValidationHelper(fakeTextField, state, myMode)
     val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver, validationHelper)
-    val errorLabel = Label("foo", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     setupErrorLabel(errorLabel, validationHelper)
     rootPane.children.addAll(listView, errorLabel, btnSaveBox)
     return rootPane
