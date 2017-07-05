@@ -2,12 +2,14 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.FXUtil;
+import biz.ganttproject.storage.FolderItem;
 import biz.ganttproject.storage.FolderView;
 import biz.ganttproject.storage.StorageDialogBuilder;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Strings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -23,6 +25,7 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.BreadCrumbBar;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -32,6 +35,41 @@ import java.util.function.Consumer;
  * @author dbarashev@bardsoftware.com
  */
 public class WebdavStorage implements StorageDialogBuilder.Ui {
+  static class WebDavResourceAsFolderItem implements FolderItem {
+    private final WebDavResource myResource;
+
+    WebDavResourceAsFolderItem(WebDavResource resource) {
+      myResource = resource;
+    }
+    @Override
+    public boolean isLocked() {
+      try {
+        return myResource.isLocked();
+      } catch (WebDavResource.WebDavException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public boolean isLockable() {
+      return myResource.isLockSupported(true);
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return myResource.getName();
+    }
+
+    @Override
+    public boolean isDirectory() {
+      try {
+        return myResource.isCollection();
+      } catch (WebDavResource.WebDavException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
   private final GanttLanguage i18n = GanttLanguage.getInstance();
   private final StorageDialogBuilder.Mode myMode;
   private final Consumer<Document> myOpenDocument;
@@ -43,7 +81,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
-  private FolderView myListView;
+  private FolderView<WebDavResourceAsFolderItem> myListView;
   private BorderPane myBorderPane;
 
   public WebdavStorage(StorageDialogBuilder.Mode mode, Consumer<Document> openDocument,
@@ -173,39 +211,46 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     isLockingSupported.addListener((observable, oldValue, newValue) -> {
       System.err.println("is locking supported="+newValue);
     });
-    myListView = new FolderView(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
+    myListView = new FolderView<>(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
     rootPane.getChildren().add(myListView.getListView());
 
     TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
     myOnSelectCrumb = selectedCrumb -> {
       selectedCrumb.getChildren().clear();
-      loadFolder(selectedCrumb.getValue().path, myDialogUi::showBusyIndicator, myListView::setResources, myDialogUi);
+
+      ObservableList<WebDavResourceAsFolderItem> wrappers = FXCollections.observableArrayList();
+      Consumer<ObservableList<WebDavResource>> consumer = webDavResources -> {
+        webDavResources.forEach(resource -> wrappers.add(new WebDavResourceAsFolderItem(resource)));
+        myListView.setResources(wrappers);
+      };
+      loadFolder(selectedCrumb.getValue().path,
+          myDialogUi::showBusyIndicator,
+          consumer, myDialogUi);
     };
     myBreadcrumbs.setOnCrumbAction(value -> myOnSelectCrumb.accept(value.getSelectedCrumb()));
     myBreadcrumbs.setSelectedCrumb(rootItem);
     myOnSelectCrumb.accept(rootItem);
 
-    myListView.getListView().setOnMouseClicked(event -> {
-      myListView.getSelectedResource().ifPresent(selectedItem -> {
-        try {
-          if (!selectedItem.isCollection()) {
-            myFilename.setValue(selectedItem.getName());
-          }
-          if (event.getClickCount() == 2) {
-            openResource();
-          }
-        } catch (IOException | WebDavResource.WebDavException e) {
-          myDialogUi.error(e);
+    myListView.getListView().setOnMouseClicked(event -> myListView.getSelectedResource().ifPresent(selectedItem -> {
+      WebDavResource selectedResource = selectedItem.myResource;
+      try {
+        if (!selectedResource.isCollection()) {
+          myFilename.setValue(selectedResource.getName());
         }
-      });
-    });
+        if (event.getClickCount() == 2) {
+          openResource();
+        }
+      } catch (IOException | WebDavResource.WebDavException e) {
+        myDialogUi.error(e);
+      }
+    }));
 
     return rootPane;
   }
 
   private void openResource() throws WebDavResource.WebDavException, IOException {
     if (myListView.getSelectedResource().isPresent()) {
-      WebDavResource selectedItem = myListView.getSelectedResource().get();
+      WebDavResource selectedItem = myListView.getSelectedResource().get().myResource;
       if (selectedItem.isCollection()) {
         BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
         TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
@@ -218,8 +263,9 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     }
   }
 
-  void deleteResource() {
-    myListView.getSelectedResource().ifPresent(resource -> {
+  private void deleteResource() {
+    myListView.getSelectedResource().ifPresent(folderItem -> {
+      WebDavResource resource = folderItem.myResource;
       try {
         resource.delete();
       } catch (WebDavResource.WebDavException e) {
@@ -228,9 +274,10 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     });
   }
 
-  void toggleLockResource() {
-    myListView.getSelectedResource().ifPresent(resource -> {
+  private void toggleLockResource() {
+    myListView.getSelectedResource().ifPresent(folderItem -> {
       try {
+        WebDavResource resource = folderItem.myResource;
         if (resource.isLocked()) {
           resource.unlock();
         } else {

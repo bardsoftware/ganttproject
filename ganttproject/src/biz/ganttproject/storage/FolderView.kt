@@ -1,4 +1,10 @@
-// Copyright (C) 2016 BarD Software
+// Copyright (C) 2017 BarD Software
+// Author: dbarashev@bardsoftware.com
+//
+// A set of classes for showing filesystem-like hierarchy as a list view and breadcrumb bar.
+// Shown elements are expected to implement interface FolderItem.
+//
+// FolderView class encapsulates a list representing the contents of a single folder.
 package biz.ganttproject.storage
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -21,30 +27,89 @@ import javafx.util.Callback
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import java.util.*
 
-class ListViewItem(resource: WebDavResource) {
+/**
+ * Interface of a single filesystem item.
+ */
+interface FolderItem {
+  // Is this item locked?
+  val isLocked: Boolean
+  // Is it possible to acquire exclusive lock on this item?
+  val isLockable: Boolean
+  // Item name
+  val name: String
+  // Is it a directory?
+  val isDirectory: Boolean
+}
+
+/**
+ * Encapsulates a list view showing the contents of a single folder.
+ */
+class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
+                 onDeleteResource: Runnable,
+                 onToggleLockResource: Runnable,
+                 isLockingSupported: BooleanProperty) {
+
+  val listView: ListView<ListViewItem<T>> = ListView()
+  init {
+    listView.setCellFactory { _ ->
+      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported)
+    }
+    listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
+      if (oldValue != null) {
+        oldValue.isSelected.value = false
+      }
+      if (newValue != null) {
+        newValue.isSelected.value = true
+      }
+    }
+  }
+
+  /**
+   * Loads the list of folder contents into the view.
+   */
+  fun setResources(folderContents: ObservableList<T>) {
+    val items = FXCollections.observableArrayList(createExtractor<T>())
+    folderContents.stream()
+        .map({resource -> ListViewItem(resource) })
+        .forEach({ items.add(it) })
+    listView.items = items
+  }
+
+  /**
+   * Property returning the selected resource.
+   */
+  val selectedResource: Optional<T>
+    get() {
+      val result = listView.selectionModel.selectedItem?.resource?.value
+      return Optional.ofNullable(result)
+    }
+}
+
+class ListViewItem<T:FolderItem>(resource: T) {
   val isSelected: BooleanProperty = SimpleBooleanProperty()
-  val resource: ObjectProperty<WebDavResource>
+  val resource: ObjectProperty<T>
 
   init {
     this.resource = SimpleObjectProperty(resource)
   }
 }
 
-object ListViewItemToObservables : Callback<ListViewItem, Array<Observable>> {
-  override fun call(item: ListViewItem?): Array<Observable> {
-    return item?.let { arrayOf(
-        item.isSelected as Observable, item.resource as Observable)
-    }?: emptyArray()
+fun <T: FolderItem> createExtractor() : Callback<ListViewItem<T>, Array<Observable>> {
+  return Callback { item ->
+    item?.let {
+      arrayOf(
+          item.isSelected as Observable, item.resource as Observable)
+    } ?: emptyArray()
   }
 }
 
-fun createListCell(
+fun <T: FolderItem> createListCell(
     dialogUi: StorageDialogBuilder.DialogUi,
     onDeleteResource: Runnable,
     onToggleLockResource: Runnable,
-    isLockingSupported: BooleanProperty) : ListCell<ListViewItem> {
-  return object : ListCell<ListViewItem>() {
-    override fun updateItem(item: ListViewItem?, empty: Boolean) {
+    isLockingSupported: BooleanProperty) : ListCell<ListViewItem<T>> {
+  return object : ListCell<ListViewItem<T>>() {
+    override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
       try {
         doUpdateItem(item, empty)
       } catch (e: WebDavResource.WebDavException) {
@@ -54,7 +119,7 @@ fun createListCell(
     }
 
     @Throws(WebDavResource.WebDavException::class)
-    private fun doUpdateItem(item: ListViewItem?, empty: Boolean) {
+    private fun doUpdateItem(item: ListViewItem<T>?, empty: Boolean) {
       if (item == null) {
         text = ""
         graphic = null
@@ -69,7 +134,7 @@ fun createListCell(
       val hbox = HBox()
       hbox.styleClass.add("webdav-list-cell")
       val isLocked = item.resource.value.isLocked
-      val isLockable = item.resource.value.isLockSupported(true)
+      val isLockable = item.resource.value.isLockable
       if (isLockable && !isLockingSupported.value) {
         isLockingSupported.value = true
       }
@@ -78,14 +143,14 @@ fun createListCell(
         FontAwesomeIconView(FontAwesomeIcon.LOCK)
       else
         FontAwesomeIconView(FontAwesomeIcon.FOLDER)
-      if (!item.resource.value.isCollection) {
+      if (!item.resource.value.isDirectory) {
         icon.styleClass.add("hide")
       } else {
         icon.styleClass.add("icon")
       }
       val label = Label(item.resource.value.name, icon)
       hbox.children.add(label)
-      if (item.isSelected.value!! && !item.resource.value.isCollection) {
+      if (item.isSelected.value!! && !item.resource.value.isDirectory) {
         val btnBox = HBox()
         btnBox.styleClass.add("webdav-list-cell-button-pane")
         val btnDelete = Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
@@ -112,42 +177,4 @@ fun createListCell(
       graphic = hbox
     }
   }
-}
-/**
- * @author dbarashev@bardsoftware.com
- */
-class FolderView(val myDialogUi: StorageDialogBuilder.DialogUi,
-                 onDeleteResource: Runnable,
-                 onToggleLockResource: Runnable,
-                 isLockingSupported: BooleanProperty) {
-
-  val listView: ListView<ListViewItem> = ListView<ListViewItem>()
-  init {
-    listView.setCellFactory { _ ->
-      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported)
-    }
-    listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
-      if (oldValue != null) {
-        oldValue.isSelected.value = false
-      }
-      if (newValue != null) {
-        newValue.isSelected.value = true
-      }
-    }
-  }
-
-  fun setResources(webDavResources: ObservableList<WebDavResource>) {
-    val items = FXCollections.observableArrayList(ListViewItemToObservables)
-    webDavResources.stream()
-        .map({resource -> ListViewItem(resource) })
-        .forEach({ items.add(it) })
-    listView.items = items
-  }
-
-
-  val selectedResource: Optional<WebDavResource>
-    get() {
-      val result = listView.selectionModel.selectedItem?.resource?.value ?: null
-      return Optional.ofNullable(result)
-    }
 }
