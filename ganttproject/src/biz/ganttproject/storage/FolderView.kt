@@ -17,15 +17,16 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.ListCell
-import javafx.scene.control.ListView
+import javafx.event.EventHandler
+import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
+import org.controlsfx.control.BreadCrumbBar
+import java.nio.file.Path
 import java.util.*
+import java.util.function.Consumer
 
 /**
  * Interface of a single filesystem item.
@@ -176,5 +177,44 @@ fun <T: FolderItem> createListCell(
       }
       graphic = hbox
     }
+  }
+}
+
+data class BreadcrumbNode(val path: Path, val label: String) {
+  override fun toString(): String = this.label
+}
+
+class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
+  val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
+  init {
+    breadcrumbs.styleClass.add("breadcrumb")
+    var lastItem: TreeItem<BreadcrumbNode>? = null
+    for (idx in 1..initialPath.nameCount) {
+      val treeItem = TreeItem<BreadcrumbNode>(
+          BreadcrumbNode(initialPath.root.resolve(initialPath.subpath(0, idx)),
+          initialPath.getName(idx - 1).toString()))
+      if (lastItem == null) {
+        lastItem = treeItem
+      } else {
+        lastItem.children.add(treeItem)
+      }
+      breadcrumbs.selectedCrumb = lastItem
+    }
+    breadcrumbs.onCrumbAction = EventHandler { node ->
+      node.selectedCrumb.children.clear()
+      onSelectCrumb.accept(node.selectedCrumb.value.path)
+    }
+    onSelectCrumb.accept(initialPath)
+  }
+
+  fun append(name: String) {
+    val selectedPath = breadcrumbs.selectedCrumb.value.path
+    val appendPath = selectedPath.resolve(name)
+    println("selected=$selectedPath append=$appendPath")
+    val crumbNode = BreadcrumbNode(appendPath, name)
+    val treeItem = TreeItem<BreadcrumbNode>(crumbNode)
+    breadcrumbs.selectedCrumb.children.add(treeItem)
+    breadcrumbs.selectedCrumb = treeItem
+    onSelectCrumb.accept(appendPath)
   }
 }

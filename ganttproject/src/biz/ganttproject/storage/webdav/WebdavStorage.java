@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav;
 
 import biz.ganttproject.FXUtil;
+import biz.ganttproject.storage.BreadcrumbView;
 import biz.ganttproject.storage.FolderItem;
 import biz.ganttproject.storage.FolderView;
 import biz.ganttproject.storage.StorageDialogBuilder;
@@ -16,18 +17,22 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.controlsfx.control.BreadCrumbBar;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -77,8 +82,8 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   private final GPCloudStorageOptions myOptions;
   private WebdavLoadService myLoadService;
   private WebDavServerDescriptor myServer;
-  private BreadCrumbBar<BreadCrumbNode> myBreadcrumbs;
-  private Consumer<TreeItem<BreadCrumbNode>> myOnSelectCrumb;
+  private BreadcrumbView myBreadcrumbs;
+  private Consumer<Path> myOnSelectCrumb;
   private WebDavResource myCurrentFolder;
   private StringProperty myFilename;
   private FolderView<WebDavResourceAsFolderItem> myListView;
@@ -116,21 +121,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
   @Override
   public String getId() {
     return myServer.getRootUrl();
-  }
-
-  static class BreadCrumbNode {
-    private String path;
-    private String label;
-
-    BreadCrumbNode(String path, String label) {
-      this.path = path;
-      this.label = label;
-    }
-
-    @Override
-    public String toString() {
-      return this.label;
-    }
   }
 
   @Override
@@ -202,10 +192,20 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     topPane.getChildren().add(buttonBar);
     rootPane.getChildren().add(topPane);
 
-    myBreadcrumbs = new BreadCrumbBar<>();
-    myBreadcrumbs.getStyleClass().add("breadcrumb");
+    myOnSelectCrumb = selectedPath -> {
+      ObservableList<WebDavResourceAsFolderItem> wrappers = FXCollections.observableArrayList();
+      Consumer<ObservableList<WebDavResource>> consumer = webDavResources -> {
+        webDavResources.forEach(resource -> wrappers.add(new WebDavResourceAsFolderItem(resource)));
+        myListView.setResources(wrappers);
+      };
+      loadFolder(selectedPath,
+          myDialogUi::showBusyIndicator,
+          consumer, myDialogUi);
+    };
+    myBreadcrumbs = new BreadcrumbView(Paths.get("/", myServer.name), myOnSelectCrumb);
 
-    rootPane.getChildren().add(myBreadcrumbs);
+
+    rootPane.getChildren().add(myBreadcrumbs.getBreadcrumbs());
 
     SimpleBooleanProperty isLockingSupported = new SimpleBooleanProperty();
     isLockingSupported.addListener((observable, oldValue, newValue) -> {
@@ -214,22 +214,6 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     myListView = new FolderView<>(myDialogUi, this::deleteResource, this::toggleLockResource, isLockingSupported);
     rootPane.getChildren().add(myListView.getListView());
 
-    TreeItem<BreadCrumbNode> rootItem = new TreeItem<>(new BreadCrumbNode("/", myServer.name));
-    myOnSelectCrumb = selectedCrumb -> {
-      selectedCrumb.getChildren().clear();
-
-      ObservableList<WebDavResourceAsFolderItem> wrappers = FXCollections.observableArrayList();
-      Consumer<ObservableList<WebDavResource>> consumer = webDavResources -> {
-        webDavResources.forEach(resource -> wrappers.add(new WebDavResourceAsFolderItem(resource)));
-        myListView.setResources(wrappers);
-      };
-      loadFolder(selectedCrumb.getValue().path,
-          myDialogUi::showBusyIndicator,
-          consumer, myDialogUi);
-    };
-    myBreadcrumbs.setOnCrumbAction(value -> myOnSelectCrumb.accept(value.getSelectedCrumb()));
-    myBreadcrumbs.setSelectedCrumb(rootItem);
-    myOnSelectCrumb.accept(rootItem);
 
     myListView.getListView().setOnMouseClicked(event -> myListView.getSelectedResource().ifPresent(selectedItem -> {
       WebDavResource selectedResource = selectedItem.myResource;
@@ -252,11 +236,7 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
     if (myListView.getSelectedResource().isPresent()) {
       WebDavResource selectedItem = myListView.getSelectedResource().get().myResource;
       if (selectedItem.isCollection()) {
-        BreadCrumbNode crumbNode = new BreadCrumbNode(selectedItem.getAbsolutePath(), selectedItem.getName());
-        TreeItem<BreadCrumbNode> treeItem = new TreeItem<>(crumbNode);
-        myBreadcrumbs.getSelectedCrumb().getChildren().add(treeItem);
-        myBreadcrumbs.setSelectedCrumb(treeItem);
-        myOnSelectCrumb.accept(treeItem);
+        myBreadcrumbs.append(selectedItem.getName());
       } else {
         myOpenDocument.accept(createDocument(selectedItem));
       }
@@ -288,8 +268,13 @@ public class WebdavStorage implements StorageDialogBuilder.Ui {
       }
     });
   }
-  private void loadFolder(String path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
-    myLoadService.setPath(path);
+  private void loadFolder(Path path, Consumer<Boolean> showMaskPane, Consumer<ObservableList<WebDavResource>> setResult, StorageDialogBuilder.DialogUi dialogUi) {
+    if (path.getNameCount() > 1) {
+      path = path.subpath(1, path.getNameCount());
+    } else {
+      path = path.getRoot();
+    }
+    myLoadService.setPath(path.toString().toString());
     myCurrentFolder = myLoadService.createRootResource();
     myLoadService.setOnSucceeded((event) -> {
       Worker<ObservableList<WebDavResource>> source = event.getSource();
