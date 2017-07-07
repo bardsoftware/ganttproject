@@ -19,21 +19,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.local
 
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
-import biz.ganttproject.storage.StorageDialogBuilder
-import biz.ganttproject.storage.StorageMode
-import biz.ganttproject.storage.StorageUtil
+import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.Button
+import javafx.scene.control.Control
+import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
-import javafx.util.Callback
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -50,10 +51,21 @@ import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
+class FileAsFolderItem(val file: File) : FolderItem {
+  override val isLocked: Boolean
+    get() = false
+  override val isLockable: Boolean
+    get() = false
+  override val name: String
+    get() = file.name
+  override val isDirectory: Boolean
+    get() = file.isDirectory
+}
 /**
  * @author dbarashev@bardsoftware.com
  */
 class LocalStorage(
+    private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val myMode: StorageMode,
     private val currentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
@@ -69,7 +81,7 @@ class LocalStorage(
   }
 
   override fun createUi(): Pane {
-    val filePath = Paths.get(currentDocument.filePath)
+    val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     val filenameControl = CustomTextField()
     val state = State(
         SimpleObjectProperty(myUtil.absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
@@ -88,15 +100,38 @@ class LocalStorage(
     val docList = VBox()
     docList.styleClass.add("doclist")
 
-    val currentDocDir = createDirPane(state, state.currentDir::set)
     filenameControl.text = when (myMode) {
       is StorageMode.Open -> ""
       is StorageMode.Save -> currentDocument.fileName
     }
 
     filenameControl.styleClass.add("filename")
-    docList.children.addAll(currentDocDir, filenameControl)
+    docList.children.addAll(filenameControl)
 
+    val listView = FolderView<FileAsFolderItem>(
+        myDialogUi,
+        Runnable { this.deleteResource() },
+        Runnable {},
+        SimpleBooleanProperty())
+    val onSelectCrumb = Consumer { path: Path ->
+      val dir = path.toFile()
+      val result = FXCollections.observableArrayList<FileAsFolderItem>()
+      dir.listFiles().map { f -> FileAsFolderItem(f) }.forEach { result.add(it) }
+      listView.setResources(result)
+    }
+
+    val breadcrumbView = BreadcrumbView(
+        if (filePath.toFile().isDirectory) filePath else filePath.parent,
+        onSelectCrumb)
+    listView.listView.onMouseClicked = EventHandler{ evt -> listView.selectedResource.ifPresent { item ->
+      if (item.isDirectory && evt.clickCount == 2) {
+        breadcrumbView.append(item.name)
+      } else {
+        state.currentDir.set(item.file.parentFile)
+        state.currentFile.set(item.file)
+        filenameControl.text = item.name
+      }
+    }}
     fun onBrowse() {
       val fileChooser = FileChooser()
       var initialDir = state.resolveFile(filenameControl.text)
@@ -135,72 +170,15 @@ class LocalStorage(
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
-    rootPane.children.addAll(titleBox, docList, errorLabel, btnSaveBox)
+    rootPane.children.addAll(titleBox, docList, errorLabel, breadcrumbView.breadcrumbs, listView.listView, btnSaveBox)
     return rootPane
   }
 
+  fun deleteResource() {
+
+  }
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty<Pane>()
-  }
-
-  fun createDirPane(state: State, onClick: ((File) -> Unit)): Pane {
-    val path = state.currentFile.get().toPath()
-    val dropDown = ComboBox<Path>()
-
-    dropDown.cellFactory = Callback<ListView<Path>, ListCell<Path>> { _ ->
-      object : ListCell<Path>() {
-        override fun updateItem(item: Path?, empty: Boolean) {
-          super.updateItem(item, empty)
-          if (item == null || empty) {
-            graphic = null
-          } else {
-            val label = Label(
-                    if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString(),
-                    FontAwesomeIconView(FontAwesomeIcon.FOLDER))
-            label.style = "-fx-padding: 0.5ex 0 0.5ex ${item.nameCount}em"
-            graphic = label
-          }
-        }
-      }
-    }
-    dropDown.buttonCell = object : ListCell<Path>() {
-      override fun updateItem(item: Path?, empty: Boolean) {
-        super.updateItem(item, empty)
-        if (item == null || empty) {
-          graphic = null
-        } else {
-          val label = Label(
-                  if(item.nameCount >= 1) item.getName(item.nameCount - 1).toString() else item.toString(),
-                  FontAwesomeIconView(FontAwesomeIcon.FOLDER))
-          label.style = "-fx-text-fill: black"
-          graphic = label
-        }
-      }
-    }
-    dropDown.valueProperty().addListener { _, _, newValue ->
-      if (newValue != null) {
-        onClick(newValue.toFile())
-      }
-    }
-    dropDown.styleClass.add("path-dropdown")
-    dropDown.maxWidth = Double.MAX_VALUE
-
-    // Re-populates dropdown given path to the selected file
-    fun resetDropDown(filePath: Path) {
-      dropDown.items.clear()
-      dropDown.items.add(filePath.root)
-      for (i in 0..(filePath.nameCount - 2)) {
-        dropDown.items.add(myUtil.absolutePrefix(filePath, i + 1))
-      }
-      dropDown.value = myUtil.absolutePrefix(filePath, filePath.nameCount - 1)
-    }
-    resetDropDown(path)
-
-    state.currentFile.addListener { _, _, newValue -> resetDropDown(newValue.toPath()) }
-    val dropDownBox = HBox()
-    dropDownBox.children.addAll(dropDown)
-    HBox.setHgrow(dropDown, Priority.ALWAYS)
-    return dropDownBox
   }
 }
 

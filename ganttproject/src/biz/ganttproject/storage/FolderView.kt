@@ -193,11 +193,10 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
       val treeItem = TreeItem<BreadcrumbNode>(
           BreadcrumbNode(initialPath.root.resolve(initialPath.subpath(0, idx)),
           initialPath.getName(idx - 1).toString()))
-      if (lastItem == null) {
-        lastItem = treeItem
-      } else {
+      if (lastItem != null) {
         lastItem.children.add(treeItem)
       }
+      lastItem = treeItem
       breadcrumbs.selectedCrumb = lastItem
     }
     breadcrumbs.onCrumbAction = EventHandler { node ->
@@ -210,9 +209,7 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
   fun append(name: String) {
     val selectedPath = breadcrumbs.selectedCrumb.value.path
     val appendPath = selectedPath.resolve(name)
-    println("selected=$selectedPath append=$appendPath")
-    val crumbNode = BreadcrumbNode(appendPath, name)
-    val treeItem = TreeItem<BreadcrumbNode>(crumbNode)
+    val treeItem = TreeItem<BreadcrumbNode>(BreadcrumbNode(appendPath, name))
     breadcrumbs.selectedCrumb.children.add(treeItem)
     breadcrumbs.selectedCrumb = treeItem
     onSelectCrumb.accept(appendPath)

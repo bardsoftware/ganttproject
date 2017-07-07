@@ -107,6 +107,7 @@ public class StoragePane {
       }
     };
     myStorageUiList.add(new LocalStorage(
+        myDialogUi,
         mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(),
         myCurrentDocument,
         openDocument)
