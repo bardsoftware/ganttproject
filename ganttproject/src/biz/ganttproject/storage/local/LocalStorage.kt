@@ -151,7 +151,15 @@ class LocalStorage(
     filenameControl.onKeyPressed = EventHandler { keyEvent ->
       when (keyEvent.code) {
         KeyCode.DOWN -> listView.listView.requestFocus()
-        KeyCode.ENTER -> println("Enter!")
+        KeyCode.ENTER -> {
+          var path = Paths.get(filenameControl.text)
+          if (!path.isAbsolute) {
+            path = breadcrumbView.path.resolve(path)
+          }
+          if (path.toFile().exists() && path.toFile().isDirectory) {
+            breadcrumbView.path = path.normalize()
+          }
+        }
         else -> {}
       }
     }

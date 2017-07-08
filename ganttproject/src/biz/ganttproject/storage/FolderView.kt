@@ -170,7 +170,7 @@ fun <T: FolderItem> createListCell(
         val btnBox = HBox()
         btnBox.styleClass.add("webdav-list-cell-button-pane")
         val btnDelete = Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
-        btnDelete.addEventHandler(ActionEvent.ACTION) { event -> onDeleteResource.run() }
+        btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.run() }
 
         var btnLock: Button? = null
         if (isLocked) {
@@ -179,7 +179,7 @@ fun <T: FolderItem> createListCell(
           btnLock = Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
         }
         if (btnLock != null) {
-          btnLock.addEventHandler(ActionEvent.ACTION) { event -> onToggleLockResource.run() }
+          btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.run() }
           btnBox.children.add(btnLock)
         }
         btnBox.children.add(btnDelete)
