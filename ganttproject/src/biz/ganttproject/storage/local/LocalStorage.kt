@@ -31,6 +31,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Control
 import javafx.scene.control.Label
+import javafx.scene.input.KeyCode
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
@@ -51,7 +52,12 @@ import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class FileAsFolderItem(val file: File) : FolderItem {
+class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem> {
+  override fun compareTo(other: FileAsFolderItem): Int {
+    val result = this.isDirectory.compareTo(other.isDirectory)
+    return  if (result != 0) { -1 * result } else { this.name.compareTo(other.name) }
+  }
+
   override val isLocked: Boolean
     get() = false
   override val isLockable: Boolean
@@ -97,16 +103,11 @@ class LocalStorage(
     val title = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.title")))
     titleBox.children.add(title)
 
-    val docList = VBox()
-    docList.styleClass.add("doclist")
-
     filenameControl.text = when (myMode) {
       is StorageMode.Open -> ""
       is StorageMode.Save -> currentDocument.fileName
     }
-
     filenameControl.styleClass.add("filename")
-    docList.children.addAll(filenameControl)
 
     val listView = FolderView<FileAsFolderItem>(
         myDialogUi,
@@ -116,25 +117,49 @@ class LocalStorage(
     val onSelectCrumb = Consumer { path: Path ->
       val dir = path.toFile()
       val result = FXCollections.observableArrayList<FileAsFolderItem>()
-      dir.listFiles().map { f -> FileAsFolderItem(f) }.forEach { result.add(it) }
+      dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
       listView.setResources(result)
+      state.currentDir.set(dir)
     }
 
     val breadcrumbView = BreadcrumbView(
-        if (filePath.toFile().isDirectory) filePath else filePath.parent,
-        onSelectCrumb)
-    listView.listView.onMouseClicked = EventHandler{ evt -> listView.selectedResource.ifPresent { item ->
-      if (item.isDirectory && evt.clickCount == 2) {
-        breadcrumbView.append(item.name)
-      } else {
-        state.currentDir.set(item.file.parentFile)
-        state.currentFile.set(item.file)
-        filenameControl.text = item.name
+        if (filePath.toFile().isDirectory) filePath else filePath.parent, onSelectCrumb)
+    state.currentDir.addListener({
+      _, _, newValue -> breadcrumbView.path = newValue.toPath().toAbsolutePath()
+    })
+
+    fun selectItem(withEnter: Boolean) {
+      listView.selectedResource.ifPresent { item ->
+        if (item.isDirectory && withEnter) {
+          breadcrumbView.append(item.name)
+        } else {
+          state.currentDir.set(item.file.parentFile)
+          state.currentFile.set(item.file)
+          filenameControl.text = item.name
+        }
+    }
+    listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(evt.clickCount == 2) }}
+    listView.listView.onKeyPressed = EventHandler { keyEvent ->
+      when (keyEvent.code) {
+        KeyCode.ENTER -> selectItem(withEnter = true)
+        else -> {}
       }
-    }}
+    }
+    filenameControl.textProperty().addListener({
+      _,_, newValue -> listView.filter(newValue)
+    })
+    filenameControl.onKeyPressed = EventHandler { keyEvent ->
+      when (keyEvent.code) {
+        KeyCode.DOWN -> listView.listView.requestFocus()
+        KeyCode.ENTER -> println("Enter!")
+        else -> {}
+      }
+    }
+
+
     fun onBrowse() {
       val fileChooser = FileChooser()
-      var initialDir = state.resolveFile(filenameControl.text)
+      var initialDir: File? = state.resolveFile(filenameControl.text)
       while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
         initialDir = initialDir.parentFile
       }
@@ -147,6 +172,7 @@ class LocalStorage(
       val chosenFile = fileChooser.showOpenDialog(null)
       if (chosenFile != null) {
         state.currentFile.set(chosenFile)
+        state.currentDir.set(chosenFile.parentFile)
         filenameControl.text = chosenFile.name
       }
     }
@@ -170,7 +196,9 @@ class LocalStorage(
 
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
-    rootPane.children.addAll(titleBox, docList, errorLabel, breadcrumbView.breadcrumbs, listView.listView, btnSaveBox)
+
+    errorLabel.styleClass.add("errorLabel")
+    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filenameControl, errorLabel, listView.listView, btnSaveBox)
     return rootPane
   }
 

@@ -1,7 +1,4 @@
 
-.local-storage .doclist {
-    -fx-padding: 1ex 0 1ex 0;
-}
 .local-storage .custom-text-field:right-node-visible {
     -fx-padding: 0 0 0 .3em;
 }
@@ -23,18 +20,20 @@
     -fx-background-radius: 2, 0;
     -fx-prompt-text-fill: transparent;
 }
+.local-storage .errorLabel {
+    -fx-padding: 0.2ex 0 1ex 0;
+}
+/*.local-storage .path-dropdown {*/
+    /*-fx-background-color: derive(orange, 20%);*/
+    /*-fx-border-insets: 0 0 1em 0;*/
+    /*-fx-background-insets: 0 0 1em 0;*/
+    /*-fx-padding: 0 0 1em 0;*/
+/*}*/
+/*.local-storage .path-dropdown > .button-cell  {*/
+    /*-fx-text-fill: black;*/
+/*}*/
 
-.local-storage .path-dropdown {
-    -fx-background-color: derive(orange, 20%);
-    -fx-border-insets: 0 0 1em 0;
-    -fx-background-insets: 0 0 1em 0;
-    -fx-padding: 0 0 1em 0;
-}
-.local-storage .path-dropdown > .button-cell  {
-    -fx-text-fill: black;
-}
-
-.local-storage .path-dropdown > .list-cell {
-    -fx-font-weight: bold;
-}
+/*.local-storage .path-dropdown > .list-cell {*/
+    /*-fx-font-weight: bold;*/
+/*}*/
 

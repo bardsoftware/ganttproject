@@ -50,6 +50,7 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
                  onToggleLockResource: Runnable,
                  isLockingSupported: BooleanProperty) {
 
+  var myContents: ObservableList<T>? = null
   val listView: ListView<ListViewItem<T>> = ListView()
   init {
     listView.setCellFactory { _ ->
@@ -69,6 +70,11 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
    * Loads the list of folder contents into the view.
    */
   fun setResources(folderContents: ObservableList<T>) {
+    myContents = folderContents
+    reloadItems(folderContents)
+  }
+
+  private fun reloadItems(folderContents: ObservableList<T>) {
     val items = FXCollections.observableArrayList(createExtractor<T>())
     folderContents.stream()
         .map({resource -> ListViewItem(resource) })
@@ -84,6 +90,15 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
       val result = listView.selectionModel.selectedItem?.resource?.value
       return Optional.ofNullable(result)
     }
+
+  fun filter(byValue: String) {
+    if (myContents == null) {
+      return
+    }
+    val result = FXCollections.observableArrayList(myContents)
+        .filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
+    reloadItems(FXCollections.observableArrayList(result))
+  }
 }
 
 class ListViewItem<T:FolderItem>(resource: T) {
@@ -186,24 +201,30 @@ data class BreadcrumbNode(val path: Path, val label: String) {
 
 class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
   val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
+  var path: Path
+    get() = breadcrumbs.selectedCrumb.value.path
+    set(value) {
+      var lastItem: TreeItem<BreadcrumbNode>? = null
+      for (idx in 1..value.nameCount) {
+        val treeItem = TreeItem<BreadcrumbNode>(
+            BreadcrumbNode(value.root.resolve(value.subpath(0, idx)),
+                value.getName(idx - 1).toString()))
+        if (lastItem != null) {
+          lastItem.children.add(treeItem)
+        }
+        lastItem = treeItem
+        breadcrumbs.selectedCrumb = lastItem
+      }
+      onSelectCrumb.accept(value)
+    }
+
   init {
     breadcrumbs.styleClass.add("breadcrumb")
-    var lastItem: TreeItem<BreadcrumbNode>? = null
-    for (idx in 1..initialPath.nameCount) {
-      val treeItem = TreeItem<BreadcrumbNode>(
-          BreadcrumbNode(initialPath.root.resolve(initialPath.subpath(0, idx)),
-          initialPath.getName(idx - 1).toString()))
-      if (lastItem != null) {
-        lastItem.children.add(treeItem)
-      }
-      lastItem = treeItem
-      breadcrumbs.selectedCrumb = lastItem
-    }
     breadcrumbs.onCrumbAction = EventHandler { node ->
       node.selectedCrumb.children.clear()
       onSelectCrumb.accept(node.selectedCrumb.value.path)
     }
-    onSelectCrumb.accept(initialPath)
+    path = initialPath
   }
 
   fun append(name: String) {
@@ -214,4 +235,5 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
     breadcrumbs.selectedCrumb = treeItem
     onSelectCrumb.accept(appendPath)
   }
+
 }
