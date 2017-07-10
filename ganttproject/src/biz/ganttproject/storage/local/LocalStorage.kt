@@ -142,6 +142,14 @@ class LocalStorage(
     listView.listView.onKeyPressed = EventHandler { keyEvent ->
       when (keyEvent.code) {
         KeyCode.ENTER -> selectItem(withEnter = true)
+        KeyCode.UP -> {
+          if (listView.isSelectedTopmost()) {
+            filenameControl.requestFocus()
+          }
+        }
+        KeyCode.BACK_SPACE -> {
+          breadcrumbView.pop()
+        }
         else -> {}
       }
     }
@@ -150,7 +158,9 @@ class LocalStorage(
     })
     filenameControl.onKeyPressed = EventHandler { keyEvent ->
       when (keyEvent.code) {
-        KeyCode.DOWN -> listView.listView.requestFocus()
+        KeyCode.DOWN -> {
+          listView.requestFocus()
+        }
         KeyCode.ENTER -> {
           var path = Paths.get(filenameControl.text)
           if (!path.isAbsolute) {

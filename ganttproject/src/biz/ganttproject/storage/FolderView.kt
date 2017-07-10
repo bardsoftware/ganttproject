@@ -99,6 +99,15 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
         .filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
     reloadItems(FXCollections.observableArrayList(result))
   }
+
+  fun requestFocus() {
+    this.listView.requestFocus()
+    this.listView.selectionModel.selectIndices(0)
+  }
+
+  fun isSelectedTopmost(): Boolean {
+    return this.listView.selectionModel.isSelected(0)
+  }
 }
 
 class ListViewItem<T:FolderItem>(resource: T) {
@@ -234,6 +243,13 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
     breadcrumbs.selectedCrumb.children.add(treeItem)
     breadcrumbs.selectedCrumb = treeItem
     onSelectCrumb.accept(appendPath)
+  }
+
+  fun pop() {
+    val parent = breadcrumbs.selectedCrumb.parent ?: return
+    parent.children.clear()
+    breadcrumbs.selectedCrumb = parent
+    onSelectCrumb.accept(parent.value.path)
   }
 
 }
