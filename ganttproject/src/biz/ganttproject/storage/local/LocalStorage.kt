@@ -128,20 +128,28 @@ class LocalStorage(
       _, _, newValue -> breadcrumbView.path = newValue.toPath().toAbsolutePath()
     })
 
-    fun selectItem(withEnter: Boolean) {
+    fun selectItem(withEnter: Boolean, withControl: Boolean) {
       listView.selectedResource.ifPresent { item ->
         if (item.isDirectory && withEnter) {
           breadcrumbView.append(item.name)
+          state.currentDir.set(item.file)
+          state.currentFile.set(null)
+          filenameControl.text = ""
         } else {
           state.currentDir.set(item.file.parentFile)
           state.currentFile.set(item.file)
           filenameControl.text = item.name
+          if (withControl) {
+            myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
+          }
         }
     }
-    listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(evt.clickCount == 2) }}
+    listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(withEnter = evt.clickCount == 2, withControl = false) }}
     listView.listView.onKeyPressed = EventHandler { keyEvent ->
       when (keyEvent.code) {
-        KeyCode.ENTER -> selectItem(withEnter = true)
+        KeyCode.ENTER -> {
+          selectItem(withEnter = true, withControl = (keyEvent.isControlDown || keyEvent.isMetaDown))
+        }
         KeyCode.UP -> {
           if (listView.isSelectedTopmost()) {
             filenameControl.requestFocus()
