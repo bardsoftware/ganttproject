@@ -87,8 +87,8 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
   }
 
   private Pane doCreateUi() {
-    WebdavStorage webdavStorage = new WebdavStorage(myMode, myOpenDocument, myDialogUi, myOptions);
-    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage, webdavStorage);
+    GPCloudLoginPane loginPane = new GPCloudLoginPane(myOptions, myDialogUi, this::nextPage,
+        webDavServer -> new WebdavStorage(webDavServer, myMode, myOpenDocument, myDialogUi, myOptions));
     GPCloudSignupPane signupPane = new GPCloudSignupPane(this::nextPage, loginPane);
     Optional<WebDavServerDescriptor> cloudServer = myOptions.getCloudServer();
     if (cloudServer.isPresent()) {
@@ -96,7 +96,7 @@ public class GPCloudStorage implements StorageDialogBuilder.Ui {
       if (wevdavServer.getPassword() == null) {
         loginPane.createPane().thenApply(pane -> nextPage(pane));
       } else {
-        webdavStorage.setServer(wevdavServer);
+        WebdavStorage webdavStorage = new WebdavStorage(wevdavServer, myMode, myOpenDocument, myDialogUi, myOptions);
         myPane.setCenter(webdavStorage.createUi());
       }
     } else {

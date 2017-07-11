@@ -46,8 +46,8 @@ interface FolderItem {
  * Encapsulates a list view showing the contents of a single folder.
  */
 class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
-                 onDeleteResource: Runnable,
-                 onToggleLockResource: Runnable,
+                 onDeleteResource: Consumer<T>,
+                 onToggleLockResource: Consumer<T>,
                  isLockingSupported: BooleanProperty) {
 
   var myContents: ObservableList<T>? = null
@@ -130,8 +130,8 @@ fun <T: FolderItem> createExtractor() : Callback<ListViewItem<T>, Array<Observab
 
 fun <T: FolderItem> createListCell(
     dialogUi: StorageDialogBuilder.DialogUi,
-    onDeleteResource: Runnable,
-    onToggleLockResource: Runnable,
+    onDeleteResource: Consumer<T>,
+    onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty) : ListCell<ListViewItem<T>> {
   return object : ListCell<ListViewItem<T>>() {
     override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
@@ -175,11 +175,11 @@ fun <T: FolderItem> createListCell(
       }
       val label = Label(item.resource.value.name, icon)
       hbox.children.add(label)
-      if (item.isSelected.value!! && !item.resource.value.isDirectory) {
+      if (item.isSelected.value && !item.resource.value.isDirectory) {
         val btnBox = HBox()
         btnBox.styleClass.add("webdav-list-cell-button-pane")
         val btnDelete = Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
-        btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.run() }
+        btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
 
         var btnLock: Button? = null
         if (isLocked) {
@@ -188,7 +188,7 @@ fun <T: FolderItem> createListCell(
           btnLock = Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
         }
         if (btnLock != null) {
-          btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.run() }
+          btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.accept(item.resource.value) }
           btnBox.children.add(btnLock)
         }
         btnBox.children.add(btnDelete)

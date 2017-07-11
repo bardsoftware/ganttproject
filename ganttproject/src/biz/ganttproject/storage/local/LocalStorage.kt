@@ -111,8 +111,8 @@ class LocalStorage(
 
     val listView = FolderView<FileAsFolderItem>(
         myDialogUi,
-        Runnable { this.deleteResource() },
-        Runnable {},
+        Consumer { item: FileAsFolderItem -> this.deleteResource() },
+        Consumer { item: FileAsFolderItem ->  },
         SimpleBooleanProperty())
     val onSelectCrumb = Consumer { path: Path ->
       val dir = path.toFile()

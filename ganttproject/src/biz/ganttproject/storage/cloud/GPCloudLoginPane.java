@@ -25,6 +25,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import net.sourceforge.ganttproject.GPVersion;
+import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -42,6 +43,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newHyperlink;
 import static biz.ganttproject.storage.cloud.GPCloudStorage.newLabel;
@@ -56,16 +58,17 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
   private final GPCloudStorageOptions myOptions;
   private final StorageDialogBuilder.DialogUi myDialogUi;
   private final Consumer<Pane> myUpdateUi;
-  private final WebdavStorage myWebdavStorage;
+  private final Function<WebDavServerDescriptor, WebdavStorage> myWebdavStorageFactory;
+  //private final WebdavStorage myWebdavStorage;
   private LoginForm myLoginForm;
   private Button mySigninButton;
 
   GPCloudLoginPane(GPCloudStorageOptions cloudStorageOptions, StorageDialogBuilder.DialogUi dialogUi,
-                   Consumer<Pane> updateUi, WebdavStorage webdavStorage) {
+                   Consumer<Pane> updateUi, Function<WebDavServerDescriptor, WebdavStorage> webdavStorageFactory) {
     myOptions = cloudStorageOptions;
     myDialogUi = dialogUi;
     myUpdateUi = updateUi;
-    myWebdavStorage = webdavStorage;
+    myWebdavStorageFactory = webdavStorageFactory;
   }
 
   public CompletableFuture<Pane> createPane() {
@@ -178,8 +181,8 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
 
   private void nextPage() {
     myOptions.getCloudServer().ifPresent(server -> {
-      myWebdavStorage.setServer(server);
-      myUpdateUi.accept(myWebdavStorage.createUi());
+      WebdavStorage webdavStorage = myWebdavStorageFactory.apply(server);
+      myUpdateUi.accept(webdavStorage.createUi());
     });
 
   }
