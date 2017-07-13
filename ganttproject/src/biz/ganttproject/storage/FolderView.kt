@@ -93,10 +93,6 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
     }
 
   fun filter(byValue: String) {
-    if (myContents == null) {
-      return
-    }
-
     reloadItems(FXCollections.observableArrayList(
         doFilter(FXCollections.observableArrayList(myContents), byValue)))
   }

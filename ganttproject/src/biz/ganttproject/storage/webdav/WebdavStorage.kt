@@ -109,7 +109,7 @@ class WebdavStorage(
   }
 
   override fun createSettingsUi(): Optional<Pane> {
-    val updater = Consumer { server: WebDavServerDescriptor ->
+    val updater = Consumer { server: WebDavServerDescriptor? ->
       if (server == null) {
         myOptions.removeValue(myServer)
       } else {
