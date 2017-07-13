@@ -26,12 +26,10 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Control
 import javafx.scene.control.Label
-import javafx.scene.input.KeyCode
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
@@ -143,46 +141,18 @@ class LocalStorage(
             myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
           }
         }
-    }
-    listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(withEnter = evt.clickCount == 2, withControl = false) }}
-    listView.listView.onKeyPressed = EventHandler { keyEvent ->
-      when (keyEvent.code) {
-        KeyCode.ENTER -> {
-          selectItem(withEnter = true, withControl = (keyEvent.isControlDown || keyEvent.isMetaDown))
-        }
-        KeyCode.UP -> {
-          if (listView.isSelectedTopmost()) {
-            filenameControl.requestFocus()
-          }
-        }
-        KeyCode.BACK_SPACE -> {
-          breadcrumbView.pop()
-        }
-        else -> {}
       }
     }
-    filenameControl.textProperty().addListener({
-      _,_, newValue -> listView.filter(newValue)
-    })
-    filenameControl.onKeyPressed = EventHandler { keyEvent ->
-      when (keyEvent.code) {
-        KeyCode.DOWN -> {
-          listView.requestFocus()
-        }
-        KeyCode.ENTER -> {
-          var path = Paths.get(filenameControl.text)
-          if (!path.isAbsolute) {
-            path = breadcrumbView.path.resolve(path)
-          }
-          if (path.toFile().exists() && path.toFile().isDirectory) {
-            breadcrumbView.path = path.normalize()
-          }
-        }
-        else -> {}
+    fun onFilenameEnter() {
+      var path = Paths.get(filenameControl.text)
+      if (!path.isAbsolute) {
+        path = breadcrumbView.path.resolve(path)
+      }
+      if (path.toFile().exists() && path.toFile().isDirectory) {
+        breadcrumbView.path = path.normalize()
       }
     }
-
-
+    connect(filenameControl, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
     fun onBrowse() {
       val fileChooser = FileChooser()
       var initialDir: File? = state.resolveFile(filenameControl.text)

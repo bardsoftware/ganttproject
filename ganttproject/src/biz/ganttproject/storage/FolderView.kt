@@ -19,6 +19,7 @@ import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.control.*
+import javafx.scene.input.KeyCode
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
@@ -50,7 +51,7 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
                  onToggleLockResource: Consumer<T>,
                  isLockingSupported: BooleanProperty) {
 
-  var myContents: ObservableList<T>? = null
+  var myContents: ObservableList<T> = FXCollections.emptyObservableList()
   val listView: ListView<ListViewItem<T>> = ListView()
   init {
     listView.setCellFactory { _ ->
@@ -95,9 +96,13 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
     if (myContents == null) {
       return
     }
-    val result = FXCollections.observableArrayList(myContents)
-        .filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
-    reloadItems(FXCollections.observableArrayList(result))
+
+    reloadItems(FXCollections.observableArrayList(
+        doFilter(FXCollections.observableArrayList(myContents), byValue)))
+  }
+
+  fun doFilter(contents: List<T>, byValue: String): List<T> {
+    return contents.filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
   }
 
   fun requestFocus() {
@@ -252,4 +257,37 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
     onSelectCrumb.accept(parent.value.path)
   }
 
+}
+
+fun <T: FolderItem> connect(
+    filename: TextField, listView: FolderView<T>, breadcrumbView: BreadcrumbView,
+    selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
+    onFilenameEnter: () -> Unit) {
+  listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(evt.clickCount == 2, false) }
+  listView.listView.onKeyPressed = EventHandler { keyEvent ->
+    when (keyEvent.code) {
+      KeyCode.ENTER -> {
+        selectItem(true, (keyEvent.isControlDown || keyEvent.isMetaDown))
+      }
+      KeyCode.UP -> {
+        if (listView.isSelectedTopmost()) {
+          filename.requestFocus()
+        }
+      }
+      KeyCode.BACK_SPACE -> {
+        breadcrumbView.pop()
+      }
+      else -> {}
+    }
+  }
+  filename.textProperty().addListener({
+    _,_, newValue -> listView.filter(newValue)
+  })
+  filename.onKeyPressed = EventHandler { keyEvent ->
+    when (keyEvent.code) {
+      KeyCode.DOWN -> listView.requestFocus()
+      KeyCode.ENTER -> onFilenameEnter()
+      else -> {}
+    }
+  }
 }

@@ -162,6 +162,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         Consumer<WebDavResourceAsFolderItem> { item -> toggleLockResource(item) },
         isLockingSupported)
 
+
     val onSelectCrumb = Consumer { selectedPath: Path ->
       val wrappers = FXCollections.observableArrayList<WebDavResourceAsFolderItem>()
       val consumer = Consumer { webDavResources: ObservableList<WebDavResource> ->
@@ -191,9 +192,13 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         }
       }
     }
-    listView.listView.onMouseClicked = EventHandler{ evt ->
-      selectItem(withEnter = evt.clickCount == 2, withControl = false)
+    fun onFilenameEnter() {
+      val filtered = listView.doFilter(listView.myContents, filename.text)
+      if (filtered.size == 1 && filtered[0].isDirectory) {
+        breadcrumbView.append(filtered[0].name)
+      }
     }
+    connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
 
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
     val btnBox = setupSaveButton(btnSave, myOpenDocument, myState, this::createResource)
