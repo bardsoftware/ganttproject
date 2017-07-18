@@ -148,8 +148,14 @@ class LocalStorage(
       if (!path.isAbsolute) {
         path = breadcrumbView.path.resolve(path)
       }
-      if (path.toFile().exists() && path.toFile().isDirectory) {
-        breadcrumbView.path = path.normalize()
+      if (path.toFile().exists()) {
+        if (path.toFile().isDirectory) {
+          breadcrumbView.path = path.normalize()
+          filenameControl.text = ""
+        } else {
+          state.currentFile.set(path.toFile())
+          myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
+        }
       }
     }
     connect(filenameControl, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)

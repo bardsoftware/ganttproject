@@ -7,6 +7,7 @@
 // FolderView class encapsulates a list representing the contents of a single folder.
 package biz.ganttproject.storage
 
+import com.google.common.collect.ImmutableList
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.Observable
@@ -25,6 +26,7 @@ import javafx.scene.layout.Priority
 import javafx.util.Callback
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import org.controlsfx.control.BreadCrumbBar
+import org.controlsfx.control.textfield.TextFields
 import java.nio.file.Path
 import java.util.*
 import java.util.function.Consumer
@@ -276,13 +278,21 @@ fun <T: FolderItem> connect(
       else -> {}
     }
   }
-  filename.textProperty().addListener({
-    _,_, newValue -> listView.filter(newValue)
+
+  filename.textProperty().addListener({_, _, newValue -> listView.filter(newValue)})
+  TextFields.bindAutoCompletion(filename, { _ ->
+    if (listView.listView.items.size == 1) {
+      ImmutableList.of(listView.listView.items[0].resource.get().name)
+    } else {
+      emptyList<String>()
+    }
   })
   filename.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.DOWN -> listView.requestFocus()
-      KeyCode.ENTER -> onFilenameEnter()
+      KeyCode.ENTER -> {
+        onFilenameEnter()
+      }
       else -> {}
     }
   }

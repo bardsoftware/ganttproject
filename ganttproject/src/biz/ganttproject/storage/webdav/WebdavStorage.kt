@@ -5,6 +5,8 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -198,12 +200,14 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         breadcrumbView.append(filtered[0].name)
       }
     }
+    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+    errorLabel.styleClass.addAll("hint", "noerror")
     connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
 
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
     val btnBox = setupSaveButton(btnSave, myOpenDocument, myState, this::createResource)
 
-    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filename, listView.listView, btnBox)
+    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filename, errorLabel, listView.listView, btnBox)
     return rootPane
   }
 
