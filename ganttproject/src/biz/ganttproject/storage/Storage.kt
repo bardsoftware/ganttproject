@@ -38,9 +38,6 @@ sealed class StorageMode(val name: String) {
 
     class Open: StorageMode("open") {
         override fun tryFile(file: File) {
-            if (file.exists() && file.isDirectory) {
-                throw FileException("document.storage.error.read.directory", file)
-            }
             if (!file.exists()) {
                 throw FileException("document.storage.error.read.notExists", file)
             }
@@ -53,9 +50,6 @@ sealed class StorageMode(val name: String) {
 
     class Save: StorageMode("save") {
         override fun tryFile(file: File) {
-            if (file.exists() && file.isDirectory) {
-                throw FileException("document.storage.error.write.isDirectory", file)
-            }
             if (file.exists() && !file.canWrite()) {
                 throw FileException("document.storage.error.write.cantOverwrite", file)
             }

@@ -25,6 +25,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -47,6 +48,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -90,7 +92,6 @@ class LocalStorage(
     val state = State(
         SimpleObjectProperty(myUtil.absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
         SimpleObjectProperty(myUtil.absolutePrefix(filePath).toFile()))
-    val validationHelper = ValidationHelper(filenameControl, state, myMode)
 
     val rootPane = VBox()
     rootPane.styleClass.addAll("pane-service-contents", "local-storage")
@@ -126,6 +127,17 @@ class LocalStorage(
       _, _, newValue -> breadcrumbView.path = newValue.toPath().toAbsolutePath()
     })
 
+    val listViewHint = Label("Hit Ctrl+Enter to open selected file")
+    listViewHint.styleClass.addAll("hint", "noerror")
+    listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
+      if (listView.listView.selectionModel.isEmpty) {
+        listViewHint.styleClass.remove("warning")
+        listViewHint.styleClass.addAll("noerror")
+      } else {
+        listViewHint.styleClass.remove("noerror")
+        listViewHint.styleClass.addAll("warning")
+      }
+    })
     fun selectItem(withEnter: Boolean, withControl: Boolean) {
       listView.selectedResource.ifPresent { item ->
         if (item.isDirectory && withEnter) {
@@ -183,6 +195,10 @@ class LocalStorage(
     filenameControl.right = btnBrowse
 
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+    val validationHelper = ValidationHelper(
+        filenameControl,
+        Supplier { -> listView.listView.items.isEmpty()},
+        state, myMode)
     setupErrorLabel(errorLabel, validationHelper)
 
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
@@ -200,7 +216,10 @@ class LocalStorage(
     rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
 
     errorLabel.styleClass.add("errorLabel")
-    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filenameControl, errorLabel, listView.listView, btnSaveBox)
+    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filenameControl, errorLabel,
+        listView.listView,
+        listViewHint,
+        btnSaveBox)
     return rootPane
   }
 
@@ -212,7 +231,11 @@ class LocalStorage(
   }
 }
 
-class ValidationHelper(val filename: Control, val state: State, val mode: StorageMode) {
+class ValidationHelper(
+    val filename: Control,
+    val isListEmpty: Supplier<Boolean>,
+    val state: State,
+    val mode: StorageMode) {
   val validator: Validator<String> = Validator { control, value ->
     if (value == null) {
       return@Validator ValidationResult()
@@ -224,8 +247,12 @@ class ValidationHelper(val filename: Control, val state: State, val mode: Storag
       mode.tryFile(state.resolveFile(value))
       return@Validator ValidationResult()
     } catch (e: StorageMode.FileException) {
-      println(e.message)
-      return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+      when {
+        "document.storage.error.read.notExists" == e.message && !isListEmpty.get() ->
+          return@Validator ValidationResult.fromWarning(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+        else -> return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+      }
+
     }
   }
   val validationSupport = ValidationSupport().apply {

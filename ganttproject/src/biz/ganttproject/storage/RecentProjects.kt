@@ -39,6 +39,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -112,7 +113,9 @@ class RecentProjects(
       }
     }
 
-    val validationHelper = ValidationHelper(fakeTextField, state, myMode)
+    val validationHelper = ValidationHelper(fakeTextField,
+        Supplier{-> listView.items.isEmpty()},
+        state, myMode)
     val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver, validationHelper)
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     setupErrorLabel(errorLabel, validationHelper)

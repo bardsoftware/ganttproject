@@ -270,6 +270,7 @@ fun <T: FolderItem> connect(
       KeyCode.UP -> {
         if (listView.isSelectedTopmost()) {
           filename.requestFocus()
+          listView.listView.selectionModel.clearSelection()
         }
       }
       KeyCode.BACK_SPACE -> {
