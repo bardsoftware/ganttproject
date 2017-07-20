@@ -16,6 +16,7 @@ import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -261,7 +262,12 @@ fun <T: FolderItem> connect(
     filename: TextField, listView: FolderView<T>, breadcrumbView: BreadcrumbView,
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
     onFilenameEnter: () -> Unit) {
-  listView.listView.onMouseClicked = EventHandler{ evt -> selectItem(evt.clickCount == 2, false) }
+  listView.listView.onMouseClicked = EventHandler{ evt ->
+    selectItem(evt.clickCount == 2, false)
+  }
+  listView.listView.selectionModel.selectedIndices.addListener(
+      ListChangeListener { selectItem(false, false) }
+  )
   listView.listView.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.ENTER -> {
@@ -280,7 +286,7 @@ fun <T: FolderItem> connect(
     }
   }
 
-  filename.textProperty().addListener({_, _, newValue -> listView.filter(newValue)})
+  //filename.textProperty().addListener({_, _, newValue -> listView.filter(newValue)})
   TextFields.bindAutoCompletion(filename, { _ ->
     if (listView.listView.items.size == 1) {
       ImmutableList.of(listView.listView.items[0].resource.get().name)

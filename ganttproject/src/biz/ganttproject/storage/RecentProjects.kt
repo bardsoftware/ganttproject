@@ -24,7 +24,6 @@ import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.storage.local.setupSaveButton
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
@@ -45,10 +44,10 @@ import java.util.function.Supplier
  * @author dbarashev@bardsoftware.com
  */
 class RecentProjects(
-        val myMode: StorageMode,
-        val myDocumentManager: DocumentManager,
-        val myCurrentDocument: Document,
-        val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+    val myMode: StorageMode,
+    val myDocumentManager: DocumentManager,
+    val myCurrentDocument: Document,
+    val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
   private val i18n = GanttLanguage.getInstance()
   private val  myUtil = StorageUtil(myMode)
@@ -64,9 +63,7 @@ class RecentProjects(
   override fun createUi(): Pane {
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
     val filePath = Paths.get(myCurrentDocument.filePath)
-    val state = State(
-        SimpleObjectProperty(myUtil.absolutePrefix(filePath, filePath.nameCount - 1).toFile()),
-        SimpleObjectProperty(myUtil.absolutePrefix(filePath).toFile()))
+    val state = State(myCurrentDocument, myMode)
 
     val rootPane = VBox()
     rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
@@ -115,8 +112,8 @@ class RecentProjects(
 
     val validationHelper = ValidationHelper(fakeTextField,
         Supplier{-> listView.items.isEmpty()},
-        state, myMode)
-    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver, validationHelper)
+        state)
+    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver)
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     setupErrorLabel(errorLabel, validationHelper)
     rootPane.children.addAll(listView, errorLabel, btnSaveBox)
