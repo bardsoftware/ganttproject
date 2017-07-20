@@ -7,7 +7,6 @@
 // FolderView class encapsulates a list representing the contents of a single folder.
 package biz.ganttproject.storage
 
-import com.google.common.collect.ImmutableList
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.Observable
@@ -102,6 +101,10 @@ class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
 
   fun doFilter(contents: List<T>, byValue: String): List<T> {
     return contents.filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
+  }
+
+  fun doFilter(byValue: String): List<T> {
+    return doFilter(FXCollections.observableArrayList(myContents), byValue)
   }
 
   fun requestFocus() {
@@ -286,12 +289,11 @@ fun <T: FolderItem> connect(
     }
   }
 
-  //filename.textProperty().addListener({_, _, newValue -> listView.filter(newValue)})
-  TextFields.bindAutoCompletion(filename, { _ ->
-    if (listView.listView.items.size == 1) {
-      ImmutableList.of(listView.listView.items[0].resource.get().name)
-    } else {
-      emptyList<String>()
+  TextFields.bindAutoCompletion(filename, { req ->
+    // Filter folder with user text and map each item to its name. Return the result if
+    // filtered list has less than 5 items.
+    listView.doFilter(req.userText).let {
+      if (it.size <= 5) it.map { it -> it.name }.toList() else emptyList<String>()
     }
   })
   filename.onKeyPressed = EventHandler { keyEvent ->
