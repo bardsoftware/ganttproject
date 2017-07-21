@@ -144,39 +144,36 @@ class LocalStorage(
       }
     })
 
-    fun selectItem(withEnter: Boolean, withControl: Boolean) {
-      listView.selectedResource.ifPresent { item ->
-        if (item.isDirectory && withEnter) {
-          breadcrumbView.append(item.name)
-          state.currentDir.set(item.file)
-          state.setCurrentFile(null)
-          filenameControl.text = ""
-        } else {
-          state.currentDir.set(item.file.parentFile)
-          state.setCurrentFile(item.file)
-          filenameControl.text = item.name
-          if (withControl && state.submitOk.get()) {
-            myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
-          }
+    fun selectItem(item: FileAsFolderItem, withEnter: Boolean, withControl: Boolean) {
+      if (item.isDirectory && withEnter) {
+        breadcrumbView.path = item.file.toPath()
+        state.currentDir.set(item.file)
+        state.setCurrentFile(null)
+        filenameControl.text = ""
+      } else {
+        state.currentDir.set(item.file.parentFile)
+        state.setCurrentFile(item.file)
+        filenameControl.text = item.name
+        if (withControl && state.submitOk.get()) {
+          myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
         }
       }
     }
-
+    fun selectItem(withEnter: Boolean, withControl: Boolean) {
+      listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
+    }
     fun onFilenameEnter() {
       var path = Paths.get(filenameControl.text)
       if (!path.isAbsolute) {
         path = breadcrumbView.path.resolve(path)
       }
-      if (path.toFile().exists()) {
-        if (path.toFile().isDirectory) {
-          breadcrumbView.path = path.normalize()
-          filenameControl.text = ""
-        } else {
-          state.setCurrentFile(path.toFile())
-          if (state.submitOk.get()) {
-            myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
-          }
-        }
+      path = path.normalize()
+      breadcrumbView.path = path.parent
+      val filtered = listView.doFilter(path.fileName.toString())
+      if (filtered.size == 1) {
+        selectItem(filtered[0], true, true)
+      } else {
+        filenameControl.text = path.fileName.toString()
       }
     }
     connect(filenameControl, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)

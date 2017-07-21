@@ -177,29 +177,32 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     }
     val breadcrumbView = BreadcrumbView(Paths.get("/", myServer.name), onSelectCrumb)
 
-    fun selectItem(withEnter: Boolean, withControl: Boolean) {
-      listView.selectedResource.ifPresent { item ->
-        if (item.isDirectory && withEnter) {
-          breadcrumbView.append(item.name)
-          myState.folder = item.myResource
-          myState.filename = null
-          myState.resource = null
-          filename.text = ""
-        } else if (!item.isDirectory) {
-          myState.resource = item.myResource
-          filename.text = item.name
-          if (withControl) {
-            myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
-          }
+    fun selectItem(item: WebDavResourceAsFolderItem, withEnter: Boolean, withControl: Boolean) {
+      if (item.isDirectory && withEnter) {
+        breadcrumbView.append(item.name)
+        myState.folder = item.myResource
+        myState.filename = null
+        myState.resource = null
+        filename.text = ""
+      } else if (!item.isDirectory) {
+        myState.resource = item.myResource
+        filename.text = item.name
+        if (withControl) {
+          myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
         }
       }
     }
+    fun selectItem(withEnter: Boolean, withControl: Boolean) {
+      listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
+    }
+
     fun onFilenameEnter() {
-      val filtered = listView.doFilter(listView.myContents, filename.text)
-      if (filtered.size == 1 && filtered[0].isDirectory) {
-        breadcrumbView.append(filtered[0].name)
+      val filtered = listView.doFilter(filename.text)
+      if (filtered.size == 1) {
+        selectItem(filtered[0], true, true)
       }
     }
+
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     errorLabel.styleClass.addAll("hint", "noerror")
     connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
