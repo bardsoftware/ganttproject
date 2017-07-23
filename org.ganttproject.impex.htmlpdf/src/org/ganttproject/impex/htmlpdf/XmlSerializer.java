@@ -255,6 +255,7 @@ public class XmlSerializer extends SaverBase {
     addAttribute("phone", i18n("colPhone"), attrs);
     addAttribute("rate", i18n("colStandardRate"), attrs);
     addAttribute("totalCost", i18n("colTotalCost"), attrs);
+    addAttribute("totalLoad", i18n("colTotalLoad"), attrs);
     startPrefixedElement("resources", attrs, handler);
     {
       List<HumanResource> resources = resourceManager.getResources();
@@ -277,6 +278,8 @@ public class XmlSerializer extends SaverBase {
         textElement("rate", attrs, p.getStandardPayRate().toPlainString(), handler);
         addAttribute("id", "6", attrs);
         textElement("totalCost", attrs, p.getTotalCost().toPlainString(), handler);
+        addAttribute("id", "7", attrs);
+        textElement("totalLoad", attrs, String.valueOf(p.getTotalLoad()), handler);
 
         List<CustomProperty> customFields = p.getCustomProperties();
         for (int j = 0; j < customFields.size(); j++) {

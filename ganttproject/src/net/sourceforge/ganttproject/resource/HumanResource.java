@@ -304,11 +304,37 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  public double getTotalLoad() {
+    double totalLoad = 0L;
+    for (ResourceAssignment assignment : myAssignments) {
+      double assignmentLoad = 0L;
+      Task t = assignment.getTask();
+      totalLoad = totalLoad + assignment.getLoad() * t.getDuration().getLength() / 100L;
+    }
+    return totalLoad;
+  }
+
   public BigDecimal getTotalCost() {
     BigDecimal cost = BigDecimal.ZERO;
     for (ResourceAssignment assignment : myAssignments) {
-      int taskDuration = assignment.getTask().getDuration().getLength();
-      BigDecimal assignmentCost = new BigDecimal(taskDuration * assignment.getLoad() / 100).multiply(getStandardPayRate());
+      BigDecimal assignmentCost = BigDecimal.ZERO;
+      Task t = assignment.getTask();
+      if (t.getCost().isCalculated()) { // if task cost is calculated get cost by ressource load
+         assignmentCost = getStandardPayRate()
+		          .multiply(BigDecimal.valueOf(assignment.getLoad()))
+			  .multiply(BigDecimal.valueOf(t.getDuration().getLength()))
+			  .divide(BigDecimal.valueOf(100));
+      } else { // if task has a fixed value get cost by contribution of ressource
+	 if (assignment.getLoad() > 0) {
+	    // calculate relative contribution of ressource
+	    BigDecimal contribution = BigDecimal.ZERO;
+	    for (ResourceAssignment taskRessource : t.getAssignments()) {
+	      contribution = contribution.add(BigDecimal.valueOf(taskRessource.getLoad()));
+	    }
+	    contribution = BigDecimal.valueOf(assignment.getLoad()).divide(contribution);
+	    assignmentCost = t.getCost().getValue().multiply(contribution);
+	 }
+      }
       cost = cost.add(assignmentCost);
     }
     return cost;
