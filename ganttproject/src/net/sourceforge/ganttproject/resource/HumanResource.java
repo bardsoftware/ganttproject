@@ -305,39 +305,21 @@ public class HumanResource implements CustomPropertyHolder {
   }
 
   public double getTotalLoad() {
-    double totalLoad = 0L;
+    double totalLoad = 0.0;
     for (ResourceAssignment assignment : myAssignments) {
-      double assignmentLoad = 0L;
-      Task t = assignment.getTask();
-      totalLoad = totalLoad + assignment.getLoad() * t.getDuration().getLength() / 100L;
+      totalLoad = totalLoad + assignment.getLoad() * assignment.getTask().getDuration().getLength() / 100.0;
     }
     return totalLoad;
   }
 
   public BigDecimal getTotalCost() {
-    BigDecimal cost = BigDecimal.ZERO;
-    for (ResourceAssignment assignment : myAssignments) {
-      BigDecimal assignmentCost = BigDecimal.ZERO;
-      Task t = assignment.getTask();
-      if (t.getCost().isCalculated()) { // if task cost is calculated get cost by ressource load
-         assignmentCost = getStandardPayRate()
-		          .multiply(BigDecimal.valueOf(assignment.getLoad()))
-			  .multiply(BigDecimal.valueOf(t.getDuration().getLength()))
-			  .divide(BigDecimal.valueOf(100));
-      } else { // if task has a fixed value get cost by contribution of ressource
-	 if (assignment.getLoad() > 0) {
-	    // calculate relative contribution of ressource
-	    BigDecimal contribution = BigDecimal.ZERO;
-	    for (ResourceAssignment taskRessource : t.getAssignments()) {
-	      contribution = contribution.add(BigDecimal.valueOf(taskRessource.getLoad()));
-	    }
-	    contribution = BigDecimal.valueOf(assignment.getLoad()).divide(contribution);
-	    assignmentCost = t.getCost().getValue().multiply(contribution);
-	 }
-      }
-      cost = cost.add(assignmentCost);
-    }
-    return cost;
+	BigDecimal cost = BigDecimal.ZERO;
+	for (ResourceAssignment assignment : myAssignments) {
+	  int taskDuration = assignment.getTask().getDuration().getLength();
+	  BigDecimal assignmentCost = new BigDecimal(taskDuration * assignment.getLoad() / 100).multiply(getStandardPayRate());
+	  cost = cost.add(assignmentCost);
+	}
+	return cost;
   }
 
   @Override
