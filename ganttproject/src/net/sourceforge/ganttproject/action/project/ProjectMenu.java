@@ -25,8 +25,6 @@ import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 
 import javax.swing.*;
 
-import javax.swing.*;
-
 /**
  * Collection of actions present in the project menu
  */
@@ -57,7 +55,7 @@ public class ProjectMenu extends JMenu {
 
     WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();
     StorageDialogAction cloudDialogAction = new StorageDialogAction(
-        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());
+        project.getProject(), project.getUIFacade(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());
     add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);

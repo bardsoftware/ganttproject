@@ -4,27 +4,27 @@ package biz.ganttproject.storage;
 import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Preconditions;
+import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Dialog;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Window;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Optional;
@@ -39,14 +39,25 @@ public class StorageDialogBuilder {
   private final Consumer<Document> myDocumentReceiver;
   private final Consumer<Document> myDocumentUpdater;
   private StatusBar myNotificationPane;
-  private
-  @Nullable
-  Dialog myDialog = null;
+  //private
+  //@Nullable
+  //Dialog myDialog = null;
   private EventHandler<ActionEvent> myOnNextClick;
   private Pane myOpenStorage;
   private Pane mySaveStorage;
+  private Scene myScene;
+  private UIFacade.Dialog myDialog;
 
+  public void setDialog(UIFacade.Dialog dlg) {
+    myDialog = dlg;
+    myScene.setOnKeyPressed(keyEvent -> {
+      if (keyEvent.getCode() == KeyCode.ESCAPE) {
+        dlg.hide();
+      }
+    });
+  }
   private DialogUi myDialogUi = new DialogUi() {
+
     @Override
     public void error(Throwable e) {
       setClass("alert-error");
@@ -82,13 +93,15 @@ public class StorageDialogBuilder {
 
     @Override
     public void close() {
-      myDialog.setResult(Boolean.TRUE);
-      myDialog.close();
+      myDialog.hide();
+      //myJDialog.setVisible(false);
+      //myDialog.setResult(Boolean.TRUE);
+      //myDialog.close();
     }
 
     @Override
     public void resize() {
-      myDialog.getDialogPane().getScene().getWindow().sizeToScene();
+      //myDialog.getDialogPane().getScene().getWindow().sizeToScene();
     }
 
     private void setClass(String className) {
@@ -124,16 +137,17 @@ public class StorageDialogBuilder {
     myProject = project;
   }
 
-  Dialog build() {
-    Dialog<Void> dialog = new Dialog<>();
-    myDialog = dialog;
-    Window window = dialog.getDialogPane().getScene().getWindow();
-    window.setOnCloseRequest(event -> window.hide());
-
-    dialog.getDialogPane().getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
-    dialog.getDialogPane().getStyleClass().add("body");
+  JFXPanel build() {
+    //Dialog<Void> dialog = new Dialog<>();
+    //myDialog = dialog;
+    //Window window = dialog.getDialogPane().getScene().getWindow();
+    //window.setOnCloseRequest(event -> window.hide());
 
     BorderPane borderPane = new BorderPane();
+    myScene = new Scene(borderPane);
+    myScene.getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
+    borderPane.getStyleClass().add("body");
+
     borderPane.getStyleClass().add("pane-storage");
     borderPane.setCenter(new Pane());
     ToggleButton btnSave = new ToggleButton("Save project as");
@@ -160,25 +174,39 @@ public class StorageDialogBuilder {
     myNotificationPane = new StatusBar();
     myNotificationPane.getStyleClass().add("notification");
     myNotificationPane.setText("");
+    JFXPanel jfxPanel = new JFXPanel();
+    jfxPanel.setScene(myScene);
+
+
+    return jfxPanel;
+    //myJDialog.getContentPane().add(jfxPanel);
+    //return myDialogUi;
     //borderPane.setBottom(myNotificationPane);
 
-    dialog.getDialogPane().setContent(borderPane);
-    dialog.initModality(Modality.WINDOW_MODAL);
-    dialog.setTitle("My Projects");
-    dialog.setResizable(true);
-    dialog.getDialogPane().getScene().getWindow().sizeToScene();
 
-    dialog.setOnShown(event -> {
-      dialog.getDialogPane().getScene().getWindow().sizeToScene();
-      if (myProject.isModified()) {
-        //showSaveStorageUi(borderPane);//
-        btnSave.fire();
-      } else {
-        showOpenStorageUi(borderPane);
-        btnOpen.fire();
-      }
-    });
-    return dialog;
+//    dialog.getDialogPane().setContent(borderPane);
+//    dialog.initModality(Modality.APPLICATION_MODAL);
+//
+//    dialog.setTitle("My Projects");
+//    dialog.setResizable(true);
+//    dialog.getDialogPane().getScene().getWindow().sizeToScene();
+//    dialog.getDialogPane().getScene().setOnKeyPressed(keyEvent -> {
+//      if (keyEvent.getCode() == KeyCode.ESCAPE) {
+//        window.hide();
+//      }
+//    });
+//
+//    dialog.setOnShown(event -> {
+//      dialog.getDialogPane().getScene().getWindow().sizeToScene();
+//      if (myProject.isModified()) {
+//        //showSaveStorageUi(borderPane);//
+//        btnSave.fire();
+//      } else {
+//        showOpenStorageUi(borderPane);
+//        btnOpen.fire();
+//      }
+//    });
+//    return dialog;
   }
 
   private void showOpenStorageUi(BorderPane container) {
