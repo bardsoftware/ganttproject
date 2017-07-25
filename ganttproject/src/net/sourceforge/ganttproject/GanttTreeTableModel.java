@@ -314,6 +314,9 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       case COST:
         res = t.getCost().getValue();
         break;
+      case LOAD:
+          res = t.getLoad().getValue();
+          break;
       case RESOURCES:
     	List<String> resources = Lists.transform(Arrays.asList(t.getAssignments()), new Function<ResourceAssignment, String>() {
 			@Override

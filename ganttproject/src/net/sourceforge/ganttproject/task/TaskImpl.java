@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
+import net.sourceforge.ganttproject.task.algorithm.LoadAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
@@ -129,6 +130,8 @@ public class TaskImpl implements Task {
   private List<TaskActivity> myMilestoneActivity;
 
   private final CostImpl myCost = new CostImpl();
+ 
+  private final LoadImpl myLoad = new LoadImpl();
 
   private boolean isUnplugged = false;
 
@@ -186,6 +189,7 @@ public class TaskImpl implements Task {
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
     myCost.setValue(copy.myCost);
+    myLoad.setValue(copy.myLoad);
 
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
@@ -1277,4 +1281,52 @@ public class TaskImpl implements Task {
   public Cost getCost() {
     return myCost;
   }
+  
+  private class LoadImpl implements Load {
+	    private Double myValue = new Double(0.0);
+//	    private boolean isCalculated = true;
+
+	    @Override
+	    public Double getValue() {
+	      return new LoadAlgorithmImpl().getCalculatedLoad(TaskImpl.this);
+//	      return (isCalculated) ? getCalculatedValue() : getManualValue();
+	    }
+
+/*	    @Override
+	    public Double getManualValue() {
+	      return myValue;
+	    }
+
+	    @Override
+	    public Double getCalculatedValue() {
+	      return new LoadAlgorithmImpl().getCalculatedLoad(TaskImpl.this);
+	    }
+	    @Override
+	    public void setValue(double value) {
+	      myValue = new Double(value);
+	    }
+*/
+	    @Override
+	    public void setValue(Load copy) {
+	      myValue = copy.getValue();
+	      //isCalculated = copy.isCalculated();
+	    }
+/*
+	    @Override
+	    public boolean isCalculated() {
+	      return isCalculated;
+	    }
+
+	    @Override
+	    public void setCalculated(boolean calculated) {
+	      isCalculated = calculated;
+	    }
+	    */
+	  }
+  
+  @Override
+  public Load getLoad() {
+	return myLoad;
+  }
+  
 }
