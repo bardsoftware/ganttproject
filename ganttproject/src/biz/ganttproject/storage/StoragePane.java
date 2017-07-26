@@ -112,18 +112,19 @@ public class StoragePane {
         myCurrentDocument,
         openDocument)
     );
-    myStorageUiList.add(new RecentProjects(
+    RecentProjects recentProjects = new RecentProjects(
         mode == StorageDialogBuilder.Mode.OPEN ? new StorageMode.Open() : new StorageMode.Save(),
         myDocumentManager,
         myCurrentDocument,
-        openDocument)
-    );
+        openDocument);
+    myStorageUiList.add(recentProjects);
     myStorageUiList.add(new GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi));
     for (WebDavServerDescriptor server : myCloudStorageOptions.getWebdavServers()) {
       WebdavStorage webdavStorageUi = new WebdavStorage(server, mode, openDocument, myDialogUi, myCloudStorageOptions);
       myStorageUiList.add(webdavStorageUi);
     }
 
+    final String initialStorageId = selectedId.orElse(recentProjects.getId());
     myStorageUiList.forEach(storageUi -> {
       myStorageUiMap.put(storageUi.getId(), Suppliers.memoize(() -> storageUi.createUi()));
 
@@ -155,11 +156,11 @@ public class StoragePane {
       btnPane.getStyleClass().add("btn-service");
       btnPane.setId(storageUi.getId());
       storageButtons.getChildren().addAll(btnPane);
-      if (selectedId.isPresent() && selectedId.get().equals(storageUi.getId())) {
+      if (initialStorageId.equals(storageUi.getId())) {
         setSelected(btnPane);
       }
     });
-    selectedId.ifPresent(id -> onStorageChange(storageUiPane, id));
+    onStorageChange(storageUiPane, initialStorageId);
   }
 
   private Unit setSelected(Parent pane) {

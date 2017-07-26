@@ -41,13 +41,10 @@ public class StorageDialogAction extends GPAction {
 
       StorageDialogBuilder dialogBuilder = new StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions);
       JFXPanel contentPane = dialogBuilder.build();
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          UIFacade.Dialog dlg = myUiFacade.createDialog(contentPane, new Action[0], "Foo");
-          dialogBuilder.setDialog(dlg);
-          dlg.show();
-        }
+      //dialogBuilder
+      SwingUtilities.invokeLater(() -> {
+        UIFacade.Dialog dlg = myUiFacade.createDialog(contentPane, new Action[0], "Foo");
+        dialogBuilder.setDialog(dlg);
       });
       //dialog.show();
     }));

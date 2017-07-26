@@ -18,30 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -52,6 +28,16 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade.Centering;
 import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import net.sourceforge.ganttproject.gui.UIUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Builds standard dialog windows in GanttProject
@@ -144,9 +130,11 @@ class DialogBuilder {
     @Override
     public void show() {
       myOriginalAnimationView = myNotificationManager.setAnimationView(new NotificationViewImpl(myDlg, myButton));
+      myDlg.pack();
       center(Centering.WINDOW);
       myDlg.setVisible(true);
     }
+
 
     @Override
     public void layout() {
@@ -158,6 +146,9 @@ class DialogBuilder {
       DialogAligner.center(myDlg, myMainFrame, centering);
     }
 
+//    public void resize() {
+//      myDlg.set
+//    }
     void setNotificationOwner(JButton button) {
       myButton = button;
     }

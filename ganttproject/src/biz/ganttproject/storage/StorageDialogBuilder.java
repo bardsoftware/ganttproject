@@ -4,6 +4,7 @@ package biz.ganttproject.storage;
 import biz.ganttproject.FXUtil;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
 import com.google.common.base.Preconditions;
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -47,6 +48,7 @@ public class StorageDialogBuilder {
   private Pane mySaveStorage;
   private Scene myScene;
   private UIFacade.Dialog myDialog;
+  private JFXPanel myJfxPanel;
 
   public void setDialog(UIFacade.Dialog dlg) {
     myDialog = dlg;
@@ -55,7 +57,10 @@ public class StorageDialogBuilder {
         dlg.hide();
       }
     });
+    dlg.show();
+    Platform.runLater(() -> {myJfxPanel.setScene(null); myJfxPanel.setScene(myScene);});
   }
+
   private DialogUi myDialogUi = new DialogUi() {
 
     @Override
@@ -101,7 +106,12 @@ public class StorageDialogBuilder {
 
     @Override
     public void resize() {
-      //myDialog.getDialogPane().getScene().getWindow().sizeToScene();
+      //
+      if (myJfxPanel != null) {
+        myJfxPanel.setScene(null);
+        myJfxPanel.setScene(myScene);
+        SwingUtilities.invokeLater(myDialog::layout);
+      }
     }
 
     private void setClass(String className) {
@@ -138,11 +148,6 @@ public class StorageDialogBuilder {
   }
 
   JFXPanel build() {
-    //Dialog<Void> dialog = new Dialog<>();
-    //myDialog = dialog;
-    //Window window = dialog.getDialogPane().getScene().getWindow();
-    //window.setOnCloseRequest(event -> window.hide());
-
     BorderPane borderPane = new BorderPane();
     myScene = new Scene(borderPane);
     myScene.getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
@@ -177,7 +182,16 @@ public class StorageDialogBuilder {
     JFXPanel jfxPanel = new JFXPanel();
     jfxPanel.setScene(myScene);
 
+    if (myProject.isModified()) {
+      //showSaveStorageUi(borderPane);//
+      btnSave.fire();
+    } else {
+      showOpenStorageUi(borderPane);
+      btnOpen.fire();
+    }
 
+
+    myJfxPanel = jfxPanel;
     return jfxPanel;
     //myJDialog.getContentPane().add(jfxPanel);
     //return myDialogUi;
