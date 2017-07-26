@@ -287,6 +287,9 @@ public class GanttCSVExport {
             case TOTAL_COST:
               writer.print(p.getTotalCost().toPlainString());
               break;
+            case TOTAL_LOAD:
+              writer.print(String.valueOf(p.getTotalLoad()));
+              break;
           }
         }
       }
