@@ -22,14 +22,14 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory
 import javafx.event.ActionEvent
 import javafx.event.Event
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.control.Label
+import javafx.scene.layout.*
+import net.sourceforge.ganttproject.language.GanttLanguage
 
 class ListItemBuilder(val contentNode: Node) {
   private val result: HBox = HBox()
@@ -82,4 +82,42 @@ fun test(): Pane {
       onClick = { _ -> println("settings clicked") })
 
   return builder.build()
+}
+
+class VBoxBuilder(vararg classes: String) {
+  private val i18n = GanttLanguage.getInstance()
+  internal val vbox = VBox()
+
+  init {
+    vbox.styleClass.addAll(classes)
+  }
+
+  fun addTitle(i18nKey: String, vararg args: String) {
+    val titleBox = HBox()
+    titleBox.styleClass.add("title")
+    val title = Label(i18n.formatText(i18nKey, *args))
+    titleBox.children.add(title)
+    add(titleBox)
+  }
+
+  fun add(node: Node) {
+    add(node, alignment = null, growth = null)
+  }
+
+  fun add(node: Node, alignment: Pos?, growth: Priority?): Node {
+    val child =
+        if (alignment == null) {
+          node
+        } else {
+          val wrapper = HBox()
+          wrapper.alignment = alignment
+          wrapper.children.add(node)
+          wrapper.maxWidth = Double.MAX_VALUE
+          wrapper
+        }
+    vbox.children.add(child)
+    growth?.let { VBox.setVgrow(child, it) }
+    return child
+  }
+
 }

@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
@@ -12,14 +13,14 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.scene.Node
+import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.webdav.HttpDocument
@@ -140,19 +141,14 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
   }
 
   fun createStorageUi(): Pane {
-    val rootPane = VBox()
-    rootPane.styleClass.add("pane-service-contents")
-    rootPane.prefWidth = 400.0
+    val rootPane = VBoxBuilder("pane-service-contents")
 
 
     val buttonBar = HBox()
     buttonBar.styleClass.add("webdav-button-pane")
     val filename = TextField()
 
-    val titleBox = HBox()
-    titleBox.styleClass.add("title")
-    val title = Label(i18n.formatText(String.format("webdav.ui.title.%s", myMode.name.toLowerCase()), myServer.name))
-    titleBox.children.add(title)
+    rootPane.addTitle(String.format("webdav.ui.title.%s", myMode.name.toLowerCase()), myServer.name)
 
     val isLockingSupported = SimpleBooleanProperty()
     isLockingSupported.addListener({ _, _, newValue ->
@@ -208,10 +204,17 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
 
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-    val btnBox = setupSaveButton(btnSave, myOpenDocument, myState, this::createResource)
+    setupSaveButton(btnSave, myOpenDocument, myState, this::createResource)
 
-    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filename, errorLabel, listView.listView, btnBox)
-    return rootPane
+    rootPane.apply {
+      vbox.prefWidth = 400.0
+      add(breadcrumbView.breadcrumbs)
+      add(filename)
+      add(errorLabel)
+      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
+      add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
+    }
+    return rootPane.vbox
   }
 
   private fun deleteResource(folderItem: WebDavResourceAsFolderItem) {
@@ -272,14 +275,9 @@ fun createDocument(server: WebDavServerDescriptor, resource: WebDavResource): Do
 
 fun setupSaveButton(btnSave: Button,
                     receiver: Consumer<Document>,
-                    state: State, resourceFactory: (State) -> WebDavResource): Node {
+                    state: State, resourceFactory: (State) -> WebDavResource){
   btnSave.addEventHandler(ActionEvent.ACTION, {
     receiver.accept(createDocument(state.server, resourceFactory(state)))
   })
   btnSave.styleClass.add("doclist-save")
-  val btnSaveBox = HBox()
-  btnSaveBox.styleClass.add("doclist-save-box")
-  btnSaveBox.maxWidth = Double.MAX_VALUE
-  btnSaveBox.children.addAll(btnSave)
-  return btnSaveBox
 }

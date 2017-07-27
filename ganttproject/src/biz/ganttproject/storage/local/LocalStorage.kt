@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -28,14 +29,13 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
-import javafx.scene.Node
+import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Control
 import javafx.scene.control.Label
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
+import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
@@ -98,14 +98,7 @@ class LocalStorage(
     val filenameControl = CustomTextField()
     val state = State(currentDocument, myMode)
 
-    val rootPane = VBox()
-    rootPane.styleClass.addAll("pane-service-contents", "local-storage")
-    rootPane.prefWidth = 400.0
-
-    val titleBox = HBox()
-    titleBox.styleClass.add("title")
-    val title = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.title")))
-    titleBox.children.add(title)
+    val rootPane = VBoxBuilder("pane-service-contents", "local-storage")
 
     filenameControl.text = when (myMode) {
       is StorageMode.Open -> ""
@@ -211,14 +204,20 @@ class LocalStorage(
     state.validationSupport = validationHelper.validationSupport
     setupErrorLabel(errorLabel, validationHelper)
 
-    rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
-    rootPane.stylesheets.add("biz/ganttproject/storage/local/LocalStorage.css")
-    rootPane.children.addAll(titleBox, breadcrumbView.breadcrumbs, filenameControl, errorLabel,
-        listView.listView,
-        listViewHint)
+    rootPane.apply {
+      vbox.prefWidth = 400.0
+      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/local/LocalStorage.css")
+      addTitle(myUtil.i18nKey("storageService.local.%s.title"))
+      add(breadcrumbView.breadcrumbs)
+      add(filenameControl)
+      add(errorLabel)
+      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
+      add(listViewHint)
+    }
 
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver)
+    setupSaveButton(btnSave, state, myDocumentReceiver)
+
     validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
       if (validationResult.errors.size + validationResult.warnings.size == 0) {
         state.setCurrentFile(state.resolveFile(filenameControl.text))
@@ -240,10 +239,10 @@ class LocalStorage(
       state.currentFile.addListener({_, _, _ -> updateConfirmation()})
 
       confirmation.selectedProperty().addListener({ _, _, newValue -> state.confirmationReceived.set(newValue) })
-      rootPane.children.add(confirmation)
+      rootPane.add(confirmation)
     }
-    rootPane.children.add(btnSaveBox)
-    return rootPane
+    rootPane.add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
+    return rootPane.vbox
   }
 
   fun deleteResource() {
@@ -285,12 +284,18 @@ class ValidationHelper(
 class State(val currentDocument: Document,
             val mode: StorageMode) {
   private val currentFilePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
+
   var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false)
+
   val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
       absolutePrefix(currentFilePath, currentFilePath.nameCount - 1).toFile())
+
   val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(absolutePrefix(currentFilePath).toFile())
+
   val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
+
   val submitOk: SimpleBooleanProperty = SimpleBooleanProperty(false)
+
   var validationSupport: ValidationSupport? = null
     set(value) {
       if (value != null) {
@@ -301,6 +306,7 @@ class State(val currentDocument: Document,
         confirmationReceived.addListener({_, _, _ -> validate()})
       }
     }
+
   var validationResult: ReadOnlyObjectProperty<ValidationResult>? = null
 
   private fun validate() {
@@ -330,6 +336,7 @@ class State(val currentDocument: Document,
   fun setCurrentFile(file: File?) {
     if (mode is StorageMode.Save
         && file != null
+        && file.exists()
         && currentDocument.uri != FileDocument(file).uri
         && (file != currentFile.get() || !confirmationReceived.get())) {
         confirmationReceived.set(false)
@@ -349,15 +356,10 @@ class State(val currentDocument: Document,
 fun setupSaveButton(
     btnSave: Button,
     state: State,
-    receiver: Consumer<Document>): Node {
+    receiver: Consumer<Document>) {
   btnSave.addEventHandler(ActionEvent.ACTION, {receiver.accept(FileDocument(state.currentFile.get()))})
   btnSave.styleClass.add("doclist-save")
-  val btnSaveBox = HBox()
-  btnSaveBox.styleClass.add("doclist-save-box")
-  btnSaveBox.maxWidth = Double.MAX_VALUE
-  btnSaveBox.children.addAll(btnSave)
   state.submitOk.addListener({_,_,newValue -> btnSave.disableProperty().set(!newValue)})
-  return btnSaveBox
 }
 
 private fun formatError(validation: ValidationResult): String {

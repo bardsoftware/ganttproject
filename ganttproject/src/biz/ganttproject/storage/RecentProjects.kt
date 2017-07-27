@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.local.State
 import biz.ganttproject.storage.local.ValidationHelper
 import biz.ganttproject.storage.local.setupErrorLabel
@@ -28,6 +29,7 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.util.Callback
@@ -65,11 +67,7 @@ class RecentProjects(
     val filePath = Paths.get(myCurrentDocument.filePath)
     val state = State(myCurrentDocument, myMode)
 
-    val rootPane = VBox()
-    rootPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
-    rootPane.stylesheets.add("biz/ganttproject/storage/RecentProjects.css")
-    rootPane.styleClass.add("pane-service-contents")
-    rootPane.prefWidth = 400.0
+    val rootPane = VBoxBuilder("pane-service-contents")
 
     val listView = ListView<Path>()
     listView.cellFactory = Callback  {_ -> object: ListCell<Path>() {
@@ -113,11 +111,16 @@ class RecentProjects(
     val validationHelper = ValidationHelper(fakeTextField,
         Supplier{-> listView.items.isEmpty()},
         state)
-    val btnSaveBox = setupSaveButton(btnSave, state, myDocumentReceiver)
+    setupSaveButton(btnSave, state, myDocumentReceiver)
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     setupErrorLabel(errorLabel, validationHelper)
-    rootPane.children.addAll(listView, errorLabel, btnSaveBox)
-    return rootPane
+    rootPane.apply {
+      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/RecentProjects.css")
+      vbox.prefWidth = 400.0
+      add(listView, alignment = null, growth = Priority.ALWAYS)
+      add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
+    }
+    return rootPane.vbox
   }
 
   override fun getName(): String {
