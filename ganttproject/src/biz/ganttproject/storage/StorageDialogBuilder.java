@@ -138,11 +138,7 @@ public class StorageDialogBuilder {
       } else {
         project.getDocument().setMirror(document);
       }
-      try {
-        project.getDocument().write();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      projectUi.saveProject(project);
     });
     myProject = project;
   }

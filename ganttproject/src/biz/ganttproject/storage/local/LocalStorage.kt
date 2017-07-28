@@ -153,7 +153,9 @@ class LocalStorage(
       }
     }
     fun selectItem(withEnter: Boolean, withControl: Boolean) {
-      listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
+      listView.selectedResource.ifPresent {
+        item -> selectItem(item, withEnter, withControl)
+      }
     }
     fun onFilenameEnter() {
       var path = Paths.get(filenameControl.text)

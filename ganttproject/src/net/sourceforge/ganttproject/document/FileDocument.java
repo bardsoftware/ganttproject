@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,13 +30,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 /**
  * This class implements the interface Document for file access on local file
  * systems.
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public class FileDocument extends AbstractDocument {
@@ -66,7 +66,7 @@ public class FileDocument extends AbstractDocument {
     if (!file.canWrite()) {
       return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal(), "", null);
     }
-    if (file.lastModified() > getLastAccessTimestamp()) {
+    if (getLastAccessTimestamp() != 0 && file.lastModified() > getLastAccessTimestamp()) {
       return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.LOST_UPDATE.ordinal(), "", null);
     }
     return Status.OK_STATUS;

@@ -266,7 +266,8 @@ fun <T: FolderItem> connect(
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
     onFilenameEnter: () -> Unit) {
   listView.listView.onMouseClicked = EventHandler{ evt ->
-    selectItem(evt.clickCount == 2, false)
+    val dblClick = evt.clickCount == 2
+    selectItem(dblClick, dblClick)
   }
   listView.listView.selectionModel.selectedIndices.addListener(
       ListChangeListener { selectItem(false, false) }
