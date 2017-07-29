@@ -182,7 +182,7 @@ public class StorageDialogBuilder {
       //showSaveStorageUi(borderPane);//
       btnSave.fire();
     } else {
-      showOpenStorageUi(borderPane);
+      //showOpenStorageUi(borderPane);
       btnOpen.fire();
     }
 

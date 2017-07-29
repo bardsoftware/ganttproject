@@ -13,7 +13,6 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
@@ -27,6 +26,7 @@ import net.sourceforge.ganttproject.document.webdav.HttpDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.controlsfx.control.StatusBar
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -144,11 +144,12 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     val rootPane = VBoxBuilder("pane-service-contents")
 
 
-    val buttonBar = HBox()
-    buttonBar.styleClass.add("webdav-button-pane")
+    val busyIndicator = StatusBar().apply {
+      styleClass.add("notification")
+      text = ""
+    }
+    HBox.setHgrow(busyIndicator, Priority.ALWAYS)
     val filename = TextField()
-
-    rootPane.addTitle(String.format("webdav.ui.title.%s", myMode.name.toLowerCase()), myServer.name)
 
     val isLockingSupported = SimpleBooleanProperty()
     isLockingSupported.addListener({ _, _, newValue ->
@@ -168,7 +169,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         listView.setResources(wrappers)
       }
       loadFolder(selectedPath,
-          Consumer<Boolean> { myDialogUi.showBusyIndicator(it) },
+          Consumer<Boolean> { busyIndicator.progress = if (it) -1.0 else 0.0 },
           consumer, myDialogUi)
     }
     val breadcrumbView = BreadcrumbView(Paths.get("/", myServer.name), onSelectCrumb)
@@ -206,13 +207,18 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
     setupSaveButton(btnSave, myOpenDocument, myState, this::createResource)
 
+    val saveBox = HBox().apply {
+      children.addAll(busyIndicator, btnSave)
+      styleClass.add("doclist-save-box")
+    }
     rootPane.apply {
       vbox.prefWidth = 400.0
+      addTitle(String.format("webdav.ui.title.%s", myMode.name.toLowerCase()), myServer.name)
       add(breadcrumbView.breadcrumbs)
       add(filename)
       add(errorLabel)
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
-      add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
+      add(saveBox)
     }
     return rootPane.vbox
   }
