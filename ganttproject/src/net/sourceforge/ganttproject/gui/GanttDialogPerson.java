@@ -54,6 +54,7 @@ public class GanttDialogPerson {
   private final StringOption myMailField = new DefaultStringOption("colMail");
   private final MoneyOption myStandardRateField = new DefaultMoneyOption("colStandardRate");
   private final MoneyOption myTotalCostField = new DefaultMoneyOption("colTotalCost");
+  private final DoubleOption myTotalLoadField = new DefaultDoubleOption("colTotalLoad");
   private final EnumerationOption myRoleField;
   private final GPOptionGroup myGroup;
   private GPOptionGroup myRateGroup;
@@ -77,7 +78,8 @@ public class GanttDialogPerson {
     myGroup.setTitled(false);
 
     ((GPAbstractOption)myTotalCostField).setWritable(false);
-    myRateGroup = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRateField, myTotalCostField});
+    ((GPAbstractOption)myTotalLoadField).setWritable(false);
+    myRateGroup = new GPOptionGroup("resourceRate", new GPOption[] {myStandardRateField, myTotalCostField, myTotalLoadField});
   }
 
   public boolean result() {
@@ -116,6 +118,7 @@ public class GanttDialogPerson {
     }
     myStandardRateField.setValue(person.getStandardPayRate());
     myTotalCostField.setValue(person.getTotalCost());
+    myTotalLoadField.setValue(person.getTotalLoad());
   }
 
   private Component getComponent() {
