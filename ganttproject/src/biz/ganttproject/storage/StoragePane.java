@@ -49,7 +49,6 @@ public class StoragePane {
   private Node myActiveStorageLabel;
   private Map<String, Supplier<Pane>> myStorageUiMap = Maps.newHashMap();
   private List<StorageDialogBuilder.Ui> myStorageUiList = Lists.newArrayList();
-  private Node myNotificationPane;
   private BorderPane storageUiPane = new BorderPane();
   StoragePane(GPCloudStorageOptions options,
               DocumentManager documentManager,
@@ -76,12 +75,13 @@ public class StoragePane {
     addStorage.addEventHandler(ActionEvent.ACTION, event -> onNewWebdavServer(storageUiPane));
     storagePane.setBottom(new HBox(addStorage));
 
+    storageUiPane.setPrefSize(400, 400);
+
+    borderPane.setCenter(storageUiPane);
     reloadStorageLabels(storageButtons, mode, Optional.empty());
     myCloudStorageOptions.getList().addListener((ListChangeListener<WebDavServerDescriptor>) c -> {
       reloadStorageLabels(storageButtons, mode, myActiveStorageLabel == null ? Optional.empty() : Optional.of(myActiveStorageLabel.getId()));
     });
-    storageUiPane.setPrefSize(400, 400);
-    borderPane.setCenter(storageUiPane);
 
     if (myStorageUiList.size() > 1) {
       borderPane.setLeft(storagePane);
@@ -176,18 +176,11 @@ public class StoragePane {
     Pane ui = myStorageUiMap.get(storageId).get();
     FXUtil.transitionCenterPane(borderPane, ui, myDialogUi::resize);
     return Unit.INSTANCE;
-    //ui.getStyleClass().add("display-none");
-    //borderPane.setCenter(ui);
   }
 
   private void onNewWebdavServer(BorderPane borderPane) {
     WebDavServerDescriptor newServer = new WebDavServerDescriptor();
     WebdavServerSetupPane setupPane = new WebdavServerSetupPane(newServer, myCloudStorageOptions::addValue, false);
     FXUtil.transitionCenterPane(borderPane, setupPane.createUi(), myDialogUi::resize);
-  }
-
-  public void setNotificationPane(Node notificationPane) {
-    myNotificationPane = notificationPane;
-    storageUiPane.setBottom(notificationPane);
   }
 }

@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
@@ -22,8 +22,8 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.SegmentedButton;
-import org.controlsfx.control.StatusBar;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -39,12 +39,8 @@ public class StorageDialogBuilder {
   private final GPCloudStorageOptions myCloudStorageOptions;
   private final Consumer<Document> myDocumentReceiver;
   private final Consumer<Document> myDocumentUpdater;
-  private StatusBar myNotificationPane;
-  //private
-  //@Nullable
-  //Dialog myDialog = null;
-  private EventHandler<ActionEvent> myOnNextClick;
-  private Pane myOpenStorage;
+  private NotificationPane myNotificationPane;
+  private Node myOpenStorage;
   private Pane mySaveStorage;
   private Scene myScene;
   private UIFacade.Dialog myDialog;
@@ -65,43 +61,25 @@ public class StorageDialogBuilder {
 
     @Override
     public void error(Throwable e) {
-      setClass("alert-error");
-      //myNotificationPane.setContent(createErrorPane(e.getMessage()));
       myNotificationPane.setText(e.getMessage());
-      //myNotificationPane.setExpanded(true);
+      myNotificationPane.show();
     }
 
     @Override
     public void error(String message) {
-      setClass("alert-error");
       myNotificationPane.setText(message);
-      //myNotificationPane.setContent(createErrorPane(message));
-      //myNotificationPane.setExpanded(true);
+      myNotificationPane.show();
     }
 
     @Override
     public void message(String message) {
-      setClass("alert-info");
       myNotificationPane.setText(message);
-//      myNotificationPane.setContent(createErrorPane(message));
-//      myNotificationPane.setExpanded(true);
-    }
-
-    @Override
-    public void showBusyIndicator(boolean show) {
-      if (show) {
-        myNotificationPane.setProgress(-1);
-      } else {
-        myNotificationPane.setProgress(0);
-      }
+      myNotificationPane.show();
     }
 
     @Override
     public void close() {
       myDialog.hide();
-      //myJDialog.setVisible(false);
-      //myDialog.setResult(Boolean.TRUE);
-      //myDialog.close();
     }
 
     @Override
@@ -112,11 +90,6 @@ public class StorageDialogBuilder {
         myJfxPanel.setScene(myScene);
         SwingUtilities.invokeLater(myDialog::layout);
       }
-    }
-
-    private void setClass(String className) {
-      myNotificationPane.getStyleClass().clear();
-      myNotificationPane.getStyleClass().add(className);
     }
   };
 
@@ -145,8 +118,6 @@ public class StorageDialogBuilder {
 
   JFXPanel build() {
     BorderPane borderPane = new BorderPane();
-    myScene = new Scene(borderPane);
-    myScene.getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
     borderPane.getStyleClass().add("body");
 
     borderPane.getStyleClass().add("pane-storage");
@@ -172,56 +143,29 @@ public class StorageDialogBuilder {
       titleBox.getChildren().addAll(projectName, buttonWrapper);
       borderPane.setTop(titleBox);
     }
-    myNotificationPane = new StatusBar();
-    myNotificationPane.getStyleClass().add("notification");
-    myNotificationPane.setText("");
+
+    myScene = new Scene(borderPane);
+    myScene.getStylesheets().add("biz/ganttproject/storage/StorageDialog.css");
     JFXPanel jfxPanel = new JFXPanel();
     jfxPanel.setScene(myScene);
 
     if (myProject.isModified()) {
-      //showSaveStorageUi(borderPane);//
       btnSave.fire();
     } else {
-      //showOpenStorageUi(borderPane);
       btnOpen.fire();
     }
 
 
     myJfxPanel = jfxPanel;
     return jfxPanel;
-    //myJDialog.getContentPane().add(jfxPanel);
-    //return myDialogUi;
-    //borderPane.setBottom(myNotificationPane);
-
-
-//    dialog.getDialogPane().setContent(borderPane);
-//    dialog.initModality(Modality.APPLICATION_MODAL);
-//
-//    dialog.setTitle("My Projects");
-//    dialog.setResizable(true);
-//    dialog.getDialogPane().getScene().getWindow().sizeToScene();
-//    dialog.getDialogPane().getScene().setOnKeyPressed(keyEvent -> {
-//      if (keyEvent.getCode() == KeyCode.ESCAPE) {
-//        window.hide();
-//      }
-//    });
-//
-//    dialog.setOnShown(event -> {
-//      dialog.getDialogPane().getScene().getWindow().sizeToScene();
-//      if (myProject.isModified()) {
-//        //showSaveStorageUi(borderPane);//
-//        btnSave.fire();
-//      } else {
-//        showOpenStorageUi(borderPane);
-//        btnOpen.fire();
-//      }
-//    });
-//    return dialog;
   }
 
   private void showOpenStorageUi(BorderPane container) {
     if (myOpenStorage == null) {
-      myOpenStorage = buildStoragePane(Mode.OPEN);
+      Pane storagePane = buildStoragePane(Mode.OPEN);
+      myNotificationPane = new NotificationPane(storagePane);
+      myNotificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+      myOpenStorage = myNotificationPane;
     }
     FXUtil.transitionCenterPane(container, myOpenStorage, myDialogUi::resize);
   }
@@ -235,7 +179,6 @@ public class StorageDialogBuilder {
 
   private Pane buildStoragePane(Mode mode) {
     StoragePane storagePane = new StoragePane(myCloudStorageOptions, myProject.getDocumentManager(), new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
-    storagePane.setNotificationPane(myNotificationPane);
     return storagePane.buildStoragePane(mode);
   }
 
@@ -253,8 +196,6 @@ public class StorageDialogBuilder {
     void error(String s);
 
     void message(String message);
-
-    void showBusyIndicator(boolean shown);
   }
 
   public interface Ui {

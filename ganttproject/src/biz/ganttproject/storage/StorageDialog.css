@@ -51,7 +51,7 @@
 }
 
 .btn-service.active {
-    -fx-background-color: derive(orange, 20%);
+    -fx-background-color: #ffab00;
 }
 
 .btn-signup {
@@ -82,8 +82,8 @@
 }
 
 .doclist-save {
-    -fx-background-color: teal;
-    -fx-text-fill: whitesmoke;
+    -fx-background-color: #ffab00;
+    -fx-text-fill: black;
     -fx-font-weight: bold;
     -fx-font-size: 120%;
     -fx-padding: 1ex 2em 1ex 2em;

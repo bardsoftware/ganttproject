@@ -11,10 +11,9 @@ import javafx.collections.ListChangeListener;
 import javafx.concurrent.Worker;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -194,7 +193,7 @@ public class FXUtil {
     }
   }
 
-  public static void transitionCenterPane(BorderPane borderPane, Pane newCenter, Runnable resizer) {
+  public static void transitionCenterPane(BorderPane borderPane, javafx.scene.Node newCenter, Runnable resizer) {
     Runnable replacePane = () -> {
       borderPane.setCenter(newCenter);
       resizer.run();

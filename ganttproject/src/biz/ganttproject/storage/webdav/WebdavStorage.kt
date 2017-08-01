@@ -257,19 +257,21 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     }
     myLoadService.setPath(path.toString())
     myState.folder = myLoadService.createRootResource()
-    myLoadService.onSucceeded = EventHandler{ _ ->
-      setResult.accept(myLoadService.value)
-      showMaskPane.accept(false)
+    myLoadService.apply {
+      onSucceeded = EventHandler{ _ ->
+        setResult.accept(value)
+        showMaskPane.accept(false)
+      }
+      onFailed = EventHandler{ _ ->
+        showMaskPane.accept(false)
+        dialogUi.error("WebdavService failed!")
+      }
+      onCancelled = EventHandler{ _ ->
+        showMaskPane.accept(false)
+        GPLogger.log("WebdavService cancelled!")
+      }
+      restart()
     }
-    myLoadService.onFailed = EventHandler{ _ ->
-      showMaskPane.accept(false)
-      dialogUi.error("WebdavService failed!")
-    }
-    myLoadService.onCancelled = EventHandler{ _ ->
-      showMaskPane.accept(false)
-      GPLogger.log("WebdavService cancelled!")
-    }
-    myLoadService.restart()
     showMaskPane.accept(true)
   }
 }

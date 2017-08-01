@@ -150,7 +150,7 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
       }
     };
     btnConnect.addEventHandler(ActionEvent.ACTION, event -> {
-      myDialogUi.showBusyIndicator(true);
+      //myDialogUi.showBusyIndicator(true);
       pinApplyService.setOnSucceeded(e -> {
         Worker<OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode>> worker = e.getSource();
         OperationStatus<CloudSettingsDto, OperationStatus.DefaultCode> result = worker.getValue();
@@ -164,7 +164,7 @@ class GPCloudLoginPane implements GPCloudStorage.PageUi {
         } else {
           myDialogUi.error(result.getMessage());
         }
-        myDialogUi.showBusyIndicator(false);
+        //myDialogUi.showBusyIndicator(false);
       });
       pinApplyService.start();
 //      CloudSettingsDto dto = new CloudSettingsDto("http://webdav.ganttproject.biz", "dbarashev@bardsoftware.com", "foobar");
