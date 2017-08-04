@@ -186,15 +186,9 @@ public interface Task extends MutableTask {
   boolean isSupertask();
 
   List<Document> getAttachments();
-  
+
   public static interface Load {
-	    Double getValue();
-	    //Double getManualValue();
-	    //Double getCalculatedValue();
-	    void setValue(Load copy);
-	    //void setValue(double value);
-	    //boolean isCalculated();
-	    //void setCalculated(boolean calculated);
+    Double getValue();
   }
 
   Load getLoad();

@@ -205,6 +205,9 @@ public class GanttCSVExport {
             case COST:
               writer.print(task.getCost().getValue().toPlainString());
               break;
+            case LOAD:
+              writer.print(task.getLoad().getValue().toString());
+              break;
             case INFO:
             case PRIORITY:
             case TYPE:

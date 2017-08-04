@@ -77,7 +77,7 @@ public class LoadAlgorithmTest extends TaskTestCase {
     Task t = createTask();
     t.setDuration(t.getManager().createLength(2));
     assertEquals(0.0, t.getLoad().getValue());
-    
+
     t.getAssignmentCollection().addAssignment(joe).setLoad(100f);
     t.getAssignmentCollection().addAssignment(jane).setLoad(50f);
     assertEquals(3.0, t.getLoad().getValue());

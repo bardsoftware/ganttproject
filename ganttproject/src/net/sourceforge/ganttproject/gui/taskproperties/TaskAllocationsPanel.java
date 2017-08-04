@@ -58,9 +58,8 @@ public class TaskAllocationsPanel {
   };
   private final GPOptionGroup myCostGroup = new GPOptionGroup("task.cost", myCostIsCalculated, myCostValue);
 
-  private final DefaultDoubleOption myLoadValue = new DefaultDoubleOption("taskProperties.load.value");
-  private final GPOptionGroup myLoadGroup = new GPOptionGroup("task.load", myLoadValue);
-	  
+  private final GPOptionGroup myLoadGroup = new GPOptionGroup("task.load");
+
   private JTable myTable;
 
   public TaskAllocationsPanel(Task task, HumanResourceManager hrManager, RoleManager roleMgr) {
@@ -127,18 +126,18 @@ public class TaskAllocationsPanel {
   }
 
   private JComponent createLoadPanel() {
-    myLoadValue.setWritable(false);
+    OptionsPageBuilder builder = new OptionsPageBuilder();
 
-	    OptionsPageBuilder builder = new OptionsPageBuilder();
+    JPanel optionsPanel = new JPanel();
+    optionsPanel.add(new JLabel(GanttLanguage.getInstance().getText("option.taskProperties.load.value.label")));
+    optionsPanel.add(new JLabel(myTask.getLoad().getValue().toString()));
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(optionsPanel, 1);
 
-	    JPanel optionsPanel = new JPanel();
-	    optionsPanel.add(new JLabel(myTask.getLoad().getValue().toString()));
+    UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myLoadGroup));
 
-	    UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myLoadGroup));
-
-	    JPanel result = new JPanel(new BorderLayout());
-	    result.add(optionsPanel, BorderLayout.NORTH);
-	    return result;
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(optionsPanel, BorderLayout.NORTH);
+    return result;
   }
 
   public void commit() {
