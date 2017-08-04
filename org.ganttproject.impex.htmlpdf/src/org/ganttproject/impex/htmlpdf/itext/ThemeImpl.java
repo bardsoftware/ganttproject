@@ -425,7 +425,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         cell = new PdfPCell(p);
         if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())
-            || ResourceDefaultColumn.TOTAL_COST.getStub().getID().equals(column.getID())) {
+            || ResourceDefaultColumn.TOTAL_COST.getStub().getID().equals(column.getID())
+            || ResourceDefaultColumn.TOTAL_LOAD.getStub().getID().equals(column.getID())) {
           cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
         }
         cell.setBorderWidth(0);
