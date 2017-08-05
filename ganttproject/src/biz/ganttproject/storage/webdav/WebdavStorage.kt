@@ -83,14 +83,9 @@ class WebdavStorage(
     return myServer.rootUrl
   }
 
-  override fun createUi(): Pane {
-    if (Strings.isNullOrEmpty(myServer.password)) {
-      myBorderPane.center = createPasswordUi()
-    } else {
-      myBorderPane.center = createStorageUi()
-    }
-    return myBorderPane
-  }
+  private fun doCreateUi(): Pane = if (Strings.isNullOrEmpty(myServer.password)) createPasswordUi() else createStorageUi()
+
+  override fun createUi(): Pane = myBorderPane.apply { center = doCreateUi() }
 
   private fun createStorageUi(): Pane {
     val serverUi = WebdavServerUi(myServer,
@@ -108,7 +103,7 @@ class WebdavStorage(
 
   private fun onPasswordEntered(server: WebDavServerDescriptor) {
     myServer = server
-    FXUtil.transitionCenterPane(myBorderPane, createUi()) { myDialogUi.resize() }
+    FXUtil.transitionCenterPane(myBorderPane, doCreateUi()) { myDialogUi.resize() }
   }
 
   override fun createSettingsUi(): Optional<Pane> {
