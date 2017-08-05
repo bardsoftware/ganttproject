@@ -154,7 +154,8 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         myDialogUi,
         Consumer<WebDavResourceAsFolderItem> { item -> deleteResource(item) },
         Consumer<WebDavResourceAsFolderItem> { item -> toggleLockResource(item) },
-        isLockingSupported)
+        isLockingSupported,
+        SimpleBooleanProperty(true))
 
 
     val onSelectCrumb = Consumer { selectedPath: Path ->

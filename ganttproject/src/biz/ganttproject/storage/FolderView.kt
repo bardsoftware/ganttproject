@@ -48,16 +48,18 @@ interface FolderItem {
 /**
  * Encapsulates a list view showing the contents of a single folder.
  */
-class FolderView<T: FolderItem>(val myDialogUi: StorageDialogBuilder.DialogUi,
-                 onDeleteResource: Consumer<T>,
-                 onToggleLockResource: Consumer<T>,
-                 isLockingSupported: BooleanProperty) {
+class FolderView<T: FolderItem>(
+    val myDialogUi: StorageDialogBuilder.DialogUi,
+    onDeleteResource: Consumer<T>,
+    onToggleLockResource: Consumer<T>,
+    isLockingSupported: BooleanProperty,
+    isDeleteSupported: BooleanProperty) {
 
   var myContents: ObservableList<T> = FXCollections.emptyObservableList()
   val listView: ListView<ListViewItem<T>> = ListView()
   init {
     listView.setCellFactory { _ ->
-      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported)
+      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported)
     }
     listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
       if (oldValue != null) {
@@ -139,7 +141,8 @@ fun <T: FolderItem> createListCell(
     dialogUi: StorageDialogBuilder.DialogUi,
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
-    isLockingSupported: BooleanProperty) : ListCell<ListViewItem<T>> {
+    isLockingSupported: BooleanProperty,
+    isDeleteSupported: BooleanProperty) : ListCell<ListViewItem<T>> {
   return object : ListCell<ListViewItem<T>>() {
     override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
       try {
@@ -185,22 +188,30 @@ fun <T: FolderItem> createListCell(
       if (item.isSelected.value && !item.resource.value.isDirectory) {
         val btnBox = HBox()
         btnBox.styleClass.add("webdav-list-cell-button-pane")
-        val btnDelete = Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
-        btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
+        val btnDelete =
+            if (isDeleteSupported.get()) {
+              Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
+            } else null
 
-        var btnLock: Button? = null
-        if (isLocked) {
-          btnLock = Button("", FontAwesomeIconView(FontAwesomeIcon.UNLOCK))
-        } else if (isLockable) {
-          btnLock = Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
-        }
+        var btnLock =
+            if (isLocked) {
+              Button("", FontAwesomeIconView(FontAwesomeIcon.UNLOCK))
+            } else if (isLockable) {
+              Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
+            } else null
+
         if (btnLock != null) {
           btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.accept(item.resource.value) }
           btnBox.children.add(btnLock)
         }
-        btnBox.children.add(btnDelete)
-        HBox.setHgrow(btnBox, Priority.ALWAYS)
-        hbox.children.add(btnBox)
+        if (btnDelete != null) {
+          btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
+          btnBox.children.add(btnDelete)
+        }
+        if (!btnBox.children.isEmpty()) {
+          HBox.setHgrow(btnBox, Priority.ALWAYS)
+          hbox.children.add(btnBox)
+        }
       } else {
         val placeholder = Button("")
         placeholder.styleClass.add("hide")
