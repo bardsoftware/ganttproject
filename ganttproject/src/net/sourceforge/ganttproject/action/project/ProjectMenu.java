@@ -59,13 +59,13 @@ public class ProjectMenu extends JMenu {
     add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);
-    add(myOpenProjectAction);
-    add(mru);
+    //add(myOpenProjectAction);
+    //add(mru);
 
-    addSeparator();
-    add(mySaveProjectAction);
-    add(saveProjectAsAction);
-    addSeparator();
+    //addSeparator();
+    //add(mySaveProjectAction);
+    //add(saveProjectAsAction);
+    //addSeparator();
 
     add(projectImportAction);
     add(projectExportAction);
@@ -76,7 +76,6 @@ public class ProjectMenu extends JMenu {
 //    mServer.add(saveURLAction);
 //    add(mServer);
 
-    addSeparator();
     add(myPrintAction);
     add(new ProjectPreviewAction(project));
     addSeparator();

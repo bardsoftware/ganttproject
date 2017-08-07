@@ -55,15 +55,9 @@ import java.util.function.Consumer
  */
 sealed class StorageMode(val name: String) {
 
-    class FileException: Exception {
-        val args: Array<out Any>
-        constructor(message: String, vararg args: Any) : super(message) {
-            this.args = args
-        }
+  class FileException(message: String, vararg val args: Any) : Exception(message)
 
-    }
-
-    abstract fun tryFile(file: File): Unit
+  abstract fun tryFile(file: File): Unit
 
     class Open: StorageMode("open") {
         override fun tryFile(file: File) {
