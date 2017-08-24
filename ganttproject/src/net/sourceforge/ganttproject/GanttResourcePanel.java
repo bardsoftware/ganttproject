@@ -154,6 +154,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   private void updateContextActions() {
+    myResourceActionSet.getResourcePropertiesAction().setEnabled(getResources().length == 1);
     myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
     myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
     appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);

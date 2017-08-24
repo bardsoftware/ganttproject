@@ -34,15 +34,24 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -259,6 +268,11 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     if (node != null) {
       getTree().scrollPathToVisible(TreeUtil.createPath(node));
     }
+  }
+
+  @Override
+  public void stopEditing() {
+    getTreeTable().getTable().editingCanceled(new ChangeEvent(getTreeTable().getTable()));
   }
 
   public void commitIfEditing() {
