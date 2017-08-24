@@ -124,6 +124,54 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
     alg.run(supertask);
-    assertEquals("Unexpected completion percentage of supertask=" + supertask, 75, supertask.getCompletionPercentage());
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
+  }
+
+  public void testCompletionWithNestedTasksDepthGreaterThan1AndGapsInCalender() {
+    TaskManager taskManager = getTaskManager();
+    Task project = taskManager.createTask();
+    project.setProjectTask(true);
+    Task supertask = taskManager.createTask();
+
+    Task supertask_0 = taskManager.createTask();
+    Task supertask_0_0 = taskManager.createTask();
+    Task supertask_0_1 = taskManager.createTask();
+    Task supertask_1 = taskManager.createTask();
+    Task supertask_1_0 = taskManager.createTask();
+    Task supertask_1_1 = taskManager.createTask();
+
+    supertask_0_0.setStart(CalendarFactory.createGanttCalendar(2000, 01, 10));
+    supertask_0_0.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 10));
+    supertask_0_0.setCompletionPercentage(100);
+    supertask_0_1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 19));
+    supertask_0_1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 19));
+
+    supertask_0_0.move(supertask_0);
+    supertask_0_1.move(supertask_0);
+
+    supertask_1_0.setStart(CalendarFactory.createGanttCalendar(2000, 01, 10));
+    supertask_1_0.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 10));
+    supertask_1_0.setCompletionPercentage(50);
+    supertask_1_1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 14));
+    supertask_1_1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 14));
+
+    supertask_1_0.move(supertask_1);
+    supertask_1_1.move(supertask_1);
+
+    supertask_0.move(supertask);
+    supertask_1.move(supertask);
+
+    supertask.move(project);
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run(project);
+
+    // half a day of two
+    assertEquals("Unexpected completion percentage of supertask=" + supertask_1, 25, supertask_1.getCompletionPercentage());
+    // one day of two
+    assertEquals("Unexpected completion percentage of supertask=" + supertask_0, 50, supertask_0.getCompletionPercentage());
+    // 1.5 days of 4 = 3/8 = 37%
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 37, supertask.getCompletionPercentage());
+    assertEquals("Unexpected completion percentage of project=" + project, 37, project.getCompletionPercentage());
   }
 }

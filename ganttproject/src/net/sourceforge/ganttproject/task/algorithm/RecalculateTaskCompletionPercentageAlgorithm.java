@@ -29,7 +29,7 @@ public abstract class RecalculateTaskCompletionPercentageAlgorithm extends Algor
     }
     TaskContainmentHierarchyFacade facade = createContainmentFacade();
     for (Task t : facade.getTasksInDocumentOrder()) {
-      if (!facade.hasNestedTasks(t)) {
+      if (facade.getDepth(t) == 0) {
         run(t);
       }
     }
@@ -43,28 +43,51 @@ public abstract class RecalculateTaskCompletionPercentageAlgorithm extends Algor
     recalculateSupertaskCompletionPercentageBottomUp(task, facade);
   }
 
-  private void recalculateSupertaskCompletionPercentageBottomUp(Task task, TaskContainmentHierarchyFacade facade) {
-    while (task != null) {
-      recalculateSupertaskCompletionPercentage(task, facade);
-      task = facade.getContainer(task);
-    }
+  private class PropagatedDays {
+    public int myCompletedDays;
+    public long myPlannedDays;
+
+    PropagatedDays() {
+      myCompletedDays = 0;
+      myPlannedDays = 0;
+    };
+
+    PropagatedDays(int completedDays, long plannedDays) {
+      myCompletedDays = completedDays;
+      myPlannedDays = plannedDays;
+    };
   }
 
-  private void recalculateSupertaskCompletionPercentage(Task task, TaskContainmentHierarchyFacade facade) {
+  private void recalculateSupertaskCompletionPercentageBottomUp(Task task, TaskContainmentHierarchyFacade facade) {
+     Task root = facade.getRootTask();
+     recalculateSupertaskCompletionPercentage(root, facade);
+  }
+
+  private PropagatedDays recalculateSupertaskCompletionPercentage(Task task, TaskContainmentHierarchyFacade facade) {
+
     Task[] nestedTasks = facade.getNestedTasks(task);
+
+    int completedDays = 0;
+    long plannedDays = 0;
+
     if (nestedTasks.length > 0) {
-      int completedDays = 0;
-      long plannedDays = 0;
       for (int i = 0; i < nestedTasks.length; i++) {
         Task next = nestedTasks[i];
-        long nextDuration = next.isMilestone() ? 1 : next.getDuration().getLength();
-        completedDays += nextDuration * next.getCompletionPercentage();
-        plannedDays += nextDuration;
+        PropagatedDays propagatedDays = recalculateSupertaskCompletionPercentage(next, facade);
+        completedDays += propagatedDays.myCompletedDays;
+        plannedDays += propagatedDays.myPlannedDays;
       }
       int completionPercentage = plannedDays == 0 ? 0 : (int) (completedDays / plannedDays);
       task.setCompletionPercentage(completionPercentage);
+    } else {
+      long nextDuration = task.getDuration().getLength();
+      completedDays += nextDuration * task.getCompletionPercentage();
+      plannedDays += nextDuration;
     }
+
+    return new PropagatedDays(completedDays, plannedDays);
   }
+
 
   protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
 
