@@ -13,6 +13,7 @@ package net.sourceforge.ganttproject.test.task;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 
@@ -129,42 +130,41 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
 
   public void testCompletionWithNestedTasksDepthGreaterThan1AndGapsInCalender() {
     TaskManager taskManager = getTaskManager();
+
     Task project = taskManager.createTask();
     project.setProjectTask(true);
-    Task supertask = taskManager.createTask();
+    project.move(taskManager.getRootTask());
 
-    Task supertask_0 = taskManager.createTask();
-    Task supertask_0_0 = taskManager.createTask();
-    Task supertask_0_1 = taskManager.createTask();
-    Task supertask_1 = taskManager.createTask();
-    Task supertask_1_0 = taskManager.createTask();
-    Task supertask_1_1 = taskManager.createTask();
+    Task supertask = taskManager.newTaskBuilder().withParent(project).build();
 
-    supertask_0_0.setStart(CalendarFactory.createGanttCalendar(2000, 01, 10));
-    supertask_0_0.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 10));
-    supertask_0_0.setCompletionPercentage(100);
-    supertask_0_1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 19));
-    supertask_0_1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 19));
+    Task supertask_0 = taskManager.newTaskBuilder().withParent(supertask).build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newMonday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withCompletion(100)
+            .withParent(supertask_0)
+            .build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newFriday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withParent(supertask_0)
+            .build();
 
-    supertask_0_0.move(supertask_0);
-    supertask_0_1.move(supertask_0);
-
-    supertask_1_0.setStart(CalendarFactory.createGanttCalendar(2000, 01, 10));
-    supertask_1_0.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 10));
-    supertask_1_0.setCompletionPercentage(50);
-    supertask_1_1.setStart(CalendarFactory.createGanttCalendar(2000, 01, 14));
-    supertask_1_1.setEnd(CalendarFactory.createGanttCalendar(2000, 01, 14));
-
-    supertask_1_0.move(supertask_1);
-    supertask_1_1.move(supertask_1);
-
-    supertask_0.move(supertask);
-    supertask_1.move(supertask);
-
-    supertask.move(project);
+    Task supertask_1 = taskManager.newTaskBuilder().withParent(supertask).build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newMonday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withCompletion(50)
+            .withParent(supertask_1)
+            .build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newWendesday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withParent(supertask_1)
+            .build();
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(project);
+    alg.run();
 
     // half a day of two
     assertEquals("Unexpected completion percentage of supertask=" + supertask_1, 25, supertask_1.getCompletionPercentage());
