@@ -1,10 +1,10 @@
 package net.sourceforge.ganttproject.test.task.hierarchy;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class TestTaskDocumentOrder extends TaskTestCase {
     public void testTasksAreInDocumentOrder() {
@@ -29,5 +29,7 @@ public class TestTaskDocumentOrder extends TaskTestCase {
         List<Task> expectedOrder = Arrays.asList(new Task[] {task1, task2, task5, task3, task4,});
         List<Task> actualOrder = Arrays.asList(getTaskManager().getTasks());
         assertEquals("Unexpected order of tasks returnedby TaskManager.getTasks()", expectedOrder, actualOrder);
+
+        assertEquals(expectedOrder, getTaskManager().getTaskHierarchy().getTasksInDocumentOrder());
     }
 }
