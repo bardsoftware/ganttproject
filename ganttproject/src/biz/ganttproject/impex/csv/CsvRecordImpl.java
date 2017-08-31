@@ -35,7 +35,7 @@ class CsvRecordImpl implements SpreadsheetRecord {
 
   @Override
   public String get(String name) {
-    return myRecord.get(name);
+    return (isSet(name)) ? myRecord.get(name) : new String();
   }
 
   @Override

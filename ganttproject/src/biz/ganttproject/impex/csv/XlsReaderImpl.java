@@ -21,9 +21,13 @@ package biz.ganttproject.impex.csv;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.IOException;
@@ -32,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.SimpleDateFormat;
 
 /**
  * @author torkhov
@@ -40,10 +45,12 @@ class XlsReaderImpl implements SpreadsheetReader {
 
   private final Workbook myBook;
   private final Map<String, Integer> myHeaders;
+  private final SimpleDateFormat myDateFormat;
 
   XlsReaderImpl(InputStream is, List<String> columnHeaders) throws IOException {
     myBook = new HSSFWorkbook(is);
     myHeaders = initializeHeader(columnHeaders);
+    myDateFormat = GanttLanguage.getInstance().getShortDateFormat();
   }
 
   @Override
@@ -53,11 +60,50 @@ class XlsReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    return Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+    Iterator<SpreadsheetRecord> iterator = null;
+
+    if(myBook.getNumberOfSheets() > 1) {
+      Iterator<SpreadsheetRecord> it = null;
+      for (int i = 0; i < myBook.getNumberOfSheets(); ++i) {
+        Sheet sheet = myBook.getSheetAt(i);
+        if (i < myBook.getNumberOfSheets() - 1) {
+          int lastRow = sheet.getPhysicalNumberOfRows();
+          sheet.createRow(lastRow + 1);
+          sheet.createRow(lastRow + 2);
+        }
+        it = Iterators.transform(sheet.iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+        iterator = (iterator == null) ? it : Iterators.concat(iterator, it);
+      }
+    }
+    else {
+      iterator = Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+    }
+
+    return iterator;
   }
 
   private List<String> getCellValues(Row row) {
-    return Lists.newArrayList(Iterables.transform(row, Cell::getStringCellValue));
+    return Lists.newArrayList(Iterables.transform(row,
+            (input) -> {
+              switch (input.getCellTypeEnum()) {
+                case NUMERIC: {
+                  if (HSSFDateUtil.isCellDateFormatted(input)) {
+                    return myDateFormat.format(input.getDateCellValue());
+                  }
+                  else {
+                    if (input.getCellStyle().getDataFormat() == (short)1) {
+                      return String.valueOf((int)input.getNumericCellValue());
+                    }
+                    else {
+                      return String.valueOf(input.getNumericCellValue());
+                    }
+                  }
+                }
+                default:
+                  return input.getStringCellValue();
+              }
+             }
+            ));
   }
 
   /**

@@ -229,7 +229,7 @@ public class CsvImportTest extends TestCase {
 
   private byte[] createXls(String... rows) throws Exception {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
+    try (SpreadsheetWriter writer = new XlsWriterImpl(stream, "test")) {
       for (String row : rows) {
         for (String cell : row.split(",", -1)) {
           writer.print(cell.trim());

@@ -26,6 +26,8 @@ import org.apache.commons.csv.CSVPrinter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.util.Calendar;
 
 /**
  * @author akurutin on 04.04.2017.
@@ -52,5 +54,36 @@ public class CsvWriterImpl implements SpreadsheetWriter {
   public void close() throws IOException {
     myCsvPrinter.flush();
     myCsvPrinter.close();
+  }
+
+  @Override
+  public void newSheet() throws IOException {
+    println();
+    println();
+  }
+
+  @Override
+  public void newSheet(String name) throws IOException {
+    newSheet();
+  }
+
+  @Override
+  public void print(Double value) throws IOException {
+    myCsvPrinter.print(String.valueOf(value));
+  }
+
+  @Override
+  public void print(Integer value) throws IOException {
+    myCsvPrinter.print(String.valueOf(value));
+  }
+
+  @Override
+  public void print(BigDecimal value) throws IOException {
+    myCsvPrinter.print(value.toPlainString());
+  }
+
+  @Override
+  public void print(Calendar value) throws IOException {
+    myCsvPrinter.print(value.toString());
   }
 }

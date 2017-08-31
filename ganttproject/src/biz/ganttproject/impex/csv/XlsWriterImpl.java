@@ -20,45 +20,65 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import com.google.common.base.Preconditions;
+
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.Calendar;
 
 /**
  * @author akurutin on 04.04.2017.
  */
 public class XlsWriterImpl implements SpreadsheetWriter {
   private final Workbook myWorkbook;
-  private final Sheet mySheet;
   private final OutputStream myStream;
+  private final CellStyle myDateStyle;
+  private final CellStyle myIntegerStyle;
+  private final CellStyle myDoubleStyle;
 
-
+  private Sheet myCurrentSheet = null;
   private Row myCurrentRow = null;
   private int myNextRowInd = 0;
   private int myNextCellInd = 0;
 
 
-  XlsWriterImpl(OutputStream stream) {
+  XlsWriterImpl(OutputStream stream, String initialSheetName) {
     myStream = Preconditions.checkNotNull(stream);
     myWorkbook = new HSSFWorkbook();
-    mySheet = myWorkbook.createSheet();
+
+    myDateStyle = myWorkbook.createCellStyle();
+    short fmt = myWorkbook.createDataFormat().getFormat("yyyy-mm-dd");
+    myDateStyle.setDataFormat(fmt);
+
+    // https://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/BuiltinFormats.html
+    myIntegerStyle = myWorkbook.createCellStyle();
+    myIntegerStyle.setDataFormat((short) 1);
+    myDoubleStyle = myWorkbook.createCellStyle();
+    myDoubleStyle.setDataFormat((short) 2);
+
+    myCurrentSheet = myWorkbook.createSheet(initialSheetName);
   }
 
   @Override
   public void print(String value) throws IOException {
+    if (value != null) {
+      addCell().setCellValue(value);
+    }
+  }
+
+  private Cell addCell() throws IOException {
     if (myCurrentRow == null) {
       createNewRow();
     }
-
-    Cell cell = myCurrentRow.createCell(myNextCellInd++);
-    if (value != null) {
-      cell.setCellValue(value);
-    }
+    return myCurrentRow.createCell(myNextCellInd++);
   }
 
   @Override
@@ -75,6 +95,56 @@ public class XlsWriterImpl implements SpreadsheetWriter {
   }
 
   private void createNewRow() {
-    myCurrentRow = mySheet.createRow(myNextRowInd++);
+    myCurrentRow = myCurrentSheet.createRow(myNextRowInd++);
+  }
+
+  @Override
+  public void newSheet() throws IOException {
+    resetForNewSheet();
+    myCurrentSheet = myWorkbook.createSheet();
+  }
+  
+  @Override
+  public void newSheet(String name) throws IOException {
+    resetForNewSheet();
+    myCurrentSheet = myWorkbook.createSheet(name);
+  }
+  
+  private void resetForNewSheet() {
+    myNextRowInd = 0;
+    myCurrentRow = null;
+    myNextCellInd = 0;
+  }
+
+  @Override
+  public void print(Double value) throws IOException {
+    if (value != null) {
+      Cell cell = addCell();
+      cell.setCellStyle(myDoubleStyle);
+      cell.setCellValue(value);
+    }
+  }
+
+  @Override
+  public void print(Integer value) throws IOException {
+    if (value != null) {
+      Cell cell = addCell();
+      cell.setCellStyle(myIntegerStyle);
+      cell.setCellValue(value);
+    }
+  }
+
+  @Override
+  public void print(BigDecimal value) throws IOException {
+    print(value.doubleValue());
+  }
+
+  @Override
+  public void print(Calendar value) throws IOException {
+    if (value != null) {
+      Cell cell = addCell();
+      cell.setCellStyle(myDateStyle);
+      cell.setCellValue(value);
+    }
   }
 }

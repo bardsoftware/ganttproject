@@ -334,7 +334,7 @@ public class GPCsvImportTest extends TestCase {
 
   private byte[] createXls(String... rows) throws Exception {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
+    try (SpreadsheetWriter writer = new XlsWriterImpl(stream, "test")) {
       for (String row : rows) {
         for (String line : row.split("\n", -1)) {
           for (String cell : line.split(",", -1)) {
