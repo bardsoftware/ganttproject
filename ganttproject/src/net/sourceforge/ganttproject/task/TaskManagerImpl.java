@@ -318,7 +318,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private void projectOpened() {
     processCriticalPath(getRootTask());
-    myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
+    myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run();
   }
 
   @Override
