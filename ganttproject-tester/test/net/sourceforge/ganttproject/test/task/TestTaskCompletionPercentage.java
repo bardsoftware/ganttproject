@@ -43,7 +43,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.move(supertask);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 0, supertask.getCompletionPercentage());
 
   }
@@ -74,7 +74,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.setCompletionPercentage(100);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 100, supertask.getCompletionPercentage());
 
   }
@@ -105,7 +105,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.setCompletionPercentage(50);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
 
   }
@@ -124,7 +124,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task2.setCompletionPercentage(100);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
   }
 
