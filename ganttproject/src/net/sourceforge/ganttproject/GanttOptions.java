@@ -665,6 +665,8 @@ public class GanttOptions extends SaverBase {
               csvOptions.getTaskOptions().get(TaskDefaultColumn.COMPLETION.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("duration")) {
               csvOptions.getTaskOptions().get(TaskDefaultColumn.DURATION.getStub().getID()).setValue(Boolean.valueOf(value));
+            } else if (aName.equals("color")) {
+              csvOptions.getTaskOptions().get(TaskDefaultColumn.COLOR.getStub().getID()).setValue(Boolean.valueOf(value));
             } else if (aName.equals("webLink")) {
               csvOptions.getTaskOptions().get("webLink").setValue(Boolean.valueOf(value));
             } else if (aName.equals("resources")) {

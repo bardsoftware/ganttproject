@@ -43,9 +43,11 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -204,6 +206,9 @@ public class GanttCSVExport {
               break;
             case COST:
               writer.print(task.getCost().getValue().toPlainString());
+              break;
+            case COLOR:
+              writer.print(ColorConvertion.getColor(task.getColor()));
               break;
             case INFO:
             case PRIORITY:
