@@ -326,7 +326,8 @@ class ProjectFileExporter {
     }
 
     exportDaysOff(hr, mpxjResource);
-    exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
+    exportCustomProperties
+        (hr, customProperty_fieldType, new CustomPropertySetter() {
       @Override
       public void set(FieldType ft, Object value) {
         mpxjResource.set(ft, value);

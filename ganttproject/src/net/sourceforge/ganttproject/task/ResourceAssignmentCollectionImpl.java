@@ -18,6 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.Role;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,10 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.Role;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
   private final Map<HumanResource, ResourceAssignment> myAssignments = new LinkedHashMap<HumanResource, ResourceAssignment>();
@@ -104,7 +104,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
   /**
    * Removes the assignments related to the given resource.
-   * 
+   *
    * @param resource
    *          Assigned resource
    */
@@ -183,6 +183,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
   private class ResourceAssignmentStub implements ResourceAssignment {
     private final HumanResource myResource;
+    private final Runnable myOnDelete;
 
     private float myLoad;
 
@@ -190,8 +191,9 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     private Role myRoleForAssignment;
 
-    public ResourceAssignmentStub(HumanResource resource) {
+    public ResourceAssignmentStub(HumanResource resource, Runnable onDelete) {
       myResource = resource;
+      myOnDelete = onDelete;
     }
 
     @Override
@@ -216,6 +218,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
 
     @Override
     public void delete() {
+      myOnDelete.run();
     }
 
     @Override
@@ -250,8 +253,13 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     private Map<HumanResource, MutationInfo> myQueue = new HashMap<HumanResource, MutationInfo>();
 
     @Override
-    public ResourceAssignment addAssignment(HumanResource resource) {
-      ResourceAssignment result = new ResourceAssignmentStub(resource);
+    public ResourceAssignment addAssignment(final HumanResource resource) {
+      ResourceAssignment result = new ResourceAssignmentStub(resource, new Runnable() {
+        @Override
+        public void run() {
+          myQueue.remove(resource);
+        }
+      });
       myQueue.put(resource, new MutationInfo(result, MutationInfo.ADD));
       return result;
     }
