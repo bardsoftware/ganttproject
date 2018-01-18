@@ -22,6 +22,10 @@
     <date year="2017" month="5" date="1" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
     <date year="2017" month="5" date="29" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
 
+    <date year="2018" month="3" date="30" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="5" date="7" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2018" month="5" date="28" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
 <!-- England -->
     <date year="" month="4" date="23" type="NEUTRAL"><![CDATA[St Georges Day]]></date>
     <date year="" month="11" date="5" type="NEUTRAL"><![CDATA[Guy Fawkes Night]]></date>
@@ -32,6 +36,10 @@
     <date year="2017" month="4" date="17" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
     <date year="2017" month="8" date="28" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
 
+    <date year="2018" month="4" date="2" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2018" month="8" date="27" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
+
 <!-- Wales -->
     <date year="2015" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
+    <date year="2018" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
 </calendar >
