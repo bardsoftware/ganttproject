@@ -4,23 +4,6 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Comparator;
-
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
@@ -37,7 +20,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -46,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -88,6 +69,20 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author bard
@@ -960,12 +955,14 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public List<Task> getTasksInDocumentOrder() {
       List<Task> result = Lists.newArrayList();
-      Deque<Task> deque = new LinkedList<Task>();
+      LinkedList<Task> deque = new LinkedList<>();
       deque.addFirst(getRootTask());
       while (!deque.isEmpty()) {
         Task head = deque.poll();
-        result.addAll(0, Arrays.asList(head.getNestedTasks()));
+        result.add(head);
+        deque.addAll(0, Arrays.asList(head.getNestedTasks()));
       }
+      result.remove(0);
       return result;
     }
 
