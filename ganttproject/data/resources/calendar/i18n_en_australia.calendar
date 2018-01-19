@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="au" name="Australia National Holidays 2016-2017" type="country">
+<calendar id="au" name="Australia National Holidays 2016-2018" type="country">
 <!-- http://www.australia.gov.au/about-australia/special-dates-and-events/public-holidays -->
 <!-- http://www.officeholidays.com/countries/australia/index.php -->
 <!-- http://www.timeanddate.com/holidays/australia/ -->
-	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
-	<date year="" month="01" date="26" type="HOLIDAY"><![CDATA[Australia Day]]></date>
-	<date year="" month="04" date="25" type="HOLIDAY"><![CDATA[ANZAC Day]]></date>
-	<date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas]]></date>
-	<date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Boxing Day]]></date>
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="01" date="26"><![CDATA[Australia Day]]></date>
+	<date year="" month="04" date="25"><![CDATA[Anzac Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+	<date year="" month="12" date="26"><![CDATA[Boxing Day]]></date>
 
 	<date year="2012" month="01" date="02"/> <!-- New Year in lieu -->
 	<date year="2012" month="04" date="06"/> <!-- Good Friday -->
@@ -21,5 +21,8 @@
 	<date year="2017" month="01" date="02" type="HOLIDAY"><![CDATA[New Year's Holiday]]></date>
     <date year="2017" month="04" date="14" type="HOLIDAY"><![CDATA[Good Friday]]></date>
     <date year="2017" month="04" date="17" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+
+    <date year="2018" month="3" date="30"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="4" date="2"><![CDATA[Easter Monday]]></date>
 
 </calendar>
