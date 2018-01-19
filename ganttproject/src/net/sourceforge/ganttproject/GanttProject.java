@@ -873,6 +873,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     @Parameter(names = { "-h", "-help" }, description = "Print usage")
     public boolean help = false;
 
+    @Parameter(names = { "-version" }, description = "Print version number")
+    public boolean version = false;
+
     @Parameter(description = "Input file name")
     public List<String> file = null;
   }
@@ -895,6 +898,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       JCommander cmdLineParser = new JCommander(new Object[] { mainArgs, cmdlineApplication.getArguments() }, arg);
       if (mainArgs.help) {
         cmdLineParser.usage();
+        System.exit(0);
+      }
+      if (mainArgs.version) {
+        System.out.println(GPVersion.getCurrentVersionNumber());
         System.exit(0);
       }
     } catch (Throwable e) {
