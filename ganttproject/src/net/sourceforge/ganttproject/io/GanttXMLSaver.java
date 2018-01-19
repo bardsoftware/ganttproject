@@ -23,7 +23,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttPreviousState;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -52,12 +51,12 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private GanttGraphicArea area;
 
-  private final TaskTreeUIFacade myTaskTree;
+  public GanttXMLSaver(IGanttProject project) {
+    this(project, null, null, null, null);
+  }
 
-  /** The constructor */
   public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
       UIFacade uiFacade) {
-    myTaskTree = taskTree;
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
@@ -73,12 +72,16 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       addAttribute("name", getProject().getProjectName(), attrs);
       addAttribute("company", getProject().getOrganization(), attrs);
       addAttribute("webLink", getProject().getWebLink(), attrs);
-      addAttribute("view-date", CalendarFactory.createGanttCalendar(area.getStartDate()).toXMLString(), attrs);
-      addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
-      // TODO for GP 2.0: move view configurations into <view> tag (see
-      // ViewSaver)
-      addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
-      addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
+      if (area != null) {
+        addAttribute("view-date", CalendarFactory.createGanttCalendar(area.getStartDate()).toXMLString(), attrs);
+      }
+      if (myUIFacade != null) {
+        addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
+        // TODO for GP 2.0: move view configurations into <view> tag (see
+        // ViewSaver)
+        addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
+        addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
+      }
       addAttribute("version", VERSION, attrs);
       addAttribute("locale", GanttLanguage.getInstance().getLocale().toString(), attrs);
       startElement("project", attrs, handler);
@@ -92,7 +95,6 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       saveResources(handler);
       saveAssignments(handler);
       saveVacations(handler);
-      //saveGanttChartView(handler);
       saveHistory(handler);
       saveRoles(handler);
       endElement("project", handler);
@@ -110,12 +112,8 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
-    List<GanttPreviousState> history = ((GanttProject) myProject).getBaselines();
+    List<GanttPreviousState> history = myProject.getBaselines();
     new HistorySaver().save(history, handler);
-  }
-
-  private void saveGanttChartView(TransformerHandler handler) throws SAXException {
-    new GanttChartViewSaver().save(myTaskTree.getVisibleFields(), handler);
   }
 
   private void saveVacations(TransformerHandler handler) throws SAXException {
@@ -127,7 +125,9 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveViews(TransformerHandler handler) throws SAXException {
-    new ViewSaver().save(getUIFacade(), handler);
+    if (getUIFacade() != null) {
+      new ViewSaver().save(getUIFacade(), handler);
+    }
   }
 
   private void saveCalendar(TransformerHandler handler) throws SAXException {

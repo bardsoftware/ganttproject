@@ -86,7 +86,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
-    mySelection = new GanttChartSelection(tree, myTaskManager);
+    mySelection = new GanttChartSelection(project, tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
   }
 

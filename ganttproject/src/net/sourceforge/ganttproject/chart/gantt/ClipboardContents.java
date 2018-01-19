@@ -18,13 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
@@ -33,11 +31,12 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents all objects which are involved into a clipboard transaction on Gantt chart: tasks, dependencies
@@ -182,5 +181,9 @@ public class ClipboardContents {
 
   public Collection<Task> getNestedTasks(Task task) {
     return myNestedTasks.get(task);
+  }
+
+  public TaskManager getTaskManager() {
+    return myTaskManager;
   }
 }

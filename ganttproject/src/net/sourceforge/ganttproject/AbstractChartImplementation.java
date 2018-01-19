@@ -453,7 +453,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     @Override
     public void startCopyClipboardTransaction() {
       if (isTransactionRunning) {
-        throw new IllegalStateException("Transaction is already running");
+        cancelClipboardTransaction();
       }
       isTransactionRunning = true;
     }
@@ -461,7 +461,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     @Override
     public void startMoveClipboardTransaction() {
       if (isTransactionRunning) {
-        throw new IllegalStateException("Transaction is already running");
+        cancelClipboardTransaction();
       }
       isTransactionRunning = true;
     }
