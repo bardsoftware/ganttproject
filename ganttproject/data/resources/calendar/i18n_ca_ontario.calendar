@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="ca.ontario" name="Canada Ontario Holidays 2017" type="country">
+<calendar id="ca.ontario" name="Canada Ontario Holidays 2017-2018" type="country">
 <!-- http://www.officeholidays.com/countries/canada/ -->
 <!-- http://www.statutoryholidays.com -->
 <!-- http://www.timeanddate.com/holidays/canada/ -->
@@ -15,6 +15,14 @@
 	<date year="2017" month="8" date="7"><![CDATA[Civic Day]]></date>
     <date year="2017" month="9" date="4"><![CDATA[Labour Day]]></date>
     <date year="2017" month="10" date="9"><![CDATA[Thanksgiving]]></date>
+
+    <date year="2018" month="2" date="19"><![CDATA[Family Day]]></date>
+    <date year="2018" month="3" date="30"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="5" date="21"><![CDATA[Victoria Day]]></date>
+	<date year="2018" month="7" date="2"><![CDATA[Canada Day in lieu]]></date>
+	<date year="2018" month="8" date="6"><![CDATA[Civic Day]]></date>
+    <date year="2018" month="9" date="3"><![CDATA[Labour Day]]></date>
+    <date year="2018" month="10" date="8"><![CDATA[Thanksgiving]]></date>
 
 </calendar >
 

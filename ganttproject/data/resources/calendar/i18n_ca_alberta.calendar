@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="ca.alberta" name="Canada Alberta Holidays 2018" type="country">
+<!-- http://www.officeholidays.com/countries/canada/ -->
+<!-- http://www.statutoryholidays.com/2016.php -->
+<!-- http://www.timeanddate.com/holidays/canada/ -->
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="07" date="01"><![CDATA[Canada Day]]></date>
+	<date year="" month="11" date="11"><![CDATA[Remembrance Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+
+    <date year="2018" month="2" date="19"><![CDATA[Family Day]]></date>
+    <date year="2018" month="3" date="30"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="5" date="21"><![CDATA[Victoria Day]]></date>
+	<date year="2018" month="7" date="2"><![CDATA[Canada Day in lieu]]></date>
+	<date year="2018" month="8" date="6"><![CDATA[Civic Day]]></date>
+    <date year="2018" month="9" date="3"><![CDATA[Labour Day]]></date>
+    <date year="2018" month="10" date="8"><![CDATA[Thanksgiving]]></date>
+
+</calendar >
+
