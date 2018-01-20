@@ -2,23 +2,20 @@
 package net.sourceforge.ganttproject;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
+import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
 import net.sourceforge.ganttproject.io.GanttXMLSaver;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.util.collect.Pair;
 
-import javax.annotation.Nullable;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,24 +60,12 @@ public class GPTransferable implements Transferable {
   private InputStream createDocumentFlavor() {
     IGanttProject bufferProject = new GanttProjectImpl();
     final TaskManager taskMgr = bufferProject.getTaskManager();
-    final Map<Task, Task> original2buffer = new HashMap<>();
-    for (final Task t : myClipboardContents.getTasks()) {
-      myClipboardContents.getTaskManager().getTaskHierarchy().breadthFirstSearch(t, new Predicate<Pair<Task, Task>>() {
-        @Override
-        public boolean apply(@Nullable Pair<Task, Task> parentChild) {
-          TaskManager.TaskBuilder taskBuilder = taskMgr.newTaskBuilder()
-              .withPrototype(parentChild.second());
-          if (parentChild.first() != null) {
-            taskBuilder.withParent(original2buffer.get(parentChild.first()));
-          }
-          Task bufferTask = taskBuilder.build();
-          original2buffer.put(parentChild.second(), bufferTask);
-          return true;
-        }
-      });
+    ClipboardTaskProcessor processor = new ClipboardTaskProcessor(taskMgr);
+    processor.pasteAsChild(taskMgr.getRootTask(), myClipboardContents);
 
+    for (HumanResource res : myClipboardContents.getResources()) {
+      bufferProject.getHumanResourceManager().add(res);
     }
-
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       GanttXMLSaver saver = new GanttXMLSaver(bufferProject);
       saver.save(out);

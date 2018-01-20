@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -52,6 +53,8 @@ public class ClipboardContents {
       return left.getManager().getTaskHierarchy().compareDocumentOrder(left, right);
     }
   };
+
+  private final List<HumanResource> myResources = Lists.newArrayList();
   private final List<Task> myTasks = Lists.newArrayList();
   private final List<TaskDependency> myIntraDeps = Lists.newArrayList();
   private final List<TaskDependency> myIncomingDeps = Lists.newArrayList();
@@ -86,6 +89,7 @@ public class ClipboardContents {
         if (parent_child.first() != null) {
           myNestedTasks.put(parent_child.first(), parent_child.second());
         }
+        myAssignments.addAll(Arrays.asList(parent_child.second().getAssignments()));
         return true;
       }
     };
@@ -154,15 +158,18 @@ public class ClipboardContents {
   }
 
   /**
-   * Processes objects placed into the clipboard so that it was "cut" transaction
+   * Processes objects placed into the clipboard so that it was "cut" transaction      myAssignments.addAll(Arrays.asList(t.getAssignments()));
+
    */
   public void cut() {
-    build();
     isCut = true;
+    build();
     for (Task t : getTasks()) {
-      myAssignments.addAll(Arrays.asList(t.getAssignments()));
       myTaskManager.deleteTask(t);
       t.delete();
+    }
+    for (ResourceAssignment ra : myAssignments) {
+      myResources.add(ra.getResource());
     }
   }
 
@@ -185,5 +192,13 @@ public class ClipboardContents {
 
   public TaskManager getTaskManager() {
     return myTaskManager;
+  }
+
+  public void addResource(HumanResource res) {
+    myResources.add(res);
+  }
+
+  public List<HumanResource> getResources() {
+    return myResources;
   }
 }
