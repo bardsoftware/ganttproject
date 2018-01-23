@@ -32,7 +32,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -89,7 +88,6 @@ public class ClipboardContents {
         if (parent_child.first() != null) {
           myNestedTasks.put(parent_child.first(), parent_child.second());
         }
-        myAssignments.addAll(Arrays.asList(parent_child.second().getAssignments()));
         return true;
       }
     };
