@@ -61,6 +61,12 @@ public class GPTransferable implements Transferable {
     IGanttProject bufferProject = new GanttProjectImpl();
     final TaskManager taskMgr = bufferProject.getTaskManager();
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(taskMgr);
+    // In intra-document copy+paste we do copy so-called external dependencies (those where one of the tasks is not in
+    // the clipboard). However, we do not want to copy them into the system clipboard because in the target project
+    // external task may not exist or may exist and be not the one we want.
+    processor.setTruncateExternalDeps(true);
+    // We also do not copy assignments into the system clipboard.
+    processor.setTruncateAssignments(true);
     processor.pasteAsChild(taskMgr.getRootTask(), myClipboardContents);
 
     for (HumanResource res : myClipboardContents.getResources()) {
