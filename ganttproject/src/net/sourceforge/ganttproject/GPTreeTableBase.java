@@ -480,9 +480,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return super.processKeyBinding(ks, e, condition, pressed);
     }
     if (e.isMetaDown() || e.isControlDown()) {
-      putClientProperty("GPTreeTableBase.selectAll", true);
-      putClientProperty("GPTreeTableBase.clearText", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
+      return false;
+//      putClientProperty("GPTreeTableBase.selectAll", true);
+//      putClientProperty("GPTreeTableBase.clearText", false);
+//      return super.processKeyBinding(ks, e, condition, pressed);
     }
     putClientProperty("GPTreeTableBase.clearText", true);
     putClientProperty("GPTreeTableBase.selectAll", false);

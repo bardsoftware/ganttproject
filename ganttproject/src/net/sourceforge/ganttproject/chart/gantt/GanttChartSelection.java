@@ -37,6 +37,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -111,6 +112,9 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   }
 
   List<Task> paste(Task target) {
+    if (myClipboardContents == null) {
+      return Collections.emptyList();
+    }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     return processor.pasteAsSibling(target, myClipboardContents);
   }
