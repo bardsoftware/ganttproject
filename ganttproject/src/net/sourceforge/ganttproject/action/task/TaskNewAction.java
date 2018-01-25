@@ -50,6 +50,9 @@ public class TaskNewAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (String.valueOf(e.getSource()).indexOf("JMenu") > 0 && calledFromAppleScreenMenu()) {
+      return;
+    }
     myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
       @Override
       public void run() {
@@ -64,6 +67,16 @@ public class TaskNewAction extends GPAction {
         myUiFacade.getTaskTree().startDefaultEditing(newTask);
       }
     });
+  }
+
+  private boolean calledFromAppleScreenMenu() {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+      if (stackTrace[i].getClassName().indexOf("ScreenMenuItem") > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected TaskManager getTaskManager() {
