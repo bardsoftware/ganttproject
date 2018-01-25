@@ -18,22 +18,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTreeTable;
 import net.sourceforge.ganttproject.GanttTreeTableModel;
 import net.sourceforge.ganttproject.TreeTableContainer;
-import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
-
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Implementation of ChartSelection on Gantt chart.
@@ -98,6 +97,9 @@ public class GanttChartSelection extends ChartSelectionImpl {
   }
 
   List<Task> paste(Task target) {
+    if (myClipboardContents == null) {
+      return Collections.emptyList();
+    }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     return processor.pasteAsSibling(target, myClipboardContents);
   }
