@@ -62,6 +62,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
+    appli = app;
     myTreeUi = treeUi;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
@@ -69,7 +70,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
-    appli = app;
     initMouseListeners();
   }
 
@@ -151,6 +151,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   private class ResourcechartImplementation extends AbstractChartImplementation {
 
+    private ResourceChartSelection mySelection;
+
     public ResourcechartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
         ChartComponentBase chartComponent) {
       super(project, uiFacade, chartModel, chartComponent);
@@ -176,7 +178,10 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
     @Override
     public ChartSelection getSelection() {
-      return new ResourceChartSelection(getProject(), appli.getResourcePanel());
+      if (mySelection == null) {
+        mySelection = new ResourceChartSelection(getProject(), appli.getResourcePanel());
+      }
+      return mySelection;
     }
 
     @Override
@@ -226,12 +231,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
   static class ResourceChartSelection extends AbstractChartImplementation.ChartSelectionImpl implements ClipboardOwner {
     private final GanttResourcePanel myResourcePanel;
     private final IGanttProject myProject;
-    private final ClipboardContents myClipboardContents;
+    private ClipboardContents myClipboardContents;
 
     ResourceChartSelection(IGanttProject project, GanttResourcePanel resourcePanel) {
       myProject = project;
       myResourcePanel = resourcePanel;
-      myClipboardContents = new ClipboardContents(myProject.getTaskManager());
     }
     @Override
     public boolean isEmpty() {
@@ -241,6 +245,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     @Override
     public void startCopyClipboardTransaction() {
       super.startCopyClipboardTransaction();
+      myClipboardContents = new ClipboardContents(myProject.getTaskManager());
       myResourcePanel.copySelection(myClipboardContents);
       exportIntoSystemClipboard();
     }
@@ -248,6 +253,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     @Override
     public void startMoveClipboardTransaction() {
       super.startMoveClipboardTransaction();
+      myClipboardContents = new ClipboardContents(myProject.getTaskManager());
       myResourcePanel.cutSelection(myClipboardContents);
       exportIntoSystemClipboard();
     }
@@ -255,6 +261,18 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     private void exportIntoSystemClipboard() {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       clipboard.setContents(new GPTransferable(myClipboardContents), this);
+    }
+
+    @Override
+    public void cancelClipboardTransaction() {
+      super.cancelClipboardTransaction();
+      myClipboardContents = null;
+    }
+
+    @Override
+    public void commitClipboardTransaction() {
+      super.commitClipboardTransaction();
+      myClipboardContents = null;
     }
 
     @Override
