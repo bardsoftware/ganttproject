@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile.VisibleFieldsImpl;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
+import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -79,7 +80,7 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
 
   @Override
   public GPSaver newSaver() {
-    return null;
+    return new GanttXMLSaver(this);
   }
 
   @Override

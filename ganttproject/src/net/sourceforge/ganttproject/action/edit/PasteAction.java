@@ -18,47 +18,101 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import net.sourceforge.ganttproject.GPTransferable;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.importer.BufferProject;
+import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.apache.commons.io.IOUtils;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
   private final GPViewManager myViewmanager;
   private final GPUndoManager myUndoManager;
+  private final IGanttProject myProject;
+  private final UIFacade myUiFacade;
 
-  public PasteAction(GPViewManager viewManager, GPUndoManager undoManager) {
+  public PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, GPUndoManager undoManager) {
     super("paste");
     myViewmanager = viewManager;
     myUndoManager = undoManager;
+    myProject = project;
+    myUiFacade = uiFacade;
   }
 
-  private PasteAction(GPViewManager viewmanager, IconSize size, GPUndoManager undoManager) {
+  private PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewmanager, IconSize size, GPUndoManager undoManager) {
     super("paste", size);
     myViewmanager = viewmanager;
     myUndoManager = undoManager;
+    myProject = project;
+    myUiFacade = uiFacade;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new PasteAction(myViewmanager, size, myUndoManager);
+    return new PasteAction(myProject, myUiFacade, myViewmanager, size, myUndoManager);
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(ActionEvent evt) {
+    ChartSelection selection = myViewmanager.getSelectedArtefacts();
+    if (!selection.isEmpty()) {
+      pasteInternalFlavor(selection);
+      return;
+    }
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    if (clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)) {
+      try {
+        Object data = clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR);
+        if (data instanceof InputStream == false) {
+          return;
+        }
+        pasteExternalDocument((InputStream)data);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void pasteExternalDocument(InputStream data) {
+    try {
+      byte[] bytes = IOUtils.toByteArray(data);
+      final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);
+      File tmpFile = File.createTempFile("ganttPaste", "");
+      Files.write(tmpFile.toPath(), bytes);
+
+      Document document = bufferProject.getDocumentManager().getDocument(tmpFile.getAbsolutePath());
+      document.read();
+      tmpFile.delete();
+
+      HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
+      mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
+      ImporterFromGanttFile.importBufferProject(myProject, bufferProject, myUiFacade, mergeOption, null);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void pasteInternalFlavor(final ChartSelection selection) {
     myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
       @Override
       public void run() {
-        ChartSelection selection = myViewmanager.getSelectedArtefacts();
-        if (selection.isEmpty()) {
-          return;
-        }
         myViewmanager.getActiveChart().paste(selection);
         selection.commitClipboardTransaction();
       }
@@ -67,7 +121,7 @@ public class PasteAction extends GPAction {
 
   @Override
   public PasteAction asToolbarAction() {
-    final PasteAction result = new PasteAction(myViewmanager, myUndoManager);
+    final PasteAction result = new PasteAction(myProject, myUiFacade, myViewmanager, myUndoManager);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     this.addPropertyChangeListener(new PropertyChangeListener() {
       @Override

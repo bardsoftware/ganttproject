@@ -22,14 +22,20 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.GanttTreeTable;
 import net.sourceforge.ganttproject.GanttTreeTableModel;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.TreeTableContainer;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +45,7 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class GanttChartSelection extends ChartSelectionImpl {
+public class GanttChartSelection extends ChartSelectionImpl implements ClipboardOwner {
   private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = new Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode>() {
     @Override
     public DefaultMutableTreeTableNode apply(DefaultMutableTreeTableNode node) {
@@ -51,6 +57,7 @@ public class GanttChartSelection extends ChartSelectionImpl {
   private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
   private final TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> myTree;
   private final TaskManager myTaskManager;
+  private final IGanttProject myProject;
 
   private ClipboardContents myClipboardContents;
 
@@ -62,9 +69,10 @@ public class GanttChartSelection extends ChartSelectionImpl {
     }
   };
 
-  GanttChartSelection(TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager) {
+  GanttChartSelection(IGanttProject project, TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager) {
     myTree = treeView;
     myTaskManager = taskManager;
+    myProject = project;
   }
   @Override
   public boolean isEmpty() {
@@ -76,6 +84,12 @@ public class GanttChartSelection extends ChartSelectionImpl {
     super.startCopyClipboardTransaction();
     myClipboardContents = buildClipboardContents();
     myClipboardContents.copy();
+    exportTasksIntoSystemClipboard();
+  }
+
+  private void exportTasksIntoSystemClipboard() {
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    clipboard.setContents(new GPTransferable(myClipboardContents), this);
   }
 
   @Override
@@ -83,6 +97,7 @@ public class GanttChartSelection extends ChartSelectionImpl {
     super.startMoveClipboardTransaction();
     myClipboardContents = buildClipboardContents();
     myClipboardContents.cut();
+    exportTasksIntoSystemClipboard();
   }
 
   public ClipboardContents buildClipboardContents() {
@@ -102,5 +117,10 @@ public class GanttChartSelection extends ChartSelectionImpl {
     }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     return processor.pasteAsSibling(target, myClipboardContents);
+  }
+
+  @Override
+  public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    // Do nothing
   }
 }

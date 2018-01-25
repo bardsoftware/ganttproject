@@ -18,15 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-
-import javax.swing.Action;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
@@ -34,9 +25,9 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
-import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -44,9 +35,17 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.util.MouseUtil;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 /**
  * Class for the graphic part of the soft
@@ -63,6 +62,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
+    appli = app;
     myTreeUi = treeUi;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
@@ -70,7 +70,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
-    appli = app;
     initMouseListeners();
   }
 
@@ -152,6 +151,8 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   private class ResourcechartImplementation extends AbstractChartImplementation {
 
+    private ResourceChartSelection mySelection;
+
     public ResourcechartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
         ChartComponentBase chartComponent) {
       super(project, uiFacade, chartModel, chartComponent);
@@ -177,25 +178,10 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
     @Override
     public ChartSelection getSelection() {
-      ChartSelectionImpl result = new ChartSelectionImpl() {
-        @Override
-        public boolean isEmpty() {
-          return appli.getResourcePanel().getSelectedNodes().length == 0;
-        }
-
-        @Override
-        public void startCopyClipboardTransaction() {
-          super.startCopyClipboardTransaction();
-          appli.getResourcePanel().copySelection();
-        }
-
-        @Override
-        public void startMoveClipboardTransaction() {
-          super.startMoveClipboardTransaction();
-          appli.getResourcePanel().cutSelection();
-        }
-      };
-      return result;
+      if (mySelection == null) {
+        mySelection = new ResourceChartSelection(getProject(), appli.getResourcePanel());
+      }
+      return mySelection;
     }
 
     @Override
@@ -205,7 +191,16 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
     @Override
     public void paste(ChartSelection selection) {
-      appli.getResourcePanel().pasteSelection();
+      if (selection instanceof ResourceChartSelection) {
+        ResourceChartSelection resourceChartSelection = (ResourceChartSelection) selection;
+        for (HumanResource res : resourceChartSelection.myClipboardContents.getResources()) {
+          if (resourceChartSelection.myClipboardContents.isCut()) {
+            getResourceManager().add(res);
+          } else {
+            getResourceManager().add(res.unpluggedClone());
+          }
+        }
+      }
     }
 
     @Override
@@ -232,4 +227,58 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
   private HumanResourceManager getResourceManager() {
     return appli.getHumanResourceManager();
   }
+
+  static class ResourceChartSelection extends AbstractChartImplementation.ChartSelectionImpl implements ClipboardOwner {
+    private final GanttResourcePanel myResourcePanel;
+    private final IGanttProject myProject;
+    private ClipboardContents myClipboardContents;
+
+    ResourceChartSelection(IGanttProject project, GanttResourcePanel resourcePanel) {
+      myProject = project;
+      myResourcePanel = resourcePanel;
+    }
+    @Override
+    public boolean isEmpty() {
+      return myResourcePanel.getSelectedNodes().length == 0;
+    }
+
+    @Override
+    public void startCopyClipboardTransaction() {
+      super.startCopyClipboardTransaction();
+      myClipboardContents = new ClipboardContents(myProject.getTaskManager());
+      myResourcePanel.copySelection(myClipboardContents);
+      exportIntoSystemClipboard();
+    }
+
+    @Override
+    public void startMoveClipboardTransaction() {
+      super.startMoveClipboardTransaction();
+      myClipboardContents = new ClipboardContents(myProject.getTaskManager());
+      myResourcePanel.cutSelection(myClipboardContents);
+      exportIntoSystemClipboard();
+    }
+
+    private void exportIntoSystemClipboard() {
+      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      clipboard.setContents(new GPTransferable(myClipboardContents), this);
+    }
+
+    @Override
+    public void cancelClipboardTransaction() {
+      super.cancelClipboardTransaction();
+      myClipboardContents = null;
+    }
+
+    @Override
+    public void commitClipboardTransaction() {
+      super.commitClipboardTransaction();
+      myClipboardContents = null;
+    }
+
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable transferable) {
+      // Do nothing.
+    }
+  }
+
 }

@@ -18,16 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-
-import javax.swing.JComponent;
-import javax.swing.TransferHandler;
-import javax.swing.tree.TreePath;
-import javax.swing.undo.UndoManager;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor;
@@ -36,12 +28,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
+import javax.swing.*;
+import javax.swing.tree.TreePath;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 
 /**
  * TransferHandler implementation which creates and consumes ClipboardContents objects
@@ -49,19 +43,6 @@ import com.google.common.base.Supplier;
  * @author dbarashev (Dmitry Barashev)
  */
 class GPTreeTransferHandler extends TransferHandler {
-  private static DataFlavor ourClipboardContentsFlavor;
-  private static DataFlavor[] ourFlavors = new DataFlavor[1];
-
-  static {
-    try {
-      String mimeType = DataFlavor.javaJVMLocalObjectMimeType + ";class=\"" + ClipboardContents.class.getName() + "\"";
-      ourClipboardContentsFlavor = new DataFlavor(mimeType);
-      ourFlavors[0] = ourClipboardContentsFlavor;
-    } catch (ClassNotFoundException e) {
-      System.out.println("ClassNotFound: " + e.getMessage());
-    }
-  }
-
   private final GPTreeTableBase myTreeTable;
   private final TaskManager myTaskManager;
   private final Supplier<GanttChart> myGanttChart;
@@ -80,7 +61,7 @@ class GPTreeTransferHandler extends TransferHandler {
       return false;
     }
     support.setShowDropLocation(true);
-    if (!support.isDataFlavorSupported(ourClipboardContentsFlavor)) {
+    if (!support.isDataFlavorSupported(GPTransferable.INTERNAL_DATA_FLAVOR)) {
       return false;
     }
     // Do not allow a drop on the drag source selections.
@@ -102,8 +83,9 @@ class GPTreeTransferHandler extends TransferHandler {
       return null;
     }
     ClipboardContents clipboardContents = ((GanttChartSelection)myGanttChart.get().getSelection()).buildClipboardContents();
-    return new NodesTransferable(clipboardContents);
+    return new GPTransferable(clipboardContents);
   }
+
 
   @Override
   public int getSourceActions(JComponent c) {
@@ -117,7 +99,7 @@ class GPTreeTransferHandler extends TransferHandler {
     }
     try {
       Transferable t = support.getTransferable();
-      final ClipboardContents clipboard = (ClipboardContents) t.getTransferData(ourClipboardContentsFlavor);
+      final ClipboardContents clipboard = (ClipboardContents) t.getTransferData(GPTransferable.INTERNAL_DATA_FLAVOR);
       JXTreeTable.DropLocation dl = (JXTreeTable.DropLocation) support.getDropLocation();
       int dropRow = myTreeTable.rowAtPoint(dl.getDropPoint());
       TreePath dropPath = myTreeTable.getPathForRow(dropRow);
@@ -143,29 +125,4 @@ class GPTreeTransferHandler extends TransferHandler {
     return false;
   }
 
-  private static class NodesTransferable implements Transferable {
-    private final ClipboardContents myClipboardContents;
-
-    public NodesTransferable(ClipboardContents contents) {
-      myClipboardContents = contents;
-    }
-
-    @Override
-    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-      if (!isDataFlavorSupported(flavor)) {
-        throw new UnsupportedFlavorException(flavor);
-      }
-      return myClipboardContents;
-    }
-
-    @Override
-    public DataFlavor[] getTransferDataFlavors() {
-      return ourFlavors;
-    }
-
-    @Override
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-      return ourClipboardContentsFlavor.equals(flavor);
-    }
-  }
 }

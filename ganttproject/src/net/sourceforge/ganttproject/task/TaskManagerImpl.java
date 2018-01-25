@@ -344,12 +344,15 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = myPrototype == null ?
-            new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId) : new GanttTask((TaskImpl)myPrototype);
+        TaskImpl task = myPrototype == null
+            ? new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId)
+            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype);
 
-        String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
-        task.setName(name);
-
+        if (myPrototype == null) {
+          String name = myName == null
+              ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
+          task.setName(name);
+        }
         if (myStartDate != null) {
           GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
           task.setStart(cal);
