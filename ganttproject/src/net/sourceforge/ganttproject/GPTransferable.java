@@ -39,7 +39,7 @@ import java.util.Set;
  * @author dbarashev@bardsoftware.com
  */
 public class GPTransferable implements Transferable {
-  public static final DataFlavor EXTERNAL_DOCUMENT_FLAVOR = new DataFlavor("application/ganttproject", "GanttProject Data");
+  public static final DataFlavor EXTERNAL_DOCUMENT_FLAVOR = new DataFlavor("application/x-ganttproject", "GanttProject XML File");
   static final DataFlavor EXTERNAL_TEXT_FLAVOR = new DataFlavor("text/plain", "GanttProject Task List");
   static DataFlavor INTERNAL_DATA_FLAVOR;
   private static Set<DataFlavor> ourFlavors;
