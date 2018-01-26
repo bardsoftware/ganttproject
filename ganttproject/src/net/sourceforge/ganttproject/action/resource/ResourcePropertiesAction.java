@@ -45,7 +45,10 @@ public class ResourcePropertiesAction extends ResourceAction {
   }
 
   @Override
-  public void actionPerformed(ActionEvent arg0) {
+  public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     HumanResource[] selectedResources = getSelection();
     if (selectedResources.length > 0) {
       myUIFacade.getResourceTree().stopEditing();

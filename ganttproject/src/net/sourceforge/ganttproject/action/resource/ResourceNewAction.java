@@ -55,6 +55,9 @@ public class ResourceNewAction extends ResourceAction {
 
   @Override
   public void actionPerformed(ActionEvent event) {
+    if (calledFromAppleScreenMenu(event)) {
+      return;
+    }
     final HumanResource resource = getManager().newHumanResource();
     resource.setRole(myRoleManager.getDefaultRole());
     GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);

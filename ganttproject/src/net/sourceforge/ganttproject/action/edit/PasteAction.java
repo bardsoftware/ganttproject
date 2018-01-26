@@ -71,6 +71,9 @@ public class PasteAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent evt) {
+    if (calledFromAppleScreenMenu(evt)) {
+      return;
+    }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
     if (!selection.isEmpty()) {
       pasteInternalFlavor(selection);

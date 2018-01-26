@@ -18,14 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-import java.util.Date;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.print.PrintPreview;
+
+import java.awt.event.ActionEvent;
+import java.util.Date;
 
 /**
  * @author bard
@@ -44,6 +44,9 @@ public class ProjectPreviewAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     Date startDate, endDate;
     Chart chart = myUIFacade.getActiveChart();
     if (chart == null) {

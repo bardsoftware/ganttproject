@@ -40,6 +40,9 @@ public class CutAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
       @Override
       public void run() {
