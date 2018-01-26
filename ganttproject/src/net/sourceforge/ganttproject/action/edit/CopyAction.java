@@ -37,6 +37,9 @@ public class CopyAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
   }
 
