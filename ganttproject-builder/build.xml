@@ -56,7 +56,7 @@
              homepage="http://ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="openjdk-7-jre | openjdk-8-jre | oracle-java7-jre | oracle-java8-jre | oracle-java8-installer"
+             depends="openjdk-7-jre | openjdk-8-jre | openjdk-9-jre | openjdk-7-jdk | openjdk-8-jdk | openjdk-9-jdk | oracle-java7-jre | oracle-java8-jre | oracle-java9-jre | oracle-java7-jdk | oracle-java8-jdk | oracle-java9-jdk | oracle-java7-installer | oracle-java8-installer"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"
