@@ -226,6 +226,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   }
 
   protected boolean calledFromAppleScreenMenu(ActionEvent e) {
+    if (e == null) {
+      return false;
+    }
     if (String.valueOf(e.getSource()).indexOf("JMenu") == -1) {
       return false;
     }
