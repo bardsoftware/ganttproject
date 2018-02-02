@@ -394,6 +394,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private void restoreBounds() {
     if (options.isLoaded()) {
+      if (options.isMaximized()) {
+        setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
+      }
       Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
       GPLogger.log(String.format("Bounds stored in the  options: %s", bounds));
 
@@ -780,7 +783,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myQuitEntered = true;
     try {
       options.setWindowPosition(getX(), getY());
-      options.setWindowSize(getWidth(), getHeight());
+      options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
       if (getProjectUIFacade().ensureProjectSaved(getProject())) {
