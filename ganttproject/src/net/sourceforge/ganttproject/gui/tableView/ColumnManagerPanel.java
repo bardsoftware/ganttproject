@@ -25,6 +25,7 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import com.google.common.base.Function;
@@ -108,6 +109,9 @@ public class ColumnManagerPanel {
 
       @Override
       protected CustomPropertyDefinition createPrototype(Object editValue) {
+        if ("".equals(String.valueOf(editValue).trim())) {
+          throw new ValidationException("Please type column name");
+        }
         return new DefaultCustomPropertyDefinition(String.valueOf(editValue));
       }
 
