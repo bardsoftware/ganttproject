@@ -232,6 +232,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     if (String.valueOf(e.getSource()).indexOf("JMenu") == -1) {
       return false;
     }
+    if (e.getModifiers() == 0) {
+      return false;
+    }
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
     for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
       if (stackTrace[i].getClassName().indexOf("ScreenMenuItem") > 0) {
