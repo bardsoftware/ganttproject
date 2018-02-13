@@ -82,7 +82,9 @@ class TaskRecords extends RecordGroup {
     ID(TaskDefaultColumn.ID.getNameKey()),
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"),
     NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"),
-    PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()), OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey());
+    PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()),
+    OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey()),
+    COST(TaskDefaultColumn.COST.getNameKey());
 
     private final String text;
 

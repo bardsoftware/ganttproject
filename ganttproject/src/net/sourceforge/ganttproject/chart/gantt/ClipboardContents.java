@@ -18,14 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -33,11 +32,12 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents all objects which are involved into a clipboard transaction on Gantt chart: tasks, dependencies
@@ -53,6 +53,8 @@ public class ClipboardContents {
       return left.getManager().getTaskHierarchy().compareDocumentOrder(left, right);
     }
   };
+
+  private final List<HumanResource> myResources = Lists.newArrayList();
   private final List<Task> myTasks = Lists.newArrayList();
   private final List<TaskDependency> myIntraDeps = Lists.newArrayList();
   private final List<TaskDependency> myIncomingDeps = Lists.newArrayList();
@@ -65,6 +67,7 @@ public class ClipboardContents {
   public ClipboardContents(TaskManager taskManager) {
     myTaskManager = taskManager;
   }
+
 
   /**
    * Adds tasks to the clipboard contents
@@ -155,15 +158,19 @@ public class ClipboardContents {
   }
 
   /**
-   * Processes objects placed into the clipboard so that it was "cut" transaction
+   * Processes objects placed into the clipboard so that it was "cut" transaction      myAssignments.addAll(Arrays.asList(t.getAssignments()));
+
    */
   public void cut() {
-    build();
     isCut = true;
+    build();
     for (Task t : getTasks()) {
       myAssignments.addAll(Arrays.asList(t.getAssignments()));
       myTaskManager.deleteTask(t);
       t.delete();
+    }
+    for (ResourceAssignment ra : myAssignments) {
+      myResources.add(ra.getResource());
     }
   }
 
@@ -182,5 +189,17 @@ public class ClipboardContents {
 
   public Collection<Task> getNestedTasks(Task task) {
     return myNestedTasks.get(task);
+  }
+
+  public TaskManager getTaskManager() {
+    return myTaskManager;
+  }
+
+  public void addResource(HumanResource res) {
+    myResources.add(res);
+  }
+
+  public List<HumanResource> getResources() {
+    return myResources;
   }
 }

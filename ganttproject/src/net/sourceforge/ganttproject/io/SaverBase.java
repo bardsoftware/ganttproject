@@ -18,15 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 public class SaverBase {
 
@@ -77,6 +77,9 @@ public class SaverBase {
 
   protected void cdataElement(String name, String cdata, AttributesImpl attrs, TransformerHandler handler)
       throws SAXException {
+    if (cdata == null) {
+      return;
+    }
     startElement(name, attrs, handler);
     handler.startCDATA();
     handler.characters(cdata.toCharArray(), 0, cdata.length());

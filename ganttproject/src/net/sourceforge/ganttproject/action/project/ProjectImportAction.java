@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.importer.ImportFileWizardImpl;
 import net.sourceforge.ganttproject.wizard.AbstractWizard;
+
+import java.awt.event.ActionEvent;
 
 /**
  * @author bard
@@ -43,6 +43,9 @@ public class ProjectImportAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     AbstractWizard wizard = new ImportFileWizardImpl(myUIFacade, myProject, myProject.getGanttOptions());
     wizard.show();
   }

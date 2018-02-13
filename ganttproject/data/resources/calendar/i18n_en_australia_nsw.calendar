@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="au.nsw" name="Australia New South Wales Holidays 2018" type="country">
+<!-- http://www.australia.gov.au/about-australia/special-dates-and-events/public-holidays -->
+<!-- http://www.officeholidays.com/countries/australia/index.php -->
+<!-- http://www.industrialrelations.nsw.gov.au/oirwww/NSW_public_holidays/NSW_Public_Holidays.page -->
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="01" date="26"><![CDATA[Australia Day]]></date>
+	<date year="" month="04" date="25"><![CDATA[Anzac Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+	<date year="" month="12" date="26"><![CDATA[Boxing Day]]></date>
+
+    <date year="2018" month="3" date="30" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="3" date="31"><![CDATA[Easter Saturday]]></date>
+    <date year="2018" month="4" date="1"><![CDATA[Easter Sunday]]></date>
+    <date year="2018" month="4" date="2" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2018" month="6" date="11"><![CDATA[Queen's Birthday]]></date>
+    <date year="2018" month="10" date="1"><![CDATA[Labour Day]]></date>
+
+</calendar>

@@ -26,6 +26,8 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class ResourcePropertiesAction extends ResourceAction {
   private final IGanttProject myProject;
@@ -43,9 +45,13 @@ public class ResourcePropertiesAction extends ResourceAction {
   }
 
   @Override
-  public void actionPerformed(ActionEvent arg0) {
+  public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     HumanResource[] selectedResources = getSelection();
     if (selectedResources.length > 0) {
+      myUIFacade.getResourceTree().stopEditing();
       // TODO Allow to edit multiple resources (instead of [0])
       GanttDialogPerson dp = new GanttDialogPerson(myProject.getResourceCustomPropertyManager(), myProject.getTaskManager(), myUIFacade,
           selectedResources[0]);
@@ -58,8 +64,16 @@ public class ResourcePropertiesAction extends ResourceAction {
 
   @Override
   public ResourcePropertiesAction asToolbarAction() {
-    ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), myUIFacade);
+    final ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), myUIFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
+    addPropertyChangeListener(new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) {
+          result.setEnabled(ResourcePropertiesAction.this.isEnabled());
+        }
+      }
+    });
     return result;
   }
 }

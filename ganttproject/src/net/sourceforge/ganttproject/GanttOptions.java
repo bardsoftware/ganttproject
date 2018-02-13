@@ -18,28 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.security.AccessControlException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.JToolBar;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.ListOption;
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
+import com.google.common.xml.XmlEscapers;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
@@ -52,7 +38,6 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleSet;
 import net.sourceforge.ganttproject.util.ColorConvertion;
-
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.xml.sax.Attributes;
@@ -60,15 +45,25 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.ListOption;
-
-import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
-import com.google.common.xml.XmlEscapers;
+import javax.swing.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import java.awt.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.security.AccessControlException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is able to load and save options on the file
@@ -76,6 +71,7 @@ import com.google.common.xml.XmlEscapers;
 public class GanttOptions extends SaverBase {
 
   private int x = 0, y = 0, width = 800, height = 600;
+  private boolean isMaximized;
 
   private boolean isloaded;
 
@@ -264,6 +260,7 @@ public class GanttOptions extends SaverBase {
       addAttribute("y", "" + y, attrs);
       addAttribute("width", "" + width, attrs);
       addAttribute("height", "" + height, attrs);
+      addAttribute("maximized", String.valueOf(this.isMaximized), attrs);
       emptyElement("geometry", attrs, handler);
 
       // ToolBar position
@@ -575,6 +572,8 @@ public class GanttOptions extends SaverBase {
               width = new Integer(value).hashCode();
             } else if (aName.equals("height")) {
               height = new Integer(value).hashCode();
+            } else if ("maximized".equals(aName)) {
+              isMaximized = Boolean.parseBoolean(value);
             }
           } else if (qName.equals("file")) {
             if (aName.equals("path")) {
@@ -792,6 +791,10 @@ public class GanttOptions extends SaverBase {
     return height;
   }
 
+  public boolean isMaximized() {
+    return this.isMaximized;
+  }
+
   /** @return the csvOptions. */
   public CSVOptions getCSVOptions() {
     return csvOptions;
@@ -891,9 +894,10 @@ public class GanttOptions extends SaverBase {
   }
 
   /** Set new window position (top left corner) */
-  public void setWindowSize(int width, int height) {
+  public void setWindowSize(int width, int height, boolean isMaximized) {
     this.width = width;
     this.height = height;
+    this.isMaximized = isMaximized;
   }
 
   /** Set new working directory value. */

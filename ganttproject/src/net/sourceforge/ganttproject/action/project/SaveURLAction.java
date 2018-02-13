@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import java.awt.event.ActionEvent;
 
 class SaveURLAction extends CloudProjectActionBase {
 
@@ -39,6 +39,9 @@ class SaveURLAction extends CloudProjectActionBase {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     try {
       saveProjectRemotely(myProject);
     } catch (Exception ex) {

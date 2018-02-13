@@ -18,15 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
-import org.osgi.service.prefs.Preferences;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
+import org.osgi.service.prefs.Preferences;
+
+import java.awt.event.ActionEvent;
 
 /**
  * @author bard
@@ -52,6 +51,9 @@ public class ProjectExportAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     WizardImpl wizard = new ExportFileWizardImpl(myUIFacade, myProject, myPluginPrerences);
     wizard.show();
   }

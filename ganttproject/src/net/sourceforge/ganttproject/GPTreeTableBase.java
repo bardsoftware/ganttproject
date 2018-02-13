@@ -24,6 +24,8 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -108,7 +110,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       updateUI();
     }
   };
-
+  private GPAction myManageColumnsAction = new GPAction("columns.manage.label") {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade,
+          myCustomPropertyManager);
+      dialog.show();
+    }
+  };
 
   @Override
   public Component prepareEditor(TableCellEditor editor, int row, int column) {
@@ -144,6 +153,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   public void editingStopped(ChangeEvent arg0) {
     super.editingStopped(arg0);
     SwingUtilities.invokeLater(myUpdateUiCommand);
+  }
+
+  public Action getManageColumnsAction() {
+    return myManageColumnsAction;
   }
 
   protected class TableHeaderUiFacadeImpl implements ColumnList {
@@ -467,9 +480,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return super.processKeyBinding(ks, e, condition, pressed);
     }
     if (e.isMetaDown() || e.isControlDown()) {
-      putClientProperty("GPTreeTableBase.selectAll", true);
-      putClientProperty("GPTreeTableBase.clearText", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
+      return false;
+//      putClientProperty("GPTreeTableBase.selectAll", true);
+//      putClientProperty("GPTreeTableBase.clearText", false);
+//      return super.processKeyBinding(ks, e, condition, pressed);
     }
     putClientProperty("GPTreeTableBase.clearText", true);
     putClientProperty("GPTreeTableBase.selectAll", false);
@@ -1002,14 +1016,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       final ColumnImpl column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
 
       {
-        result.add(new GPAction("columns.manage.label") {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade,
-                myCustomPropertyManager);
-            dialog.show();
-          }
-        });
+        result.add(myManageColumnsAction);
       }
       {
         GPAction fitAction = new GPAction("columns.fit.label") {
@@ -1037,6 +1044,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         } else {
           hideAction.putValue(Action.NAME,
               GanttLanguage.getInstance().formatText("columns.hide.label", column.getName()));
+          Collection<ColumnImpl> allVisible = Collections2.filter(myTableHeaderFacade.getColumns(), new Predicate<ColumnImpl>() {
+            @Override
+            public boolean apply(@Nullable ColumnImpl column) {
+              return column.isVisible();
+            }
+          });
+          hideAction.setEnabled(allVisible.size() > 1);
         }
         result.add(hideAction);
       }

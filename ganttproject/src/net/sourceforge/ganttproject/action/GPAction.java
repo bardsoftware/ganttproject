@@ -225,6 +225,25 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     updateTooltip();
   }
 
+  protected boolean calledFromAppleScreenMenu(ActionEvent e) {
+    if (e == null) {
+      return false;
+    }
+    if (String.valueOf(e.getSource()).indexOf("JMenu") == -1) {
+      return false;
+    }
+    if (e.getModifiers() == 0) {
+      return false;
+    }
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+      if (stackTrace[i].getClassName().indexOf("ScreenMenuItem") > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   protected void updateTooltip() {
     String description = getLocalizedDescription();
     putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);

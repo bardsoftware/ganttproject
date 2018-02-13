@@ -294,7 +294,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       mHuman.add(a);
     }
     mHuman.add(myResourceActions.getResourceSendMailAction());
-    mHuman.add(myResourceActions.getResourceImportAction());
     bar.add(mHuman);
 
     HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
@@ -395,6 +394,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private void restoreBounds() {
     if (options.isLoaded()) {
+      if (options.isMaximized()) {
+        setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
+      }
       Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
       GPLogger.log(String.format("Bounds stored in the  options: %s", bounds));
 
@@ -781,7 +783,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myQuitEntered = true;
     try {
       options.setWindowPosition(getX(), getY());
-      options.setWindowSize(getWidth(), getHeight());
+      options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
       if (getProjectUIFacade().ensureProjectSaved(getProject())) {
@@ -873,6 +875,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     @Parameter(names = { "-h", "-help" }, description = "Print usage")
     public boolean help = false;
 
+    @Parameter(names = { "-version" }, description = "Print version number")
+    public boolean version = false;
+
     @Parameter(description = "Input file name")
     public List<String> file = null;
   }
@@ -895,6 +900,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       JCommander cmdLineParser = new JCommander(new Object[] { mainArgs, cmdlineApplication.getArguments() }, arg);
       if (mainArgs.help) {
         cmdLineParser.usage();
+        System.exit(0);
+      }
+      if (mainArgs.version) {
+        System.out.println(GPVersion.getCurrentVersionNumber());
         System.exit(0);
       }
     } catch (Throwable e) {

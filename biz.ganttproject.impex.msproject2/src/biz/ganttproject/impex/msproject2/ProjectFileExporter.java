@@ -121,9 +121,7 @@ class ProjectFileExporter {
 //    Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = new HashMap<CustomPropertyDefinition, FieldType>();
 //    collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
     Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getTaskManager());
-    for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
-      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
-    }
+    exportCustomFieldTypes(customProperty_fieldType);
     net.sf.mpxj.Task rootTask = myOutputProject.addTask();
     rootTask.setEffortDriven(false);
     rootTask.setID(0);
@@ -304,11 +302,20 @@ class ProjectFileExporter {
 
   private void exportResources(Map<Integer, Resource> id2mpxjResource) throws MPXJException {
     Map<CustomPropertyDefinition, FieldType> customProperty_fieldType = CustomPropertyMapping.buildMapping(getResourceManager());
-    for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
-      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(e.getKey().getName());
-    }
+    exportCustomFieldTypes(customProperty_fieldType);
     for (HumanResource hr : getResourceManager().getResources()) {
       exportResource(hr, id2mpxjResource, customProperty_fieldType);
+    }
+  }
+
+  private void exportCustomFieldTypes(Map<CustomPropertyDefinition, FieldType> customProperty_fieldType) {
+    for (Entry<CustomPropertyDefinition, FieldType> e : customProperty_fieldType.entrySet()) {
+      String alias = e.getKey().getName();
+      if ("".equals(alias.trim())) {
+        alias = e.getValue().getName();
+
+      }
+      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(alias);
     }
   }
 
@@ -326,7 +333,8 @@ class ProjectFileExporter {
     }
 
     exportDaysOff(hr, mpxjResource);
-    exportCustomProperties(hr, customProperty_fieldType, new CustomPropertySetter() {
+    exportCustomProperties
+        (hr, customProperty_fieldType, new CustomPropertySetter() {
       @Override
       public void set(FieldType ft, Object value) {
         mpxjResource.set(ft, value);

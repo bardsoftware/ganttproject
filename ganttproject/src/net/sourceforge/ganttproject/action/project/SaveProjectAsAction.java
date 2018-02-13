@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+
+import java.awt.event.ActionEvent;
 
 class SaveProjectAsAction extends GPAction {
   private GanttProject myMainFrame;
@@ -38,6 +38,9 @@ class SaveProjectAsAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myMainFrame.saveAsProject();
   }
 }

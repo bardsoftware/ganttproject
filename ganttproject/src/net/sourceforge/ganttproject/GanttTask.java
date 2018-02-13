@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.io.Serializable;
-
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskMutator;
+
+import java.io.Serializable;
 
 /**
  * Class that generate a task
@@ -59,8 +59,8 @@ public class GanttTask extends TaskImpl implements Serializable {
    * @param copy
    *          task to copy
    */
-  public GanttTask(TaskImpl copy) {
-    super(copy, false);
+  public GanttTask(TaskManagerImpl manager, TaskImpl copy) {
+    super(manager, copy, false);
     enableEvents(true);
   }
 

@@ -18,17 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.ResourceTreeTable;
-import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
-import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
-import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ResourceContext;
+
+import javax.swing.*;
 
 public class ResourceActionSet {
   private final ResourceNewAction myResourceNewAction;
@@ -43,8 +40,6 @@ public class ResourceActionSet {
 
   private final ResourceSendMailAction myResourceSendMailAction;
 
-  private final ResourceImportAction myResourceImportAction;
-
   private final AssignmentDeleteAction myAssignmentDelete;
 
   private AbstractAction[] myActions;
@@ -58,8 +53,6 @@ public class ResourceActionSet {
     myResourceMoveUpAction = new ResourceMoveUpAction(table);
     myResourceMoveDownAction = new ResourceMoveDownAction(table);
     myResourceSendMailAction = new ResourceSendMailAction(table);
-    myResourceImportAction = new ResourceImportAction(manager, projectFrame.getTaskManager(),
-        projectFrame.getRoleManager(), projectFrame);
     myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
   }
 
@@ -68,7 +61,6 @@ public class ResourceActionSet {
       myResourceNewAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);
-      myResourceImportAction.putValue(Action.SHORT_DESCRIPTION, null);
       myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
     }
     return myActions;
@@ -96,10 +88,6 @@ public class ResourceActionSet {
 
   public ResourceSendMailAction getResourceSendMailAction() {
     return myResourceSendMailAction;
-  }
-
-  public ResourceImportAction getResourceImportAction() {
-    return myResourceImportAction;
   }
 
   public AssignmentDeleteAction getAssignmentDelete() {

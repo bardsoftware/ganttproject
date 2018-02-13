@@ -18,10 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -33,8 +31,9 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implements procedures for clipboard operations with tasks.
@@ -43,9 +42,19 @@ import com.google.common.collect.Maps;
  */
 public class ClipboardTaskProcessor {
   private final TaskManager myTaskManager;
+  private boolean myTruncateExternalDeps;
+  private boolean myTruncateAssignments;
 
   public ClipboardTaskProcessor(TaskManager taskManager) {
     myTaskManager = taskManager;
+  }
+
+  public void setTruncateExternalDeps(boolean value) {
+    myTruncateExternalDeps = value;
+  }
+
+  public void setTruncateAssignments(boolean value) {
+    myTruncateAssignments = value;
   }
 
   public List<Task> pasteAsSibling(Task selectedTask, ClipboardContents clipboardContents) {
@@ -70,9 +79,12 @@ public class ClipboardTaskProcessor {
       result.add(copy);
     }
     copyDependencies(clipboardContents, original2copy);
-    copyAssignments(clipboardContents, original2copy);
+    if (!myTruncateAssignments) {
+      copyAssignments(clipboardContents, original2copy);
+    }
     return result;
   }
+
   private void copyAssignments(ClipboardContents clipboardContents, Map<Task, Task> original2copy) {
     for (ResourceAssignment ra : clipboardContents.getAssignments()) {
       Task copy = original2copy.get(ra.getTask());
@@ -102,6 +114,11 @@ public class ClipboardTaskProcessor {
         GPLogger.log(e);
       }
     }
+
+    if (myTruncateExternalDeps) {
+      return;
+    }
+
     for (TaskDependency td : clipboardContents.getIncomingDeps()) {
       Task predecessor = td.getDependee();
       Task newSuccessor = original2copy.get(td.getDependant());
@@ -138,6 +155,9 @@ public class ClipboardTaskProcessor {
       builder = builder.withName(newName);
     }
     Task result = builder.build();
+    if (myTruncateAssignments) {
+      result.getAssignmentCollection().clear();
+    }
     original2copy.put(task, result);
     Task anchor = null;
     for (Task child : clipboardContents.getNestedTasks(task)) {

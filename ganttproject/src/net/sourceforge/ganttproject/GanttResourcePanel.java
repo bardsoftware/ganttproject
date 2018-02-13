@@ -24,11 +24,18 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.*;
+import net.sourceforge.ganttproject.resource.AssignmentContext;
+import net.sourceforge.ganttproject.resource.AssignmentNode;
+import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.ResourceContext;
+import net.sourceforge.ganttproject.resource.ResourceEvent;
+import net.sourceforge.ganttproject.resource.ResourceNode;
+import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -51,9 +58,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
   public ResourceLoadGraphicArea area;
-
-  private HumanResource[] clipboard = null;
-  private boolean isCut = false;
 
   private GPAction myTaskPropertiesAction;
 
@@ -154,6 +158,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   private void updateContextActions() {
+    myResourceActionSet.getResourcePropertiesAction().setEnabled(getResources().length == 1);
     myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
     myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
     appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
@@ -325,62 +330,28 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return res;
   }
 
-  public void copySelection() {
-    saveSelectionToClipboard(false);
-    isCut = false;
+  public void copySelection(ClipboardContents clipboardContents) {
+    saveSelectionToClipboard(clipboardContents, false);
   }
 
-  public void cutSelection() {
-    saveSelectionToClipboard(true);
-    isCut = true;
+  public void cutSelection(ClipboardContents clipboardContents) {
+    saveSelectionToClipboard(clipboardContents, true);
   }
 
-  public void pasteSelection() {
-    if (clipboard == null) {
-      return;
-    }
-
-    for (HumanResource resource : clipboard) {
-      if (isCut) {
-        appli.getHumanResourceManager().add(resource);
-      } else {
-        appli.getHumanResourceManager().add(resource.unpluggedClone());
-      }
-    }
-
-    // if the selection was cut, we clear the clipboard after pasting
-    if (isCut) {
-      isCut = false;
-    }
-  }
-
-  public void saveSelectionToClipboard(boolean cut) {
+  private void saveSelectionToClipboard(ClipboardContents clipboardContents, boolean cut) {
     DefaultMutableTreeTableNode selectedNodes[] = getSelectedNodes();
 
     if (selectedNodes == null) {
       return;
     }
 
-    // count instances of ResourceNode
-    int count = 0;
     for (DefaultMutableTreeTableNode node : selectedNodes) {
       if (node instanceof ResourceNode) {
-        count++;
-      }
-    }
-
-    clipboard = new HumanResource[count];
-
-    int index = 0;
-    for (DefaultMutableTreeTableNode node : selectedNodes) {
-      if (node instanceof ResourceNode) {
-        ResourceNode rn = (ResourceNode) node;
-
-        clipboard[index] = (HumanResource) rn.getUserObject();
+        HumanResource res = (HumanResource) node.getUserObject();
         if (cut) {
-          this.appli.getHumanResourceManager().remove(this.clipboard[index], this.appli.getUndoManager());
+          this.appli.getHumanResourceManager().remove(res, this.appli.getUndoManager());
         }
-        index++;
+        clipboardContents.addResource(res);
       }
     }
   }

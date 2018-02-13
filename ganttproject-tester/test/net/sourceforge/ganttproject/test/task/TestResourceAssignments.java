@@ -10,6 +10,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
@@ -95,6 +96,23 @@ public class TestResourceAssignments extends TestCase {
         res1.delete();
         Set<HumanResource> resources = extractResources(task);
         assertTrue("It is expected that after resource deletion assignments disappear", resources.isEmpty());
+    }
+
+    // See https://github.com/bardsoftware/ganttproject/issues/612
+    public void testAssignmentUpdateAndDelete() {
+        TaskManager taskManager = getTaskManager();
+        Task task = taskManager.createTask();
+        HumanResource res1 = getResourceManager().getById(1);
+        ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(res1);
+        ResourceAssignmentMutator mutator = task.getAssignmentCollection().createMutator();
+        assignment.delete();
+        assignment = mutator.addAssignment(res1);
+        assignment.setLoad(50);
+        assignment.delete();
+        mutator.commit();
+
+        Set<HumanResource> resources = extractResources(task);
+        assertTrue("It is expected that assignment is removed after sequential update+delete via mutator", resources.isEmpty());
     }
 
     private Set<HumanResource> extractResources(Task task) {

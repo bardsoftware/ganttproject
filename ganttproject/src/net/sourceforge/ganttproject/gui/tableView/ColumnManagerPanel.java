@@ -18,25 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui.tableView;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -44,11 +25,13 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-
 import com.google.common.base.Function;
-
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -61,6 +44,19 @@ import net.sourceforge.ganttproject.gui.ListAndFieldsPanel;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.model.CustomPropertyDefaultValueAdapter;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * UI component inside  "Custom Fields Manager" dialog which allows for showing/hiding
@@ -113,6 +109,9 @@ public class ColumnManagerPanel {
 
       @Override
       protected CustomPropertyDefinition createPrototype(Object editValue) {
+        if ("".equals(String.valueOf(editValue).trim())) {
+          throw new ValidationException("Please type column name");
+        }
         return new DefaultCustomPropertyDefinition(String.valueOf(editValue));
       }
 
@@ -171,6 +170,26 @@ public class ColumnManagerPanel {
       @Override
       public void selectionChanged(List<CustomPropertyDefinition> selection) {
         mySelection = selection;
+        if (!isShow) {
+          for (int i = 0; i < myVisibleFields.getSize(); i++) {
+            final Column it = myVisibleFields.getField(i);
+            if (it.isVisible()) {
+              boolean isSelected = !Collections2.filter(selection, new Predicate<CustomPropertyDefinition>() {
+                @Override
+                public boolean apply(@Nullable CustomPropertyDefinition def) {
+                  return Objects.equal(def.getName(), it.getName());
+                }
+              }).isEmpty();
+              if (!isSelected) {
+                setEnabled(true);
+                return;
+              }
+            }
+          }
+          setEnabled(false);
+        } else {
+          setEnabled(true);
+        }
       }
 
       @Override
