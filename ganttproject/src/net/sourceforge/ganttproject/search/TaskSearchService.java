@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sourceforge.ganttproject.CustomProperty;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -42,8 +43,18 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
     query = query.toLowerCase();
     List<MySearchResult> results = new ArrayList<MySearchResult>();
     for (Task t : getProject().getTaskManager().getTasks()) {
+      boolean matched = false;
+      for (CustomProperty c : t.getCustomValues().getCustomProperties()) {
+        if (isNotEmptyAndContains(c.getValueAsString(), query)) {
+          matched = true;
+          break;
+        }
+      }
       if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)
           || isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
+        matched = true;
+      }
+      if (matched) {
         results.add(new MySearchResult(t, this));
       }
     }
