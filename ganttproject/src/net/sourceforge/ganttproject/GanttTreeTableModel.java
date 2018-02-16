@@ -318,7 +318,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     	List<String> resources = Lists.transform(Arrays.asList(t.getAssignments()), new Function<ResourceAssignment, String>() {
 			@Override
 			public String apply(ResourceAssignment ra) {
-				return ra.getResource().getName();
+			  float load = ra.getLoad();
+			  String name = ra.getResource().getName();
+
+			  return (load == 100)?name:name.concat(String.format("[%d%%]", Math.round(load)));
 			}
     	});
         res = Joiner.on(',').join(resources);
