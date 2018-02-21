@@ -110,7 +110,12 @@ public class SearchUiImpl implements SearchUi {
       if (results.isEmpty()) {
         return;
       }
-      list.setListData(results.toArray(new SearchResult[0]));
+      SearchResult[] searchResults = results.toArray(new SearchResult[0]);
+      list.setListData(searchResults);
+      int searchResultLength = searchResults.length;
+      if (searchResultLength < 9) {
+        list.setVisibleRowCount(searchResultLength);
+      }
       JScrollPane scrollPane = new JScrollPane(list);
       scrollPane.setBorder(BorderFactory.createEmptyBorder());
       final JPopupMenu popup = new JPopupMenu();
