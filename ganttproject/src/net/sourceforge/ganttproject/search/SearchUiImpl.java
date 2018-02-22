@@ -115,6 +115,8 @@ public class SearchUiImpl implements SearchUi {
       int searchResultLength = searchResults.length;
       if (searchResultLength < 9) {
         list.setVisibleRowCount(searchResultLength);
+      } else {
+        list.setVisibleRowCount(10);
       }
       JScrollPane scrollPane = new JScrollPane(list);
       scrollPane.setBorder(BorderFactory.createEmptyBorder());
