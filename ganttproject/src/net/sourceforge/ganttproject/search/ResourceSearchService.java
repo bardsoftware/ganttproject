@@ -28,8 +28,8 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 /** Search service for resources */
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
   static class MySearchResult extends SearchResult<HumanResource> {
-    public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
-      super("Resource: " + hr.getName(), "", "", hr, searchService);
+    public MySearchResult(HumanResource hr, ResourceSearchService searchService, String query, String snippet, String snippetText, String origin) {
+      super("Resource", hr.getName(), query, snippet, snippetText, origin, hr, searchService);
     }
   }
 
@@ -43,7 +43,7 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
     List<MySearchResult> results = new ArrayList<MySearchResult>();
     for (HumanResource hr : getProject().getHumanResourceManager().getResources()) {
       if (isNotEmptyAndContains(hr.getName(), query)) {
-        results.add(new MySearchResult(hr, this));
+        results.add(new MySearchResult(hr, this, query, "", "", ""));
       }
     }
     return results;

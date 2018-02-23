@@ -29,8 +29,8 @@ import net.sourceforge.ganttproject.task.Task;
 /** Search service for tasks */
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
   static class MySearchResult extends SearchResult<Task> {
-    public MySearchResult(Task t, TaskSearchService searchService) {
-      super("Task: " + t.getName(), "", "", t, searchService);
+    public MySearchResult(Task t, TaskSearchService searchService, String query, String snippet, String snippetText) {
+      super("Task", t.getName(), query, snippet, snippetText, "", t, searchService);
     }
   }
 
@@ -42,20 +42,33 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
   public List<MySearchResult> search(String query) {
     query = query.toLowerCase();
     List<MySearchResult> results = new ArrayList<MySearchResult>();
+    String snippet = "";
+    String snippetText = "";
     for (Task t : getProject().getTaskManager().getTasks()) {
       boolean matched = false;
+      if (isNotEmptyAndContains(t.getName(), query)) {
+        matched = true;
+      }
       for (CustomProperty c : t.getCustomValues().getCustomProperties()) {
         if (isNotEmptyAndContains(c.getValueAsString(), query)) {
           matched = true;
+          snippet = c.getDefinition().getName();
+          snippetText = c.getValueAsString();
           break;
         }
       }
-      if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)
-          || isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
+      if (isNotEmptyAndContains(t.getNotes(), query)) {
         matched = true;
+        snippet = "Notes";
+        snippetText = t.getNotes();
+      }
+      if (isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
+        matched = true;
+        snippet = "Id";
+        snippetText = String.valueOf(t.getTaskID());
       }
       if (matched) {
-        results.add(new MySearchResult(t, this));
+        results.add(new MySearchResult(t, this, query, snippet, snippetText));
       }
     }
     return results;

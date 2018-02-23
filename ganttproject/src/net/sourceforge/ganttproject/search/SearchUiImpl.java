@@ -33,6 +33,7 @@ import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -122,8 +123,11 @@ public class SearchUiImpl implements SearchUi {
       scrollPane.setBorder(BorderFactory.createEmptyBorder());
       final JPopupMenu popup = new JPopupMenu();
       popup.add(scrollPane);
+      popup.setPopupSize(searchBox.getWidth(), 300);
       popup.show(searchBox, 0, searchBox.getHeight());
       list.requestFocusInWindow();
+      ListCellRenderer resultRenderer = new SearchResultCellRenderer();
+      list.setCellRenderer(resultRenderer);
       list.setSelectedIndex(0);
       onSelect = new Runnable() {
         @Override

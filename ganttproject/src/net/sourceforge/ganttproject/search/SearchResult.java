@@ -20,27 +20,45 @@ package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
   private final String myOrigin;
-  private final String mySnippet;
-  private final String myLabel;
+  private final String secondaryLabel;
+  private final String typeOfResult;
+  private final String secondaryText;
+  private final String myLabel; //Top line
+  private final String myQueryMatch;
   private final SearchService<?, SearchObjectType> mySearchService;
   private final SearchObjectType mySearchObject;
 
-  public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject,
-      SearchService<?, SearchObjectType> service) {
+  public SearchResult(
+          String typeOfResult,
+          String label,
+          String myQueryMatch,
+          String secondaryLabel,
+          String secondaryText,
+          String origin,
+          SearchObjectType searchObject,
+          SearchService<?, SearchObjectType> service
+  ) {
+    this.typeOfResult = typeOfResult;
     myLabel = label;
-    mySnippet = snippet;
+    this.myQueryMatch = myQueryMatch;
+    this.secondaryText = secondaryText;
+    this.secondaryLabel = secondaryLabel;
     myOrigin = origin;
     mySearchService = service;
     mySearchObject = searchObject;
   }
 
+  public String getTypeOfResult() { return typeOfResult; }
+
+  public String getSecondaryText() { return secondaryText; }
+
+  public String getMyQueryMatch() { return myQueryMatch; }
+
   public String getLabel() {
     return myLabel;
   }
 
-  public String getSnippet() {
-    return mySnippet;
-  }
+  public String getSecondaryLabel() { return secondaryLabel; }
 
   public String getOrigin() {
     return myOrigin;
