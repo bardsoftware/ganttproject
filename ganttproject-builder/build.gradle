@@ -193,3 +193,7 @@ task debugApp(type: JavaExec, dependsOn: distBin) {
   args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
   jvmArgs  '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
 }
+
+build {
+  dependsOn updateMavenDeps
+}
