@@ -1,2 +1,5 @@
 language: java
 script: ./ganttproject-builder/build-travis.sh
+branches:
+  only:
+  - master
