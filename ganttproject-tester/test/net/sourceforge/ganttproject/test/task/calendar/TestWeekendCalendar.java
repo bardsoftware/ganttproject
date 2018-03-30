@@ -3,20 +3,19 @@
  */
 package net.sourceforge.ganttproject.test.task.calendar;
 
-import java.text.DateFormat;
-import java.util.Locale;
-
-import com.google.common.collect.ImmutableList;
-
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
+import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.text.DateFormat;
+import java.util.Locale;
 
 /**
  * @author bard
@@ -62,8 +61,9 @@ public class TestWeekendCalendar extends TaskTestCase {
         noWeekendsOneHolidayCalendar.setPublicHolidays(ImmutableList.of(
             CalendarEvent.newEvent(TestSetupHelper.newMonday().getTime(), false, CalendarEvent.Type.HOLIDAY, null, null)));
         TaskManager mgr = TestSetupHelper.newTaskManagerBuilder().withCalendar(noWeekendsOneHolidayCalendar).build();
-        Task t = mgr.createTask();
-        t.setStart(TestSetupHelper.newFriday());
+        Task t = mgr.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newFriday().getTime())
+            .build();
         t.setEnd(TestSetupHelper.newWendesday());
         assertEquals(4.0f, t.getDuration().getLength(GregorianTimeUnitStack.DAY));
 
