@@ -30,7 +30,7 @@ import net.sourceforge.ganttproject.task.Task;
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
   static class MySearchResult extends SearchResult<Task> {
     public MySearchResult(Task t, TaskSearchService searchService, String query, String snippet, String snippetText) {
-      super("Task", t.getName(), query, snippet, snippetText, "", t, searchService);
+      super(t.getTaskID(), "Task", t.getName(), query, snippet, snippetText, "", t, searchService);
     }
   }
 
@@ -42,9 +42,9 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
   public List<MySearchResult> search(String query) {
     query = query.toLowerCase();
     List<MySearchResult> results = new ArrayList<MySearchResult>();
-    String snippet = "";
-    String snippetText = "";
     for (Task t : getProject().getTaskManager().getTasks()) {
+      String snippet = "";
+      String snippetText = "";
       boolean matched = false;
       if (isNotEmptyAndContains(t.getName(), query)) {
         matched = true;

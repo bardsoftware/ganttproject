@@ -29,7 +29,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
   static class MySearchResult extends SearchResult<HumanResource> {
     public MySearchResult(HumanResource hr, ResourceSearchService searchService, String query, String snippet, String snippetText, String origin) {
-      super("Resource", hr.getName(), query, snippet, snippetText, origin, hr, searchService);
+      super(hr.getId(), "Resource", hr.getName(), query, snippet, snippetText, origin, hr, searchService);
     }
   }
 

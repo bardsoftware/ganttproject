@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
+  private final int id;
   private final String myOrigin;
   private final String secondaryLabel;
   private final String typeOfResult;
@@ -29,6 +30,7 @@ public class SearchResult<SearchObjectType> {
   private final SearchObjectType mySearchObject;
 
   public SearchResult(
+          int id,
           String typeOfResult,
           String label,
           String myQueryMatch,
@@ -38,6 +40,7 @@ public class SearchResult<SearchObjectType> {
           SearchObjectType searchObject,
           SearchService<?, SearchObjectType> service
   ) {
+    this.id = id;
     this.typeOfResult = typeOfResult;
     myLabel = label;
     this.myQueryMatch = myQueryMatch;
@@ -47,6 +50,8 @@ public class SearchResult<SearchObjectType> {
     mySearchService = service;
     mySearchObject = searchObject;
   }
+
+  public int getId() { return id; }
 
   public String getTypeOfResult() { return typeOfResult; }
 

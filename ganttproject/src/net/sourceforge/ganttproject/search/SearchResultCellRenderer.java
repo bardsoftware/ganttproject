@@ -26,7 +26,7 @@ public class SearchResultCellRenderer implements ListCellRenderer {
 
         if (o instanceof SearchResult) {
             SearchResult searchResult = (SearchResult) o;
-            theText.append("<b>" + searchResult.getTypeOfResult() + " #" + (index + 1) + "</b>: ");
+            theText.append("<b>" + searchResult.getTypeOfResult()+ " #" + searchResult.getId() + "</b>: ");
             String label = searchResult.getLabel();
             String searchTerm = searchResult.getMyQueryMatch();
             theText.append(label.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>"));
