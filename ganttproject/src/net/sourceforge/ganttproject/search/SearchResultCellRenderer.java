@@ -1,5 +1,23 @@
 package net.sourceforge.ganttproject.search;
 
+/*
+Copyright 2018 BarD Software s.r.o, Douglas Kelly
+
+This file is part of GanttProject, an opensource project management tool.
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
 import java.awt.Component;
 import java.awt.Font;
 
@@ -8,13 +26,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
-/**
- * Created by Doug Kelly on 2/22/2018.
- */
-
 public class SearchResultCellRenderer implements ListCellRenderer {
 
-    protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+    private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
     @Override
     public Component getListCellRendererComponent(JList jList, Object o, int index, boolean b, boolean b1) {
@@ -26,22 +40,21 @@ public class SearchResultCellRenderer implements ListCellRenderer {
 
         if (o instanceof SearchResult) {
             SearchResult searchResult = (SearchResult) o;
-            theText.append("<b>" + searchResult.getTypeOfResult()+ " #" + searchResult.getId() + "</b>: ");
             String label = searchResult.getLabel();
-            String searchTerm = searchResult.getMyQueryMatch();
-            theText.append(label.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>"));
+            String searchTerm = searchResult.getQueryMatch();
+            String boldedLabel = label.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>");
+            theText.append(GanttLanguage.getInstance().formatText("search.result.line1", searchResult.getTypeOfResult(), searchResult.getMyId(), boldedLabel));
             if (!searchResult.getSecondaryLabel().isEmpty()) {
-                theText.append("<br>");
-                theText.append("&nbsp;<b>" + searchResult.getSecondaryLabel() + "</b>: ");
                 String secondaryText = searchResult.getSecondaryText();
-                theText.append(searchResult.getSecondaryText().replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>"));
+                String boldedSecondaryText = secondaryText.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>");
+                theText.append(GanttLanguage.getInstance().formatText("search.result.line2", searchResult.getSecondaryLabel(), boldedSecondaryText));
             }
         } else {
             theText.append(o.toString());
         }
         theText.append("</html>");
         renderer.setText(theText.toString());
-        renderer.setFont(new Font("Helvetica", Font.PLAIN, 12));
+        renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
         return renderer;
     }
 }

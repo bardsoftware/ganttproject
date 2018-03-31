@@ -19,55 +19,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
-  private final int id;
-  private final String myOrigin;
-  private final String secondaryLabel;
-  private final String typeOfResult;
-  private final String secondaryText;
+  private final int myId;
+  private final String mySecondaryLabel;
+  private final String myTypeOfResult;
+  private final String mySecondaryText;
   private final String myLabel; //Top line
   private final String myQueryMatch;
   private final SearchService<?, SearchObjectType> mySearchService;
   private final SearchObjectType mySearchObject;
 
-  public SearchResult(
-          int id,
-          String typeOfResult,
-          String label,
-          String myQueryMatch,
-          String secondaryLabel,
-          String secondaryText,
-          String origin,
-          SearchObjectType searchObject,
-          SearchService<?, SearchObjectType> service
+  SearchResult(
+    int id,
+    String typeOfResult,
+    String label,
+    String queryMatch,
+    String secondaryLabel,
+    String secondaryText,
+    SearchObjectType searchObject,
+    SearchService<?, SearchObjectType> service
   ) {
-    this.id = id;
-    this.typeOfResult = typeOfResult;
+    myId = id;
+    myTypeOfResult = typeOfResult;
     myLabel = label;
-    this.myQueryMatch = myQueryMatch;
-    this.secondaryText = secondaryText;
-    this.secondaryLabel = secondaryLabel;
-    myOrigin = origin;
+    myQueryMatch = queryMatch;
+    mySecondaryText = secondaryText;
+    mySecondaryLabel = secondaryLabel;
     mySearchService = service;
     mySearchObject = searchObject;
   }
 
-  public int getId() { return id; }
+  int getMyId() { return myId; }
 
-  public String getTypeOfResult() { return typeOfResult; }
+  String getTypeOfResult() { return myTypeOfResult; }
 
-  public String getSecondaryText() { return secondaryText; }
+  String getSecondaryText() { return mySecondaryText; }
 
-  public String getMyQueryMatch() { return myQueryMatch; }
+  String getQueryMatch() { return myQueryMatch; }
 
-  public String getLabel() {
+  String getLabel() {
     return myLabel;
   }
 
-  public String getSecondaryLabel() { return secondaryLabel; }
-
-  public String getOrigin() {
-    return myOrigin;
-  }
+  String getSecondaryLabel() { return mySecondaryLabel; }
 
   public SearchObjectType getObject() {
     return mySearchObject;
@@ -78,7 +71,7 @@ public class SearchResult<SearchObjectType> {
     return myLabel;
   }
 
-  public SearchService<?, SearchObjectType> getSearchService() {
+  SearchService<?, SearchObjectType> getSearchService() {
     return mySearchService;
   }
 }
