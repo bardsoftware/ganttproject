@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
+import net.sourceforge.ganttproject.gui.taskproperties.CalendarPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskAllocationsPanel;
 import net.sourceforge.ganttproject.gui.taskproperties.TaskDependenciesPanel;
@@ -354,6 +355,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     tabbedPane.addTab(language.getCorrectedLabel("human"), new ImageIcon(getClass().getResource("/icons/res_16.gif")),
         resourcesPanel);
 
+    tabbedPane.addTab("Calendar", new CalendarPanel(resourcesPanel.getBackground()).getComponent());
     setLayout(new BorderLayout());
 
     add(tabbedPane, BorderLayout.CENTER);
