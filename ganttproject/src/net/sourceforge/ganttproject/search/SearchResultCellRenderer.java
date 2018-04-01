@@ -21,40 +21,38 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import java.awt.Component;
 import java.awt.Font;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
+import javax.swing.*;
 
 public class SearchResultCellRenderer implements ListCellRenderer {
 
-    private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+  private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
-    @Override
-    public Component getListCellRendererComponent(JList jList, Object o, int index, boolean b, boolean b1) {
-        StringBuilder theText = new StringBuilder();
-        theText.append("<html>");
+  @Override
+  public Component getListCellRendererComponent(JList jList, Object searchResultObject, int index, boolean isSelected, boolean cellHasFocus) {
+    StringBuilder theText = new StringBuilder();
+    theText.append("<html>");
 
-        JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(jList, o, index,
-                b, b1);
+    JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(jList, searchResultObject, index,
+        isSelected, cellHasFocus);
 
-        if (o instanceof SearchResult) {
-            SearchResult searchResult = (SearchResult) o;
-            String label = searchResult.getLabel();
-            String searchTerm = searchResult.getQueryMatch();
-            String boldedLabel = label.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>");
-            theText.append(GanttLanguage.getInstance().formatText("search.result.line1", searchResult.getTypeOfResult(), searchResult.getMyId(), boldedLabel));
-            if (!searchResult.getSecondaryLabel().isEmpty()) {
-                String secondaryText = searchResult.getSecondaryText();
-                String boldedSecondaryText = secondaryText.replaceAll("(?i)" + searchTerm + "", "<b><i>$0</i></b>");
-                theText.append(GanttLanguage.getInstance().formatText("search.result.line2", searchResult.getSecondaryLabel(), boldedSecondaryText));
-            }
-        } else {
-            theText.append(o.toString());
-        }
-        theText.append("</html>");
-        renderer.setText(theText.toString());
-        renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
-        return renderer;
+    if (searchResultObject instanceof SearchResult) {
+      SearchResult searchResult = (SearchResult) searchResultObject;
+      String label = searchResult.getLabel();
+      String searchTerm = searchResult.getQueryMatch();
+      String boldedLabel = label.replaceAll("(?i)" + searchTerm, "<b><i>$0</i></b>");
+      theText.append(GanttLanguage.getInstance().formatText("search.result.line1", searchResult.getTypeOfResult(), searchResult.getId(), boldedLabel));
+      if (!searchResult.getSecondaryLabel().isEmpty()) {
+        String secondaryText = searchResult.getSecondaryText();
+        String boldedSecondaryText = secondaryText.replaceAll("(?i)" + searchTerm, "<b><i>$0</i></b>");
+        theText.append(GanttLanguage.getInstance().formatText("search.result.line2", searchResult.getSecondaryLabel(), boldedSecondaryText));
+      }
+    } else {
+      theText.append(searchResultObject.toString());
     }
+    theText.append("</html>");
+    renderer.setText(theText.toString());
+    renderer.setBorder(BorderFactory.createEmptyBorder(5, 3, 5, 3));
+    renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
+    return renderer;
+  }
 }

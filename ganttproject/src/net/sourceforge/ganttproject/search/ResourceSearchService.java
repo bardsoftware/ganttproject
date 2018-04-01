@@ -30,7 +30,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
   static class MySearchResult extends SearchResult<HumanResource> {
     MySearchResult(HumanResource hr, ResourceSearchService searchService, String query, String snippet, String snippetText) {
-      super(hr.getId(), GanttLanguage.getInstance().getText("resources"), hr.getName(), query, snippet, snippetText, hr, searchService);
+      super(hr.getId(), GanttLanguage.getInstance().getText("generic.resource"), hr.getName(), query, snippet, snippetText, hr, searchService);
     }
   }
 

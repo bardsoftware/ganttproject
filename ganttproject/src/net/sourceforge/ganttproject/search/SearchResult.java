@@ -29,14 +29,14 @@ public class SearchResult<SearchObjectType> {
   private final SearchObjectType mySearchObject;
 
   SearchResult(
-    int id,
-    String typeOfResult,
-    String label,
-    String queryMatch,
-    String secondaryLabel,
-    String secondaryText,
-    SearchObjectType searchObject,
-    SearchService<?, SearchObjectType> service
+      int id,
+      String typeOfResult,
+      String label,
+      String queryMatch,
+      String secondaryLabel,
+      String secondaryText,
+      SearchObjectType searchObject,
+      SearchService<?, SearchObjectType> service
   ) {
     myId = id;
     myTypeOfResult = typeOfResult;
@@ -48,7 +48,7 @@ public class SearchResult<SearchObjectType> {
     mySearchObject = searchObject;
   }
 
-  int getMyId() { return myId; }
+  int getId() { return myId; }
 
   String getTypeOfResult() { return myTypeOfResult; }
 

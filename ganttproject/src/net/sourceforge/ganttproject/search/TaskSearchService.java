@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.task.Task;
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
   static class MySearchResult extends SearchResult<Task> {
     MySearchResult(Task t, TaskSearchService searchService, String query, String snippet, String snippetText) {
-      super(t.getTaskID(), GanttLanguage.getInstance().getCorrectedLabel("task"), t.getName(), query, snippet, snippetText, t, searchService);
+      super(t.getTaskID(), GanttLanguage.getInstance().getText("generic.task"), t.getName(), query, snippet, snippetText, t, searchService);
     }
   }
 

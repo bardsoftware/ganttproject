@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -37,9 +36,11 @@ import javax.swing.ListCellRenderer;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.search.SearchDialog.SearchCallback;
+import org.jdesktop.swingx.JXList;
 
 public class SearchUiImpl implements SearchUi {
   private final IGanttProject project;
@@ -77,7 +78,7 @@ public class SearchUiImpl implements SearchUi {
   class PopupSearchCallback implements SearchCallback {
     private SearchDialog myDialog = new SearchDialog(project, uiFacade);
     private JTextField searchBox;
-    private JList list = new JList();
+    private JXList list = new JXList();
     private Runnable onSelect;
     private Runnable onDismiss;
 
@@ -128,6 +129,7 @@ public class SearchUiImpl implements SearchUi {
       list.requestFocusInWindow();
       ListCellRenderer resultRenderer = new SearchResultCellRenderer();
       list.setCellRenderer(resultRenderer);
+      list.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
       list.setSelectedIndex(0);
       onSelect = new Runnable() {
         @Override
