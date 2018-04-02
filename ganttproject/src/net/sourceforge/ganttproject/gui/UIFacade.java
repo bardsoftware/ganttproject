@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.client.RssUpdate;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -154,4 +155,6 @@ public interface UIFacade {
   GPOptionGroup[] getOptions();
 
   void addOnUpdateComponentTreeUi(Runnable callback);
+
+  void showUpdateDialog(RssUpdate update);
 }

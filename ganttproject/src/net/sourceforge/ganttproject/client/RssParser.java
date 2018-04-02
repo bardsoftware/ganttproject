@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.client;
 
 import net.sourceforge.ganttproject.GPVersion;
 
+import net.sourceforge.ganttproject.util.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -84,6 +85,18 @@ class RssParser {
     return result;
   }
 
+  public RssUpdate parseUpdate(String content){
+    if(!StringUtils.isEmptyOrNull(content)) {
+      content = content.replaceAll("</?div>(\\n)?", "");
+
+      String[] parts = content.split("\n", 3);
+      if (parts.length == 3) {
+        return new RssUpdate(parts[0], parts[1], parts[2]);
+      }
+    }
+    return null;
+  }
+
   private boolean isApplicableToVersion(Node item, String version, String build) throws XPathExpressionException {
     boolean hasRestriction = false;
     NodeList categories = (NodeList) getXPath("atom:category").evaluate(item, XPathConstants.NODESET);
@@ -142,6 +155,21 @@ class RssParser {
     }
     String title = getXPath("atom:title/text()").evaluate(item);
     String body = getXPath("atom:content/text()").evaluate(item);
-    result.addItem(title, body);
+    boolean isUpdate = isUpdateItem(item);
+    result.addItem(title, body, isUpdate);
+  }
+
+  private boolean isUpdateItem(Node item) throws XPathExpressionException {
+    NodeList categories = (NodeList) getXPath("atom:category").evaluate(item, XPathConstants.NODESET);
+    for (int i = 0; i < categories.getLength(); i++) {
+      Element elCategory = (Element) categories.item(i);
+      String category = elCategory.getAttribute("term");
+      if (!Strings.isNullOrEmpty(category)) {
+        if(category.equals("update")){
+            return true;
+        }
+      }
+    }
+    return false;
   }
 }

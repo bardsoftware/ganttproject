@@ -25,17 +25,19 @@ class RssFeed {
   static class Item {
     final String title;
     final String body;
+    final boolean isUpdate;
 
-    Item(String title, String body) {
+    Item(String title, String body, boolean isUpdate) {
       this.title = title;
       this.body = body;
+      this.isUpdate = isUpdate;
     }
   }
 
   private final List<Item> myItems = new ArrayList<Item>();
 
-  void addItem(String title, String body) {
-    myItems.add(new Item(title, body));
+  void addItem(String title, String body, boolean isUpdate) {
+    myItems.add(new Item(title, body, isUpdate));
   }
 
   List<Item> getItems() {
