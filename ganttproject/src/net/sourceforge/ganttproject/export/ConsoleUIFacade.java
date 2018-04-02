@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.client.RssUpdate;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
@@ -243,11 +242,6 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public void addOnUpdateComponentTreeUi(Runnable callback) {
-  }
-
-  @Override
-  public void showUpdateDialog(RssUpdate update) {
-
   }
 
   @Override

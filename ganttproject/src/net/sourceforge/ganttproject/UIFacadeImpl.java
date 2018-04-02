@@ -30,7 +30,6 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.client.RssUpdate;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -39,7 +38,6 @@ import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
-import net.sourceforge.ganttproject.gui.update.UpdateDialog;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
@@ -673,11 +671,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void addOnUpdateComponentTreeUi(Runnable callback) {
     myOnUpdateComponentTreeUiCallbacks.add(callback);
-  }
-
-  @Override
-  public void showUpdateDialog(RssUpdate update) {
-    UpdateDialog.show(this, update);
   }
 
   @Override

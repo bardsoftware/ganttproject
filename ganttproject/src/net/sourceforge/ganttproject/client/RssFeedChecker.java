@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.update.UpdateDialog;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.apache.http.HttpResponse;
@@ -208,7 +209,7 @@ public class RssFeedChecker {
         boolean updateDialogShowed = false;
         for (RssFeed.Item item : feed.getItems()) {
           if (item.isUpdate) {
-            if(!updateDialogShowed){
+            if (!updateDialogShowed) {
               updateDialogShowed = true;
               createUpdateDialog(item.body);
             }
@@ -238,9 +239,8 @@ public class RssFeedChecker {
 
   private void createUpdateDialog(String content) {
     RssUpdate update = parser.parseUpdate(content);
-    if(update != null) {
-      Thread updateDialogThread = new Thread(() -> myUiFacade.showUpdateDialog(update));
-      updateDialogThread.start();
+    if (update != null) {
+      UpdateDialog.show(myUiFacade, update);
     }
   }
 

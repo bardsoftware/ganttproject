@@ -30,7 +30,6 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
-import net.sourceforge.ganttproject.client.RssUpdate;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -471,8 +470,4 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected abstract ParserFactory getParserFactory();
 
-  @Override
-  public void showUpdateDialog(RssUpdate update){
-    myUIFacade.showUpdateDialog(update);
-  }
 }

@@ -5,8 +5,8 @@ This file is part of GanttProject, an opensource project management tool.
 
 GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,35 +29,34 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class UpdateDialog {
+  public static void show(UIFacade uiFacade, RssUpdate update) {
+    JEditorPane versionRow = createHtml(GanttLanguage.getInstance().formatText("updateAvailable", update.getVersion()));
+    JEditorPane descriptionRow = createHtml(update.getDescription());
 
-    public static void show(UIFacade uiFacade, RssUpdate update) {
-        JEditorPane versionRow = createHtml(GanttLanguage.getInstance().formatText("updateAvailable", update.getVersion()));
-        JEditorPane descriptionRow = createHtml(update.getDescription());
+    Box dialogBox = Box.createVerticalBox();
+    dialogBox.add(versionRow);
+    dialogBox.add(descriptionRow);
 
-        Box dialogBox = Box.createVerticalBox();
-        dialogBox.add(versionRow);
-        dialogBox.add(descriptionRow);
+    JPanel panel = new JPanel();
+    panel.add(dialogBox);
 
-        JPanel panel = new JPanel();
-        panel.add(dialogBox);
+    OkAction okAction = new OkAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
 
-        OkAction okAction = new OkAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+      }
+    };
 
-            }
-        };
+    UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY }, "");
+    dlg.show();
+  }
 
-        UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY }, "");
-        dlg.show();
-    }
-
-    private static JEditorPane createHtml(String html) {
-        JEditorPane htmlPane = new JEditorPane("text/html", html);
-        htmlPane.setEditable(false);
-        htmlPane.setBackground(new JPanel().getBackground());
-        htmlPane.addHyperlinkListener(NotificationManager.DEFAULT_HYPERLINK_LISTENER);
-        return htmlPane;
-    }
+  private static JEditorPane createHtml(String html) {
+    JEditorPane htmlPane = new JEditorPane("text/html", html);
+    htmlPane.setEditable(false);
+    htmlPane.setBackground(new JPanel().getBackground());
+    htmlPane.addHyperlinkListener(NotificationManager.DEFAULT_HYPERLINK_LISTENER);
+    return htmlPane;
+  }
 
 }

@@ -20,25 +20,25 @@ package net.sourceforge.ganttproject.client;
 
 public class RssUpdate {
 
-    private String version;
-    private String url;
-    private String description;
+  final String myVersion;
+  final String myUrl;
+  final String myDescription;
 
-    public RssUpdate(String version, String url, String description) {
-        this.version = version;
-        this.url = url;
-        this.description = description;
-    }
+  public RssUpdate(String version, String url, String description) {
+    myVersion = version;
+    myUrl = url;
+    myDescription = description;
+  }
 
-    public String getVersion() {
-        return version;
-    }
+  public String getVersion() {
+    return myVersion;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return myUrl;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return myDescription;
+  }
 }
