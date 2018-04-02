@@ -39,7 +39,7 @@ import java.io.*;
 import java.util.Date;
 import java.util.Iterator;
 
-class RssParser {
+public class RssParser {
 
   private final XPathFactory myXPathFactory = XPathFactory.newInstance();
 
