@@ -20,10 +20,13 @@ package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.core.option.ColorOption
 import javafx.embed.swing.JFXPanel
+import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.CheckBox
+import javafx.scene.control.Label
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.StackPane
+import javafx.scene.layout.VBox
 import javax.swing.JComponent
 
 /**
@@ -40,8 +43,16 @@ class CalendarPanel(val background: java.awt.Color) {
 
    fun createScene(): Scene {
      val grid = GridPane()
+
      val weekendsWorking = CheckBox("Weekends are working days")
-     grid.add(weekendsWorking, 0, 0)
+
+     val title = Label("Calendar Exceptions")
+     title.style = "-fx-border-width: 0 0 1 0; -fx-padding: 0 0 3 0; -fx-border-color: black; -fx-font-size: 125%;"
+     val exceptionsGroup = VBox()
+     exceptionsGroup.children.addAll(title, weekendsWorking)
+     VBox.setMargin(weekendsWorking, Insets(10.0, 0.0,0.0,0.0))
+
+     grid.add(exceptionsGroup, 0, 0)
      grid.style = "-fx-background-color:${ColorOption.Util.getColor(background)}; -fx-opacity:1; -fx-padding: 20 5 5 5;"
 
      val stackPane = StackPane(grid)

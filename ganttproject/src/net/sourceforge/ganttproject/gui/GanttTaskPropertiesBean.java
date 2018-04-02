@@ -355,7 +355,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     tabbedPane.addTab(language.getCorrectedLabel("human"), new ImageIcon(getClass().getResource("/icons/res_16.gif")),
         resourcesPanel);
 
-    tabbedPane.addTab("Calendar", new CalendarPanel(resourcesPanel.getBackground()).getComponent());
+    tabbedPane.addTab("Scheduling Options", new CalendarPanel(resourcesPanel.getBackground()).getComponent());
     setLayout(new BorderLayout());
 
     add(tabbedPane, BorderLayout.CENTER);
