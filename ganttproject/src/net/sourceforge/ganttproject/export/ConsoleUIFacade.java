@@ -245,6 +245,11 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
+  public void setDownloadProgress(int progress) {
+
+  }
+
+  @Override
   public GanttLookAndFeelInfo getLookAndFeel() {
     // TODO Auto-generated method stub
     return null;

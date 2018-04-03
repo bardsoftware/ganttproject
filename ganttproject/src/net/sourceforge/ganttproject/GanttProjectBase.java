@@ -470,4 +470,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected abstract ParserFactory getParserFactory();
 
+  @Override
+  public void setDownloadProgress(int progress){
+    myUIFacade.setDownloadProgress(progress);
+  }
+
 }

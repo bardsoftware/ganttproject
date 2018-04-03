@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.font.Fonts;
 
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -47,12 +48,15 @@ public class GanttStatusBar extends JPanel {
 
   private JFrame myMainFrame;
 
+  private JLabel myStatusText = new JLabel();
+
   private static IProgressMonitor ourMonitor;
 
   public GanttStatusBar(JFrame mainFrame) {
     super(new BorderLayout());
     myMainFrame = mainFrame;
     add(new JPanel(), BorderLayout.CENTER);
+    add(myStatusText, BorderLayout.WEST);
   }
 
   public IProgressMonitor createProgressMonitor() {
@@ -246,6 +250,14 @@ public class GanttStatusBar extends JPanel {
           myProgressDialog.setProgress(myWorked);
         }
       });
+    }
+  }
+
+  public void setDownloadProgress(int progress) {
+    if (progress == -1) {
+      myStatusText.setText("");
+    } else {
+      myStatusText.setText(GanttLanguage.getInstance().formatText("downloadProgress", progress));
     }
   }
 
