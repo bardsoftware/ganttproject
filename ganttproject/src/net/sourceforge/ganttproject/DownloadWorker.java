@@ -132,9 +132,9 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
   }
 
   private String getExtractionFolder() {
-    String projectPath = System.getProperty("user.dir") + PLUGINS_FOLDER;
+    String projectPath = System.getProperty("user.dir");
     if (new File(projectPath).canWrite()) {
-      return projectPath;
+      return projectPath + PLUGINS_FOLDER;
     } else {
       return System.getProperty("user.home") + "/.ganttproject.d" + PLUGINS_FOLDER;
     }

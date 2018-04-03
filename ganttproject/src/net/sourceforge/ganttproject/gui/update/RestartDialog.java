@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.apache.commons.lang.SystemUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -43,7 +44,8 @@ public class RestartDialog {
       public void actionPerformed(ActionEvent e) {
         ScheduledExecutorService schedulerExecutor = Executors.newScheduledThreadPool(2);
         Callable<Process> callable = () -> {
-          ProcessBuilder builder = new ProcessBuilder("ganttproject");
+          ProcessBuilder builder = new ProcessBuilder(
+                  SystemUtils.IS_OS_WINDOWS? "cmd /c start \"\" ganttproject.bat" : "ganttproject");
 
           return builder.start();
         };
