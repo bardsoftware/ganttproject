@@ -18,11 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
-import com.google.common.xml.XmlEscapers;
 import net.sourceforge.ganttproject.GPVersion;
 
 import net.sourceforge.ganttproject.util.StringUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -89,11 +87,10 @@ public class RssParser {
 
   public RssUpdate parseUpdate(String content){
     if (!StringUtils.isEmptyOrNull(content)) {
-      content = XmlEscapers.xmlContentEscaper().escape(content);
 
       String[] parts = content.split("\n", 3);
       if (parts.length == 3) {
-        return new RssUpdate(parts[0], parts[1], StringEscapeUtils.unescapeHtml(parts[2]));
+        return new RssUpdate(parts[0], parts[1], parts[2]);
       }
     }
     return null;

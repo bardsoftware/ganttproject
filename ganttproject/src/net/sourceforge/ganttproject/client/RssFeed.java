@@ -21,11 +21,11 @@ package net.sourceforge.ganttproject.client;
 import java.util.ArrayList;
 import java.util.List;
 
-class RssFeed {
-  static class Item {
-    final String title;
-    final String body;
-    final boolean isUpdate;
+public class RssFeed {
+  public static class Item {
+    public final String title;
+    public final String body;
+    public final boolean isUpdate;
 
     Item(String title, String body, boolean isUpdate) {
       this.title = title;
@@ -40,7 +40,7 @@ class RssFeed {
     myItems.add(new Item(title, body, isUpdate));
   }
 
-  List<Item> getItems() {
+  public List<Item> getItems() {
     return myItems;
   }
 }

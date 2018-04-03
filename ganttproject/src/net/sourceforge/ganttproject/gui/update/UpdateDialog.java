@@ -46,9 +46,10 @@ public class UpdateDialog {
 
       }
     };
-
-    UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY }, "");
-    dlg.show();
+    SwingUtilities.invokeLater(() -> {
+      UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY }, "");
+      dlg.show();
+    });
   }
 
   private static JEditorPane createHtml(String html) {
