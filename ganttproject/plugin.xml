@@ -24,6 +24,9 @@
       <library name="lib/core/commons-csv.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/commons-lang-2.6.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/commons-io.jar">
          <export name="*"/>
       </library>

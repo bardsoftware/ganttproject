@@ -5,6 +5,7 @@ dependencies {
   testCompile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   testCompile project(':..:ganttproject')
   testCompile project(':..:biz.ganttproject.impex.msproject2')
+  testCompile files('data/resources')
 }
 
 updateMavenDeps.doFirst {
