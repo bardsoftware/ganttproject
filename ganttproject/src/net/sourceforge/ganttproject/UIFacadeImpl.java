@@ -674,11 +674,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public void setDownloadProgress(int progress) {
-    myStatusBar.setDownloadProgress(progress);
-  }
-
-  @Override
   public Image getLogo() {
     if (myLogoOption.getValue() == null) {
       return DEFAULT_LOGO.getImage();

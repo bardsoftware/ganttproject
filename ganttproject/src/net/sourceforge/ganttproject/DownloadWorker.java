@@ -18,8 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject;
 
+import com.google.common.io.ByteStreams;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.update.RestartDialog;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
 import java.io.*;
@@ -31,7 +33,7 @@ import java.util.zip.ZipInputStream;
 
 public class DownloadWorker extends SwingWorker<Void, Integer> {
   private static final int BUFFER_SIZE = 4096;
-  private static final String PLUGINS_FOLDER = "/plugins";
+  private static final String PLUGINS_FOLDER = File.separator + "plugins";
   private String myDownloadURL;
   private UIFacade myUiFacade;
 
@@ -42,7 +44,12 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
 
   @Override
   protected void process(List<Integer> chunks) {
-    myUiFacade.setDownloadProgress(chunks.get(chunks.size() - 1));
+    String statusText = "";
+    int chunk = chunks.get(chunks.size() - 1);
+    if (chunk > -1) {
+      statusText = GanttLanguage.getInstance().formatText("downloadProgress", chunk);
+    }
+    myUiFacade.setStatusText(statusText);
   }
 
   @Override
@@ -54,8 +61,7 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
       urlConnection = (HttpURLConnection) url.openConnection();
       int responseCode = urlConnection.getResponseCode();
 
-      String saveFilePath = System.getProperty("java.io.tmpdir") + File.separator + "gantt-update";
-      updateFile = File.createTempFile(saveFilePath, ".tmp");
+      updateFile = File.createTempFile("gantt-update", ".tmp");
 
       if (responseCode == HttpURLConnection.HTTP_OK) {
         downloadZip(urlConnection, updateFile);
@@ -64,11 +70,15 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
       }
       unzipUpdates(updateFile);
     } catch (IOException ex) {
-      ex.printStackTrace();
+      GPLogger.log(ex);
       cancel(true);
     } finally {
-      urlConnection.disconnect();
-      updateFile.delete();
+      if (urlConnection != null) {
+        urlConnection.disconnect();
+      }
+      if (updateFile != null) {
+        updateFile.delete();
+      }
     }
 
     return null;
@@ -92,7 +102,7 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
         publish(percentCompleted);
       }
     } catch (IOException ex) {
-      ex.printStackTrace();
+      GPLogger.log(ex);
       cancel(true);
     }
   }
@@ -103,10 +113,11 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
 
       File folder = new File(extractionFolder);
       if (!folder.exists()) {
-        folder.mkdir();
+        if (!folder.mkdirs()) {
+          throw new IOException("Cannot create plugins folder");
+        }
       }
 
-      byte[] buffer = new byte[BUFFER_SIZE];
       ZipEntry zipEntry;
       while ((zipEntry = zis.getNextEntry()) != null) {
         String fileName = zipEntry.getName();
@@ -116,33 +127,37 @@ public class DownloadWorker extends SwingWorker<Void, Integer> {
         }
 
         File newFile = new File(extractionFolder + File.separator + fileName);
-        new File(newFile.getParent()).mkdirs();
+        File parent = newFile.getParentFile();
+        if (!parent.exists()) {
+          if (!parent.mkdirs()) {
+            throw new IOException("Cannot create plugins folder");
+          }
+        }
 
         FileOutputStream fos = new FileOutputStream(newFile);
-        int len;
-        while ((len = zis.read(buffer)) > 0) {
-          fos.write(buffer, 0, len);
-        }
+        ByteStreams.copy(zis, fos);
+
         fos.close();
         zis.closeEntry();
       }
     } catch (IOException ex) {
-      ex.printStackTrace();
+      GPLogger.log(ex);
+      cancel(true);
     }
   }
 
   private String getExtractionFolder() {
-    String projectPath = System.getProperty("user.dir");
-    if (new File(projectPath).canWrite()) {
-      return projectPath + PLUGINS_FOLDER;
+    URL projectPath = Object.class.getResource(PLUGINS_FOLDER);
+    if (projectPath != null && new File(projectPath.getPath()).canWrite()) {
+      return projectPath.getPath() + PLUGINS_FOLDER;
     } else {
-      return System.getProperty("user.home") + "/.ganttproject.d" + PLUGINS_FOLDER;
+      return System.getProperty("user.home") + File.separator + ".ganttproject.d" + PLUGINS_FOLDER;
     }
   }
 
   @Override
   protected void done() {
-    myUiFacade.setDownloadProgress(-1);
+    myUiFacade.setStatusText("");
     if (!isCancelled()) {
       RestartDialog.show(myUiFacade);
     }

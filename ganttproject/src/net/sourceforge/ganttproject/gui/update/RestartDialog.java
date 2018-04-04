@@ -22,41 +22,24 @@ import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.apache.commons.lang.SystemUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ScheduledExecutorService;
+import java.awt.event.WindowEvent;
+
+import static javax.swing.JOptionPane.QUESTION_MESSAGE;
 
 public class RestartDialog {
 
   public static void show(UIFacade uiFacade) {
-    JLabel label = new JLabel(GanttLanguage.getInstance().formatText("restartApplication"));
-
-    JPanel panel = new JPanel();
-    panel.add(label);
 
     OkAction okAction = new OkAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        ScheduledExecutorService schedulerExecutor = Executors.newScheduledThreadPool(2);
-        Callable<Process> callable = () -> {
-          ProcessBuilder builder = new ProcessBuilder(
-                  SystemUtils.IS_OS_WINDOWS? "cmd /c start \"\" ganttproject.bat" : "ganttproject");
-
-          return builder.start();
-        };
-        FutureTask<Process> futureTask = new FutureTask<>(callable);
-        schedulerExecutor.submit(futureTask);
-
-        System.exit(0);
+        uiFacade.getMainFrame().dispatchEvent(new WindowEvent(uiFacade.getMainFrame(), WindowEvent.WINDOW_CLOSING));
       }
     };
+    uiFacade.showOptionDialog(QUESTION_MESSAGE, GanttLanguage.getInstance().formatText("restartApplication"), new Action[]{okAction, CancelAction.EMPTY});
 
-    UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[]{okAction, CancelAction.EMPTY}, "");
-    dlg.show();
   }
 }

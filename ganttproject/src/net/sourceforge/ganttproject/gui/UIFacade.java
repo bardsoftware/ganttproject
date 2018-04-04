@@ -154,6 +154,4 @@ public interface UIFacade {
   GPOptionGroup[] getOptions();
 
   void addOnUpdateComponentTreeUi(Runnable callback);
-
-  void setDownloadProgress(int progress);
 }

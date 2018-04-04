@@ -82,6 +82,7 @@ public class GanttStatusBar extends JPanel {
    *          amount of milliseconds to show the text
    */
   public void setFirstText(String text, int milliseconds) {
+    myStatusText.setText(text);
   }
 
   /**
@@ -250,14 +251,6 @@ public class GanttStatusBar extends JPanel {
           myProgressDialog.setProgress(myWorked);
         }
       });
-    }
-  }
-
-  public void setDownloadProgress(int progress) {
-    if (progress == -1) {
-      myStatusText.setText("");
-    } else {
-      myStatusText.setText(GanttLanguage.getInstance().formatText("downloadProgress", progress));
     }
   }
 
