@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.update;
 
+import net.sourceforge.ganttproject.DownloadWorker;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.client.RssUpdate;
@@ -40,15 +41,17 @@ public class UpdateDialog {
     JPanel panel = new JPanel();
     panel.add(dialogBox);
 
-    OkAction okAction = new OkAction() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-
-      }
-    };
     SwingUtilities.invokeLater(() -> {
-      UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[] { okAction, CancelAction.EMPTY }, "");
+      OkAction okAction = new OkAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          new DownloadWorker(uiFacade, update.getUrl()).execute();
+        }
+      };
+
+      UIFacade.Dialog dlg = uiFacade.createDialog(panel, new Action[]{okAction, CancelAction.EMPTY}, "");
       dlg.show();
+
     });
   }
 
