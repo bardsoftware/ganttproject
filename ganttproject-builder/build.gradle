@@ -181,7 +181,7 @@ task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
 
 task runApp(type: JavaExec, dependsOn: distBin) {
   workingDir = 'dist-bin'
-  classpath = fileTree(dir: 'dist-bin', includes:['eclipsito.jar', '.'])
+  classpath = (fileTree(dir: 'dist-bin', includes:['eclipsito.jar']) + files('dist-bin'))
   main = 'org.bardsoftware.eclipsito.Boot'
   args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
   jvmArgs '-ea'
