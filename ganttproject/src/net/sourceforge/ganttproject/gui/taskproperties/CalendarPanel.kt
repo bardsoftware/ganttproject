@@ -20,13 +20,13 @@ package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.core.option.ColorOption
 import javafx.embed.swing.JFXPanel
-import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
 import javafx.scene.layout.GridPane
-import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
+import net.sourceforge.ganttproject.task.Task
+import java.awt.Color
 import javax.swing.JComponent
 
 /**
@@ -34,29 +34,28 @@ import javax.swing.JComponent
  *
  * @author dbarashev@bardsoftware.com
  */
-class CalendarPanel(val background: java.awt.Color) {
+class CalendarPanel(private val task: Task, private val background: Color) {
   fun getComponent(): JComponent {
-    val result = JFXPanel()
-    result.scene = createScene()
-    return result
+    return JFXPanel().apply {
+      scene = createScene()
+    }
   }
 
-   fun createScene(): Scene {
-     val grid = GridPane()
+  fun createScene(): Scene {
+    val grid = GridPane()
 
-     val weekendsWorking = CheckBox("Weekends are working days")
+    val weekendsWorking = CheckBox("Work on weekends")
+    weekendsWorking.selectedProperty().addListener({ _, _, new -> this.task.calendar.workingWeekends = new })
 
-     val title = Label("Calendar Exceptions")
-     title.style = "-fx-border-width: 0 0 1 0; -fx-padding: 0 0 3 0; -fx-border-color: black; -fx-font-size: 125%;"
-     val exceptionsGroup = VBox()
-     exceptionsGroup.children.addAll(title, weekendsWorking)
-     VBox.setMargin(weekendsWorking, Insets(10.0, 0.0,0.0,0.0))
+    val title = Label("Calendar Exceptions")
+    title.style = "-fx-padding: 0 0 10 0; -fx-font-size: 125%;"
+    val exceptionsGroup = VBox()
+    exceptionsGroup.children.addAll(title, weekendsWorking)
+    //VBox.setMargin(weekendsWorking, Insets(10.0, 0.0,0.0,0.0))
 
-     grid.add(exceptionsGroup, 0, 0)
-     grid.style = "-fx-background-color:${ColorOption.Util.getColor(background)}; -fx-opacity:1; -fx-padding: 20 5 5 5;"
+    grid.add(exceptionsGroup, 0, 0)
+    grid.style = "-fx-background-color:${ColorOption.Util.getColor(background)}; -fx-opacity:1; -fx-padding: 20 5 5 5;"
 
-     val stackPane = StackPane(grid)
-     val scene = Scene(stackPane)
-     return scene
-   }
+    return Scene(grid)
+  }
 }

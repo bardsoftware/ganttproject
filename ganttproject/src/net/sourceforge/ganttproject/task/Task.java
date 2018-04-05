@@ -18,15 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.awt.Color;
-import java.math.BigDecimal;
-import java.util.List;
-
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.model.task.TaskCalendar;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+
+import java.awt.*;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Project task definition
@@ -186,4 +187,6 @@ public interface Task extends MutableTask {
   boolean isSupertask();
 
   List<Document> getAttachments();
+
+  TaskCalendar getCalendar();
 }

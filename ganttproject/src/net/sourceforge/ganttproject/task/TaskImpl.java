@@ -24,12 +24,15 @@ import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.model.task.TaskCalendar;
+import biz.ganttproject.core.model.task.TaskCalendarImpl;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
@@ -83,6 +86,8 @@ public class TaskImpl implements Task {
   boolean isProjectTask;
 
   private Priority myPriority;
+
+  private final TaskCalendarImpl myCalendar;
 
   private GanttCalendar myStart;
 
@@ -144,6 +149,7 @@ public class TaskImpl implements Task {
     myManager = taskManager;
     myID = taskID;
 
+    myCalendar = new TaskCalendarImpl(taskManager.getWeekendExceptionRanges(), () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()));
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
@@ -193,6 +199,7 @@ public class TaskImpl implements Task {
 
     customValues = (CustomColumnsValues) copy.getCustomValues().clone();
 
+    myCalendar = new TaskCalendarImpl(manager.getWeekendExceptionRanges(), () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()));
     recalculateActivities();
   }
 
@@ -331,6 +338,11 @@ public class TaskImpl implements Task {
       });
     }
     return Collections.emptyList();
+  }
+
+  @Override
+  public TaskCalendar getCalendar() {
+    return myCalendar;
   }
 
   @Override
@@ -872,6 +884,7 @@ public class TaskImpl implements Task {
       return myCompletionPercentageChange == null ? TaskImpl.this.myCompletionPercentage
           : ((Integer) myCompletionPercentageChange.myFieldValue).intValue();
     }
+
 
     GanttCalendar getStart() {
       return myStartChange == null ? TaskImpl.this.myStart : (GanttCalendar) myStartChange.myFieldValue;
