@@ -352,6 +352,8 @@ public class TaskManagerImpl implements TaskManager {
           String name = myName == null
               ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
           task.setName(name);
+        } else if (myName != null) {
+          task.setName(myName);
         }
         if (myStartDate != null) {
           GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
