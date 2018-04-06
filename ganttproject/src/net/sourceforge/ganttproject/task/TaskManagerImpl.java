@@ -318,6 +318,10 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public void deleteTask(Task tasktoRemove) {
+    Task[] nestedTasks = getTaskHierarchy().getDeepNestedTasks(tasktoRemove);
+    for (Task t : nestedTasks) {
+      t.delete();
+    }
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
     tasktoRemove.delete();
