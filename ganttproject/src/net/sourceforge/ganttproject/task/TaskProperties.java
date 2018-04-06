@@ -84,11 +84,15 @@ public class TaskProperties {
     StringBuffer sb = new StringBuffer();
     if (propertyID != null) {
       if (propertyID.equals(ID_TASK_DATES)) {
-        sb.append(" [ ");
-        formatDate(task.getStart(), sb);
-        sb.append(" - ");
-        formatDate(task.getDisplayEnd(), sb);
-        sb.append(" ] ");
+        if (task.isMilestone()) {
+          formatDate(task.getStart(), sb);
+        } else {
+          sb.append(" [ ");
+          formatDate(task.getStart(), sb);
+          sb.append(" - ");
+          formatDate(task.getDisplayEnd(), sb);
+          sb.append(" ] ");
+        }
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_NAME)) {
         sb.append(" " + task.getName() + " ");
