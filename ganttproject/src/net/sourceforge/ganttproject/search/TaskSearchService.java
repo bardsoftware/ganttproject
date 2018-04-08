@@ -65,7 +65,7 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
       }
       if (isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
         matched = true;
-        snippet = "Id";
+        snippet = GanttLanguage.getInstance().getText("id");
         snippetText = String.valueOf(t.getTaskID());
       }
       if (matched) {

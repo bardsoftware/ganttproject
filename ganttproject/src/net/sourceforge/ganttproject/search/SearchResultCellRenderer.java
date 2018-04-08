@@ -1,5 +1,3 @@
-package net.sourceforge.ganttproject.search;
-
 /*
 Copyright 2018 BarD Software s.r.o, Douglas Kelly
 
@@ -15,6 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package net.sourceforge.ganttproject.search;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
