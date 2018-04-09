@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
+import net.sourceforge.ganttproject.task.algorithm.LoadAlgorithmImpl;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
@@ -129,6 +130,8 @@ public class TaskImpl implements Task {
   private List<TaskActivity> myMilestoneActivity;
 
   private final CostImpl myCost = new CostImpl();
+
+  private final LoadImpl myLoad = new LoadImpl();
 
   private boolean isUnplugged = false;
 
@@ -1277,4 +1280,19 @@ public class TaskImpl implements Task {
   public Cost getCost() {
     return myCost;
   }
+
+  private class LoadImpl implements Load {
+
+    @Override
+    public Double getValue() {
+      return new LoadAlgorithmImpl().getCalculatedLoad(TaskImpl.this);
+    }
+
+  }
+
+  @Override
+  public Load getLoad() {
+	return myLoad;
+  }
+
 }

@@ -58,6 +58,8 @@ public class TaskAllocationsPanel {
   };
   private final GPOptionGroup myCostGroup = new GPOptionGroup("task.cost", myCostIsCalculated, myCostValue);
 
+  private final GPOptionGroup myLoadGroup = new GPOptionGroup("task.load");
+
   private JTable myTable;
 
   public TaskAllocationsPanel(Task task, HumanResourceManager hrManager, RoleManager roleMgr) {
@@ -78,7 +80,7 @@ public class TaskAllocationsPanel {
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(4), myRoleManager.getEnabledRoles());
 
     JPanel tablePanel = CommonPanel.createTableAndActions(myTable, myModel);
-    String layoutDef = "(ROW weight=1.0 (LEAF name=resources weight=0.5) (LEAF name=cost weight=0.5))";
+    String layoutDef = "(ROW weight=1.0 (LEAF name=resources weight=0.5) (COLUMN weight=0.5 (LEAF name=cost weight=0.5) (LEAF name=load weight=0.5)))";
 
     JXMultiSplitPane result = new JXMultiSplitPane();
     result.setDividerSize(0);
@@ -87,6 +89,7 @@ public class TaskAllocationsPanel {
     result.getMultiSplitLayout().setModel(modelRoot);
     result.add(tablePanel, "resources");
     result.add(UIUtil.border(createCostPanel(), 10, UIUtil.LEFT), "cost");
+    result.add(UIUtil.border(createLoadPanel(), 10, UIUtil.LEFT), "load");
     return result;
   }
 
@@ -116,6 +119,21 @@ public class TaskAllocationsPanel {
     radioUi.getYesButton().setText(GanttLanguage.getInstance().getText(yesLabelKey));
     radioUi.getNoButton().setText(GanttLanguage.getInstance().getText(builder.getI18N().getCanonicalOptionLabelKey(myCostIsCalculated) + ".no"));
     UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myCostGroup));
+
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(optionsPanel, BorderLayout.NORTH);
+    return result;
+  }
+
+  private JComponent createLoadPanel() {
+    OptionsPageBuilder builder = new OptionsPageBuilder();
+
+    JPanel optionsPanel = new JPanel();
+    optionsPanel.add(new JLabel(GanttLanguage.getInstance().getText("option.taskProperties.load.value.label")));
+    optionsPanel.add(new JLabel(myTask.getLoad().getValue().toString()));
+    OptionsPageBuilder.TWO_COLUMN_LAYOUT.layout(optionsPanel, 1);
+
+    UIUtil.createTitle(optionsPanel, builder.getI18N().getOptionGroupLabel(myLoadGroup));
 
     JPanel result = new JPanel(new BorderLayout());
     result.add(optionsPanel, BorderLayout.NORTH);

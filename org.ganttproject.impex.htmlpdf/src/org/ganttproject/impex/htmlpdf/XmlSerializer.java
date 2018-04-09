@@ -143,6 +143,7 @@ public class XmlSerializer extends SaverBase {
     addAttribute("assigned-to", i18n("human"), attrs);
     addAttribute("notes", i18n("notes"), attrs);
     addAttribute("duration", i18n("duration"), attrs);
+    addAttribute("load", i18n("load"), attrs);
     startPrefixedElement("tasks", attrs, handler);
     TaskVisitor visitor = new TaskVisitor() {
       AttributesImpl myAttrs = new AttributesImpl();
@@ -171,6 +172,9 @@ public class XmlSerializer extends SaverBase {
 
         addAttribute("id", "tpd6", myAttrs);
         textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
+
+        addAttribute("id", "tpd14", myAttrs);
+        textElement("load", myAttrs, String.valueOf(t.getLoad().getValue()), handler);
 
         final List<Document> attachments = t.getAttachments();
         for (int i = 0; i < attachments.size(); i++) {
