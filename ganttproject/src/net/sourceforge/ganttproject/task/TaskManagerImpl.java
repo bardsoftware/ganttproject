@@ -1078,9 +1078,15 @@ public class TaskManagerImpl implements TaskManager {
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
-      Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
-        .withDuration(that.getDuration())
-        .withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+      Task nextImported = builder
+          .withName(that.getName())
+          .withStartDate(that.getStart().getTime())
+          .withDuration(that.getDuration())
+          .withColor(that.getColor())
+          .withNotes(that.getNotes())
+          .withWebLink(that.getWebLink())
+          .withPriority(that.getPriority())
+          .withParent(root).build();
 
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
