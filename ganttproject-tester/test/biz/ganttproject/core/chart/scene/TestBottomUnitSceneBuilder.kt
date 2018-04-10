@@ -24,6 +24,7 @@ import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.grid.Offset
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl
 import biz.ganttproject.core.chart.grid.OffsetList
+import biz.ganttproject.core.chart.text.DayTextFormatter
 import biz.ganttproject.core.chart.text.TimeFormatter
 import biz.ganttproject.core.chart.text.TimeUnitText
 import biz.ganttproject.core.time.CalendarFactory
@@ -55,8 +56,8 @@ class TestBottomUnitSceneBuilder: TestCase() {
     };
   }
 
-  // Tests that label corresponding to weekend days are not rendered and have no graphic primitives on the canvas
-  fun testWeekendLabelsAreIgnored() {
+  // Tests that label corresponding to weekend days are rendered with empty labels
+  fun testWeekendLabelsAreEmpty() {
     val calendar = WeekendCalendarImpl()
     val start = TestSetupHelper.newMonday().time
 
@@ -71,16 +72,7 @@ class TestBottomUnitSceneBuilder: TestCase() {
 
     // Fill canvas with simple bottom line
     val canvas = Canvas()
-    val dumbFormatter = object: TimeFormatter {
-      override fun format(timeUnit: TimeUnit?, baseDate: Date?): Array<TimeUnitText> {
-        return arrayOf(TimeUnitText("*"))
-      }
-
-      override fun getTextCount(): Int {
-        return 1
-      }
-
-    }
+    val dumbFormatter = DayTextFormatter()
     val bottomUnitSceneBuilder = BottomUnitSceneBuilder(canvas, object: BottomUnitSceneBuilder.InputApi {
       override fun getTopLineHeight(): Int {
         return 10
@@ -96,7 +88,7 @@ class TestBottomUnitSceneBuilder: TestCase() {
     })
     bottomUnitSceneBuilder.build()
 
-    // Get text grouos from canvas. The only legal way of doing that is "painting"
+    // Get text groups from canvas. The only legal way of doing that is "painting"
     val textLengthCalculator = TestTextLengthCalculator(10)
     val textGroups = mutableListOf<Canvas.TextGroup>()
     canvas.paint(object : TestPainter(textLengthCalculator) {
@@ -106,12 +98,17 @@ class TestBottomUnitSceneBuilder: TestCase() {
     })
     assertEquals(1, textGroups.size)
 
-    // Now iterate through all texts and check that they were built for non-weekend offsets only
+    // Now iterate through all texts and check that those which were built for weekend offsets
+    // are empty.
     textGroups[0].getLine(0).forEachIndexed({index, text ->
       val offset = findOffset(bottomUnitOffsets, text.leftX)
       assertNotNull(offset)
-      assertEquals(0, offset!!.dayMask.and(GPCalendar.DayMask.WEEKEND))
-      assertEquals("*", text.getLabels(textLengthCalculator)[0].text)
+      val label = text.getLabels(textLengthCalculator)[0].text
+      if (offset!!.dayMask.and(GPCalendar.DayMask.WEEKEND) == 0) {
+        assertFalse(label.isEmpty())
+      } else {
+        assertTrue(label.isEmpty())
+      }
     })
   }
 

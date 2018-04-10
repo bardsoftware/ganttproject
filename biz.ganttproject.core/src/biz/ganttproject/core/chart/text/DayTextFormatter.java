@@ -18,15 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.text;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.chart.grid.Offset;
+
 import java.text.MessageFormat;
 import java.util.Date;
 
 
 
 public class DayTextFormatter extends CachingTextFormatter implements TimeFormatter {
-  // /** cache for holding formatted day names * */
-  // private final HashMap<Date, String> textCache = new HashMap<Date,
-  // String>();
 
   @Override
   protected TimeUnitText[] createTimeUnitText(Date adjustedLeft) {
@@ -34,18 +34,11 @@ public class DayTextFormatter extends CachingTextFormatter implements TimeFormat
         new Object[] { "" + adjustedLeft.getDate() })) };
   }
 
-  // public TimeUnitText format(TimeUnit timeUnit, Date baseDate) {
-  // String result = null;
-  // if (timeUnit instanceof DateFrameable) {
-  // Date adjustedLeft = ((DateFrameable) timeUnit).adjustLeft(baseDate);
-  // result = (String) textCache.get(adjustedLeft);
-  // if (result == null) {
-  // result = MessageFormat.format("{0}", new Object[] { ""
-  // + adjustedLeft.getDate() });
-  // textCache.put(adjustedLeft, result);
-  // }
-  // }
-  // return new TimeUnitText(result);
-  // }
-
+  @Override
+  public TimeUnitText[] format(Offset curOffset) {
+    if ((curOffset.getDayMask() & (GPCalendar.DayMask.WORKING)) == 0) {
+      return TimeFormatters.EMPTY_TEXT;
+    }
+    return super.format(curOffset);
+  }
 }

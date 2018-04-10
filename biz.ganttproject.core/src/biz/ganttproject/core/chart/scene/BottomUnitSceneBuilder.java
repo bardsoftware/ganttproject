@@ -84,11 +84,8 @@ public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
   }
 
   private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset, TimeFormatter formatter) {
-    if ((curOffset.getDayMask() & (DayMask.WORKING)) == 0) {
-      return;
-    }
     final int maxWidth = curOffset.getOffsetPixels() - curX;
-    TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
+    TimeUnitText[] texts = formatter.format(curOffset);
     for (int i = 0; i < texts.length; i++) {
       final TimeUnitText timeUnitText = texts[i];
       textGroup.addText(curX + 2, i, new TextSelector() {

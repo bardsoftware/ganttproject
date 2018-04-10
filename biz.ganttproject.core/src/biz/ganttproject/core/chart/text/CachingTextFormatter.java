@@ -3,13 +3,13 @@
  */
 package biz.ganttproject.core.chart.text;
 
-import java.util.Date;
-import java.util.HashMap;
-
-
+import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeUnit;
+
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @author bard
@@ -18,6 +18,10 @@ public abstract class CachingTextFormatter {
   private final HashMap<Date, TimeUnitText[]> myTextCache = new HashMap<Date, TimeUnitText[]>();
 
   protected CachingTextFormatter() {
+  }
+
+  public TimeUnitText[] format(Offset curOffset) {
+    return format(curOffset.getOffsetUnit(), curOffset.getOffsetStart());
   }
 
   public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
