@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
@@ -505,6 +506,10 @@ public abstract class UIUtil {
     public Component getTableCellEditorComponent(JTable arg0, Object value, boolean arg2, int arg3, int arg4) {
       if (value instanceof GanttCalendar) {
         myDatePicker.setDate(((GanttCalendar)value).getTime());
+      } else if (value instanceof Date) {
+        myDatePicker.setDate((Date) value);
+      } else if (value instanceof CalendarEvent) {
+        myDatePicker.setDate(((CalendarEvent)value).myDate);
       }
       return myShowDatePicker ? myDatePicker : myDatePicker.getEditor();
     }
