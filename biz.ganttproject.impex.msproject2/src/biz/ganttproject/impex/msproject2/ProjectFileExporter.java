@@ -19,13 +19,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.impex.msproject2;
 
 import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
-import net.sf.mpxj.*;
-import net.sourceforge.ganttproject.*;
+import net.sf.mpxj.DateRange;
+import net.sf.mpxj.Day;
+import net.sf.mpxj.Duration;
+import net.sf.mpxj.FieldType;
+import net.sf.mpxj.MPXJException;
+import net.sf.mpxj.Priority;
+import net.sf.mpxj.ProjectCalendar;
+import net.sf.mpxj.ProjectCalendarException;
+import net.sf.mpxj.ProjectCalendarHours;
+import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Rate;
+import net.sf.mpxj.RelationType;
+import net.sf.mpxj.Resource;
+import net.sf.mpxj.ResourceType;
+import net.sf.mpxj.TaskMode;
+import net.sf.mpxj.TimeUnit;
+import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.CustomPropertyHolder;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -109,10 +131,20 @@ class ProjectFileExporter {
   }
 
   private void exportHolidays(ProjectCalendar calendar) {
-    for (CalendarEvent h : getCalendar().getPublicHolidays()) {
+    exportHolidays(getCalendar(), calendar);
+  }
+
+  static void exportHolidays(GPCalendar gpCalendar, ProjectCalendar calendar) {
+    for (CalendarEvent h : gpCalendar.getPublicHolidays()) {
       if (!h.isRecurring && h.getType() == CalendarEvent.Type.HOLIDAY) {
         Date d = h.myDate;
         calendar.addCalendarException(d, d);
+      }
+      if (!h.isRecurring && h.getType() == CalendarEvent.Type.WORKING_DAY && !calendar.isWorkingDate(h.myDate)) {
+        Date d = h.myDate;
+        ProjectCalendarException exception = calendar.addCalendarException(d, d);
+        exception.addRange(ProjectCalendar.DEFAULT_WORKING_MORNING);
+        exception.addRange(ProjectCalendar.DEFAULT_WORKING_AFTERNOON);
       }
     }
   }
@@ -197,6 +229,11 @@ class ProjectFileExporter {
 
   private Date convertStartTime(Date gpStartDate) {
     Date startTime = myOutputProject.getDefaultCalendar().getStartTime(gpStartDate);
+    if (startTime == null) {
+      GPLogger.getLogger(getClass()).warning(String.format("Failed to convert start date=%s to start time in MPXJ project, got null. " +
+          "Chances are that task start date is non-working day in MPXJ project calendar. Let's take the start date as is", gpStartDate.toString()));
+      startTime = gpStartDate;
+    }
     Calendar c = (Calendar) Calendar.getInstance().clone();
     c.setTime(gpStartDate);
     c.set(Calendar.HOUR, startTime.getHours());

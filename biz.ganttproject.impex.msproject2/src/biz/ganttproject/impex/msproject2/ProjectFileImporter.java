@@ -201,18 +201,17 @@ class ProjectFileImporter {
     }
     importWeekends(defaultCalendar);
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
-    for (ProjectCalendarException e : exceptions) {
-      if (!e.getWorking()) {
-        final List<CalendarEvent> holidays = Lists.newArrayList();
-        importHolidays(e, new HolidayAdder() {
-          @Override
-          public void addHoliday(Date date) {
-            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null, null));
-          }
-        });
-        getNativeCalendar().setPublicHolidays(holidays);
-      }
+    final List<CalendarEvent> holidays = Lists.newArrayList();
+    for (final ProjectCalendarException e : exceptions) {
+      importHolidays(e, new HolidayAdder() {
+        @Override
+        public void addHoliday(Date date) {
+          holidays.add(CalendarEvent.newEvent(date, false,
+              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY, null, null));
+        }
+      });
     }
+    getNativeCalendar().setPublicHolidays(holidays);
   }
 
   private void importWeekends(ProjectCalendar calendar) {
@@ -235,19 +234,12 @@ class ProjectFileImporter {
   }
 
   private void importHolidays(ProjectCalendarException e, HolidayAdder adder) {
-    if (e.getRangeCount() > 0) {
-      for (DateRange range : e) {
-        importHolidays(range.getStart(), range.getEnd(), adder);
-      }
-    } else {
       importHolidays(e.getFromDate(), e.getToDate(), adder);
-    }
   }
 
   private void importHolidays(Date start, Date end, HolidayAdder adder) {
     TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
     for (Date dayStart = start; !dayStart.after(end);) {
-      // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
       adder.addHoliday(dayStart);
       dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }

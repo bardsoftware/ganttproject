@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.importer;
 
+import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttProjectImpl;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -34,8 +35,6 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
-import net.sourceforge.ganttproject.task.TaskManager;
-import biz.ganttproject.core.table.ColumnList;
 
 /**
  * Buffer project is a target for importing functions, and when it is filled with
@@ -46,7 +45,6 @@ import biz.ganttproject.core.table.ColumnList;
 public class BufferProject extends GanttProjectImpl implements ParserFactory {
   PrjInfos myProjectInfo = new PrjInfos();
   final DocumentManager myDocumentManager;
-  final TaskManager myTaskManager;
   final UIFacade myUIfacade;
   private final ColumnList myVisibleFields = new VisibleFieldsImpl();
   final ColumnList myResourceVisibleFields = new VisibleFieldsImpl();
@@ -63,8 +61,8 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
         return myResourceVisibleFields;
       }
     };
-    myTaskManager = targetProject.getTaskManager().emptyClone();
     myUIfacade = uiFacade;
+    getTaskManager().getDependencyHardnessOption().setValue(targetProject.getTaskManager().getDependencyHardnessOption().getValue());
     myBufferResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
         new CustomColumnsManager(), targetProject.getRoleManager());
   }
@@ -89,13 +87,8 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   }
 
   @Override
-  public TaskManager getTaskManager() {
-    return myTaskManager;
-  }
-
-  @Override
   public CustomPropertyManager getTaskCustomColumnManager() {
-    return myTaskManager.getCustomPropertyManager();
+    return getTaskManager().getCustomPropertyManager();
   }
 
   @Override
