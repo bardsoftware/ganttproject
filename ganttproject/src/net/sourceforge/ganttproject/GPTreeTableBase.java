@@ -463,39 +463,53 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   protected IGanttProject getProject() {
     return myProject;
   }
-
-  @Override
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
-      return false;
-    }
-    if (e.getID() != KeyEvent.KEY_PRESSED) {
-      putClientProperty("GPTreeTableBase.clearText", false);
-      putClientProperty("GPTreeTableBase.selectAll", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
-    }
-
-    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
-        return false;
-      }
+    if (e.getKeyCode() == KeyEvent.VK_F2) {
       putClientProperty("GPTreeTableBase.selectAll", true);
       putClientProperty("GPTreeTableBase.clearText", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
-    }
-    if (e.isMetaDown() || e.isControlDown()) {
-      return false;
-//      putClientProperty("GPTreeTableBase.selectAll", true);
-//      putClientProperty("GPTreeTableBase.clearText", false);
-//      return super.processKeyBinding(ks, e, condition, pressed);
-    }
-    putClientProperty("GPTreeTableBase.clearText", true);
-    putClientProperty("GPTreeTableBase.selectAll", false);
-    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
-      putClientProperty("GPTreeTableBase.unselectAll", true);
+    } else {
+      putClientProperty("GPTreeTableBase.selectAll", false);
+      putClientProperty("GPTreeTableBase.clearText", true);
+      if (e.getKeyChar() != KeyEvent.CHAR_UNDEFINED && !e.isMetaDown() && !e.isControlDown()) {
+        putClientProperty("GPTreeTableBase.clearText", true);
+      } else {
+        putClientProperty("GPTreeTableBase.clearText", false);
+      }
     }
     return super.processKeyBinding(ks, e, condition, pressed);
   }
+//  @Override
+//  protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+//    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
+//      return false;
+//    }
+//    if (e.getID() != KeyEvent.KEY_PRESSED) {
+//      putClientProperty("GPTreeTableBase.clearText", false);
+//      putClientProperty("GPTreeTableBase.selectAll", false);
+//      return super.processKeyBinding(ks, e, condition, pressed);
+//    }
+//
+//    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+//      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
+//        return false;
+//      }
+//      putClientProperty("GPTreeTableBase.selectAll", true);
+//      putClientProperty("GPTreeTableBase.clearText", false);
+//      return super.processKeyBinding(ks, e, condition, pressed);
+//    }
+//    if (e.isMetaDown() || e.isControlDown()) {
+//      return false;
+////      putClientProperty("GPTreeTableBase.selectAll", true);
+////      putClientProperty("GPTreeTableBase.clearText", false);
+////      return super.processKeyBinding(ks, e, condition, pressed);
+//    }
+//    putClientProperty("GPTreeTableBase.clearText", true);
+//    putClientProperty("GPTreeTableBase.selectAll", false);
+//    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
+//      putClientProperty("GPTreeTableBase.unselectAll", true);
+//    }
+//    return super.processKeyBinding(ks, e, condition, pressed);
+//  }
 
   @Override
   public void applyComponentOrientation(ComponentOrientation o) {

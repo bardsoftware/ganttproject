@@ -128,7 +128,6 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
         UIUtil.pushAction(myTreeTable, false, ks, nodeAction);
       }
     }
-    ExpandAllAction expandAll = new ExpandAllAction();
 
     this.addFocusListener(new FocusAdapter() {
       @Override
