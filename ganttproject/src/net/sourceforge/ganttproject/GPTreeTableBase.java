@@ -194,7 +194,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       myColumns.clear();
       for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
         Column stub = myDefaultColumnStubs.get(i);
-        ColumnImpl column = createColumn(i, stub);
+        ColumnImpl column = createColumn(i, createStub(stub));
         if (stub.isVisible()) {
           // keep some columns visible in the table when creating a new project
           // otherwise table appears without any columns at all and as a side effect,
@@ -242,7 +242,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (mine == null) {
           int modelIndex = getModelIndex(foreign);
           if (modelIndex >= 0) {
-            mine = createColumn(modelIndex, foreign);
+            mine = createColumn(modelIndex, createStub(foreign));
           }
         } else {
           mine.getStub().setOrder(foreign.getOrder());
@@ -297,11 +297,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return -1;
     }
 
+    private ColumnStub createStub(ColumnList.Column stub) {
+      return new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
+          stub.getOrder(), stub.getWidth());
+    }
+
     void createDefaultColumns(List<ColumnList.Column> stubs) {
       myDefaultColumnStubs.clear();
       for (Column stub : stubs) {
-        myDefaultColumnStubs.add(new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
-            stub.getOrder(), stub.getWidth()));
+        myDefaultColumnStubs.add(createStub(stub));
       }
     }
 
