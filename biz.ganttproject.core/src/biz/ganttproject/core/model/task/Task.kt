@@ -18,9 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.model.task
 
+import biz.ganttproject.core.calendar.GPCalendar
+import biz.ganttproject.core.calendar.GPCalendarCalc
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
 import java.time.Instant
+import java.util.*
 import java.util.function.Supplier
 
 /**
@@ -43,6 +46,19 @@ class TaskCalendarImpl(private val weekendRangeSet: WeekendExceptionRangeSet,
   }
 }
 
+class TaskManagerCalendarImpl(
+    val projectCalendar: GPCalendarCalc, val weekendExceptions: WeekendExceptionRangeSet): GPCalendarCalc by projectCalendar {
+  override fun getDayMask(date: Date): Int {
+    val projectDayMask = this.projectCalendar.getDayMask(date)
+    if (projectDayMask.and(GPCalendar.DayMask.WORKING) == 0) {
+      if (this.weekendExceptions.contains(date.toInstant())) {
+        return projectDayMask.or(GPCalendar.DayMask.WORKING)
+      }
+    }
+    return projectDayMask
+  }
+}
+
 class WeekendExceptionRangeSet {
   private val rangeSet = TreeRangeSet.create<Instant>()
 
@@ -54,5 +70,9 @@ class WeekendExceptionRangeSet {
   fun removeRange(range: Range<Instant>) {
     this.rangeSet.remove(range)
     println(this.rangeSet)
+  }
+
+  fun contains(instant: Instant): Boolean {
+    return this.rangeSet.contains(instant)
   }
 }
