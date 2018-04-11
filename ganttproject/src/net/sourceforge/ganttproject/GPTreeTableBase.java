@@ -66,14 +66,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EventObject;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +117,18 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       dialog.show();
     }
   };
+  private GPAction myNewRowAction;
+
+  @Override
+  public boolean editCellAt(int row, int column, EventObject e) {
+    if (e instanceof KeyEvent) {
+      KeyEvent ke = (KeyEvent) e;
+      if (!isStartEditingEvent(ke, true)) {
+        return false;
+      }
+    }
+    return super.editCellAt(row, column, e);
+  }
 
   @Override
   public Component prepareEditor(TableCellEditor editor, int row, int column) {
@@ -155,7 +166,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     SwingUtilities.invokeLater(myUpdateUiCommand);
   }
 
-  public Action getManageColumnsAction() {
+  Action getManageColumnsAction() {
     return myManageColumnsAction;
   }
 
@@ -206,8 +217,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     private void clearUiColumns() {
       List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
-      for (int i = 0; i < columns.size(); i++) {
-        getTable().removeColumn(columns.get(i));
+      for (TableColumn column : columns) {
+        getTable().removeColumn(column);
       }
     }
 
@@ -463,8 +474,19 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   protected IGanttProject getProject() {
     return myProject;
   }
+
+  private boolean isStartEditingEvent(KeyEvent e, boolean includeCharTyping) {
+    boolean result = e.getKeyCode() == KeyEvent.VK_F2
+        || e.getKeyCode() == KeyEvent.VK_INSERT
+        || (myNewRowAction != null && KeyStroke.getKeyStrokeForEvent(e).equals(myNewRowAction.getKeyStroke()));
+    if (!result && includeCharTyping) {
+      result = e.getKeyChar() != KeyEvent.CHAR_UNDEFINED && !e.isMetaDown() && !e.isControlDown();
+    }
+    return result;
+  }
+
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-    if (e.getKeyCode() == KeyEvent.VK_F2) {
+    if (isStartEditingEvent(e, false)) {
       putClientProperty("GPTreeTableBase.selectAll", true);
       putClientProperty("GPTreeTableBase.clearText", false);
     } else {
@@ -918,19 +940,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return myScrollPane;
   }
 
-  @Override
-  public void addMouseListener(MouseListener mouseListener) {
-    super.addMouseListener(mouseListener);
-    // this.getTreeTable().getParent().addMouseListener(mouseListener);
-  }
-
-  @Override
-  public void addKeyListener(KeyListener keyListener) {
-    super.addKeyListener(keyListener);
-    // getTable().addKeyListener(keyListener);
-    // getTree().addKeyListener(keyListener);
-  }
-
   protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {
     private final boolean isMod;
     private final TimelineChart myChart;
@@ -983,6 +992,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
+  void setNewRowAction(GPAction action) {
+    myNewRowAction = action;
+  }
   /** Adds an action to the object and makes it active */
   void addActionWithAccelleratorKey(GPAction action) {
     if (action != null) {
@@ -999,12 +1011,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private class HeaderMouseListener extends MouseAdapter {
-    private final CustomPropertyManager myCustomPropertyManager;
     private final LinkedList<Column> myRecentlyHiddenColumns = new LinkedList<>();
 
     HeaderMouseListener(CustomPropertyManager customPropertyManager) {
       super();
-      myCustomPropertyManager = customPropertyManager;
     }
 
     /**
