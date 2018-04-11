@@ -123,6 +123,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   public boolean editCellAt(int row, int column, EventObject e) {
     if (e instanceof KeyEvent) {
       KeyEvent ke = (KeyEvent) e;
+      // If editing was triggered by keyboard action, we want to check if
+      // it should actually start editing. There are actions, such as Alt+arrow which
+      // may trigger editCellAt but which are not supposed to start editing.
       if (!isStartEditingEvent(ke, true)) {
         return false;
       }
@@ -485,53 +488,28 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return result;
   }
 
+  @Override
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
     if (isStartEditingEvent(e, false)) {
+      // It is an action which is supposed to start cell editing, but it is not
+      // typing any character. Such actions are F2, Insert and Ctrl+T in the Gantt chart.
+      // We want to select all existing text but do not clear it.
       putClientProperty("GPTreeTableBase.selectAll", true);
       putClientProperty("GPTreeTableBase.clearText", false);
     } else {
       putClientProperty("GPTreeTableBase.selectAll", false);
       putClientProperty("GPTreeTableBase.clearText", true);
+      // Otherwise let's check if it is a character and ctrl/meta is not pressed.
       if (e.getKeyChar() != KeyEvent.CHAR_UNDEFINED && !e.isMetaDown() && !e.isControlDown()) {
+        // In this case we want to clear existing text.
         putClientProperty("GPTreeTableBase.clearText", true);
       } else {
         putClientProperty("GPTreeTableBase.clearText", false);
       }
     }
+    // See also overridden method editCellAt.
     return super.processKeyBinding(ks, e, condition, pressed);
   }
-//  @Override
-//  protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-//    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
-//      return false;
-//    }
-//    if (e.getID() != KeyEvent.KEY_PRESSED) {
-//      putClientProperty("GPTreeTableBase.clearText", false);
-//      putClientProperty("GPTreeTableBase.selectAll", false);
-//      return super.processKeyBinding(ks, e, condition, pressed);
-//    }
-//
-//    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-//      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
-//        return false;
-//      }
-//      putClientProperty("GPTreeTableBase.selectAll", true);
-//      putClientProperty("GPTreeTableBase.clearText", false);
-//      return super.processKeyBinding(ks, e, condition, pressed);
-//    }
-//    if (e.isMetaDown() || e.isControlDown()) {
-//      return false;
-////      putClientProperty("GPTreeTableBase.selectAll", true);
-////      putClientProperty("GPTreeTableBase.clearText", false);
-////      return super.processKeyBinding(ks, e, condition, pressed);
-//    }
-//    putClientProperty("GPTreeTableBase.clearText", true);
-//    putClientProperty("GPTreeTableBase.selectAll", false);
-//    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
-//      putClientProperty("GPTreeTableBase.unselectAll", true);
-//    }
-//    return super.processKeyBinding(ks, e, condition, pressed);
-//  }
 
   @Override
   public void applyComponentOrientation(ComponentOrientation o) {
