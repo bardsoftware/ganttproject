@@ -23,10 +23,15 @@ import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import biz.ganttproject.core.time.CalendarFactory
 import junit.framework.TestCase
 import net.sf.mpxj.ProjectFile
+import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.importer.ImporterFromGanttFile
 import java.awt.Color
+import java.io.File
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 fun initLocale() {
   object : CalendarFactory() {
@@ -65,5 +70,27 @@ class ProjectCalendarTest: TestCase() {
     assertTrue(mpxjCalendar.isWorkingDate(TestSetupHelper.newSaturday().time))
     assertFalse(mpxjCalendar.isWorkingDate(TestSetupHelper.newMonday().time))
   }
+
+  fun testImportCalendarEvents() {
+    val project = GanttProjectImpl()
+    val columns = ImporterFromGanttFile.VisibleFieldsImpl()
+    val fileUrl = ProjectCalendarTest::class.java.getResource("/issue1520.xml")
+    assertNotNull(fileUrl)
+    val importer = ProjectFileImporter(project, columns, File(fileUrl.toURI()))
+    importer.setPatchMspdi(false)
+    importer.run()
+
+    val parser = SimpleDateFormat("yyyy-MM-dd")
+    val calendar = project.activeCalendar
+    val publicHolidays = ArrayList(calendar.publicHolidays)
+    assertEquals(2, publicHolidays.size)
+    assertTrue(publicHolidays[0].type == CalendarEvent.Type.WORKING_DAY)
+    assertEquals(parser.parse("2018-04-28"), publicHolidays[0].myDate)
+
+    assertTrue(publicHolidays[1].type == CalendarEvent.Type.HOLIDAY)
+    assertEquals(parser.parse("2018-04-30"), publicHolidays[1].myDate)
+  }
+
+
 }
 

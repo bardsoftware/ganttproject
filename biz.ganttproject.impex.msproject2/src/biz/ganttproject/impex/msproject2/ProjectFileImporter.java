@@ -75,6 +75,7 @@ class ProjectFileImporter {
   private List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
   private Map<GanttTask, Date> myNativeTask2foreignStart;
+  private boolean myPatchMspdi = true;
 
   private static ProjectReader createReader(File file) {
     int lastDot = file.getName().lastIndexOf('.');
@@ -96,12 +97,17 @@ class ProjectFileImporter {
     void addHoliday(Date date);
   }
 
-  public ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+  ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+    this(nativeProject, taskTreeUIFacade.getVisibleFields(), foreignProjectFile);
+  }
+
+  public ProjectFileImporter(IGanttProject nativeProject, ColumnList taskFields, File foreignProjectFile) {
     myNativeProject = nativeProject;
-    myTaskFields = taskTreeUIFacade.getVisibleFields();
+    myTaskFields = taskFields;
     myReader = ProjectFileImporter.createReader(foreignProjectFile);
     myForeignFile = foreignProjectFile;
   }
+
 
   private TaskManager getTaskManager() {
     return myNativeProject.getTaskManager();
@@ -136,10 +142,14 @@ class ProjectFileImporter {
     return Collections.emptyList();
   }
 
+  void setPatchMspdi(boolean enabled) {
+    myPatchMspdi = enabled;
+  }
+
   public void run() throws MPXJException {
     ProjectFile pf;
     try {
-      pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile))
+      pf = (myReader instanceof MSPDIReader && myPatchMspdi) ? myReader.read(createPatchedStream(myForeignFile))
           : myReader.read(myForeignFile);
     } catch (TransformerConfigurationException e) {
       throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath() + "<br>" + e.getMessage(),

@@ -18,14 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.importer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.osgi.service.prefs.Preferences;
-
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -35,16 +27,23 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
-import net.sourceforge.ganttproject.resource.OverwritingMerger;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption;
+import net.sourceforge.ganttproject.resource.OverwritingMerger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+import org.osgi.service.prefs.Preferences;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
@@ -169,7 +168,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
   }
 
-  static class VisibleFieldsImpl implements ColumnList {
+  public static class VisibleFieldsImpl implements ColumnList {
     private final List<Column> myFields = new ArrayList<Column>();
 
     @Override
