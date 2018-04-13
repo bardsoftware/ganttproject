@@ -3,7 +3,7 @@ Copyright (C) 2004-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -18,14 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene;
 
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
 import biz.ganttproject.core.chart.canvas.TextSelector;
-import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.text.TimeFormatter;
@@ -33,6 +30,9 @@ import biz.ganttproject.core.chart.text.TimeUnitText;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -62,16 +62,16 @@ public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
     }
     TimeFormatter formatter = null;
     TextGroup textGroup = null;
-    
+
     for (Offset offset : bottomOffsets) {
       renderScaleMark(offset, prevOffset);
       if (formatter == null) {
-        formatter = myInputApi.getFormatter(offset.getOffsetUnit(), TimeUnitText.Position.LOWER_LINE); 
+        formatter = myInputApi.getFormatter(offset.getOffsetUnit(), TimeUnitText.Position.LOWER_LINE);
       }
       if (textGroup == null) {
         if (formatter.getTextCount() == 1) {
           textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
-              myInputApi.getTopLineHeight(), "timeline.bottom.label");      
+              myInputApi.getTopLineHeight(), "timeline.bottom.label");
         } else {
           textGroup = getCanvas().createTextGroup(0, getLineTopPosition(),
               myInputApi.getTopLineHeight(), "timeline.bottom.major_label", "timeline.bottom.minor_label");
@@ -85,7 +85,7 @@ public class BottomUnitSceneBuilder extends AbstractSceneBuilder {
 
   private void renderLabel(TextGroup textGroup, int curX, Date curDate, Offset curOffset, TimeFormatter formatter) {
     final int maxWidth = curOffset.getOffsetPixels() - curX;
-    TimeUnitText[] texts = formatter.format(curOffset.getOffsetUnit(), curDate);
+    TimeUnitText[] texts = formatter.format(curOffset);
     for (int i = 0; i < texts.length; i++) {
       final TimeUnitText timeUnitText = texts[i];
       textGroup.addText(curX + 2, i, new TextSelector() {

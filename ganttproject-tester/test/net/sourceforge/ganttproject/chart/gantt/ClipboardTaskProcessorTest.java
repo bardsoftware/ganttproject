@@ -249,4 +249,21 @@ public class ClipboardTaskProcessorTest extends TestCase {
       assertEquals(1, taskManager.getTaskHierarchy().getNestedTasks(pasted.get(0)).length);
     }
   }
+
+  public void testTaskNamePattern() {
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
+    taskManager.getTaskCopyNamePrefixOption().setValue("{1}_new");
+    GanttTask task = taskManager.createTask();
+
+    ClipboardContents contents = new ClipboardContents(taskManager);
+    contents.addTasks(ImmutableList.<Task>of(task));
+    contents.copy();
+    ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+    Task pastedTask = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents).get(0);
+    assertEquals(task.getName(), pastedTask.getName());
+
+    clipboardProcessor.setTaskCopyNameOption(taskManager.getTaskCopyNamePrefixOption());
+    pastedTask = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents).get(0);
+    assertEquals(task.getName() + "_new", pastedTask.getName());
+  }
 }

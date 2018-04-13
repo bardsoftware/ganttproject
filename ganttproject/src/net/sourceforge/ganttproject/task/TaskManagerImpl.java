@@ -318,6 +318,10 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public void deleteTask(Task tasktoRemove) {
+    Task[] nestedTasks = getTaskHierarchy().getDeepNestedTasks(tasktoRemove);
+    for (Task t : nestedTasks) {
+      t.delete();
+    }
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
     tasktoRemove.delete();
@@ -352,6 +356,8 @@ public class TaskManagerImpl implements TaskManager {
           String name = myName == null
               ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
           task.setName(name);
+        } else if (myName != null) {
+          task.setName(myName);
         }
         if (myStartDate != null) {
           GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
@@ -1072,9 +1078,15 @@ public class TaskManagerImpl implements TaskManager {
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
-      Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
-        .withDuration(that.getDuration())
-        .withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+      Task nextImported = builder
+          .withName(that.getName())
+          .withStartDate(that.getStart().getTime())
+          .withDuration(that.getDuration())
+          .withColor(that.getColor())
+          .withNotes(that.getNotes())
+          .withWebLink(that.getWebLink())
+          .withPriority(that.getPriority())
+          .withParent(root).build();
 
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());

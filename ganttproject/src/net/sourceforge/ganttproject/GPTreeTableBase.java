@@ -66,14 +66,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EventObject;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +117,21 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       dialog.show();
     }
   };
+  private GPAction myNewRowAction;
+
+  @Override
+  public boolean editCellAt(int row, int column, EventObject e) {
+    if (e instanceof KeyEvent) {
+      KeyEvent ke = (KeyEvent) e;
+      // If editing was triggered by keyboard action, we want to check if
+      // it should actually start editing. There are actions, such as Alt+arrow which
+      // may trigger editCellAt but which are not supposed to start editing.
+      if (!isStartEditingEvent(ke, true)) {
+        return false;
+      }
+    }
+    return super.editCellAt(row, column, e);
+  }
 
   @Override
   public Component prepareEditor(TableCellEditor editor, int row, int column) {
@@ -155,7 +169,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     SwingUtilities.invokeLater(myUpdateUiCommand);
   }
 
-  public Action getManageColumnsAction() {
+  Action getManageColumnsAction() {
     return myManageColumnsAction;
   }
 
@@ -194,7 +208,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       myColumns.clear();
       for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
         Column stub = myDefaultColumnStubs.get(i);
-        ColumnImpl column = createColumn(i, stub);
+        ColumnImpl column = createColumn(i, createStub(stub));
         if (stub.isVisible()) {
           // keep some columns visible in the table when creating a new project
           // otherwise table appears without any columns at all and as a side effect,
@@ -206,8 +220,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     private void clearUiColumns() {
       List<TableColumn> columns = Collections.list(getTable().getColumnModel().getColumns());
-      for (int i = 0; i < columns.size(); i++) {
-        getTable().removeColumn(columns.get(i));
+      for (TableColumn column : columns) {
+        getTable().removeColumn(column);
       }
     }
 
@@ -242,7 +256,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (mine == null) {
           int modelIndex = getModelIndex(foreign);
           if (modelIndex >= 0) {
-            mine = createColumn(modelIndex, foreign);
+            mine = createColumn(modelIndex, createStub(foreign));
           }
         } else {
           mine.getStub().setOrder(foreign.getOrder());
@@ -297,11 +311,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return -1;
     }
 
+    private ColumnStub createStub(ColumnList.Column stub) {
+      return new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
+          stub.getOrder(), stub.getWidth());
+    }
+
     void createDefaultColumns(List<ColumnList.Column> stubs) {
       myDefaultColumnStubs.clear();
       for (Column stub : stubs) {
-        myDefaultColumnStubs.add(new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
-            stub.getOrder(), stub.getWidth()));
+        myDefaultColumnStubs.add(createStub(stub));
       }
     }
 
@@ -460,36 +478,36 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return myProject;
   }
 
+  private boolean isStartEditingEvent(KeyEvent e, boolean includeCharTyping) {
+    boolean result = e.getKeyCode() == KeyEvent.VK_F2
+        || e.getKeyCode() == KeyEvent.VK_INSERT
+        || (myNewRowAction != null && KeyStroke.getKeyStrokeForEvent(e).equals(myNewRowAction.getKeyStroke()));
+    if (!result && includeCharTyping) {
+      result = e.getKeyChar() != KeyEvent.CHAR_UNDEFINED && !e.isMetaDown() && !e.isControlDown();
+    }
+    return result;
+  }
+
   @Override
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-    if (e.getKeyCode() == KeyEvent.VK_ESCAPE && !isEditing()) {
-      return false;
-    }
-    if (e.getID() != KeyEvent.KEY_PRESSED) {
-      putClientProperty("GPTreeTableBase.clearText", false);
-      putClientProperty("GPTreeTableBase.selectAll", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
-    }
-
-    if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
-      if (e.getKeyCode() == KeyEvent.VK_META || e.getKeyCode() == 0) {
-        return false;
-      }
+    if (isStartEditingEvent(e, false)) {
+      // It is an action which is supposed to start cell editing, but it is not
+      // typing any character. Such actions are F2, Insert and Ctrl+T in the Gantt chart.
+      // We want to select all existing text but do not clear it.
       putClientProperty("GPTreeTableBase.selectAll", true);
       putClientProperty("GPTreeTableBase.clearText", false);
-      return super.processKeyBinding(ks, e, condition, pressed);
+    } else {
+      putClientProperty("GPTreeTableBase.selectAll", false);
+      putClientProperty("GPTreeTableBase.clearText", true);
+      // Otherwise let's check if it is a character and ctrl/meta is not pressed.
+      if (e.getKeyChar() != KeyEvent.CHAR_UNDEFINED && !e.isMetaDown() && !e.isControlDown()) {
+        // In this case we want to clear existing text.
+        putClientProperty("GPTreeTableBase.clearText", true);
+      } else {
+        putClientProperty("GPTreeTableBase.clearText", false);
+      }
     }
-    if (e.isMetaDown() || e.isControlDown()) {
-      return false;
-//      putClientProperty("GPTreeTableBase.selectAll", true);
-//      putClientProperty("GPTreeTableBase.clearText", false);
-//      return super.processKeyBinding(ks, e, condition, pressed);
-    }
-    putClientProperty("GPTreeTableBase.clearText", true);
-    putClientProperty("GPTreeTableBase.selectAll", false);
-    if (UIManager.getLookAndFeel().getName().toLowerCase().replace(" ", "").indexOf("macosx") >= 0) {
-      putClientProperty("GPTreeTableBase.unselectAll", true);
-    }
+    // See also overridden method editCellAt.
     return super.processKeyBinding(ks, e, condition, pressed);
   }
 
@@ -900,19 +918,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return myScrollPane;
   }
 
-  @Override
-  public void addMouseListener(MouseListener mouseListener) {
-    super.addMouseListener(mouseListener);
-    // this.getTreeTable().getParent().addMouseListener(mouseListener);
-  }
-
-  @Override
-  public void addKeyListener(KeyListener keyListener) {
-    super.addKeyListener(keyListener);
-    // getTable().addKeyListener(keyListener);
-    // getTree().addKeyListener(keyListener);
-  }
-
   protected class VscrollAdjustmentListener implements AdjustmentListener, TimelineChart.VScrollController {
     private final boolean isMod;
     private final TimelineChart myChart;
@@ -965,6 +970,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
+  void setNewRowAction(GPAction action) {
+    myNewRowAction = action;
+  }
   /** Adds an action to the object and makes it active */
   void addActionWithAccelleratorKey(GPAction action) {
     if (action != null) {
@@ -981,12 +989,10 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   private class HeaderMouseListener extends MouseAdapter {
-    private final CustomPropertyManager myCustomPropertyManager;
     private final LinkedList<Column> myRecentlyHiddenColumns = new LinkedList<>();
 
     HeaderMouseListener(CustomPropertyManager customPropertyManager) {
       super();
-      myCustomPropertyManager = customPropertyManager;
     }
 
     /**

@@ -618,6 +618,7 @@ public class Canvas {
     }
   }
 
+
   public void clear() {
     myTextIndex.clear();
     myPolygonIndex.clear();

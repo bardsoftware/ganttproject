@@ -88,6 +88,22 @@ public class TestResourceAssignments extends TestCase {
                 assignments.length == 0);
     }
 
+    public void testAssignmentsDisappearOnSummaryTaskDeletion() {
+        HumanResource res1 = getResourceManager().getById(1);
+        TaskManager taskManager = getTaskManager();
+        Task summaryTask = taskManager.createTask();
+        summaryTask.getAssignmentCollection().addAssignment(res1);
+
+        Task childTask = taskManager.newTaskBuilder().withParent(summaryTask).build();
+        childTask.getAssignmentCollection().addAssignment(res1);
+
+        taskManager.deleteTask(summaryTask);
+        ResourceAssignment[] assignments = res1.getAssignments();
+        assertTrue(
+            "Resource is expected to have no assignments after summary task deletion",
+            assignments.length == 0);
+    }
+
     public void testAssignmentDisappearOnResourceDeletion() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
