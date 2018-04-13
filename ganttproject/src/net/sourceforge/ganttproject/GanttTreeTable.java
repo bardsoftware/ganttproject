@@ -18,31 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.text.NumberFormat;
-import java.util.List;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.table.ColumnList.Column;
+import com.google.common.base.Supplier;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.GanttChart;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
-import javax.swing.DropMode;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
+import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
-
-import com.google.common.base.Supplier;
-
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.table.ColumnList.Column;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.text.NumberFormat;
+import java.util.List;
 
 /**
  * Task tree table.
@@ -134,6 +128,8 @@ public class GanttTreeTable extends GPTreeTableBase {
   void editSelectedTask() {
     TreePath selectedPath = getTree().getTreeSelectionModel().getSelectionPath();
     Column column = getTableHeaderUiFacade().findColumnByID(TaskDefaultColumn.NAME.getStub().getID());
+    putClientProperty("GPTreeTableBase.selectAll", true);
+    putClientProperty("GPTreeTableBase.clearText", false);
     editCellAt(getTree().getRowForPath(selectedPath), column.getOrder());
   }
 

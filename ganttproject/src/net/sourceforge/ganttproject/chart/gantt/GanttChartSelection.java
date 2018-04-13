@@ -116,6 +116,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
       return Collections.emptyList();
     }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
+    processor.setTaskCopyNameOption(myTaskManager.getTaskCopyNamePrefixOption());
     return processor.pasteAsSibling(target, myClipboardContents);
   }
 

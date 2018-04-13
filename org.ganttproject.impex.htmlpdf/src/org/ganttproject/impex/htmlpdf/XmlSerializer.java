@@ -18,17 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
-import java.net.URI;
-import java.net.URLDecoder;
-import java.util.List;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
-
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.table.ColumnList;
+import com.google.common.base.Joiner;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.document.Document;
@@ -43,11 +35,18 @@ import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import biz.ganttproject.core.table.ColumnList;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.List;
 
 /**
  * Serializes project data into XML for GanttProject's HTML/FOP stylesheets.
@@ -171,6 +170,16 @@ public class XmlSerializer extends SaverBase {
 
         addAttribute("id", "tpd6", myAttrs);
         textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
+
+        addAttribute("id", TaskDefaultColumn.COST.getStub().getID(), myAttrs);
+        textElement("cost", myAttrs, String.valueOf(t.getCost().getValue()), handler);
+
+        addAttribute("id", TaskDefaultColumn.ID.getStub().getID(), myAttrs);
+        textElement("task-id", myAttrs, String.valueOf(t.getTaskID()), handler);
+
+        addAttribute("id", TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), myAttrs);
+        textElement("outline-number", myAttrs,
+            Joiner.on('.').join(t.getManager().getTaskHierarchy().getOutlinePath(t)), handler);
 
         final List<Document> attachments = t.getAttachments();
         for (int i = 0; i < attachments.size(); i++) {

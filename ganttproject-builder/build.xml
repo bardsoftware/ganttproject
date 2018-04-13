@@ -97,7 +97,7 @@
                    identifier="net.sourceforge.ganttproject"
                    shortversion="${version}"
                    icon="ganttproject.icns"
-                   copyright="Copyright 2017 BarD Software s.r.o. Distributed under GPL3"
+                   copyright="Copyright 2018 BarD Software s.r.o. Distributed under GPL3"
                    applicationCategory="public.app-category.productivity"
                    mainclassname="org.bardsoftware.eclipsito.Boot">
 

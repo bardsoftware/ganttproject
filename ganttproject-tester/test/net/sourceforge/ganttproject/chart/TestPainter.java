@@ -32,11 +32,11 @@ import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class TestPainter implements Painter {
+public class TestPainter implements Painter {
 
   private final TextMetrics myCalculator;
 
-  TestPainter(TextMetrics calculator) {
+  protected TestPainter(TextMetrics calculator) {
     myCalculator = calculator;
   }
 

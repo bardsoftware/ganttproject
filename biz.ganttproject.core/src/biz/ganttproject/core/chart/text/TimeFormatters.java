@@ -18,16 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.chart.text;
 
+import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import com.google.common.collect.Iterables;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import com.google.common.collect.Iterables;
-
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -35,8 +35,13 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 public class TimeFormatters {
   private final Map<String, TimeFormatter> ourUpperFormatters = new HashMap<String, TimeFormatter>();
   private final Map<String, TimeFormatter> ourLowerFormatters = new HashMap<String, TimeFormatter>();
-  protected static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] { new TimeUnitText("") };
+  public static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] { new TimeUnitText("") };
   private static final TimeFormatter DEFAULT_TIME_FORMATTER = new TimeFormatter() {
+    @Override
+    public TimeUnitText[] format(Offset curOffset) {
+      return EMPTY_TEXT;
+    }
+
     @Override
     public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
       return EMPTY_TEXT;

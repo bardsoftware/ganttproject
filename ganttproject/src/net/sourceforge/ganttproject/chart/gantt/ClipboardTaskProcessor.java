@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.core.option.StringOption;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
@@ -44,6 +45,7 @@ public class ClipboardTaskProcessor {
   private final TaskManager myTaskManager;
   private boolean myTruncateExternalDeps;
   private boolean myTruncateAssignments;
+  private StringOption myTaskCopyNameOption;
 
   public ClipboardTaskProcessor(TaskManager taskManager) {
     myTaskManager = taskManager;
@@ -151,7 +153,12 @@ public class ClipboardTaskProcessor {
     if (clipboardContents.isCut()) {
       builder = builder.withId(task.getTaskID()).withName(task.getName());
     } else {
-      String newName = MessageFormat.format(myTaskManager.getTaskCopyNamePrefixOption().getValue(), GanttLanguage.getInstance().getText("copy2"), task.getName());
+      String newName = (myTaskCopyNameOption == null)
+          ? task.getName()
+          : MessageFormat.format(
+              myTaskCopyNameOption.getValue(),
+              GanttLanguage.getInstance().getText("copy2"),
+              task.getName());
       builder = builder.withName(newName);
     }
     Task result = builder.build();
@@ -175,5 +182,9 @@ public class ClipboardTaskProcessor {
       }
     }
     return true;
+  }
+
+  public void setTaskCopyNameOption(StringOption option) {
+    myTaskCopyNameOption = option;
   }
 }

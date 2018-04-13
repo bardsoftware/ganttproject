@@ -75,6 +75,7 @@ class ProjectFileImporter {
   private List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
   private Map<GanttTask, Date> myNativeTask2foreignStart;
+  private boolean myPatchMspdi = true;
 
   private static ProjectReader createReader(File file) {
     int lastDot = file.getName().lastIndexOf('.');
@@ -96,12 +97,17 @@ class ProjectFileImporter {
     void addHoliday(Date date);
   }
 
-  public ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+  ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+    this(nativeProject, taskTreeUIFacade.getVisibleFields(), foreignProjectFile);
+  }
+
+  public ProjectFileImporter(IGanttProject nativeProject, ColumnList taskFields, File foreignProjectFile) {
     myNativeProject = nativeProject;
-    myTaskFields = taskTreeUIFacade.getVisibleFields();
+    myTaskFields = taskFields;
     myReader = ProjectFileImporter.createReader(foreignProjectFile);
     myForeignFile = foreignProjectFile;
   }
+
 
   private TaskManager getTaskManager() {
     return myNativeProject.getTaskManager();
@@ -136,10 +142,14 @@ class ProjectFileImporter {
     return Collections.emptyList();
   }
 
+  void setPatchMspdi(boolean enabled) {
+    myPatchMspdi = enabled;
+  }
+
   public void run() throws MPXJException {
     ProjectFile pf;
     try {
-      pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile))
+      pf = (myReader instanceof MSPDIReader && myPatchMspdi) ? myReader.read(createPatchedStream(myForeignFile))
           : myReader.read(myForeignFile);
     } catch (TransformerConfigurationException e) {
       throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath() + "<br>" + e.getMessage(),
@@ -201,18 +211,17 @@ class ProjectFileImporter {
     }
     importWeekends(defaultCalendar);
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
-    for (ProjectCalendarException e : exceptions) {
-      if (!e.getWorking()) {
-        final List<CalendarEvent> holidays = Lists.newArrayList();
-        importHolidays(e, new HolidayAdder() {
-          @Override
-          public void addHoliday(Date date) {
-            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null, null));
-          }
-        });
-        getNativeCalendar().setPublicHolidays(holidays);
-      }
+    final List<CalendarEvent> holidays = Lists.newArrayList();
+    for (final ProjectCalendarException e : exceptions) {
+      importHolidays(e, new HolidayAdder() {
+        @Override
+        public void addHoliday(Date date) {
+          holidays.add(CalendarEvent.newEvent(date, false,
+              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY, null, null));
+        }
+      });
     }
+    getNativeCalendar().setPublicHolidays(holidays);
   }
 
   private void importWeekends(ProjectCalendar calendar) {
@@ -235,19 +244,12 @@ class ProjectFileImporter {
   }
 
   private void importHolidays(ProjectCalendarException e, HolidayAdder adder) {
-    if (e.getRangeCount() > 0) {
-      for (DateRange range : e) {
-        importHolidays(range.getStart(), range.getEnd(), adder);
-      }
-    } else {
       importHolidays(e.getFromDate(), e.getToDate(), adder);
-    }
   }
 
   private void importHolidays(Date start, Date end, HolidayAdder adder) {
     TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
     for (Date dayStart = start; !dayStart.after(end);) {
-      // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
       adder.addHoliday(dayStart);
       dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
