@@ -6,6 +6,7 @@ dependencies {
   testCompile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   testCompile project(':..:ganttproject')
   testCompile project(':..:biz.ganttproject.impex.msproject2')
+
     testCompile fileTree(dir: project.projectDir.absolutePath + "/resources")
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }

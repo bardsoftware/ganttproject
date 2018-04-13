@@ -19,32 +19,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
-  private final String myOrigin;
-  private final String mySnippet;
-  private final String myLabel;
+  private final int myId;
+  private final String mySecondaryLabel;
+  private final String myTypeOfResult;
+  private final String mySecondaryText;
+  private final String myLabel; //Top line
+  private final String myQueryMatch;
   private final SearchService<?, SearchObjectType> mySearchService;
   private final SearchObjectType mySearchObject;
 
-  public SearchResult(String label, String snippet, String origin, SearchObjectType searchObject,
-      SearchService<?, SearchObjectType> service) {
+  SearchResult(
+      int id,
+      String typeOfResult,
+      String label,
+      String queryMatch,
+      String secondaryLabel,
+      String secondaryText,
+      SearchObjectType searchObject,
+      SearchService<?, SearchObjectType> service
+  ) {
+    myId = id;
+    myTypeOfResult = typeOfResult;
     myLabel = label;
-    mySnippet = snippet;
-    myOrigin = origin;
+    myQueryMatch = queryMatch;
+    mySecondaryText = secondaryText;
+    mySecondaryLabel = secondaryLabel;
     mySearchService = service;
     mySearchObject = searchObject;
   }
 
-  public String getLabel() {
+  int getId() { return myId; }
+
+  String getTypeOfResult() { return myTypeOfResult; }
+
+  String getSecondaryText() { return mySecondaryText; }
+
+  String getQueryMatch() { return myQueryMatch; }
+
+  String getLabel() {
     return myLabel;
   }
 
-  public String getSnippet() {
-    return mySnippet;
-  }
-
-  public String getOrigin() {
-    return myOrigin;
-  }
+  String getSecondaryLabel() { return mySecondaryLabel; }
 
   public SearchObjectType getObject() {
     return mySearchObject;
@@ -55,7 +71,7 @@ public class SearchResult<SearchObjectType> {
     return myLabel;
   }
 
-  public SearchService<?, SearchObjectType> getSearchService() {
+  SearchService<?, SearchObjectType> getSearchService() {
     return mySearchService;
   }
 }
