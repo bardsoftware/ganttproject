@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.grid.*;
@@ -48,6 +49,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -391,10 +393,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public OffsetBuilder.Factory createOffsetBuilderFactory() {
+    GPCalendar calendar = myTaskManager.getCalendar().copy().setWeekendExceptions(((TaskManagerImpl)myTaskManager).getMergedWeekendExceptions()).build();
     OffsetBuilder.Factory factory = new OffsetBuilderImpl.FactoryImpl()
       .withAtomicUnitWidth(getBottomUnitWidth())
       .withBottomUnit(getBottomUnit())
-      .withCalendar(myTaskManager.getCalendar())
+      .withCalendar(calendar)
       .withRightMargin(myScrollingSession == null ? 0 : 1)
       .withStartDate(getOffsetAnchorDate())
       .withViewportStartDate(getStartDate())

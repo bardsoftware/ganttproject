@@ -1,10 +1,12 @@
 package biz.ganttproject.core.calendar;
 
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
+import com.google.common.collect.RangeSet;
+
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 
 public interface GPCalendarCalc extends GPCalendar {
   public static enum MoveDirection {
@@ -45,5 +47,19 @@ public interface GPCalendarCalc extends GPCalendar {
   GPCalendarCalc PLAIN = new AlwaysWorkingTimeCalendarImpl();
   String EXTENSION_POINT_ID = "net.sourceforge.ganttproject.calendar";
 
-  public GPCalendarCalc copy();
+  public Builder copy();
+
+  abstract class Builder {
+    protected RangeSet<Instant> myWeekendExceptions;
+
+    public Builder setWeekendExceptions(RangeSet<Instant> weekendExceptions) {
+      myWeekendExceptions = weekendExceptions;
+      return this;
+    }
+
+    public abstract GPCalendarCalc build();
+  }
+
 }
+
+

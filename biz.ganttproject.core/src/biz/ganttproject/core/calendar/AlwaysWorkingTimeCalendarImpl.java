@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.calendar;
 
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
 
 
 /**
@@ -115,8 +115,13 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   }
 
   @Override
-  public GPCalendarCalc copy() {
-    return new AlwaysWorkingTimeCalendarImpl();
+  public Builder copy() {
+    return new Builder() {
+      @Override
+      public GPCalendarCalc build() {
+        return new AlwaysWorkingTimeCalendarImpl();
+      }
+    };
   }
 
   @Override
@@ -132,7 +137,7 @@ public class AlwaysWorkingTimeCalendarImpl extends GPCalendarBase implements GPC
   public void setBaseCalendarID(String id) {
   }
 
-  @Override  
+  @Override
   public void importCalendar(GPCalendar calendar, ImportCalendarOption importOption) {
   }
 }

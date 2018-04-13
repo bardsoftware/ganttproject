@@ -29,7 +29,13 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.action.*;
+import javafx.application.Platform;
+import net.sourceforge.ganttproject.action.ActiveActionProvider;
+import net.sourceforge.ganttproject.action.ArtefactAction;
+import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
+import net.sourceforge.ganttproject.action.ArtefactNewAction;
+import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -46,7 +52,14 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.*;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
@@ -62,14 +75,23 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.*;
+import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -947,6 +969,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (InterruptedException e1) {
       GPLogger.log(e1);
     }
+    Platform.setImplicitExit(false);
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {

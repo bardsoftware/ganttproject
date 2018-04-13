@@ -149,7 +149,11 @@ public class TaskImpl implements Task {
     myManager = taskManager;
     myID = taskID;
 
-    myCalendar = new TaskCalendarImpl(taskManager.getWeekendExceptionRanges(), () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()));
+    myCalendar = new TaskCalendarImpl(
+        taskManager.getCalendar(),
+        taskManager.getWeekendExceptionRanges(),
+        () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()),
+        () -> { myEnd = null; recalculateActivities(); });
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
@@ -199,7 +203,11 @@ public class TaskImpl implements Task {
 
     customValues = (CustomColumnsValues) copy.getCustomValues().clone();
 
-    myCalendar = new TaskCalendarImpl(manager.getWeekendExceptionRanges(), () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()));
+    myCalendar = new TaskCalendarImpl(
+        myManager.getCalendar(),
+        manager.getWeekendExceptionRanges(),
+        () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()),
+        () -> { myEnd = null; recalculateActivities(); } );
     recalculateActivities();
   }
 

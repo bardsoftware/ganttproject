@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.core.option.ColorOption
+import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.scene.Scene
 import javafx.scene.control.CheckBox
@@ -36,9 +37,11 @@ import javax.swing.JComponent
  */
 class CalendarPanel(private val task: Task, private val background: Color) {
   fun getComponent(): JComponent {
-    return JFXPanel().apply {
-      scene = createScene()
+    val result = JFXPanel()
+    Platform.runLater {
+      result.scene = createScene()
     }
+    return result
   }
 
   fun createScene(): Scene {

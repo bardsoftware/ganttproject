@@ -18,6 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.calendar;
 
+import biz.ganttproject.core.calendar.CalendarEvent.Type;
+import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.impl.FramerImpl;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.Sets;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -28,31 +40,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import biz.ganttproject.core.calendar.CalendarEvent.Type;
-import biz.ganttproject.core.calendar.walker.ForwardTimeWalker;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.impl.FramerImpl;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 /**
  * Implements a calendar which is aware of weekend days and recurring/one-off holidays and working days.
- * 
+ *
  * By default, this calendar assumes that any day D is a working day. Then it applies weekend check,
  * recurring event check and one-off event check in this specified order. Each check can override the result of the previous
  * one. For instance, if D is a weekend day then it is a holiday, unless one of the following is the case:
  * -- only show weekends option is on
  * -- there is one-off event at date D with type WORKING
  * -- there is a recurring event at date D with type WORKING and no one-off event at date D with type HOLIDAY
- * 
+ *
  * If D is a non-weekend day then it is a working day, unless one of the following is the case:
  * -- there is one-off event at date D with type HOLIDAY
  * -- there is a recurring event at date D with type HOLIDAY and no one-off event at date D with type WORKING
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCalc {
@@ -73,11 +74,12 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   private final AlwaysWorkingTimeCalendarImpl myRestlessCalendar = new AlwaysWorkingTimeCalendarImpl();
 
   private String myBaseCalendarID;
+  private RangeSet<Instant> myWeekendExceptions;
 
   public WeekendCalendarImpl() {
     this(null);
   }
-  
+
   public WeekendCalendarImpl(String baseCalendarID) {
     myBaseCalendarID = baseCalendarID;
     reset();
@@ -93,7 +95,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     setWeekDayType(GregorianCalendar.SUNDAY, GPCalendar.DayType.WEEKEND);
     fireCalendarChanged();
   }
-  
+
   @Override
   public List<GPCalendarActivity> getActivities(Date startDate, final Date endDate) {
     if (getWeekendDaysCount() == 0 && myOneOffEvents.isEmpty() && myRecurringEvents.isEmpty()) {
@@ -227,7 +229,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         return false;
       case NEUTRAL:
       default:
-        // intentionally fall-through, consult recurring holidays in this case 
+        // intentionally fall-through, consult recurring holidays in this case
       }
     }
     CalendarEvent recurring = myRecurringEvents.get(getRecurringDate(curDayStart));
@@ -239,8 +241,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         return false;
       case NEUTRAL:
       default:
-        // intentionally fall-through, use default answer 
-      }            
+        // intentionally fall-through, use default answer
+      }
     }
     return false;
   }
@@ -252,7 +254,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     }
     return result;
   }
-  
+
   private Date getRecurringDate(Date date) {
     myCalendar.setTime(date);
     myCalendar.set(Calendar.YEAR, 1);
@@ -267,9 +269,16 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     boolean isWeekend = myTypes[dayOfWeek - 1] == DayType.WEEKEND;
     if (isWeekend) {
       result |= DayMask.WEEKEND;
+      // This is weekend but it may be working because of one-off exception...
       CalendarEvent oneOff = myOneOffEvents.get(date);
       if (oneOff != null && oneOff.getType() == Type.WORKING_DAY) {
         result |= DayMask.WORKING;
+      }
+      // ... or because of weekend exceptions
+      if (myWeekendExceptions != null) {
+        if (myWeekendExceptions.contains(date.toInstant())) {
+          result |= DayMask.WORKING;
+        }
       }
     }
     if (isHoliday) {
@@ -332,15 +341,27 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
-  public GPCalendarCalc copy() {
-    WeekendCalendarImpl result = new WeekendCalendarImpl(myBaseCalendarID);
-    for (int i = 1; i < 8; i++) {
-      result.setWeekDayType(i, getWeekDayType(i));
-    }
-    result.setOnlyShowWeekends(getOnlyShowWeekends());
-    result.setPublicHolidays(getPublicHolidays());
-    //result.publicHolidaysArray.addAll(publicHolidaysArray);
-    return result;
+  public Builder copy() {
+    return new Builder() {
+      @Override
+      public GPCalendarCalc build() {
+        WeekendCalendarImpl result = new WeekendCalendarImpl(myBaseCalendarID);
+        for (int i = 1; i < 8; i++) {
+          result.setWeekDayType(i, getWeekDayType(i));
+        }
+        result.setOnlyShowWeekends(getOnlyShowWeekends());
+        result.setPublicHolidays(getPublicHolidays());
+        if (myWeekendExceptions != null) {
+          result.setWeekendExceptions(myWeekendExceptions);
+        }
+        //result.publicHolidaysArray.addAll(publicHolidaysArray);
+        return result;
+      }
+    };
+  }
+
+  private void setWeekendExceptions(RangeSet<Instant> weekendExceptions) {
+    myWeekendExceptions = weekendExceptions;
   }
 
   @Override
@@ -369,10 +390,10 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
       LinkedHashSet<CalendarEvent> mergedHolidays = Sets.newLinkedHashSet(getPublicHolidays());
       mergedHolidays.addAll(calendar.getPublicHolidays());
-      setPublicHolidays(mergedHolidays);      
+      setPublicHolidays(mergedHolidays);
     }
     for (int i = 1; i <= 7; i++) {
-      if (calendar.getWeekDayType(i) == DayType.WEEKEND) {        
+      if (calendar.getWeekDayType(i) == DayType.WEEKEND) {
         setWeekDayType(i, DayType.WEEKEND);
       }
     }

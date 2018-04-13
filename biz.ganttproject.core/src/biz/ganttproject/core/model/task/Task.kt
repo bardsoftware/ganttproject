@@ -18,12 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.model.task
 
-import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.calendar.GPCalendarCalc
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
 import java.time.Instant
-import java.util.*
 import java.util.function.Supplier
 
 /**
@@ -31,10 +29,13 @@ import java.util.function.Supplier
  */
 interface TaskCalendar {
   var workingWeekends: Boolean
+  fun asGPCalendar(): GPCalendarCalc
 }
 
-class TaskCalendarImpl(private val weekendRangeSet: WeekendExceptionRangeSet,
-                       private val taskRange: Supplier<Range<Instant>>): TaskCalendar {
+class TaskCalendarImpl(private val projectCalendar: GPCalendarCalc,
+                       private val weekendRangeSet: WeekendExceptionRangeSet,
+                       private val taskRange: Supplier<Range<Instant>>,
+                       private val onChange: Runnable): TaskCalendar {
   override var workingWeekends: Boolean = false
   set(value) {
     field = value
@@ -43,36 +44,30 @@ class TaskCalendarImpl(private val weekendRangeSet: WeekendExceptionRangeSet,
     } else {
       this.weekendRangeSet.removeRange(this.taskRange.get())
     }
+    onChange.run()
+  }
+
+  override fun asGPCalendar(): GPCalendarCalc {
+    return this.projectCalendar.copy().setWeekendExceptions(this.weekendRangeSet.taskRangeSet).build()
   }
 }
 
-class TaskManagerCalendarImpl(
-    val projectCalendar: GPCalendarCalc, val weekendExceptions: WeekendExceptionRangeSet): GPCalendarCalc by projectCalendar {
-  override fun getDayMask(date: Date): Int {
-    val projectDayMask = this.projectCalendar.getDayMask(date)
-    if (projectDayMask.and(GPCalendar.DayMask.WORKING) == 0) {
-      if (this.weekendExceptions.contains(date.toInstant())) {
-        return projectDayMask.or(GPCalendar.DayMask.WORKING)
-      }
-    }
-    return projectDayMask
-  }
-}
 
-class WeekendExceptionRangeSet {
-  private val rangeSet = TreeRangeSet.create<Instant>()
-
+class WeekendExceptionRangeSet(val globalRangeSet: TreeRangeSet<Instant>) {
+  val taskRangeSet = TreeRangeSet.create<Instant>()
   fun addRange(range: Range<Instant>) {
-    this.rangeSet.add(range)
-    println(this.rangeSet)
+    this.taskRangeSet.add(range)
+    this.globalRangeSet.add(range)
+    println(this.taskRangeSet)
   }
 
   fun removeRange(range: Range<Instant>) {
-    this.rangeSet.remove(range)
-    println(this.rangeSet)
+    this.taskRangeSet.remove(range)
+    this.globalRangeSet.remove(range)
+    println(this.taskRangeSet)
   }
 
   fun contains(instant: Instant): Boolean {
-    return this.rangeSet.contains(instant)
+    return this.taskRangeSet.contains(instant)
   }
 }

@@ -46,7 +46,7 @@ public class NewProjectWizardWindow extends WizardImpl {
   }
 
   public void addWeekendConfigurationPage(IGanttProject project) {
-    myCalendar = project.getActiveCalendar().copy();
+    myCalendar = project.getActiveCalendar().copy().build();
     WizardPage weekendPage;
     try {
       weekendPage = new WeekendConfigurationPage(myCalendar, myI18n, getUIFacade());
