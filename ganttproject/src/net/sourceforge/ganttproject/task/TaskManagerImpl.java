@@ -21,7 +21,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -100,7 +99,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private final AlgorithmCollection myAlgorithmCollection;
 
-  private final List<TaskListener> myListeners = new ArrayList<TaskListener>();
+  private final List<TaskListener> myListeners = new ArrayList<>();
 
   private AtomicInteger myMaxID = new AtomicInteger(0);
 
@@ -121,12 +120,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
-  private final Supplier<TaskContainmentHierarchyFacade> myHierarchySupplier = new Supplier<TaskContainmentHierarchyFacade>() {
-    @Override
-    public TaskContainmentHierarchyFacade get() {
-      return getTaskHierarchy();
-    }
-  };
+  private final Supplier<TaskContainmentHierarchyFacade> myHierarchySupplier = () -> getTaskHierarchy();
   private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier, new DependencyGraph.Logger() {
     @Override
     public void logDependencyLoop(String title, String message) {
@@ -147,7 +141,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private static class TaskMap {
-    private final Map<Integer, Task> myId2task = new HashMap<Integer, Task>();
+    private final Map<Integer, Task> myId2task = new HashMap<>();
     private TaskDocumentOrderComparator myComparator;
     private boolean isModified = true;
     private Task[] myArray;
@@ -159,17 +153,17 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     void addTask(Task task) {
-      myId2task.put(new Integer(task.getTaskID()), task);
+      myId2task.put(task.getTaskID(), task);
       isModified = true;
     }
 
     Task getTask(int id) {
-      return myId2task.get(new Integer(id));
+      return myId2task.get(id);
     }
 
     public Task[] getTasks() {
       if (isModified) {
-        myArray = myId2task.values().toArray(new Task[myId2task.size()]);
+        myArray = myId2task.values().toArray(new Task[0]);
         Arrays.sort(myArray, myComparator);
         isModified = false;
       }
@@ -181,11 +175,11 @@ public class TaskManagerImpl implements TaskManager {
       isModified = true;
     }
 
-    public void removeTask(Task task) {
-      myId2task.remove(new Integer(task.getTaskID()));
+    void removeTask(Task task) {
+      myId2task.remove(task.getTaskID());
       Task[] nestedTasks = myManager.getTaskHierarchy().getNestedTasks(task);
-      for (int i = 0; i < nestedTasks.length; i++) {
-        removeTask(nestedTasks[i]);
+      for (Task nestedTask : nestedTasks) {
+        removeTask(nestedTask);
       }
       isModified = true;
     }
@@ -448,7 +442,7 @@ public class TaskManagerImpl implements TaskManager {
     myDependencyGraph.addTask(task);
   }
 
-  boolean isRegistered(TaskImpl task) {
+  private boolean isRegistered(TaskImpl task) {
     return myTaskMap.getTask(task.getTaskID()) != null;
   }
 
@@ -458,27 +452,22 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private static Iterable<BarChartActivity<?>> tasksToActivities(Task[] tasks) {
-    return Iterables.transform(Arrays.asList(tasks), new Function<Task, BarChartActivity<?>>() {
+    return Iterables.transform(Arrays.asList(tasks), task -> new BarChartActivity<Task>() {
       @Override
-      public BarChartActivity<?> apply(final Task task) {
-        return new BarChartActivity<Task>() {
-          @Override
-          public Date getStart() {
-            return task.getStart().getTime();
-          }
-          @Override
-          public Date getEnd() {
-            return task.getEnd().getTime();
-          }
-          @Override
-          public TimeDuration getDuration() {
-            return task.getDuration();
-          }
-          @Override
-          public Task getOwner() {
-            return task;
-          }
-        };
+      public Date getStart() {
+        return task.getStart().getTime();
+      }
+      @Override
+      public Date getEnd() {
+        return task.getEnd().getTime();
+      }
+      @Override
+      public TimeDuration getDuration() {
+        return task.getDuration();
+      }
+      @Override
+      public Task getOwner() {
+        return task;
       }
     });
   }
@@ -517,7 +506,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public String encode(TimeDuration taskLength) {
-    StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
+    StringBuilder result = new StringBuilder(String.valueOf(taskLength.getLength()));
     result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
     return result.toString();
   }
@@ -525,7 +514,7 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public TimeDuration createLength(String lengthAsString) throws DurationParsingException {
     int state = 0;
-    StringBuffer valueBuffer = new StringBuffer();
+    StringBuilder valueBuffer = new StringBuilder();
     Integer currentValue = null;
     TimeDuration currentLength = null;
     lengthAsString += " ";
@@ -639,8 +628,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public Date shift(Date original, TimeDuration duration) {
-    GPCalendarCalc calendar = RESTLESS_CALENDAR;
-    return calendar.shiftDate(original, duration);
+    return RESTLESS_CALENDAR.shiftDate(original, duration);
   }
 
   @Override
@@ -653,7 +641,7 @@ public class TaskManagerImpl implements TaskManager {
     return myAlgorithmCollection;
   }
 
-  public TaskHierarchyManagerImpl getHierarchyManager() {
+  TaskHierarchyManagerImpl getHierarchyManager() {
     return myHierarchyManager;
   }
 
@@ -714,21 +702,17 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   public GPCalendarListener getCalendarListener() {
-    return new GPCalendarListener() {
-      @Override
-      public void onCalendarChange() {
-        for (Task t : getTasks()) {
-          t.setEnd(null);
-        }
-        myScheduler.run();
+    return () -> {
+      for (Task t : getTasks()) {
+        t.setEnd(null);
       }
+      myScheduler.run();
     };
   }
-  public void fireTaskProgressChanged(Task changedTask) {
+  void fireTaskProgressChanged(Task changedTask) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(changedTask);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskProgressChanged(e);
       }
     }
@@ -741,8 +725,7 @@ public class TaskManagerImpl implements TaskManager {
           changedTask.getEnd());
       // List copy = new ArrayList(myListeners);
       // myListeners.clear();
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskScheduleChanged(e);
       }
     }
@@ -752,8 +735,7 @@ public class TaskManagerImpl implements TaskManager {
     myDependencyGraph.addDependency(newDependency);
     if (areEventsEnabled) {
       TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), newDependency);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.dependencyAdded(e);
       }
     }
@@ -762,16 +744,14 @@ public class TaskManagerImpl implements TaskManager {
   private void fireDependencyRemoved(TaskDependency dep) {
     myDependencyGraph.removeDependency(dep);
     TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), dep);
-    for (int i = 0; i < myListeners.size(); i++) {
-      TaskListener next = myListeners.get(i);
+    for (TaskListener next : myListeners) {
       next.dependencyRemoved(e);
     }
   }
 
   private void fireDependencyChanged(TaskDependency dep) {
     TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), dep);
-    for (int i = 0; i < myListeners.size(); i++) {
-      TaskListener next = myListeners.get(i);
+    for (TaskListener next : myListeners) {
       next.dependencyChanged(e);
     }
   }
@@ -779,8 +759,7 @@ public class TaskManagerImpl implements TaskManager {
   private void fireTaskAdded(Task task) {
     if (areEventsEnabled) {
       TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, null, getTaskHierarchy().getContainer(task));
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskAdded(e);
       }
     }
@@ -798,8 +777,7 @@ public class TaskManagerImpl implements TaskManager {
   void fireTaskPropertiesChanged(Task task) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(task);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskPropertiesChanged(e);
       }
     }
@@ -807,21 +785,20 @@ public class TaskManagerImpl implements TaskManager {
 
   private void fireTaskModelReset() {
     if (areEventsEnabled) {
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskModelReset();
       }
     }
   }
 
-  public TaskManagerConfig getConfig() {
+  TaskManagerConfig getConfig() {
     return myConfig;
   }
 
   private final class FacadeImpl implements TaskContainmentHierarchyFacade {
     // private final Task myRoot;
 
-    private List<Task> myPathBuffer = new ArrayList<Task>();
+    private List<Task> myPathBuffer = new ArrayList<>();
 
     // public FacadeImpl(Task root) {
     // myRoot = root;
@@ -834,16 +811,16 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public Task[] getDeepNestedTasks(Task container) {
-      ArrayList<Task> result = new ArrayList<Task>();
+      ArrayList<Task> result = new ArrayList<>();
       addDeepNestedTasks(container, result);
-      return result.toArray(new Task[result.size()]);
+      return result.toArray(new Task[0]);
     }
 
     private void addDeepNestedTasks(Task container, ArrayList<Task> result) {
       Task[] nested = container.getNestedTasks();
       result.addAll(Arrays.asList(nested));
-      for (int i = 0; i < nested.length; i++) {
-        addDeepNestedTasks(nested[i], result);
+      for (Task aNested : nested) {
+        addDeepNestedTasks(aNested, result);
       }
     }
 
@@ -934,11 +911,11 @@ public class TaskManagerImpl implements TaskManager {
       if (task1 == task2) {
         return 0;
       }
-      List<Task> buffer1 = new ArrayList<Task>();
+      List<Task> buffer1 = new ArrayList<>();
       for (Task container = task1; container != null; container = getContainer(container)) {
         buffer1.add(0, container);
       }
-      List<Task> buffer2 = new ArrayList<Task>();
+      List<Task> buffer2 = new ArrayList<>();
       for (Task container = task2; container != null; container = getContainer(container)) {
         buffer2.add(0, container);
       }
@@ -964,11 +941,11 @@ public class TaskManagerImpl implements TaskManager {
           assert commonRoot != null : "Failure comparing task=" + task1 + " and task=" + task2 + "\n. Path1=" + buffer1
               + "\nPath2=" + buffer2;
           Task[] nestedTasks = commonRoot.getNestedTasks();
-          for (int j = 0; j < nestedTasks.length; j++) {
-            if (nestedTasks[j] == root1) {
+          for (Task nestedTask : nestedTasks) {
+            if (nestedTask == root1) {
               return -1;
             }
-            if (nestedTasks[j] == root2) {
+            if (nestedTask == root2) {
               return 1;
             }
           }
@@ -1020,13 +997,11 @@ public class TaskManagerImpl implements TaskManager {
     public List<Task> breadthFirstSearch(Task root, final boolean includeRoot) {
       final Task _root = (root == null) ? getRootTask() : root;
       final List<Task> result = Lists.newArrayList();
-      breadthFirstSearch(_root, new Predicate<Pair<Task,Task>>() {
-        public boolean apply(Pair<Task, Task> parent_child) {
-          if (includeRoot || parent_child.first() != null) {
-            result.add(parent_child.second());
-          }
-          return true;
+      breadthFirstSearch(_root, parent_child -> {
+        if (includeRoot || parent_child.first() != null) {
+          result.add(parent_child.second());
         }
+        return true;
       });
       return result;
     }
@@ -1069,20 +1044,20 @@ public class TaskManagerImpl implements TaskManager {
   public Map<Task, Task> importData(TaskManager taskManager,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping) {
     Task importRoot = taskManager.getRootTask();
-    Map<Task, Task> original2imported = new LinkedHashMap<Task, Task>();
+    Map<Task, Task> original2imported = new LinkedHashMap<>();
     importData(importRoot, getRootTask(), customPropertyMapping, original2imported);
     TaskDependency[] deps = taskManager.getDependencyCollection().getDependencies();
-    for (int i = 0; i < deps.length; i++) {
-      Task nextDependant = deps[i].getDependant();
-      Task nextDependee = deps[i].getDependee();
+    for (TaskDependency dep : deps) {
+      Task nextDependant = dep.getDependant();
+      Task nextDependee = dep.getDependee();
       Task importedDependant = original2imported.get(nextDependant);
       Task importedDependee = original2imported.get(nextDependee);
       try {
         TaskDependency dependency = getDependencyCollection().createDependency(importedDependant, importedDependee,
             new FinishStartConstraintImpl());
-        dependency.setConstraint(deps[i].getConstraint());
-        dependency.setDifference(deps[i].getDifference());
-        dependency.setHardness(deps[i].getHardness());
+        dependency.setConstraint(dep.getConstraint());
+        dependency.setDifference(dep.getDifference());
+        dependency.setHardness(dep.getHardness());
       } catch (TaskDependencyException e) {
         if (!GPLogger.log(e)) {
           e.printStackTrace(System.err);
@@ -1095,9 +1070,9 @@ public class TaskManagerImpl implements TaskManager {
   private void importData(Task importRoot, Task root,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping, Map<Task, Task> original2imported) {
     Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
-    for (int i = 0; i < nested.length; i++) {
-      TaskManager.TaskBuilder builder = newTaskBuilder();
-      GanttTask that = (GanttTask) nested[i];
+    for (Task aNested : nested) {
+      TaskBuilder builder = newTaskBuilder();
+      GanttTask that = (GanttTask) aNested;
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
@@ -1111,18 +1086,18 @@ public class TaskManagerImpl implements TaskManager {
           .withPriority(that.getPriority())
           .withParent(root).build();
 
-      nextImported.setShape(nested[i].getShape());
-      nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
-      nextImported.setTaskInfo(nested[i].getTaskInfo());
-      nextImported.setExpand(nested[i].getExpand());
-      nextImported.setMilestone(nested[i].isMilestone());
+      nextImported.setShape(aNested.getShape());
+      nextImported.setCompletionPercentage(aNested.getCompletionPercentage());
+      nextImported.setTaskInfo(aNested.getTaskInfo());
+      nextImported.setExpand(aNested.getExpand());
+      nextImported.setMilestone(aNested.isMilestone());
       nextImported.getCost().setValue(that.getCost());
-      if (nested[i].getThird() != null) {
-        nextImported.setThirdDate(nested[i].getThird().clone());
-        nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());
+      if (aNested.getThird() != null) {
+        nextImported.setThirdDate(aNested.getThird().clone());
+        nextImported.setThirdDateConstraint(aNested.getThirdDateConstraint());
       }
 
-      CustomColumnsValues customValues = nested[i].getCustomValues();
+      CustomColumnsValues customValues = aNested.getCustomValues();
       for (CustomPropertyDefinition thatDef : importRoot.getManager().getCustomPropertyManager().getDefinitions()) {
         CustomPropertyDefinition thisDef = customPropertyMapping.get(thatDef);
         Object value = customValues.getValue(thatDef);
@@ -1136,12 +1111,12 @@ public class TaskManagerImpl implements TaskManager {
           }
         }
       }
-      original2imported.put(nested[i], nextImported);
-      importData(nested[i], nextImported, customPropertyMapping, original2imported);
+      original2imported.put(aNested, nextImported);
+      importData(aNested, nextImported, customPropertyMapping, original2imported);
     }
   }
 
-  public Date findClosestWorkingTime(Date time) {
+  Date findClosestWorkingTime(Date time) {
     return getCalendar().findClosestWorkingTime(time);
   }
 
@@ -1156,15 +1131,15 @@ public class TaskManagerImpl implements TaskManager {
     }
     Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
     resetCriticalPath();
-    for (int i = 0; i < tasks.length; i++) {
-      tasks[i].setCritical(true);
+    for (Task task : tasks) {
+      task.setCritical(true);
     }
   }
 
   private void resetCriticalPath() {
     Task[] allTasks = getTasks();
-    for (int i = 0; i < allTasks.length; i++) {
-      allTasks[i].setCritical(false);
+    for (Task allTask : allTasks) {
+      allTask.setCritical(false);
     }
   }
 
@@ -1172,14 +1147,14 @@ public class TaskManagerImpl implements TaskManager {
   public void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
       Map<Task, Task> original2importedTask, Map<HumanResource, HumanResource> original2importedResource) {
     Task[] tasks = importedTaskManager.getTasks();
-    for (int i = 0; i < tasks.length; i++) {
-      ResourceAssignment[] assignments = tasks[i].getAssignments();
-      for (int j = 0; j < assignments.length; j++) {
-        Task task = getTask(original2importedTask.get(tasks[i]).getTaskID());
+    for (Task task1 : tasks) {
+      ResourceAssignment[] assignments = task1.getAssignments();
+      for (ResourceAssignment assignment1 : assignments) {
+        Task task = getTask(original2importedTask.get(task1).getTaskID());
         ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(
-            original2importedResource.get(assignments[j].getResource()));
-        assignment.setLoad(assignments[j].getLoad());
-        assignment.setCoordinator(assignments[j].isCoordinator());
+            original2importedResource.get(assignment1.getResource()));
+        assignment.setLoad(assignment1.getLoad());
+        assignment.setCoordinator(assignment1.isCoordinator());
       }
     }
   }
@@ -1205,12 +1180,12 @@ public class TaskManagerImpl implements TaskManager {
     return myCustomColumnsManager;
   }
 
-  public URL getProjectDocument() {
+  URL getProjectDocument() {
     return myConfig.getProjectDocumentURL();
   }
 
   private static class TaskNamePrefixOption extends DefaultStringOption implements GP1XOptionConverter {
-    public TaskNamePrefixOption() {
+    TaskNamePrefixOption() {
       super("taskNamePrefix");
       resetValue(GanttLanguage.getInstance().getText("defaultTaskPrefix"), true);
     }
