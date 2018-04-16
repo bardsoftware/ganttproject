@@ -69,6 +69,15 @@ clean {
   delete += "dist-bin"
 }
 
+task updateEclipsito(type: Jar) {
+  destinationDir rootProject.distBinDir
+  archiveName 'eclipsito.jar'
+  from zipTree(project(":..:ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
+  from(".") {
+    include "ganttproject-eclipsito-config.xml"
+  }
+}
+
 task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
   println "===== Building GanttProject ${version} ====="
   println "===== Building generic binary distro ====="
@@ -94,6 +103,7 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
     }
   }
 }
+distBin.finalizedBy(updateEclipsito)
 
 def getBuildNum() {
   def stdout = new ByteArrayOutputStream()
