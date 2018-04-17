@@ -25,7 +25,7 @@ import net.sourceforge.ganttproject.util.MouseUtil;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-public class MouseWheelListenerBase implements MouseWheelListener {
+public abstract class MouseWheelListenerBase implements MouseWheelListener {
   private final ZoomManager myZoomManager;
   private final String myHScrollKeyStroke = GPAction.getKeyStrokeText("mouse.wheel.hscroll");
   private final String myVScrollKeyStroke = GPAction.getKeyStrokeText("mouse.wheel.vscroll");
@@ -49,8 +49,7 @@ public class MouseWheelListenerBase implements MouseWheelListener {
     }
   }
 
-  protected void fireScroll(MouseWheelEvent e) {
-  }
+  protected abstract void fireScroll(MouseWheelEvent e);
 
   private void fireZoomIn() {
     if (myZoomManager.canZoomIn()) {

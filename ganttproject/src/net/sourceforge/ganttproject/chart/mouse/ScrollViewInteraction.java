@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.mouse;
 
 import net.sourceforge.ganttproject.ChartComponentBase;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 
 import java.awt.*;
@@ -27,6 +28,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 
 public class ScrollViewInteraction extends MouseInteractionBase implements MouseInteraction {
+  private final double myWheelFactor = Double.parseDouble(GPAction.getKeyStrokeText("mouse.wheel.factor"));
   private int myCurY;
   private int myCurX;
   private ScrollingSession myScrollingSession;
@@ -45,7 +47,10 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
   public void apply(MouseEvent event) {
     if (event instanceof MouseWheelEvent) {
       MouseWheelEvent wheelEvent = (MouseWheelEvent) event;
-      int scrollIncrement = Math.max(wheelEvent.getScrollAmount(), 10)  * (wheelEvent.getWheelRotation() < 0 ? 1 : -1);
+      int scrollIncrement = (int)(
+          Math.max(wheelEvent.getScrollAmount(), 10)
+              * (wheelEvent.getWheelRotation() < 0 ? myWheelFactor : -myWheelFactor)
+      );
       if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0) {
         // Vertical scroll
         myCurY += scrollIncrement;
