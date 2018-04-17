@@ -192,6 +192,9 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   protected void setActiveInteraction(MouseInteraction myActiveInteraction) {
+    if (myActiveInteraction != null) {
+      myActiveInteraction.finish();
+    }
     this.myActiveInteraction = myActiveInteraction;
   }
 

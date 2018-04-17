@@ -18,13 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.util.MouseUtil;
+
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
-
 public class MouseWheelListenerBase implements MouseWheelListener {
   private final ZoomManager myZoomManager;
+  private final String myHScrollKeyStroke = GPAction.getKeyStrokeText("mouse.wheel.hscroll");
+  private final String myVScrollKeyStroke = GPAction.getKeyStrokeText("mouse.wheel.vscroll");
+  private final String myZoomKeyStroke = GPAction.getKeyStrokeText("mouse.wheel.zoom");
 
   public MouseWheelListenerBase(ZoomManager zoomManager) {
     myZoomManager = zoomManager;
@@ -32,11 +37,19 @@ public class MouseWheelListenerBase implements MouseWheelListener {
 
   @Override
   public void mouseWheelMoved(MouseWheelEvent e) {
-    if (isRotationUp(e)) {
-      fireZoomIn();
-    } else {
-      fireZoomOut();
+    String text = MouseUtil.toString(e);
+    if (text.equals(myZoomKeyStroke)) {
+      if (isRotationUp(e)) {
+        fireZoomIn();
+      } else {
+        fireZoomOut();
+      }
+    } else if (text.equals(myHScrollKeyStroke) || text.equals(myVScrollKeyStroke)) {
+      fireScroll(e);
     }
+  }
+
+  protected void fireScroll(MouseWheelEvent e) {
   }
 
   private void fireZoomIn() {
