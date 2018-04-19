@@ -118,6 +118,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   };
   private GPAction myNewRowAction;
+  private GPAction myPropertiesAction;
 
   @Override
   public boolean editCellAt(int row, int column, EventObject e) {
@@ -128,6 +129,16 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       // may trigger editCellAt but which are not supposed to start editing.
       if (!isStartEditingEvent(ke, true)) {
         return false;
+      }
+    }
+    if (e instanceof MouseEvent) {
+      MouseEvent me = (MouseEvent) e;
+      if (me.getClickCount() == 2 && me.getButton() == MouseEvent.BUTTON1) {
+        if (getTable().getSelectedRow() != -1) {
+          me.consume();
+          myPropertiesAction.actionPerformed(null);
+          return false;
+        }
       }
     }
     return super.editCellAt(row, column, e);
@@ -973,6 +984,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   void setNewRowAction(GPAction action) {
     myNewRowAction = action;
   }
+
+  void setRowPropertiesAction(GPAction action) {
+    myPropertiesAction = action;
+  }
+
   /** Adds an action to the object and makes it active */
   void addActionWithAccelleratorKey(GPAction action) {
     if (action != null) {
