@@ -55,6 +55,7 @@ InstallDir $PROGRAMFILES\GanttProject-2.8
 !insertmacro MUI_LANGUAGE "Hebrew"
 !insertmacro MUI_LANGUAGE "Turkish"
 !insertmacro MUI_LANGUAGE "Ukrainian"
+!insertmacro MUI_LANGUAGE "Indonesian"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -76,6 +77,7 @@ Section "GanttProject"
   File ganttproject.l4j.ini
   File HouseBuildingSample.gan
   File LICENSE
+  File logging.properties
 
   File /r plugins-${VERSION}
 
