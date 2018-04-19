@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseWheelListenerBase;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -50,6 +51,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Date;
@@ -96,7 +98,19 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
     myOptionsDialogAction = new ViewChartOptionsDialogAction(this, uiFacade);
 
-    myMouseWheelListener = new MouseWheelListenerBase(zoomManager);
+    myMouseWheelListener = new MouseWheelListenerBase(zoomManager) {
+      @Override
+      protected void fireScroll(MouseWheelEvent e) {
+        MouseInteraction activeInteraction = getImplementation().getActiveInteraction();
+        if (activeInteraction == null) {
+          getImplementation().beginScrollViewInteraction(e);
+          requestFocus();
+        } else {
+          activeInteraction.apply(e);
+          getImplementation().reset();
+        }
+      }
+    };
     myProject.getActiveCalendar().addListener(new GPCalendarListener() {
       @Override
       public void onCalendarChange() {

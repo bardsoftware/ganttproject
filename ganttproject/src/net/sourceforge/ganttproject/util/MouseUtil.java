@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.util;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -33,9 +34,13 @@ public class MouseUtil {
     append(buf, modifiers, InputEvent.ALT_DOWN_MASK, "Alt");
     append(buf, modifiers, InputEvent.SHIFT_DOWN_MASK, "Shift");
     append(buf, modifiers, InputEvent.ALT_GRAPH_DOWN_MASK, "Alt Graph");
-    append(buf, modifiers, InputEvent.BUTTON1_DOWN_MASK, "Button1");
-    append(buf, modifiers, InputEvent.BUTTON2_DOWN_MASK, "Button2");
-    append(buf, modifiers, InputEvent.BUTTON3_DOWN_MASK, "Button3");
+    if (e instanceof MouseWheelEvent) {
+      append(buf, 1, 1, "Wheel");
+    } else {
+      append(buf, modifiers, InputEvent.BUTTON1_DOWN_MASK, "Button1");
+      append(buf, modifiers, InputEvent.BUTTON2_DOWN_MASK, "Button2");
+      append(buf, modifiers, InputEvent.BUTTON3_DOWN_MASK, "Button3");
+    }
     return buf.toString().trim();
   }
 
