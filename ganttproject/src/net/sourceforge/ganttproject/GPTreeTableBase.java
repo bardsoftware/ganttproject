@@ -162,7 +162,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         }
         // Otherwise wait for double-click a little bit and then start editing.
         myDoubleClickExpectation.set(true);
-        System.out.println("dblclk in " + myDoubleClickInterval);
         myEditCellExecutor.schedule(new Runnable() {
           @Override
           public void run() {
@@ -182,6 +181,15 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
     return super.editCellAt(row, column, e);
+  }
+
+  @Override
+  protected void processMouseEvent(MouseEvent e) {
+    try {
+      super.processMouseEvent(e);
+    } catch (NullPointerException ex) {
+      // GPLogger.log(ex);
+    }
   }
 
   @Override
