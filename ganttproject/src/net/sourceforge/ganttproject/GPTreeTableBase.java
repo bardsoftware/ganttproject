@@ -23,6 +23,7 @@ import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -77,6 +78,10 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
@@ -119,9 +124,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   };
   private GPAction myNewRowAction;
   private GPAction myPropertiesAction;
+  private TableCellEditor myHierarchicalEditor;
+  private final AtomicBoolean myDoubleClickExpectation = new AtomicBoolean(false);
+  private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
+  private final Integer myDoubleClickInterval = (Integer) Objects.firstNonNull(Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval"), 500);
 
   @Override
-  public boolean editCellAt(int row, int column, EventObject e) {
+  public boolean editCellAt(final int row, final int column, EventObject e) {
     if (e instanceof KeyEvent) {
       KeyEvent ke = (KeyEvent) e;
       // If editing was triggered by keyboard action, we want to check if
@@ -132,16 +141,59 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
     if (e instanceof MouseEvent) {
+      // Here we have to distinguish between double-click and two consecutive single-clicks.
+      // The first single click on a cell should make the cell selected, while single click
+      // on selected cell should start editing. The problem is that when user double-clicks
+      // a selected cell, single-click event comes first. So in this case we postpone editing start,
+      // schedule a task and cancel that task if we get double-click before task starts executing.
       MouseEvent me = (MouseEvent) e;
       if (me.getClickCount() == 2 && me.getButton() == MouseEvent.BUTTON1) {
+        // "Cancel" the task and show properties.
+        myDoubleClickExpectation.set(false);
         if (getTable().getSelectedRow() != -1) {
           me.consume();
           myPropertiesAction.actionPerformed(null);
           return false;
         }
+      } else if (me.getClickCount() == 1 && me.getButton() == MouseEvent.BUTTON1) {
+        // If we click a column which is not selected, we should not start editing
+        if (getTable().getSelectedColumn() != column) {
+          return false;
+        }
+        // Otherwise wait for double-click a little bit and then start editing.
+        myDoubleClickExpectation.set(true);
+        System.out.println("dblclk in " + myDoubleClickInterval);
+        myEditCellExecutor.schedule(new Runnable() {
+          @Override
+          public void run() {
+            if (myDoubleClickExpectation.get()) {
+              SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                  putClientProperty("GPTreeTableBase.selectAll", true);
+                  putClientProperty("GPTreeTableBase.clearText", false);
+                  editCellAt(row, column);
+                }
+              });
+            }
+          }
+        }, myDoubleClickInterval, TimeUnit.MILLISECONDS);
+        return false;
       }
     }
     return super.editCellAt(row, column, e);
+  }
+
+  @Override
+  public TableCellEditor getCellEditor(int row, int column) {
+    TableCellEditor result = super.getCellEditor(row, column);
+    if (!this.isHierarchical(column)) {
+      return result;
+    }
+    if (myHierarchicalEditor == null) {
+      myHierarchicalEditor = wrapEditor(result);
+    }
+    return myHierarchicalEditor;
   }
 
   @Override
