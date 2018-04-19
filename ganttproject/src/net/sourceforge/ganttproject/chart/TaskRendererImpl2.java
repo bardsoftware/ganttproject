@@ -514,7 +514,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   private void renderBaseline(Task t, int rowNum, OffsetList defaultUnitOffsets) {
-    TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(getCalendar());
+    TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm();
     List<GanttPreviousStateTask> baseline = myModel.getBaseline();
     if (baseline != null) {
       for (GanttPreviousStateTask taskBaseline : baseline) {

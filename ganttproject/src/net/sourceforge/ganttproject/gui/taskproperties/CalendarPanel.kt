@@ -48,6 +48,7 @@ class CalendarPanel(private val task: Task, private val background: Color) {
     val grid = GridPane()
 
     val weekendsWorking = CheckBox("Work on weekends")
+    weekendsWorking.selectedProperty().value = this.task.calendar.workingWeekends
     weekendsWorking.selectedProperty().addListener({ _, _, new -> this.task.calendar.workingWeekends = new })
 
     val title = Label("Calendar Exceptions")

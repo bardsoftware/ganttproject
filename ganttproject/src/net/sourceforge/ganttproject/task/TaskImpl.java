@@ -694,7 +694,7 @@ public class TaskImpl implements Task {
     public List<TaskActivity> getActivities() {
       if (myActivities == null && (myStartChange != null) || (myDurationChange != null)) {
         myActivities = new ArrayList<TaskActivity>();
-        TaskImpl.recalculateActivities(myManager.getConfig().getCalendar(), TaskImpl.this, myActivities,
+        TaskImpl.recalculateActivities(TaskImpl.this, myActivities,
             getStart().getTime(), TaskImpl.this.getEnd().getTime());
       }
       return myActivities;
@@ -1074,7 +1074,7 @@ public class TaskImpl implements Task {
   }
 
   private Date shiftDate(Date input, TimeDuration duration) {
-    return myManager.getConfig().getCalendar().shiftDate(input, duration);
+    return getCalendar().asGPCalendar().shiftDate(input, duration);
   }
 
   @Override
@@ -1113,7 +1113,7 @@ public class TaskImpl implements Task {
       return;
     }
 
-    recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, startDate, endDate);
+    recalculateActivities(this, myActivities, startDate, endDate);
     int length = 0;
     for (TaskActivity activity : myActivities) {
       if (activity.getIntensity() > 0) {
@@ -1123,9 +1123,9 @@ public class TaskImpl implements Task {
     myLength = getManager().createLength(myLength.getTimeUnit(), length);
   }
 
-  private static void recalculateActivities(GPCalendarCalc calendar, Task task, List<TaskActivity> output, Date startDate,
+  private static void recalculateActivities(Task task, List<TaskActivity> output, Date startDate,
       Date endDate) {
-    TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(calendar);
+    TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm();
     alg.recalculateActivities(task, output, startDate, endDate);
   }
 
