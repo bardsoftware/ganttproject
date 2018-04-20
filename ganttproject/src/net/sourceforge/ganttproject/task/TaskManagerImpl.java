@@ -10,7 +10,6 @@ import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
-import biz.ganttproject.core.model.task.WeekendExceptionRangeSet;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -206,9 +205,6 @@ public class TaskManagerImpl implements TaskManager {
   private Boolean isZeroMilestones = true;
 
   private final TreeRangeSet<Instant> myGlobalWeekendExceptions = TreeRangeSet.create();
-  private final WeekendExceptionRangeSet myWeekendExceptionRangeSet = new WeekendExceptionRangeSet(myGlobalWeekendExceptions);
-  private GPCalendarCalc myCalendar;
-  private GPCalendarCalc myProjectCalendar;
 
   TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
@@ -675,16 +671,11 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public GPCalendarCalc getCalendar() {
     return getConfig().getCalendar();
-//    if (myProjectCalendar == null || myProjectCalendar != getConfig().getCalendar()) {
-//      myProjectCalendar = getConfig().getCalendar();
-//      myCalendar = myProjectCalendar.copy().setWeekendExceptions(myGlobalWeekendExceptions).build();
-//    }
-//    return myCalendar;
   }
 
 
-  WeekendExceptionRangeSet getWeekendExceptionRanges() {
-    return myWeekendExceptionRangeSet;
+  TreeRangeSet<Instant> getWeekendExceptionRanges() {
+    return myGlobalWeekendExceptions;
   }
 
   public ProjectEventListener getProjectListener() {

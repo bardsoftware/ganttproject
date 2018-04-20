@@ -26,6 +26,7 @@ import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.model.task.TaskCalendar;
 import biz.ganttproject.core.model.task.TaskCalendarImpl;
+import biz.ganttproject.core.model.task.WeekendExceptionRangeSet;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
@@ -151,7 +152,7 @@ public class TaskImpl implements Task {
 
     myCalendar = new TaskCalendarImpl(
         taskManager.getCalendar(),
-        taskManager.getWeekendExceptionRanges(),
+        new WeekendExceptionRangeSet(taskManager.getWeekendExceptionRanges()),
         () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()),
         () -> { myEnd = null; recalculateActivities(); });
     myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
@@ -205,7 +206,7 @@ public class TaskImpl implements Task {
 
     myCalendar = new TaskCalendarImpl(
         myManager.getCalendar(),
-        manager.getWeekendExceptionRanges(),
+        new WeekendExceptionRangeSet(manager.getWeekendExceptionRanges()),
         () -> Range.closedOpen(myStart.toInstant(), getEnd().toInstant()),
         () -> { myEnd = null; recalculateActivities(); } );
     recalculateActivities();
