@@ -157,7 +157,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         }
       } else if (me.getClickCount() == 1 && me.getButton() == MouseEvent.BUTTON1) {
         // If we click a column which is not selected, we should not start editing
-        if (getTable().getSelectedColumn() != column) {
+        if (getTable().getSelectedColumn() != column || getTable().getSelectedRow() != row) {
           return false;
         }
         // Otherwise wait for double-click a little bit and then start editing.
