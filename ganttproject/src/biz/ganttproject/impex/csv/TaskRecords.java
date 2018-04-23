@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -171,16 +172,12 @@ class TaskRecords extends RecordGroup {
         builder = builder.withCompletion(Integer.parseInt(completion));
       }
     }
-    if (record.isSet(TaskDefaultColumn.COLOR.getName())) {
-      try {
-        String taskColorAsString = getOrNull(record, TaskFields.COLOR.toString());
-        if (!Strings.isNullOrEmpty(taskColorAsString)) {
-          builder.withColor(ColorConvertion.determineColor(taskColorAsString));
-        } else if (taskManager.getTaskDefaultColorOption().getValue() != null) {
-          builder.withColor(taskManager.getTaskDefaultColorOption().getValue());
-        }
-      } catch (AssertionError e) {
-        GPLogger.logToLogger(e);
+    if (record.isSet(TaskFields.COLOR.toString())) {
+      String taskColorAsString = getOrNull(record, TaskFields.COLOR.toString());
+      if (ColorOption.Util.isValidColor(taskColorAsString)) {
+        builder.withColor(ColorConvertion.determineColor(taskColorAsString));
+      } else if (taskManager.getTaskDefaultColorOption().getValue() != null) {
+        builder.withColor(taskManager.getTaskDefaultColorOption().getValue());
       }
     }
     if (record.isSet(TaskDefaultColumn.COST.getName())) {

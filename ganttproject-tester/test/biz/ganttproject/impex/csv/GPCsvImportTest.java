@@ -279,7 +279,7 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date,Color";
+    String header1 = "ID,Name,Begin date,End date,Task color";
     String data1 = "1,t1,23/07/12,26/07/12,\"#ff0000\"";
     String data2 = "2,t2,23/07/12,26/07/12,\"#00ff00\"";
     String data3 = "3,t3,23/07/12,26/07/12,\"#2a2a2a\"";

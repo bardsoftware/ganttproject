@@ -115,7 +115,7 @@ public class GPCsvExportTest extends TaskTestCase {
     exporter.save(outputStream);
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
     assertEquals(5, lines.length);
-    assertEquals("tableColID,color", lines[0].trim());
+    assertEquals("tableColID,option.taskDefaultColor.label", lines[0].trim());
     assertEquals("0,\"#ff0000\"", lines[1].trim());
     assertEquals("1,\"#00ff00\"", lines[2].trim());
     assertEquals("2,\"#2a2a2a\"", lines[3].trim());
