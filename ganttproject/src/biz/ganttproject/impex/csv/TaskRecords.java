@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -37,6 +38,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.apache.commons.csv.CSVRecord;
 
 import java.math.BigDecimal;
@@ -85,7 +87,8 @@ class TaskRecords extends RecordGroup {
     NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"),
     PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()),
     OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey()),
-    COST(TaskDefaultColumn.COST.getNameKey());
+    COST(TaskDefaultColumn.COST.getNameKey()),
+    COLOR(TaskDefaultColumn.COLOR.getNameKey());
 
     private final String text;
 
@@ -167,6 +170,14 @@ class TaskRecords extends RecordGroup {
       String completion = record.get(TaskFields.COMPLETION.toString());
       if (!Strings.isNullOrEmpty(completion)) {
         builder = builder.withCompletion(Integer.parseInt(completion));
+      }
+    }
+    if (record.isSet(TaskFields.COLOR.toString())) {
+      String taskColorAsString = getOrNull(record, TaskFields.COLOR.toString());
+      if (ColorOption.Util.isValidColor(taskColorAsString)) {
+        builder.withColor(ColorConvertion.determineColor(taskColorAsString));
+      } else if (taskManager.getTaskDefaultColorOption().getValue() != null) {
+        builder.withColor(taskManager.getTaskDefaultColorOption().getValue());
       }
     }
     if (record.isSet(TaskDefaultColumn.COST.getName())) {

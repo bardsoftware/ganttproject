@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -264,6 +265,7 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
     assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
   }
+
   public void testOutlineNumberComparator() {
     assertOrder("1", "2");
     assertOrder("1", "1.1");
@@ -271,5 +273,29 @@ public class GPCsvImportTest extends TestCase {
     assertOrder("1.1", "2");
     assertOrder("1.2", "1.10");
     assertOrder("2", "10");
+  }
+
+  public void testTaskColors() throws IOException {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,End date,Task color";
+    String data1 = "1,t1,23/07/12,26/07/12,\"#ff0000\"";
+    String data2 = "2,t2,23/07/12,26/07/12,\"#00ff00\"";
+    String data3 = "3,t3,23/07/12,26/07/12,\"#2a2a2a\"";
+    String data4 = "4,t4,23/07/12,26/07/12,";
+    String data5 = "5,t5,23/07/12,26/07/12,red";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(
+        header1, data1, data2, data3, data4, data5)),
+        taskManager, null, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    assertEquals(5, taskMap.size());
+    assertEquals(Color.RED, taskMap.get("t1").getColor());
+    assertEquals(Color.GREEN, taskMap.get("t2").getColor());
+    assertEquals(new Color(42, 42, 42), taskMap.get("t3").getColor());
+    assertEquals(builder.getDefaultColor(), taskMap.get("t4").getColor());
+    assertEquals(builder.getDefaultColor(), taskMap.get("t5").getColor());
   }
 }

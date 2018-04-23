@@ -5,12 +5,14 @@
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.scene.SceneBuilder;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.time.TimeUnitStack;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -19,21 +21,15 @@ import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
-import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.scene.SceneBuilder;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.TimeUnitStack;
 
-import com.google.common.collect.Lists;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Controls painting of the Gantt chart
@@ -64,29 +60,7 @@ public class ChartModelImpl extends ChartModelBase {
     myTaskRendererImpl = new TaskRendererImpl2(this);
     getRenderers().add(myTaskRendererImpl);
 
-    class NewTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
-      private NewTaskColorOption() {
-        super("taskDefaultColor", new Color(140, 182, 206));
-      }
-
-      @Override
-      public String getTagName() {
-        return "colors";
-      }
-
-      @Override
-      public String getAttributeName() {
-        return "tasks";
-      }
-
-      @Override
-      public void loadValue(String legacyValue) {
-        loadPersistentValue(legacyValue);
-        commit();
-      }
-    }
-
-    myTaskDefaultColorOption = new NewTaskColorOption();
+    myTaskDefaultColorOption = taskManager.getTaskDefaultColorOption();
     myTaskDefaultsOptions = new GPOptionGroup("ganttChartDefaults",
         new GPOption[] { taskManager.getTaskNamePrefixOption(), taskManager.getTaskCopyNamePrefixOption(), myTaskDefaultColorOption,
             getTaskManager().getDependencyHardnessOption() });

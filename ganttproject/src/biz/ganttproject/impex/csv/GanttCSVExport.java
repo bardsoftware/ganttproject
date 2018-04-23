@@ -22,6 +22,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -44,6 +45,7 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -199,6 +201,13 @@ public class GanttCSVExport {
             break;
           case COST:
             writer.print(task.getCost().getValue().toPlainString());
+            break;
+          case COLOR:
+            if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
+              writer.print(ColorConvertion.getColor(task.getColor()));
+            } else {
+              writer.print("");
+            }
             break;
           case INFO:
           case PRIORITY:

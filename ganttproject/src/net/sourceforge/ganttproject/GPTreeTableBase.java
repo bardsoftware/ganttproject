@@ -353,8 +353,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
           if (test1 != 0) {
             return test1;
           }
-          if (!left.getStub().isVisible() && !right.getStub().isVisible()) {
+          if (!left.getStub().isVisible() && !right.getStub().isVisible()
+              && left.getName() != null && right.getName() != null) {
+            // In fact, names can be null e.g. if resource key is missing
             return left.getName().compareTo(right.getName());
+          }
+          if (left.getStub().getOrder() == right.getStub().getOrder()) {
+            return left.getStub().getID().compareTo(right.getStub().getID());
           }
           return left.getStub().getOrder() - right.getStub().getOrder();
         }
