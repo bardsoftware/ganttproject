@@ -18,23 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
+import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -43,6 +38,12 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
+
+import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GanttProjectImpl implements IGanttProject {
   private static final GanttLanguage language = GanttLanguage.getInstance();
@@ -217,20 +218,28 @@ public class GanttProjectImpl implements IGanttProject {
     return myResourceManager.getCustomPropertyManager();
   };
 
+  private static Color DEFAULT_TASK_COLOR = new Color(140, 182, 206);
   private static class TaskManagerConfigImpl implements TaskManagerConfig {
     private final HumanResourceManager myResourceManager;
     private final GPTimeUnitStack myTimeUnitStack;
     private final GPCalendarCalc myCalendar;
+    private final ColorOption myDefaultTaskColorOption;
 
     private TaskManagerConfigImpl(HumanResourceManager resourceManager, GPCalendarCalc calendar, GanttLanguage i18n) {
       myResourceManager = resourceManager;
       myTimeUnitStack = new GPTimeUnitStack();
       myCalendar = calendar;
+      myDefaultTaskColorOption = new DefaultTaskColorOption(DEFAULT_TASK_COLOR);
     }
 
     @Override
     public Color getDefaultColor() {
-      return Color.BLUE;
+      return myDefaultTaskColorOption.getValue();
+    }
+
+    @Override
+    public ColorOption getDefaultColorOption() {
+      return myDefaultTaskColorOption;
     }
 
     @Override
@@ -272,4 +281,32 @@ public class GanttProjectImpl implements IGanttProject {
   public void repaintResourcePanel() {
     // TODO Auto-generated method stub
   }
+
+
+  static class DefaultTaskColorOption extends DefaultColorOption implements GP1XOptionConverter {
+    DefaultTaskColorOption() {
+      this(DEFAULT_TASK_COLOR);
+    }
+    private DefaultTaskColorOption(Color defaultColor) {
+      super("taskDefaultColor", defaultColor);
+    }
+
+    @Override
+    public String getTagName() {
+      return "colors";
+    }
+
+    @Override
+    public String getAttributeName() {
+      return "tasks";
+    }
+
+    @Override
+    public void loadValue(String legacyValue) {
+      loadPersistentValue(legacyValue);
+      commit();
+    }
+  }
+
+
 }

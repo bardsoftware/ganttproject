@@ -4,8 +4,10 @@ package biz.ganttproject.impex.csv;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -16,8 +18,10 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -33,12 +37,7 @@ public class GPCsvExportTest extends TaskTestCase {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
     RoleManager roleManager = new RoleManagerImpl();
-    CSVOptions csvOptions = new CSVOptions();
-    for (BooleanOption option : csvOptions.getResourceOptions().values()) {
-      if (!"id".equals(option.getID())) {
-        option.setValue(false);
-      }
-    }
+    CSVOptions csvOptions = enableOnly("id");
     CustomPropertyDefinition prop1 = hrManager.getCustomPropertyManager().createDefinition(
         CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
     CustomPropertyDefinition prop2 = hrManager.getCustomPropertyManager().createDefinition(
@@ -67,12 +66,8 @@ public class GPCsvExportTest extends TaskTestCase {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
     RoleManager roleManager = new RoleManagerImpl();
-    CSVOptions csvOptions = new CSVOptions();
-    for (BooleanOption option : csvOptions.getTaskOptions().values()) {
-      if (!TaskDefaultColumn.ID.getStub().getID().equals(option.getID())) {
-        option.setValue(false);
-      }
-    }
+    CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID());
+
     CustomPropertyDefinition prop1 = taskManager.getCustomPropertyManager().createDefinition(
         CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
     CustomPropertyDefinition prop2 = taskManager.getCustomPropertyManager().createDefinition(
@@ -96,5 +91,50 @@ public class GPCsvExportTest extends TaskTestCase {
     assertEquals("1,,b,", lines[2].trim());
     assertEquals("2,c,,", lines[3].trim());
 
+  }
+
+  public void testTaskColor() throws IOException {
+    TaskManager taskManager = getTaskManager();
+    GanttTask task0 = taskManager.createTask();
+    GanttTask task1 = taskManager.createTask();
+    GanttTask task2 = taskManager.createTask();
+    GanttTask task3 = taskManager.createTask();
+    task0.setColor(Color.RED);
+    task1.setColor(Color.GREEN);
+    task2.setColor(new Color(42, 42, 42));
+    // Leave task3 color default
+
+    CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID(), TaskDefaultColumn.COLOR.getStub().getID());
+    GanttCSVExport exporter = new GanttCSVExport(
+        taskManager,
+        new HumanResourceManager(null, new CustomColumnsManager()),
+        new RoleManagerImpl(),
+        csvOptions
+    );
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    exporter.save(outputStream);
+    String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
+    assertEquals(5, lines.length);
+    assertEquals("tableColID,color", lines[0].trim());
+    assertEquals("0,\"#ff0000\"", lines[1].trim());
+    assertEquals("1,\"#00ff00\"", lines[2].trim());
+    assertEquals("2,\"#2a2a2a\"", lines[3].trim());
+    assertEquals("3,", lines[4].trim());
+  }
+
+  private static CSVOptions enableOnly(String... fields) {
+    CSVOptions csvOptions = new CSVOptions();
+    Set fieldSet = ImmutableSet.copyOf(fields);
+    for (BooleanOption option : csvOptions.getTaskOptions().values()) {
+      if (!fieldSet.contains(option.getID())) {
+        option.setValue(false);
+      }
+    }
+    for (BooleanOption option : csvOptions.getResourceOptions().values()) {
+      if (!fieldSet.contains(option.getID())) {
+        option.setValue(false);
+      }
+    }
+    return csvOptions;
   }
 }

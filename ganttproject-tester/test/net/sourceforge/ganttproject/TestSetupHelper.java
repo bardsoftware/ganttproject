@@ -1,10 +1,9 @@
 package net.sourceforge.ganttproject;
 
-import java.awt.Color;
-import java.net.URL;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -17,6 +16,9 @@ import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 
+import java.awt.*;
+import java.net.URL;
+
 public class TestSetupHelper {
     public static class TaskManagerBuilder implements TaskManagerConfig {
         private GPCalendarCalc myGPCalendar = new AlwaysWorkingTimeCalendarImpl();
@@ -27,6 +29,8 @@ public class TestSetupHelper {
 
         private RoleManager myRoleManager;
 
+        private DefaultColorOption myDefaultColorOption = new DefaultColorOption("taskcolor", Color.CYAN);
+
         public TaskManagerBuilder() {
             myTimeUnitStack = new GPTimeUnitStack();
             myRoleManager = new RoleManagerImpl();
@@ -35,8 +39,13 @@ public class TestSetupHelper {
 
         @Override
         public Color getDefaultColor() {
-            return null;
+            return myDefaultColorOption.getValue();
         }
+
+        @Override
+        public ColorOption getDefaultColorOption() {
+        return myDefaultColorOption;
+      }
 
         @Override
         public GPCalendarCalc getCalendar() {

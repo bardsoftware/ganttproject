@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.test.task;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
@@ -161,7 +162,12 @@ public class TestResourceAssignments extends TestCase {
                 return null;
             }
 
-            @Override
+          @Override
+          public ColorOption getDefaultColorOption() {
+            return null;
+          }
+
+          @Override
             public GPCalendarCalc getCalendar() {
                 return new AlwaysWorkingTimeCalendarImpl();
             }

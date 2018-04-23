@@ -18,13 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.awt.Color;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Map;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.time.TimeDuration;
@@ -41,6 +37,11 @@ import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.event.TaskListener;
+
+import java.awt.*;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * @author bard
@@ -226,6 +227,8 @@ public interface TaskManager {
   StringOption getTaskNamePrefixOption();
 
   StringOption getTaskCopyNamePrefixOption();
+
+  ColorOption getTaskDefaultColorOption();
 
   EnumerationOption getDependencyHardnessOption();
 

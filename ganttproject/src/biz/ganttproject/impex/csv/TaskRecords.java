@@ -37,10 +37,9 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import org.apache.commons.csv.CSVRecord;
 import net.sourceforge.ganttproject.util.ColorConvertion;
+import org.apache.commons.csv.CSVRecord;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -87,9 +86,8 @@ class TaskRecords extends RecordGroup {
     NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"),
     PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()),
     OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey()),
-    COST(TaskDefaultColumn.COST.getNameKey());
-    COLOR("color"),
-    OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey());
+    COST(TaskDefaultColumn.COST.getNameKey()),
+    COLOR(TaskDefaultColumn.COLOR.getNameKey());
 
     private final String text;
 
@@ -175,8 +173,12 @@ class TaskRecords extends RecordGroup {
     }
     if (record.isSet(TaskDefaultColumn.COLOR.getName())) {
       try {
-        Color taskColor = ColorConvertion.determineColor(getOrNull(record, TaskFields.COLOR.toString()));
-        builder.withColor(taskColor);
+        String taskColorAsString = getOrNull(record, TaskFields.COLOR.toString());
+        if (!Strings.isNullOrEmpty(taskColorAsString)) {
+          builder.withColor(ColorConvertion.determineColor(taskColorAsString));
+        } else if (taskManager.getTaskDefaultColorOption().getValue() != null) {
+          builder.withColor(taskManager.getTaskDefaultColorOption().getValue());
+        }
       } catch (AssertionError e) {
         GPLogger.logToLogger(e);
       }
