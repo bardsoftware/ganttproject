@@ -102,7 +102,7 @@ class TaskRecords extends RecordGroup {
       return GanttLanguage.getInstance().getText(text);
     }
   }
-  private final Map<Task, String> myAssignmentMap = Maps.newHashMap();
+  private final Map<Task, AssignmentSpec> myAssignmentMap = Maps.newHashMap();
   private final Map<Task, String> myPredecessorMap = Maps.newHashMap();
   private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR);
   private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
@@ -196,7 +196,7 @@ class TaskRecords extends RecordGroup {
     if (record.isSet(TaskDefaultColumn.ID.getName())) {
       myTaskIdMap.put(record.get(TaskDefaultColumn.ID.getName()), task);
     }
-    myAssignmentMap.put(task, getOrNull(record, TaskFields.RESOURCES.toString()));
+    myAssignmentMap.put(task, parseAssignmentSpec(record));
     myPredecessorMap.put(task, getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName()));
     String outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName());
     if (outlineNumber != null) {
@@ -217,6 +217,41 @@ class TaskRecords extends RecordGroup {
     return true;
   }
 
+  private interface AssignmentSpec {
+    void apply(Task task, HumanResourceManager resourceManager);
+
+    class ResourceMap {
+      private static Map<String, HumanResource> resourceMap;
+      static Map<String, HumanResource> getIndexByName(HumanResourceManager resourceManager) {
+        if (resourceMap == null) {
+          resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+            @Override
+            public String apply(HumanResource input) {
+              return input.getName();
+            }
+          });
+        }
+        return resourceMap;
+      }
+    }
+  }
+
+  private AssignmentSpec parseAssignmentSpec(CSVRecord record) {
+    final String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
+    return new AssignmentSpec() {
+      @Override
+      public void apply(Task task, HumanResourceManager resourceManager) {
+        String[] names = resourcesColumn.split(";");
+        for (String name : names) {
+          HumanResource resource = AssignmentSpec.ResourceMap.getIndexByName(resourceManager).get(name);
+          if (resource != null) {
+            task.getAssignmentCollection().addAssignment(resource);
+          }
+        }
+      }
+    };
+  }
+
   @Override
   protected void postProcess() {
     for (Map.Entry<String, Task> wbsEntry : myWbsMap.entrySet()) {
@@ -233,23 +268,11 @@ class TaskRecords extends RecordGroup {
       taskManager.getTaskHierarchy().move(wbsEntry.getValue(), parentTask, 0);
     }
     if (resourceManager != null) {
-      Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-        @Override
-        public String apply(HumanResource input) {
-          return input.getName();
-        }
-      });
-      for (Entry<Task, String> assignment : myAssignmentMap.entrySet()) {
+      for (Entry<Task, AssignmentSpec> assignment : myAssignmentMap.entrySet()) {
         if (assignment.getValue() == null) {
           continue;
         }
-        String[] names = assignment.getValue().split(";");
-        for (String name : names) {
-          HumanResource resource = resourceMap.get(name);
-          if (resource != null) {
-            assignment.getKey().getAssignmentCollection().addAssignment(resource);
-          }
-        }
+        assignment.getValue().apply(assignment.getKey(), resourceManager);
       }
     }
     Function<Integer, Task> taskIndex = new Function<Integer, Task>() {
