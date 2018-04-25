@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.CustomProperty;
@@ -133,6 +134,9 @@ public class GanttCSVExport {
         writer.print(i18n(entry.getKey()));
       } else {
         writer.print(defaultColumn.getName());
+        if (defaultColumn == TaskDefaultColumn.RESOURCES) {
+          writer.print("assignments");
+        }
       }
     }
     for (CustomPropertyDefinition def : defs) {
@@ -198,6 +202,7 @@ public class GanttCSVExport {
             break;
           case RESOURCES:
             writer.print(getAssignments(task));
+            writer.print(buildAssignmentSpec(task));
             break;
           case COST:
             writer.print(task.getCost().getValue().toPlainString());
@@ -336,4 +341,14 @@ public class GanttCSVExport {
     }
     return res;
   }
+
+  private String buildAssignmentSpec(Task task) {
+    List<String> loads = Lists.newArrayList();
+    for (ResourceAssignment ra : task.getAssignments()) {
+      loads.add(String.format("%d:%.2f", ra.getResource().getId(), ra.getLoad()));
+    }
+    return Joiner.on(';').join(loads);
+  }
+
+
 }
