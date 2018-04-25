@@ -60,7 +60,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     private List<WebDavServerDescriptor> myServers = Lists.newArrayList();
 
     class EnumerationOptionImpl extends DefaultEnumerationOption<WebDavServerDescriptor> {
-      public EnumerationOptionImpl(String id) {
+      EnumerationOptionImpl(String id) {
         super(id, myServers.toArray(new WebDavServerDescriptor[0]));
       }
       @Override
@@ -82,11 +82,11 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           setValueIndex(idxValue);
         }
       }
-    };
+    }
 
     private EnumerationOptionImpl myEnumerationOption;
 
-    public ServerListOption(String id) {
+    ServerListOption(String id) {
       super(id);
       myEnumerationOption = new EnumerationOptionImpl(id);
     }
@@ -309,10 +309,6 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   public ListOption<WebDavServerDescriptor> getServersOption() {
     return myServers;
-  }
-
-  public StringOption getWebDavUsernameOption() {
-    return myUsername;
   }
 
   public StringOption getLegacyLastWebDAVDocumentOption() {
