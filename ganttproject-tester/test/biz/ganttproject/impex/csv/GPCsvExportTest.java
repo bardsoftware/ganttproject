@@ -93,6 +93,34 @@ public class GPCsvExportTest extends TaskTestCase {
 
   }
 
+  public void testResourceAssignments() throws IOException {
+    HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
+    TaskManager taskManager = getTaskManager();
+    CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID(), TaskDefaultColumn.RESOURCES.getStub().getID());
+
+    Task task1 = createTask();
+    Task task2 = createTask();
+    Task task3 = createTask();
+
+    HumanResource alice = hrManager.create("Alice", 1);
+    HumanResource bob = hrManager.create("Bob", 2);
+
+    task1.getAssignmentCollection().addAssignment(alice).setLoad(100f);
+    task2.getAssignmentCollection().addAssignment(alice).setLoad(45.457f);
+    task2.getAssignmentCollection().addAssignment(bob);
+
+    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, new RoleManagerImpl(), csvOptions);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    exporter.save(outputStream);
+    String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
+
+    assertEquals(9, lines.length);
+    assertEquals("tableColID,resources,assignments", lines[0].trim());
+    assertEquals("0,Alice,1:100.00", lines[1].trim());
+    assertEquals("1,Alice;Bob,1:45.46;2:0.00", lines[2].trim());
+    assertEquals("2,,", lines[3].trim());
+
+  }
   public void testTaskColor() throws IOException {
     TaskManager taskManager = getTaskManager();
     GanttTask task0 = taskManager.createTask();

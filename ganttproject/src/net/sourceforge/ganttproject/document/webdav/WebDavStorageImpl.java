@@ -18,24 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.document.webdav;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.JComponent;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.ProjectEventListener;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentStorageUi;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -48,10 +30,25 @@ import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ProjectEventListener;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.DocumentStorageUi;
+import net.sourceforge.ganttproject.gui.UIFacade;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Implements storage UI for WebDAV storages
@@ -63,7 +60,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
     private List<WebDavServerDescriptor> myServers = Lists.newArrayList();
 
     class EnumerationOptionImpl extends DefaultEnumerationOption<WebDavServerDescriptor> {
-      public EnumerationOptionImpl(String id) {
+      EnumerationOptionImpl(String id) {
         super(id, myServers.toArray(new WebDavServerDescriptor[0]));
       }
       @Override
@@ -85,11 +82,11 @@ public class WebDavStorageImpl implements DocumentStorageUi {
           setValueIndex(idxValue);
         }
       }
-    };
+    }
 
     private EnumerationOptionImpl myEnumerationOption;
 
-    public ServerListOption(String id) {
+    ServerListOption(String id) {
       super(id);
       myEnumerationOption = new EnumerationOptionImpl(id);
     }
@@ -125,7 +122,9 @@ public class WebDavStorageImpl implements DocumentStorageUi {
             server.password = parts[3];
             server.savePassword = true;
           }
-          myServers.add(server);
+          if (server.getRootUrl() != null) {
+            myServers.add(server);
+          }
         }
       }
       myEnumerationOption.reload();
@@ -310,10 +309,6 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   public ListOption<WebDavServerDescriptor> getServersOption() {
     return myServers;
-  }
-
-  public StringOption getWebDavUsernameOption() {
-    return myUsername;
   }
 
   public StringOption getLegacyLastWebDAVDocumentOption() {
