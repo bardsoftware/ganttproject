@@ -43,6 +43,9 @@ import net.sourceforge.ganttproject.task.event.TaskListener;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.BorderHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
@@ -338,6 +341,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
       return anyVisible;
     }
+
     @Override
     public void importData(ColumnList source) {
       for (ColumnImpl column : myColumns) {
@@ -602,7 +606,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   }
 
   protected GPTreeTableBase(IGanttProject project, UIFacade uiFacade, CustomPropertyManager customPropertyManager,
-      DefaultTreeTableModel model) {
+                            DefaultTreeTableModel model) {
     super(model);
     setTableHeader(new JTableHeader(getColumnModel()) {
       @Override
@@ -636,7 +640,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   protected void createDefaultEditors() {
     super.createDefaultEditors();
 
-    defaultEditorsByColumnClass.put(Object.class, new GenericEditor(){
+    defaultEditorsByColumnClass.put(Object.class, new GenericEditor() {
       @Override
       public boolean stopCellEditing() {
         try {
@@ -708,7 +712,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
-  private static <T>Comparator<T> reverseComparator(final Comparator<T> comparator) {
+  private static <T> Comparator<T> reverseComparator(final Comparator<T> comparator) {
     return new Comparator<T>() {
       @Override
       public int compare(T t1, T t2) {
@@ -744,6 +748,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     public void taskScheduleChanged(TaskScheduleEvent e) {
       clearOrdering();
     }
+
     @Override
     public void taskAdded(TaskHierarchyEvent e) {
       clearOrdering();
@@ -800,7 +805,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
                 myProject.getTaskManager().getTaskHierarchy().sort(
                     reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
                 );
-              } else  {
+              } else {
                 column.setSort(SortOrder.ASCENDING);
                 myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
               }
@@ -850,7 +855,16 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     setLeafIcon(icon);
     addActionWithAccelleratorKey(myEditCellAction);
 
-    setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);
+    BorderHighlighter paddingHiglighter = new BorderHighlighter(
+        new HighlightPredicate() {
+          @Override
+          public boolean isHighlighted(Component component, ComponentAdapter componentAdapter) {
+            return !componentAdapter.isHierarchical();
+          }
+        },
+        BorderFactory.createEmptyBorder(3, 3, 3, 5));
+    paddingHiglighter.setInner(true);
+    setHighlighters(paddingHiglighter, UIUtil.ZEBRA_HIGHLIGHTER);
 
     getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
@@ -903,19 +917,19 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   @Override
   public void customPropertyChange(CustomPropertyEvent event) {
     switch (event.getType()) {
-    case CustomPropertyEvent.EVENT_ADD:
-      addNewCustomColumn((CustomColumn) event.getDefinition());
-      break;
-    case CustomPropertyEvent.EVENT_REMOVE:
-      deleteCustomColumn((CustomColumn) event.getDefinition());
-      break;
-    case CustomPropertyEvent.EVENT_NAME_CHANGE:
-      getTableHeaderUiFacade().renameColumn(event.getDefinition());
-      getTable().getTableHeader().repaint();
-      break;
-    case CustomPropertyEvent.EVENT_TYPE_CHANGE:
-      getTableHeaderUiFacade().updateType(event.getDefinition());
-      getTable().repaint();
+      case CustomPropertyEvent.EVENT_ADD:
+        addNewCustomColumn((CustomColumn) event.getDefinition());
+        break;
+      case CustomPropertyEvent.EVENT_REMOVE:
+        deleteCustomColumn((CustomColumn) event.getDefinition());
+        break;
+      case CustomPropertyEvent.EVENT_NAME_CHANGE:
+        getTableHeaderUiFacade().renameColumn(event.getDefinition());
+        getTable().getTableHeader().repaint();
+        break;
+      case CustomPropertyEvent.EVENT_TYPE_CHANGE:
+        getTableHeaderUiFacade().updateType(event.getDefinition());
+        getTable().repaint();
     }
   }
 
@@ -1037,7 +1051,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   }
 
-  /** Adds keyStroke to the given action (if action is null nothing happens) */
+  /**
+   * Adds keyStroke to the given action (if action is null nothing happens)
+   */
   private void addAction(Action action, KeyStroke keyStroke) {
     if (action != null) {
       InputMap inputMap = getInputMap();
@@ -1054,7 +1070,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     myPropertiesAction = action;
   }
 
-  /** Adds an action to the object and makes it active */
+  /**
+   * Adds an action to the object and makes it active
+   */
   void addActionWithAccelleratorKey(GPAction action) {
     if (action != null) {
       for (KeyStroke ks : GPAction.getAllKeyStrokes(action.getID())) {
@@ -1078,7 +1096,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     /**
      * @inheritDoc Shows the popupMenu to hide/show columns and to add custom
-     *             columns.
+     * columns.
      */
     @Override
     public void mousePressed(MouseEvent e) {
@@ -1143,7 +1161,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
       if (!myRecentlyHiddenColumns.isEmpty()) {
         List<GPAction> showActions = new ArrayList<>();
-        for (ListIterator<Column> it = myRecentlyHiddenColumns.listIterator(myRecentlyHiddenColumns.size()); it.hasPrevious();) {
+        for (ListIterator<Column> it = myRecentlyHiddenColumns.listIterator(myRecentlyHiddenColumns.size()); it.hasPrevious(); ) {
           final Column hidden = it.previous();
           GPAction action = new GPAction("columns.show.label") {
             @Override
