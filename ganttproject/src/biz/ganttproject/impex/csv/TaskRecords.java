@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.task.TaskProperties;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.ColorConvertion;
+import net.sourceforge.ganttproject.util.collect.Pair;
 import org.apache.commons.csv.CSVRecord;
 
 import java.math.BigDecimal;
@@ -84,13 +85,20 @@ class TaskRecords extends RecordGroup {
   enum TaskFields {
     ID(TaskDefaultColumn.ID.getNameKey()),
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"),
-    NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"), DURATION("tableColDuration"),
+    NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"),
+    ASSIGNMENTS("Assignments") {
+      @Override
+      public String toString() {
+        return this.text;
+      }
+    },
+    DURATION("tableColDuration"),
     PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()),
     OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey()),
     COST(TaskDefaultColumn.COST.getNameKey()),
     COLOR(TaskDefaultColumn.COLOR.getNameKey());
 
-    private final String text;
+    protected final String text;
 
     TaskFields(final String text) {
       this.text = text;
@@ -219,37 +227,95 @@ class TaskRecords extends RecordGroup {
 
   private interface AssignmentSpec {
     void apply(Task task, HumanResourceManager resourceManager);
+    AssignmentSpec VOID = new AssignmentSpec() {
+      @Override
+      public void apply(Task task, HumanResourceManager resourceManager) {
+        // Dp nothing.
+      }
+    };
+  }
 
-    class ResourceMap {
-      private static Map<String, HumanResource> resourceMap;
-      static Map<String, HumanResource> getIndexByName(HumanResourceManager resourceManager) {
-        if (resourceMap == null) {
-          resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-            @Override
-            public String apply(HumanResource input) {
-              return input.getName();
-            }
-          });
+  private static class AssignmentColumnSpecImpl implements AssignmentSpec {
+    private final String myValue;
+    private final List<Pair<Level, String>> myErrors;
+
+    AssignmentColumnSpecImpl(String value, List<Pair<Level, String>> errors) {
+      myValue = value;
+      myErrors = errors;
+    }
+
+    @Override
+    public void apply(Task task, HumanResourceManager resourceManager) {
+      String[] assignments = myValue.split(";");
+      for (String item : assignments) {
+        String[] idAndLoad = item.split(":");
+        if (idAndLoad.length != 2) {
+          RecordGroup.addError(myErrors, Level.SEVERE, String.format(
+              "Malformed entry=%s in assignment cell=%s of task=%d", item, myValue, task.getTaskID()));
+          continue;
         }
-        return resourceMap;
+        try {
+          Integer resourceId = Integer.parseInt(idAndLoad[0]);
+          HumanResource resource = resourceManager.getById(resourceId);
+          if (resource == null) {
+            RecordGroup.addError(myErrors, Level.WARNING, String.format(
+                "Resource not found by id=%d from assignment cell=%s of task=%d", item, myValue, task.getTaskID()));
+            continue;
+          }
+          Float load = Float.parseFloat(idAndLoad[1]);
+          task.getAssignmentCollection().addAssignment(resource).setLoad(load);
+        } catch (NumberFormatException e) {
+          RecordGroup.addError(myErrors, Level.SEVERE, String.format(
+              "Failed to parse number from assignment cell=%s of task=%d %n%s",
+              item, task.getTaskID(), e.getMessage()));
+        }
       }
     }
   }
 
-  private AssignmentSpec parseAssignmentSpec(CSVRecord record) {
-    final String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
-    return new AssignmentSpec() {
-      @Override
-      public void apply(Task task, HumanResourceManager resourceManager) {
-        String[] names = resourcesColumn.split(";");
-        for (String name : names) {
-          HumanResource resource = AssignmentSpec.ResourceMap.getIndexByName(resourceManager).get(name);
-          if (resource != null) {
-            task.getAssignmentCollection().addAssignment(resource);
+  private static class ResourceColumnSpecImpl implements AssignmentSpec {
+    private static Map<String, HumanResource> resourceMap;
+    static Map<String, HumanResource> getIndexByName(HumanResourceManager resourceManager) {
+      if (resourceMap == null) {
+        resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+          @Override
+          public String apply(HumanResource input) {
+            return input.getName();
           }
+        });
+      }
+      return resourceMap;
+    }
+    private final String myValue;
+    private final List<Pair<Level, String>> myErrors;
+
+    ResourceColumnSpecImpl(String value, List<Pair<Level, String>> errors) {
+      myValue = value;
+      myErrors = errors;
+    }
+
+    @Override
+    public void apply(Task task, HumanResourceManager resourceManager) {
+      String[] names = myValue.split(";");
+      for (String name : names) {
+        HumanResource resource = getIndexByName(resourceManager).get(name);
+        if (resource != null) {
+          task.getAssignmentCollection().addAssignment(resource);
         }
       }
-    };
+    }
+
+  }
+  private AssignmentSpec parseAssignmentSpec(CSVRecord record) {
+    final String assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString());
+    if (!Strings.isNullOrEmpty(assignmentsColumn)) {
+      return new AssignmentColumnSpecImpl(assignmentsColumn, getErrorOutput());
+    }
+    String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
+    if (!Strings.isNullOrEmpty(resourcesColumn)) {
+      return new ResourceColumnSpecImpl(resourcesColumn, getErrorOutput());
+    }
+    return AssignmentSpec.VOID;
   }
 
   @Override

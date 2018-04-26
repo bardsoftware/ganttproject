@@ -135,7 +135,7 @@ public class GanttCSVExport {
       } else {
         writer.print(defaultColumn.getName());
         if (defaultColumn == TaskDefaultColumn.RESOURCES) {
-          writer.print("assignments");
+          writer.print(TaskRecords.TaskFields.ASSIGNMENTS.toString());
         }
       }
     }
