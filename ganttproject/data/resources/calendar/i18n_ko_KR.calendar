@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="South Korea Holidays 2013-2019" type="country">
+<!-- http://www.officeholidays.com/countries/south_korea/index.php -->
+<!-- https://publicholidays.co.kr/ko -->
+	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[새해]]></date>	<!-- New Year -->
+	<date year="" month="03" date="01" type="HOLIDAY"><![CDATA[3.1절]]></date>	<!-- March 1st Independence Movement Memorial Day -->
+	<date year="" month="05" date="01" type="HOLIDAY"><![CDATA[노동절]]></date>	<!-- Laber Day -->
+	<date year="" month="05" date="05" type="HOLIDAY"><![CDATA[어린이날]]></date>	<!-- Children's Day -->
+	<date year="" month="06" date="06" type="HOLIDAY"><![CDATA[현충일]]></date>	<!-- Memorial Day -->
+	<!-- <date year="" month="07" date="17" type="HOLIDAY"><![CDATA[제헌절]]></date>>-->     <!-- Constitution Day -->
+	<date year="" month="08" date="15" type="HOLIDAY"><![CDATA[광복절]]></date>	<!-- Liberation Day -->
+	<date year="" month="10" date="03" type="HOLIDAY"><![CDATA[개천절]]></date>	<!-- National Foundation Day -->
+	<date year="" month="10" date="09" type="HOLIDAY"><![CDATA[한글날]]></date>	<!-- Hangual Day -->
+	<date year="" month="12" date="25" type="HOLIDAY"><![CDATA[크리스마스]]></date>	<!-- Christmas Day -->
+	
+	<date year="2013" month="02" date="09" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2013" month="02" date="10" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2013" month="02" date="11" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2013" month="04" date="17" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2013" month="09" date="19" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+	<date year="2013" month="09" date="20" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+	<date year="2013" month="09" date="21" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+
+	<date year="2014" month="01" date="30" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2014" month="01" date="31" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2014" month="02" date="01" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year -->
+	<date year="2014" month="05" date="06" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2014" month="09" date="07" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+	<date year="2014" month="09" date="08" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+	<date year="2014" month="09" date="09" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival -->
+
+	<date year="2015" month="02" date="18" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal -->
+	<date year="2015" month="02" date="19" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2015" month="02" date="20" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day afer Seollal -->
+	<date year="2015" month="05" date="25" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2015" month="09" date="26" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2015" month="09" date="27" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2015" month="09" date="28" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+	<date year="2015" month="09" date="29" type="HOLIDAY"><![CDATA[대체휴일]]></date>	<!-- Substitute Holiday for Chuseok -->
+
+	<date year="2016" month="02" date="07" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2016" month="02" date="08" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2016" month="02" date="09" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2016" month="02" date="10" type="HOLIDAY"><![CDATA[대체휴일]]></date>	<!-- Substitute Holiday for Seollal -->
+	<date year="2016" month="04" date="13" type="HOLIDAY"><![CDATA[국회의원선거]]></date>	<!-- Election Day : the 20th Parliament Representatives -->
+	<date year="2016" month="05" date="14" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2016" month="09" date="14" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2016" month="09" date="15" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2016" month="09" date="16" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+
+	<date year="2017" month="01" date="27" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2017" month="01" date="28" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2017" month="01" date="29" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2017" month="05" date="09" type="HOLIDAY"><![CDATA[대통령선거]]></date>	<!-- Election Day : the 19th Presidential Election -->
+	<date year="2017" month="05" date="14" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2017" month="10" date="03" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2017" month="10" date="04" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2017" month="10" date="05" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+
+	<date year="2018" month="02" date="15" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2018" month="02" date="16" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2018" month="02" date="17" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2018" month="05" date="22" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2018" month="06" date="13" type="HOLIDAY"><![CDATA[지방선거일]]></date>	<!-- Election Day : the 7th Regional Elections -->
+	<date year="2018" month="09" date="23" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2018" month="09" date="24" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2018" month="09" date="25" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+	<date year="2018" month="09" date="26" type="HOLIDAY"><![CDATA[대체휴일]]></date>	<!-- Substitute Holiday for Chuseok -->
+
+	<date year="2019" month="02" date="04" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2019" month="02" date="05" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2019" month="02" date="06" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2019" month="02" date="07" type="HOLIDAY"><![CDATA[대체휴일]]></date>	<!-- Substitute Holiday for Seollal -->
+	<date year="2019" month="05" date="12" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2019" month="09" date="12" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2019" month="09" date="13" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2019" month="09" date="14" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+</calendar >
