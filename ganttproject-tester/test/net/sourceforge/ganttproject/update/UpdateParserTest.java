@@ -29,11 +29,11 @@ import java.util.List;
 public class UpdateParserTest extends TestCase {
 
   private static final String CONTENT = "3.0.0\n" +
-          "http://www.ganttproject.biz/my/feed\n" +
-          "GanttProject 3.0.0 is now available.&amp;nbsp;&lt;a href=&quot;https://www.ganttproject.biz/download/upgrade&quot;&gt;Download the update&lt;/a&gt;";
+      "http://www.ganttproject.biz/my/feed\n" +
+      "GanttProject 3.0.0 is now available.&amp;nbsp;&lt;a href=&quot;https://www.ganttproject.biz/download/upgrade&quot;&gt;Download the update&lt;/a&gt;";
 
   public void testUpdateParser_Sussessful() {
-    RssParser parser = new RssParser();
+    RssParser parser = new RssParser("2.8.6", "2262");
     RssUpdate update = parser.parseUpdate(CONTENT);
 
     assertEquals("3.0.0", update.getVersion());
@@ -42,7 +42,7 @@ public class UpdateParserTest extends TestCase {
   }
 
   public void testUpdateParser_Empty() {
-    RssParser parser = new RssParser();
+    RssParser parser = new RssParser("2.8.6", "2262");
     RssUpdate update = parser.parseUpdate("");
 
     assertNull(update);
@@ -51,12 +51,12 @@ public class UpdateParserTest extends TestCase {
   public void testParseRss_Successful() {
     InputStream updateRss = ClassLoader.class.getResourceAsStream("/update.rss");
 
-    RssParser parser = new RssParser();
+    RssParser parser = new RssParser("2.8.6", "2262");
     RssFeed feed = parser.parse(updateRss, null);
 
     assertNotNull(feed);
     List<RssFeed.Item> items = feed.getItems();
-    assertEquals(items.size(), 2);
+    assertEquals(2, items.size());
 
     assertFalse(items.get(1).isUpdate);
 
