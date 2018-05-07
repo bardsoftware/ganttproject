@@ -99,7 +99,7 @@ public class GPCsvImportTest extends TestCase {
     GanttLanguage.getInstance().setShortDateFormat(new SimpleDateFormat("dd/MM/yy"));
   }
 
-  public void testImportAssignments() throws Exception {
+  public void testImportResourcesColumn() throws Exception {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
     HumanResourceManager resourceManager = builder.getResourceManager();
@@ -125,6 +125,42 @@ public class GPCsvImportTest extends TestCase {
     });
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+  }
+
+  public void testImportAssignmentsColumn() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+    HumanResourceManager resourceManager = builder.getResourceManager();
+    RoleManager roleManager = new RoleManagerImpl();
+
+    String header1 = "Name,Begin date,End date,Assignments";
+    String data1 = "t1,23/07/12,25/07/12,1:100.00;2:50.00";
+    String data2 = "t2,23/07/12,25/07/12,3:100.00";
+    String data3 = "t3,23/07/12,25/07/12,";
+
+    String header2 = "Name,ID,e-mail,Phone,Default role";
+    String resources = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, "", header2, resources)),
+        taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
+    importer.load();
+
+    Map<String, HumanResource> resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+      @Override
+      public String apply(HumanResource input) {
+        return input.getName();
+      }
+    });
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+
+    Task t1 = taskMap.get("t1");
+    assertNotNull(t1);
+    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
+    assertEquals(100f, t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")).getLoad());
+    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
+    assertEquals(50f, t1.getAssignmentCollection().getAssignment(resourceMap.get("John")).getLoad());
+
+    assertEquals(100f, taskMap.get("t2").getAssignmentCollection().getAssignment(resourceMap.get("Jack")).getLoad());
+    assertEquals(0, taskMap.get("t3").getAssignmentCollection().getAssignments().length);
   }
 
   public void testImportResourceRole() throws Exception {

@@ -115,7 +115,7 @@ public class GPCsvExportTest extends TaskTestCase {
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
 
     assertEquals(9, lines.length);
-    assertEquals("tableColID,resources,assignments", lines[0].trim());
+    assertEquals("tableColID,resources,Assignments", lines[0].trim());
     assertEquals("0,Alice,1:100.00", lines[1].trim());
     assertEquals("1,Alice;Bob,1:45.46;2:0.00", lines[2].trim());
     assertEquals("2,,", lines[3].trim());
