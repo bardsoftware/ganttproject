@@ -111,12 +111,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       editCellAt(t.getSelectedRow(), t.getSelectedColumn());
     }
   };
-  private final Runnable myUpdateUiCommand = new Runnable() {
-    @Override
-    public void run() {
-      updateUI();
-    }
-  };
   private GPAction myManageColumnsAction = new GPAction("columns.manage.label") {
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -230,18 +224,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return result;
   }
 
-
-  @Override
-  public void editingCanceled(ChangeEvent e) {
-    super.editingCanceled(e);
-    SwingUtilities.invokeLater(myUpdateUiCommand);
-  }
-
-  @Override
-  public void editingStopped(ChangeEvent arg0) {
-    super.editingStopped(arg0);
-    SwingUtilities.invokeLater(myUpdateUiCommand);
-  }
 
   Action getManageColumnsAction() {
     return myManageColumnsAction;
