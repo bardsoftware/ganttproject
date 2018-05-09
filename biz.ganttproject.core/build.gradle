@@ -2,7 +2,7 @@ apply plugin: 'java'
 
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
-  mavenDeps group: 'com.google.guava', name: 'guava', version: '19.0'
+  mavenDeps group: 'com.google.guava', name: 'guava', version: '25.0-jre'
 }
 
 sourceSets {
