@@ -44,15 +44,19 @@ public class DesktopIntegration {
       }
 
       @Override
-      public void openFile(File file) {
-        if (projectUiFacade.ensureProjectSaved(project)) {
-          Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
-          try {
-            projectUiFacade.openProject(myDocument, project);
-          } catch (Document.DocumentException | IOException ex) {
-            uiFacade.showErrorDialog(ex);
+      public void openFile(final File file) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+            if (projectUiFacade.ensureProjectSaved(project)) {
+              Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
+              try {
+                projectUiFacade.openProject(myDocument, project);
+              } catch (Document.DocumentException | IOException ex) {
+                uiFacade.showErrorDialog(ex);
+              }
+            }            
           }
-        }
+        });
       }
     });
   }
