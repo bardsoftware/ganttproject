@@ -44,7 +44,7 @@ class XlsRecordImpl implements SpreadsheetRecord {
     if (index == null) {
       throw new IllegalArgumentException(String.format("Mapping for %s not found, expected one of %s", name, myMapping.keySet()));
     }
-    return (myValues.size() <= index) ? new String() : myValues.get(index);
+    return (myValues.size() <= index) ? "" : myValues.get(index);
   }
 
   @Override
@@ -70,5 +70,18 @@ class XlsRecordImpl implements SpreadsheetRecord {
   @Override
   public int size() {
     return myValues.size();
+  }
+  
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    for (String name : myMapping.keySet()) {
+      try {
+        sb.append(name + ": " + get(myMapping.get(name)) + ";");
+      } catch (Throwable t) {
+        sb.append(name + ": <invalid column>;");
+      }
+    }
+    return sb.toString();
   }
 }

@@ -61,49 +61,43 @@ class XlsReaderImpl implements SpreadsheetReader {
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
     Iterator<SpreadsheetRecord> iterator = null;
+    Iterator<SpreadsheetRecord> it = null;
 
-    if(myBook.getNumberOfSheets() > 1) {
-      Iterator<SpreadsheetRecord> it = null;
-      for (int i = 0; i < myBook.getNumberOfSheets(); ++i) {
-        Sheet sheet = myBook.getSheetAt(i);
-        if (i < myBook.getNumberOfSheets() - 1) {
-          int lastRow = sheet.getPhysicalNumberOfRows();
-          sheet.createRow(lastRow + 1);
-          sheet.createRow(lastRow + 2);
-        }
-        it = Iterators.transform(sheet.iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
-        iterator = (iterator == null) ? it : Iterators.concat(iterator, it);
+    // import all sheets into CSV style records with two empty records to separate "tables" 
+    for (int i = 0; i < myBook.getNumberOfSheets(); ++i) {
+      Sheet sheet = myBook.getSheetAt(i);
+      if (i < myBook.getNumberOfSheets() - 1) {
+        int lastRow = sheet.getPhysicalNumberOfRows();
+        sheet.createRow(lastRow + 1);
+        sheet.createRow(lastRow + 2);
       }
-    }
-    else {
-      iterator = Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+      it = Iterators.transform(sheet.iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+      iterator = (iterator == null) ? it : Iterators.concat(iterator, it);
     }
 
     return iterator;
   }
 
   private List<String> getCellValues(Row row) {
-    return Lists.newArrayList(Iterables.transform(row,
-            (input) -> {
-              switch (input.getCellTypeEnum()) {
-                case NUMERIC: {
-                  if (HSSFDateUtil.isCellDateFormatted(input)) {
-                    return myDateFormat.format(input.getDateCellValue());
-                  }
-                  else {
-                    if (input.getCellStyle().getDataFormat() == (short)1) {
-                      return String.valueOf((int)input.getNumericCellValue());
-                    }
-                    else {
-                      return String.valueOf(input.getNumericCellValue());
-                    }
-                  }
-                }
-                default:
-                  return input.getStringCellValue();
-              }
-             }
-            ));
+    return Lists.newArrayList(Iterables.transform(row, (input) -> {
+      switch (input.getCellTypeEnum()) {
+        // handle the cases for date, integer and double as used when writing
+        // this is neccessary to get correct date values and make the parser happy
+        case NUMERIC: {
+          if (HSSFDateUtil.isCellDateFormatted(input)) {
+            return myDateFormat.format(input.getDateCellValue());
+          } else {
+            if (input.getCellStyle().getDataFormat() == (short) 1) {
+              return String.valueOf((int) input.getNumericCellValue());
+            } else {
+              return String.valueOf(input.getNumericCellValue());
+            }
+          }
+        }
+        default:
+          return input.getStringCellValue();
+      }
+    }));
   }
 
   /**

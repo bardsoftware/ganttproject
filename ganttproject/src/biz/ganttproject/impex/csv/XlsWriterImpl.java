@@ -21,7 +21,6 @@ package biz.ganttproject.impex.csv;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -118,18 +117,18 @@ public class XlsWriterImpl implements SpreadsheetWriter {
 
   @Override
   public void print(Double value) throws IOException {
+    Cell cell = addCell();
+    cell.setCellStyle(myDoubleStyle);
     if (value != null) {
-      Cell cell = addCell();
-      cell.setCellStyle(myDoubleStyle);
       cell.setCellValue(value);
     }
   }
 
   @Override
   public void print(Integer value) throws IOException {
+    Cell cell = addCell();
+    cell.setCellStyle(myIntegerStyle);
     if (value != null) {
-      Cell cell = addCell();
-      cell.setCellStyle(myIntegerStyle);
       cell.setCellValue(value);
     }
   }
@@ -141,9 +140,9 @@ public class XlsWriterImpl implements SpreadsheetWriter {
 
   @Override
   public void print(Calendar value) throws IOException {
+    Cell cell = addCell();
+    cell.setCellStyle(myDateStyle);
     if (value != null) {
-      Cell cell = addCell();
-      cell.setCellStyle(myDateStyle);
       cell.setCellValue(value);
     }
   }
