@@ -17,6 +17,10 @@ import java.io.IOException;
  * @author dbarashev@bardsoftware.com
  */
 public class DesktopIntegration {
+  public static boolean isMacOs() {
+    return System.getProperty("os.name").toLowerCase().startsWith("mac os x");
+  }
+
   static void setup(final GanttProject app) {
     final IGanttProject project = app.getProject();
     final UIFacade uiFacade = app.getUIFacade();
@@ -54,7 +58,7 @@ public class DesktopIntegration {
               } catch (Document.DocumentException | IOException ex) {
                 uiFacade.showErrorDialog(ex);
               }
-            }            
+            }
           }
         });
       }

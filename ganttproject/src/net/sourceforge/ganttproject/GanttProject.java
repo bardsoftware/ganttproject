@@ -1036,7 +1036,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             Class.forName("java.awt.desktop.AboutHandler");
             DesktopIntegration.setup(ganttFrame);
           } catch (ClassNotFoundException e) {
-            if (System.getProperty("os.name").toLowerCase().startsWith("mac os x")) {
+            if (DesktopIntegration.isMacOs()) {
               OSXAdapter.registerMacOSXApplication(ganttFrame);
             }
           } finally {
