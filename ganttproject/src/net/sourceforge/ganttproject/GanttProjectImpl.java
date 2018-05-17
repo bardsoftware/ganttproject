@@ -25,6 +25,7 @@ import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -88,7 +89,7 @@ public class GanttProjectImpl implements IGanttProject {
 
   @Override
   public String getDescription() {
-    return myDescription;
+    return Strings.nullToEmpty(myDescription);
   }
 
   @Override
@@ -216,9 +217,12 @@ public class GanttProjectImpl implements IGanttProject {
   @Override
   public CustomPropertyManager getResourceCustomPropertyManager() {
     return myResourceManager.getCustomPropertyManager();
-  };
+  }
+
+  ;
 
   private static Color DEFAULT_TASK_COLOR = new Color(140, 182, 206);
+
   private static class TaskManagerConfigImpl implements TaskManagerConfig {
     private final HumanResourceManager myResourceManager;
     private final GPTimeUnitStack myTimeUnitStack;
@@ -287,6 +291,7 @@ public class GanttProjectImpl implements IGanttProject {
     DefaultTaskColorOption() {
       this(DEFAULT_TASK_COLOR);
     }
+
     private DefaultTaskColorOption(Color defaultColor) {
       super("taskDefaultColor", defaultColor);
     }

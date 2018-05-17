@@ -87,8 +87,10 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       startElement("project", attrs, handler);
       //
       // See https://bugs.openjdk.java.net/browse/JDK-8133452
-      String projectDescription = getProject().getDescription().replace("\\r\\n", "\\n");
-      cdataElement("description", projectDescription, attrs, handler);
+      if (getProject().getDescription() != null) {
+        String projectDescription = getProject().getDescription().replace("\\r\\n", "\\n");
+        cdataElement("description", projectDescription, attrs, handler);
+      }
 
       saveViews(handler);
       emptyComment(handler);
