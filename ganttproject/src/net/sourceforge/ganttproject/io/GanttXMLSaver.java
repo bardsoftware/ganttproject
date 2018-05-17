@@ -56,7 +56,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
-      UIFacade uiFacade) {
+                       UIFacade uiFacade) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
