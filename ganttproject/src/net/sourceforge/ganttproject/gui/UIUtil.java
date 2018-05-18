@@ -90,6 +90,8 @@ public abstract class UIUtil {
   public static final Color PATINA_FOREGROUND = new Color(102, 153, 153);
   public static Font FONTAWESOME_FONT = null;
   private static Properties FONTAWESOME_PROPERTIES = new Properties();
+  private static Properties ourUiProperties = new Properties();
+
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
     ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
@@ -107,6 +109,11 @@ public abstract class UIUtil {
     }
     FONTAWESOME_PROPERTIES = new Properties();
     PropertiesUtil.loadProperties(FONTAWESOME_PROPERTIES, "/fontawesome.properties");
+    PropertiesUtil.loadProperties(ourUiProperties, "/ui.properties");
+  }
+
+  public static String getUiProperty(String key) {
+    return ourUiProperties.getProperty(key);
   }
 
   public static void setEnabledTree(JComponent root, final boolean isEnabled) {

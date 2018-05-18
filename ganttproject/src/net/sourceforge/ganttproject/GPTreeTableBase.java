@@ -580,6 +580,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   @Override
   public String getToolTipText(MouseEvent e) {
+    if (Boolean.FALSE.equals(Boolean.parseBoolean(UIUtil.getUiProperty("treetable.tooltips")))) {
+      return super.getToolTipText(e);
+    }
     try {
       java.awt.Point p = e.getPoint();
       int rowIndex = rowAtPoint(p);
