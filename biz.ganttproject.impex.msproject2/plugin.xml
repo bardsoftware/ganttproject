@@ -1,57 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin
-   id="biz.ganttproject.impex.msproject2"
-   name="MS Project import/export, version 2"
-   version="2.0.0"
-   provider-name="">
+        id="biz.ganttproject.impex.msproject2"
+        name="MS Project import/export, version 2"
+        version="2.0.0"
+        provider-name="">
 
-   <runtime>
-      <library name="biz.ganttproject.impex.msproject2.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/">
-         <export name="*">
-         </export>
-      </library>
-      <library name="lib/activation-1.1.1.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/jaxb-api-2.3.0.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/jaxb-impl-2.0.2.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/mpxj-5.6.3.jar">
-         <export
-               name="*">
-         </export>
-      </library>
-      <library name="lib/poi-3.15.jar">
-         <export
-               name="*">
-         </export>
-      </library>
-      <library name="lib/rtfparserkit-1.10.0.jar">
-         <export
-               name="*">
-         </export>
-      </library>
-   </runtime>
-   <requires>
-      <import plugin="biz.ganttproject.core"/>
-      <import plugin="net.sourceforge.ganttproject"/>
-      <import plugin="org.eclipse.core.runtime" version="3.4.0"/>
-   </requires>
+    <runtime>
+        <library name="biz.ganttproject.impex.msproject2.jar">
+            <export name="*"/>
+        </library>
+        <library name="lib/">
+            <export name="*">
+            </export>
+        </library>
+        <library name="lib/activation-1.1.1.jar">
+            <export name="*"/>
+        </library>
+        <library name="lib/commons-collections4-4.1.jar">
+            <export name="*"/>
+        </library>
+        <library name="lib/jaxb-api-2.3.0.jar">
+            <export name="*"/>
+        </library>
+        <library name="lib/jaxb-impl-2.0.2.jar">
+            <export name="*"/>
+        </library>
+        <library name="lib/mpxj-7.4.2.jar">
+            <export
+                    name="*">
+            </export>
+        </library>
+        <library name="lib/poi-3.17.jar">
+            <export
+                    name="*">
+            </export>
+        </library>
+        <library name="lib/rtfparserkit-1.10.0.jar">
+            <export
+                    name="*">
+            </export>
+        </library>
+    </runtime>
+    <requires>
+        <import plugin="biz.ganttproject.core"/>
+        <import plugin="net.sourceforge.ganttproject"/>
+        <import plugin="org.eclipse.core.runtime" version="3.4.0"/>
+    </requires>
 
-   <extension point="net.sourceforge.ganttproject.exporter">
-         <exporter class="biz.ganttproject.impex.msproject2.ExporterToMsProjectFile"/>
-   </extension>
+    <extension point="net.sourceforge.ganttproject.exporter">
+        <exporter class="biz.ganttproject.impex.msproject2.ExporterToMsProjectFile"/>
+    </extension>
 
-   <extension
-         point="net.sourceforge.ganttproject.importer">
-         <importer class="biz.ganttproject.impex.msproject2.ImporterFromMsProjectFile"/>
-   </extension>
+    <extension
+            point="net.sourceforge.ganttproject.importer">
+        <importer class="biz.ganttproject.impex.msproject2.ImporterFromMsProjectFile"/>
+    </extension>
 
 </plugin>
