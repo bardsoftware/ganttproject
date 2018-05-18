@@ -18,7 +18,7 @@
       <library name="lib/core/biz.ganttproject.desktop.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/commons-codec-1.4.jar">
+      <library name="lib/core/commons-codec-1.5.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/commons-csv.jar">
