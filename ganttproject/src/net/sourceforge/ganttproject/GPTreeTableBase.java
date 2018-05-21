@@ -157,6 +157,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (getTable().getSelectedColumn() != column || getTable().getSelectedRow() != row) {
           return false;
         }
+        if (me.isControlDown() || me.isMetaDown() || me.isShiftDown() || me.isAltDown()) {
+          return false;
+        }
         // Otherwise wait for double-click a little bit and then start editing.
         myDoubleClickExpectation.set(true);
         myEditCellExecutor.schedule(new Runnable() {
@@ -580,6 +583,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   @Override
   public String getToolTipText(MouseEvent e) {
+    if (Boolean.FALSE.equals(Boolean.parseBoolean(UIUtil.getUiProperty("treetable.tooltips")))) {
+      return super.getToolTipText(e);
+    }
     try {
       java.awt.Point p = e.getPoint();
       int rowIndex = rowAtPoint(p);
