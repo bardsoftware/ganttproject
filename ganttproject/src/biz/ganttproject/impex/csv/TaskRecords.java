@@ -40,7 +40,6 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.ColorConvertion;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import org.apache.commons.csv.CSVRecord;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -287,11 +286,9 @@ class TaskRecords extends RecordGroup {
       return resourceMap;
     }
     private final String myValue;
-    private final List<Pair<Level, String>> myErrors;
 
-    ResourceColumnSpecImpl(String value, List<Pair<Level, String>> errors) {
+    ResourceColumnSpecImpl(String value) {
       myValue = value;
-      myErrors = errors;
     }
 
     @Override
@@ -306,14 +303,14 @@ class TaskRecords extends RecordGroup {
     }
 
   }
-  private AssignmentSpec parseAssignmentSpec(CSVRecord record) {
+  private AssignmentSpec parseAssignmentSpec(SpreadsheetRecord record) {
     final String assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString());
     if (!Strings.isNullOrEmpty(assignmentsColumn)) {
       return new AssignmentColumnSpecImpl(assignmentsColumn, getErrorOutput());
     }
     String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
     if (!Strings.isNullOrEmpty(resourcesColumn)) {
-      return new ResourceColumnSpecImpl(resourcesColumn, getErrorOutput());
+      return new ResourceColumnSpecImpl(resourcesColumn);
     }
     return AssignmentSpec.VOID;
   }

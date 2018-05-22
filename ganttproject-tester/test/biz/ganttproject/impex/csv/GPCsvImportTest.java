@@ -20,6 +20,7 @@ package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
@@ -103,10 +104,6 @@ public class GPCsvImportTest extends TestCase {
   }
 
   public void testImportResourcesColumn() throws Exception {
-    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
-    TaskManager taskManager = builder.build();
-    HumanResourceManager resourceManager = builder.getResourceManager();
-    RoleManager roleManager = new RoleManagerImpl();
 
     String header1 = buildTaskHeader(
         TaskRecords.TaskFields.NAME,
@@ -149,7 +146,9 @@ public class GPCsvImportTest extends TestCase {
 
     String header2 = "Name,ID,e-mail,Phone,Default role";
     String resources = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, data2, data3, "", header2, resources)),
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(
+        Joiner.on('\n').join(header1, data1, data2, data3, "", header2, resources).getBytes(Charsets.UTF_8)),
+        SpreadsheetFormat.CSV,
         taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
     importer.load();
 
@@ -368,8 +367,9 @@ public class GPCsvImportTest extends TestCase {
     String data4 = "4,t4,23/07/12,26/07/12,";
     String data5 = "5,t5,23/07/12,26/07/12,red";
 
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(
-        header1, data1, data2, data3, data4, data5)),
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(
+        Joiner.on('\n').join(header1, data1, data2, data3, data4, data5).getBytes(Charsets.UTF_8)),
+        SpreadsheetFormat.CSV,
         taskManager, null, null, builder.getTimeUnitStack());
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
@@ -380,7 +380,7 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(builder.getDefaultColor(), taskMap.get("t4").getColor());
     assertEquals(builder.getDefaultColor(), taskMap.get("t5").getColor());
   }
-  
+
   private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
     List<Pair<SpreadsheetFormat, Supplier<InputStream>>> pairs = new ArrayList<>();
     pairs.add(Pair.create(CSV, createSupplier(Joiner.on('\n').join(data).getBytes(Charsets.UTF_8))));

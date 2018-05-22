@@ -17,11 +17,12 @@ import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+import org.apache.commons.csv.CSVFormat;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Set;
+
 import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 
 /**
@@ -98,7 +99,7 @@ public class GPCsvExportTest extends TaskTestCase {
 
   }
 
-  public void testResourceAssignments() throws IOException {
+  public void testResourceAssignments() throws Exception {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();
     CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID(), TaskDefaultColumn.RESOURCES.getStub().getID());
@@ -116,7 +117,9 @@ public class GPCsvExportTest extends TaskTestCase {
 
     GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, new RoleManagerImpl(), csvOptions);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    exporter.save(outputStream);
+    try (SpreadsheetWriter writer = new CsvWriterImpl(outputStream, CSVFormat.DEFAULT)) {
+      exporter.save(writer);
+    }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
 
     assertEquals(9, lines.length);
@@ -126,7 +129,7 @@ public class GPCsvExportTest extends TaskTestCase {
     assertEquals("2,,", lines[3].trim());
 
   }
-  public void testTaskColor() throws IOException {
+  public void testTaskColor() throws Exception {
     TaskManager taskManager = getTaskManager();
     GanttTask task0 = taskManager.createTask();
     GanttTask task1 = taskManager.createTask();
@@ -145,7 +148,9 @@ public class GPCsvExportTest extends TaskTestCase {
         csvOptions
     );
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    exporter.save(outputStream);
+    try (SpreadsheetWriter writer = new CsvWriterImpl(outputStream, CSVFormat.DEFAULT)) {
+      exporter.save(writer);
+    }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
     assertEquals(5, lines.length);
     assertEquals("tableColID,option.taskDefaultColor.label", lines[0].trim());
