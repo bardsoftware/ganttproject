@@ -23,13 +23,14 @@ import java.util.List;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 
 /** Search service for resources */
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
   static class MySearchResult extends SearchResult<HumanResource> {
-    public MySearchResult(HumanResource hr, ResourceSearchService searchService) {
-      super("Resource: " + hr.getName(), "", "", hr, searchService);
+    MySearchResult(HumanResource hr, ResourceSearchService searchService, String query, String snippet, String snippetText) {
+      super(hr.getId(), GanttLanguage.getInstance().getText("generic.resource"), hr.getName(), query, snippet, snippetText, hr, searchService);
     }
   }
 
@@ -40,10 +41,10 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
   @Override
   public List<MySearchResult> search(String query) {
     query = query.toLowerCase();
-    List<MySearchResult> results = new ArrayList<MySearchResult>();
+    List<MySearchResult> results = new ArrayList<>();
     for (HumanResource hr : getProject().getHumanResourceManager().getResources()) {
       if (isNotEmptyAndContains(hr.getName(), query)) {
-        results.add(new MySearchResult(hr, this));
+        results.add(new MySearchResult(hr, this, query, "", ""));
       }
     }
     return results;

@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskInteractionHintRenderer;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskMutator;
 
@@ -61,7 +62,8 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
   @Override
   public void apply(MouseEvent event) {
-    int newProgress = myChangeScale.getProgress(event.getX());
+    ChangeTaskProgressRuler.Progress progress = myChangeScale.getProgress(event.getX());
+    int newProgress = progress.toPercents();
     if (newProgress > 100) {
       newProgress = 100;
     }
@@ -69,7 +71,13 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
       newProgress = 0;
     }
     myMutator.setCompletionPercentage(newProgress);
-    myLastNotes = new TaskInteractionHintRenderer(newProgress + "%", event.getX(), event.getY() - 30);
+    String hintText = getHintText(newProgress, progress.toUnits());
+    myLastNotes = new TaskInteractionHintRenderer(hintText, event.getX(), event.getY() - 30);
+  }
+
+  private String getHintText(int percents, String units) {
+    return GanttLanguage.getInstance().formatText("task.changeProgressHint", percents, units,
+        getChartDateGrid().getTimeUnitStack().encode(getTask().getDuration().getTimeUnit()));
   }
 
   @Override

@@ -1,4 +1,17 @@
+buildscript {
+  ext.kotlin_version = '1.2.41'
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+plugins {
+  id "org.jetbrains.kotlin.jvm" version "1.1.2"
+}
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 ext {
   libDir = 'lib/core'
@@ -6,17 +19,17 @@ ext {
 
 dependencies {
   compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+  compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
   compile files('data/resources')
-  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
-  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
+  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
+  // https://mvnrepository.com/artifact/org.apache.poi/poi
+  mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.17'
+  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 }
 
-updateMavenDeps.doFirst {
-  into project.ext.libDir
-}
 
 sourceSets {
     main {
@@ -28,7 +41,11 @@ sourceSets {
             include "**/*.css"
         }
     }
+
+    main.kotlin.srcDirs  += 'src'
 }
+
+assemble.dependsOn += updateMavenDeps
 
 task updateVersion {
     doFirst {
@@ -38,6 +55,7 @@ task updateVersion {
         gpVersionFile.write(gpversion, 'UTF-8')
     }
 }
+
 task copyPluginFiles(type: Copy) {
     into(new File(rootProject.pluginsDir, project.name))
     from(jar.outputs.getFiles().getFiles().flatten())
@@ -45,6 +63,7 @@ task copyPluginFiles(type: Copy) {
       include "plugin.xml"
       include "lib/core/**.jar"
       exclude "lib/core/eclipsito.jar"
+      include "lib/mvn/**.jar"
       include "data/resources/**.ttf"
       include "data/resources/**.properties"
       include "data/resources/calendar/**"

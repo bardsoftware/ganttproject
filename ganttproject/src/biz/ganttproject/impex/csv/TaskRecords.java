@@ -144,7 +144,7 @@ class TaskRecords extends RecordGroup {
     return result;
   }
   @Override
-  protected boolean doProcess(CSVRecord record) {
+  protected boolean doProcess(SpreadsheetRecord record) {
     if (!super.doProcess(record)) {
       return false;
     }

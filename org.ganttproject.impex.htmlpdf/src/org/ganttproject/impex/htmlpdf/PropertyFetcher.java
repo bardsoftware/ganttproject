@@ -79,6 +79,8 @@ public class PropertyFetcher {
     id2value.put(ResourceDefaultColumn.EMAIL.getStub().getID(), hr.getMail());
     id2value.put(ResourceDefaultColumn.PHONE.getStub().getID(), hr.getPhone());
     id2value.put(ResourceDefaultColumn.STANDARD_RATE.getStub().getID(), hr.getStandardPayRate().toPlainString());
+    id2value.put(ResourceDefaultColumn.TOTAL_COST.getStub().getID(), hr.getTotalCost().toPlainString());
+    id2value.put(ResourceDefaultColumn.TOTAL_LOAD.getStub().getID(), String.valueOf(hr.getTotalLoad()));
 
     List<CustomProperty> customFields = hr.getCustomProperties();
     for (CustomProperty property : customFields) {

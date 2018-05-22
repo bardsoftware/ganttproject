@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom' xmlns:openSearch='http://a9.com/-/spec/opensearchrss/1.0/' xmlns:blogger='http://schemas.google.com/blogger/2008' xmlns:georss='http://www.georss.org/georss' xmlns:gd="http://schemas.google.com/g/2005" xmlns:thr='http://purl.org/syndication/thread/1.0'>
+
+
+<entry>
+  <id>tag:blogger.com,1999:blog-2627872152492708696.post-6903748415626801166</id>
+  <published>2018-04-02T17:26:00.000+03:00</published>
+  <updated>2018-04-02T17:50:09.342+03:00</updated>
+  <category scheme="http://www.blogger.com/atom/ns#" term="__version_eq_2.8.6"/>
+  <category scheme="http://www.blogger.com/atom/ns#" term="update"/>
+  <title type='text'></title>
+  <content type='html'>3.0.0
+https://www.dropbox.com/s/exetyj5pk0na3ze/update-2.8.6.zip?dl=1
+&lt;b&gt;GanttProject 2.8.6&lt;/b&gt; is now available.&amp;nbsp;&lt;a href=&quot;https://www.ganttproject.biz/download/upgrade&quot;&gt;Download the update&lt;/a&gt;
+</content>
+</entry>
+
+<entry>
+  <id>tag:blogger.com,1999:blog-2627872152492708696.post-6723462652953145933</id>
+  <published>2018-02-12T18:45:00.000+03:00</published>
+  <updated>2018-02-12T18:45:10.929+03:00</updated>
+  <category scheme="http://www.blogger.com/atom/ns#" term="__version_lt_2.8.7"/>
+  <category scheme="http://www.blogger.com/atom/ns#" term="clientrss"/>
+  <title type='text'></title>
+  <content type='html'>&lt;div dir=&quot;ltr&quot; style=&quot;text-align: left;&quot; trbidi=&quot;on&quot;&gt;GanttProject 2.8.6 is now available.&amp;nbsp;&lt;a href=&quot;https://www.ganttproject.biz/download/upgrade&quot;&gt;Download the update&lt;/a&gt;.&lt;/div&gt;</content>
+</entry>
+
+</feed>

@@ -160,8 +160,8 @@ public class GanttOptions extends SaverBase {
     redline = false;
     lockDAVMinutes = 240;
     undoNumber = 50;
-    xslDir = GanttOptions.class.getResource("/xslt").toString();
-    xslFo = GanttOptions.class.getResource("/xslfo/ganttproject.xsl").toString();
+    xslDir = String.valueOf(GanttOptions.class.getResource("/xslt"));
+    xslFo = String.valueOf(GanttOptions.class.getResource("/xslfo/ganttproject.xsl"));
     toolBarPosition = JToolBar.HORIZONTAL;
     bShowStatusBar = true;
     // must be 16 small, 24 for big (32 for extra big not directly include on

@@ -18,8 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.GPVersion;
-
+import net.sourceforge.ganttproject.util.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -27,18 +29,31 @@ import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 import org.xml.sax.InputSource;
 
-import com.google.common.base.Strings;
-
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.*;
-
-import java.io.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Iterator;
 
-class RssParser {
+public class RssParser {
 
   private final XPathFactory myXPathFactory = XPathFactory.newInstance();
+  private final String myCurrentBuildNumber;
+  private final String myCurrentVersionNumber;
+
+  RssParser() {
+    this(GPVersion.getCurrentVersionNumber(), GPVersion.getCurrentBuildNumber());
+  }
+
+  public RssParser(String currentVersionNumber, String currentBuildNumber) {
+    myCurrentVersionNumber = Preconditions.checkNotNull(currentVersionNumber);
+    myCurrentBuildNumber = Preconditions.checkNotNull(currentBuildNumber);
+  }
 
   private XPathExpression getXPath(String expression) throws XPathExpressionException {
     XPath xpath = myXPathFactory.newXPath();
@@ -70,10 +85,8 @@ class RssParser {
       XPathExpression xpath = getXPath("//atom:entry");
       NodeList items = (NodeList) xpath.evaluate(new InputSource(new InputStreamReader(inputStream)),
           XPathConstants.NODESET);
-      final String currentVersion = GPVersion.getCurrentVersionNumber();
-      final String currentBuild = GPVersion.getCurrentBuildNumber();
       for (int i = 0; i < items.getLength(); i++) {
-        if (isApplicableToVersion(items.item(i), currentVersion, currentBuild)) {
+        if (isApplicableToVersion(items.item(i), myCurrentVersionNumber, myCurrentBuildNumber)) {
           addItem(result, items.item(i), lastCheckDate);
         }
       }
@@ -82,6 +95,17 @@ class RssParser {
       e.printStackTrace();
     }
     return result;
+  }
+
+  public RssUpdate parseUpdate(String content) {
+    if (!StringUtils.isEmptyOrNull(content)) {
+
+      String[] parts = content.split("\n", 3);
+      if (parts.length == 3) {
+        return new RssUpdate(parts[0], parts[1], parts[2]);
+      }
+    }
+    return null;
   }
 
   private boolean isApplicableToVersion(Node item, String version, String build) throws XPathExpressionException {
@@ -111,22 +135,17 @@ class RssParser {
   private boolean compareCategory(String category, String type, String value) {
     if (category.startsWith("__" + type + "_lt_")) {
       String valueRequired = category.substring(("__" + type + "_lt_").length());
-      if (value.compareTo(valueRequired) < 0) {
-        return true;
-      }
+      return value.compareTo(valueRequired) < 0;
     } else if (category.startsWith("__" + type + "_gt_")) {
       String valueRequired = category.substring(("__" + type + "_gt_").length());
-      if (value.compareTo(valueRequired) > 0) {
-        return true;
-      }
+      return value.compareTo(valueRequired) > 0;
     } else if (category.startsWith("__" + type + "_eq_")) {
       String valueRequired = category.substring(("__" + type + "_eq_").length());
-      if (value.equals(valueRequired)) {
-        return true;
-      }
+      return value.equals(valueRequired);
     }
     return false;
   }
+
   private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
     if (lastCheckDate != null) {
       String updateString = getXPath("atom:updated/text()").evaluate(item);
@@ -136,12 +155,26 @@ class RssParser {
           return;
         }
       } catch (InvalidDateException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
     String title = getXPath("atom:title/text()").evaluate(item);
     String body = getXPath("atom:content/text()").evaluate(item);
-    result.addItem(title, body);
+    boolean isUpdate = isUpdateItem(item);
+    result.addItem(title, body, isUpdate);
+  }
+
+  private boolean isUpdateItem(Node item) throws XPathExpressionException {
+    NodeList categories = (NodeList) getXPath("atom:category").evaluate(item, XPathConstants.NODESET);
+    for (int i = 0; i < categories.getLength(); i++) {
+      Element elCategory = (Element) categories.item(i);
+      String category = elCategory.getAttribute("term");
+      if (!Strings.isNullOrEmpty(category)) {
+        if (category.equals("update")) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

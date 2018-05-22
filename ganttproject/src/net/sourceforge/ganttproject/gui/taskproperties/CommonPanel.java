@@ -18,14 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.table.TableColumn;
 
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
+import net.sourceforge.ganttproject.gui.TableModelExt;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
 import org.jdesktop.swingx.JXTable;
@@ -51,5 +48,9 @@ public abstract class CommonPanel {
 
   static JPanel createTableAndActions(JComponent table, JComponent actionsComponent) {
     return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, actionsComponent);
+  }
+
+  static JPanel createTableAndActions(JTable table, TableModelExt model) {
+    return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, model);
   }
 }

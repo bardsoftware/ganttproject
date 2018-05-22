@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.update.UpdateDialog;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import org.apache.http.HttpResponse;
@@ -205,8 +206,16 @@ public class RssFeedChecker {
       private void processResponse(InputStream responseStream) {
         RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
         List<NotificationItem> items = new ArrayList<NotificationItem>();
+        boolean updateDialogShowed = false;
         for (RssFeed.Item item : feed.getItems()) {
-          items.add(new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
+          if (item.isUpdate) {
+            if (!updateDialogShowed) {
+              updateDialogShowed = true;
+              createUpdateDialog(item.body);
+            }
+          } else {
+            items.add(new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
+          }
         }
         Collections.reverse(items);
         if (!items.isEmpty()) {
@@ -226,6 +235,13 @@ public class RssFeedChecker {
             Collections.singletonList(myRssProposalNotification));
       }
     };
+  }
+
+  private void createUpdateDialog(String content) {
+    RssUpdate update = parser.parseUpdate(content);
+    if (update != null) {
+      UpdateDialog.show(myUiFacade, update);
+    }
   }
 
   private boolean wasToday(Date date) {

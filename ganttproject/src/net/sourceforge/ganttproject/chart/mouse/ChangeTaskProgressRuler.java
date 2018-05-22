@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
+import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
@@ -69,16 +70,16 @@ class ChangeTaskProgressRuler {
   /**
    * @return progress value corresponding to the given {@code pixels} value.
    */
-  int getProgress(int pixels) {
+  Progress getProgress(int pixels) {
     if (pixels < myMinPx) {
-      return 0;
+      return new Progress(0, myTask.getDuration());
     }
     SortedMap<Integer, Integer> tailMap = myPixel2progress.tailMap(pixels);
     if (tailMap.isEmpty()) {
-      return 100;
+      return new Progress(100, myTask.getDuration());
     }
     if (tailMap.firstKey().intValue() == pixels) {
-      return tailMap.get(pixels);
+      return new Progress(tailMap.get(pixels), myTask.getDuration());
     }
 
     SortedMap<Integer, Integer> headMap = myPixel2progress.headMap(pixels);
@@ -88,6 +89,28 @@ class ChangeTaskProgressRuler {
     int upperProgress = tailMap.get(upperPx);
 
     float diffProgress = (upperProgress - lowerProgress) * ((float) (pixels - lowerPx) / (float) (upperPx - lowerPx));
-    return (int) (lowerProgress + diffProgress);
+    int overallProgress = (int) (lowerProgress + diffProgress);
+    return new Progress(overallProgress, myTask.getDuration());
+  }
+
+  static class Progress {
+    private final int myPercents;
+    private final TimeDuration myTaskDuration;
+
+    Progress(int percents, TimeDuration taskDuration) {
+      myPercents = percents;
+      myTaskDuration = taskDuration;
+    }
+
+    int toPercents() {
+      return myPercents;
+    }
+
+    String toUnits() {
+      float progressInUnits = myPercents * myTaskDuration.getLength() / 100f;
+      String wholeUnits = Integer.toString((int) progressInUnits);
+      String fractionIndicator = (myPercents * myTaskDuration.getLength()) % 100 == 0 ? "" : "+";
+      return wholeUnits + fractionIndicator;
+    }
   }
 }

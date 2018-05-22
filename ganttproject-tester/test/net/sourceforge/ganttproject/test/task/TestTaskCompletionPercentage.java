@@ -13,6 +13,7 @@ package net.sourceforge.ganttproject.test.task;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 
@@ -42,7 +43,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.move(supertask);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 0, supertask.getCompletionPercentage());
 
   }
@@ -73,7 +74,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.setCompletionPercentage(100);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 100, supertask.getCompletionPercentage());
 
   }
@@ -104,7 +105,7 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task3.setCompletionPercentage(50);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
+    alg.run();
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
 
   }
@@ -123,7 +124,54 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     task2.setCompletionPercentage(100);
     //
     RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
-    alg.run(supertask);
-    assertEquals("Unexpected completion percentage of supertask=" + supertask, 75, supertask.getCompletionPercentage());
+    alg.run();
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 50, supertask.getCompletionPercentage());
+  }
+
+  public void testCompletionWithNestedTasksDepthGreaterThan1AndGapsInCalender() {
+    TaskManager taskManager = getTaskManager();
+
+    Task project = taskManager.createTask();
+    project.setProjectTask(true);
+    project.move(taskManager.getRootTask());
+
+    Task supertask = taskManager.newTaskBuilder().withParent(project).build();
+
+    Task supertask_0 = taskManager.newTaskBuilder().withParent(supertask).build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newMonday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withCompletion(100)
+            .withParent(supertask_0)
+            .build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newFriday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withParent(supertask_0)
+            .build();
+
+    Task supertask_1 = taskManager.newTaskBuilder().withParent(supertask).build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newMonday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withCompletion(50)
+            .withParent(supertask_1)
+            .build();
+    taskManager.newTaskBuilder()
+            .withStartDate(TestSetupHelper.newWendesday().getTime())
+            .withDuration(taskManager.createLength(1))
+            .withParent(supertask_1)
+            .build();
+    //
+    RecalculateTaskCompletionPercentageAlgorithm alg = taskManager.getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm();
+    alg.run();
+
+    // half a day of two
+    assertEquals("Unexpected completion percentage of supertask=" + supertask_1, 25, supertask_1.getCompletionPercentage());
+    // one day of two
+    assertEquals("Unexpected completion percentage of supertask=" + supertask_0, 50, supertask_0.getCompletionPercentage());
+    // 1.5 days of 4 = 3/8 = 37%
+    assertEquals("Unexpected completion percentage of supertask=" + supertask, 37, supertask.getCompletionPercentage());
+    assertEquals("Unexpected completion percentage of project=" + project, 37, project.getCompletionPercentage());
   }
 }
