@@ -56,7 +56,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
-      UIFacade uiFacade) {
+                       UIFacade uiFacade) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
@@ -86,7 +86,11 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
       addAttribute("locale", GanttLanguage.getInstance().getLocale().toString(), attrs);
       startElement("project", attrs, handler);
       //
-      cdataElement("description", getProject().getDescription(), attrs, handler);
+      // See https://bugs.openjdk.java.net/browse/JDK-8133452
+      if (getProject().getDescription() != null) {
+        String projectDescription = getProject().getDescription().replace("\\r\\n", "\\n");
+        cdataElement("description", projectDescription, attrs, handler);
+      }
 
       saveViews(handler);
       emptyComment(handler);

@@ -19,34 +19,31 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Stack;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.DefaultHandler2;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * SAX parser which delegates parsing semantics to TagHandler instances.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class XmlParser extends DefaultHandler {
-  private StringBuffer myCharacterBuffer = new StringBuffer();
-  private final Stack<String> myTagStack = new Stack<String>();
+public class XmlParser extends DefaultHandler2 {
   private final List<TagHandler> myTagHandlers;
   private final List<ParsingListener> myListeners;
+  private boolean myCdataStarted;
 
   public XmlParser(List<TagHandler> tagHandlers, List<ParsingListener> listeners) {
     myTagHandlers = tagHandlers;
@@ -56,11 +53,10 @@ public class XmlParser extends DefaultHandler {
   @Override
   public void startDocument() throws SAXException {
     super.startDocument();
-    myTagStack.clear();
   }
 
   @Override
-  public void endDocument() throws SAXException {
+  public void endDocument() {
     for (ParsingListener l : myListeners) {
       l.parsingFinished();
     }
@@ -70,9 +66,7 @@ public class XmlParser extends DefaultHandler {
   public void startElement(String namespaceURI, String sName, // simple
       // name
       String qName, // qualified name
-      Attributes attrs) throws SAXException {
-    myCharacterBuffer = new StringBuffer();
-    myTagStack.push(qName);
+      Attributes attrs) {
     for (TagHandler next : myTagHandlers) {
       try {
         next.startElement(namespaceURI, sName, qName, attrs);
@@ -83,15 +77,27 @@ public class XmlParser extends DefaultHandler {
   }
 
   @Override
-  public void endElement(String namespaceURI, String sName, String qName) throws SAXException {
+  public void endElement(String namespaceURI, String sName, String qName) {
     for (TagHandler next : myTagHandlers) {
       next.endElement(namespaceURI, sName, qName);
     }
-    myTagStack.pop();
   }
 
   @Override
-  public void characters(char buf[], int offset, int len) throws SAXException {
+  public void startCDATA() {
+    myCdataStarted = true;
+  }
+
+  @Override
+  public void endCDATA() {
+    myCdataStarted = false;
+  }
+
+  @Override
+  public void characters(char buf[], int offset, int len) {
+    if (!myCdataStarted) {
+      return;
+    }
     String s = new String(buf, offset, len);
     for (TagHandler tagHandler : myTagHandlers) {
       if (tagHandler.hasCdata()) {
@@ -107,13 +113,11 @@ public class XmlParser extends DefaultHandler {
       // Parse the input
       SAXParser saxParser;
       saxParser = factory.newSAXParser();
+      XMLReader xmlReader = saxParser.getXMLReader();
+      xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler",
+          this);
       saxParser.parse(inStream, this);
-    } catch (ParserConfigurationException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
-      }
-      throw new IOException(e.getMessage());
-    } catch (SAXException e) {
+    } catch (ParserConfigurationException | SAXException e) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err);
       }

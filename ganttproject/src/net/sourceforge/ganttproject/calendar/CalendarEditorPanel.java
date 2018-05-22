@@ -19,33 +19,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.calendar;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.CalendarEvent.Type;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -56,19 +42,22 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidato
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.CalendarEvent.Type;
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.ValidationException;
-import biz.ganttproject.core.time.CalendarFactory;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Implements a calendar editor component which consists of a table with calendar events (three columns: date, title, type)
@@ -186,8 +175,9 @@ public class CalendarEditorPanel {
   }
 
   private static Pair<JLabel, ? extends TableCellEditor> createDateValidatorComponents(final String hint, DateFormat... dateFormats) {
+    Supplier<List<DateFormat>> formatSupplier = Suppliers.<List<DateFormat>>ofInstance(Lists.newArrayList(dateFormats));
     final JLabel hintLabel = new JLabel(" "); // non-empty label to occupy some vertical space
-    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(null, dateFormats);
+    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(null, formatSupplier);
     ValueValidator<Date> decorator = new ValueValidator<Date>() {
       @Override
       public Date parse(String text) throws ValidationException {
@@ -202,7 +192,7 @@ public class CalendarEditorPanel {
         }
       }
     };
-    GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator, dateFormats);
+    GPDateCellEditor dateEditor = new GPDateCellEditor(null, true, decorator, formatSupplier);
     return Pair.create(hintLabel, dateEditor);
   }
 

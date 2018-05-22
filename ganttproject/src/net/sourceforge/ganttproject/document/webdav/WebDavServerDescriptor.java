@@ -64,7 +64,7 @@ public class WebDavServerDescriptor {
   }
 
   public String getRootUrl() {
-    return rootUri.buildRootUrl();
+    return rootUri == null ? null : rootUri.buildRootUrl();
   }
 
   public void setRootUrl(String rootUrl) {

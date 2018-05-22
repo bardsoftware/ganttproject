@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin
-   id="net.sourceforge.ganttproject"
-   name="Ganttproject Plug-in"
-   version="2.0.0"
-   provider-name="">
+        id="net.sourceforge.ganttproject"
+        name="Ganttproject Plug-in"
+        version="2.0.0"
+        provider-name="">
 
    <runtime>
       <library name="ganttproject.jar">
@@ -18,7 +18,10 @@
       <library name="lib/core/balloontip-1.2.4.1.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/commons-codec-1.4.jar">
+      <library name="lib/core/biz.ganttproject.desktop.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/core/commons-codec-1.5.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/commons-csv.jar">
@@ -99,40 +102,40 @@
    <extension-point id="search" name="SearchService"/>
 
    <extension point="org.eclipse.core.runtime.applications" id="GanttProject">
-        <application>
-          <run class="net.sourceforge.ganttproject.application.MainApplication"/>
-        </application>
+      <application>
+         <run class="net.sourceforge.ganttproject.application.MainApplication"/>
+      </application>
    </extension>
    <extension point="net.sourceforge.ganttproject.exporter">
-         <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>
-         <exporter class="net.sourceforge.ganttproject.export.ExporterToCSV"/>
+      <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>
+      <exporter class="net.sourceforge.ganttproject.export.ExporterToCSV"/>
    </extension>
    <extension
-         point="net.sourceforge.ganttproject.importer">
-         <importer class="net.sourceforge.ganttproject.importer.ImporterFromGanttFile"/>
-         <importer class="net.sourceforge.ganttproject.importer.ImporterFromTxtFile"/>
-         <importer class="biz.ganttproject.impex.csv.ImporterFromCsvFile"/>
+           point="net.sourceforge.ganttproject.importer">
+      <importer class="net.sourceforge.ganttproject.importer.ImporterFromGanttFile"/>
+      <importer class="net.sourceforge.ganttproject.importer.ImporterFromTxtFile"/>
+      <importer class="biz.ganttproject.impex.csv.ImporterFromCsvFile"/>
    </extension>
    <extension point="net.sourceforge.ganttproject.OptionPageProvider">
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ExportCsvOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.GanttChartOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectBasicOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectCalendarOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectRolesOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
-         <optionpageprovider class="net.sourceforge.ganttproject.document.webdav.WebDavOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ExportCsvOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.GanttChartOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.InterfaceOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectBasicOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectCalendarOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ProjectRolesOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.gui.options.ResourceChartOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.document.NetworkOptionPageProvider"/>
+      <optionpageprovider class="net.sourceforge.ganttproject.document.webdav.WebDavOptionPageProvider"/>
    </extension>
 
    <extension
-         point="net.sourceforge.ganttproject.search">
+           point="net.sourceforge.ganttproject.search">
       <searchservice class="net.sourceforge.ganttproject.search.TaskSearchService"/>
       <searchservice class="net.sourceforge.ganttproject.search.ResourceSearchService"/>
    </extension>
 
-<!--   <extension point="net.sourceforge.ganttproject.chart">
-         <exporter class="net.sourceforge.ganttproject.chart.TestChart"/>
-   </extension> -->
+   <!--   <extension point="net.sourceforge.ganttproject.chart">
+            <exporter class="net.sourceforge.ganttproject.chart.TestChart"/>
+      </extension> -->
 
 </plugin>

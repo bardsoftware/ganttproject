@@ -10,20 +10,22 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import java.awt.Color;
-import java.net.URL;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
-import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+
+import java.awt.*;
+import java.net.URL;
 
 /**
  * Created by IntelliJ IDEA. User: bard
  */
 public interface TaskManagerConfig {
   Color getDefaultColor();
+
+  ColorOption getDefaultColorOption();
 
   GPCalendarCalc getCalendar();
 

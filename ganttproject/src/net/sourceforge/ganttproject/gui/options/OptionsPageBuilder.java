@@ -121,7 +121,7 @@ public class OptionsPageBuilder {
 
 
   public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
-    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
+    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), "");
     JComponent planePage = buildPlanePage(optionGroups);
     return UIUtil.createTopAndCenter(topPanel, planePage);
   }

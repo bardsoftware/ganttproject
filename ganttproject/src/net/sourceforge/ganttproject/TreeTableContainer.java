@@ -153,13 +153,6 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-          if (getTreeTable().getTable().getSelectedRow() != -1) {
-            e.consume();
-            getPropertiesAction().actionPerformed(null);
-          }
-          return;
-        }
         handlePopupTrigger(e);
       }
 
@@ -352,6 +345,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
     myPropertiesAction = propertiesAction;
     myDeleteAction = deleteAction;
     myTreeTable.setNewRowAction(myNewAction);
+    myTreeTable.setRowPropertiesAction(myPropertiesAction);
   }
 
   public abstract void addToolbarActions(ToolbarBuilder builder);

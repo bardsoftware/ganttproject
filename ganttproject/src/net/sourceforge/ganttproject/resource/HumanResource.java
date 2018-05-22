@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author barmeier
@@ -330,6 +331,11 @@ public class HumanResource implements CustomPropertyHolder {
       result = pr.id == id;
     }
     return result;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 
   @Override
