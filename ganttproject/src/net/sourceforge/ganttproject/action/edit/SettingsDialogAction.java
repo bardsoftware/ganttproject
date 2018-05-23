@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Action to show the options dialog for the application. It will seach and show
@@ -41,6 +41,9 @@ public class SettingsDialogAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder");
     dialog.show();
   }

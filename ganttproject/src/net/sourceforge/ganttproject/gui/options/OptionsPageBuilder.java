@@ -121,7 +121,7 @@ public class OptionsPageBuilder {
 
 
   public JComponent buildPage(GPOptionGroup[] optionGroups, String pageID) {
-    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), myi18n.getPageDescription(pageID));
+    JComponent topPanel = TopPanel.create(myi18n.getPageTitle(pageID), "");
     JComponent planePage = buildPlanePage(optionGroups);
     return UIUtil.createTopAndCenter(topPanel, planePage);
   }
@@ -324,21 +324,6 @@ public class OptionsPageBuilder {
     return UIUtil.getValidFieldColor();
   }
 
-  private static void updateTextField(final JTextField textField, final DocumentListener listener,
-      final ChangeValueEvent event) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        textField.getDocument().removeDocumentListener(listener);
-        if (!textField.getText().equals(event.getNewValue())) {
-          String newText = String.valueOf(event.getNewValue());
-          textField.setText(newText);
-        }
-        textField.getDocument().addDocumentListener(listener);
-      }
-    });
-  }
-
   private Component createFileComponent(final FileOption option) {
     final TextFieldAndFileChooserComponent result = new TextFieldAndFileChooserComponent(myUiFacade, myi18n.getValue(myi18n.myOptionKeyPrefix + option.getID() + ".dialogTitle")) {
       @Override
@@ -358,13 +343,28 @@ public class OptionsPageBuilder {
     return result;
   }
 
+  private static void updateTextField(final JTextField textField, final DocumentListener listener,
+                                      final ChangeValueEvent event) {
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        textField.getDocument().removeDocumentListener(listener);
+        if (!textField.getText().equals(event.getNewValue())) {
+          String newText = String.valueOf(event.getNewValue());
+          textField.setText(newText);
+        }
+        textField.getDocument().addDocumentListener(listener);
+      }
+    });
+  }
+
   private Component createStringComponent(final StringOption option) {
     final JTextField result = option.isScreened() ? new JPasswordField(option.getValue()) : new JTextField(option.getValue());
 
     final DocumentListener documentListener = new DocumentListener() {
       private void saveValue() {
         try {
-          option.setValue(result.getText());
+          option.setValue(result.getText(), result);
           result.setBackground(getValidFieldColor());
         } catch (ValidationException ex) {
           result.setBackground(UIUtil.INVALID_FIELD_COLOR);
@@ -390,7 +390,9 @@ public class OptionsPageBuilder {
     option.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(final ChangeValueEvent event) {
-        updateTextField(result, documentListener, event);
+        if (event.getTriggerID() != result) {
+          updateTextField(result, documentListener, event);
+        }
       }
     });
     return result;

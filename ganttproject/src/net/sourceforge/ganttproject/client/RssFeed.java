@@ -21,24 +21,26 @@ package net.sourceforge.ganttproject.client;
 import java.util.ArrayList;
 import java.util.List;
 
-class RssFeed {
-  static class Item {
-    final String title;
-    final String body;
+public class RssFeed {
+  public static class Item {
+    public final String title;
+    public final String body;
+    public final boolean isUpdate;
 
-    Item(String title, String body) {
+    Item(String title, String body, boolean isUpdate) {
       this.title = title;
       this.body = body;
+      this.isUpdate = isUpdate;
     }
   }
 
   private final List<Item> myItems = new ArrayList<Item>();
 
-  void addItem(String title, String body) {
-    myItems.add(new Item(title, body));
+  void addItem(String title, String body, boolean isUpdate) {
+    myItems.add(new Item(title, body, isUpdate));
   }
 
-  List<Item> getItems() {
+  public List<Item> getItems() {
     return myItems;
   }
 }

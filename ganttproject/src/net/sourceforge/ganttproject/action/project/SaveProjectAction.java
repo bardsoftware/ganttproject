@@ -51,6 +51,9 @@ public class SaveProjectAction extends GPAction implements ProjectEventListener 
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myMainFrame.saveProject();
   }
 

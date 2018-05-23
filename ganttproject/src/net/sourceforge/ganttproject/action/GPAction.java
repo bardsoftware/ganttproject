@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import com.google.common.base.Strings;
+import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
@@ -225,6 +226,25 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     updateTooltip();
   }
 
+  protected boolean calledFromAppleScreenMenu(ActionEvent e) {
+    if (e == null) {
+      return false;
+    }
+    if (String.valueOf(e.getSource()).indexOf("JMenu") == -1) {
+      return false;
+    }
+    if (e.getModifiers() == 0) {
+      return false;
+    }
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+      if (stackTrace[i].getClassName().indexOf("ScreenMenuItem") > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   protected void updateTooltip() {
     String description = getLocalizedDescription();
     putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);
@@ -299,7 +319,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     if (ourKeyboardProperties == null) {
       ourKeyboardProperties = new Properties();
       PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
-      PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
+      if (DesktopIntegration.isMacOs()) {
+        PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.macos.properties");
+      } else {
+        PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
+      }
     }
     return (String) ourKeyboardProperties.get(keystrokeID);
   }

@@ -289,6 +289,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       actions.add(myProject.getCopyAction());
       actions.add(myProject.getPasteAction());
       actions.add(getDeleteAction());
+      actions.add(null);
+      actions.add(getTreeTable().getManageColumnsAction());
     }
     return actions.toArray(new Action[0]);
   }

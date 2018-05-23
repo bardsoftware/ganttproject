@@ -18,14 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.task.algorithm;
 
-import java.math.BigDecimal;
-
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.TestSetupHelper.TaskManagerBuilder;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.math.BigDecimal;
 
 /**
  * Tests for cost calculations
@@ -58,7 +58,7 @@ public class CostAlgorithmTest extends TaskTestCase {
     HumanResource joe = new HumanResource("Joe", 1, builder.getResourceManager());
     joe.setStandardPayRate(BigDecimal.valueOf(5));
 
-    HumanResource jane = new HumanResource("Jane", 1, builder.getResourceManager());
+    HumanResource jane = new HumanResource("Jane", 2, builder.getResourceManager());
     jane.setStandardPayRate(BigDecimal.valueOf(10));
 
     builder.getResourceManager().add(joe);

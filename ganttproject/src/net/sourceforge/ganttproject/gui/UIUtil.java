@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
@@ -28,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -68,7 +70,9 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 public abstract class UIUtil {
@@ -80,6 +84,8 @@ public abstract class UIUtil {
   public static final Color PATINA_FOREGROUND = new Color(102, 153, 153);
   public static Font FONTAWESOME_FONT = null;
   private static Properties FONTAWESOME_PROPERTIES = new Properties();
+  private static Properties ourUiProperties = new Properties();
+
   static {
     ImageIcon calendarImage = new ImageIcon(UIUtil.class.getResource("/icons/calendar_16.gif"));
     ImageIcon nextMonth = new ImageIcon(UIUtil.class.getResource("/icons/nextmonth.gif"));
@@ -97,6 +103,11 @@ public abstract class UIUtil {
     }
     FONTAWESOME_PROPERTIES = new Properties();
     PropertiesUtil.loadProperties(FONTAWESOME_PROPERTIES, "/fontawesome.properties");
+    PropertiesUtil.loadProperties(ourUiProperties, "/ui.properties");
+  }
+
+  public static String getUiProperty(String key) {
+    return ourUiProperties.getProperty(key);
   }
 
   public static void setEnabledTree(JComponent root, final boolean isEnabled) {
@@ -225,13 +236,13 @@ public abstract class UIUtil {
     }
   }
 
-  public static ValueValidator<Date> createStringDateValidator(final DateValidator dv, final DateFormat... formats) {
+  public static ValueValidator<Date> createStringDateValidator(final DateValidator dv, final Supplier<List<DateFormat>> formats) {
     return text -> {
       if (Strings.isNullOrEmpty(text)) {
         throw new ValidationException();
       }
       Date parsed = null;
-      for (DateFormat df : formats) {
+      for (DateFormat df : formats.get()) {
         parsed = tryParse(df, text);
         if (parsed != null) {
           break;
@@ -252,8 +263,15 @@ public abstract class UIUtil {
 
   public static void setupDatePicker(
       final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ActionListener listener) {
-    ValueValidator<Date> parseValidator = createStringDateValidator(
-        dv, GanttLanguage.getInstance().getLongDateFormat(), GanttLanguage.getInstance().getShortDateFormat());
+    Supplier<List<DateFormat>> formatSupplier = new Supplier<List<DateFormat>>() {
+      @Override
+      public List<DateFormat> get() {
+        return ImmutableList.<DateFormat>of(
+            GanttLanguage.getInstance().getLongDateFormat(),
+            GanttLanguage.getInstance().getShortDateFormat());
+      }
+    };
+    ValueValidator<Date> parseValidator = createStringDateValidator(dv, formatSupplier);
     DatePickerEditCommiter commiter = setupDatePicker(picker, initialDate, dv, parseValidator, listener);
     commiter.attachOnFocusLost(listener);
   }
@@ -453,7 +471,13 @@ public abstract class UIUtil {
   }
 
   public static TableCellEditor newDateCellEditor(IGanttProject project, boolean showDatePicker) {
-    return new GPDateCellEditor(project, showDatePicker, null, GanttLanguage.getInstance().getShortDateFormat());
+    Supplier<List<DateFormat>> supplier = new Supplier<List<DateFormat>>() {
+      @Override
+      public List<DateFormat> get() {
+        return Collections.<DateFormat>singletonList(GanttLanguage.getInstance().getShortDateFormat());
+      }
+    };
+    return new GPDateCellEditor(project, showDatePicker, null, supplier);
   }
 
   public static class GPDateCellEditor extends DefaultCellEditor implements ActionListener, GanttLanguage.Listener {
@@ -462,9 +486,9 @@ public abstract class UIUtil {
     private final boolean myShowDatePicker;
     private DatePickerEditCommiter myCommitter;
 
-    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator, DateFormat... dateFormats) {
+    public GPDateCellEditor(IGanttProject project, boolean showDatePicker, ValueValidator<Date> parseValidator, Supplier<List<DateFormat>> dateFormats) {
       super(new JTextField());
-      myDatePicker = UIUtil.createDatePicker(dateFormats);
+      myDatePicker = UIUtil.createDatePicker(dateFormats.get().toArray(new DateFormat[0]));
       myShowDatePicker = showDatePicker;
       if (parseValidator == null) {
         parseValidator = UIUtil.createStringDateValidator(null, dateFormats);
@@ -477,6 +501,10 @@ public abstract class UIUtil {
     public Component getTableCellEditorComponent(JTable arg0, Object value, boolean arg2, int arg3, int arg4) {
       if (value instanceof GanttCalendar) {
         myDatePicker.setDate(((GanttCalendar)value).getTime());
+      } else if (value instanceof Date) {
+        myDatePicker.setDate((Date) value);
+      } else if (value instanceof CalendarEvent) {
+        myDatePicker.setDate(((CalendarEvent)value).myDate);
       }
       return myShowDatePicker ? myDatePicker : myDatePicker.getEditor();
     }

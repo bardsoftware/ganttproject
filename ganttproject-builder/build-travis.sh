@@ -1,3 +1,4 @@
 #!/bin/bash
 cd ganttproject-builder
-ant
+gradle updateMavenDeps
+gradle build

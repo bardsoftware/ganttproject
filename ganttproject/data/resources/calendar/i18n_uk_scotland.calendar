@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="uk.scotland" name="United Kingdom (Scotland) National Holidays 2015-2017" type="country">
+<calendar id="uk.scotland" name="United Kingdom (Scotland) National Holidays 2015-2018" type="country">
 <!-- http://www.direct.gov.uk/en/Employment/Employees/Timeoffandholidays/DG_073741 -->
 <!-- http://www.officeholidays.com/countries/united_kingdom/index.php -->
 <!-- The whole UK -->
-    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Years Day]]></date>
+    <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
     <date year="" month="12" date="25" type="HOLIDAY"><![CDATA[Christmas Day ]]></date>
     <date year="" month="12" date="26" type="HOLIDAY"><![CDATA[Boxing Day]]></date>
     <date year="2015" month="12" date="28" type="HOLIDAY"><![CDATA[Boxing Day (in lieu)]]></date>
@@ -22,16 +22,22 @@
     <date year="2017" month="5" date="1" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
     <date year="2017" month="5" date="29" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
 
+    <date year="2018" month="3" date="30" type="HOLIDAY"><![CDATA[Good Friday]]></date>
+    <date year="2018" month="5" date="7" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
+    <date year="2018" month="5" date="28" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
+
 <!-- Scotland -->
+    <date year="" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
+
     <date year="2015" month="1" date="2" type="HOLIDAY"><![CDATA[Day after New Years Day]]></date>
     <date year="2015" month="8" date="3" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
-    <date year="2015" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
 
     <date year="2016" month="1" date="4" type="HOLIDAY"><![CDATA[Day after New Years Day (in lieu)]]></date>
     <date year="2016" month="8" date="1" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
-    <date year="2016" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrews Day]]></date>
 
     <date year="2017" month="1" date="3" type="HOLIDAY"><![CDATA[New Year's Day (in lieu)]]></date>
     <date year="2017" month="8" date="7" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
-    <date year="2017" month="11" date="30" type="HOLIDAY"><![CDATA[St Andrew's Day]]></date>
+
+    <date year="2018" month="1" date="2" type="HOLIDAY"><![CDATA[Day after New Year's Day]]></date>
+    <date year="2018" month="8" date="6" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
 </calendar >

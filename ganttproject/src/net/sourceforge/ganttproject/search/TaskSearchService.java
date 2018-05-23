@@ -20,16 +20,18 @@ package net.sourceforge.ganttproject.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sourceforge.ganttproject.CustomProperty;
 
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
 /** Search service for tasks */
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
   static class MySearchResult extends SearchResult<Task> {
-    public MySearchResult(Task t, TaskSearchService searchService) {
-      super("Task: " + t.getName(), "", "", t, searchService);
+    MySearchResult(Task t, TaskSearchService searchService, String query, String snippet, String snippetText) {
+      super(t.getTaskID(), GanttLanguage.getInstance().getText("generic.task"), t.getName(), query, snippet, snippetText, t, searchService);
     }
   }
 
@@ -40,11 +42,34 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
   @Override
   public List<MySearchResult> search(String query) {
     query = query.toLowerCase();
-    List<MySearchResult> results = new ArrayList<MySearchResult>();
+    List<MySearchResult> results = new ArrayList<>();
     for (Task t : getProject().getTaskManager().getTasks()) {
-      if (isNotEmptyAndContains(t.getName(), query) || isNotEmptyAndContains(t.getNotes(), query)
-          || isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
-        results.add(new MySearchResult(t, this));
+      String snippet = "";
+      String snippetText = "";
+      boolean matched = false;
+      if (isNotEmptyAndContains(t.getName(), query)) {
+        matched = true;
+      }
+      for (CustomProperty c : t.getCustomValues().getCustomProperties()) {
+        if (isNotEmptyAndContains(c.getValueAsString(), query)) {
+          matched = true;
+          snippet = c.getDefinition().getName();
+          snippetText = c.getValueAsString();
+          break;
+        }
+      }
+      if (isNotEmptyAndContains(t.getNotes(), query)) {
+        matched = true;
+        snippet = GanttLanguage.getInstance().getText("notes");
+        snippetText = t.getNotes();
+      }
+      if (isNotEmptyAndContains(String.valueOf(t.getTaskID()), query)) {
+        matched = true;
+        snippet = GanttLanguage.getInstance().getText("id");
+        snippetText = String.valueOf(t.getTaskID());
+      }
+      if (matched) {
+        results.add(new MySearchResult(t, this, query, snippet, snippetText));
       }
     }
     return results;

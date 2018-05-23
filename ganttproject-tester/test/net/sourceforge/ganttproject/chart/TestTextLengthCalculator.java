@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Font;
-
 import biz.ganttproject.core.chart.canvas.TextMetrics;
+
+import java.awt.*;
 
 /**
  * Simple text length calculator which considers all characters occupying a square block
@@ -28,10 +28,10 @@ import biz.ganttproject.core.chart.canvas.TextMetrics;
  *
  *  @author dbarashev (Dmitry Barashev)
  */
-class TestTextLengthCalculator implements TextMetrics {
+public class TestTextLengthCalculator implements TextMetrics {
   private final int myBboxSize;
 
-  TestTextLengthCalculator(int bboxSize) {
+  public TestTextLengthCalculator(int bboxSize) {
     myBboxSize = bboxSize;
   }
 
@@ -47,7 +47,7 @@ class TestTextLengthCalculator implements TextMetrics {
 
   @Override
   public Object getState() {
-    return null;
+    return Boolean.TRUE;
   }
 
   @Override

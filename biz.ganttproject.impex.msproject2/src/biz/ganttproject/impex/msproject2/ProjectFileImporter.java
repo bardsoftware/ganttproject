@@ -30,14 +30,34 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import net.sf.mpxj.*;
+import net.sf.mpxj.Day;
+import net.sf.mpxj.Duration;
+import net.sf.mpxj.FieldType;
+import net.sf.mpxj.MPXJException;
+import net.sf.mpxj.ProjectCalendar;
+import net.sf.mpxj.ProjectCalendarException;
+import net.sf.mpxj.ProjectFile;
+import net.sf.mpxj.Rate;
+import net.sf.mpxj.RecurringData;
+import net.sf.mpxj.Relation;
+import net.sf.mpxj.Resource;
+import net.sf.mpxj.ResourceAssignment;
+import net.sf.mpxj.ResourceField;
+import net.sf.mpxj.Task;
+import net.sf.mpxj.TaskField;
+import net.sf.mpxj.TimeUnit;
 import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mpx.MPXReader;
 import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
-import net.sourceforge.ganttproject.*;
+import net.sourceforge.ganttproject.CustomPropertyClass;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -53,14 +73,29 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -75,6 +110,7 @@ class ProjectFileImporter {
   private List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
   private Map<GanttTask, Date> myNativeTask2foreignStart;
+  private boolean myPatchMspdi = true;
 
   private static ProjectReader createReader(File file) {
     int lastDot = file.getName().lastIndexOf('.');
@@ -92,16 +128,23 @@ class ProjectFileImporter {
     return null;
   }
 
-  private static interface HolidayAdder {
-    void addHoliday(Date date);
+  private interface HolidayAdder {
+    void addHoliday(Date date, Optional<String> title);
+
+    void addYearlyHoliday(Date date, Optional<String> title);
   }
 
-  public ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+  ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
+    this(nativeProject, taskTreeUIFacade.getVisibleFields(), foreignProjectFile);
+  }
+
+  public ProjectFileImporter(IGanttProject nativeProject, ColumnList taskFields, File foreignProjectFile) {
     myNativeProject = nativeProject;
-    myTaskFields = taskTreeUIFacade.getVisibleFields();
+    myTaskFields = taskFields;
     myReader = ProjectFileImporter.createReader(foreignProjectFile);
     myForeignFile = foreignProjectFile;
   }
+
 
   private TaskManager getTaskManager() {
     return myNativeProject.getTaskManager();
@@ -136,10 +179,14 @@ class ProjectFileImporter {
     return Collections.emptyList();
   }
 
+  void setPatchMspdi(boolean enabled) {
+    myPatchMspdi = enabled;
+  }
+
   public void run() throws MPXJException {
     ProjectFile pf;
     try {
-      pf = (myReader instanceof MSPDIReader) ? myReader.read(createPatchedStream(myForeignFile))
+      pf = (myReader instanceof MSPDIReader && myPatchMspdi) ? myReader.read(createPatchedStream(myForeignFile))
           : myReader.read(myForeignFile);
     } catch (TransformerConfigurationException e) {
       throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath() + "<br>" + e.getMessage(),
@@ -178,6 +225,7 @@ class ProjectFileImporter {
   Map<GanttTask, Date> getOriginalStartDates() {
     return myNativeTask2foreignStart;
   }
+
   private void hideCustomProperties() {
     for (Map.Entry<String, Object> it : myCustomPropertyUniqueValueMapping.entrySet()) {
       if (it.getValue() != null) {
@@ -201,18 +249,29 @@ class ProjectFileImporter {
     }
     importWeekends(defaultCalendar);
     List<ProjectCalendarException> exceptions = defaultCalendar.getCalendarExceptions();
-    for (ProjectCalendarException e : exceptions) {
-      if (!e.getWorking()) {
-        final List<CalendarEvent> holidays = Lists.newArrayList();
-        importHolidays(e, new HolidayAdder() {
-          @Override
-          public void addHoliday(Date date) {
-            holidays.add(CalendarEvent.newEvent(date, false, CalendarEvent.Type.HOLIDAY, null, null));
-          }
-        });
-        getNativeCalendar().setPublicHolidays(holidays);
-      }
+    final List<CalendarEvent> holidays = Lists.newArrayList();
+    for (final ProjectCalendarException e : exceptions) {
+      importHolidays(e, new HolidayAdder() {
+        @Override
+        public void addHoliday(Date date, Optional<String> title) {
+          holidays.add(CalendarEvent.newEvent(date, false,
+              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY, title.orNull(), null));
+        }
+
+        @Override
+        public void addYearlyHoliday(Date date, Optional<String> title) {
+          holidays.add(CalendarEvent.newEvent(
+              date,
+              true,
+              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY,
+              title.orNull(),
+              null));
+        }
+
+
+      });
     }
+    getNativeCalendar().setPublicHolidays(holidays);
   }
 
   private void importWeekends(ProjectCalendar calendar) {
@@ -235,20 +294,57 @@ class ProjectFileImporter {
   }
 
   private void importHolidays(ProjectCalendarException e, HolidayAdder adder) {
-    if (e.getRangeCount() > 0) {
-      for (DateRange range : e) {
-        importHolidays(range.getStart(), range.getEnd(), adder);
+    RecurringData recurringData = e.getRecurring();
+    if (recurringData != null) {
+      switch (recurringData.getRecurrenceType()) {
+        case DAILY:
+          importDailyHoliday(e, adder);
+          break;
+        case YEARLY:
+          importYearlyHoliday(e, adder);
+          break;
+        default:
+          getErrors().add(Pair.create(Level.WARNING, String.format("Skipped calendar exception:\n%s", e.toString())));
       }
     } else {
-      importHolidays(e.getFromDate(), e.getToDate(), adder);
+      importHolidays(e.getFromDate(), e.getToDate(),
+          Optional.fromNullable(e.getName()), adder);
     }
   }
 
-  private void importHolidays(Date start, Date end, HolidayAdder adder) {
+  private void importYearlyHoliday(ProjectCalendarException e, HolidayAdder adder) {
+    RecurringData recurringData = e.getRecurring();
+    Date date = CalendarFactory.createGanttCalendar(1, recurringData.getMonthNumber() - 1, recurringData.getDayNumber()).getTime();
+    adder.addYearlyHoliday(date, Optional.fromNullable(e.getName()));
+  }
+
+  private void importDailyHoliday(ProjectCalendarException e, HolidayAdder adder) {
+    RecurringData recurringData = e.getRecurring();
+    if (recurringData.getUseEndDate()) {
+      importHolidays(
+          recurringData.getStartDate(), recurringData.getFinishDate(),
+          Optional.fromNullable(e.getName()), adder);
+    } else {
+      importHolidays(
+          recurringData.getStartDate(), recurringData.getOccurrences(),
+          Optional.fromNullable(e.getName()), adder);
+    }
+  }
+
+  private void importHolidays(
+      Date start, int occurrences, Optional<String> title, HolidayAdder adder) {
     TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
-    for (Date dayStart = start; !dayStart.after(end);) {
-      // myNativeProject.getActiveCalendar().setPublicHoliDayType(dayStart);
-      adder.addHoliday(dayStart);
+    for (Date dayStart = start; occurrences > 0; occurrences--) {
+      adder.addHoliday(dayStart, title);
+      dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
+    }
+  }
+
+  private void importHolidays(
+      Date start, Date end, Optional<String> title, HolidayAdder adder) {
+    TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
+    for (Date dayStart = start; !dayStart.after(end); ) {
+      adder.addHoliday(dayStart, title);
       dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
   }
@@ -299,8 +395,13 @@ class ProjectFileImporter {
     for (ProjectCalendarException e : c.getCalendarExceptions()) {
       importHolidays(e, new HolidayAdder() {
         @Override
-        public void addHoliday(Date date) {
+        public void addHoliday(Date date, Optional<String> title) {
           nativeResource.addDaysOff(new GanttDaysOff(date, GregorianTimeUnitStack.DAY.adjustRight(date)));
+        }
+
+        @Override
+        public void addYearlyHoliday(Date date, Optional<String> title) {
+          // Not yet supported
         }
       });
     }
@@ -327,7 +428,7 @@ class ProjectFileImporter {
 
 
   private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask,
-      Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
+                          Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
     if (t.getNull()) {
       myErrors.add(Pair.create(Level.INFO,
           MessageFormat.format("Task with id={0} is blank task. Skipped", foreignId(t))));
@@ -458,77 +559,77 @@ class ProjectFileImporter {
 
   private String convertDataType(FieldType tf) {
     switch (tf.getDataType()) {
-    case ACCRUE:
-    case CONSTRAINT:
-    case DURATION:
-    case PRIORITY:
-    case RELATION_LIST:
-    case RESOURCE_TYPE:
-    case STRING:
-    case TASK_TYPE:
-    case UNITS:
-      return CustomPropertyClass.TEXT.name().toLowerCase();
-    case BOOLEAN:
-      return CustomPropertyClass.BOOLEAN.name().toLowerCase();
-    case DATE:
-      return CustomPropertyClass.DATE.name().toLowerCase();
-    case CURRENCY:
-    case NUMERIC:
-    case PERCENTAGE:
-    case RATE:
-      return CustomPropertyClass.DOUBLE.name().toLowerCase();
+      case ACCRUE:
+      case CONSTRAINT:
+      case DURATION:
+      case PRIORITY:
+      case RELATION_LIST:
+      case RESOURCE_TYPE:
+      case STRING:
+      case TASK_TYPE:
+      case UNITS:
+        return CustomPropertyClass.TEXT.name().toLowerCase();
+      case BOOLEAN:
+        return CustomPropertyClass.BOOLEAN.name().toLowerCase();
+      case DATE:
+        return CustomPropertyClass.DATE.name().toLowerCase();
+      case CURRENCY:
+      case NUMERIC:
+      case PERCENTAGE:
+      case RATE:
+        return CustomPropertyClass.DOUBLE.name().toLowerCase();
     }
     return null;
   }
 
   private Object convertDataValue(FieldType tf, Object value) {
     switch (tf.getDataType()) {
-    case ACCRUE:
-    case CONSTRAINT:
-    case DURATION:
-    case PRIORITY:
-    case RELATION_LIST:
-    case RESOURCE_TYPE:
-    case STRING:
-    case TASK_TYPE:
-    case UNITS:
-      return String.valueOf(value);
-    case BOOLEAN:
-      assert value instanceof Boolean;
-      return value;
-    case DATE:
-      assert value instanceof Date;
-      return CalendarFactory.createGanttCalendar((Date) value);
-    case CURRENCY:
-    case NUMERIC:
-    case PERCENTAGE:
-      assert value instanceof Number;
-      return ((Number) value).doubleValue();
-    case RATE:
-      assert value instanceof Rate;
-      return ((Rate) value).getAmount();
+      case ACCRUE:
+      case CONSTRAINT:
+      case DURATION:
+      case PRIORITY:
+      case RELATION_LIST:
+      case RESOURCE_TYPE:
+      case STRING:
+      case TASK_TYPE:
+      case UNITS:
+        return String.valueOf(value);
+      case BOOLEAN:
+        assert value instanceof Boolean;
+        return value;
+      case DATE:
+        assert value instanceof Date;
+        return CalendarFactory.createGanttCalendar((Date) value);
+      case CURRENCY:
+      case NUMERIC:
+      case PERCENTAGE:
+        assert value instanceof Number;
+        return ((Number) value).doubleValue();
+      case RATE:
+        assert value instanceof Rate;
+        return ((Rate) value).getAmount();
     }
     return null;
   }
 
   private Priority convertPriority(net.sf.mpxj.Priority priority) {
     switch (priority.getValue()) {
-    case net.sf.mpxj.Priority.HIGHEST:
-    case net.sf.mpxj.Priority.VERY_HIGH:
-      return Priority.HIGHEST;
-    case net.sf.mpxj.Priority.HIGHER:
-    case net.sf.mpxj.Priority.HIGH:
-      return Priority.HIGH;
-    case net.sf.mpxj.Priority.MEDIUM:
-      return Priority.NORMAL;
-    case net.sf.mpxj.Priority.LOWER:
-    case net.sf.mpxj.Priority.LOW:
-      return Priority.LOW;
-    case net.sf.mpxj.Priority.VERY_LOW:
-    case net.sf.mpxj.Priority.LOWEST:
-      return Priority.LOWEST;
-    default:
-      return Priority.NORMAL;
+      case net.sf.mpxj.Priority.HIGHEST:
+      case net.sf.mpxj.Priority.VERY_HIGH:
+        return Priority.HIGHEST;
+      case net.sf.mpxj.Priority.HIGHER:
+      case net.sf.mpxj.Priority.HIGH:
+        return Priority.HIGH;
+      case net.sf.mpxj.Priority.MEDIUM:
+        return Priority.NORMAL;
+      case net.sf.mpxj.Priority.LOWER:
+      case net.sf.mpxj.Priority.LOW:
+        return Priority.LOW;
+      case net.sf.mpxj.Priority.VERY_LOW:
+      case net.sf.mpxj.Priority.LOWEST:
+        return Priority.LOWEST;
+      default:
+        return Priority.NORMAL;
     }
   }
 
@@ -540,8 +641,9 @@ class ProjectFileImporter {
     return Pair.create(workingDuration, nonWorkingDuration);
 
   }
+
   private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_FINISH =
-      new Function<Task, Pair<TimeDuration,TimeDuration>>() {
+      new Function<Task, Pair<TimeDuration, TimeDuration>>() {
         @Override
         public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {
@@ -552,7 +654,7 @@ class ProjectFileImporter {
       };
 
   private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_AND_DURATION =
-      new Function<Task, Pair<TimeDuration,TimeDuration>>() {
+      new Function<Task, Pair<TimeDuration, TimeDuration>>() {
         @Override
         public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {
@@ -576,6 +678,7 @@ class ProjectFileImporter {
     }
     throw new IllegalStateException("No ID found in task=" + mpxjTask);
   }
+
   private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask) {
     for (Task t : pf.getAllTasks()) {
       if (t.getPredecessors() == null) {
@@ -612,21 +715,21 @@ class ProjectFileImporter {
 
   private TaskDependencyConstraint convertConstraint(Relation r) {
     switch (r.getType()) {
-    case FINISH_FINISH:
-      return new FinishFinishConstraintImpl();
-    case FINISH_START:
-      return new FinishStartConstraintImpl();
-    case START_FINISH:
-      return new StartFinishConstraintImpl();
-    case START_START:
-      return new StartStartConstraintImpl();
-    default:
-      throw new IllegalStateException("Uknown relation type=" + r.getType());
+      case FINISH_FINISH:
+        return new FinishFinishConstraintImpl();
+      case FINISH_START:
+        return new FinishStartConstraintImpl();
+      case START_FINISH:
+        return new StartFinishConstraintImpl();
+      case START_START:
+        return new StartStartConstraintImpl();
+      default:
+        throw new IllegalStateException("Uknown relation type=" + r.getType());
     }
   }
 
   private void importResourceAssignments(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask,
-      Map<Integer, HumanResource> foreignId2nativeResource) {
+                                         Map<Integer, HumanResource> foreignId2nativeResource) {
     for (ResourceAssignment ra : pf.getAllResourceAssignments()) {
       GanttTask nativeTask = foreignId2nativeTask.get(foreignId(ra.getTask()));
       if (nativeTask == null) {

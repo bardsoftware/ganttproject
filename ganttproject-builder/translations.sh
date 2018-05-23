@@ -12,6 +12,7 @@ ganttproject-builder/crowdin2prb.sh translations/gl/$GP_VERSION/i18n.properties 
 ganttproject-builder/crowdin2prb.sh translations/he/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_iw_IL.properties 
 ganttproject-builder/crowdin2prb.sh translations/hr/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_hr.properties 
 ganttproject-builder/crowdin2prb.sh translations/hu/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_hu.properties 
+ganttproject-builder/crowdin2prb.sh translations/id/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_id.properties 
 ganttproject-builder/crowdin2prb.sh translations/it/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_it.properties 
 ganttproject-builder/crowdin2prb.sh translations/ja/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_ja_JP.properties 
 ganttproject-builder/crowdin2prb.sh translations/ko/$GP_VERSION/i18n.properties ganttproject/data/resources/language/i18n_ko_KR.properties 

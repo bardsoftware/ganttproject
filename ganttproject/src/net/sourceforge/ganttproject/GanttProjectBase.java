@@ -131,7 +131,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return GanttProjectBase.this.getParserFactory();
       }
     };
-    myViewManager = new ViewManagerImpl(getProject(), myTabPane, getUndoManager());
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
@@ -469,4 +469,5 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   protected abstract ParserFactory getParserFactory();
+
 }

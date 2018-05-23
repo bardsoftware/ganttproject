@@ -63,6 +63,6 @@ public interface TreeUiFacade<T> {
   GPAction getDeleteAction();
 
   void startDefaultEditing(T modelElement);
-
+  void stopEditing();
   AbstractAction[] getTreeActions();
 }

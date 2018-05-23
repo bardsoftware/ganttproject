@@ -18,11 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
+
+import java.awt.event.ActionEvent;
 
 class ProjectPropertiesAction extends GPAction {
   private final GanttProject myMainFrame;
@@ -39,6 +39,9 @@ class ProjectPropertiesAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myMainFrame.getUIFacade().getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
       @Override
       public void run() {

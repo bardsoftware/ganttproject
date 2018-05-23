@@ -54,8 +54,8 @@ class TaskSaver extends SaverBase {
     endElement("taskproperties", handler);
     Task rootTask = project.getTaskManager().getTaskHierarchy().getRootTask();
     Task[] tasks = project.getTaskManager().getTaskHierarchy().getNestedTasks(rootTask);
-    for (int i = 0; i < tasks.length; i++) {
-      writeTask(handler, (GanttTask) tasks[i], project.getTaskCustomColumnManager());
+    for (Task task : tasks) {
+      writeTask(handler, (GanttTask) task, project.getTaskCustomColumnManager());
     }
     endElement("tasks", handler);
   }
@@ -94,26 +94,20 @@ class TaskSaver extends SaverBase {
     }
     addAttribute("expand", String.valueOf(task.getExpand()), attrs);
 
-    if (!(task.getCost().isCalculated() && task.getCost().getManualValue() == BigDecimal.ZERO)) {
+    if (!(task.getCost().isCalculated() && task.getCost().getManualValue().equals(BigDecimal.ZERO))) {
       addAttribute("cost-manual-value", task.getCost().getManualValue().toPlainString(), attrs);
       addAttribute("cost-calculated", task.getCost().isCalculated(), attrs);
     }
     startElement("task", attrs, handler);
 
     if (task.getNotes() != null && task.getNotes().length() > 0) {
-      cdataElement("notes", task.getNotes(), attrs, handler);
-      // fout.write(space2 + "<notes>");
-      // fout.write("\n"
-      // + space2
-      // + s
-      // + correct(replaceAll(task.getNotes(), "\n", "\n"
-      // + space2 + s)));
-      // fout.write("\n" + space2 + "</notes>\n");
+      // See https://bugs.openjdk.java.net/browse/JDK-8133452
+      String taskNotes = task.getNotes().replace("\\r\\n", "\\n");
+      cdataElement("notes", taskNotes, attrs, handler);
     }
     // use successors to write depends information
     final TaskDependency[] depsAsDependee = task.getDependenciesAsDependee().toArray();
-    for (int i = 0; i < depsAsDependee.length; i++) {
-      TaskDependency next = depsAsDependee[i];
+    for (TaskDependency next : depsAsDependee) {
       addAttribute("id", String.valueOf(next.getDependant().getTaskID()), attrs);
       addAttribute("type", next.getConstraint().getType().getPersistentValue(), attrs);
       addAttribute("difference", String.valueOf(next.getDifference()), attrs);
@@ -138,8 +132,8 @@ class TaskSaver extends SaverBase {
     // Write the child of the task
     if (task.getManager().getTaskHierarchy().hasNestedTasks(task)) {
       Task[] nestedTasks = task.getManager().getTaskHierarchy().getNestedTasks(task);
-      for (int i = 0; i < nestedTasks.length; i++) {
-        writeTask(handler, (GanttTask) nestedTasks[i], customPropertyManager);
+      for (Task nestedTask : nestedTasks) {
+        writeTask(handler, (GanttTask) nestedTask, customPropertyManager);
       }
     }
 
@@ -203,7 +197,7 @@ class TaskSaver extends SaverBase {
     }
   }
 
-  static String encodeFieldType(Class<?> fieldType) {
+  private static String encodeFieldType(Class<?> fieldType) {
     return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);
   }
 

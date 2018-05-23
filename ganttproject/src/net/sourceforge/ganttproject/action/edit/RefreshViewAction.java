@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import java.awt.event.ActionEvent;
 
 public class RefreshViewAction extends GPAction {
 
@@ -33,7 +33,10 @@ public class RefreshViewAction extends GPAction {
   }
 
   @Override
-  public void actionPerformed(ActionEvent ae) {
+  public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myUIFacade.refresh();
   }
 

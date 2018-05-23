@@ -42,7 +42,6 @@ import java.net.URL;
  * @author dbarashev (Dmitry Barashev)
  */
 public class WebDavStorageImpl implements DocumentStorageUi {
-
   private final GPCloudStorageOptions myServers = new GPCloudStorageOptions();
   private final StringOption myLegacyLastWebDAVDocument = new DefaultStringOption("last-webdav-document", "");
   private final StringOption myLastWebDavDocumentOption = new DefaultStringOption("lastDocument", null);
@@ -180,10 +179,6 @@ public class WebDavStorageImpl implements DocumentStorageUi {
 
   public GPCloudStorageOptions getServersOption() {
     return myServers;
-  }
-
-  public StringOption getWebDavUsernameOption() {
-    return myUsername;
   }
 
   public StringOption getLegacyLastWebDAVDocumentOption() {

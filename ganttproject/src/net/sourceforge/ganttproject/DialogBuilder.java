@@ -18,16 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject;
 
-import net.java.balloontip.BalloonTip;
-import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.DialogAligner;
-import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade.Centering;
 import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
-import net.sourceforge.ganttproject.gui.UIUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,66 +53,14 @@ class DialogBuilder {
     }
   }
 
-  private static class NotificationViewImpl implements AnimationView {
-    private final JDialog myDlg;
-    private BalloonTip myBalloon;
-    private Runnable myOnHide;
-    private final JButton myNotificationOwner;
-
-    public NotificationViewImpl(JDialog dlg, JButton notificationOwner) {
-      myDlg = dlg;
-      myNotificationOwner = notificationOwner;
-      notificationOwner.setAction(new AbstractAction("Error") {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          showBalloon();
-        }
-      });
-    }
-    protected void showBalloon() {
-      myBalloon.setVisible(true);
-    }
-    @Override
-    public boolean isReady() {
-      return myDlg.isVisible();
-    }
-
-    @Override
-    public boolean isVisible() {
-      return myBalloon != null && myBalloon.isVisible();
-    }
-
-    @Override
-    public void setComponent(final JComponent component, JComponent owner, final Runnable onHide) {
-      myNotificationOwner.setVisible(true);
-      myBalloon = new BalloonTip(myNotificationOwner, component, new EdgedBalloonStyle(Color.WHITE, Color.BLACK),
-          BalloonTip.Orientation.LEFT_ABOVE, BalloonTip.AttachLocation.ALIGNED, 30, 10, false);
-      myBalloon.setVisible(false);
-      myOnHide = onHide;
-    }
-
-    @Override
-    public void close() {
-      if (myBalloon != null) {
-        myBalloon.setVisible(false);
-      }
-      myOnHide.run();
-      myNotificationOwner.setVisible(false);
-    }
-  }
-
   private static class DialogImpl implements Dialog {
     /** Original animation view, used to set it back when the dialog is closed again */
-    private AnimationView myOriginalAnimationView;
     private final JDialog myDlg;
     private final JFrame myMainFrame;
-    private final NotificationManager myNotificationManager;
-    private JButton myButton;
 
     DialogImpl(JDialog dlg, JFrame mainFrame, NotificationManager notificationManager) {
       myDlg = dlg;
       myMainFrame = mainFrame;
-      myNotificationManager = notificationManager;
     }
     @Override
     public void hide() {
@@ -124,13 +68,10 @@ class DialogBuilder {
         myDlg.setVisible(false);
         myDlg.dispose();
       }
-      myNotificationManager.setAnimationView(myOriginalAnimationView);
     }
 
     @Override
     public void show() {
-      myOriginalAnimationView = myNotificationManager.setAnimationView(new NotificationViewImpl(myDlg, myButton));
-      myDlg.pack();
       center(Centering.WINDOW);
       myDlg.setVisible(true);
     }
@@ -144,13 +85,6 @@ class DialogBuilder {
     @Override
     public void center(Centering centering) {
       DialogAligner.center(myDlg, myMainFrame, centering);
-    }
-
-//    public void resize() {
-//      myDlg.set
-//    }
-    void setNotificationOwner(JButton button) {
-      myButton = button;
     }
 
   }
@@ -269,16 +203,10 @@ class DialogBuilder {
     dlg.getContentPane().setLayout(new BorderLayout());
     dlg.getContentPane().add(content, BorderLayout.CENTER);
 
-    JButton errorButton = new JButton("Error");
-    errorButton.setBackground(UIUtil.ERROR_BACKGROUND);
-    //errorLabel.setBorder(BorderFactory.createCompoundBorder(errorLabel.getBorder(), BorderFactory.createEmptyBorder(2,2,2,2)));
     JPanel buttonPanel = new JPanel(new BorderLayout());
     buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
     buttonPanel.add(buttonBox, BorderLayout.EAST);
-    buttonPanel.add(errorButton, BorderLayout.WEST);
     dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-    result.setNotificationOwner(errorButton);
-    errorButton.setVisible(false);
 
     dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     final Action localCancelAction = cancelAction;

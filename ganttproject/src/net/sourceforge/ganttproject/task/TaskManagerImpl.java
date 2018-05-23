@@ -4,29 +4,13 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Comparator;
-
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -37,7 +21,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -46,7 +29,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -88,6 +70,20 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author bard
@@ -318,11 +314,15 @@ public class TaskManagerImpl implements TaskManager {
 
   private void projectOpened() {
     processCriticalPath(getRootTask());
-    myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run(getRootTask());
+    myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run();
   }
 
   @Override
   public void deleteTask(Task tasktoRemove) {
+    Task[] nestedTasks = getTaskHierarchy().getDeepNestedTasks(tasktoRemove);
+    for (Task t : nestedTasks) {
+      t.delete();
+    }
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
     myTaskMap.removeTask(tasktoRemove);
     tasktoRemove.delete();
@@ -349,12 +349,17 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = myPrototype == null ?
-            new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId) : new GanttTask((TaskImpl)myPrototype);
+        TaskImpl task = myPrototype == null
+            ? new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId)
+            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype);
 
-        String name = myName == null ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
-        task.setName(name);
-
+        if (myPrototype == null) {
+          String name = myName == null
+              ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
+          task.setName(name);
+        } else if (myName != null) {
+          task.setName(myName);
+        }
         if (myStartDate != null) {
           GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
           task.setStart(cal);
@@ -960,12 +965,14 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public List<Task> getTasksInDocumentOrder() {
       List<Task> result = Lists.newArrayList();
-      Deque<Task> deque = new LinkedList<Task>();
+      LinkedList<Task> deque = new LinkedList<>();
       deque.addFirst(getRootTask());
       while (!deque.isEmpty()) {
         Task head = deque.poll();
-        result.addAll(0, Arrays.asList(head.getNestedTasks()));
+        result.add(head);
+        deque.addAll(0, Arrays.asList(head.getNestedTasks()));
       }
+      result.remove(0);
       return result;
     }
 
@@ -1072,9 +1079,15 @@ public class TaskManagerImpl implements TaskManager {
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
-      Task nextImported = builder.withName(that.getName()).withStartDate(that.getStart().getTime())
-        .withDuration(that.getDuration())
-        .withColor(that.getColor()).withNotes(that.getNotes()).withWebLink(that.getWebLink()).withParent(root).build();
+      Task nextImported = builder
+          .withName(that.getName())
+          .withStartDate(that.getStart().getTime())
+          .withDuration(that.getDuration())
+          .withColor(that.getColor())
+          .withNotes(that.getNotes())
+          .withWebLink(that.getWebLink())
+          .withPriority(that.getPriority())
+          .withParent(root).build();
 
       nextImported.setShape(nested[i].getShape());
       nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
@@ -1204,6 +1217,11 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public StringOption getTaskCopyNamePrefixOption() {
     return myTaskCopyNamePrefixOption;
+  }
+
+  @Override
+  public ColorOption getTaskDefaultColorOption() {
+    return myConfig.getDefaultColorOption();
   }
 
   @Override

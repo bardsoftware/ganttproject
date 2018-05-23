@@ -50,6 +50,9 @@ public class TaskNewAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
       @Override
       public void run() {

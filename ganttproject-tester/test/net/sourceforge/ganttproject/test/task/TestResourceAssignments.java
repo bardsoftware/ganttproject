@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.test.task;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
@@ -10,6 +11,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
+import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
@@ -87,6 +89,22 @@ public class TestResourceAssignments extends TestCase {
                 assignments.length == 0);
     }
 
+    public void testAssignmentsDisappearOnSummaryTaskDeletion() {
+        HumanResource res1 = getResourceManager().getById(1);
+        TaskManager taskManager = getTaskManager();
+        Task summaryTask = taskManager.createTask();
+        summaryTask.getAssignmentCollection().addAssignment(res1);
+
+        Task childTask = taskManager.newTaskBuilder().withParent(summaryTask).build();
+        childTask.getAssignmentCollection().addAssignment(res1);
+
+        taskManager.deleteTask(summaryTask);
+        ResourceAssignment[] assignments = res1.getAssignments();
+        assertTrue(
+            "Resource is expected to have no assignments after summary task deletion",
+            assignments.length == 0);
+    }
+
     public void testAssignmentDisappearOnResourceDeletion() {
         TaskManager taskManager = getTaskManager();
         Task task = taskManager.createTask();
@@ -95,6 +113,23 @@ public class TestResourceAssignments extends TestCase {
         res1.delete();
         Set<HumanResource> resources = extractResources(task);
         assertTrue("It is expected that after resource deletion assignments disappear", resources.isEmpty());
+    }
+
+    // See https://github.com/bardsoftware/ganttproject/issues/612
+    public void testAssignmentUpdateAndDelete() {
+        TaskManager taskManager = getTaskManager();
+        Task task = taskManager.createTask();
+        HumanResource res1 = getResourceManager().getById(1);
+        ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(res1);
+        ResourceAssignmentMutator mutator = task.getAssignmentCollection().createMutator();
+        assignment.delete();
+        assignment = mutator.addAssignment(res1);
+        assignment.setLoad(50);
+        assignment.delete();
+        mutator.commit();
+
+        Set<HumanResource> resources = extractResources(task);
+        assertTrue("It is expected that assignment is removed after sequential update+delete via mutator", resources.isEmpty());
     }
 
     private Set<HumanResource> extractResources(Task task) {
@@ -127,7 +162,12 @@ public class TestResourceAssignments extends TestCase {
                 return null;
             }
 
-            @Override
+          @Override
+          public ColorOption getDefaultColorOption() {
+            return null;
+          }
+
+          @Override
             public GPCalendarCalc getCalendar() {
                 return new AlwaysWorkingTimeCalendarImpl();
             }

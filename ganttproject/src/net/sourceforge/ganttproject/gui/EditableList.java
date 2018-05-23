@@ -18,20 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import biz.ganttproject.core.option.ValidationException;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class EditableList<T> {
 
@@ -158,6 +156,17 @@ public abstract class EditableList<T> {
           return super.getCellEditorValue();
         }
 
+        @Override
+        public boolean stopCellEditing() {
+          try {
+            boolean result = super.stopCellEditing();
+            getComponent().setBackground(UIUtil.getValidFieldColor());
+            return result;
+          } catch (ValidationException e) {
+            getComponent().setBackground(UIUtil.ERROR_BACKGROUND);
+            return false;
+          }
+        }
       });
       if (!myPossibleValues.isEmpty()) {
         setupEditor(myPossibleValues, resourcesTable);

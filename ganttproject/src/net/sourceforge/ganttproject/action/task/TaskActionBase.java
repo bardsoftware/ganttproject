@@ -18,12 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActionStateChangedListener;
@@ -35,6 +29,12 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener, ActionDelegate {
   private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
@@ -67,6 +67,9 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     final List<Task> selection = new ArrayList<Task>(mySelection);
     Collections.sort(selection, new Comparator<Task>() {
       private final TaskContainmentHierarchyFacade myTaskHierarchy = getTaskManager().getTaskHierarchy();

@@ -128,7 +128,9 @@ public class GPCloudStorageOptions extends GPAbstractOption<WebDavServerDescript
           server.setPassword(parts[3]);
           server.setSavePassword(true);
         }
-        myObservableList.add(server);
+        if (!server.getRootUrl().isEmpty()) {
+          myObservableList.add(server);
+        }
       }
     }
   }

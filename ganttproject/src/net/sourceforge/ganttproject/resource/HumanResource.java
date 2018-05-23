@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author barmeier
@@ -304,6 +305,14 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  public double getTotalLoad() {
+    double totalLoad = 0.0;
+    for (ResourceAssignment assignment : myAssignments) {
+      totalLoad = totalLoad + assignment.getLoad() * assignment.getTask().getDuration().getLength() / 100.0;
+    }
+    return totalLoad;
+  }
+
   public BigDecimal getTotalCost() {
     BigDecimal cost = BigDecimal.ZERO;
     for (ResourceAssignment assignment : myAssignments) {
@@ -322,6 +331,11 @@ public class HumanResource implements CustomPropertyHolder {
       result = pr.id == id;
     }
     return result;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 
   @Override

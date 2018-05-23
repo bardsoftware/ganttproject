@@ -54,6 +54,9 @@ public class OpenProjectAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
     try {
       myProjectUiFacade.openProject(myProject);
     } catch (Exception ex) {

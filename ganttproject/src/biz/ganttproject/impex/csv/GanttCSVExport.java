@@ -21,10 +21,12 @@ package biz.ganttproject.impex.csv;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.CustomProperty;
@@ -43,6 +45,7 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
 
@@ -138,6 +141,9 @@ public class GanttCSVExport {
         writer.print(i18n(entry.getKey()));
       } else {
         writer.print(defaultColumn.getName());
+        if (defaultColumn == TaskDefaultColumn.RESOURCES) {
+          writer.print(TaskRecords.TaskFields.ASSIGNMENTS.toString());
+        }
       }
     }
     for (CustomPropertyDefinition def : defs) {
@@ -170,45 +176,53 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-            case ID:
-              writer.print(String.valueOf(task.getTaskID()));
-              break;
-            case NAME:
-              writer.print(getName(task));
-              break;
-            case BEGIN_DATE:
-              writer.print(task.getStart().toString());
-              break;
-            case END_DATE:
-              writer.print(task.getDisplayEnd().toString());
-              break;
-            case DURATION:
-              writer.print(String.valueOf(task.getDuration().getLength()));
-              break;
-            case COMPLETION:
-              writer.print(String.valueOf(task.getCompletionPercentage()));
-              break;
-            case OUTLINE_NUMBER:
-              List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
-              writer.print(Joiner.on('.').join(outlinePath));
-              break;
-            case COORDINATOR:
-              ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
-              writer.print(coordinator == null ? "" : coordinator.getResource().getName());
-              break;
-            case PREDECESSORS:
-              writer.print(TaskProperties.formatPredecessors(task, ";", true));
-              break;
-            case RESOURCES:
-              writer.print(getAssignments(task));
-              break;
-            case COST:
-              writer.print(task.getCost().getValue().toPlainString());
-              break;
-            case INFO:
-            case PRIORITY:
-            case TYPE:
-              break;
+          case ID:
+            writer.print(String.valueOf(task.getTaskID()));
+            break;
+          case NAME:
+            writer.print(getName(task));
+            break;
+          case BEGIN_DATE:
+            writer.print(task.getStart().toString());
+            break;
+          case END_DATE:
+            writer.print(task.getDisplayEnd().toString());
+            break;
+          case DURATION:
+            writer.print(String.valueOf(task.getDuration().getLength()));
+            break;
+          case COMPLETION:
+            writer.print(String.valueOf(task.getCompletionPercentage()));
+            break;
+          case OUTLINE_NUMBER:
+            List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
+            writer.print(Joiner.on('.').join(outlinePath));
+            break;
+          case COORDINATOR:
+            ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
+            writer.print(coordinator == null ? "" : coordinator.getResource().getName());
+            break;
+          case PREDECESSORS:
+            writer.print(TaskProperties.formatPredecessors(task, ";", true));
+            break;
+          case RESOURCES:
+            writer.print(getAssignments(task));
+            writer.print(buildAssignmentSpec(task));
+            break;
+          case COST:
+            writer.print(task.getCost().getValue().toPlainString());
+            break;
+          case COLOR:
+            if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
+              writer.print(ColorConvertion.getColor(task.getColor()));
+            } else {
+              writer.print("");
+            }
+            break;
+          case INFO:
+          case PRIORITY:
+          case TYPE:
+            break;
           }
         }
       }
@@ -287,6 +301,9 @@ public class GanttCSVExport {
             case TOTAL_COST:
               writer.print(p.getTotalCost().toPlainString());
               break;
+            case TOTAL_LOAD:
+              writer.print(String.valueOf(p.getTotalLoad()));
+              break;
           }
         }
       }
@@ -341,4 +358,14 @@ public class GanttCSVExport {
     }
     return res.toString();
   }
+
+  private String buildAssignmentSpec(Task task) {
+    List<String> loads = Lists.newArrayList();
+    for (ResourceAssignment ra : task.getAssignments()) {
+      loads.add(String.format("%d:%.2f", ra.getResource().getId(), ra.getLoad()));
+    }
+    return Joiner.on(';').join(loads);
+  }
+
+
 }
