@@ -26,7 +26,7 @@ public class StorageDialogAction extends GPAction {
 
   public StorageDialogAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUIFacade,
                              DocumentManager documentManager, GPCloudStorageOptions cloudStorageOptions) {
-    super("Go Online...");
+    super("myProjects.action");
     myProject = project;
     myUiFacade = uiFacade;
     myCloudStorageOptions = cloudStorageOptions;
@@ -43,7 +43,7 @@ public class StorageDialogAction extends GPAction {
       JFXPanel contentPane = dialogBuilder.build();
       //dialogBuilder
       SwingUtilities.invokeLater(() -> {
-        UIFacade.Dialog dlg = myUiFacade.createDialog(contentPane, new Action[0], "Foo");
+        UIFacade.Dialog dlg = myUiFacade.createDialog(contentPane, new Action[0], getI18n("myProjects.title"));
         dialogBuilder.setDialog(dlg);
       });
       //dialog.show();

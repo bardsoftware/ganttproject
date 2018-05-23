@@ -110,7 +110,8 @@ class LocalStorage(
         myDialogUi,
         Consumer { _: FileAsFolderItem -> this.deleteResource() },
         Consumer { _: FileAsFolderItem ->  },
-        SimpleBooleanProperty())
+        SimpleBooleanProperty(),
+        SimpleBooleanProperty(false))
     val onSelectCrumb = Consumer { path: Path ->
       val dir = path.toFile()
       val result = FXCollections.observableArrayList<FileAsFolderItem>()

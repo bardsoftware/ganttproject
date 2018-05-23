@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.SegmentedButton;
 
@@ -122,8 +123,8 @@ public class StorageDialogBuilder {
 
     borderPane.getStyleClass().add("pane-storage");
     borderPane.setCenter(new Pane());
-    ToggleButton btnSave = new ToggleButton("Save project as");
-    ToggleButton btnOpen = new ToggleButton("Open other project");
+    ToggleButton btnSave = new ToggleButton(GanttLanguage.getInstance().getText("myProjects.save"));
+    ToggleButton btnOpen = new ToggleButton(GanttLanguage.getInstance().getText("myProjects.open"));
 
     {
       VBox titleBox = new VBox();
