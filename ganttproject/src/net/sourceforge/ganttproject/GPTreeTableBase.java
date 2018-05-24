@@ -23,7 +23,7 @@ import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -124,7 +124,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   private TableCellEditor myHierarchicalEditor;
   private final AtomicBoolean myDoubleClickExpectation = new AtomicBoolean(false);
   private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
-  private final Integer myDoubleClickInterval = (Integer) Objects.firstNonNull(Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval"), 500);
+  private final Integer myDoubleClickInterval = (Integer) MoreObjects.firstNonNull(Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval"), 500);
 
   @Override
   public boolean editCellAt(final int row, final int column, EventObject e) {

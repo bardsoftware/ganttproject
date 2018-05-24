@@ -19,39 +19,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.document.webdav;
 
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.option.StringOption;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import io.milton.http.exceptions.NotAuthorizedException;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -64,24 +44,23 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
-
 import org.divxdede.swing.busy.JBusyComponent;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXList;
 
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.IntegerOption;
-import biz.ganttproject.core.option.ListOption;
-import biz.ganttproject.core.option.StringOption;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * UI component for WebDAV operarions.
@@ -368,7 +347,7 @@ class GanttURLChooser {
     while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
-    String path = Objects.firstNonNull(myPath.getValue(), "");
+    String path = MoreObjects.firstNonNull(myPath.getValue(), "");
     if (!path.startsWith("/")) {
       path = "/" + path;
     }

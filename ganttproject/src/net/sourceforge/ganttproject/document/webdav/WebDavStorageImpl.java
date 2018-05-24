@@ -30,6 +30,7 @@ import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -260,7 +261,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       myUsername.setValue(currentDocument.getUsername());
       myPassword.setValue(currentDocument.getPassword());
     } else {
-      String lastDocument = Objects.firstNonNull(
+      String lastDocument = MoreObjects.firstNonNull(
           getLastWebDavDocumentOption().getValue(), getLegacyLastWebDAVDocumentOption().getValue());
       if (lastDocument == null) {
         currentUri = null;

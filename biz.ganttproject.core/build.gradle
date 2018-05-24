@@ -1,7 +1,9 @@
 apply plugin: 'java'
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
+  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+  compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
+  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   mavenDeps group: 'com.google.guava', name: 'guava', version: '25.0-jre'
 }
 

@@ -18,8 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultFileOption;
+import biz.ganttproject.core.option.DefaultFontOption;
+import biz.ganttproject.core.option.DefaultIntegerOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.FontSpec.Size;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.IntegerOption;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -31,7 +44,18 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.*;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
+import net.sourceforge.ganttproject.gui.GanttStatusBar;
+import net.sourceforge.ganttproject.gui.NotificationChannel;
+import net.sourceforge.ganttproject.gui.NotificationItem;
+import net.sourceforge.ganttproject.gui.NotificationManager;
+import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
+import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
+import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
@@ -61,8 +85,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
@@ -681,7 +711,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     try {
       File imageFile = new File(myLogoOption.getValue());
       if (imageFile.exists() && imageFile.canRead()) {
-        return Objects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
+        return MoreObjects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
       }
       GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
     } catch (IOException e) {

@@ -24,6 +24,7 @@ import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
@@ -273,7 +274,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       @Override
       protected String getLocalizedName() {
         String fallbackLabel = String.format("%s %s", language.getText("copy"), language.getText("generic.startDate.label"));
-        return Objects.firstNonNull(super.getLocalizedName(), fallbackLabel);
+        return MoreObjects.firstNonNull(super.getLocalizedName(), fallbackLabel);
       }
 
     });
