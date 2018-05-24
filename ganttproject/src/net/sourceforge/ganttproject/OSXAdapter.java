@@ -18,17 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.io.IOException;
-
-import javax.swing.SwingUtilities;
-
+import com.apple.eawt.ApplicationAdapter;
+import com.apple.eawt.ApplicationEvent;
 import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 
-import com.apple.eawt.ApplicationAdapter;
-import com.apple.eawt.ApplicationEvent;
+import javax.swing.*;
+import java.io.IOException;
 
 public class OSXAdapter extends ApplicationAdapter {
   private static OSXAdapter osxAdapter;
@@ -37,6 +35,9 @@ public class OSXAdapter extends ApplicationAdapter {
 
   private OSXAdapter(GanttProject myProj) {
     this.myProj = myProj;
+  }
+
+  static void setupSystemProperties() {
     System.setProperty("apple.awt.graphics.EnableQ2DX", "true");
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     System.setProperty("com.apple.mrj.application.apple.menu.about.name", "GanttProject");
@@ -73,7 +74,9 @@ public class OSXAdapter extends ApplicationAdapter {
     e.setHandled(true);
   }
 
-  /** Handle the Mac OSX "about" menu option. */
+  /**
+   * Handle the Mac OSX "about" menu option.
+   */
   @Override
   public void handleAbout(ApplicationEvent event) {
     AboutDialog2 abd = new AboutDialog2(myProj.getUIFacade());

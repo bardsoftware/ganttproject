@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import com.google.common.base.Strings;
+import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
@@ -318,7 +319,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     if (ourKeyboardProperties == null) {
       ourKeyboardProperties = new Properties();
       PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
-      PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
+      if (DesktopIntegration.isMacOs()) {
+        PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.macos.properties");
+      } else {
+        PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
+      }
     }
     return (String) ourKeyboardProperties.get(keystrokeID);
   }

@@ -28,9 +28,11 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConst
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
+import org.jdesktop.swingx.JXLabel;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -41,12 +43,12 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskDependenciesPanel {
-  private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[] {
+  private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[]{
       new FinishStartConstraintImpl(), new FinishFinishConstraintImpl(), new StartFinishConstraintImpl(),
-      new StartStartConstraintImpl() };
+      new StartStartConstraintImpl()};
 
-  private static TaskDependency.Hardness[] HARDNESS = new TaskDependency.Hardness[] { TaskDependency.Hardness.STRONG,
-      TaskDependency.Hardness.RUBBER };
+  private static TaskDependency.Hardness[] HARDNESS = new TaskDependency.Hardness[]{TaskDependency.Hardness.STRONG,
+      TaskDependency.Hardness.RUBBER};
 
   private Task myTask;
   private DependencyTableModel myModel;
@@ -104,15 +106,53 @@ public class TaskDependenciesPanel {
     return myTask;
   }
 
-  protected void setUpPredecessorComboColumn(TableColumn predecessorColumn, final JTable predecessorTable) {
-    final JComboBox comboBox = new JComboBox();
+  private void setUpPredecessorComboColumn(TableColumn predecessorColumn, final JTable predecessorTable) {
+    final JComboBox<DependencyTableModel.TaskComboItem> comboBox = new JComboBox<>();
+
     Task[] possiblePredecessors = getTaskManager().getAlgorithmCollection().getFindPossibleDependeesAlgorithm().run(
         getTask());
-    for (int i = 0; i < possiblePredecessors.length; i++) {
-      Task next = possiblePredecessors[i];
-      comboBox.addItem(new DependencyTableModel.TaskComboItem(next));
-    }
 
+    int maxDigits = 0;
+    for (Task next : possiblePredecessors) {
+      comboBox.addItem(new DependencyTableModel.TaskComboItem(next));
+      maxDigits = Math.max(maxDigits, (int) Math.log10(next.getTaskID()));
+    }
+    final int maxWidth = (maxDigits + 1) * 10;
+
+    comboBox.setRenderer(new DefaultListCellRenderer() {
+      private JLabel myId = new JLabel();
+      private JXLabel myLabel = new JXLabel();
+      private JPanel myBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));
+
+      {
+        myId.setEnabled(false);
+        myId.setHorizontalAlignment(SwingConstants.RIGHT);
+        myBox.add(myId);
+        myBox.add(myLabel);
+        myBox.setOpaque(true);
+      }
+
+      @Override
+      public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        DependencyTableModel.TaskComboItem item = (DependencyTableModel.TaskComboItem) value;
+        TaskManager taskManager = item.myTask.getManager();
+        JComponent superResult = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        if (index == -1) {
+          return superResult;
+        }
+        myId.setPreferredSize(new Dimension(maxWidth, 10));
+        myId.setFont(superResult.getFont().deriveFont(superResult.getFont().getSize() * 0.85f));
+        myId.setText(String.valueOf(item.myTask.getTaskID()));
+        myLabel.setText(item.myTask.getName());
+        myLabel.setBorder(BorderFactory.createEmptyBorder(0,
+            10 * (taskManager.getTaskHierarchy().getDepth(item.myTask) - 1),
+            0, 0));
+        myBox.setBorder(superResult.getBorder());
+        myBox.setBackground(superResult.getBackground());
+        myBox.setForeground(superResult.getForeground());
+        return myBox;
+      }
+    });
     comboBox.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {

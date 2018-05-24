@@ -12,9 +12,6 @@
       <library name="lib/backport-util-concurrent-3.1.jar">
          <export name="*"/>
       </library>
-      <library name="lib/commons-codec-1.5.jar">
-         <export name="*"/>
-      </library>
       <library name="lib/commons-lang-2.6.jar">
          <export name="*"/>
       </library>

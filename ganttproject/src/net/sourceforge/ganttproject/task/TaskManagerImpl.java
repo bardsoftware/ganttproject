@@ -10,6 +10,7 @@ import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.EnumerationOption;
@@ -1205,6 +1206,11 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public StringOption getTaskCopyNamePrefixOption() {
     return myTaskCopyNamePrefixOption;
+  }
+
+  @Override
+  public ColorOption getTaskDefaultColorOption() {
+    return myConfig.getDefaultColorOption();
   }
 
   @Override

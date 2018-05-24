@@ -689,7 +689,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public ScrollingSession createScrollingSession(int startXpos) {
-    assert myScrollingSession == null;
+    if (myScrollingSession != null) {
+      myScrollingSession.finish();
+    }
     return new ScrollingSessionImpl(startXpos);
   }
 

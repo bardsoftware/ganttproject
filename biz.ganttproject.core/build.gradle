@@ -3,10 +3,8 @@ apply plugin: 'kotlin'
 
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
-  mavenDeps group: 'com.google.guava', name: 'guava', version: '19.0'
-    mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile group: 'com.google.guava', name: 'guava', version: '19.0'
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  mavenDeps group: 'com.google.guava', name: 'guava', version: '25.0-jre'
 }
 
 sourceSets {

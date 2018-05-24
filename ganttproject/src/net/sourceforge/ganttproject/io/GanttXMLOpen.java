@@ -18,15 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -38,13 +32,16 @@ import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-
 import org.xml.sax.Attributes;
 
-import biz.ganttproject.core.time.GanttCalendar;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Allows to load a gantt file from xml format, using SAX parser
@@ -142,10 +139,12 @@ public class GanttXMLOpen implements GPParser {
 
   private class DefaultTagHandler extends AbstractTagHandler {
     private final Set<String> myTags = ImmutableSet.of("project", "tasks", "description", "notes");
+    private boolean hasCdata = false;
 
-    public DefaultTagHandler() {
+    DefaultTagHandler() {
       super(null, true);
     }
+
     @Override
     public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
       clearCdata();
@@ -154,6 +153,7 @@ public class GanttXMLOpen implements GPParser {
         eName = qName; // not namespace aware
       }
       setTagStarted(myTags.contains(eName));
+      hasCdata = "description".equals(eName) || "notes".equals(eName);
       if (eName.equals("tasks")) {
         myTaskManager.setZeroMilestones(null);
       }
@@ -202,7 +202,18 @@ public class GanttXMLOpen implements GPParser {
         Task currentTask = getContext().peekTask();
         currentTask.setNotes(getCdata());
       }
+      hasCdata = false;
       setTagStarted(false);
+    }
+
+    @Override
+    public boolean hasCdata() {
+      return hasCdata;
+    }
+
+    @Override
+    public void appendCdata(String cdata) {
+      super.appendCdata(cdata);
     }
   }
 

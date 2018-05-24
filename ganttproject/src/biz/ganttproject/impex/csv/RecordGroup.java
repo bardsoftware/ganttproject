@@ -18,6 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.util.collect.Pair;
+import org.apache.commons.csv.CSVRecord;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -46,13 +53,13 @@ public abstract class RecordGroup {
   private final String myName;
   private List<Pair<Level, String>> myErrorOutput;
 
-  public RecordGroup(String name, Set<String> fields) {
+  RecordGroup(String name, Set<String> fields) {
     myName = name;
     myFields = fields;
     myMandatoryFields = fields;
   }
 
-  public RecordGroup(String name, Set<String> regularFields, Set<String> mandatoryFields) {
+  RecordGroup(String name, Set<String> regularFields, Set<String> mandatoryFields) {
     myName = name;
     myFields = regularFields;
     myMandatoryFields = mandatoryFields;
@@ -116,11 +123,11 @@ public abstract class RecordGroup {
     myCustomFields = Sets.difference(Sets.newHashSet(header), myFields);
   }
 
-  public List<String> getHeader() {
+  List<String> getHeader() {
     return myHeader;
   }
 
-  protected Collection<String> getCustomFields() {
+  Collection<String> getCustomFields() {
     return myCustomFields;
   }
 
@@ -133,7 +140,15 @@ public abstract class RecordGroup {
     myErrorOutput = errors;
   }
 
-  protected void addError(Level level, String message) {
-    myErrorOutput.add(Pair.create(level, message));
+  protected List<Pair<Level, String>> getErrorOutput() {
+    return myErrorOutput;
+  }
+
+  void addError(Level level, String message) {
+    addError(myErrorOutput, level, message);
+  }
+
+  static void addError(List<Pair<Level, String>> output, Level level, String message) {
+    output.add(Pair.create(level, message));
   }
 }

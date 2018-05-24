@@ -282,7 +282,16 @@ public class TTFontCache {
         if (myFontCache.containsKey(awtFont)) {
           return myFontCache.get(awtFont);
         }
-        String family = awtFont.getFamily().toLowerCase().replace(' ', '_');
+
+        String family = awtFont.getFamily().toLowerCase();
+        Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
+        if (f != null) {
+          BaseFont result = f.apply(charset);
+          myFontCache.put(awtFont, result);
+          return result;
+        }
+
+        family = family.replace(' ', '_');
         if (myProperties.containsKey("font." + family)) {
           family = String.valueOf(myProperties.get("font." + family));
         }
@@ -290,7 +299,7 @@ public class TTFontCache {
         if (substitution != null) {
           family = substitution.getSubstitutionFamily();
         }
-        Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
+        f = myMap_Family_ItextFont.get(family);
         if (f != null) {
           BaseFont result = f.apply(charset);
           myFontCache.put(awtFont, result);
