@@ -1,4 +1,15 @@
+buildscript {
+  ext.kotlin_version = '1.2.41'
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 dependencies {
   compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
