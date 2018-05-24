@@ -26,7 +26,7 @@ import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -459,11 +459,11 @@ public class CalendarEditorPanel {
       case DATES:
         return e;
       case SUMMARY:
-        return Objects.firstNonNull(e.getTitle(), "");
+        return MoreObjects.firstNonNull(e.getTitle(), "");
       case TYPE:
         return getI18NedEventType(e.getType());
       case COLOR:
-        return Objects.firstNonNull(e.getColor(), Column.values()[col].getDefault());
+        return MoreObjects.firstNonNull(e.getColor(), Column.values()[col].getDefault());
       }
       return null;
     }

@@ -21,8 +21,7 @@ package net.sourceforge.ganttproject.document.webdav;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.OutputSupplier;
+import com.google.common.io.Files;
 import io.milton.common.Path;
 import io.milton.http.exceptions.BadRequestException;
 import io.milton.http.exceptions.ConflictException;
@@ -36,14 +35,11 @@ import io.milton.httpclient.ProgressListener;
 import io.milton.httpclient.Resource;
 import io.milton.httpclient.Utils.CancelledException;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
@@ -255,12 +251,7 @@ public class MiltonResourceImpl implements WebDavResource {
     Folder parentFolder = (Folder) parent.myImpl;
     try {
       final java.io.File tempFile = java.io.File.createTempFile("webdav-" + myUrl.hostUrl, "");
-      ByteStreams.write(byteArray, new OutputSupplier<OutputStream>() {
-        @Override
-        public OutputStream getOutput() throws IOException {
-          return new BufferedOutputStream(new FileOutputStream(tempFile));
-        }
-      });
+      Files.write(byteArray, tempFile);
       parentFolder.uploadFile(getName(), tempFile, null);
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
