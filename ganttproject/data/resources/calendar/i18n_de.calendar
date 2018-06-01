@@ -175,8 +175,6 @@
     <date year="2017" month="4" date="14" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
     <date year="2022" month="6" date="16" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
     <date year="2022" month="11" date="16" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
-</calendar >
-
 
     <!-- Regional holidays 2023 -->
     <date year="2017" month="4" date="6" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
@@ -202,4 +200,6 @@
     <date year="2017" month="3" date="25" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
     <date year="2027" month="5" date="27" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
     <date year="2027" month="11" date="17" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
+</calendar >
+
 
