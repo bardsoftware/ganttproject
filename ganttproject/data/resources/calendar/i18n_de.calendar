@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="de.all" name="German national public holidays 2008-2022" type="country">
+<calendar id="de.all" name="Gesetzliche Feiertage in Deutschland 2008-2027" type="country">
 <!-- http://www.officeholidays.com/countries/germany/ -->
+<!--https://de.wikipedia.org/wiki/Gesetzliche_Feiertage_in_Deutschland -->
     <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[Neujahr]]></date>
     <date year="" month="5" date="1" type="HOLIDAY"><![CDATA[Erster Mai, Tag der Arbeit]]></date>
     <date year="" month="10" date="3" type="HOLIDAY"><![CDATA[Tag der Deutschen Einheit]]></date>
