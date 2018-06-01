@@ -82,54 +82,69 @@
     <date year="2022" month="5" date="26" type="HOLIDAY"><![CDATA[Christi Himmelfahrt]]></date>
     <date year="2022" month="6" date="6" type="HOLIDAY"><![CDATA[Pfingstmontag]]></date>
 
+
     <!-- Regional holidays -->
-    <date year="" month="1" date="6" type="HOLIDAY"><![CDATA[Epiphany (BW, BY, ST)]]></date>
-    <date year="" month="8" date="15" type="HOLIDAY"><![CDATA[Assumption Day  (BY, SL)]]></date>
-    <date year="" month="10" date="31" type="HOLIDAY"><![CDATA[Day of Reformation  (BB, MV, SN, ST, TH)]]></date>
-    <date year="" month="11" date="1" type="HOLIDAY"><![CDATA[All Saints Day (BW, BY, NW, RP, SL)]]></date>
-  	<date year="2008" month="5" date="22" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2008" month="11" date="19" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2009" month="6" date="11" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2009" month="11" date="18" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2010" month="6" date="3" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2010" month="11" date="17" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2011" month="6" date="23" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2011" month="11" date="16" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2012" month="6" date="7" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2012" month="11" date="21" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2013" month="5" date="30" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2013" month="11" date="20" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2014" month="6" date="19" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2014" month="11" date="19" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2015" month="6" date="4" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2015" month="11" date="18" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
-    <date year="2016" month="5" date="26" type="HOLIDAY"><![CDATA[Corpus Christi  (BW, BY, HE, NW, RP, SL)]]></date>
-    <date year="2016" month="11" date="16" type="HOLIDAY"><![CDATA[Repentance Day  (SN)]]></date>
+    <date year="" month="1" date="6" type="HOLIDAY"><![CDATA[Heilige Drei Könige (BW, BY, ST)]]></date>
+    <date year="" month="8" date="15" type="HOLIDAY"><![CDATA[Mariä Himmelfahrt  (BY, SL)]]></date>
+    <date year="" month="10" date="31" type="HOLIDAY"><![CDATA[Tag der Reformation  (BB, MV, SN, ST, TH)]]></date>
+    <date year="" month="11" date="1" type="HOLIDAY"><![CDATA[Allerheiligen (BW, BY, NW, RP, SL)]]></date>
+    <date year="2008" month="3" date="20" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2008" month="5" date="22" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2008" month="11" date="19" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2009" month="4" date="9" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2009" month="6" date="11" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2009" month="11" date="18" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2010" month="4" date="1" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2010" month="6" date="3" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2010" month="11" date="17" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2011" month="4" date="21" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2011" month="6" date="23" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2011" month="11" date="16" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2012" month="4" date="5" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2012" month="6" date="7" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2012" month="11" date="21" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2013" month="3" date="28" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2013" month="5" date="30" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2013" month="11" date="20" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2014" month="4" date="17" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2014" month="6" date="19" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2014" month="11" date="19" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2015" month="4" date="2" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2015" month="6" date="4" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2015" month="11" date="18" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
+    <date year="2016" month="3" date="24" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2016" month="5" date="26" type="HOLIDAY"><![CDATA[Fronleichnam  (BW, BY, HE, NW, RP, SL)]]></date>
+    <date year="2016" month="11" date="16" type="HOLIDAY"><![CDATA[Buß- und Bettag  (SN)]]></date>
 
-    <!-- <date year="2017" month="1" date="6" type="HOLIDAY"><![CDATA[Epiphany (BW, BY, ST)]]></date> -->
-    <date year="2017" month="6" date="15" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-    <date year="2017" month="11" date="22" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
+    <!-- Regional holidays 2017 -->
+    <date year="2017" month="4" date="13" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2017" month="6" date="15" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2017" month="11" date="22" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 
-	<!-- Regional holidays 2018 -->
-	  <date year="2018" month="5" date="31" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-    <date year="2018" month="11" date="21" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
+    <!-- Regional holidays 2018 -->
+    <date year="2017" month="3" date="29" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2018" month="5" date="31" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2018" month="11" date="21" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 
-  <!-- Regional holidays 2019 -->
-    <date year="2019" month="6" date="20" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-    <date year="2019" month="11" date="20" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
+    <!-- Regional holidays 2019 -->
+    <date year="2017" month="4" date="18" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2019" month="6" date="20" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2019" month="11" date="20" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 
-	<!-- Regional holidays 2020 -->
-    <date year="2020" month="6" date="11" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-	  <date year="2020" month="11" date="18" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
+    <!-- Regional holidays 2020 -->
+    <date year="2017" month="4" date="9" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2020" month="6" date="11" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2020" month="11" date="18" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 
-	<!-- Regional holidays 2021 -->
-    <date year="2021" month="6" date="3" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-	  <date year="2021" month="11" date="17" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
+    <!-- Regional holidays 2021 -->
+    <date year="2017" month="4" date="1" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2021" month="6" date="3" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2021" month="11" date="17" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 
-	<!-- Regional holidays 2022 -->
-    <date year="2022" month="6" date="16" type="HOLIDAY"><![CDATA[Corpus Christi (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
-	  <date year="2022" month="11" date="16" type="HOLIDAY"><![CDATA[Repentance Day (SN)]]></date>
-
+    <!-- Regional holidays 2022 -->
+    <date year="2017" month="4" date="14" type="HOLIDAY"><![CDATA[Gründonnerstag (BW)]]></date>
+    <date year="2022" month="6" date="16" type="HOLIDAY"><![CDATA[Fronleichnam (BW, BY, HE, NW, RP, SL, SN, TH)]]></date>
+    <date year="2022" month="11" date="16" type="HOLIDAY"><![CDATA[Buß- und Bettag (SN)]]></date>
 </calendar >
 
 
