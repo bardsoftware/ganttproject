@@ -283,7 +283,9 @@ public class GanttTaskPropertiesBean extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         myEarliestBeginDatePicker.setEnabled(myEarliestBeginEnabled.isSelected());
-        setThird(myTaskScheduleDates.getStart());
+        if (getThird() == null) {
+          setThird(myTaskScheduleDates.getStart());
+        }
         copyFromBeginDate.setEnabled(myEarliestBeginEnabled.isSelected());
       }
     };
