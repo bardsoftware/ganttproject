@@ -20,12 +20,10 @@ import java.util.function.Consumer;
  */
 public class GPCloudSignupPane implements GPCloudStorage.PageUi {
   private final Consumer<Pane> myUpdateUi;
-  private final GPCloudLoginPane myLoginPane;
   private GanttLanguage i18n = GanttLanguage.getInstance();
 
-  GPCloudSignupPane(Consumer<Pane> updateUi, GPCloudLoginPane loginPane) {
+  GPCloudSignupPane(Consumer<Pane> updateUi) {
     myUpdateUi = updateUi;
-    myLoginPane = loginPane;
   }
 
   public CompletableFuture<Pane> createPane() {
@@ -61,10 +59,7 @@ public class GPCloudSignupPane implements GPCloudStorage.PageUi {
     buttonPane.getChildren().add(btnNext);
     pane.setBottom(buttonPane);
     btnNext.addEventHandler(ActionEvent.ACTION, e -> {
-      myLoginPane.createPane().thenApply(loginPane -> {
-        myUpdateUi.accept(loginPane);
-        return loginPane;
-      });
+      System.out.println("Let'd sign in here!");
     });
     return result;
   }
