@@ -403,6 +403,6 @@ public class GanttLanguage {
 
   public String formatText(String key, Object... values) {
     String message = getText(key);
-    return message == null ? null : MessageFormat.format(message, values);
+    return message == null ? key : MessageFormat.format(message, values);
   }
 }

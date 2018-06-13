@@ -61,4 +61,8 @@ public abstract class AbstractDocument implements Document {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public void setMirror(Document mirrorDocument) {
+    throw new UnsupportedOperationException("Abstract document doesn't support mirroring");
+  }
 }

@@ -18,14 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
+import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
@@ -34,21 +28,19 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.update.UpdateDialog;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DateOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultDateOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Checks GanttProject RSS news feeds once per day
@@ -181,12 +173,11 @@ public class RssFeedChecker {
         GPLogger.log("Starting RSS check...");
         HttpClient httpClient = new DefaultHttpClient();
         String url = RSS_URL;
+        HttpGet getRssUrl = new HttpGet(url);
+        getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
         try {
           for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            HttpGet getRssUrl = new HttpGet(url);
-            getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
             HttpResponse result = httpClient.execute(getRssUrl);
-
             switch (result.getStatusLine().getStatusCode()) {
             case HttpStatus.SC_OK:
               processResponse(result.getEntity().getContent());
@@ -198,6 +189,7 @@ public class RssFeedChecker {
         } catch (IOException e) {
           e.printStackTrace();
         } finally {
+          getRssUrl.releaseConnection();
           httpClient.getConnectionManager().shutdown();
           GPLogger.log("RSS check finished");
         }

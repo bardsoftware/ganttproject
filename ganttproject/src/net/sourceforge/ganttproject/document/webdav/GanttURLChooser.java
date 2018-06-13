@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.storage.webdav.WebdavLoadWorker;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -238,43 +239,20 @@ class GanttURLChooser {
   }
 
   class ReloadWorker extends SwingWorker<Pair<WebDavResource, List<WebDavResource>>, Object> {
-    private WebDavResource myResource;
+    private final WebdavLoadWorker myWorkerImpl;
 
     public ReloadWorker(WebDavResource resource) {
-      myResource = resource;
-      setProgressBar(true);
+      myWorkerImpl = new WebdavLoadWorker(resource);
     }
     @Override
     protected Pair<WebDavResource, List<WebDavResource>> doInBackground() throws Exception {
       try {
-        WebDavResource resource = myResource;
-        if (resource.exists() && resource.isCollection()) {
-          return Pair.create(resource, readChildren(resource));
-        }
-        WebDavResource parent = resource.getParent();
-        if (parent.exists() && parent.isCollection()) {
-          return Pair.create(parent, readChildren(parent));
-        }
-        return null;
+        setProgressBar(true);
+        return myWorkerImpl.load();
       } catch (WebDavException e) {
         showError(e);
         return null;
       }
-    }
-
-    private List<WebDavResource> readChildren(WebDavResource parent) throws WebDavException {
-      List<WebDavResource> children = Lists.newArrayList();
-      for (WebDavResource child : parent.getChildResources()) {
-        try {
-          if (child.exists()) {
-            children.add(child);
-          }
-        }
-        catch (WebDavException e) {
-          GPLogger.logToLogger(e);
-        }
-      }
-      return children;
     }
 
     @Override

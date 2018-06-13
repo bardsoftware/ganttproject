@@ -19,28 +19,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document.webdav;
 
 
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.StringOption;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import io.milton.httpclient.Host;
 import io.milton.httpclient.ProxyDetails;
+import net.sourceforge.ganttproject.GPLogger;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.logging.Level;
 
-import net.sourceforge.ganttproject.GPLogger;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.StringOption;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-
 /**
  * Caching factory of WebDavResource instances.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class MiltonResourceFactory {
+public class MiltonResourceFactory {
   private static final int TIMEOUT_MS = 30000;
   private static class Key {
     String url;
@@ -84,7 +82,7 @@ class MiltonResourceFactory {
     myProxy = proxyOption;
   }
 
-  MiltonResourceImpl createResource(WebDavUri uri) {
+  public MiltonResourceImpl createResource(WebDavUri uri) {
     Key key = new Key(uri.buildUrl(), myUsername, myPassword);
     MiltonResourceImpl result = myResourceCache.get(key);
     if (result == null) {

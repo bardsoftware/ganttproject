@@ -33,10 +33,13 @@ task copyPlugin(type: Copy) {
     from(jar.outputs.getFiles().getFiles().flatten())
     from(fileTree(".")) {
       include "plugin.xml"
-      include "lib/**.jar"
+      include "lib/**/*.jar"
       include "resources/**"
     }
     doLast {
       println "Copying $project.name to $rootProject.pluginsDir"
     }
+}
+repositories {
+    mavenCentral()
 }

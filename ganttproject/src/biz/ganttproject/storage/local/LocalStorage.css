@@ -1,0 +1,39 @@
+
+.local-storage .custom-text-field:right-node-visible {
+    -fx-padding: 0 0 0 .3em;
+}
+.local-storage .custom-text-field:right-node-visible .right-pane {
+    -fx-padding: 0 0 0 0;
+}
+
+.custom-text-field.error {
+    -fx-effect: dropshadow(three-pass-box, red, 7, 0, 0, 0);
+}
+.custom-text-field.error:focused,
+.custom-text-field.error:text-field-has-focus {
+    -fx-highlight-fill: -fx-accent;
+    -fx-highlight-text-fill: white;
+    -fx-background-color:
+            -fx-control-inner-background,
+            linear-gradient(from 0px 0px to 0px 5px, derive(-fx-control-inner-background, -9%), -fx-control-inner-background);
+    -fx-background-insets: 1, 3;
+    -fx-background-radius: 2, 0;
+    -fx-prompt-text-fill: transparent;
+}
+.local-storage .errorLabel {
+    -fx-padding: 0.2ex 0 1ex 0;
+}
+/*.local-storage .path-dropdown {*/
+    /*-fx-background-color: derive(orange, 20%);*/
+    /*-fx-border-insets: 0 0 1em 0;*/
+    /*-fx-background-insets: 0 0 1em 0;*/
+    /*-fx-padding: 0 0 1em 0;*/
+/*}*/
+/*.local-storage .path-dropdown > .button-cell  {*/
+    /*-fx-text-fill: black;*/
+/*}*/
+
+/*.local-storage .path-dropdown > .list-cell {*/
+    /*-fx-font-weight: bold;*/
+/*}*/
+

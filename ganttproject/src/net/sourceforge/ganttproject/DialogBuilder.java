@@ -76,6 +76,7 @@ class DialogBuilder {
       myDlg.setVisible(true);
     }
 
+
     @Override
     public void layout() {
       myDlg.pack();

@@ -234,6 +234,14 @@ public class MiltonResourceImpl implements WebDavResource {
   }
 
   @Override
+  public String getAbsolutePath() {
+    if (myImpl != null) {
+      return myImpl.path().toPath();
+    }
+    return Path.path(myUrl.path).toPath();
+
+  }
+  @Override
   public String getName() {
     if (myImpl != null) {
       return myImpl.name;

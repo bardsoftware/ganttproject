@@ -31,6 +31,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import javafx.embed.swing.JFXPanel;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -433,6 +434,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
+
+    try {
+      projectDocument = getDocumentManager().newUntitledDocument();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
 
@@ -1024,6 +1032,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void run() {
         try {
+          new JFXPanel(); // initializes JavaFX environment
           final GanttProject ganttFrame = new GanttProject(false);
           System.err.println("Main frame created");
           ganttFrame.fireProjectCreated();
