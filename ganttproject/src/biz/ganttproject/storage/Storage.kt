@@ -21,7 +21,6 @@ package biz.ganttproject.storage
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
-import biz.ganttproject.storage.cloud.GPCloudStorage
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
@@ -59,32 +58,32 @@ sealed class StorageMode(val name: String) {
 
   abstract fun tryFile(file: File): Unit
 
-    class Open: StorageMode("open") {
-        override fun tryFile(file: File) {
-            if (!file.exists()) {
-                throw FileException("document.storage.error.read.notExists", file)
-            }
-            if (file.exists() && !file.canRead()) {
-                throw FileException("document.storage.error.read.cantRead", file)
-            }
-        }
-
+  class Open : StorageMode("open") {
+    override fun tryFile(file: File) {
+      if (!file.exists()) {
+        throw FileException("document.storage.error.read.notExists", file)
+      }
+      if (file.exists() && !file.canRead()) {
+        throw FileException("document.storage.error.read.cantRead", file)
+      }
     }
 
-    class Save: StorageMode("save") {
-        override fun tryFile(file: File) {
-            if (file.exists() && !file.canWrite()) {
-                throw FileException("document.storage.error.write.cantOverwrite", file)
-            }
-            if (!file.exists() && !file.parentFile.exists()) {
-                throw FileException("document.storage.error.write.parentNotExists", file, file.parentFile)
-            }
-            if (!file.exists() && file.parentFile.exists() && !file.parentFile.canWrite()) {
-                throw FileException("document.storage.error.write.parentNotWritable", file, file.parentFile)
-            }
-        }
+  }
 
+  class Save : StorageMode("save") {
+    override fun tryFile(file: File) {
+      if (file.exists() && !file.canWrite()) {
+        throw FileException("document.storage.error.write.cantOverwrite", file)
+      }
+      if (!file.exists() && !file.parentFile.exists()) {
+        throw FileException("document.storage.error.write.parentNotExists", file, file.parentFile)
+      }
+      if (!file.exists() && file.parentFile.exists() && !file.parentFile.canWrite()) {
+        throw FileException("document.storage.error.write.parentNotWritable", file, file.parentFile)
+      }
     }
+
+  }
 
 }
 
@@ -125,7 +124,7 @@ class StoragePane internal constructor(
 
     borderPane.center = storageUiPane
     reloadStorageLabels(storageButtons, mode, Optional.empty<String>())
-    myCloudStorageOptions.list.addListener(ListChangeListener{ _ ->
+    myCloudStorageOptions.list.addListener(ListChangeListener { _ ->
       reloadStorageLabels(
           storageButtons, mode,
           if (myActiveStorageLabel == null) Optional.empty<String>()
@@ -168,9 +167,9 @@ class StoragePane internal constructor(
         myCurrentDocument,
         openDocument)
     myStorageUiList.add(recentProjects)
-    myStorageUiList.add(GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi))
+    //myStorageUiList.add(GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi))
     myCloudStorageOptions.webdavServers.mapTo(myStorageUiList) {
-        WebdavStorage(it, mode, openDocument, myDialogUi, myCloudStorageOptions)
+      WebdavStorage(it, mode, openDocument, myDialogUi, myCloudStorageOptions)
     }
 
     val initialStorageId = selectedId.orElse(recentProjects.id)
@@ -193,8 +192,8 @@ class StoragePane internal constructor(
       storageUi.createSettingsUi().ifPresent { settingsPane ->
         val listItemOnHover = buildFontAwesomeButton(FontAwesomeIcon.COG.name, null,
             {
-                FXUtil.transitionCenterPane(storageUiPane, settingsPane) { myDialogUi.resize() }
-                Unit
+              FXUtil.transitionCenterPane(storageUiPane, settingsPane) { myDialogUi.resize() }
+              Unit
             },
             "settings"
         )
