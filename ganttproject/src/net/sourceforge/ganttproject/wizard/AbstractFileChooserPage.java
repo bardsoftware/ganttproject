@@ -18,9 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.wizard;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import com.google.common.base.MoreObjects;
+import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.osgi.service.prefs.Preferences;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,36 +48,6 @@ import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.gui.TextFieldAndFileChooserComponent;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.osgi.service.prefs.Preferences;
-
-import com.google.common.base.Objects;
-
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.GPOptionGroup;
 
 public abstract class AbstractFileChooserPage implements WizardPage {
   public static final int FILE_SOURCE = 0;
@@ -100,8 +85,8 @@ public abstract class AbstractFileChooserPage implements WizardPage {
     myUiFacade = uiFacade;
     myPreferences = prefs;
     myTitle = title;
-    myFileFilter = Objects.firstNonNull(fileFilter, ACCEPT_ALL);
-    myOptions = Objects.firstNonNull(options, new GPOptionGroup[0]);
+    myFileFilter = MoreObjects.firstNonNull(fileFilter, ACCEPT_ALL);
+    myOptions = MoreObjects.firstNonNull(options, new GPOptionGroup[0]);
     isUrlChooserEnabled = enableUrlChooser;
     myOptionsBuilder = new OptionsPageBuilder();
     mySecondaryOptionsComponent = new JPanel(new BorderLayout());

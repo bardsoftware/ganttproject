@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -131,10 +131,10 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.first())),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".url"),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".label")
          );
@@ -160,10 +160,10 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.second())),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".url"),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".label")
          );

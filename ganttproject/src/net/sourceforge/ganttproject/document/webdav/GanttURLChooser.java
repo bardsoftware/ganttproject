@@ -28,7 +28,7 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.storage.webdav.WebdavLoadWorker;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -325,7 +325,7 @@ class GanttURLChooser {
     while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
-    String path = Objects.firstNonNull(myPath.getValue(), "");
+    String path = MoreObjects.firstNonNull(myPath.getValue(), "");
     if (!path.startsWith("/")) {
       path = "/" + path;
     }

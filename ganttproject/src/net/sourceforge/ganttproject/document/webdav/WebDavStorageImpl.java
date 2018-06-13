@@ -20,6 +20,19 @@ package net.sourceforge.ganttproject.document.webdav;
 
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions;
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.DefaultIntegerOption;
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.option.StringOption;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -128,7 +141,7 @@ public class WebDavStorageImpl implements DocumentStorageUi {
       myUsername.setValue(currentDocument.getUsername());
       myPassword.setValue(currentDocument.getPassword());
     } else {
-      String lastDocument = Objects.firstNonNull(
+      String lastDocument = MoreObjects.firstNonNull(
           getLastWebDavDocumentOption().getValue(), getLegacyLastWebDAVDocumentOption().getValue());
       if (lastDocument == null) {
         currentUri = null;
