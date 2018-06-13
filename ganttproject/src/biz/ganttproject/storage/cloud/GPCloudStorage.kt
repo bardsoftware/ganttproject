@@ -3,13 +3,11 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.storage.StorageDialogBuilder
+import fi.iki.elonen.NanoHTTPD
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Pos
-import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.document.Document
 import org.controlsfx.control.HyperlinkLabel
@@ -17,13 +15,15 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
+val GPCLOUD_SIGNIN_URL = "https://cloud.ganttproject.biz/__/auth/desktop"
+
 /**
  * @author dbarashev@bardsoftware.com
  */
 class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val myOptions: GPCloudStorageOptions, private val myOpenDocument: Consumer<Document>, private val myDialogUi: StorageDialogBuilder.DialogUi) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane
-  private val myButtonPane: HBox
-  private val myNextButton: Button
+//  private val myButtonPane: HBox
+//  private val myNextButton: Button
 
 
   internal interface PageUi {
@@ -32,13 +32,13 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
 
   init {
     myPane = BorderPane()
-    myButtonPane = HBox()
-    myButtonPane.styleClass.add("button-pane")
-    myButtonPane.alignment = Pos.CENTER
-    myNextButton = Button("Continue")
-    myButtonPane.children.add(myNextButton)
-    myNextButton.visibleProperty().value = false
-    myPane.bottom = myButtonPane
+//    myButtonPane = HBox()
+//    myButtonPane.styleClass.add("button-pane")
+//    myButtonPane.alignment = Pos.CENTER
+//    myNextButton = Button("Continue")
+//    myButtonPane.children.add(myNextButton)
+//    myNextButton.visibleProperty().value = false
+//    myPane.bottom = myButtonPane
   }
 
   override fun getName(): String {
@@ -58,11 +58,14 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 
   private fun doCreateUi(): Pane {
-    val signupPane = GPCloudSignupPane(Consumer { this.nextPage(it) })
-    val cloudServer = myOptions.cloudServer
-    if (cloudServer.isPresent) {
-    } else {
-      signupPane.createPane().thenApply { pane -> nextPage(pane) }
+    val signupPane = GPCloudSignupPane(Consumer { })
+//    val cloudServer = myOptions.cloudServer
+//    if (cloudServer.isPresent) {
+//    } else {
+//      signupPane.createPane().thenApply { pane -> nextPage(pane) }
+//    }
+    signupPane.createPane().thenApply { pane ->
+      nextPage(pane)
     }
     return myPane
   }
@@ -86,5 +89,19 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
       result.styleClass.addAll(*classes)
       return result
     }
+  }
+}
+
+class HttpServerImpl() : NanoHTTPD("localhost", 0) {
+  var onTokenReceived: Consumer<String>? = null
+
+  override fun serve(session: IHTTPSession): Response {
+    val args = mutableMapOf<String, String>()
+    session.parseBody(args)
+    val tokenList = session.parameters["token"]
+    if (tokenList?.size == 1) {
+      onTokenReceived?.accept(tokenList[0])
+    }
+    return newFixedLengthResponse("")
   }
 }
