@@ -54,7 +54,7 @@
 }
 
 .btn-service.active {
-    -fx-background-color: #ffab00;
+    -fx-background-color: #ffc241;
 }
 
 .btn-signup {
@@ -83,7 +83,7 @@
 }
 
 .doclist-save {
-    -fx-background-color: #ffab00;
+    -fx-background-color: #ffc241;
     -fx-text-fill: black;
     -fx-font-weight: bold;
     -fx-font-size: 120%;
@@ -97,7 +97,7 @@
 
 HBox.title {
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: #ffab00;
+    -fx-border-color: #ffc241;
     -fx-border-insets: 0 0 0 0;
 }
 
@@ -165,6 +165,7 @@ HBox.title Label {
     -fx-padding: 10 10 0 10;
     -fx-font-family: Arial;
     -fx-fill-width: true;
+    -fx-pref-width: 100%;
 }
 
 .pane-service-contents > * {

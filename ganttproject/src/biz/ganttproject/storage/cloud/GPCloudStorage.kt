@@ -15,7 +15,9 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
+val GPCLOUD_LANDING_URL = "https://cloud.ganttproject.biz"
 val GPCLOUD_SIGNIN_URL = "https://cloud.ganttproject.biz/__/auth/desktop"
+val GPCLOUD_SIGNUP_URL = "https://cloud.ganttproject.biz/__/auth/handler"
 
 /**
  * @author dbarashev@bardsoftware.com

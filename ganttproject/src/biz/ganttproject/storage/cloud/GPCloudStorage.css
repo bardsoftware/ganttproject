@@ -1,15 +1,19 @@
-TextArea.help, TextArea.help:focused {
+.text-area {
     -fx-border-width: 0;
-    -fx-background-color: transparent;
+    -fx-background-color: #99cc99;
+    -fx-text-fill: black;
     -fx-background-insets: 0px;
     -fx-effect: none;
+    -fx-pref-width: 100%;
+}
+.text-area .content {
+    -fx-background-color: #99cc99;
 }
 
 Label.h2 {
-    -fx-padding: 5 0 0 0;
+    -fx-padding: 5 0 3 0;
     -fx-font-weight: bold;
     -fx-font-size: 110%;
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: dimgray;
-    -fx-border-insets: 0 0 0 0;
 }
+
+
