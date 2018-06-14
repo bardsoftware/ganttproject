@@ -15,16 +15,10 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.Pane
 import javafx.util.Duration
-import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.HyperlinkLabel
-import java.awt.Desktop
-import java.io.IOException
-import java.net.URI
-import java.net.URISyntaxException
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
-import javax.swing.SwingUtilities
 
 
 /**
@@ -69,22 +63,14 @@ class GPCloudSignupPane internal constructor(private val myUpdateUi: Consumer<Pa
 
     val btnSignIn = Button("Sign In")
     btnSignIn.styleClass.add("doclist-save")
+    btnSignIn.style = "-fx-pref-width: 20em"
+
     btnSignIn.addEventHandler(ActionEvent.ACTION) {
+      val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
+      expandMsg(uri)
 
-
-      val uri = URI("$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}")
-      expandMsg(uri.toASCIIString())
-
-      SwingUtilities.invokeLater {
-        try {
-          this.httpd.onTokenReceived = Consumer { it -> println("Received token $it") }
-          Desktop.getDesktop().browse(uri)
-        } catch (e: IOException) {
-          GPLogger.log(e)
-        } catch (e: URISyntaxException) {
-          GPLogger.log(e)
-        }
-      }
+      this.httpd.onTokenReceived = Consumer { it -> println("Received token $it") }
+      openInBrowser(uri)
     }
 
     rootPane.add(btnSignIn, Pos.CENTER, null).apply {
@@ -111,9 +97,10 @@ class GPCloudSignupPane internal constructor(private val myUpdateUi: Consumer<Pa
     signupBtn.addEventHandler(ActionEvent.ACTION) {
       openInBrowser(GPCLOUD_SIGNUP_URL)
     }
+    signupBtn.style = "-fx-pref-width: 20em"
+
     rootPane.add(signupBtn, Pos.CENTER, null).apply {
       this.styleClass.add("doclist-save-box")
-      this.style = "-fx-pref-width: 20em"
     }
 
     result.complete(rootPane.vbox)
