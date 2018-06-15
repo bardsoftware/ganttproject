@@ -1,22 +1,24 @@
+
+// import com.sun.org.apache.xalan.internal.xsltc.compiler.Copy
+
 buildscript {
-  ext.kotlin_version = '1.2.41'
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  }
+    ext.kotlin_version = '1.2.50'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
 dependencies {
-  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-  compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
-  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  mavenDeps group: 'com.google.guava', name: 'guava', version: '25.1-jre'
-  mavenDeps 'com.beust:klaxon:3.0.1'
+    compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
+    mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    mavenDeps group: 'com.google.guava', name: 'guava', version: '25.1-jre'
 }
 
 sourceSets {
@@ -33,12 +35,12 @@ task copyPlugin(type: Copy) {
     into(new File(rootProject.pluginsDir, project.name))
     from(jar.outputs.getFiles().getFiles().flatten())
     from(fileTree(".")) {
-      include "plugin.xml"
-      include "lib/**/*.jar"
-      include "resources/**"
+        include "plugin.xml"
+        include "lib/**/*.jar"
+        include "resources/**"
     }
     doLast {
-      println "Copying $project.name to $rootProject.pluginsDir"
+        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }
 repositories {

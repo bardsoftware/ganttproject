@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.core.option.*
 import biz.ganttproject.storage.StorageDialogBuilder
 import fi.iki.elonen.NanoHTTPD
 import javafx.event.ActionEvent
@@ -94,6 +95,16 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 }
 
+// Persistently stored options
+object GPCloudOptions {
+  val authToken: StringOption = DefaultStringOption("authToken")
+  val validity: IntegerOption = DefaultIntegerOption("validity")
+  val userId: StringOption = DefaultStringOption("userId")
+
+  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
+}
+
+// HTTP server for sign in into GP Cloud
 typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?) -> Unit
 
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
@@ -110,6 +121,7 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
     val token = getParam(session, "token")
     val userId = getParam(session, "userId")
     val validity = getParam(session, "validity")
+
     onTokenReceived?.invoke(token, validity, userId)
     return newFixedLengthResponse("")
   }

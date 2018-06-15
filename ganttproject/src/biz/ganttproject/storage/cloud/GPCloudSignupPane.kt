@@ -69,8 +69,13 @@ class GPCloudSignupPane internal constructor(private val myUpdateUi: Consumer<Pa
       val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
       expandMsg(uri)
 
-      this.httpd.onTokenReceived =  { token, validity, userId ->
-        println("Received token: $token validity: $validity userId: $userId")
+      this.httpd.onTokenReceived = { token, validity, userId ->
+        with(GPCloudOptions) {
+          this.authToken.value = token
+          this.validity.value = validity?.toIntOrNull()
+          this.userId.value = userId
+        }
+        println(GPCloudOptions)
       }
       openInBrowser(uri)
     }
@@ -90,7 +95,8 @@ class GPCloudSignupPane internal constructor(private val myUpdateUi: Consumer<Pa
         val link = it.source as Hyperlink?
         when (link?.text) {
           "Learn more" -> openInBrowser(GPCLOUD_LANDING_URL)
-          else -> {}
+          else -> {
+          }
         }
       }
     })
