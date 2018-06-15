@@ -94,16 +94,23 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 }
 
-class HttpServerImpl() : NanoHTTPD("localhost", 0) {
-  var onTokenReceived: Consumer<String>? = null
+typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?) -> Unit
+
+class HttpServerImpl : NanoHTTPD("localhost", 0) {
+  var onTokenReceived: AuthTokenCallback? = null
+
+  fun getParam(session: IHTTPSession, key: String): String? {
+    val values = session.parameters[key]
+    return if (values?.size == 1) values[0] else null
+  }
 
   override fun serve(session: IHTTPSession): Response {
     val args = mutableMapOf<String, String>()
     session.parseBody(args)
-    val tokenList = session.parameters["token"]
-    if (tokenList?.size == 1) {
-      onTokenReceived?.accept(tokenList[0])
-    }
+    val token = getParam(session, "token")
+    val userId = getParam(session, "userId")
+    val validity = getParam(session, "validity")
+    onTokenReceived?.invoke(token, validity, userId)
     return newFixedLengthResponse("")
   }
 }

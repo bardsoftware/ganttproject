@@ -1,4 +1,4 @@
-// Copyright (C) 2016 BarD Software
+// Copyright (C) 2018 BarD Software
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -69,7 +69,9 @@ class GPCloudSignupPane internal constructor(private val myUpdateUi: Consumer<Pa
       val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
       expandMsg(uri)
 
-      this.httpd.onTokenReceived = Consumer { it -> println("Received token $it") }
+      this.httpd.onTokenReceived =  { token, validity, userId ->
+        println("Received token: $token validity: $validity userId: $userId")
+      }
       openInBrowser(uri)
     }
 
