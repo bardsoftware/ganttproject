@@ -61,7 +61,7 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 
   private fun doCreateUi(): Pane {
-    val signupPane = GPCloudSignupPane(Consumer { })
+    val signupPane = GPCloudSignupPane(myDialogUi, Consumer { })
 //    val cloudServer = myOptions.cloudServer
 //    if (cloudServer.isPresent) {
 //    } else {

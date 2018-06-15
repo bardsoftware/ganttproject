@@ -23,6 +23,15 @@
     -fx-border-color: red;
 }
 
+.btn-attention {
+    -fx-background-color: #ffc241;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-cursor: hand;
+}
+
 .btn-done {
     -fx-font-weight: bold;
 }
@@ -82,17 +91,9 @@
     -fx-padding: 5 0;
 }
 
-.doclist-save {
-    -fx-background-color: #ffc241;
-    -fx-text-fill: black;
-    -fx-font-weight: bold;
-    -fx-font-size: 120%;
-    -fx-padding: 1ex 2em 1ex 2em;
-    -fx-cursor: hand;
-}
-
 .doclist-save-box {
     -fx-padding: 1ex 0em;
+    -fx-pref-width: 100%;
 }
 
 HBox.title {
@@ -139,7 +140,6 @@ HBox.title Label {
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
-
 }
 
 .notification.alert-error > *.content {
@@ -166,6 +166,7 @@ HBox.title Label {
     -fx-font-family: Arial;
     -fx-fill-width: true;
     -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
 }
 
 .pane-service-contents > * {

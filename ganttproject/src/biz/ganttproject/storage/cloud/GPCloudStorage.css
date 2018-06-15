@@ -1,3 +1,24 @@
+.btn-attention {
+    -fx-max-width: 20em;
+    -fx-min-width: 10em;
+    -fx-pref-width: 50%;
+}
+
+.fill-parent {
+    -fx-pref-height: 100%;
+    -fx-pref-width: 100%;
+    -fx-fill-width: true;
+    -fx-max-width: infinity;
+}
+
+.alert-info .notification-bar > .pane {
+    -fx-background-color: #99cc99;
+}
+
+.alert-info .notification-bar > .pane .label {
+    -fx-text-fill: black;
+}
+
 .text-area {
     -fx-border-width: 0;
     -fx-background-color: #99cc99;
@@ -6,6 +27,7 @@
     -fx-effect: none;
     -fx-pref-width: 100%;
 }
+
 .text-area .content {
     -fx-background-color: #99cc99;
 }
