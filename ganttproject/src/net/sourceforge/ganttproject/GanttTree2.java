@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager.Listener;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
@@ -100,6 +101,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
       @Override
       public void run() {
         project.setModified();
+
       }
     };
   }
@@ -112,7 +114,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   public GanttTree2(final GanttProject project, TaskManager taskManager, TaskSelectionManager selectionManager,
       final UIFacade uiFacade) {
-
     super(createTreeTable(project.getProject(), createDirtyfier(project), uiFacade));
     myUIFacade = uiFacade;
     myProject = project;
@@ -137,6 +138,11 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         }
       }
 
+      @Override
+      public void taskPropertiesChanged(TaskPropertyEvent e) {
+        // Otherwise task name cell may be cropped and will appear with ellipsis at the end.
+        getTreeTable().updateUI();
+      }
     });
     mySelectionManager.addSelectionListener(new TaskSelectionManager.Listener() {
       @Override
