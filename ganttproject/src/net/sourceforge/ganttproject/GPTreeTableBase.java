@@ -225,6 +225,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return result;
   }
 
+  @Override
+  public void editingStopped(ChangeEvent arg0) {
+    super.editingStopped(arg0);
+    // Otherwise task name cell may be cropped and will appear with ellipsis at the end.
+    // See issue #1551
+    updateHierarchicalRendererEditor();
+  }
 
   Action getManageColumnsAction() {
     return myManageColumnsAction;
