@@ -90,6 +90,7 @@ public class GanttCSVExport {
     myRoleManager = Preconditions.checkNotNull(roleManager);
     this.csvOptions = Preconditions.checkNotNull(csvOptions);
   }
+
   /**
    * Save the project as CSV on a stream
    *
@@ -97,6 +98,9 @@ public class GanttCSVExport {
    */
   public void save(OutputStream stream) throws IOException {
     OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
+    if (csvOptions.getBomOption().getValue()) {
+      writer.write('\ufeff');
+    }
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (csvOptions.sSeparatedChar.length() == 1) {
       format = format.withDelimiter(csvOptions.sSeparatedChar.charAt(0));
@@ -150,8 +154,11 @@ public class GanttCSVExport {
     return GanttLanguage.getInstance().getText(key);
   }
 
-  /** Write all tasks.
-   * @throws IOException */
+  /**
+   * Write all tasks.
+   *
+   * @throws IOException
+   */
   private void writeTasks(CSVPrinter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
@@ -171,53 +178,53 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-          case ID:
-            writer.print(String.valueOf(task.getTaskID()));
-            break;
-          case NAME:
-            writer.print(getName(task));
-            break;
-          case BEGIN_DATE:
-            writer.print(task.getStart().toString());
-            break;
-          case END_DATE:
-            writer.print(task.getDisplayEnd().toString());
-            break;
-          case DURATION:
-            writer.print(String.valueOf(task.getDuration().getLength()));
-            break;
-          case COMPLETION:
-            writer.print(String.valueOf(task.getCompletionPercentage()));
-            break;
-          case OUTLINE_NUMBER:
-            List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
-            writer.print(Joiner.on('.').join(outlinePath));
-            break;
-          case COORDINATOR:
-            ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
-            writer.print(coordinator == null ? "" : coordinator.getResource().getName());
-            break;
-          case PREDECESSORS:
-            writer.print(TaskProperties.formatPredecessors(task, ";", true));
-            break;
-          case RESOURCES:
-            writer.print(getAssignments(task));
-            writer.print(buildAssignmentSpec(task));
-            break;
-          case COST:
-            writer.print(task.getCost().getValue().toPlainString());
-            break;
-          case COLOR:
-            if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
-              writer.print(ColorConvertion.getColor(task.getColor()));
-            } else {
-              writer.print("");
-            }
-            break;
-          case INFO:
-          case PRIORITY:
-          case TYPE:
-            break;
+            case ID:
+              writer.print(String.valueOf(task.getTaskID()));
+              break;
+            case NAME:
+              writer.print(getName(task));
+              break;
+            case BEGIN_DATE:
+              writer.print(task.getStart().toString());
+              break;
+            case END_DATE:
+              writer.print(task.getDisplayEnd().toString());
+              break;
+            case DURATION:
+              writer.print(String.valueOf(task.getDuration().getLength()));
+              break;
+            case COMPLETION:
+              writer.print(String.valueOf(task.getCompletionPercentage()));
+              break;
+            case OUTLINE_NUMBER:
+              List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
+              writer.print(Joiner.on('.').join(outlinePath));
+              break;
+            case COORDINATOR:
+              ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
+              writer.print(coordinator == null ? "" : coordinator.getResource().getName());
+              break;
+            case PREDECESSORS:
+              writer.print(TaskProperties.formatPredecessors(task, ";", true));
+              break;
+            case RESOURCES:
+              writer.print(getAssignments(task));
+              writer.print(buildAssignmentSpec(task));
+              break;
+            case COST:
+              writer.print(task.getCost().getValue().toPlainString());
+              break;
+            case COLOR:
+              if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
+                writer.print(ColorConvertion.getColor(task.getColor()));
+              } else {
+                writer.print("");
+              }
+              break;
+            case INFO:
+            case PRIORITY:
+            case TYPE:
+              break;
           }
         }
       }
@@ -250,8 +257,11 @@ public class GanttCSVExport {
     return customFieldDefs;
   }
 
-  /** write the resources.
-   * @throws IOException */
+  /**
+   * write the resources.
+   *
+   * @throws IOException
+   */
   private void writeResources(CSVPrinter writer) throws IOException {
     Set<Role> projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());
     List<CustomPropertyDefinition> customPropDefs = writeResourceHeaders(writer);
@@ -269,33 +279,33 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-          case NAME:
-            writer.print(p.getName());
-            break;
-          case EMAIL:
-            writer.print(p.getMail());
-            break;
-          case PHONE:
-            writer.print(p.getPhone());
-            break;
-          case ROLE:
-            Role role = p.getRole();
-            final String sRoleID;
-            if (role == null) {
-              sRoleID = "0";
-            } else if (projectRoles.contains(role)) {
-              sRoleID = role.getName();
-            } else {
-              sRoleID = role.getPersistentID();
-            }
-            writer.print(sRoleID);
-            break;
-          case ROLE_IN_TASK:
-            writer.print("");
-            break;
-          case STANDARD_RATE:
-            writer.print(p.getStandardPayRate().toPlainString());
-            break;
+            case NAME:
+              writer.print(p.getName());
+              break;
+            case EMAIL:
+              writer.print(p.getMail());
+              break;
+            case PHONE:
+              writer.print(p.getPhone());
+              break;
+            case ROLE:
+              Role role = p.getRole();
+              final String sRoleID;
+              if (role == null) {
+                sRoleID = "0";
+              } else if (projectRoles.contains(role)) {
+                sRoleID = role.getName();
+              } else {
+                sRoleID = role.getPersistentID();
+              }
+              writer.print(sRoleID);
+              break;
+            case ROLE_IN_TASK:
+              writer.print("");
+              break;
+            case STANDARD_RATE:
+              writer.print(p.getStandardPayRate().toPlainString());
+              break;
           }
         }
       }
@@ -317,7 +327,10 @@ public class GanttCSVExport {
     writer.println();
 
   }
-  /** @return the name of task with the correct level. */
+
+  /**
+   * @return the name of task with the correct level.
+   */
   private String getName(Task task) {
     if (csvOptions.bFixedSize) {
       return task.getName();
@@ -326,12 +339,16 @@ public class GanttCSVExport {
     return StringUtils.padLeft(task.getName(), depth * 2);
   }
 
-  /** @return the link of the task. */
+  /**
+   * @return the link of the task.
+   */
   private String getWebLink(GanttTask task) {
     return (task.getWebLink() == null || task.getWebLink().equals("http://") ? "" : task.getWebLink());
   }
 
-  /** @return the list of the assignment for the resources. */
+  /**
+   * @return the list of the assignment for the resources.
+   */
   private String getAssignments(Task task) {
     String res = "";
     ResourceAssignment[] assignment = task.getAssignments();
