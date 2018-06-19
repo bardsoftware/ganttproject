@@ -1,34 +1,35 @@
 buildscript {
-  ext.kotlin_version = '1.2.+'
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  }
+    ext.kotlin_version = '1.2.+'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 plugins {
-  id "org.jetbrains.kotlin.jvm" version "1.2.41"
+    id "org.jetbrains.kotlin.jvm" version "1.2.50"
 }
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
 ext {
-  libDir = 'lib/core'
+    libDir = 'lib/core'
 }
 
 dependencies {
-  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-  compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
-  compile project(':..:biz.ganttproject.core')
-  compile files('data/resources')
-  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.+'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.+'
-  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
-  // https://mvnrepository.com/artifact/org.apache.poi/poi
-  mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.17'
+    compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
+    compile project(':..:biz.ganttproject.core')
+    compile files('data/resources')
+    mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
+    mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
+    mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'
+    mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
+    // https://mvnrepository.com/artifact/org.apache.poi/poi
+    mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.17'
+    mavenDeps group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.+'
 }
 
 compileKotlin {
@@ -48,7 +49,7 @@ sourceSets {
         }
     }
 
-    main.kotlin.srcDirs  += 'src'
+    main.kotlin.srcDirs += 'src'
 }
 
 assemble.dependsOn += updateMavenDeps
@@ -66,25 +67,27 @@ task copyPluginFiles(type: Copy) {
     into(new File(rootProject.pluginsDir, project.name))
     from(jar.outputs.getFiles().getFiles().flatten())
     from(fileTree(".")) {
-      include "plugin.xml"
-      include "lib/core/**.jar"
-      exclude "lib/core/eclipsito.jar"
-      include "lib/mvn/**.jar"
-      include "data/resources/**.ttf"
-      include "data/resources/**.properties"
-      include "data/resources/calendar/**"
-      include "data/resources/icons/**"
-      include "data/resources/language/**"
-      include "data/resources/xslfo/**"
-      include "data/resources/xslt/**"
+        include "plugin.xml"
+        include "lib/core/**.jar"
+        exclude "lib/core/eclipsito.jar"
+        include "lib/mvn/**.jar"
+        include "data/resources/**.ttf"
+        include "data/resources/**.properties"
+        include "data/resources/calendar/**"
+        include "data/resources/icons/**"
+        include "data/resources/language/**"
+        include "data/resources/xslfo/**"
+        include "data/resources/xslt/**"
     }
 }
 
 task copyEclipsito(type: Copy) {
     into(rootProject.distBinDir)
     from(fileTree("lib/core")) {
-      include "eclipsito.jar"
+        include "eclipsito.jar"
     }
 }
 
-task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }
+task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << {
+    println "Copying $project.name to $rootProject.pluginsDir"
+}

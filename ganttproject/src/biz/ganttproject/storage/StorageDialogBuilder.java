@@ -10,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -55,14 +56,19 @@ public class StorageDialogBuilder {
       }
     });
     dlg.show();
-    Platform.runLater(() -> {myJfxPanel.setScene(null); myJfxPanel.setScene(myScene);});
+    Platform.runLater(() -> {
+      myJfxPanel.setScene(null);
+      myJfxPanel.setScene(myScene);
+    });
   }
 
   private DialogUi myDialogUi = new DialogUi() {
 
     @Override
     public void error(Throwable e) {
-      myNotificationPane.setText(e.getMessage());
+      TextArea notificationText = new TextArea(e.getMessage());
+      notificationText.setWrapText(true);
+      myNotificationPane.setContent(notificationText);
       myNotificationPane.show();
     }
 
@@ -74,7 +80,11 @@ public class StorageDialogBuilder {
 
     @Override
     public void message(String message) {
-      myNotificationPane.setText(message);
+      TextArea notificationText = new TextArea(message);
+      notificationText.setWrapText(true);
+      notificationText.setPrefRowCount(3);
+      notificationText.getStyleClass().add("info");
+      myNotificationPane.setGraphic(notificationText);
       myNotificationPane.show();
     }
 
@@ -165,7 +175,8 @@ public class StorageDialogBuilder {
     if (myOpenStorage == null) {
       Pane storagePane = buildStoragePane(Mode.OPEN);
       myNotificationPane = new NotificationPane(storagePane);
-      myNotificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+      myNotificationPane.getStyleClass().addAll(
+          NotificationPane.STYLE_CLASS_DARK);
       myOpenStorage = myNotificationPane;
     }
     FXUtil.transitionCenterPane(container, myOpenStorage, myDialogUi::resize);
@@ -201,7 +212,11 @@ public class StorageDialogBuilder {
 
   public interface Ui {
     String getCategory();
-    default String getId() { return getCategory(); }
+
+    default String getId() {
+      return getCategory();
+    }
+
     Pane createUi();
 
     String getName();

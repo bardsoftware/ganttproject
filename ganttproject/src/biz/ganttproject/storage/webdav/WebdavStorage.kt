@@ -59,6 +59,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
 
     }
 }
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -89,7 +90,7 @@ class WebdavStorage(
 
   private fun createStorageUi(): Pane {
     val serverUi = WebdavServerUi(myServer,
-        when(myMode) {
+        when (myMode) {
           StorageDialogBuilder.Mode.OPEN -> StorageMode.Open()
           StorageDialogBuilder.Mode.SAVE -> StorageMode.Save()
         }, myOpenDocument, myDialogUi)
@@ -185,6 +186,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
         }
       }
     }
+
     fun selectItem(withEnter: Boolean, withControl: Boolean) {
       listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
     }
@@ -254,15 +256,15 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     myLoadService.setPath(path.toString())
     myState.folder = myLoadService.createRootResource()
     myLoadService.apply {
-      onSucceeded = EventHandler{ _ ->
+      onSucceeded = EventHandler { _ ->
         setResult.accept(value)
         showMaskPane.accept(false)
       }
-      onFailed = EventHandler{ _ ->
+      onFailed = EventHandler { _ ->
         showMaskPane.accept(false)
         dialogUi.error("WebdavService failed!")
       }
-      onCancelled = EventHandler{ _ ->
+      onCancelled = EventHandler { _ ->
         showMaskPane.accept(false)
         GPLogger.log("WebdavService cancelled!")
       }
@@ -279,9 +281,9 @@ fun createDocument(server: WebDavServerDescriptor, resource: WebDavResource): Do
 
 fun setupSaveButton(btnSave: Button,
                     receiver: Consumer<Document>,
-                    state: State, resourceFactory: (State) -> WebDavResource){
+                    state: State, resourceFactory: (State) -> WebDavResource) {
   btnSave.addEventHandler(ActionEvent.ACTION, {
     receiver.accept(createDocument(state.server, resourceFactory(state)))
   })
-  btnSave.styleClass.add("doclist-save")
+  btnSave.styleClass.add("btn-attention")
 }

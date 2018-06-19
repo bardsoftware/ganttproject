@@ -12,18 +12,30 @@
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
+
 .body > .button-bar {
     -fx-pref-height: 0;
 }
+
 .bordered {
     -fx-border-width: 1;
     -fx-border-style: dotted;
     -fx-border-color: red;
 }
 
+.btn-attention {
+    -fx-background-color: #ffc241;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-cursor: hand;
+}
+
 .btn-done {
     -fx-font-weight: bold;
 }
+
 .btn-radio {
     -fx-padding: 3px 0 3px 0;
 }
@@ -51,7 +63,7 @@
 }
 
 .btn-service.active {
-    -fx-background-color: #ffab00;
+    -fx-background-color: #ffc241;
 }
 
 .btn-signup {
@@ -62,11 +74,9 @@
     -fx-font-weight: bold;
 }
 
-
 .button-pane {
     -fx-padding: 5px 0px 0px 0px;
 }
-
 
 .center {
     -fx-alignment: center;
@@ -81,20 +91,21 @@
     -fx-padding: 5 0;
 }
 
-.doclist-save {
-    -fx-background-color: #ffab00;
-    -fx-text-fill: black;
-    -fx-font-weight: bold;
-    -fx-font-size: 120%;
-    -fx-padding: 1ex 2em 1ex 2em;
-}
 .doclist-save-box {
     -fx-padding: 1ex 0em;
+    -fx-pref-width: 100%;
+}
+
+HBox.title {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #ffc241;
+    -fx-border-insets: 0 0 0 0;
 }
 
 HBox.title Button {
     -fx-font-weight: bold;
 }
+
 HBox.title Label {
     -fx-font-size: 130%;
     -fx-font-weight: bold;
@@ -107,17 +118,21 @@ HBox.title Label {
     -fx-max-width: 400px;
     -fx-wrap-text: true;
 }
+
 .hide {
     visibility: hidden;
 }
+
 .hint.error {
     -fx-text-fill: derive(darkred, +10%);
     visibility: visible;
 }
+
 .hint.warning {
     -fx-text-fill: derive(darkgray, +20%);
     visibility: visible;
 }
+
 .hint.noerror {
     visibility: hidden;
 }
@@ -125,7 +140,6 @@ HBox.title Label {
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
-
 }
 
 .notification.alert-error > *.content {
@@ -151,6 +165,8 @@ HBox.title Label {
     -fx-padding: 10 10 0 10;
     -fx-font-family: Arial;
     -fx-fill-width: true;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
 }
 
 .pane-service-contents > * {
@@ -201,19 +217,23 @@ HBox.title Label {
     -fx-font-size: 90%;
     -fx-padding: 3 0 0 0;
 }
+
 .pane-service-contents.local-storage HBox.browse Button {
     -fx-background-radius: 20;
-    -fx-background-insets: 0,1,1;
+    -fx-background-insets: 0, 1, 1;
     -fx-text-fill: black;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 3, 0.0, 0, 1);
 }
+
 .webdav-server-password {
     -fx-alignment: center;
     -fx-border-color: red;
 }
+
 .webdav-server-password HBox {
     -fx-padding: 5px 10px 0px 10px;
 }
+
 .pane-service-contents.webdav-server-setup > PropertySheet {
     -fx-background-color: white;
 }
@@ -229,9 +249,11 @@ HBox.title Label {
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
+
 .pane-storage > * {
     -fx-font-family: Arial;
 }
+
 .pane-storage .title-box {
     -fx-pref-width: 100%;
     -fx-fill-width: true;
@@ -247,6 +269,7 @@ HBox.title Label {
     -fx-font-size: 130%;
     -fx-padding: 0;
 }
+
 .pane-storage .title-box .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 90%;
@@ -262,9 +285,9 @@ HBox.title Label {
 }
 
 .subtitle {
-    -fx-font-size: 110%;
-    -fx-padding: 10 0 3 0;
+    -fx-padding: 0 0 3 0;
     -fx-font-weight: bold;
+    -fx-text-fill: dimgray;
 }
 
 .webdav-button-pane {
@@ -272,12 +295,15 @@ HBox.title Label {
     -fx-alignment: center-right;
     -fx-spacing: 5;
 }
+
 .webdav-list-cell {
     -fx-alignment: center-left;
 }
+
 .webdav-list-cell .icon {
     -fx-text-fill: dimgrey;
 }
+
 .webdav-list-cell-button-pane {
     -fx-alignment: center-right;
 }

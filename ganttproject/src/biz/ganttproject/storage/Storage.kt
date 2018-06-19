@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.storage.cloud.GPCloudStorage
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
@@ -167,7 +168,7 @@ class StoragePane internal constructor(
         myCurrentDocument,
         openDocument)
     myStorageUiList.add(recentProjects)
-    //myStorageUiList.add(GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi))
+    myStorageUiList.add(GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi))
     myCloudStorageOptions.webdavServers.mapTo(myStorageUiList) {
       WebdavStorage(it, mode, openDocument, myDialogUi, myCloudStorageOptions)
     }

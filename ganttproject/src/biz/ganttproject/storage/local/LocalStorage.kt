@@ -57,7 +57,11 @@ import java.util.stream.Stream
 class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem> {
   override fun compareTo(other: FileAsFolderItem): Int {
     val result = this.isDirectory.compareTo(other.isDirectory)
-    return  if (result != 0) { -1 * result } else { this.name.compareTo(other.name) }
+    return if (result != 0) {
+      -1 * result
+    } else {
+      this.name.compareTo(other.name)
+    }
   }
 
   override val isLocked: Boolean
@@ -109,7 +113,7 @@ class LocalStorage(
     val listView = FolderView(
         myDialogUi,
         Consumer { _: FileAsFolderItem -> this.deleteResource() },
-        Consumer { _: FileAsFolderItem ->  },
+        Consumer { _: FileAsFolderItem -> },
         SimpleBooleanProperty(),
         SimpleBooleanProperty(false))
     val onSelectCrumb = Consumer { path: Path ->
@@ -122,8 +126,8 @@ class LocalStorage(
 
     val breadcrumbView = BreadcrumbView(
         if (filePath.toFile().isDirectory) filePath else filePath.parent, onSelectCrumb)
-    state.currentDir.addListener({
-      _, _, newValue -> breadcrumbView.path = newValue.toPath().toAbsolutePath()
+    state.currentDir.addListener({ _, _, newValue ->
+      breadcrumbView.path = newValue.toPath().toAbsolutePath()
     })
 
     val listViewHint = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
@@ -153,11 +157,13 @@ class LocalStorage(
         }
       }
     }
+
     fun selectItem(withEnter: Boolean, withControl: Boolean) {
-      listView.selectedResource.ifPresent {
-        item -> selectItem(item, withEnter, withControl)
+      listView.selectedResource.ifPresent { item ->
+        selectItem(item, withEnter, withControl)
       }
     }
+
     fun onFilenameEnter() {
       var path = Paths.get(filenameControl.text)
       if (!path.isAbsolute) {
@@ -195,14 +201,14 @@ class LocalStorage(
       }
     }
 
-    val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", {onBrowse()}, "doclist-browse")
+    val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "doclist-browse")
     filenameControl.right = btnBrowse
 
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
     errorLabel.styleClass.add("errorLabel")
     val validationHelper = ValidationHelper(
         filenameControl,
-        Supplier { -> listView.listView.items.isEmpty()},
+        Supplier { -> listView.listView.items.isEmpty() },
         state)
     state.validationSupport = validationHelper.validationSupport
     setupErrorLabel(errorLabel, validationHelper)
@@ -238,8 +244,8 @@ class LocalStorage(
           confirmation.visibleProperty().set(false)
         }
       }
-      state.confirmationRequired.addListener({ _, _, _ ->  updateConfirmation()})
-      state.currentFile.addListener({_, _, _ -> updateConfirmation()})
+      state.confirmationRequired.addListener({ _, _, _ -> updateConfirmation() })
+      state.currentFile.addListener({ _, _, _ -> updateConfirmation() })
 
       confirmation.selectedProperty().addListener({ _, _, newValue -> state.confirmationReceived.set(newValue) })
       rootPane.add(confirmation)
@@ -251,6 +257,7 @@ class LocalStorage(
   fun deleteResource() {
 
   }
+
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty<Pane>()
   }
@@ -306,7 +313,7 @@ class State(val currentDocument: Document,
         value.invalidProperty().addListener({ _, _, _ ->
           validate()
         })
-        confirmationReceived.addListener({_, _, _ -> validate()})
+        confirmationReceived.addListener({ _, _, _ -> validate() })
       }
     }
 
@@ -342,14 +349,14 @@ class State(val currentDocument: Document,
         && file.exists()
         && currentDocument.uri != FileDocument(file).uri
         && (file != currentFile.get() || !confirmationReceived.get())) {
-        confirmationReceived.set(false)
-        confirmationRequired.set(true)
+      confirmationReceived.set(false)
+      confirmationRequired.set(true)
     } else {
       confirmationRequired.set(false)
     }
-    println("setCurrentFile 1="+file)
+    println("setCurrentFile 1=" + file)
     this.currentFile.set(file)
-    println("setCurrentFile 2="+this.currentFile.get())
+    println("setCurrentFile 2=" + this.currentFile.get())
     validationResult = null
     validate()
   }
@@ -360,9 +367,9 @@ fun setupSaveButton(
     btnSave: Button,
     state: State,
     receiver: Consumer<Document>) {
-  btnSave.addEventHandler(ActionEvent.ACTION, {receiver.accept(FileDocument(state.currentFile.get()))})
-  btnSave.styleClass.add("doclist-save")
-  state.submitOk.addListener({_,_,newValue -> btnSave.disableProperty().set(!newValue)})
+  btnSave.addEventHandler(ActionEvent.ACTION, { receiver.accept(FileDocument(state.currentFile.get())) })
+  btnSave.styleClass.add("btn-attention")
+  state.submitOk.addListener({ _, _, newValue -> btnSave.disableProperty().set(!newValue) })
 }
 
 private fun formatError(validation: ValidationResult): String {
@@ -373,7 +380,7 @@ private fun formatError(validation: ValidationResult): String {
 
 fun setupErrorLabel(errorLabel: Label, validationHelper: ValidationHelper) {
   errorLabel.styleClass.addAll("hint", "noerror")
-  validationHelper.validationSupport.validationResultProperty().addListener({_, _, validationResult ->
+  validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
     if (validationResult.errors.size + validationResult.warnings.size > 0) {
       errorLabel.text = formatError(validationResult)
       errorLabel.styleClass.remove("noerror")
