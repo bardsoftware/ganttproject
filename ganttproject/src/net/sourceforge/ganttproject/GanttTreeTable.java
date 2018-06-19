@@ -120,7 +120,7 @@ public class GanttTreeTable extends GPTreeTableBase {
           return;
         }
 
-        if (mouseEvent.isPopupTrigger()) {
+        if (mouseEvent.isPopupTrigger() || mouseEvent.getButton() != MouseEvent.BUTTON1) {
           return;
         }
         if (mouseEvent.isAltDown() || mouseEvent.isShiftDown() || mouseEvent.isControlDown()) {
