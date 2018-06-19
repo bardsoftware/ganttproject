@@ -1,9 +1,25 @@
-// Copyright (C) 2018 BarD Software
+/*
+Copyright 2018 BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
-import biz.ganttproject.storage.StorageDialogBuilder
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -17,15 +33,12 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.HyperlinkLabel
 import org.controlsfx.control.NotificationPane
 import java.util.concurrent.CompletableFuture
-import java.util.function.Consumer
 
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudSignupPane internal constructor(
-    private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val myUpdateUi: Consumer<Pane>) : GPCloudStorage.PageUi {
+class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallback) : GPCloudStorage.PageUi {
   private val i18n = GanttLanguage.getInstance()
 
   private val httpd: HttpServerImpl by lazy {
@@ -57,20 +70,6 @@ class GPCloudSignupPane internal constructor(
       signinMsg.text = msgText
       notification.graphic = signinMsg
       notification.show()
-
-
-      //this.dialogUi.message(msgText)
-//      signinPane.lookup(".title").isVisible = false;
-//      signinPane.isVisible = true
-//      signinPane.isExpanded = true
-//      val text = signinMsg.lookup(".text")
-//      val finalHeight = signinMsg.font.size + text.boundsInLocal.height
-
-//      val tl = Timeline()
-//      val k1 = KeyValue(signinMsg.prefHeightProperty(), finalHeight)
-//      val kf1 = KeyFrame(Duration.millis(1000.0), k1)
-//      tl.keyFrames.add(kf1)
-//      tl.play()
     }
 
     val btnSignIn = Button("Sign In")
@@ -80,22 +79,13 @@ class GPCloudSignupPane internal constructor(
       val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
       expandMsg(uri)
 
-      this.httpd.onTokenReceived = { token, validity, userId ->
-        with(GPCloudOptions) {
-          this.authToken.value = token
-          this.validity.value = validity?.toIntOrNull()
-          this.userId.value = userId
-        }
-        println(GPCloudOptions)
-      }
+      this.httpd.onTokenReceived = this.onTokenCallback
       openInBrowser(uri)
     }
 
     rootPane.add(btnSignIn, Pos.CENTER, null).apply {
       this.styleClass.add("doclist-save-box")
     }
-
-    //rootPane.add(signinPane)
 
     rootPane.add(Label("Not registered yet? Sign up now!").apply {
       this.styleClass.add("h2")
@@ -106,8 +96,7 @@ class GPCloudSignupPane internal constructor(
         val link = it.source as Hyperlink?
         when (link?.text) {
           "Learn more" -> openInBrowser(GPCLOUD_LANDING_URL)
-          else -> {
-          }
+          else -> Unit
         }
       }
     })

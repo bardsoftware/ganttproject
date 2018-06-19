@@ -1,4 +1,21 @@
-// Copyright (C) 2016 BarD Software
+/*
+Copyright 2018 BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
@@ -23,7 +40,11 @@ val GPCLOUD_SIGNUP_URL = "https://cloud.ganttproject.biz/__/auth/handler"
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val myOptions: GPCloudStorageOptions, private val myOpenDocument: Consumer<Document>, private val myDialogUi: StorageDialogBuilder.DialogUi) : StorageDialogBuilder.Ui {
+class GPCloudStorage(
+    private val mode: StorageDialogBuilder.Mode,
+    private val myOptions: GPCloudStorageOptions,
+    private val myOpenDocument: Consumer<Document>,
+    private val dialogUi: StorageDialogBuilder.DialogUi) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane
 //  private val myButtonPane: HBox
 //  private val myNextButton: Button
@@ -61,12 +82,17 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 
   private fun doCreateUi(): Pane {
-    val signupPane = GPCloudSignupPane(myDialogUi, Consumer { })
-//    val cloudServer = myOptions.cloudServer
-//    if (cloudServer.isPresent) {
-//    } else {
-//      signupPane.createPane().thenApply { pane -> nextPage(pane) }
-//    }
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi)
+    val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
+      with(GPCloudOptions) {
+        this.authToken.value = token
+        this.validity.value = validity?.toIntOrNull()
+        this.userId.value = userId
+      }
+      nextPage(browserPane.createStorageUi())
+    }
+
+    val signupPane = GPCloudSignupPane(onTokenCallback)
     signupPane.createPane().thenApply { pane ->
       nextPage(pane)
     }
@@ -74,7 +100,7 @@ class GPCloudStorage(private val myMode: StorageDialogBuilder.Mode, private val 
   }
 
   private fun nextPage(newPage: Pane): Pane {
-    FXUtil.transitionCenterPane(myPane, newPage) { myDialogUi.resize() }
+    FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
     return newPage
   }
 
