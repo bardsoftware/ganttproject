@@ -19,9 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.FolderView
 import biz.ganttproject.storage.StorageDialogBuilder
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.collections.FXCollections
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import org.apache.http.client.methods.HttpGet
@@ -37,9 +42,11 @@ import java.util.function.Consumer
 class GPCloudBrowserPane(
     val mode: StorageDialogBuilder.Mode,
     val dialogUi: StorageDialogBuilder.DialogUi) {
+  private lateinit var listView: FolderView<FolderItem>
+
   fun createStorageUi(): Pane {
     val rootPane = VBoxBuilder("pane-service-contents")
-    val listView = FolderView(
+    this.listView = FolderView(
         this.dialogUi,
         Consumer { },
         Consumer { },
@@ -60,7 +67,29 @@ class GPCloudBrowserPane(
     val http = HttpClientBuilder.buildHttpClient()
     val teamList = HttpGet("/team/list")
     val resp = http.client.execute(http.host, teamList, http.context)
-    println("Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
-    println(EntityUtils.toString(resp.entity))
+    if (resp.statusLine.statusCode == 200) {
+      val objectMapper = ObjectMapper()
+      val jsonNode = objectMapper.readTree(resp.entity.content)
+      if (jsonNode is ArrayNode) {
+        this.listView.setResources(FXCollections.observableArrayList<FolderItem>(
+            jsonNode.map(::TeamJsonAsFolderItem)))
+
+      }
+    } else {
+      println("Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
+      println(EntityUtils.toString(resp.entity))
+    }
   }
+}
+
+class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
+  override val isLocked: Boolean
+    get() = false
+  override val isLockable: Boolean
+    get() = false
+  override val name: String
+    get() = this.node["name"].asText()
+  override val isDirectory: Boolean
+    get() = false
+
 }

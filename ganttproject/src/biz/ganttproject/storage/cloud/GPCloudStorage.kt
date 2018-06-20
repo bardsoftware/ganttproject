@@ -22,6 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.*
 import biz.ganttproject.storage.StorageDialogBuilder
 import fi.iki.elonen.NanoHTTPD
+import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.control.Label
@@ -48,10 +49,10 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-val GPCLOUD_HOST = "cloud.ganttproject.biz"
-val GPCLOUD_LANDING_URL = "https://cloud.ganttproject.biz"
-val GPCLOUD_SIGNIN_URL = "https://cloud.ganttproject.biz/__/auth/desktop"
-val GPCLOUD_SIGNUP_URL = "https://cloud.ganttproject.biz/__/auth/handler"
+val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
+val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
+val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -105,8 +106,10 @@ class GPCloudStorage(
         this.validity.value = validity?.toIntOrNull()
         this.userId.value = userId
       }
-      nextPage(browserPane.createStorageUi())
-      browserPane.loadTeams()
+      Platform.runLater {
+        nextPage(browserPane.createStorageUi())
+        browserPane.loadTeams()
+      }
     }
 
     val signupPane = GPCloudSignupPane(onTokenCallback)
