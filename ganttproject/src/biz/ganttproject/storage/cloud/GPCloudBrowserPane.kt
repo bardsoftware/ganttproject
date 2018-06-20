@@ -26,18 +26,39 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
+import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.concurrent.Service
+import javafx.concurrent.Task
+import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.util.EntityUtils
 import org.controlsfx.control.StatusBar
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.Consumer
+
+/**
+ * Wraps JSON node matching a team to FolderItem
+ */
+class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
+  override val isLocked: Boolean
+    get() = false
+  override val isLockable: Boolean
+    get() = false
+  override val name: String
+    get() = this.node["name"].asText()
+  override val isDirectory: Boolean
+    get() = false
+}
 
 /**
  * This pane shows the contents of GanttProject Cloud storage
@@ -50,8 +71,14 @@ class GPCloudBrowserPane(
     val dialogUi: StorageDialogBuilder.DialogUi) {
   private val i18n = GanttLanguage.getInstance()
   private lateinit var listView: FolderView<FolderItem>
+  private val loaderService = LoaderService()
 
   fun createStorageUi(): Pane {
+    val busyIndicator = StatusBar().apply {
+      styleClass.add("notification")
+      text = ""
+    }
+
     val rootPane = VBoxBuilder("pane-service-contents")
     this.listView = FolderView(
         this.dialogUi,
@@ -60,12 +87,15 @@ class GPCloudBrowserPane(
         SimpleBooleanProperty(true),
         SimpleBooleanProperty(true))
 
-    val breadcrumbView = BreadcrumbView(Paths.get("/", "GanttProject Cloud"), Consumer {})
-
-    val busyIndicator = StatusBar().apply {
-      styleClass.add("notification")
-      text = ""
+    val onSelectCrumb = Consumer { selectedPath: Path ->
+      loadTeams(
+          Consumer { items -> this.listView.setResources(items) },
+          Consumer { busyIndicator.progress = if (it) -1.0 else 0.0 }
+      )
     }
+
+    val breadcrumbView = BreadcrumbView(Paths.get("/", "GanttProject Cloud"), onSelectCrumb)
+
     HBox.setHgrow(busyIndicator, Priority.ALWAYS)
     val btnSave = Button(i18n.getText("storageService.local.${this.mode.name.toLowerCase()}.actionLabel"))
     btnSave.styleClass.add("btn-attention")
@@ -83,10 +113,32 @@ class GPCloudBrowserPane(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
+
+    Platform.runLater { breadcrumbView.path = Paths.get("/") }
     return rootPane.vbox
   }
 
-  fun loadTeams() {
+  fun loadTeams(setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
+    loaderService.apply {
+      onSucceeded = EventHandler { _ ->
+        setResult.accept(value)
+        showMaskPane.accept(false)
+      }
+      onFailed = EventHandler { _ ->
+        showMaskPane.accept(false)
+        dialogUi.error("Loading failed!")
+      }
+      onCancelled = EventHandler { _ ->
+        showMaskPane.accept(false)
+        GPLogger.log("Loading cancelled!")
+      }
+      restart()
+    }
+  }
+}
+
+class LoaderTask : Task<ObservableList<FolderItem>>() {
+  override fun call(): ObservableList<FolderItem>? {
     val http = HttpClientBuilder.buildHttpClient()
     val teamList = HttpGet("/team/list")
     val resp = http.client.execute(http.host, teamList, http.context)
@@ -94,25 +146,20 @@ class GPCloudBrowserPane(
       val objectMapper = ObjectMapper()
       val jsonNode = objectMapper.readTree(resp.entity.content)
       if (jsonNode is ArrayNode) {
-        this.listView.setResources(FXCollections.observableArrayList<FolderItem>(
-            jsonNode.map(::TeamJsonAsFolderItem)))
-
+        return FXCollections.observableArrayList<FolderItem>(
+            jsonNode.map(::TeamJsonAsFolderItem))
       }
     } else {
       println("Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
       println(EntityUtils.toString(resp.entity))
     }
+    return null
   }
 }
 
-class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
-  override val isLocked: Boolean
-    get() = false
-  override val isLockable: Boolean
-    get() = false
-  override val name: String
-    get() = this.node["name"].asText()
-  override val isDirectory: Boolean
-    get() = false
+class LoaderService : Service<ObservableList<FolderItem>>() {
 
+  override fun createTask(): Task<ObservableList<FolderItem>> {
+    return LoaderTask()
+  }
 }

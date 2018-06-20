@@ -108,7 +108,6 @@ class GPCloudStorage(
       }
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
-        browserPane.loadTeams()
       }
     }
 
