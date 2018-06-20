@@ -24,15 +24,7 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import org.apache.http.HttpHost
-import org.apache.http.auth.AuthScope
-import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.protocol.ClientContext
-import org.apache.http.impl.auth.BasicScheme
-import org.apache.http.impl.client.BasicAuthCache
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.util.EntityUtils
 import java.util.function.Consumer
 
@@ -65,18 +57,10 @@ class GPCloudBrowserPane(
   }
 
   fun loadTeams() {
-    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
-    val httpClient = DefaultHttpClient()
-    httpClient.credentialsProvider.setCredentials(
-        AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
-    val authCache = BasicAuthCache()
-    authCache.put(httpHost, BasicScheme())
-    val context = BasicHttpContext()
-    context.setAttribute(ClientContext.AUTH_CACHE, authCache)
-
+    val http = HttpClientBuilder.buildHttpClient()
     val teamList = HttpGet("/team/list")
-    val resp = httpClient.execute(httpHost, teamList, context)
+    val resp = http.client.execute(http.host, teamList, http.context)
     println("Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
-    EntityUtils.consume(resp.entity)
+    println(EntityUtils.toString(resp.entity))
   }
 }
