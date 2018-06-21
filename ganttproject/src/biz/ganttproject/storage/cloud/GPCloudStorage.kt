@@ -117,7 +117,9 @@ class GPCloudStorage(
     signupPane.tryAccessToken(
         Consumer { remainedValidity ->
           println("Auth token is valid!")
-          nextPage(browserPane.createStorageUi())
+          Platform.runLater {
+            nextPage(browserPane.createStorageUi())
+          }
         },
         Consumer {
           println("Auth token is NOT valid!")
