@@ -19,9 +19,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.lib.fx.VBoxBuilder
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.scene.control.Button
+import javafx.scene.control.Label
+import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
@@ -39,6 +47,13 @@ import java.util.function.Consumer
  * This function is supposed to run asynchronously in a background task.
  */
 typealias Loader = (path: Path, success: Consumer<ObservableList<FolderItem>>, loading: Consumer<Boolean>) -> Unit
+
+/**
+ * This function is called when some action happens on some element, e.g. "select",
+ * "delete", "open" or "launch".
+ */
+typealias OnItemAction = Consumer<FolderItem>
+
 
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
@@ -62,16 +77,30 @@ class BrowserPaneBuilder(
     text = ""
     HBox.setHgrow(this, Priority.ALWAYS)
   }
+  private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)).apply {
+    styleClass.addAll("hint", "noerror")
+  }
+  private val filename = TextField()
+
   private lateinit var breadcrumbView: BreadcrumbView
   private lateinit var saveBox: HBox
+  private lateinit var onOpenItem: OnItemAction
+  private lateinit var onLaunch: OnItemAction
 
-  fun withListView() {
+  fun withListView(
+      onOpenItem: OnItemAction = Consumer {},
+      onLaunch: OnItemAction = Consumer {},
+      onDelete: OnItemAction = Consumer {},
+      onLock: OnItemAction = Consumer {},
+      canLock: BooleanProperty = SimpleBooleanProperty(false),
+      canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)) {
     this.listView = FolderView(
         this.dialogUi,
-        Consumer { },
-        Consumer { },
-        SimpleBooleanProperty(true),
-        SimpleBooleanProperty(true))
+        onDelete,
+        onLock,
+        canLock, canDelete)
+    this.onOpenItem = onOpenItem
+    this.onLaunch = onLaunch
   }
 
   fun withBreadcrumbs() {
@@ -85,8 +114,9 @@ class BrowserPaneBuilder(
     this.breadcrumbView = BreadcrumbView(Paths.get("/", "GanttProject Cloud"), onSelectCrumb)
   }
 
-  fun withActionButton() {
+  fun withActionButton(onAction: EventHandler<ActionEvent>) {
     val btnSave = Button(i18n.getText("storageService.local.${this.mode.name.toLowerCase()}.actionLabel"))
+    btnSave.addEventHandler(ActionEvent.ACTION, onAction)
     btnSave.styleClass.add("btn-attention")
     this.saveBox = HBox().apply {
       children.addAll(busyIndicator, btnSave)
@@ -94,13 +124,48 @@ class BrowserPaneBuilder(
     }
   }
 
+  private fun installEventHandlers() {
+    fun selectItem(item: FolderItem, withEnter: Boolean, withControl: Boolean) {
+      if (!withEnter) {
+        return
+      }
+      if (item.isDirectory) {
+        breadcrumbView.append(item.name)
+        this.onOpenItem.accept(item)
+        filename.text = ""
+      } else if (!item.isDirectory) {
+        this.onOpenItem.accept(item)
+        filename.text = item.name
+        if (withControl) {
+          this.onLaunch.accept(item)
+        }
+      }
+    }
+
+    fun selectItem(withEnter: Boolean, withControl: Boolean) {
+      listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
+    }
+
+    fun onFilenameEnter() {
+      val filtered = listView.doFilter(filename.text)
+      if (filtered.size == 1) {
+        selectItem(filtered[0], true, true)
+      }
+    }
+
+    connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
+  }
+
   fun build(): BrowserPaneElements {
+    installEventHandlers()
     rootPane.apply {
       vbox.prefWidth = 400.0
       addTitle(String.format("webdav.ui.title.%s",
           this@BrowserPaneBuilder.mode.name.toLowerCase()),
           "GanttProject Cloud")
       add(breadcrumbView.breadcrumbs)
+      add(errorLabel)
+      add(filename)
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }

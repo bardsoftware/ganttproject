@@ -76,7 +76,7 @@ class GPCloudBrowserPane(
     }
     val browserPaneElements = builder.apply {
       withBreadcrumbs()
-      withActionButton()
+      withActionButton(EventHandler {})
       withListView()
     }.build()
 
@@ -126,7 +126,7 @@ class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Servi
   }
 }
 
-// Task implementation which does the real work: sends HTTP request
+// Implementation of a task which does the real work: sends HTTP request
 // and interprets the results.
 class LoaderTask : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
