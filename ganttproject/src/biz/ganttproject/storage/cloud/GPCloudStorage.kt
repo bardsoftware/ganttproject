@@ -22,20 +22,38 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.*
 import biz.ganttproject.storage.StorageDialogBuilder
 import fi.iki.elonen.NanoHTTPD
+import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.control.Label
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.document.Document
+import org.apache.http.HttpHost
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.HttpClient
+import org.apache.http.client.protocol.ClientContext
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.scheme.SchemeRegistry
+import org.apache.http.conn.ssl.SSLSocketFactory
+import org.apache.http.conn.ssl.TrustStrategy
+import org.apache.http.impl.auth.BasicScheme
+import org.apache.http.impl.client.BasicAuthCache
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.conn.PoolingClientConnectionManager
+import org.apache.http.protocol.BasicHttpContext
+import org.apache.http.protocol.HttpContext
 import org.controlsfx.control.HyperlinkLabel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-val GPCLOUD_LANDING_URL = "https://cloud.ganttproject.biz"
-val GPCLOUD_SIGNIN_URL = "https://cloud.ganttproject.biz/__/auth/desktop"
-val GPCLOUD_SIGNUP_URL = "https://cloud.ganttproject.biz/__/auth/handler"
+val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
+val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
+val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
+val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -89,7 +107,9 @@ class GPCloudStorage(
         this.validity.value = validity?.toIntOrNull()
         this.userId.value = userId
       }
-      nextPage(browserPane.createStorageUi())
+      Platform.runLater {
+        nextPage(browserPane.createStorageUi())
+      }
     }
 
     val signupPane = GPCloudSignupPane(onTokenCallback)
@@ -149,6 +169,36 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
     val validity = getParam(session, "validity")
 
     onTokenReceived?.invoke(token, validity, userId)
-    return newFixedLengthResponse("")
+    val resp = newFixedLengthResponse("")
+    resp.addHeader("Access-Control-Allow-Origin", "$GPCLOUD_ORIGIN")
+    return resp
+  }
+}
+
+data class GPCloudHttpClient(
+    val client: HttpClient, val host: HttpHost, val context: HttpContext)
+
+object HttpClientBuilder {
+  fun buildHttpClient(): GPCloudHttpClient {
+    val httpClient = if (System.getProperty("gp.ssl.trust-all")?.toBoolean() == true) {
+      val trustAll = TrustStrategy { _, _ -> true }
+      val sslSocketFactory = SSLSocketFactory(
+          trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+      val schemeRegistry = SchemeRegistry()
+      schemeRegistry.register(Scheme("https", 443, sslSocketFactory))
+      val connectionManager = PoolingClientConnectionManager(schemeRegistry)
+      DefaultHttpClient(connectionManager)
+    } else {
+      DefaultHttpClient()
+    }
+    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
+    httpClient.credentialsProvider.setCredentials(
+        AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
+    val authCache = BasicAuthCache()
+    authCache.put(httpHost, BasicScheme())
+    val context = BasicHttpContext()
+    context.setAttribute(ClientContext.AUTH_CACHE, authCache)
+
+    return GPCloudHttpClient(httpClient, httpHost, context)
   }
 }

@@ -10,10 +10,7 @@ package biz.ganttproject.storage
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.Observable
-import javafx.beans.property.BooleanProperty
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -48,15 +45,16 @@ interface FolderItem {
 /**
  * Encapsulates a list view showing the contents of a single folder.
  */
-class FolderView<T: FolderItem>(
+class FolderView<T : FolderItem>(
     val myDialogUi: StorageDialogBuilder.DialogUi,
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
-    isDeleteSupported: BooleanProperty) {
+    isDeleteSupported: ReadOnlyBooleanProperty) {
 
   var myContents: ObservableList<T> = FXCollections.emptyObservableList()
   val listView: ListView<ListViewItem<T>> = ListView()
+
   init {
     listView.setCellFactory { _ ->
       createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported)
@@ -82,7 +80,7 @@ class FolderView<T: FolderItem>(
   private fun reloadItems(folderContents: ObservableList<T>) {
     val items = FXCollections.observableArrayList(createExtractor<T>())
     folderContents.stream()
-        .map({resource -> ListViewItem(resource) })
+        .map({ resource -> ListViewItem(resource) })
         .forEach({ items.add(it) })
     listView.items = items
   }
@@ -119,7 +117,7 @@ class FolderView<T: FolderItem>(
   }
 }
 
-class ListViewItem<T:FolderItem>(resource: T) {
+class ListViewItem<T : FolderItem>(resource: T) {
   val isSelected: BooleanProperty = SimpleBooleanProperty()
   val resource: ObjectProperty<T>
 
@@ -128,7 +126,7 @@ class ListViewItem<T:FolderItem>(resource: T) {
   }
 }
 
-fun <T: FolderItem> createExtractor() : Callback<ListViewItem<T>, Array<Observable>> {
+fun <T : FolderItem> createExtractor(): Callback<ListViewItem<T>, Array<Observable>> {
   return Callback { item ->
     item?.let {
       arrayOf(
@@ -137,12 +135,12 @@ fun <T: FolderItem> createExtractor() : Callback<ListViewItem<T>, Array<Observab
   }
 }
 
-fun <T: FolderItem> createListCell(
+fun <T : FolderItem> createListCell(
     dialogUi: StorageDialogBuilder.DialogUi,
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
-    isDeleteSupported: BooleanProperty) : ListCell<ListViewItem<T>> {
+    isDeleteSupported: ReadOnlyBooleanProperty): ListCell<ListViewItem<T>> {
   return object : ListCell<ListViewItem<T>>() {
     override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
       try {
@@ -272,11 +270,11 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
 
 }
 
-fun <T: FolderItem> connect(
+fun <T : FolderItem> connect(
     filename: TextField, listView: FolderView<T>, breadcrumbView: BreadcrumbView,
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
     onFilenameEnter: () -> Unit) {
-  listView.listView.onMouseClicked = EventHandler{ evt ->
+  listView.listView.onMouseClicked = EventHandler { evt ->
     val dblClick = evt.clickCount == 2
     selectItem(dblClick, dblClick)
   }
@@ -297,7 +295,8 @@ fun <T: FolderItem> connect(
       KeyCode.BACK_SPACE -> {
         breadcrumbView.pop()
       }
-      else -> {}
+      else -> {
+      }
     }
   }
 
@@ -314,7 +313,8 @@ fun <T: FolderItem> connect(
       KeyCode.ENTER -> {
         onFilenameEnter()
       }
-      else -> {}
+      else -> {
+      }
     }
   }
 }
