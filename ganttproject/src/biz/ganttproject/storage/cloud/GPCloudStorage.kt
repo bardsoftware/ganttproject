@@ -50,6 +50,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
 val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
 val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
@@ -168,7 +169,9 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
     val validity = getParam(session, "validity")
 
     onTokenReceived?.invoke(token, validity, userId)
-    return newFixedLengthResponse("")
+    val resp = newFixedLengthResponse("")
+    resp.addHeader("Access-Control-Allow-Origin", "$GPCLOUD_ORIGIN")
+    return resp
   }
 }
 
