@@ -18,8 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.BreadcrumbView
+import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.FolderView
 import biz.ganttproject.storage.StorageDialogBuilder
@@ -28,24 +27,18 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.google.common.io.CharStreams
 import javafx.application.Platform
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
 import javafx.concurrent.Task
 import javafx.event.EventHandler
-import javafx.scene.control.Button
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.util.EntityUtils
-import org.controlsfx.control.StatusBar
 import java.io.IOException
 import java.io.InputStreamReader
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.Consumer
 import java.util.logging.Level
@@ -78,50 +71,19 @@ class GPCloudBrowserPane(
   private val loaderService = LoaderService(dialogUi)
 
   fun createStorageUi(): Pane {
-    val busyIndicator = StatusBar().apply {
-      text = ""
+    val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
+      loadTeams(success, loading)
     }
-    HBox.setHgrow(busyIndicator, Priority.ALWAYS)
-
-    val rootPane = VBoxBuilder("pane-service-contents")
-    this.listView = FolderView(
-        this.dialogUi,
-        Consumer { },
-        Consumer { },
-        SimpleBooleanProperty(true),
-        SimpleBooleanProperty(true))
-
-    val onSelectCrumb = Consumer { _: Path ->
-      loadTeams(
-          Consumer { items -> this.listView.setResources(items) },
-          Consumer { busyIndicator.progress = if (it) -1.0 else 0.0 }
-      )
-    }
-
-    val breadcrumbView = BreadcrumbView(Paths.get("/", "GanttProject Cloud"), onSelectCrumb)
-
-    HBox.setHgrow(busyIndicator, Priority.ALWAYS)
-    val btnSave = Button(i18n.getText("storageService.local.${this.mode.name.toLowerCase()}.actionLabel"))
-    btnSave.styleClass.add("btn-attention")
-    val saveBox = HBox().apply {
-      children.addAll(busyIndicator, btnSave)
-      styleClass.add("doclist-save-box")
-    }
-
-    rootPane.apply {
-      vbox.prefWidth = 400.0
-      addTitle(String.format("webdav.ui.title.%s",
-          this@GPCloudBrowserPane.mode.name.toLowerCase()),
-          "GanttProject Cloud")
-      add(breadcrumbView.breadcrumbs)
-      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
-      add(saveBox)
-    }
+    val browserPaneElements = builder.apply {
+      withBreadcrumbs()
+      withActionButton()
+      withListView()
+    }.build()
 
     Platform.runLater {
-      breadcrumbView.path = Paths.get("/")
+      browserPaneElements.breadcrumbView.path = Paths.get("/")
     }
-    return rootPane.vbox
+    return browserPaneElements.pane
   }
 
   private fun loadTeams(setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
@@ -170,7 +132,7 @@ class LoaderTask : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClient()
-    val teamList = HttpGet("/team/lst")
+    val teamList = HttpGet("/team/list")
 
     val jsonBody = let {
       val resp = http.client.execute(http.host, teamList, http.context)
