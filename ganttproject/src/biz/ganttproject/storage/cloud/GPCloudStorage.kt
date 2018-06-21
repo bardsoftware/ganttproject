@@ -50,6 +50,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
 val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+//val GPCLOUD_HOST = "cloud.ganttproject.biz"
 val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
@@ -113,9 +114,20 @@ class GPCloudStorage(
     }
 
     val signupPane = GPCloudSignupPane(onTokenCallback)
-    signupPane.createPane().thenApply { pane ->
-      nextPage(pane)
-    }
+    signupPane.tryAccessToken(
+        Consumer { remainedValidity ->
+          println("Auth token is valid!")
+          nextPage(browserPane.createStorageUi())
+        },
+        Consumer {
+          println("Auth token is NOT valid!")
+          Platform.runLater {
+            signupPane.createPane().thenApply { pane ->
+              nextPage(pane)
+            }
+          }
+        }
+    )
     return myPane
   }
 
@@ -180,7 +192,7 @@ data class GPCloudHttpClient(
 
 object HttpClientBuilder {
   fun buildHttpClient(): GPCloudHttpClient {
-    val httpClient = if (System.getProperty("gp.ssl.trust-all")?.toBoolean() == true) {
+    val httpClient = if (System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
       val trustAll = TrustStrategy { _, _ -> true }
       val sslSocketFactory = SSLSocketFactory(
           trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
@@ -191,14 +203,15 @@ object HttpClientBuilder {
     } else {
       DefaultHttpClient()
     }
-    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
-    httpClient.credentialsProvider.setCredentials(
-        AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
-    val authCache = BasicAuthCache()
-    authCache.put(httpHost, BasicScheme())
     val context = BasicHttpContext()
-    context.setAttribute(ClientContext.AUTH_CACHE, authCache)
-
+    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
+    if (GPCloudOptions.authToken.value != "") {
+      httpClient.credentialsProvider.setCredentials(
+          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
+      val authCache = BasicAuthCache()
+      authCache.put(httpHost, BasicScheme())
+      context.setAttribute(ClientContext.AUTH_CACHE, authCache)
+    }
     return GPCloudHttpClient(httpClient, httpHost, context)
   }
 }
