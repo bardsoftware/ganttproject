@@ -19,15 +19,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.core.option.*
+import biz.ganttproject.core.option.DefaultStringOption
+import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.core.option.StringOption
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.StorageDialogBuilder
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
@@ -45,6 +51,9 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.protocol.HttpContext
 import org.controlsfx.control.HyperlinkLabel
+import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -105,7 +114,7 @@ class GPCloudStorage(
     val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
       with(GPCloudOptions) {
         this.authToken.value = token
-        this.validity.value = validity?.toIntOrNull()
+        this.validity.value = Instant.now().plus(validity?.toLongOrNull() ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
         this.userId.value = userId
       }
       Platform.runLater {
@@ -114,6 +123,24 @@ class GPCloudStorage(
     }
 
     val signupPane = GPCloudSignupPane(onTokenCallback)
+    if (GPCloudOptions.authToken.value != "") {
+      val paneBuilder = VBoxBuilder("pane-service-contents")
+      paneBuilder.addTitle("Signing in to GanttProject Cloud")
+      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLong())
+      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
+      if (!remainingDuration.isNegative) {
+        val hours = remainingDuration.toHours()
+        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
+        val expirationLabel = if (hours > 0) {
+          "${hours}h ${minutes}m"
+        } else {
+          "${minutes}m"
+        }
+        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
+        paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
+        nextPage(paneBuilder.vbox)
+      }
+    }
     signupPane.tryAccessToken(
         Consumer { remainedValidity ->
           println("Auth token is valid!")
@@ -157,8 +184,8 @@ class GPCloudStorage(
 
 // Persistently stored options
 object GPCloudOptions {
-  val authToken: StringOption = DefaultStringOption("authToken")
-  val validity: IntegerOption = DefaultIntegerOption("validity")
+  val authToken: StringOption = DefaultStringOption("authToken", "")
+  val validity: StringOption = DefaultStringOption("validity", "")
   val userId: StringOption = DefaultStringOption("userId")
 
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)

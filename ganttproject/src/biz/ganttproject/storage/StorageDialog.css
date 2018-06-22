@@ -185,6 +185,12 @@ HBox.title Label {
     -fx-padding: 0 0 5 0;
 }
 
+.pane-service-contents > .progress-indicator {
+    -fx-progress-color: #99cc99;
+    -fx-scale-x: 0.75;
+    -fx-scale-y: 0.75;
+}
+
 .pane-service-contents > .title-help {
     -fx-padding: 0 5 10 5;
     -fx-font-size: 80%;
