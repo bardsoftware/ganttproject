@@ -20,13 +20,14 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.FolderItem
-import biz.ganttproject.storage.FolderView
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.google.common.io.CharStreams
 import javafx.application.Platform
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
@@ -34,13 +35,14 @@ import javafx.concurrent.Task
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.Consumer
+import java.util.function.Predicate
 import java.util.logging.Level
 
 /**
@@ -54,9 +56,20 @@ class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory: Boolean
-    get() = false
+    get() = true
 }
 
+class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
+  override val isLocked: Boolean
+    get() = false
+  override val isLockable: Boolean
+    get() = false
+  override val name: String
+    get() = this.node["name"].asText()
+  override val isDirectory: Boolean
+    get() = false
+
+}
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -66,13 +79,11 @@ class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi) {
-  private val i18n = GanttLanguage.getInstance()
-  private lateinit var listView: FolderView<FolderItem>
   private val loaderService = LoaderService(dialogUi)
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
-      loadTeams(success, loading)
+      loadTeams(path, success, loading)
     }
     val browserPaneElements = builder.apply {
       withBreadcrumbs()
@@ -86,9 +97,10 @@ class GPCloudBrowserPane(
     return browserPaneElements.pane
   }
 
-  private fun loadTeams(setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
-    showMaskPane.accept(true)
+  private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
     loaderService.apply {
+      busyIndicator = showMaskPane
+      this.path = path
       onSucceeded = EventHandler { _ ->
         setResult.accept(value)
         showMaskPane.accept(false)
@@ -109,27 +121,74 @@ class GPCloudBrowserPane(
 // Background tasks which communicate with GP Cloud server and load
 // user team and project list.
 
-// We just need to implement a factory of tasjs
+// Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
 class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
+  var busyIndicator: Consumer<Boolean> = Consumer {}
+  var path: Path = Paths.get("/")
+  var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
+
   override fun createTask(): Task<ObservableList<FolderItem>> {
-    val task = LoaderTask()
-    task.onFailed = EventHandler { _ ->
-      val errorDetails = if (task.exception != null) {
-        GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
-        "\n${task.exception.message}"
-      } else {
-        ""
+    if (jsonResult.value == null) {
+      val task = LoaderTask(busyIndicator, this.jsonResult)
+      task.onFailed = EventHandler { _ ->
+        val errorDetails = if (task.exception != null) {
+          GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
+          "\n${task.exception.message}"
+        } else {
+          ""
+        }
+        this.dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
       }
-      this.dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
+      return task
+    } else {
+      return CachedTask(this.path, this.jsonResult)
     }
-    return task
   }
 }
 
-// Implementation of a task which does the real work: sends HTTP request
-// and interprets the results.
-class LoaderTask : Task<ObservableList<FolderItem>>() {
+// Takes the root node of GP Cloud response and filters teams
+fun filterTeams(jsonNode: JsonNode, filter: Predicate<JsonNode>): List<JsonNode> {
+  return if (jsonNode is ArrayNode) {
+    jsonNode.filter(filter::test)
+  } else {
+    emptyList()
+  }
+}
+
+// Takes a list of team nodes and returns filtered projects.
+// This can work if teams.size > 1 (e.g. to find all projects matching some criteria)
+// but in practice we expect teams.size == 1
+fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<JsonNode> {
+  return teams.flatMap { it.get("projects").let {
+    if (it is ArrayNode) {
+      it.filter(filter::test)
+    } else {
+      emptyList()
+    }
+  }}
+}
+
+// Processes cached response from GP Cloud
+class CachedTask(val path: Path, val jsonNode: SimpleObjectProperty<JsonNode>) : Task<ObservableList<FolderItem>>() {
+  override fun call(): ObservableList<FolderItem> {
+    return FXCollections.observableArrayList(
+        when (path.nameCount) {
+          1 -> filterTeams(jsonNode.value, Predicate { true }).map(::TeamJsonAsFolderItem)
+          2 -> {
+            filterProjects(
+                filterTeams(jsonNode.value, Predicate { it["name"].asText() == path.getName(1).toString() }),
+                Predicate { true }
+            ).map(::ProjectJsonAsFolderItem)
+          }
+          else -> emptyList()
+        })
+  }
+}
+
+// Sends HTTP request to GP Cloud and returns a list of teams.
+class LoaderTask(val busyIndicator: Consumer<Boolean>, val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
+    busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClient()
     val teamList = HttpGet("/team/list")
@@ -150,16 +209,8 @@ class LoaderTask : Task<ObservableList<FolderItem>>() {
 
     val objectMapper = ObjectMapper()
     val jsonNode = objectMapper.readTree(jsonBody)
-    return if (jsonNode is ArrayNode) {
-      FXCollections.observableArrayList<FolderItem>(
-          jsonNode.map(::TeamJsonAsFolderItem))
-    } else {
-      with(log) {
-        fine("Malformed response from GPCloud")
-        fine(jsonBody)
-      }
-      throw IOException("Malformed response: array was expected, got ${jsonNode.javaClass.name}")
-    }
+    resultStorage.value = jsonNode
+    return FXCollections.observableArrayList(filterTeams(jsonNode, Predicate { true }).map(::TeamJsonAsFolderItem))
   }
 }
 
