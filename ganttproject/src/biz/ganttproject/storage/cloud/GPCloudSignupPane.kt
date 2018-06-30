@@ -29,10 +29,13 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import kotlinx.coroutines.experimental.launch
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
 import org.controlsfx.control.NotificationPane
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 
 
 /**
@@ -118,7 +121,28 @@ class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallb
     result.complete(wrapperPane)
     return result
   }
+
+  fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
+    launch {
+      try {
+        callAuthCheck(success, unauthenticated)
+      } catch (ex: Exception) {
+        ex.printStackTrace()
+        unauthenticated.accept("")
+      }
+    }
+  }
+
+  private fun callAuthCheck(onSuccess: Consumer<String>, onUnauthenticated: Consumer<String>) {
+    val http = HttpClientBuilder.buildHttpClient()
+    val teamList = HttpGet("/access-token/check")
+    val resp = http.client.execute(http.host, teamList, http.context)
+    when (resp.statusLine.statusCode) {
+      200 -> onSuccess.accept("")
+      401 -> onUnauthenticated.accept("")
+      else -> {
+        onUnauthenticated.accept("")
+      }
+    }
+  }
 }
-
-
-
