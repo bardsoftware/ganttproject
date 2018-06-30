@@ -17,13 +17,19 @@ ext {
     libDir = 'lib/core'
 }
 
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
 dependencies {
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
     compile project(':..:biz.ganttproject.core')
     compile files('data/resources')
+
     mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.+'
+    mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.3'
     mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
     mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
     mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'
