@@ -24,21 +24,23 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.core.option.StringOption
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.StorageDialogBuilder
+import com.fasterxml.jackson.databind.node.ObjectNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
-import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
+import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.protocol.ClientContext
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
@@ -50,7 +52,11 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.conn.PoolingClientConnectionManager
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.protocol.HttpContext
-import org.controlsfx.control.HyperlinkLabel
+import org.eclipse.core.runtime.IStatus
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -62,6 +68,7 @@ val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 //val GPCLOUD_HOST = "cloud.ganttproject.biz"
 val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
+val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
 val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 
@@ -70,27 +77,12 @@ val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
  */
 class GPCloudStorage(
     private val mode: StorageDialogBuilder.Mode,
-    private val myOptions: GPCloudStorageOptions,
-    private val myOpenDocument: Consumer<Document>,
+    private val openDocument: Consumer<Document>,
     private val dialogUi: StorageDialogBuilder.DialogUi) : StorageDialogBuilder.Ui {
-  private val myPane: BorderPane
-//  private val myButtonPane: HBox
-//  private val myNextButton: Button
-
+  private val myPane: BorderPane = BorderPane()
 
   internal interface PageUi {
     fun createPane(): CompletableFuture<Pane>
-  }
-
-  init {
-    myPane = BorderPane()
-//    myButtonPane = HBox()
-//    myButtonPane.styleClass.add("button-pane")
-//    myButtonPane.alignment = Pos.CENTER
-//    myNextButton = Button("Continue")
-//    myButtonPane.children.add(myNextButton)
-//    myNextButton.visibleProperty().value = false
-//    myPane.bottom = myButtonPane
   }
 
   override fun getName(): String {
@@ -110,7 +102,7 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
       with(GPCloudOptions) {
         this.authToken.value = token
@@ -164,22 +156,6 @@ class GPCloudStorage(
     FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
     return newPage
   }
-
-  companion object {
-
-    internal fun newLabel(key: String, vararg classes: String): Label {
-      val label = Label(key)
-      label.styleClass.addAll(*classes)
-      return label
-    }
-
-    internal fun newHyperlink(eventHandler: EventHandler<ActionEvent>, text: String, vararg classes: String): HyperlinkLabel {
-      val result = HyperlinkLabel(text)
-      result.addEventHandler(ActionEvent.ACTION, eventHandler)
-      result.styleClass.addAll(*classes)
-      return result
-    }
-  }
 }
 
 // Persistently stored options
@@ -211,7 +187,7 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
 
     onTokenReceived?.invoke(token, validity, userId)
     val resp = newFixedLengthResponse("")
-    resp.addHeader("Access-Control-Allow-Origin", "$GPCLOUD_ORIGIN")
+    resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
     return resp
   }
 }
@@ -243,4 +219,46 @@ object HttpClientBuilder {
     }
     return GPCloudHttpClient(httpClient, httpHost, context)
   }
+}
+
+class GPCloudDocument(private val projectNode: ObjectNode): AbstractURLDocument() {
+  override fun getFileName(): String {
+    return this.projectNode["name"].asText()
+  }
+
+  override fun canRead(): Boolean = true
+
+  override fun canWrite(): IStatus {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun isValidForMRU(): Boolean = true
+
+  override fun getInputStream(): InputStream {
+    val http = HttpClientBuilder.buildHttpClient()
+    val projectRead = HttpGet("/p/read$queryArgs")
+    val resp = http.client.execute(http.host, projectRead, http.context)
+    if (resp.statusLine.statusCode == 200) {
+      return Base64InputStream(resp.entity.content)
+    } else {
+      throw IOException("Failed to read from GanttProject Cloud")
+    }
+  }
+
+  override fun getOutputStream(): OutputStream {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun getPath(): String = """ganttproject.cloud://${this.projectNode["team"].asText()}/${this.projectNode["name"].asText()}"""
+
+  override fun write() {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")
+
+  override fun isLocal(): Boolean = false
+
+  private val queryArgs: String
+    get() = "?projectRefid=${this.projectNode["refid"].asText()}"
 }
