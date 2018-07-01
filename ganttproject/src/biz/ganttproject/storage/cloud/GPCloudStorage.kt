@@ -64,13 +64,13 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 //val GPCLOUD_HOST = "cloud.ganttproject.biz"
-val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
-val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
-val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
-val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
-val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
+private const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
+const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
+private const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
+const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
+const val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -134,7 +134,7 @@ class GPCloudStorage(
       }
     }
     signupPane.tryAccessToken(
-        Consumer { remainedValidity ->
+        Consumer { _ ->
           println("Auth token is valid!")
           Platform.runLater {
             nextPage(browserPane.createStorageUi())
@@ -173,7 +173,7 @@ typealias AuthTokenCallback = (token: String?, validity: String?, userId: String
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
   var onTokenReceived: AuthTokenCallback? = null
 
-  fun getParam(session: IHTTPSession, key: String): String? {
+  private fun getParam(session: IHTTPSession, key: String): String? {
     val values = session.parameters[key]
     return if (values?.size == 1) values[0] else null
   }
