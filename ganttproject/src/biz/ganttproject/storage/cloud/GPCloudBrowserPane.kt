@@ -24,6 +24,7 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.io.CharStreams
 import javafx.application.Platform
 import javafx.beans.property.Property
@@ -35,6 +36,7 @@ import javafx.concurrent.Task
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.document.Document
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.util.EntityUtils
 import java.io.IOException
@@ -78,7 +80,8 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
  */
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
-    private val dialogUi: StorageDialogBuilder.DialogUi) {
+    private val dialogUi: StorageDialogBuilder.DialogUi,
+    private val documentConsumer: Consumer<Document>) {
   private val loaderService = LoaderService(dialogUi)
 
   fun createStorageUi(): Pane {
@@ -88,13 +91,25 @@ class GPCloudBrowserPane(
     val browserPaneElements = builder.apply {
       withBreadcrumbs()
       withActionButton(EventHandler {})
-      withListView()
+      withListView(
+          onLaunch = Consumer {
+            if (it is ProjectJsonAsFolderItem) {
+              this@GPCloudBrowserPane.openDocument(it)
+            }
+          }
+      )
     }.build()
 
     Platform.runLater {
       browserPaneElements.breadcrumbView.path = Paths.get("/")
     }
     return browserPaneElements.pane
+  }
+
+  private fun openDocument(item: ProjectJsonAsFolderItem) {
+    if (item.node is ObjectNode) {
+      this.documentConsumer.accept(GPCloudDocument(item.node))
+    }
   }
 
   private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
@@ -159,9 +174,9 @@ fun filterTeams(jsonNode: JsonNode, filter: Predicate<JsonNode>): List<JsonNode>
 // This can work if teams.size > 1 (e.g. to find all projects matching some criteria)
 // but in practice we expect teams.size == 1
 fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<JsonNode> {
-  return teams.flatMap { it.get("projects").let {
+  return teams.flatMap { team -> team.get("projects").let {
     if (it is ArrayNode) {
-      it.filter(filter::test)
+      it.filter(filter::test).map { project -> project.also { (it as ObjectNode).put("team", team["name"].asText()) } }
     } else {
       emptyList()
     }
