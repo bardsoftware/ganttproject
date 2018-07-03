@@ -41,11 +41,15 @@ import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.protocol.ClientContext
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.conn.ssl.TrustStrategy
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.entity.mime.content.StringBody
 import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.BasicAuthCache
 import org.apache.http.impl.client.DefaultHttpClient
@@ -53,6 +57,8 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.protocol.HttpContext
 import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Status
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -64,8 +70,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
-//val GPCLOUD_HOST = "cloud.ganttproject.biz"
+//private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+private const val GPCLOUD_HOST = "cloud.ganttproject.biz"
 private const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 private const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
@@ -197,7 +203,7 @@ data class GPCloudHttpClient(
 
 object HttpClientBuilder {
   fun buildHttpClient(): GPCloudHttpClient {
-    val httpClient = if (System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
+    val httpClient = if (true || System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
       val trustAll = TrustStrategy { _, _ -> true }
       val sslSocketFactory = SSLSocketFactory(
           trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
@@ -221,16 +227,17 @@ object HttpClientBuilder {
   }
 }
 
-class GPCloudDocument(private val projectNode: ObjectNode): AbstractURLDocument() {
+class GPCloudDocument(private val teamName: String, private val projectRefid: String, private val projectName: String)
+  : AbstractURLDocument() {
+  constructor(projectNode: ObjectNode): this(projectNode["team"].asText(), projectNode["refid"].asText(), projectNode["name"].asText()) {}
+
   override fun getFileName(): String {
-    return this.projectNode["name"].asText()
+    return this.projectName
   }
 
   override fun canRead(): Boolean = true
 
-  override fun canWrite(): IStatus {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
+  override fun canWrite(): IStatus = Status.OK_STATUS
 
   override fun isValidForMRU(): Boolean = true
 
@@ -246,10 +253,27 @@ class GPCloudDocument(private val projectNode: ObjectNode): AbstractURLDocument(
   }
 
   override fun getOutputStream(): OutputStream {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return object : ByteArrayOutputStream() {
+      override fun close() {
+        super.close()
+        val http = HttpClientBuilder.buildHttpClient()
+        val projectWrite = HttpPost("/p/write")
+        val multipartBuilder = MultipartEntityBuilder.create()
+        multipartBuilder.addPart("projectRefid", StringBody(
+            this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
+        multipartBuilder.addPart("fileContents", StringBody(
+            Base64.getEncoder().encodeToString(this.toByteArray()), ContentType.TEXT_PLAIN))
+        projectWrite.entity = multipartBuilder.build()
+
+        val resp = http.client.execute(http.host, projectWrite, http.context)
+        if (resp.statusLine.statusCode != 200) {
+          throw IOException("Failed to write to GanttProject Cloud")
+        }
+      }
+    }
   }
 
-  override fun getPath(): String = """ganttproject.cloud://${this.projectNode["team"].asText()}/${this.projectNode["name"].asText()}"""
+  override fun getPath(): String = """ganttproject.cloud://${this.teamName}/${this.projectName}/${this.projectRefid}"""
 
   override fun write() {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -260,5 +284,5 @@ class GPCloudDocument(private val projectNode: ObjectNode): AbstractURLDocument(
   override fun isLocal(): Boolean = false
 
   private val queryArgs: String
-    get() = "?projectRefid=${this.projectNode["refid"].asText()}"
+    get() = "?projectRefid=${this.projectRefid}"
 }
