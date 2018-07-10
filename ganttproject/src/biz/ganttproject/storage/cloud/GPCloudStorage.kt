@@ -70,8 +70,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-//private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
-private const val GPCLOUD_HOST = "cloud.ganttproject.biz"
+private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+//private const val GPCLOUD_HOST = "cloud.ganttproject.biz"
 private const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 private const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
