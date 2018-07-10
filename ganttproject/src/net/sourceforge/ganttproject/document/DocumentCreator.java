@@ -4,24 +4,15 @@
  */
 package net.sourceforge.ganttproject.document;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.storage.cloud.GPCloudDocument;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -33,15 +24,24 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.time.CalendarFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This is a helper class, to create new instances of Document easily. It
@@ -123,8 +123,7 @@ public class DocumentCreator implements DocumentManager {
    * @param pass
    *          password
    * @return an implementation of the interface Document
-   * @throws an
-   *           Exception when the specified protocol is not supported
+   * @throws Exception when the specified protocol is not supported
    */
   private Document createDocument(String path, String user, String pass) {
     assert path != null;
@@ -149,6 +148,9 @@ public class DocumentCreator implements DocumentManager {
       }
     } else if (lowerPath.startsWith("ftp:")) {
       return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
+    } else if (lowerPath.startsWith("ganttproject.cloud:")) {
+      Path p = Paths.get(path.substring("ganttproject.cloud:/".length()));
+      return new GPCloudDocument(p.getName(0).toString(), p.getName(2).toString(), p.getName(1).toString());
     } else if (!lowerPath.startsWith("file://") && path.contains("://")) {
       // Generate error for unknown protocol
       throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
