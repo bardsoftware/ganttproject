@@ -51,25 +51,20 @@ import java.util.logging.Level
  * Wraps JSON node matching a team to FolderItem
  */
 class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
-  override val isLocked: Boolean
-    get() = false
-  override val isLockable: Boolean
-    get() = false
+  override val isLocked = false
+  override val isLockable = false
   override val name: String
     get() = this.node["name"].asText()
-  override val isDirectory: Boolean
-    get() = true
+  override val isDirectory = true
 }
 
 class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLocked: Boolean
     get() = false
-  override val isLockable: Boolean
-    get() = false
+  override val isLockable = true
   override val name: String
     get() = this.node["name"].asText()
-  override val isDirectory: Boolean
-    get() = false
+  override val isDirectory = false
 
 }
 /**
