@@ -300,13 +300,13 @@ fun <T : FolderItem> connect(
     }
   }
 
-  TextFields.bindAutoCompletion(filename, { req ->
+  TextFields.bindAutoCompletion(filename) { req ->
     // Filter folder with user text and map each item to its name. Return the result if
     // filtered list has less than 5 items.
     listView.doFilter(req.userText).let {
       if (it.size <= 5) it.map { it -> it.name }.toList() else emptyList<String>()
     }
-  })
+  }
   filename.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.DOWN -> listView.requestFocus()

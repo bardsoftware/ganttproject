@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.BrowserPaneBuilder
+import biz.ganttproject.storage.BrowserPaneElements
 import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
@@ -33,6 +34,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
 import javafx.concurrent.Task
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
@@ -83,10 +85,33 @@ class GPCloudBrowserPane(
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
       loadTeams(path, success, loading)
     }
-    val browserPaneElements = builder.apply {
+    var paneElements: BrowserPaneElements? = null
+
+    val actionButtonHandler = object {
+      var selectedProject: ProjectJsonAsFolderItem? = null
+      var selectedTeam: TeamJsonAsFolderItem? = null
+
+      fun onOpenItem(item: FolderItem) {
+        when (item) {
+          is ProjectJsonAsFolderItem -> selectedProject = item
+          is TeamJsonAsFolderItem -> selectedTeam = item
+          else -> {}
+        }
+
+      }
+
+      fun onAction(event: ActionEvent) {
+        selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
+            ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements!!.filenameInput.text)
+
+      }
+    }
+
+    paneElements = builder.apply {
       withBreadcrumbs()
-      withActionButton(EventHandler {})
+      withActionButton(EventHandler { actionButtonHandler.onAction(it) })
       withListView(
+          onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
           onLaunch = Consumer {
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
@@ -96,9 +121,16 @@ class GPCloudBrowserPane(
     }.build()
 
     Platform.runLater {
-      browserPaneElements.breadcrumbView.path = Paths.get("/")
+      paneElements.breadcrumbView.path = Paths.get("/")
     }
-    return browserPaneElements.pane
+    return paneElements.pane
+  }
+
+  private fun createDocument(selectedTeam: TeamJsonAsFolderItem?, text: String) {
+    if (selectedTeam == null) {
+      return
+    }
+    this.documentConsumer.accept(GPCloudDocument(selectedTeam, text))
   }
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {

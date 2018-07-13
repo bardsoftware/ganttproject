@@ -227,9 +227,23 @@ object HttpClientBuilder {
   }
 }
 
-class GPCloudDocument(private val teamName: String, private val projectRefid: String, private val projectName: String)
+class GPCloudDocument(private val teamRefid: String?,
+                      private val teamName: String,
+                      private val projectRefid: String?,
+                      private val projectName: String)
   : AbstractURLDocument() {
-  constructor(projectNode: ObjectNode): this(projectNode["team"].asText(), projectNode["refid"].asText(), projectNode["name"].asText()) {}
+  constructor(projectNode: ObjectNode): this(
+      teamRefid = null,
+      teamName = projectNode["team"].asText(),
+      projectRefid = projectNode["refid"].asText(),
+      projectName = projectNode["name"].asText()) {}
+
+  constructor(team: TeamJsonAsFolderItem, projectName: String) : this(
+      teamRefid = team.node["refid"].asText(),
+      teamName = team.name,
+      projectRefid = null,
+      projectName = projectName
+  )
 
   override fun getFileName(): String {
     return this.projectName
@@ -259,8 +273,15 @@ class GPCloudDocument(private val teamName: String, private val projectRefid: St
         val http = HttpClientBuilder.buildHttpClient()
         val projectWrite = HttpPost("/p/write")
         val multipartBuilder = MultipartEntityBuilder.create()
-        multipartBuilder.addPart("projectRefid", StringBody(
-            this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
+        if (this@GPCloudDocument.projectRefid != null) {
+          multipartBuilder.addPart("projectRefid", StringBody(
+              this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
+        } else {
+          multipartBuilder.addPart("teamRefid", StringBody(
+              this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
+          multipartBuilder.addPart("fileName", StringBody(
+              this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
+        }
         multipartBuilder.addPart("fileContents", StringBody(
             Base64.getEncoder().encodeToString(this.toByteArray()), ContentType.TEXT_PLAIN))
         projectWrite.entity = multipartBuilder.build()
