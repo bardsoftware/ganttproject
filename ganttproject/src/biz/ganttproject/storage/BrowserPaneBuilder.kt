@@ -57,6 +57,7 @@ typealias OnItemAction = Consumer<FolderItem>
 
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
+                               val filenameInput: TextField,
                                val pane: Pane)
 
 /**
@@ -169,6 +170,6 @@ class BrowserPaneBuilder(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, rootPane.vbox)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox)
   }
 }
