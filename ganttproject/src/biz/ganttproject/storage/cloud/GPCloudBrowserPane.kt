@@ -59,12 +59,20 @@ import java.util.logging.Level
 class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLocked = false
   override val isLockable = false
+  override val canChangeLock = false
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory = true
 }
 
 class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
+  override val canChangeLock: Boolean
+    get() {
+      return if (!isLocked) isLockable else {
+        val lockNode = this.node["lock"]
+        lockNode["uid"].asText().substringAfterLast(':') == GPCloudOptions.userId.value
+      }
+    }
   override val isLocked: Boolean
     get() {
       val lockNode = this.node["lock"]

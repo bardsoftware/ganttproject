@@ -16,6 +16,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.HBox
@@ -40,6 +41,8 @@ interface FolderItem {
   val name: String
   // Is it a directory?
   val isDirectory: Boolean
+  // Is it possible to change lock state: unlock if locked or lock if unlocked
+  val canChangeLock: Boolean
 }
 
 /**
@@ -171,19 +174,28 @@ fun <T : FolderItem> createListCell(
       if (isLockable && !isLockingSupported.value) {
         isLockingSupported.value = true
       }
+      val canChangeLock = item.resource.value.canChangeLock
 
-      val icon = if (isLocked)
-        FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      else
-        FontAwesomeIconView(FontAwesomeIcon.FOLDER)
-      if (!item.resource.value.isDirectory) {
-        icon.styleClass.add("hide")
+      val icon = if (item.resource.value.isDirectory) {
+        FontAwesomeIconView(FontAwesomeIcon.FOLDER).also { styleClass.add("icon") }
       } else {
-        icon.styleClass.add("icon")
+        if (isLocked) {
+          FontAwesomeIconView(FontAwesomeIcon.LOCK).also { styleClass.add("icon") }
+        } else {
+          FontAwesomeIconView(FontAwesomeIcon.LOCK).also { styleClass.add("hide") }
+        }
       }
       val label = Label(item.resource.value.name, icon)
       hbox.children.add(label)
-      if (item.isSelected.value && !item.resource.value.isDirectory) {
+      hbox.children.add(buildLockButtons(item))
+      graphic = hbox
+    }
+
+    private fun buildLockButtons(item: ListViewItem<T>): Node {
+      val isLocked = item.resource.value.isLocked
+      val isLockable = item.resource.value.isLockable
+
+      return if (item.isSelected.value && !item.resource.value.isDirectory) {
         val btnBox = HBox()
         btnBox.styleClass.add("webdav-list-cell-button-pane")
         val btnDelete =
@@ -208,14 +220,13 @@ fun <T : FolderItem> createListCell(
         }
         if (!btnBox.children.isEmpty()) {
           HBox.setHgrow(btnBox, Priority.ALWAYS)
-          hbox.children.add(btnBox)
         }
+        btnBox
       } else {
         val placeholder = Button("")
         placeholder.styleClass.add("hide")
-        hbox.children.add(placeholder)
+        placeholder
       }
-      graphic = hbox
     }
   }
 }

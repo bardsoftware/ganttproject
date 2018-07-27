@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
+
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
