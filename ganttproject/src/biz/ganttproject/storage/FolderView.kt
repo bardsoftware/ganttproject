@@ -191,12 +191,12 @@ fun <T : FolderItem> createListCell(
               Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
             } else null
 
-        var btnLock =
-            if (isLocked) {
-              Button("", FontAwesomeIconView(FontAwesomeIcon.UNLOCK))
-            } else if (isLockable) {
-              Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
-            } else null
+        val btnLock =
+            when {
+              isLocked -> Button("", FontAwesomeIconView(FontAwesomeIcon.UNLOCK))
+              isLockable -> Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
+              else -> null
+            }
 
         if (btnLock != null) {
           btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.accept(item.resource.value) }

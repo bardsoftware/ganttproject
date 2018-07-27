@@ -69,7 +69,7 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
     get() {
       val lockNode = this.node["lock"]
       return if (lockNode is ObjectNode) {
-        lockNode["expirationTs"].asLong(System.currentTimeMillis() - 1) > Instant.now().toEpochMilli()
+        lockNode["expirationEpochTs"].asLong(0) > Instant.now().toEpochMilli()
       } else {
         false
       }
@@ -279,7 +279,7 @@ class LoaderTask(val busyIndicator: Consumer<Boolean>, val resultStorage: Proper
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClient()
-    val teamList = HttpGet("/team/list")
+    val teamList = HttpGet("/team/list?owned=true&participated=true")
 
     val jsonBody = let {
       val resp = http.client.execute(http.host, teamList, http.context)
@@ -294,6 +294,7 @@ class LoaderTask(val busyIndicator: Consumer<Boolean>, val resultStorage: Proper
         throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
       }
     }
+    println("Team list:\n$jsonBody")
 
     val objectMapper = ObjectMapper()
     val jsonNode = objectMapper.readTree(jsonBody)
