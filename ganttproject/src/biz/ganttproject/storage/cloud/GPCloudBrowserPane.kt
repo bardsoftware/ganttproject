@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.io.CharStreams
-import javafx.application.Platform
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -143,16 +142,12 @@ class GPCloudBrowserPane(
           onLock = Consumer {
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.toggleProjectLock(it,
-                  Consumer { result -> println("Toggling result=$result") },
+                  Consumer { this@GPCloudBrowserPane.reload() },
                   builder.busyIndicatorToggler)
             }
           }
       )
     }.build()
-
-    Platform.runLater {
-      paneElements.breadcrumbView.path = Paths.get("/")
-    }
     return paneElements.pane
   }
 
@@ -189,6 +184,12 @@ class GPCloudBrowserPane(
     }
   }
 
+  private fun reload() {
+    this.loaderService.jsonResult.set(null)
+    this.loaderService.restart()
+  }
+
+
   private fun toggleProjectLock(item: ProjectJsonAsFolderItem,
                                 setResult: Consumer<Boolean>,
                                 showMaskPane: Consumer<Boolean>) {
@@ -218,12 +219,12 @@ class GPCloudBrowserPane(
 // Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
 class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
-  var path: Path = Paths.get("/")
+  var path: Path = Paths.get("/GanttProject Cloud")
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
 
   override fun createTask(): Task<ObservableList<FolderItem>> {
     if (jsonResult.value == null) {
-      val task = LoaderTask(busyIndicator, this.jsonResult)
+      val task = LoaderTask(busyIndicator, this.path, this.jsonResult)
       task.onFailed = EventHandler { _ ->
         val errorDetails = if (task.exception != null) {
           GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
@@ -265,7 +266,7 @@ fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<Jso
 }
 
 // Processes cached response from GP Cloud
-class CachedTask(val path: Path, val jsonNode: SimpleObjectProperty<JsonNode>) : Task<ObservableList<FolderItem>>() {
+class CachedTask(val path: Path, val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem> {
     return FXCollections.observableArrayList(
         when (path.nameCount) {
@@ -279,10 +280,13 @@ class CachedTask(val path: Path, val jsonNode: SimpleObjectProperty<JsonNode>) :
           else -> emptyList()
         })
   }
+  fun callPublic(): ObservableList<FolderItem> { return this.call() }
 }
 
 // Sends HTTP request to GP Cloud and returns a list of teams.
-class LoaderTask(val busyIndicator: Consumer<Boolean>, val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
+class LoaderTask(val busyIndicator: Consumer<Boolean>,
+                 val path: Path,
+                 val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
@@ -307,7 +311,8 @@ class LoaderTask(val busyIndicator: Consumer<Boolean>, val resultStorage: Proper
     val objectMapper = ObjectMapper()
     val jsonNode = objectMapper.readTree(jsonBody)
     resultStorage.value = jsonNode
-    return FXCollections.observableArrayList(filterTeams(jsonNode, Predicate { true }).map(::TeamJsonAsFolderItem))
+    return CachedTask(this.path, this.resultStorage).callPublic()
+    //return FXCollections.observableArrayList(filterTeams(jsonNode, Predicate { true }).map(::TeamJsonAsFolderItem))
   }
 }
 

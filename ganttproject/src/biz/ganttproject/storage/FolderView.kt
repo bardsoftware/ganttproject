@@ -76,9 +76,14 @@ class FolderView<T : FolderItem>(
   /**
    * Loads the list of folder contents into the view.
    */
-  fun setResources(folderContents: ObservableList<T>) {
+  fun setResources(folderContents: ObservableList<T>, keepSelection: Boolean = true) {
+    val selectedItem = listView.selectionModel.selectedItem
     myContents = folderContents
     reloadItems(folderContents)
+    if (selectedItem != null) {
+      val newSelection = listView.items.find { it.resource.value.name == selectedItem.resource.value.name }
+      listView.selectionModel.select(newSelection)
+    }
   }
 
   private fun reloadItems(folderContents: ObservableList<T>) {
