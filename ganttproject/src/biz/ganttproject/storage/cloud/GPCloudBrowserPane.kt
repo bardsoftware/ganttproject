@@ -335,13 +335,21 @@ class LockTask(val busyIndicator: Consumer<Boolean>, val project: ProjectJsonAsF
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClient()
-    val projectLock = HttpPost("/p/lock")
-    val params = listOf(
-        BasicNameValuePair("projectRefid", project.refid),
-        BasicNameValuePair("expirationPeriodSeconds", "600"))
-    projectLock.entity = UrlEncodedFormEntity(params)
+    val resp = if (project.isLocked) {
+      val projectUnlock = HttpPost("/p/unlock")
+      val params = listOf(
+          BasicNameValuePair("projectRefid", project.refid))
+      projectUnlock.entity = UrlEncodedFormEntity(params)
+      http.client.execute(http.host, projectUnlock, http.context)
+    } else {
+      val projectLock = HttpPost("/p/lock")
+      val params = listOf(
+          BasicNameValuePair("projectRefid", project.refid),
+          BasicNameValuePair("expirationPeriodSeconds", "600"))
+      projectLock.entity = UrlEncodedFormEntity(params)
 
-    val resp = http.client.execute(http.host, projectLock, http.context)
+      http.client.execute(http.host, projectLock, http.context)
+    }
     if (resp.statusLine.statusCode == 200) {
       return true
     } else {
