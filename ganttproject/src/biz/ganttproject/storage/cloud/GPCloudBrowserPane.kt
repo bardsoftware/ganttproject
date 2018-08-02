@@ -160,7 +160,7 @@ class GPCloudBrowserPane(
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
-      this.documentConsumer.accept(GPCloudDocument(item.node))
+      this.documentConsumer.accept(GPCloudDocument(item))
     }
   }
 

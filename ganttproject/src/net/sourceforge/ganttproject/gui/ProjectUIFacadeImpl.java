@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.storage.StorageDialogAction;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -26,11 +27,11 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-import net.sourceforge.ganttproject.util.FileUtil;
 import org.eclipse.core.runtime.IStatus;
 
 import javax.swing.*;
@@ -139,51 +140,53 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
   @Override
   public void saveProjectAs(IGanttProject project) {
+    new StorageDialogAction(project, myWorkbenchFacade, this, project.getDocumentManager(),
+        ((WebDavStorageImpl)project.getDocumentManager().getWebDavStorageUi()).getServersOption()).actionPerformed(null);
     /*
      * if (project.getDocument() instanceof AbstractURLDocument) {
      * saveProjectRemotely(project); return; }
      */
-    JFileChooser fc = new JFileChooser(myDocumentManager.getWorkingDirectory());
-    FileFilter ganttFilter = new GanttXMLFileFilter();
-    fc.addChoosableFileFilter(ganttFilter);
-
-    // Remove the possibility to use a file filter for all files
-    FileFilter[] filefilters = fc.getChoosableFileFilters();
-    for (int i = 0; i < filefilters.length; i++) {
-      if (filefilters[i] != ganttFilter) {
-        fc.removeChoosableFileFilter(filefilters[i]);
-      }
-    }
-
-    try {
-      for (;;) {
-        int userChoice = fc.showSaveDialog(myWorkbenchFacade.getMainFrame());
-        if (userChoice != JFileChooser.APPROVE_OPTION) {
-          break;
-        }
-        File projectfile = fc.getSelectedFile();
-        String extension = FileUtil.getExtension(projectfile).toLowerCase();
-        if (!"gan".equals(extension) && !"xml".equals(extension)) {
-          projectfile = FileUtil.replaceExtension(projectfile, "gan");
-        }
-
-        if (projectfile.exists()) {
-          UIFacade.Choice overwritingChoice = myWorkbenchFacade.showConfirmationDialog(
-              projectfile + "\n" + i18n.getText("msg18"), i18n.getText("warning"));
-          if (overwritingChoice != UIFacade.Choice.YES) {
-            continue;
-          }
-        }
-
-        Document document = myDocumentManager.getDocument(projectfile.getAbsolutePath());
-        saveProject(document);
-        project.setDocument(document);
-        afterSaveProject(project);
-        break;
-      }
-    } catch (Throwable e) {
-      myWorkbenchFacade.showErrorDialog(e);
-    }
+//    JFileChooser fc = new JFileChooser(myDocumentManager.getWorkingDirectory());
+//    FileFilter ganttFilter = new GanttXMLFileFilter();
+//    fc.addChoosableFileFilter(ganttFilter);
+//
+//    // Remove the possibility to use a file filter for all files
+//    FileFilter[] filefilters = fc.getChoosableFileFilters();
+//    for (int i = 0; i < filefilters.length; i++) {
+//      if (filefilters[i] != ganttFilter) {
+//        fc.removeChoosableFileFilter(filefilters[i]);
+//      }
+//    }
+//
+//    try {
+//      for (;;) {
+//        int userChoice = fc.showSaveDialog(myWorkbenchFacade.getMainFrame());
+//        if (userChoice != JFileChooser.APPROVE_OPTION) {
+//          break;
+//        }
+//        File projectfile = fc.getSelectedFile();
+//        String extension = FileUtil.getExtension(projectfile).toLowerCase();
+//        if (!"gan".equals(extension) && !"xml".equals(extension)) {
+//          projectfile = FileUtil.replaceExtension(projectfile, "gan");
+//        }
+//
+//        if (projectfile.exists()) {
+//          UIFacade.Choice overwritingChoice = myWorkbenchFacade.showConfirmationDialog(
+//              projectfile + "\n" + i18n.getText("msg18"), i18n.getText("warning"));
+//          if (overwritingChoice != UIFacade.Choice.YES) {
+//            continue;
+//          }
+//        }
+//
+//        Document document = myDocumentManager.getDocument(projectfile.getAbsolutePath());
+//        saveProject(document);
+//        project.setDocument(document);
+//        afterSaveProject(project);
+//        break;
+//      }
+//    } catch (Throwable e) {
+//      myWorkbenchFacade.showErrorDialog(e);
+//    }
   }
 
   /**
