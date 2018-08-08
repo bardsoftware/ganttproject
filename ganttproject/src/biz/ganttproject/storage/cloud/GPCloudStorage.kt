@@ -111,7 +111,8 @@ class GPCloudStorage(
     val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
       with(GPCloudOptions) {
         this.authToken.value = token
-        this.validity.value = Instant.now().plus(validity?.toLongOrNull() ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
+        this.validity.value = Instant.now().plus(validity?.toLongOrNull()
+            ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
         this.userId.value = userId
       }
       Platform.runLater {
@@ -233,12 +234,13 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument() {
 
-  constructor(projectJson: ProjectJsonAsFolderItem): this(
+  constructor(projectJson: ProjectJsonAsFolderItem) : this(
       teamRefid = null,
       teamName = projectJson.node["team"].asText(),
       projectRefid = projectJson.node["refid"].asText(),
       projectName = projectJson.node["name"].asText(),
-      projectJson = projectJson) {}
+      projectJson = projectJson) {
+  }
 
 
   constructor(team: TeamJsonAsFolderItem, projectName: String) : this(
@@ -289,7 +291,7 @@ class GPCloudDocument(private val teamRefid: String?,
         } else {
           multipartBuilder.addPart("teamRefid", StringBody(
               this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
-          multipartBuilder.addPart("fileName", StringBody(
+          multipartBuilder.addPart("filename", StringBody(
               this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
         }
         multipartBuilder.addPart("fileContents", StringBody(
