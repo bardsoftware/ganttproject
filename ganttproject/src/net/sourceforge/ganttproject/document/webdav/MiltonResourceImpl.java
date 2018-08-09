@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.document.webdav;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import io.milton.common.Path;
 import io.milton.http.exceptions.BadRequestException;
 import io.milton.http.exceptions.ConflictException;
@@ -27,27 +30,20 @@ import io.milton.httpclient.File;
 import io.milton.httpclient.Folder;
 import io.milton.httpclient.Host;
 import io.milton.httpclient.HttpException;
+import io.milton.httpclient.IfMatchCheck;
 import io.milton.httpclient.ProgressListener;
 import io.milton.httpclient.Resource;
 import io.milton.httpclient.Utils.CancelledException;
 
-import java.io.BufferedOutputStream;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.OutputSupplier;
 
 /**
  * Implementation which uses Milton client library.
@@ -240,14 +236,13 @@ public class MiltonResourceImpl implements WebDavResource {
     assert parent.myImpl instanceof Folder;
     Folder parentFolder = (Folder) parent.myImpl;
     try {
-      final java.io.File tempFile = java.io.File.createTempFile("webdav-" + myUrl.hostUrl, "");
-      ByteStreams.write(byteArray, new OutputSupplier<OutputStream>() {
-        @Override
-        public OutputStream getOutput() throws IOException {
-          return new BufferedOutputStream(new FileOutputStream(tempFile));
-        }
-      });
-      parentFolder.uploadFile(getName(), tempFile, null);
+      InputStream is = new BufferedInputStream(new ByteArrayInputStream(byteArray));
+      if (myImpl != null && myImpl.getLockToken() != null) {
+        parentFolder.upload(getName(), is, Long.valueOf(byteArray.length),
+            "application/xml", new IfMatchCheck(myImpl.getLockToken()), null);
+      } else {
+        parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), null);
+      }
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
