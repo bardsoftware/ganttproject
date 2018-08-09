@@ -8,10 +8,18 @@ dependencies {
   compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
   compile project(':..:biz.ganttproject.core')
   compile files('data/resources')
-  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
-  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
-  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
+//  mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
+//  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
+//  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
+//  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.+'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.+'
+    mavenDeps group: 'org.jdom', name: 'jdom', version:'1.1.+'
+    mavenDeps group: 'net.sf.json-lib', name: 'json-lib', version:'2.4', classifier:'jdk15'
+    mavenDeps group: 'xml-apis', name: 'xml-apis', version:'2.0.2'
+    mavenDeps group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version:'1.4.2'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-api', version:'1.7.+'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
 }
 
 updateMavenDeps.doFirst {
