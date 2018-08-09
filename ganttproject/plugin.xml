@@ -79,10 +79,10 @@
       <library name="lib/core/jxlayer.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/milton-api-2.6.2.4.jar">
+      <library name="lib/core/milton-api-2.7.4.4.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/milton-client-2.6.2.4.jar">
+      <library name="lib/core/milton-client-2.7.4.4-bs.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/slf4j-api-1.7.25.jar">
