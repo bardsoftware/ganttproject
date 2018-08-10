@@ -18,15 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.common.base.Objects;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import com.google.common.base.MoreObjects;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Default columns in the resource table
@@ -72,7 +70,7 @@ public enum ResourceDefaultColumn {
   }
 
   public String getName() {
-    return Objects.firstNonNull(GanttLanguage.getInstance().getText(myNameKey), myNameKey);
+    return MoreObjects.firstNonNull(GanttLanguage.getInstance().getText(myNameKey), myNameKey);
   }
 
   public Class<?> getValueClass() {

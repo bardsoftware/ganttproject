@@ -18,20 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
  * @author bard
  */
 public interface DocumentManager {
+  Document newUntitledDocument() throws IOException;
   Document newAutosaveDocument() throws IOException;
 
   Document getLastAutosaveDocument(Document priorTo) throws IOException;

@@ -1,0 +1,24 @@
+.list-item .content-node {
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-text-fill: black;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center-left;
+}
+
+.list-item .hover-node {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 3px 0 0;
+    visibility: hidden;
+}
+.list-item.active .hover-node {
+    visibility: visible;
+}
+.list-item:hover .hover-node {
+    visibility: visible;
+}

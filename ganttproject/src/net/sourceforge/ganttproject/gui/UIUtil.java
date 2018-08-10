@@ -31,6 +31,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -43,8 +44,6 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
-import org.jdesktop.swingx.decorator.ComponentAdapter;
-import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
@@ -77,12 +76,7 @@ import java.util.List;
 import java.util.Properties;
 
 public abstract class UIUtil {
-  public static final Highlighter ZEBRA_HIGHLIGHTER = new ColorHighlighter(new HighlightPredicate() {
-    @Override
-    public boolean isHighlighted(Component renderer, ComponentAdapter adapter) {
-      return adapter.row % 2 == 1;
-    }
-  }, new Color(0xf0, 0xf0, 0xe0), null);
+  public static final Highlighter ZEBRA_HIGHLIGHTER = new ColorHighlighter((renderer, adapter) -> adapter.row % 2 == 1, new Color(0xf0, 0xf0, 0xe0), null);
 
   public static final Color ERROR_BACKGROUND = new Color(255, 191, 207);
   public static final Color INVALID_VALUE_BACKGROUND = new Color(255, 125, 125);
@@ -117,31 +111,25 @@ public abstract class UIUtil {
   }
 
   public static void setEnabledTree(JComponent root, final boolean isEnabled) {
-    walkComponentTree(root, new Predicate<JComponent>() {
-      @Override
-      public boolean apply(JComponent input) {
-        input.setEnabled(isEnabled);
-        return true;
-      }
+    walkComponentTree(root, input -> {
+      input.setEnabled(isEnabled);
+      return true;
     });
   }
 
   public static void setBackgroundTree(JComponent root, final Color background) {
-    walkComponentTree(root, new Predicate<JComponent>() {
-      @Override
-      public boolean apply(JComponent input) {
-        input.setBackground(background);
-        return true;
-      }
+    walkComponentTree(root, input -> {
+      input.setBackground(background);
+      return true;
     });
   }
 
   public static void walkComponentTree(JComponent root, Predicate<JComponent> visitor) {
     if (visitor.apply(root)) {
       Component[] components = root.getComponents();
-      for (int i = 0; i < components.length; i++) {
-        if (components[i] instanceof JComponent) {
-          walkComponentTree((JComponent) components[i], visitor);
+      for (Component component : components) {
+        if (component instanceof JComponent) {
+          walkComponentTree((JComponent) component, visitor);
         }
       }
     }
@@ -197,9 +185,7 @@ public abstract class UIUtil {
           textField.setBackground(getValidFieldColor());
         }
         /* If value in text filed is not integer change field color */
-        catch (NumberFormatException ex) {
-          textField.setBackground(INVALID_FIELD_COLOR);
-        } catch (ValidationException ex) {
+        catch (NumberFormatException | ValidationException ex) {
           textField.setBackground(INVALID_FIELD_COLOR);
         }
       }
@@ -223,24 +209,20 @@ public abstract class UIUtil {
     return listener;
   }
 
-
-  public static interface DateValidator extends Function<Date, Pair<Boolean, String>> {
+  public interface DateValidator extends Function<Date, Pair<Boolean, String>> {
     class Default {
       public static DateValidator aroundProjectStart(final Date projectStart) {
         return dateInRange(projectStart, 1000);
       }
 
       public static DateValidator dateInRange(final Date center, final int yearDiff) {
-        return new DateValidator() {
-          @Override
-          public Pair<Boolean, String> apply(Date value) {
-            int diff = Math.abs(value.getYear() - center.getYear());
-            if (diff > yearDiff) {
-              return Pair.create(Boolean.FALSE, String.format(
-                    "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center));
-            }
-            return Pair.create(Boolean.TRUE, null);
+        return value -> {
+          int diff = Math.abs(value.getYear() - center.getYear());
+          if (diff > yearDiff) {
+            return Pair.create(Boolean.FALSE, String.format(
+                  "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center));
           }
+          return Pair.create(Boolean.TRUE, null);
         };
       }
     }
@@ -255,30 +237,27 @@ public abstract class UIUtil {
   }
 
   public static ValueValidator<Date> createStringDateValidator(final DateValidator dv, final Supplier<List<DateFormat>> formats) {
-    return new ValueValidator<Date>() {
-      @Override
-      public Date parse(String text) throws ValidationException {
-        if (Strings.isNullOrEmpty(text)) {
-          throw new ValidationException();
-        }
-        Date parsed = null;
-        for (DateFormat df : formats.get()) {
-          parsed = tryParse(df, text);
-          if (parsed != null) {
-            break;
-          }
-        }
-        if (parsed == null) {
-          throw new ValidationException("Can't parse value=" + text + "as date");
-        }
-        if (dv != null) {
-          Pair<Boolean, String> validationResult = dv.apply(parsed);
-          if (!validationResult.first()) {
-            throw new ValidationException(validationResult.second());
-          }
-        }
-        return parsed;
+    return text -> {
+      if (Strings.isNullOrEmpty(text)) {
+        throw new ValidationException();
       }
+      Date parsed = null;
+      for (DateFormat df : formats.get()) {
+        parsed = tryParse(df, text);
+        if (parsed != null) {
+          break;
+        }
+      }
+      if (parsed == null) {
+        throw new ValidationException("Can't parse value=" + text + "as date");
+      }
+      if (dv != null) {
+        Pair<Boolean, String> validationResult = dv.apply(parsed);
+        if (!validationResult.first()) {
+          throw new ValidationException(validationResult.second());
+        }
+      }
+      return parsed;
     };
   }
 
@@ -335,12 +314,9 @@ public abstract class UIUtil {
 
     void resetValue() {
       myTextEditor.setBackground(getValidFieldColor());
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          if (myInitialDate != null) {
-            myDatePicker.setDate(myInitialDate);
-          }
+      SwingUtilities.invokeLater(() -> {
+        if (myInitialDate != null) {
+          myDatePicker.setDate(myInitialDate);
         }
       });
     }
@@ -365,22 +341,18 @@ public abstract class UIUtil {
       }
       myDatePicker.setDate(dateValue);
       myTextEditor.setBackground(getValidFieldColor());
-      return;
     }
   }
   public static DatePickerEditCommiter setupDatePicker(final JXDatePicker picker, final Date initialDate, final DateValidator dv, final ValueValidator<Date> parseValidator, final ActionListener listener) {
     if (dv == null) {
       picker.addActionListener(listener);
     } else {
-      picker.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          Date date = ((JXDatePicker) e.getSource()).getDate();
-          if (date != null) {
-            Pair<Boolean, String> validation = dv.apply(date);
-            if (!validation.first()) {
-              throw new ValidationException(validation.second());
-            }
+      picker.addActionListener(e -> {
+        Date date = ((JXDatePicker) e.getSource()).getDate();
+        if (date != null) {
+          Pair<Boolean, String> validation = dv.apply(date);
+          if (!validation.first()) {
+            throw new ValidationException(validation.second());
           }
         }
       });
@@ -633,11 +605,10 @@ public abstract class UIUtil {
   }
 
   public static void initJavaFx(final Runnable andThen) {
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-          new JFXPanel(); // initializes JavaFX environment
-          andThen.run();
-      }
+    SwingUtilities.invokeLater(() -> {
+        new JFXPanel(); // initializes JavaFX environment
+        Platform.setImplicitExit(false);
+        andThen.run();
     });
   }
 

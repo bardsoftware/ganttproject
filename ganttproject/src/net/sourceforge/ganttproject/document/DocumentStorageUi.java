@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.document;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
+import java.io.IOException;
 
 /**
  * Interface for the document selection UI.
@@ -31,11 +32,11 @@ public interface DocumentStorageUi {
   /**
    * Receives document descriptors as user changes selection in UI
    */
-  public interface DocumentReceiver {
-    void setDocument(Document document);
+  interface DocumentReceiver {
+    void setDocument(Document document) throws IOException, Document.DocumentException;
   }
 
-  public class Components {
+  class Components {
     public final JComponent contentPane;
     public final Action[] actions;
 

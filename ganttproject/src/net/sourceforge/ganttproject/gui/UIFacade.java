@@ -43,7 +43,7 @@ import java.util.Locale;
 public interface UIFacade {
   ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource("/icons/big.png"));
 
-  public interface Dialog {
+   interface Dialog {
     void show();
 
     void hide();
@@ -51,6 +51,7 @@ public interface UIFacade {
     void layout();
 
     void center(Centering centering);
+    //void resize();
   }
 
   public enum Centering {

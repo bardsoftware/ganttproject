@@ -72,6 +72,9 @@
       <library name="lib/core/jxlayer.jar">
          <export name="*"/>
       </library>
+      <library name="lib/core/kotlin-stdlib-1.1.1.jar">
+         <export name="*"/>
+      </library>
       <library name="lib/core/milton-api-2.6.5.7.jar">
          <export name="*"/>
       </library>

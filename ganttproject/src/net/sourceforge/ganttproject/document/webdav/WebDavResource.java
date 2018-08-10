@@ -73,6 +73,12 @@ public interface WebDavResource {
   String getName();
 
   /**
+   * This method should be just a simple getter and should not issue any requests.
+   * @return absolute path of this resource from the root
+   */
+  String getAbsolutePath();
+
+  /**
    * This method may or may not issue a request to a server. Implementation may decide to return
    * stub which has not yet received full information (and may not even exist on the server)
    *

@@ -1,8 +1,21 @@
+buildscript {
+  ext.kotlin_version = '1.2.51'
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
-  mavenDeps group: 'com.google.guava', name: 'guava', version: '25.0-jre'
+  compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+  compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
+  mavenDeps "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  mavenDeps group: 'com.google.guava', name: 'guava', version: '25.1-jre'
 }
 
 sourceSets {
@@ -20,10 +33,13 @@ task copyPlugin(type: Copy) {
     from(jar.outputs.getFiles().getFiles().flatten())
     from(fileTree(".")) {
       include "plugin.xml"
-      include "lib/**.jar"
+      include "lib/**/*.jar"
       include "resources/**"
     }
     doLast {
       println "Copying $project.name to $rootProject.pluginsDir"
     }
+}
+repositories {
+    mavenCentral()
 }

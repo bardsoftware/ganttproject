@@ -1,0 +1,283 @@
+.alert-warning {
+    -fx-background-color: derive(orange, 40%);
+    -fx-border-color: derive(orange, 20%);
+    -fx-text-fill: dimgray;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+    -fx-wrap-text: true;
+}
+
+.body {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 0;
+}
+.body > .button-bar {
+    -fx-pref-height: 0;
+}
+.bordered {
+    -fx-border-width: 1;
+    -fx-border-style: dotted;
+    -fx-border-color: red;
+}
+
+.btn-done {
+    -fx-font-weight: bold;
+}
+.btn-radio {
+    -fx-padding: 3px 0 3px 0;
+}
+
+.btn-service {
+    -fx-background-color: #e5e5e5;
+    -fx-border-width: 0;
+    -fx-text-fill: black;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center-left;
+    -fx-padding: 5px 3px;
+}
+
+.btn-service {
+    -fx-alignment: center-left;
+}
+
+.btn-service > * {
+    -fx-font-size: 200%;
+}
+
+.btn-service:hover {
+    -fx-background-color: white;
+}
+
+.btn-service.active {
+    -fx-background-color: #ffab00;
+}
+
+.btn-signup {
+    -fx-background-color: orangered;
+    -fx-border-width: 1;
+    -fx-border-color: derive(orangered, -10%);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+
+.button-pane {
+    -fx-padding: 5px 0px 0px 0px;
+}
+
+
+.center {
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+}
+
+.control-label {
+    -fx-padding: 10 0;
+}
+
+.control-row {
+    -fx-padding: 5 0;
+}
+
+.doclist-save {
+    -fx-background-color: #ffab00;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-padding: 1ex 2em 1ex 2em;
+}
+.doclist-save-box {
+    -fx-padding: 1ex 0em;
+}
+
+HBox.title Button {
+    -fx-font-weight: bold;
+}
+HBox.title Label {
+    -fx-font-size: 130%;
+    -fx-font-weight: bold;
+}
+
+.help {
+    -fx-font-size: 80%;
+    -fx-padding: 0 0 0 0;
+    -fx-pref-width: 400px;
+    -fx-max-width: 400px;
+    -fx-wrap-text: true;
+}
+.hide {
+    visibility: hidden;
+}
+.hint.error {
+    -fx-text-fill: derive(darkred, +10%);
+    visibility: visible;
+}
+.hint.warning {
+    -fx-text-fill: derive(darkgray, +20%);
+    visibility: visible;
+}
+.hint.noerror {
+    visibility: hidden;
+}
+
+.notification {
+    -fx-padding: 5px 10px 0px 10px;
+    -fx-background-color: rgba(255, 255, 255, 0);
+
+}
+
+.notification.alert-error > *.content {
+    -fx-padding: 3px;
+    -fx-text-fill: maroon;
+}
+
+.notification.alert-info {
+    -fx-padding: 3px;
+    -fx-text-fill: black;
+}
+
+.pane-service-buttons {
+    -fx-border-width: 0 1 1 0;
+    -fx-background-color: #e5e5e5;
+    -fx-border-color: derive(#e5e5e5, -15%);
+    -fx-padding: 10;
+    -fx-spacing: 8;
+    -fx-alignment: top-left;
+}
+
+.pane-service-contents {
+    -fx-padding: 10 10 0 10;
+    -fx-font-family: Arial;
+    -fx-fill-width: true;
+}
+
+.pane-service-contents > * {
+    -fx-font-family: Arial;
+}
+
+.pane-service-contents > RadioButton {
+    -fx-padding: 5 0 5 0;
+}
+
+.pane-service-contents > TextField {
+    -fx-padding: 5 0 5 0;
+}
+
+.pane-service-contents > .breadcrumb {
+    -fx-padding: 0 0 5 0;
+}
+
+.pane-service-contents > .title-help {
+    -fx-padding: 0 5 10 5;
+    -fx-font-size: 80%;
+    -fx-text-fill: dimgray;
+    -fx-wrap-text: true;
+    -fx-pref-width: 400px;
+}
+
+.pane-service-contents HBox {
+    -fx-fill-width: true;
+    -fx-spacing: 5;
+}
+
+.pane-service-contents HBox.title {
+    -fx-padding: 0 0 5 0;
+    -fx-alignment: center-left;
+}
+
+.pane-service-contents.local-storage HBox.open {
+    -fx-alignment: center-right;
+}
+
+.pane-service-contents.local-storage .filename {
+    -fx-padding: 5 0 0 0;
+    -fx-font-size: 90%;
+}
+
+.pane-service-contents.local-storage HBox.browse {
+    -fx-alignment: center;
+    -fx-font-size: 90%;
+    -fx-padding: 3 0 0 0;
+}
+.pane-service-contents.local-storage HBox.browse Button {
+    -fx-background-radius: 20;
+    -fx-background-insets: 0,1,1;
+    -fx-text-fill: black;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
+}
+.webdav-server-password {
+    -fx-alignment: center;
+    -fx-border-color: red;
+}
+.webdav-server-password HBox {
+    -fx-padding: 5px 10px 0px 10px;
+}
+.pane-service-contents.webdav-server-setup > PropertySheet {
+    -fx-background-color: white;
+}
+
+.pane-service-contents.webdav-server-setup .button-bar {
+    -fx-padding: 10px 0px;
+    -fx-alignment: top-left;
+}
+
+.pane-storage {
+    -fx-min-height: 400;
+    -fx-min-width: 400;
+    -fx-padding: 0;
+    -fx-border-insets: 0;
+}
+.pane-storage > * {
+    -fx-font-family: Arial;
+}
+.pane-storage .title-box {
+    -fx-pref-width: 100%;
+    -fx-fill-width: true;
+    -fx-spacing: 5;
+    -fx-padding: 15;
+    -fx-background-color: #eee;
+    -fx-background-insets: 0 0 4 0;
+    -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
+}
+
+.pane-storage .title-box Label {
+    -fx-font-weight: bold;
+    -fx-font-size: 130%;
+    -fx-padding: 0;
+}
+.pane-storage .title-box .open-save-buttons {
+    -fx-alignment: baseline-center;
+    -fx-font-size: 90%;
+}
+
+.property-sheet {
+    -fx-background-color: white;
+    -fx-padding: 5px 0 0 0;
+}
+
+.space-section {
+    -fx-padding: 10px 0 10px 0;
+}
+
+.subtitle {
+    -fx-font-size: 110%;
+    -fx-padding: 10 0 3 0;
+    -fx-font-weight: bold;
+}
+
+.webdav-button-pane {
+    -fx-padding: 5 0 0 0;
+    -fx-alignment: center-right;
+    -fx-spacing: 5;
+}
+.webdav-list-cell {
+    -fx-alignment: center-left;
+}
+.webdav-list-cell .icon {
+    -fx-text-fill: dimgrey;
+}
+.webdav-list-cell-button-pane {
+    -fx-alignment: center-right;
+}

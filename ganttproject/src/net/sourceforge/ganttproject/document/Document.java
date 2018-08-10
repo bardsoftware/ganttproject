@@ -18,18 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
+import org.eclipse.core.runtime.IStatus;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.eclipse.core.runtime.IStatus;
-
 /**
  * This interface abstracts the details of file access. Implementations of this
  * interface provide methods to open streams to a project file, independent of
  * storage location (filesystem / WebDAV).
- * 
+ *
  * @author Michael Haeusler (michael at akatose.de)
  */
 public interface Document {
@@ -47,14 +47,14 @@ public interface Document {
 
   /**
    * Checks, whether the document is readable.
-   * 
+   *
    * @return readability
    */
   public boolean canRead();
 
   /**
    * Checks, whether the document is writable.
-   * 
+   *
    * @return writability
    */
   public IStatus canWrite();
@@ -62,7 +62,7 @@ public interface Document {
   /**
    * Checks, whether the document should appear in the MRU (list of <b>m</b>ost
    * <b>r</b>ecently <b>u</b>sed files).
-   * 
+   *
    * @return validity for MRU
    */
   public boolean isValidForMRU();
@@ -71,7 +71,7 @@ public interface Document {
    * Tries to acquire a lock. <br>
    * This method is optional. Storage containers, for which locking is
    * inappropriate, should always return true.
-   * 
+   *
    * @return whether a lock could be successfully acquired
    * @see #releaseLock()
    */
@@ -79,28 +79,28 @@ public interface Document {
 
   /**
    * Releases a previously acquired lock.
-   * 
+   *
    * @see #acquireLock()
    */
   public void releaseLock();
 
   /**
    * Gets an InputStream, that allows to read from the document.
-   * 
+   *
    * @return InputStream to read from
    */
   public InputStream getInputStream() throws IOException;
 
   /**
    * Gets an OutputStream, that allows to write to the document.
-   * 
+   *
    * @return OutputStream to write to
    */
   public OutputStream getOutputStream() throws IOException;
 
   /**
    * Gets the path to the document.
-   * 
+   *
    * @return the path to the document
    */
   public String getPath();
@@ -108,7 +108,7 @@ public interface Document {
   /**
    * Gets the path to the document, if it is a file on a local file system (can
    * be used to initialize a JFileChooser).
-   * 
+   *
    * @return the path, if the document is a local file; <code>null</code>,
    *         otherwise.
    */
@@ -116,21 +116,21 @@ public interface Document {
 
   /**
    * Gets the username used to authenticate to the storage container
-   * 
+   *
    * @return username
    */
   public String getUsername();
 
   /**
    * Gets the password used to authenticate to the storage container
-   * 
+   *
    * @return password
    */
   public String getPassword();
 
   /**
    * Gets the last error
-   * 
+   *
    * @return errormessage
    */
   public String getLastError();
@@ -158,4 +158,6 @@ public interface Document {
       super(msg, cause);
     }
   }
+
+  void setMirror(Document mirrorDocument);
 }

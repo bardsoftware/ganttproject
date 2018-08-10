@@ -18,9 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
+import biz.ganttproject.storage.StorageDialogAction;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 
 import javax.swing.*;
 
@@ -43,35 +44,38 @@ public class ProjectMenu extends JMenu {
     ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
     myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());
     SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
-    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
-        project.getProjectUIFacade());
-    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
-        project.getProjectUIFacade());
+//    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
+//        project.getProjectUIFacade());
+//    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
+//        project.getProjectUIFacade());
     ExitAction exitAction = new ExitAction(project);
     ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
     ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project,
         project.getGanttOptions().getPluginPreferences());
 
+    WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();
+    StorageDialogAction cloudDialogAction = new StorageDialogAction(
+        project.getProject(), project.getUIFacade(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());
+    add(cloudDialogAction);
     add(projectSettingsAction);
     add(myNewProjectAction);
-    add(myOpenProjectAction);
-    add(mru);
+    //add(myOpenProjectAction);
+    //add(mru);
 
-    addSeparator();
-    add(mySaveProjectAction);
-    add(saveProjectAsAction);
-    addSeparator();
+    //addSeparator();
+    //add(mySaveProjectAction);
+    //add(saveProjectAsAction);
+    //addSeparator();
 
     add(projectImportAction);
     add(projectExportAction);
     addSeparator();
 
-    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
-    mServer.add(openURLAction);
-    mServer.add(saveURLAction);
-    add(mServer);
+//    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
+//    mServer.add(openURLAction);
+//    mServer.add(saveURLAction);
+//    add(mServer);
 
-    addSeparator();
     add(myPrintAction);
     add(new ProjectPreviewAction(project));
     addSeparator();

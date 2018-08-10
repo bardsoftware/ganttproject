@@ -1,0 +1,7 @@
+.list-item-path {
+    -fx-text-fill: grey;
+    -fx-font-size: 90%;
+}
+.list-item-filename {
+    -fx-font-size: 110%;
+}

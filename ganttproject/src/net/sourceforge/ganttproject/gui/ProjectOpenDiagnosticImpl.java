@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -92,6 +92,7 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
     String endDateChangeTable = myHasOnlyEndDateChange ? buildEndDateChangeTable() : "";
     //String reasonTable = buildReasonTable();
     final String msg = String.format(i18n.getText("scheduler.warning.template"),
+        i18n.getText("zz.dialog.css"),
         i18n.getText("scheduler.warning.h1"),
         i18n.getText("scheduler.warning.intro1"),
         intro,
@@ -130,10 +131,10 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.first())),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".url"),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".label")
          );
@@ -159,10 +160,10 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.second())),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".url"),
-            i18n.getText(Objects.firstNonNull(
+            i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
                 "scheduler.warning.table.reason.other") + ".label")
          );
