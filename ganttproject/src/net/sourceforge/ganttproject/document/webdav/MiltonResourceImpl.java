@@ -239,7 +239,7 @@ public class MiltonResourceImpl implements WebDavResource {
       InputStream is = new BufferedInputStream(new ByteArrayInputStream(byteArray));
       if (myImpl != null && myImpl.getLockToken() != null) {
         parentFolder.upload(getName(), is, Long.valueOf(byteArray.length),
-            "application/xml", new IfMatchCheck(myImpl.getLockToken()), null);
+            "application/xml", new IfMatchCheck(myImpl.getLockToken(), false, true), null);
       } else {
         parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), null);
       }
