@@ -88,7 +88,7 @@
       <library name="lib/core/slf4j-api-1.7.25.jar">
          <export name="*"/>
       </library>
-      <library name="lib/core/slf4j-simple-1.7.25.jar">
+      <library name="lib/core/slf4j-jdk14-1.7.25.jar">
          <export name="*"/>
       </library>
       <library name="lib/core/swingx-1.6.4.jar">

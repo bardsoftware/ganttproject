@@ -155,6 +155,8 @@ public class MiltonResourceImpl implements WebDavResource {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
     } catch (NotFoundException e) {
       throw new WebDavException(MessageFormat.format("Resource {0} is not found on {1}", myUrl.path, myUrl.hostName), e);
+    } catch (RuntimeException e) {
+      throw new WebDavException(MessageFormat.format("Something went wrong when locking {0}: {1}", myUrl.buildUrl(), e.getMessage()), e);
     }
   }
 
