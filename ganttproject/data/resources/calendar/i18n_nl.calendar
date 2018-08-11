@@ -1,15 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="Netherlands" type="country">
+<calendar id="NL" name="Netherlands 2018-2021" type="country">
 <!-- http://www.officeholidays.com/countries/netherlands/2012.asp -->
 <!-- http://calendar.retira.eu/public-holidays/netherlands/2012/ -->
-      <date year="" month="1" date="1"/>       <!-- New Year -->
-      <date year="2012" month="4" date="6"/>   <!-- Good Friday -->
-      <date year="2012" month="4" date="8"/>   <!-- Easter -->
-      <date year="2012" month="4" date="9"/>   <!-- Easter Monday -->
-      <date year="" month="4" date="30"/>      <!--Queen's birthday -->
-      <date year="2012" month="5" date="17"/>  <!-- Ascension -->
-      <date year="2012" month="5" date="27"/>  <!-- Pentecost -->
-      <date year="2012" month="5" date="28"/>  <!-- Whitmonday -->
-      <date year="" month="12" date="25"/>     <!-- Christmas -->
-      <date year="" month="12" date="26"/>     <!-- St.Stephens -->
+
+      <date year="" month="1" date="1"><![CDATA[Nieuwjaarsdag]]></date>
+      <date year="" month="4" date="27"><![CDATA[Koningsdag]]></date>
+      <date year="" month="12" date="25"><![CDATA[Eerste Kerstdag]]></date>
+      <date year="" month="12" date="26"><![CDATA[Tweede Kerstdag]]></date>
+
+      <date year="2018" month="2" date="11"><![CDATA[Carnaval]]></date>
+      <date year="2018" month="2" date="12"><![CDATA[Carnaval]]></date>
+      <date year="2018" month="2" date="13"><![CDATA[Carnaval]]></date>
+      <date year="2018" month="4" date="1"><![CDATA[Eerste Paasdag]]></date>
+      <date year="2018" month="4" date="2"><![CDATA[Tweede Paasdag]]></date>
+      <date year="2018" month="5" date="10"><![CDATA[Hemelvaart]]></date>
+      <date year="2018" month="5" date="20"><![CDATA[Eerste Pinksterdag]]></date>
+      <date year="2018" month="5" date="21"><![CDATA[Tweede Pinksterdag]]></date>
+
+      <date year="2019" month="3" date="3"><![CDATA[Carnaval]]></date>
+      <date year="2019" month="3" date="4"><![CDATA[Carnaval]]></date>
+      <date year="2019" month="3" date="5"><![CDATA[Carnaval]]></date>
+      <date year="2019" month="4" date="21"><![CDATA[Eerste Paasdag]]></date>
+      <date year="2019" month="4" date="22"><![CDATA[Tweede Paasdag]]></date>
+      <date year="2019" month="5" date="30"><![CDATA[Hemelvaart]]></date>
+      <date year="2019" month="6" date="9"><![CDATA[Eerste Pinksterdag]]></date>
+      <date year="2019" month="6" date="10"><![CDATA[Tweede Pinksterdag]]></date>
+
+      <date year="2020" month="2" date="23"><![CDATA[Carnaval]]></date>
+      <date year="2020" month="2" date="24"><![CDATA[Carnaval]]></date>
+      <date year="2020" month="2" date="25"><![CDATA[Carnaval]]></date>
+      <date year="2020" month="4" date="12"><![CDATA[Eerste Paasdag]]></date>
+      <date year="2020" month="4" date="13"><![CDATA[Tweede Paasdag]]></date>
+      <date year="2020" month="5" date="21"><![CDATA[Hemelvaart]]></date>
+      <date year="2020" month="5" date="31"><![CDATA[Eerste Pinksterdag]]></date>
+      <date year="2020" month="6" date="1"><![CDATA[Tweede Pinksterdag]]></date>
+
+      <date year="2021" month="2" date="14"><![CDATA[Carnaval]]></date>
+      <date year="2021" month="2" date="15"><![CDATA[Carnaval]]></date>
+      <date year="2021" month="2" date="16"><![CDATA[Carnaval]]></date>
+      <date year="2021" month="4" date="12"><![CDATA[Eerste Paasdag]]></date>
+      <date year="2021" month="4" date="13"><![CDATA[Tweede Paasdag]]></date>
+      <date year="2021" month="5" date="21"><![CDATA[Hemelvaart]]></date>
+      <date year="2021" month="5" date="31"><![CDATA[Eerste Pinksterdag]]></date>
+      <date year="2021" month="6" date="1"><![CDATA[Tweede Pinksterdag]]></date>
+
 </calendar>
