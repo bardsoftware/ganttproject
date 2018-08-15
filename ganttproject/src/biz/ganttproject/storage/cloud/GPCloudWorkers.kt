@@ -33,6 +33,7 @@ import javafx.concurrent.Service
 import javafx.concurrent.Task
 import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
+import okhttp3.*
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -206,5 +207,55 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
       }
       throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
     }
+  }
+}
+
+class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebSocketListener() {
+  private var webSocket: WebSocket? = null
+  internal var token: String? = null
+    set(value) {
+      field = value
+      trySendToken()
+    }
+
+  override fun onOpen(webSocket: WebSocket, response: Response) {
+    println("WebSocket opened")
+    this.webSocket = webSocket
+    this.trySendToken()
+  }
+
+  private fun trySendToken() {
+    println("Trying sending token ${this.token}")
+    if (this.webSocket != null && this.token != null) {
+      this.webSocket?.send(this.token!!)
+      println("Token is sent!")
+    }
+  }
+
+  override fun onMessage(webSocket: WebSocket?, text: String?) {
+    this.onStructureChange.accept(Any())
+  }
+
+  override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
+    println("WebSocket closed")
+  }
+}
+
+class WebSocketClient(private val onStructureChange: Consumer<Any>) {
+  private val okClient = OkHttpClient()
+  private var isStarted = false
+  private val wsListener = WebSocketListenerImpl(onStructureChange)
+  var token: String = ""
+    set(value) {
+      this.wsListener.token = value
+    }
+
+  fun start() {
+    if (isStarted) {
+      return
+    }
+    val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
+    this.okClient.newWebSocket(req, this.wsListener)
+    isStarted = true
   }
 }

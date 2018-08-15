@@ -82,6 +82,11 @@ class GPCloudBrowserPane(
     private val documentConsumer: Consumer<Document>) {
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
+  private val webSocketClient = WebSocketClient(Consumer { this.reload() })
+  var websocketToken: String = ""
+    set(value) {
+      this.webSocketClient.token = value
+    }
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
@@ -152,6 +157,7 @@ class GPCloudBrowserPane(
       onSucceeded = EventHandler { _ ->
         setResult.accept(value)
         showMaskPane.accept(false)
+        this@GPCloudBrowserPane.webSocketClient.start()
       }
       onFailed = EventHandler { _ ->
         showMaskPane.accept(false)
