@@ -59,7 +59,7 @@ class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Servi
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
 
   override fun createTask(): Task<ObservableList<FolderItem>> {
-    if (jsonResult.value == null) {
+    return if (jsonResult.value == null) {
       val task = LoaderTask(busyIndicator, this.path, this.jsonResult)
       task.onFailed = EventHandler { _ ->
         val errorDetails = if (task.exception != null) {
@@ -70,9 +70,9 @@ class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Servi
         }
         this.dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
       }
-      return task
+      task
     } else {
-      return CachedTask(this.path, this.jsonResult)
+      CachedTask(this.path, this.jsonResult)
     }
   }
 }
@@ -102,7 +102,7 @@ fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<Jso
 }
 
 // Processes cached response from GP Cloud
-class CachedTask(val path: Path, val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
+class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem> {
     return FXCollections.observableArrayList(
         when (path.nameCount) {
@@ -123,9 +123,9 @@ class CachedTask(val path: Path, val jsonNode: Property<JsonNode>) : Task<Observ
 }
 
 // Sends HTTP request to GP Cloud and returns a list of teams.
-class LoaderTask(val busyIndicator: Consumer<Boolean>,
+class LoaderTask(private val busyIndicator: Consumer<Boolean>,
                  val path: Path,
-                 val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
+                 private val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
@@ -176,7 +176,7 @@ class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service
 }
 
 // This task toggles project lock status: acquires or releases lock
-class LockTask(val busyIndicator: Consumer<Boolean>,
+class LockTask(private val busyIndicator: Consumer<Boolean>,
                val project: ProjectJsonAsFolderItem) : Task<Boolean>() {
   override fun call(): Boolean {
     busyIndicator.accept(true)

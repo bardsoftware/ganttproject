@@ -25,7 +25,6 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
@@ -104,7 +103,7 @@ class GPCloudBrowserPane(
 
       }
 
-      fun onAction(event: ActionEvent) {
+      fun onAction() {
         selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
             ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements!!.filenameInput.text)
 
@@ -113,7 +112,7 @@ class GPCloudBrowserPane(
 
     paneElements = builder.apply {
       withBreadcrumbs()
-      withActionButton(EventHandler { actionButtonHandler.onAction(it) })
+      withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
           onLaunch = Consumer {
