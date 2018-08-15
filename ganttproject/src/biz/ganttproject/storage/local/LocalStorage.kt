@@ -64,14 +64,11 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
     }
   }
 
-  override val isLocked: Boolean
-    get() = false
-  override val isLockable: Boolean
-    get() = false
-  override val name: String
-    get() = file.name
-  override val isDirectory: Boolean
-    get() = file.isDirectory
+  override val isLocked: Boolean = false
+  override val isLockable: Boolean = false
+  override val canChangeLock: Boolean = false
+  override val name: String = file.name
+  override val isDirectory: Boolean = file.isDirectory
 }
 
 fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {

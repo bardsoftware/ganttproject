@@ -36,6 +36,9 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
   override val isLockable: Boolean
     get() = myResource.isLockSupported(true)
 
+  override val canChangeLock: Boolean
+    get() = isLockable
+
   override val name: String
     get() = myResource.name
 

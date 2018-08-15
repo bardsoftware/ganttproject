@@ -16,8 +16,10 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
@@ -40,6 +42,8 @@ interface FolderItem {
   val name: String
   // Is it a directory?
   val isDirectory: Boolean
+  // Is it possible to change lock state: unlock if locked or lock if unlocked
+  val canChangeLock: Boolean
 }
 
 /**
@@ -72,9 +76,14 @@ class FolderView<T : FolderItem>(
   /**
    * Loads the list of folder contents into the view.
    */
-  fun setResources(folderContents: ObservableList<T>) {
+  fun setResources(folderContents: ObservableList<T>, keepSelection: Boolean = true) {
+    val selectedItem = listView.selectionModel.selectedItem
     myContents = folderContents
     reloadItems(folderContents)
+    if (selectedItem != null) {
+      val newSelection = listView.items.find { it.resource.value.name == selectedItem.resource.value.name }
+      listView.selectionModel.select(newSelection)
+    }
   }
 
   private fun reloadItems(folderContents: ObservableList<T>) {
@@ -166,56 +175,77 @@ fun <T : FolderItem> createListCell(
       }
       val hbox = HBox()
       hbox.styleClass.add("webdav-list-cell")
-      val isLocked = item.resource.value.isLocked
       val isLockable = item.resource.value.isLockable
       if (isLockable && !isLockingSupported.value) {
         isLockingSupported.value = true
       }
 
-      val icon = if (isLocked)
-        FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      else
-        FontAwesomeIconView(FontAwesomeIcon.FOLDER)
-      if (!item.resource.value.isDirectory) {
-        icon.styleClass.add("hide")
+      val icon = if (item.resource.value.isDirectory) {
+        FontAwesomeIconView(FontAwesomeIcon.FOLDER).also { it.styleClass.add("icon") }
       } else {
-        icon.styleClass.add("icon")
+        null
       }
-      val label = Label(item.resource.value.name, icon)
+      val label = if (icon == null) Label(item.resource.value.name) else Label(item.resource.value.name, icon)
       hbox.children.add(label)
+      hbox.children.add(buildLockButtons(item))
+      graphic = hbox
+    }
+
+    private fun buildLockButtons(item: ListViewItem<T>): Node {
+      val isLocked = item.resource.value.isLocked
+      val isLockable = item.resource.value.isLockable
+      val canChangeLock = item.resource.value.canChangeLock
+
+      val btnBox = HBox()
+      btnBox.styleClass.add("webdav-list-cell-button-pane")
       if (item.isSelected.value && !item.resource.value.isDirectory) {
-        val btnBox = HBox()
-        btnBox.styleClass.add("webdav-list-cell-button-pane")
         val btnDelete =
             if (isDeleteSupported.get()) {
               Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
             } else null
 
-        var btnLock =
-            if (isLocked) {
-              Button("", FontAwesomeIconView(FontAwesomeIcon.UNLOCK))
-            } else if (isLockable) {
-              Button("", FontAwesomeIconView(FontAwesomeIcon.LOCK))
-            } else null
+        val btnLock =
+            when {
+              isLocked -> Label("unlock", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {//.also {
+                it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+                it.tooltip = Tooltip("Click to release lock")
+                it.styleClass.add("icon")
+              }
+              isLockable -> Label("lock", FontAwesomeIconView(FontAwesomeIcon.UNLOCK)).also {//.also {
+                it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+                it.tooltip = Tooltip("Click to lock ${item.resource.value.name}")
+                it.styleClass.add("icon")
+              }
+              else -> null
+            }
 
         if (btnLock != null) {
-          btnLock.addEventHandler(ActionEvent.ACTION) { _ -> onToggleLockResource.accept(item.resource.value) }
+          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onToggleLockResource.accept(item.resource.value)}
           btnBox.children.add(btnLock)
         }
+        //btnBox.children.add(Label("Foo"))
         if (btnDelete != null) {
           btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
           btnBox.children.add(btnDelete)
         }
-        if (!btnBox.children.isEmpty()) {
-          HBox.setHgrow(btnBox, Priority.ALWAYS)
-          hbox.children.add(btnBox)
-        }
       } else {
-        val placeholder = Button("")
-        placeholder.styleClass.add("hide")
-        hbox.children.add(placeholder)
+        if (isLocked) {
+          btnBox.children.add(Label("", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
+            it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+            if (canChangeLock) {
+              it.disableProperty().set(true)
+              it.tooltip = Tooltip("Project ${item.resource.value.name} is locked. Click to release lock")
+            } else {
+              it.tooltip = Tooltip("Project ${item.resource.value.name} is locked.")
+              it.disableProperty().set(true)
+            }
+          })
+        }
       }
-      graphic = hbox
+      if (!btnBox.children.isEmpty()) {
+        HBox.setHgrow(btnBox, Priority.ALWAYS)
+      }
+      return btnBox
     }
   }
 }

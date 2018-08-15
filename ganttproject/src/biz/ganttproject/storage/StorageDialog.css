@@ -1,4 +1,4 @@
-.alert-warning {
+webdav-list-cell-button-pane.alert-warning {
     -fx-background-color: derive(orange, 40%);
     -fx-border-color: derive(orange, 20%);
     -fx-text-fill: dimgray;
@@ -312,4 +312,10 @@ HBox.title Label {
 
 .webdav-list-cell-button-pane {
     -fx-alignment: center-right;
+}
+
+.webdav-list-cell-button-pane .icon {
+    -fx-text-fill: dimgray;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
 }

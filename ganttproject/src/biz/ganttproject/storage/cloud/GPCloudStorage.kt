@@ -24,7 +24,6 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.core.option.StringOption
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.StorageDialogBuilder
-import com.fasterxml.jackson.databind.node.ObjectNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.geometry.Pos
@@ -112,7 +111,8 @@ class GPCloudStorage(
     val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
       with(GPCloudOptions) {
         this.authToken.value = token
-        this.validity.value = Instant.now().plus(validity?.toLongOrNull() ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
+        this.validity.value = Instant.now().plus(validity?.toLongOrNull()
+            ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
         this.userId.value = userId
       }
       Platform.runLater {
@@ -230,19 +230,25 @@ object HttpClientBuilder {
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
                       private val projectRefid: String?,
-                      private val projectName: String)
+                      private val projectName: String,
+                      private val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument() {
-  constructor(projectNode: ObjectNode): this(
+
+  constructor(projectJson: ProjectJsonAsFolderItem) : this(
       teamRefid = null,
-      teamName = projectNode["team"].asText(),
-      projectRefid = projectNode["refid"].asText(),
-      projectName = projectNode["name"].asText()) {}
+      teamName = projectJson.node["team"].asText(),
+      projectRefid = projectJson.node["refid"].asText(),
+      projectName = projectJson.node["name"].asText(),
+      projectJson = projectJson) {
+  }
+
 
   constructor(team: TeamJsonAsFolderItem, projectName: String) : this(
       teamRefid = team.node["refid"].asText(),
       teamName = team.name,
       projectRefid = null,
-      projectName = projectName
+      projectName = projectName,
+      projectJson = null
   )
 
   override fun getFileName(): String {
@@ -251,7 +257,13 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun canRead(): Boolean = true
 
-  override fun canWrite(): IStatus = Status.OK_STATUS
+  override fun canWrite(): IStatus {
+    return if (this.projectJson == null || !this.projectJson.isLocked || this.projectJson.canChangeLock) {
+      Status.OK_STATUS
+    } else {
+      Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal, "", null)
+    }
+  }
 
   override fun isValidForMRU(): Boolean = true
 
@@ -262,7 +274,7 @@ class GPCloudDocument(private val teamRefid: String?,
     if (resp.statusLine.statusCode == 200) {
       return Base64InputStream(resp.entity.content)
     } else {
-      throw IOException("Failed to read from GanttProject Cloud")
+      throw IOException("Failed to read from GanttProject Cloud: got response ${resp.statusLine}")
     }
   }
 
@@ -279,7 +291,7 @@ class GPCloudDocument(private val teamRefid: String?,
         } else {
           multipartBuilder.addPart("teamRefid", StringBody(
               this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
-          multipartBuilder.addPart("fileName", StringBody(
+          multipartBuilder.addPart("filename", StringBody(
               this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
         }
         multipartBuilder.addPart("fileContents", StringBody(

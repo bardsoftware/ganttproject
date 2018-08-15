@@ -151,7 +151,7 @@ public class DocumentCreator implements DocumentManager {
     } else if (lowerPath.startsWith("ganttproject.cloud:")) {
       Path p = Paths.get(path.substring("ganttproject.cloud:/".length()));
       return new GPCloudDocument(
-          null, p.getName(0).toString(), p.getName(2).toString(), p.getName(1).toString());
+          null, p.getName(0).toString(), p.getName(2).toString(), p.getName(1).toString(), null);
     } else if (!lowerPath.startsWith("file://") && path.contains("://")) {
       // Generate error for unknown protocol
       throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
