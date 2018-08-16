@@ -114,7 +114,10 @@ class GPCloudStorage(
         this.validity.value = Instant.now().plus(validity?.toLongOrNull()
             ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
         this.userId.value = userId
-        websocketToken?.let { browserPane.websocketToken = it }
+        this.websocketToken = websocketToken
+        if (websocketToken != null) {
+          browserPane.openWebSocket()
+        }
       }
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
@@ -170,7 +173,7 @@ object GPCloudOptions {
   val authToken: StringOption = DefaultStringOption("authToken", "")
   val validity: StringOption = DefaultStringOption("validity", "")
   val userId: StringOption = DefaultStringOption("userId")
-
+  var websocketToken: String? = null
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
 }
 

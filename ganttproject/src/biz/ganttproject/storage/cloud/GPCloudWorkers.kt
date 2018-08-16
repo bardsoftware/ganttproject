@@ -43,6 +43,8 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
+import java.util.Collections.emptyList
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
@@ -212,11 +214,8 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
 
 class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebSocketListener() {
   private var webSocket: WebSocket? = null
-  internal var token: String? = null
-    set(value) {
-      field = value
-      trySendToken()
-    }
+  internal val token: String? get() = Base64.getEncoder().encodeToString(
+      "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
 
   override fun onOpen(webSocket: WebSocket, response: Response) {
     println("WebSocket opened")
@@ -227,7 +226,7 @@ class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebS
   private fun trySendToken() {
     println("Trying sending token ${this.token}")
     if (this.webSocket != null && this.token != null) {
-      this.webSocket?.send(this.token!!)
+      this.webSocket?.send("Basic ${this.token}")
       println("Token is sent!")
     }
   }
@@ -245,10 +244,6 @@ class WebSocketClient(private val onStructureChange: Consumer<Any>) {
   private val okClient = OkHttpClient()
   private var isStarted = false
   private val wsListener = WebSocketListenerImpl(onStructureChange)
-  var token: String = ""
-    set(value) {
-      this.wsListener.token = value
-    }
 
   fun start() {
     if (isStarted) {

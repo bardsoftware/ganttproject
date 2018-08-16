@@ -86,7 +86,7 @@ class RecentProjects(
         val pane = StackPane()
         pane.minWidth = 0.0
         pane.prefWidth = 1.0
-        val pathLabel = Label(item.parent.normalize().toString())
+        val pathLabel = Label(item.parent?.normalize()?.toString() ?: "")
         pathLabel.styleClass.add("list-item-path")
         val nameLabel = Label(item.fileName.toString())
         nameLabel.styleClass.add("list-item-filename")
