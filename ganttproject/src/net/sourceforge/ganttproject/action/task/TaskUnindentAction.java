@@ -48,7 +48,7 @@ public class TaskUnindentAction extends TaskActionBase {
   private static final RetainRootsAlgorithm<Task> ourRetainRootsAlgorithm = new RetainRootsAlgorithm<>();
 
   public TaskUnindentAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-      GanttTree2 tree) {
+                            GanttTree2 tree) {
     super("task.unindent", taskManager, selectionManager, uiFacade, tree);
   }
 
@@ -65,23 +65,18 @@ public class TaskUnindentAction extends TaskActionBase {
   @Override
   protected void run(List<Task> selection) throws Exception {
     final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-    List<Task> indentRoots = Lists.newArrayList();
-    ourRetainRootsAlgorithm.run(selection, getParentTask, indentRoots);
-    indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
-    for (int i = indentRoots.size() - 1; i >= 0; i--) {
-      // Place task at ancestor children right after parent
-      Task task = indentRoots.get(i);
-      Task parent = taskHierarchy.getContainer(task);
-      final Task ancestor = taskHierarchy.getContainer(parent);
-      final int index = taskHierarchy.getTaskIndex(parent) + 1;
-      getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
-        @Override
-        public boolean apply(Task t) {
-          taskHierarchy.move(t, ancestor, index);
-          return false;
-        }
-      });
-    }
+    unindent(selection, taskHierarchy, new UnindentApplyFxn() {
+      @Override
+      public void apply(Task task, Task newParent, int position) {
+        getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
+          @Override
+          public boolean apply(Task t) {
+            taskHierarchy.move(t, newParent, position);
+            return false;
+          }
+        });
+      }
+    });
   }
 
   public TaskUnindentAction asToolbarAction() {
@@ -91,11 +86,30 @@ public class TaskUnindentAction extends TaskActionBase {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean)evt.getNewValue());
+          result.setEnabled((Boolean) evt.getNewValue());
         }
       }
     });
     result.setEnabled(this.isEnabled());
     return result;
+  }
+
+  public interface UnindentApplyFxn {
+    void apply(Task task, Task newParent, int position);
+  }
+
+  public static void unindent(List<Task> selectedTasks, TaskContainmentHierarchyFacade taskHierarchy, UnindentApplyFxn fxn) {
+    List<Task> indentRoots = Lists.newArrayList();
+    ourRetainRootsAlgorithm.run(selectedTasks, getParentTask, indentRoots);
+    indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
+    for (int i = indentRoots.size() - 1; i >= 0; i--) {
+      // Place task at ancestor children right after parent
+      Task task = indentRoots.get(i);
+      Task parent = taskHierarchy.getContainer(task);
+      final Task ancestor = taskHierarchy.getContainer(parent);
+      final int index = taskHierarchy.getTaskIndex(parent) + 1;
+      fxn.apply(task, ancestor, index);
+    }
+
   }
 }

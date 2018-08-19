@@ -68,19 +68,18 @@ public class TaskIndentAction extends TaskActionBase {
     getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
     try {
       final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-      List<Task> indentRoots = Lists.newArrayList();
-      ourRetainRootsAlgorithm.run(selection, getParentTask, indentRoots);
-      indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
-      for (Task task : indentRoots) {
-        final Task newParent = taskHierarchy.getPreviousSibling(task);
-        getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
-          @Override
-          public boolean apply(Task t) {
-            taskHierarchy.move(t, newParent);
-            return true;
-          }
-        });
-      }
+      indent(selection, taskHierarchy, new IndentApplyFxn() {
+        @Override
+        public void apply(Task task, Task newParent) {
+          getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
+            @Override
+            public boolean apply(Task t) {
+              taskHierarchy.move(t, newParent);
+              return true;
+            }
+          });
+        }
+      });
     } finally {
       getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(true);
     }
@@ -99,5 +98,19 @@ public class TaskIndentAction extends TaskActionBase {
     });
     result.setEnabled(this.isEnabled());
     return result;
+  }
+
+  public interface IndentApplyFxn {
+    void apply(Task task, Task newParent);
+  }
+
+  public static void indent(List<Task> selectedTasks, TaskContainmentHierarchyFacade taskHierarchy, IndentApplyFxn fxn) {
+    List<Task> indentRoots = Lists.newArrayList();
+    ourRetainRootsAlgorithm.run(selectedTasks, getParentTask, indentRoots);
+    indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
+    for (Task task : indentRoots) {
+      final Task newParent = taskHierarchy.getPreviousSibling(task);
+      fxn.apply(task, newParent);
+    }
   }
 }
