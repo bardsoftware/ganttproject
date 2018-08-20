@@ -504,6 +504,7 @@ public class TaskImpl implements Task {
     TaskHierarchyItem targetItem = supertaskImpl.myTaskHierarchyItem;
     myTaskHierarchyItem.delete();
     targetItem.addNestedItem(myTaskHierarchyItem, position);
+    myManager.onTaskMoved(this);
   }
 
   @Override
