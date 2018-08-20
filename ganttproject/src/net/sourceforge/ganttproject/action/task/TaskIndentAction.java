@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,7 +49,7 @@ public class TaskIndentAction extends TaskActionBase {
   private static final RetainRootsAlgorithm<Task> ourRetainRootsAlgorithm = new RetainRootsAlgorithm<>();
 
   public TaskIndentAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-      GanttTree2 tree) {
+                          GanttTree2 tree) {
     super("task.indent", taskManager, selectionManager, uiFacade, tree);
   }
 
@@ -70,7 +71,7 @@ public class TaskIndentAction extends TaskActionBase {
       final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
       indent(selection, taskHierarchy, new IndentApplyFxn() {
         @Override
-        public void apply(Task task, Task newParent) {
+        public void apply(Task task, final Task newParent) {
           getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
             @Override
             public boolean apply(Task t) {
@@ -92,7 +93,7 @@ public class TaskIndentAction extends TaskActionBase {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean)evt.getNewValue());
+          result.setEnabled((Boolean) evt.getNewValue());
         }
       }
     });
@@ -107,7 +108,7 @@ public class TaskIndentAction extends TaskActionBase {
   public static void indent(List<Task> selectedTasks, TaskContainmentHierarchyFacade taskHierarchy, IndentApplyFxn fxn) {
     List<Task> indentRoots = Lists.newArrayList();
     ourRetainRootsAlgorithm.run(selectedTasks, getParentTask, indentRoots);
-    indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
+    Collections.sort(indentRoots, new TaskDocumentOrderComparator(taskHierarchy));
     for (Task task : indentRoots) {
       final Task newParent = taskHierarchy.getPreviousSibling(task);
       fxn.apply(task, newParent);

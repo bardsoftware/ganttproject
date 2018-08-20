@@ -105,4 +105,65 @@ public class TestTaskIndentOutdent extends TaskTestCase {
 
   }
 
+  public void testOutdentWholeSubtrees() {
+    Task task1 = getTaskManager().createTask();
+    Task task2 = getTaskManager().createTask();
+    Task task3 = getTaskManager().createTask();
+    Task task4 = getTaskManager().createTask();
+    Task task5 = getTaskManager().createTask();
+
+    task3.move(task2);
+    task2.move(task1);
+
+    task5.move(task4);
+    task4.move(task1);
+
+    TaskUnindentAction.unindent(ImmutableList.of(task2, task3, task4, task5), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
+    assertEquals(3, children.length);
+    assertEquals(Arrays.asList(children).toString(), task1, children[0]);
+    assertEquals(Arrays.asList(children).toString(), task2, children[1]);
+    assertEquals(Arrays.asList(children).toString(), task4, children[2]);
+  }
+
+  public void testOutdentSubtreeRoots() {
+    Task task1 = getTaskManager().createTask();
+    Task task2 = getTaskManager().createTask();
+    Task task3 = getTaskManager().createTask();
+    Task task4 = getTaskManager().createTask();
+    Task task5 = getTaskManager().createTask();
+
+    task3.move(task2);
+    task2.move(task1);
+
+    task5.move(task4);
+    task4.move(task1);
+
+    TaskUnindentAction.unindent(ImmutableList.of(task2, task4), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
+    assertEquals(3, children.length);
+    assertEquals(Arrays.asList(children).toString(), task1, children[0]);
+    assertEquals(Arrays.asList(children).toString(), task2, children[1]);
+    assertEquals(Arrays.asList(children).toString(), task4, children[2]);
+  }
+
+  public void testOudentFromDifferentSources() {
+    Task task1 = getTaskManager().createTask();
+    Task task2 = getTaskManager().createTask();
+    Task task3 = getTaskManager().createTask();
+    Task task4 = getTaskManager().createTask();
+    Task task5 = getTaskManager().createTask();
+
+    task3.move(task2);
+    task2.move(task1);
+
+    task5.move(task4);
+
+    TaskUnindentAction.unindent(ImmutableList.of(task2, task3, task5), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+
+    Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
+    assertEquals(4, children.length);
+    assertEquals(ImmutableList.of(task1, task2, task4, task5), Arrays.asList(children));
+  }
+
 }

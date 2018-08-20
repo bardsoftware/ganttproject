@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -67,7 +68,7 @@ public class TaskUnindentAction extends TaskActionBase {
     final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     unindent(selection, taskHierarchy, new UnindentApplyFxn() {
       @Override
-      public void apply(Task task, Task newParent, int position) {
+      public void apply(Task task, final Task newParent, final int position) {
         getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
           @Override
           public boolean apply(Task t) {
@@ -101,7 +102,7 @@ public class TaskUnindentAction extends TaskActionBase {
   public static void unindent(List<Task> selectedTasks, TaskContainmentHierarchyFacade taskHierarchy, UnindentApplyFxn fxn) {
     List<Task> indentRoots = Lists.newArrayList();
     ourRetainRootsAlgorithm.run(selectedTasks, getParentTask, indentRoots);
-    indentRoots.sort(new TaskDocumentOrderComparator(taskHierarchy));
+    Collections.sort(indentRoots, new TaskDocumentOrderComparator(taskHierarchy));
     for (int i = indentRoots.size() - 1; i >= 0; i--) {
       // Place task at ancestor children right after parent
       Task task = indentRoots.get(i);
