@@ -24,6 +24,7 @@ import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
@@ -82,7 +83,9 @@ class GPCloudBrowserPane(
     private val documentConsumer: Consumer<Document>) {
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
-  private val webSocketClient = WebSocketClient(Consumer { this.reload() })
+  private val webSocketClient = WebSocketClient(Consumer {
+    Platform.runLater { this.reload() }
+  })
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
