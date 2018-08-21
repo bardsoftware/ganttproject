@@ -18,19 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 import java.util.Comparator;
 
-class TaskDocumentOrderComparator implements Comparator<Task> {
-  private final TaskManagerImpl myManager;
+public class TaskDocumentOrderComparator implements Comparator<Task> {
+  private final Supplier<TaskContainmentHierarchyFacade> myHierarchy;
 
-  TaskDocumentOrderComparator(TaskManagerImpl taskManager) {
-    myManager = taskManager;
+  public TaskDocumentOrderComparator(TaskContainmentHierarchyFacade hierarchy) {
+    myHierarchy = Suppliers.ofInstance(hierarchy);
+  }
+
+  TaskDocumentOrderComparator(final TaskManagerImpl taskManager) {
+    myHierarchy = new Supplier<TaskContainmentHierarchyFacade>() {
+      @Override
+      public TaskContainmentHierarchyFacade get() {
+        return taskManager.getTaskHierarchy();
+      }
+    };
   }
 
   @Override
   public int compare(Task task1, Task tasl2) {
     // TODO assert can be removed since it is checked by Java compiler?
     assert (task1 instanceof Task && tasl2 instanceof Task) : "I compare only tasks";
-    return myManager.getTaskHierarchy().compareDocumentOrder(task1, tasl2);
+    return myHierarchy.get().compareDocumentOrder(task1, tasl2);
   }
 }

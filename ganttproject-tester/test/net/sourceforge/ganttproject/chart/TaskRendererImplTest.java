@@ -93,6 +93,8 @@ public class TaskRendererImplTest extends TaskTestCase {
     }
     allTasks.get(7).move(allTasks.get(6));
     allTasks.get(9).move(allTasks.get(8));
+    allTasks.get(6).setExpand(false);
+    allTasks.get(8).setExpand(false);
     {
       VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(4, 6));
       partitioning.build(taskManager.getTaskHierarchy());
