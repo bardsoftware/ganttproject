@@ -11,7 +11,7 @@ apply plugin: 'eclipse'
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
-ext.semver = '2.8.8'
+ext.semver = '2.8.9'
 ext.distBinDir = file('dist-bin')
 ext.pluginsDir = file("dist-bin/plugins-${semver}")
 ext.buildNum = getBuildNum()
@@ -149,7 +149,7 @@ task distWin(dependsOn: distBin) {
             include "ganttproject.l4j.ini"
             include 'ganttproject.nsi'
             include "ganttproject_16.ico"
-            include "ganttproject_32_2.ico"
+            include "ganttproject.ico"
         }
         println '= Building installer...'
         exec {

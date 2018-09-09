@@ -18,28 +18,27 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
+
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-
 public class CSVOptions {
   private static final Set<TaskDefaultColumn> ourIgnoredTaskColumns = ImmutableSet.of(
       TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
   private final Map<String, BooleanOption> myTaskOptions = Maps.newLinkedHashMap();
   private final Map<String, BooleanOption> myResourceOptions = Maps.newLinkedHashMap();
+  private final BooleanOption myBomOption = new DefaultBooleanOption("write-bom", false);
 
   public CSVOptions() {
     List<TaskDefaultColumn> orderedColumns = ImmutableList.of(
@@ -96,9 +95,15 @@ public class CSVOptions {
 
   public String sSeparatedTextChar = "\"";
 
-  /** @return a list of the possible separated char. */
+  /**
+   * @return a list of the possible separated char.
+   */
   public String[] getSeparatedTextChars() {
-    String[] charText = { "   \'   ", "   \"   " };
+    String[] charText = {"   \'   ", "   \"   "};
     return charText;
+  }
+
+  public BooleanOption getBomOption() {
+    return myBomOption;
   }
 }

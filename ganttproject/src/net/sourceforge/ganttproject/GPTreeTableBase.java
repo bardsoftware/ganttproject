@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -36,7 +35,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListener;
@@ -227,6 +225,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     return result;
   }
 
+  @Override
+  public void editingStopped(ChangeEvent arg0) {
+    super.editingStopped(arg0);
+    // Otherwise task name cell may be cropped and will appear with ellipsis at the end.
+    // See issue #1551
+    updateHierarchicalRendererEditor();
+  }
 
   Action getManageColumnsAction() {
     return myManageColumnsAction;
@@ -465,10 +470,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       myStub = stub;
     }
 
+    @Override
     public SortOrder getSort() {
       return mySort;
     }
 
+    @Override
     public void setSort(SortOrder sort) {
       mySort = sort;
     }
@@ -703,15 +710,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
   }
 
-  private static <T> Comparator<T> reverseComparator(final Comparator<T> comparator) {
-    return new Comparator<T>() {
-      @Override
-      public int compare(T t1, T t2) {
-        return -comparator.compare(t1, t2);
-      }
-    };
-  }
-
   private final TaskListener myRemoveOrderListener = new TaskListenerAdapter() {
 
     private void clearOrdering() {
@@ -771,40 +769,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         return myTableHeaderFacade.findColumnByViewIndex(idxColumn);
       }
     }));
-
-    getTableHeader().addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent mouseEvent) {
-        int index = getTable().columnAtPoint(mouseEvent.getPoint());
-        if (index == -1) return;
-
-        final ColumnImpl column = myTableHeaderFacade.findColumnByViewIndex(index);
-        final TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
-
-        myUiFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
-          @Override
-          public void run() {
-            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
-              for (ColumnImpl c : myTableHeaderFacade.getColumns()) {
-                if (c != column) {
-                  c.setSort(SortOrder.UNSORTED);
-                }
-              }
-
-              if (column.getSort() == SortOrder.ASCENDING) {
-                column.setSort(SortOrder.DESCENDING);
-                myProject.getTaskManager().getTaskHierarchy().sort(
-                    reverseComparator((Comparator<Task>) taskColumn.getSortComparator())
-                );
-              } else {
-                column.setSort(SortOrder.ASCENDING);
-                myProject.getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
-              }
-            }
-          }
-        });
-      }
-    });
 
     myProject.getTaskManager().addTaskListener(myRemoveOrderListener);
 

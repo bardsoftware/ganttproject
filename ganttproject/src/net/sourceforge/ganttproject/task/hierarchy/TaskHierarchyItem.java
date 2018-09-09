@@ -18,11 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.hierarchy;
 
-import java.util.ArrayList;
-
 import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.task.Task;
+
+import java.util.ArrayList;
 
 public class TaskHierarchyItem {
   private Task myTask;
@@ -39,7 +38,7 @@ public class TaskHierarchyItem {
     this.myTask = myTask;
     this.myContainerItem = containerItem;
     if (myContainerItem != null) {
-      myContainerItem.addNestedItem(this);
+      myContainerItem.addNestedItem(this, -1);
     }
   }
 
@@ -49,6 +48,10 @@ public class TaskHierarchyItem {
 
   public TaskHierarchyItem getContainerItem() {
     return myContainerItem;
+  }
+
+  public TaskHierarchyItem getNextSiblingItem() {
+    return myNextSiblingItem;
   }
 
   public TaskHierarchyItem[] getNestedItems() {
@@ -65,10 +68,28 @@ public class TaskHierarchyItem {
     return result;
   }
 
-  public void addNestedItem(TaskHierarchyItem nested) {
-    nested.myNextSiblingItem = myFirstNestedItem;
-    nested.myContainerItem = this;
-    myFirstNestedItem = nested;
+  public void addNestedItem(TaskHierarchyItem nested, int position) {
+    if (position == -1) {
+      // Just add to the end of the list
+      nested.myNextSiblingItem = myFirstNestedItem;
+      nested.myContainerItem = this;
+      myFirstNestedItem = nested;
+    } else {
+      int curCount = getNestedItems().length;
+      if (position == curCount) {
+        addNestedItem(nested, -1);
+        return;
+      }
+      TaskHierarchyItem nextItem = myFirstNestedItem;
+      for (int idx = curCount - position; nextItem != null && --idx > 0; nextItem = nextItem.getNextSiblingItem());
+      if (nextItem == null) {
+        addNestedItem(nested, -1);
+      } else {
+        nested.myNextSiblingItem = nextItem.myNextSiblingItem;
+        nested.myContainerItem = this;
+        nextItem.myNextSiblingItem = nested;
+      }
+    }
   }
 
   public void delete() {

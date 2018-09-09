@@ -24,6 +24,8 @@ import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.Task;
 
 import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
@@ -33,9 +35,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -47,6 +52,7 @@ import java.util.List;
 public class GanttTreeTable extends GPTreeTableBase {
   private final UIFacade myUIfacade;
   private static final NumberFormat ID_FORMAT = (NumberFormat) NumberFormat.getIntegerInstance().clone();
+
   static {
     ID_FORMAT.setGroupingUsed(false);
   }
@@ -96,15 +102,61 @@ public class GanttTreeTable extends GPTreeTableBase {
     TableCellRenderer idRenderer = new DefaultTableCellRenderer() {
       @Override
       public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-          int row, int column) {
+                                                     int row, int column) {
         if (value instanceof Integer) {
-          value = ID_FORMAT.format((Integer) value);
+          value = ID_FORMAT.format(value);
         }
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
       }
     };
     getTableHeaderUiFacade().findColumnByID(TaskDefaultColumn.ID.getStub().getID())
         .getTableColumnExt().setCellRenderer(idRenderer);
+
+    getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+        int index = getTable().columnAtPoint(mouseEvent.getPoint());
+        if (index == -1) {
+          return;
+        }
+
+        if (mouseEvent.isPopupTrigger() || mouseEvent.getButton() != MouseEvent.BUTTON1) {
+          return;
+        }
+        if (mouseEvent.isAltDown() || mouseEvent.isShiftDown() || mouseEvent.isControlDown()) {
+          return;
+        }
+        final TableHeaderUiFacadeImpl tableHeader = getTableHeaderUiFacade();
+        final ColumnImpl column = tableHeader.findColumnByViewIndex(index);
+        final TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
+
+        getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
+          @Override
+          public void run() {
+            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+              for (int i = 0; i < tableHeader.getSize(); i++) {
+                Column c = tableHeader.getField(i);
+                if (c != column) {
+                  c.setSort(SortOrder.UNSORTED);
+                }
+              }
+
+              if (column.getSort() == SortOrder.ASCENDING) {
+                column.setSort(SortOrder.DESCENDING);
+                getProject().getTaskManager().getTaskHierarchy().sort(
+                    Collections.reverseOrder((Comparator<Task>) taskColumn.getSortComparator())
+                );
+              } else {
+                column.setSort(SortOrder.ASCENDING);
+                getProject().getTaskManager().getTaskHierarchy().sort((Comparator<Task>) taskColumn.getSortComparator());
+              }
+            }
+          }
+        });
+      }
+    });
+
+
   }
 
   void centerViewOnSelectedCell() {

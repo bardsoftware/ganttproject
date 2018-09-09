@@ -34,7 +34,14 @@ public class CsvWriterImpl implements SpreadsheetWriter {
   private final CSVPrinter myCsvPrinter;
 
   CsvWriterImpl(OutputStream stream, CSVFormat format) throws IOException {
+    this(stream, format, false);
+  }
+  
+  CsvWriterImpl(OutputStream stream, CSVFormat format, boolean addBom) throws IOException {
     OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
+    if (addBom) {
+      writer.write('\ufeff');
+    }
     myCsvPrinter = new CSVPrinter(writer, format);
   }
 

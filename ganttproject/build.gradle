@@ -8,7 +8,7 @@ buildscript {
   }
 }
 plugins {
-  id "org.jetbrains.kotlin.jvm" version "1.2.41"
+  id "org.jetbrains.kotlin.jvm" version "1.2.61"
 }
 apply plugin: 'java'
 apply plugin: 'kotlin'
@@ -29,6 +29,14 @@ dependencies {
   mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
   // https://mvnrepository.com/artifact/org.apache.poi/poi
   mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.17'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.+'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.+'
+    mavenDeps group: 'org.jdom', name: 'jdom', version:'1.1.+'
+    mavenDeps group: 'net.sf.json-lib', name: 'json-lib', version:'2.4', classifier:'jdk15'
+    mavenDeps group: 'xml-apis', name: 'xml-apis', version:'2.0.2'
+    mavenDeps group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version:'1.4.2'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-api', version:'1.7.+'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.+'
 }
 
 compileKotlin {
