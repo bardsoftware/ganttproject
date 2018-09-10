@@ -58,12 +58,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
   }
 
-  public static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-
   /** Location of the icon files */
-  public static final String ICON_FILE_DIRECTORY = "/icons";
+  private static final String ICON_FILE_DIRECTORY = "/icons";
 
-  protected boolean iconVisible = true;
+  private boolean iconVisible = true;
 
   private final String myName;
 
@@ -137,7 +135,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
   }
 
-  protected final Icon createIcon(String iconSize) {
+  private final Icon createIcon(String iconSize) {
     if (iconSize == null || false == iconVisible) {
       return null;
     }
@@ -152,7 +150,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return resource == null ? null : new ImageIcon(resource);
   }
 
-  public static final Icon getIcon(String iconSize, String iconFileName) {
+  public static Icon getIcon(String iconSize, String iconFileName) {
     URL resource = GPAction.class.getResource(MessageFormat.format("{0}/{1}x{1}/{2}", ICON_FILE_DIRECTORY, iconSize, iconFileName));
     return resource == null ? null : new ImageIcon(resource);
 
@@ -294,7 +292,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return result;
   }
 
-  public static KeyStroke getKeyStroke(String keystrokeID) {
+  private static KeyStroke getKeyStroke(String keystrokeID) {
     String keystrokeText = getKeyStrokeText(keystrokeID);
     if (keystrokeText == null) {
       return null;
