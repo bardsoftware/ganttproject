@@ -8,7 +8,7 @@ buildscript {
     }
 }
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.60"
+  id "org.jetbrains.kotlin.jvm" version "1.2.61"
 }
 apply plugin: 'java'
 apply plugin: 'kotlin'
@@ -45,7 +45,6 @@ dependencies {
     mavenDeps group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version: '1.4.2'
     mavenDeps group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     mavenDeps group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
-
 }
 
 compileKotlin {

@@ -29,6 +29,7 @@ public class TestWeekendCalendar extends TaskTestCase {
           public Locale getLocale() {
             return Locale.US;
           }
+
           @Override
           public DateFormat getShortDateFormat() {
             return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
@@ -37,21 +38,22 @@ public class TestWeekendCalendar extends TaskTestCase {
       }
     };
   }
-    public void testTaskOverlappingWeekendIsTwoDaysShorter() {
-        Task t = getTaskManager().createTask();
-        t.setStart(TestSetupHelper.newFriday());// Friday
-        t.setEnd(TestSetupHelper.newTuesday()); // Tuesday
-        assertEquals("Unexpected length of task=" + t
-                + " which overlaps weekend", 2f, t.getDuration().getLength(
-                GregorianTimeUnitStack.DAY), 0.1);
-    }
 
-    @Override
-    protected TaskManager newTaskManager() {
-        return TestSetupHelper.newTaskManagerBuilder().withCalendar(myWeekendCalendar).build();
-    }
+  public void testTaskOverlappingWeekendIsTwoDaysShorter() {
+    Task t = getTaskManager().createTask();
+    t.setStart(TestSetupHelper.newFriday());// Friday
+    t.setEnd(TestSetupHelper.newTuesday()); // Tuesday
+    assertEquals("Unexpected length of task=" + t
+        + " which overlaps weekend", 2f, t.getDuration().getLength(
+        GregorianTimeUnitStack.DAY), 0.1);
+  }
 
-    private WeekendCalendarImpl myWeekendCalendar = new WeekendCalendarImpl();
+  private WeekendCalendarImpl myWeekendCalendar = new WeekendCalendarImpl();
+
+  @Override
+  protected TaskManager newTaskManager() {
+    return TestSetupHelper.newTaskManagerBuilder().withCalendar(myWeekendCalendar).build();
+  }
 
     public void testNoWeekendsButHasHolidays() {
         WeekendCalendarImpl noWeekendsOneHolidayCalendar = new WeekendCalendarImpl();
@@ -66,6 +68,5 @@ public class TestWeekendCalendar extends TaskTestCase {
             .build();
         t.setEnd(TestSetupHelper.newWendesday());
         assertEquals(4.0f, t.getDuration().getLength(GregorianTimeUnitStack.DAY));
-
-    }
+  }
 }

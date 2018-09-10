@@ -4,9 +4,9 @@
 
 Name "GanttProject"
 XPStyle on
-Icon "ganttproject_32_2.ico"
+Icon "ganttproject.ico"
 
-!define MUI_ICON "ganttproject_32_2.ico"
+!define MUI_ICON "ganttproject.ico"
 
 OutFile ganttproject-${VERSION_BUILD}.exe
 
@@ -70,7 +70,7 @@ Section "GanttProject"
 
   ; Put file there
   File ganttproject_16.ico
-  File ganttproject_32_2.ico
+  File ganttproject.ico
   File eclipsito.jar
   File ganttproject.bat
   File ganttproject.exe
@@ -96,7 +96,7 @@ Section "GanttProject"
   ; Associate .gan files with GP
   WriteRegStr HKCR ".gan" "" "GanttProject File"
   WriteRegStr HKCR ".gan\shell" "" "open"
-  WriteRegStr HKCR ".gan\DefaultIcon" "" "$INSTDIR\ganttproject_32_2.ico,0"
+  WriteRegStr HKCR ".gan\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
   WriteRegStr HKCR ".gan\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
   System::Call 'Shell32::SHChange Notify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 SectionEnd
@@ -107,23 +107,23 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\GanttProject"
   CreateShortCut "$SMPROGRAMS\GanttProject\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
-  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject_32_2.ico"
-  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
-  CreateShortCut "$DESKTOP\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject_32_2.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$SMPROGRAMS\GanttProject\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$DESKTOP\GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
 
 SectionEnd
 
 Section /o "Open Microsoft Project files with GanttProject"
   WriteRegStr HKCR ".mpp" "" "Microsoft Project File"
   WriteRegStr HKCR ".mpp\shell" "" "open"
-  WriteRegStr HKCR ".mpp\DefaultIcon" "" "$INSTDIR\ganttproject_32_2.ico,0"
+  WriteRegStr HKCR ".mpp\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
   WriteRegStr HKCR ".mpp\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 
   WriteRegStr HKCR ".mpx" "" "Microsoft Project File"
   WriteRegStr HKCR ".mpx\shell" "" "open"
-  WriteRegStr HKCR ".mpx\DefaultIcon" "" "$INSTDIR\ganttproject_32_2.ico,0"
+  WriteRegStr HKCR ".mpx\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
   WriteRegStr HKCR ".mpx\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 

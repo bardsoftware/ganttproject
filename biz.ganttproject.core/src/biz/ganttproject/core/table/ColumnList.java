@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.table;
 
+import javax.swing.*;
 import java.util.List;
 
 public interface ColumnList {
@@ -32,6 +33,10 @@ public interface ColumnList {
   void importData(ColumnList source);
 
   public interface Column {
+    SortOrder getSort();
+
+    void setSort(SortOrder sort);
+
     String getID();
 
     String getName();
@@ -55,6 +60,7 @@ public interface ColumnList {
     private int myWidth;
     private final String myName;
     private boolean isVisible;
+    private SortOrder mySortOrder = SortOrder.UNSORTED;
 
     public ColumnStub(String id, String name, boolean visible, int order, int width) {
       myName = name;
@@ -62,6 +68,16 @@ public interface ColumnList {
       myOrder = order;
       myWidth = width;
       isVisible = visible;
+    }
+
+    @Override
+    public SortOrder getSort() {
+      return mySortOrder;
+    }
+
+    @Override
+    public void setSort(SortOrder sort) {
+      mySortOrder = sort;
     }
 
     @Override

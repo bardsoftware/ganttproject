@@ -777,25 +777,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void openStartupDocument(String path) {
     if (path != null) {
       final Document document = getDocumentManager().getDocument(path);
-      // openStartupDocument(document);
-      getUndoManager().undoableEdit("OpenFile", new Runnable() {
-        @Override
-        public void run() {
-          try {
-            getProjectUIFacade().openProject(document, getProject());
-          } catch (DocumentException e) {
-            fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
-            if (!tryImportDocument(document)) {
-              getUIFacade().showErrorDialog(e);
-            }
-          } catch (IOException e) {
-            fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
-            if (!tryImportDocument(document)) {
-              getUIFacade().showErrorDialog(e);
-            }
-          }
+      try {
+        getProjectUIFacade().openProject(document, getProject());
+      } catch (DocumentException e) {
+        fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
+        if (!tryImportDocument(document)) {
+          getUIFacade().showErrorDialog(e);
         }
-      });
+      } catch (IOException e) {
+        fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
+        if (!tryImportDocument(document)) {
+          getUIFacade().showErrorDialog(e);
+        }
+      }
     }
   }
 

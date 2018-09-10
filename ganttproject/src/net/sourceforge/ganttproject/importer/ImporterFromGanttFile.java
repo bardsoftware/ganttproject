@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import org.osgi.service.prefs.Preferences;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
   private final ImportCalendarOption myImportCalendarOption = new ImportCalendarOption();
 
-  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
+  private final GPOption[] myOptions = new GPOption[]{myMergeResourcesOption, myImportCalendarOption};
 
   public ImporterFromGanttFile() {
     super("ganttprojectFiles");
@@ -128,6 +129,16 @@ public class ImporterFromGanttFile extends ImporterBase {
       myID = id;
       myOrder = order;
       myWidth = width;
+    }
+
+    @Override
+    public SortOrder getSort() {
+      return SortOrder.UNSORTED;
+    }
+
+    @Override
+    public void setSort(SortOrder sort) {
+
     }
 
     @Override

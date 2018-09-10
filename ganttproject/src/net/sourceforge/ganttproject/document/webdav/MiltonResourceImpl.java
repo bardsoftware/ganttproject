@@ -31,10 +31,12 @@ import io.milton.httpclient.File;
 import io.milton.httpclient.Folder;
 import io.milton.httpclient.Host;
 import io.milton.httpclient.HttpException;
+import io.milton.httpclient.IfMatchCheck;
 import io.milton.httpclient.ProgressListener;
 import io.milton.httpclient.Resource;
 import io.milton.httpclient.Utils.CancelledException;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -169,6 +171,8 @@ public class MiltonResourceImpl implements WebDavResource {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
     } catch (NotFoundException e) {
       throw new WebDavException(MessageFormat.format("Resource {0} is not found on {1}", myUrl.path, myUrl.hostName), e);
+    } catch (RuntimeException e) {
+      throw new WebDavException(MessageFormat.format("Something went wrong when locking {0}: {1}", myUrl.buildUrl(), e.getMessage()), e);
     }
   }
 
@@ -258,9 +262,13 @@ public class MiltonResourceImpl implements WebDavResource {
     assert parent.myImpl instanceof Folder;
     Folder parentFolder = (Folder) parent.myImpl;
     try {
-      final java.io.File tempFile = java.io.File.createTempFile("webdav-" + myUrl.hostUrl, "");
-      Files.write(byteArray, tempFile);
-      parentFolder.uploadFile(getName(), tempFile, null);
+      InputStream is = new BufferedInputStream(new ByteArrayInputStream(byteArray));
+      if (myImpl != null && myImpl.getLockToken() != null) {
+        parentFolder.upload(getName(), is, Long.valueOf(byteArray.length),
+            "application/xml", new IfMatchCheck(myImpl.getLockToken(), false, true), null);
+      } else {
+        parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), null);
+      }
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
