@@ -120,7 +120,9 @@ class GPCloudStorage(
       }
     }
 
-    val signupPane = GPCloudSignupPane(onTokenCallback)
+    val signupPane = GPCloudSignupPane(onTokenCallback, Consumer {
+      Platform.runLater { nextPage(it) }
+    })
     if (GPCloudOptions.authToken.value != "") {
       val paneBuilder = VBoxBuilder("pane-service-contents")
       paneBuilder.addTitle("Signing in to GanttProject Cloud")
