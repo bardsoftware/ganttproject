@@ -130,18 +130,23 @@ class BrowserPaneBuilder(
 
   private fun installEventHandlers() {
     fun selectItem(item: FolderItem, withEnter: Boolean, withControl: Boolean) {
-      if (!withEnter) {
-        return
-      }
-      if (item.isDirectory) {
-        breadcrumbView.append(item.name)
-        this.onOpenItem.accept(item)
-        filename.text = ""
-      } else if (!item.isDirectory) {
-        this.onOpenItem.accept(item)
-        filename.text = item.name
-        if (withControl) {
-          this.onLaunch.accept(item)
+      when {
+        withEnter && item.isDirectory -> {
+          breadcrumbView.append(item.name)
+          this.onOpenItem.accept(item)
+          filename.text = ""
+        }
+        withEnter && !item.isDirectory -> {
+          this.onOpenItem.accept(item)
+          filename.text = item.name
+          if (withControl) {
+            this.onLaunch.accept(item)
+          }
+        }
+        !withEnter && item.isDirectory -> {
+        }
+        !withEnter && !item.isDirectory -> {
+          this.onOpenItem.accept(item)
         }
       }
     }
