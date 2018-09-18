@@ -109,10 +109,14 @@ class GPCloudStorage(
   private fun doCreateUi(): Pane {
     val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
+      val validityAsLong = validity?.toLongOrNull()
       with(GPCloudOptions) {
         this.authToken.value = token
-        this.validity.value = Instant.now().plus(validity?.toLongOrNull()
-            ?: 0L, ChronoUnit.HOURS).epochSecond.toString()
+        this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
+          ""
+        } else {
+          Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
+        }
         this.userId.value = userId
       }
       Platform.runLater {
@@ -123,9 +127,9 @@ class GPCloudStorage(
     val signupPane = GPCloudSignupPane(onTokenCallback, Consumer {
       Platform.runLater { nextPage(it) }
     })
+    val paneBuilder = VBoxBuilder("pane-service-contents")
+    paneBuilder.addTitle("Signing in to GanttProject Cloud")
     if (GPCloudOptions.authToken.value != "") {
-      val paneBuilder = VBoxBuilder("pane-service-contents")
-      paneBuilder.addTitle("Signing in to GanttProject Cloud")
       val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLong())
       val remainingDuration = Duration.between(Instant.now(), expirationInstant)
       if (!remainingDuration.isNegative) {
@@ -137,10 +141,11 @@ class GPCloudStorage(
           "${minutes}m"
         }
         paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
-        paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
-        nextPage(paneBuilder.vbox)
       }
     }
+    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
+    nextPage(paneBuilder.vbox)
+
     signupPane.tryAccessToken(
         Consumer { _ ->
           println("Auth token is valid!")
@@ -168,9 +173,21 @@ class GPCloudStorage(
 
 // Persistently stored options
 object GPCloudOptions {
-  val authToken: StringOption = DefaultStringOption("authToken", "")
+  val authToken: StringOption = object : DefaultStringOption("authToken", "") {
+    override fun getPersistentValue(): String? {
+      return GPCloudOptions.validity.value.toLongOrNull()?.let {
+        if (it > 0) { super.getPersistentValue() } else { null }
+      }
+    }
+  }
   val validity: StringOption = DefaultStringOption("validity", "")
-  val userId: StringOption = DefaultStringOption("userId")
+  val userId: StringOption = object : DefaultStringOption("userId") {
+    override fun getPersistentValue(): String? {
+      return GPCloudOptions.validity.value.toLongOrNull()?.let {
+        if (it > 0) { super.getPersistentValue() } else { null }
+      }
+    }
+  }
 
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
 }
