@@ -24,6 +24,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
+import net.sourceforge.ganttproject.gui.UIUtil
 import org.controlsfx.control.BreadCrumbBar
 import org.controlsfx.control.textfield.TextFields
 import java.nio.file.Path
@@ -44,6 +45,8 @@ interface FolderItem {
   val isDirectory: Boolean
   // Is it possible to change lock state: unlock if locked or lock if unlocked
   val canChangeLock: Boolean
+
+  val buttons: List<Node>
 }
 
 /**
@@ -228,6 +231,7 @@ fun <T : FolderItem> createListCell(
           btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
           btnBox.children.add(btnDelete)
         }
+        btnBox.children.addAll(item.resource.value.buttons)
       } else {
         if (isLocked) {
           btnBox.children.add(Label("", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
@@ -347,4 +351,15 @@ fun <T : FolderItem> connect(
       }
     }
   }
+}
+
+fun createButton(id: String, onAction: () -> Unit): Node {
+  val text = UIUtil.getUiProperty("projectPane.browser.item.action.$id.text")
+  val iconName = UIUtil.getUiProperty("projectPane.browser.item.action.$id.icon")
+  val label = Label(text, FontAwesomeIconView(FontAwesomeIcon.valueOf(iconName))).also {
+    it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    it.styleClass.add("icon")
+  }
+  label.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onAction() }
+  return label
 }

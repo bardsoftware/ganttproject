@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
@@ -51,6 +52,8 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
       }
 
     }
+
+  override val buttons: List<Node> = listOf()
 }
 
 /**

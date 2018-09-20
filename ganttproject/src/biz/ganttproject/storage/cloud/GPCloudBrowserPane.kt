@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.storage.BrowserPaneBuilder
-import biz.ganttproject.storage.BrowserPaneElements
-import biz.ganttproject.storage.FolderItem
-import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -35,6 +32,7 @@ import javafx.concurrent.Service
 import javafx.concurrent.Task
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -62,6 +60,7 @@ class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory = true
+  override val buttons: List<Node> = listOf()
 }
 
 class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
@@ -87,6 +86,13 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isDirectory = false
   val refid: String = this.node["refid"].asText()
 
+  override val buttons: List<Node>
+  get() {
+    val btnHistory = createButton("history") {
+      println("History is requested")
+    }
+    return listOf(btnHistory)
+  }
 }
 
 /**
