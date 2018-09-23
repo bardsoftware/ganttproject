@@ -304,18 +304,42 @@ HBox.title Label {
 
 .webdav-list-cell {
     -fx-alignment: center-left;
-}
-
-.webdav-list-cell .icon {
-    -fx-text-fill: dimgrey;
+    -fx-text-fill: #616161;
 }
 
 .webdav-list-cell-button-pane {
     -fx-alignment: center-right;
 }
 
-.webdav-list-cell-button-pane .icon {
-    -fx-text-fill: dimgray;
-    -fx-min-width: 10;
-    -fx-min-height: 10;
+.folder-view .list-cell {
+    -fx-text-fill: red;
+    -fx-fill: #616161;
+    -fx-font-size: 120%;
 }
+
+.folder-view .list-cell:filled:selected {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #616161;
+    -fx-fill: #616161;
+}
+
+.list-view:focused .list-cell:filled:selected {
+    -fx-text-fill: #616161;
+}
+.folder-view:focused .list-cell:filled:selected {
+    -fx-text-fill: #616161;
+    -fx-fill: #616161;
+}
+
+.item-action {
+    -fx-min-width: 15;
+    -fx-min-height: 15;
+    -fx-font-size: 150%;
+}
+.item-action .glyph-icon {
+    -fx-fill: #616161;
+}
+.item-action:hover .glyph-icon {
+    -fx-fill: #424242;
+}
+

@@ -59,7 +59,7 @@ class FolderView<T : FolderItem>(
     isLockingSupported: BooleanProperty,
     isDeleteSupported: ReadOnlyBooleanProperty) {
 
-  var myContents: ObservableList<T> = FXCollections.emptyObservableList()
+  var myContents: ObservableList<T> = FXCollections.observableArrayList()
   val listView: ListView<ListViewItem<T>> = ListView()
 
   init {
@@ -74,6 +74,7 @@ class FolderView<T : FolderItem>(
         newValue.isSelected.value = true
       }
     }
+    listView.styleClass.add("folder-view")
   }
 
   /**
@@ -135,6 +136,7 @@ class ListViewItem<T : FolderItem>(resource: T) {
 
   init {
     this.resource = SimpleObjectProperty(resource)
+
   }
 }
 
@@ -212,12 +214,12 @@ fun <T : FolderItem> createListCell(
               isLocked -> Label("unlock", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {//.also {
                 it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
                 it.tooltip = Tooltip("Click to release lock")
-                it.styleClass.add("icon")
+                it.styleClass.add("item-action")
               }
               isLockable -> Label("lock", FontAwesomeIconView(FontAwesomeIcon.UNLOCK)).also {//.also {
                 it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
                 it.tooltip = Tooltip("Click to lock ${item.resource.value.name}")
-                it.styleClass.add("icon")
+                it.styleClass.add("item-action")
               }
               else -> null
             }
@@ -358,7 +360,7 @@ fun createButton(id: String, onAction: () -> Unit): Node {
   val iconName = UIUtil.getUiProperty("projectPane.browser.item.action.$id.icon")
   val label = Label(text, FontAwesomeIconView(FontAwesomeIcon.valueOf(iconName))).also {
     it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-    it.styleClass.add("icon")
+    it.styleClass.add("item-action")
   }
   label.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onAction() }
   return label

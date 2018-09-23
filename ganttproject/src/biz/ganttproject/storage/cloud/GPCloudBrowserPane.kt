@@ -86,12 +86,13 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isDirectory = false
   val refid: String = this.node["refid"].asText()
 
-  override val buttons: List<Node>
-  get() {
-    val btnHistory = createButton("history") {
+  private val btnHistory by lazy { createButton("history") {
       println("History is requested")
     }
-    return listOf(btnHistory)
+  }
+  override val buttons: List<Node>
+  get() {
+    return listOf(this.btnHistory)
   }
 }
 
