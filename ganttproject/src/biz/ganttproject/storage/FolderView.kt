@@ -180,6 +180,11 @@ fun <T : FolderItem> createListCell(
       }
       val hbox = HBox()
       hbox.styleClass.add("webdav-list-cell")
+      if (this.isSelected) {
+        hbox.styleClass.add("selected")
+      } else {
+        hbox.styleClass.remove("selected")
+      }
       val isLockable = item.resource.value.isLockable
       if (isLockable && !isLockingSupported.value) {
         isLockingSupported.value = true
@@ -211,12 +216,14 @@ fun <T : FolderItem> createListCell(
 
         val btnLock =
             when {
-              isLocked -> Label("unlock", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {//.also {
+              isLocked -> Label("unlock", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
+                //.also {
                 it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
                 it.tooltip = Tooltip("Click to release lock")
                 it.styleClass.add("item-action")
               }
-              isLockable -> Label("lock", FontAwesomeIconView(FontAwesomeIcon.UNLOCK)).also {//.also {
+              isLockable -> Label("lock", FontAwesomeIconView(FontAwesomeIcon.UNLOCK)).also {
+                //.also {
                 it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
                 it.tooltip = Tooltip("Click to lock ${item.resource.value.name}")
                 it.styleClass.add("item-action")
@@ -225,7 +232,7 @@ fun <T : FolderItem> createListCell(
             }
 
         if (btnLock != null) {
-          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onToggleLockResource.accept(item.resource.value)}
+          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onToggleLockResource.accept(item.resource.value) }
           btnBox.children.add(btnLock)
         }
         //btnBox.children.add(Label("Foo"))
