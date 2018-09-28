@@ -38,7 +38,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * This function takes path and loads path contents from the storage.
@@ -55,6 +57,7 @@ typealias Loader = (path: Path, success: Consumer<ObservableList<FolderItem>>, l
  */
 typealias OnItemAction = Consumer<FolderItem>
 
+typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
@@ -98,12 +101,13 @@ class BrowserPaneBuilder(
       onDelete: OnItemAction = Consumer {},
       onLock: OnItemAction = Consumer {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
-      canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)) {
+      canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
+      itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap()}) {
     this.listView = FolderView(
         this.dialogUi,
         onDelete,
         onLock,
-        canLock, canDelete)
+        canLock, canDelete, itemActionFactory)
     this.onOpenItem = onOpenItem
     this.onLaunch = onLaunch
   }

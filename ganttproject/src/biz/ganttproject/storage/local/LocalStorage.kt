@@ -30,7 +30,6 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Control
@@ -70,7 +69,6 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val canChangeLock: Boolean = false
   override val name: String = file.name
   override val isDirectory: Boolean = file.isDirectory
-  override val buttons: List<Node> = listOf()
 }
 
 fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {

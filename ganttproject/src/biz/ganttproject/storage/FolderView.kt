@@ -30,6 +30,7 @@ import org.controlsfx.control.textfield.TextFields
 import java.nio.file.Path
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Interface of a single filesystem item.
@@ -45,8 +46,6 @@ interface FolderItem {
   val isDirectory: Boolean
   // Is it possible to change lock state: unlock if locked or lock if unlocked
   val canChangeLock: Boolean
-
-  val buttons: List<Node>
 }
 
 /**
@@ -57,14 +56,15 @@ class FolderView<T : FolderItem>(
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
-    isDeleteSupported: ReadOnlyBooleanProperty) {
+    isDeleteSupported: ReadOnlyBooleanProperty,
+    private val itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap() }) {
 
   var myContents: ObservableList<T> = FXCollections.observableArrayList()
   val listView: ListView<ListViewItem<T>> = ListView()
 
   init {
     listView.setCellFactory { _ ->
-      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported)
+      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, this.itemActionFactory)
     }
     listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
       if (oldValue != null) {
@@ -154,7 +154,8 @@ fun <T : FolderItem> createListCell(
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
-    isDeleteSupported: ReadOnlyBooleanProperty): ListCell<ListViewItem<T>> {
+    isDeleteSupported: ReadOnlyBooleanProperty,
+    itemActionFactory: ItemActionFactory): ListCell<ListViewItem<T>> {
   return object : ListCell<ListViewItem<T>>() {
     override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
       try {
@@ -239,7 +240,12 @@ fun <T : FolderItem> createListCell(
           btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
           btnBox.children.add(btnDelete)
         }
-        btnBox.children.addAll(item.resource.value.buttons)
+        itemActionFactory.apply(item.resource.value).forEach{ key, action ->
+          createButton(key).also {
+            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> action.accept(item.resource.value) }
+            btnBox.children.add(it)
+          }
+        }
       } else {
         if (isLocked) {
           btnBox.children.add(Label("", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
@@ -368,13 +374,12 @@ fun <T : FolderItem> connect(
   }
 }
 
-fun createButton(id: String, onAction: () -> Unit): Node {
+fun createButton(id: String): Node {
   val text = UIUtil.getUiProperty("projectPane.browser.item.action.$id.text")
   val iconName = UIUtil.getUiProperty("projectPane.browser.item.action.$id.icon")
   val label = Label(text, FontAwesomeIconView(FontAwesomeIcon.valueOf(iconName))).also {
     it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
     it.styleClass.add("item-action")
   }
-  label.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onAction() }
   return label
 }
