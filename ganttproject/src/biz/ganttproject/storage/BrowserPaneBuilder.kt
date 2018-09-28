@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.lib.fx.VBoxBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -93,7 +94,7 @@ class BrowserPaneBuilder(
   private lateinit var onLaunch: OnItemAction
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { busyIndicator.progress = if (it) -1.0 else 0.0 }
+    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
 
   fun withListView(
       onOpenItem: OnItemAction = Consumer {},

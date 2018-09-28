@@ -208,6 +208,7 @@ class GPCloudBrowserPane(
   private fun loadHistory(item: ProjectJsonAsFolderItem, busyIndicator: Consumer<Boolean>) {
     this.historyService.apply {
       this.busyIndicator = busyIndicator
+      this.projectNode = item
       onSucceeded = EventHandler { _ -> this.busyIndicator.accept(false) }
       onFailed = EventHandler { _ ->
         busyIndicator.accept(false)

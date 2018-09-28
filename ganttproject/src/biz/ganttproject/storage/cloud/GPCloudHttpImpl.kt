@@ -92,9 +92,9 @@ fun filterTeams(jsonNode: JsonNode, filter: Predicate<JsonNode>): List<JsonNode>
 // but in practice we expect teams.size == 1
 fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<JsonNode> {
   return teams.flatMap { team ->
-    team.get("projects").let {
-      if (it is ArrayNode) {
-        it.filter(filter::test).map { project -> project.also { (it as ObjectNode).put("team", team["name"].asText()) } }
+    team.get("projects").let { node ->
+      if (node is ArrayNode) {
+        node.filter(filter::test).map { project -> project.also { (it as ObjectNode).put("team", team["name"].asText()) } }
       } else {
         emptyList()
       }
@@ -103,7 +103,7 @@ fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<Jso
 }
 
 // Processes cached response from GP Cloud
-class CachedTask(val path: Path, val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
+class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem> {
     return FXCollections.observableArrayList(
         when (path.nameCount) {
@@ -121,9 +121,9 @@ class CachedTask(val path: Path, val jsonNode: Property<JsonNode>) : Task<Observ
 }
 
 // Sends HTTP request to GP Cloud and returns a list of teams.
-class LoaderTask(val busyIndicator: Consumer<Boolean>,
+class LoaderTask(private val busyIndicator: Consumer<Boolean>,
                  val path: Path,
-                 val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
+                 private val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem>? {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
@@ -172,7 +172,7 @@ class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service
   }
 }
 
-class LockTask(val busyIndicator: Consumer<Boolean>, val project: ProjectJsonAsFolderItem) : Task<Boolean>() {
+class LockTask(private val busyIndicator: Consumer<Boolean>, val project: ProjectJsonAsFolderItem) : Task<Boolean>() {
   override fun call(): Boolean {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
@@ -206,18 +206,36 @@ class LockTask(val busyIndicator: Consumer<Boolean>, val project: ProjectJsonAsF
 
 class HistoryService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
-  var projectNode: ProjectJsonAsFolderItem? = null
+  lateinit var projectNode: ProjectJsonAsFolderItem
 
   override fun createTask(): Task<ObservableList<FolderItem>> {
-    return HistoryTask(busyIndicator)
+    return HistoryTask(busyIndicator, projectNode)
   }
 
 }
 
-class HistoryTask(private val busyIndicator: Consumer<Boolean>) : Task<ObservableList<FolderItem>>() {
+class HistoryTask(private val busyIndicator: Consumer<Boolean>,
+                  private val project: ProjectJsonAsFolderItem) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem> {
     this.busyIndicator.accept(true)
-    Thread.sleep(5000)
+    val log = GPLogger.getLogger("GPCloud")
+    val http = HttpClientBuilder.buildHttpClient()
+    val teamList = HttpGet("/p/versions?projectRefid=${project.refid}")
+
+    val jsonBody = let {
+      val resp = http.client.execute(http.host, teamList, http.context)
+      if (resp.statusLine.statusCode == 200) {
+        CharStreams.toString(InputStreamReader(resp.entity.content))
+      } else {
+        with(log) {
+          warning(
+              "Failed to get project history. Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
+          fine(EntityUtils.toString(resp.entity))
+        }
+        throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
+      }
+    }
+    println("Project History:\n$jsonBody")
     return FXCollections.observableArrayList()
   }
 }
