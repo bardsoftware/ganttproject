@@ -33,6 +33,7 @@ import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Path
@@ -172,9 +173,14 @@ class BrowserPaneBuilder(
       addTitle(String.format("webdav.ui.title.%s",
           this@BrowserPaneBuilder.mode.name.toLowerCase()),
           "GanttProject Cloud")
-      add(breadcrumbView.breadcrumbs)
-      add(errorLabel)
-      add(filename)
+      add(VBox().also {
+        it.styleClass.add("nav-search")
+        it.children.addAll(
+            breadcrumbView.breadcrumbs,
+            errorLabel,
+            filename
+        )
+      })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }

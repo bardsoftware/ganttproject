@@ -235,7 +235,6 @@ fun <T : FolderItem> createListCell(
           btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onToggleLockResource.accept(item.resource.value) }
           btnBox.children.add(btnLock)
         }
-        //btnBox.children.add(Label("Foo"))
         if (btnDelete != null) {
           btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
           btnBox.children.add(btnDelete)
@@ -288,6 +287,13 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
 
   init {
     breadcrumbs.styleClass.add("breadcrumb")
+    val defaultCrumbFactory = breadcrumbs.crumbFactory
+    breadcrumbs.crumbFactory = Callback { treeItem ->
+      val btn = defaultCrumbFactory.call(treeItem)
+      btn.graphic = Label("/")
+      btn.contentDisplay = ContentDisplay.LEFT
+      btn
+    }
     breadcrumbs.onCrumbAction = EventHandler { node ->
       node.selectedCrumb.children.clear()
       onSelectCrumb.accept(node.selectedCrumb.value.path)
