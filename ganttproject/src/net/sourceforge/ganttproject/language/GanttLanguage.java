@@ -111,6 +111,8 @@ public class GanttLanguage {
 
   private DateFormat currentTimeFormat = null;
 
+  private DateFormat currentDateTimeFormat = null;
+
   private List<String> myDayShortNames;
 
   private Locale myDateFormatLocale;
@@ -152,7 +154,6 @@ public class GanttLanguage {
   public SimpleDateFormat getLongDateFormat() {
     return myLongFormat;
   }
-
   public Locale getDateFormatLocale() {
     return myDateFormatLocale;
   }
@@ -162,6 +163,7 @@ public class GanttLanguage {
     setShortDateFormat((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale));
     currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
     currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+    currentDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
     myLongFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
     UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
     UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
@@ -295,6 +297,12 @@ public class GanttLanguage {
   public String formatTime(Calendar date) {
     return currentTimeFormat.format(date.getTime());
   }
+
+  public String formatDateTime(Date date) {
+    return currentDateTimeFormat.format(date);
+  }
+
+
 
   public Date parseDate(String dateString) {
     if (dateString == null) {

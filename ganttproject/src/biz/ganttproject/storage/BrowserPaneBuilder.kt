@@ -94,7 +94,10 @@ class BrowserPaneBuilder(
   private lateinit var onLaunch: OnItemAction
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
+    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 }}
+
+  val resultConsumer: Consumer<ObservableList<FolderItem>>
+    get() = Consumer { Platform.runLater { this.listView.setResources(it) }}
 
   fun withListView(
       onOpenItem: OnItemAction = Consumer {},
@@ -116,7 +119,7 @@ class BrowserPaneBuilder(
   fun withBreadcrumbs() {
     val onSelectCrumb = Consumer { path: Path ->
       loader(path,
-          Consumer { items -> this.listView.setResources(items) },
+          resultConsumer,
           busyIndicatorToggler
       )
     }

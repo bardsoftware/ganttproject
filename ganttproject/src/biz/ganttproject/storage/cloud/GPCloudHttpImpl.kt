@@ -204,6 +204,8 @@ class LockTask(private val busyIndicator: Consumer<Boolean>, val project: Projec
   }
 }
 
+
+// History service and tasks load project change history.
 class HistoryService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   lateinit var projectNode: ProjectJsonAsFolderItem
@@ -235,7 +237,13 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
         throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
       }
     }
-    println("Project History:\n$jsonBody")
-    return FXCollections.observableArrayList()
+
+    val objectMapper = ObjectMapper()
+    val jsonNode = objectMapper.readTree(jsonBody)
+    return if (jsonNode is ArrayNode) {
+      FXCollections.observableArrayList(jsonNode.map(::VersionJsonAsFolderItem))
+    } else {
+      FXCollections.observableArrayList()
+    }
   }
 }

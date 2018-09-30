@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.BrowserPaneElements
 import biz.ganttproject.storage.FolderItem
@@ -25,11 +26,11 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.language.GanttLanguage
 import java.nio.file.Path
 import java.time.Instant
 import java.util.*
@@ -72,6 +73,21 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
   val refid: String = this.node["refid"].asText()
 }
 
+class VersionJsonAsFolderItem(val node: JsonNode): FolderItem {
+  override val isLocked = false
+  override val isLockable = false
+  override val name: String
+    get() = """${node["author"]} [${this.formatTimestamp()}]"""
+  override val isDirectory = false
+  override val canChangeLock = false
+
+  private fun formatTimestamp(): String {
+    return GanttLanguage.getInstance().formatDateTime(CalendarFactory.newCalendar().let {
+      it.timeInMillis = node["timestamp"].asLong()
+      it.time
+    })
+  }
+}
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -106,7 +122,7 @@ class GPCloudBrowserPane(
 
       }
 
-      fun onAction(event: ActionEvent) {
+      fun onAction() {
         selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
             ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements!!.filenameInput.text)
 
@@ -115,7 +131,7 @@ class GPCloudBrowserPane(
 
     paneElements = builder.apply {
       withBreadcrumbs()
-      withActionButton(EventHandler { actionButtonHandler.onAction(it) })
+      withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
           onLaunch = Consumer {
@@ -133,7 +149,9 @@ class GPCloudBrowserPane(
           itemActionFactory = Function { it ->
             if (it is ProjectJsonAsFolderItem) {
               mapOf(
-                  "history" to Consumer { item -> this@GPCloudBrowserPane.loadHistory(it, builder.busyIndicatorToggler) }
+                  "history" to Consumer { item ->
+                    this@GPCloudBrowserPane.loadHistory(it, builder.resultConsumer, builder.busyIndicatorToggler)
+                  }
               )
             } else {
               Collections.emptyMap<String, Consumer<FolderItem>>()
@@ -205,11 +223,16 @@ class GPCloudBrowserPane(
     }
   }
 
-  private fun loadHistory(item: ProjectJsonAsFolderItem, busyIndicator: Consumer<Boolean>) {
+  private fun loadHistory(item: ProjectJsonAsFolderItem,
+                          resultConsumer: Consumer<ObservableList<FolderItem>>,
+                          busyIndicator: Consumer<Boolean>) {
     this.historyService.apply {
       this.busyIndicator = busyIndicator
       this.projectNode = item
-      onSucceeded = EventHandler { _ -> this.busyIndicator.accept(false) }
+      onSucceeded = EventHandler { _ ->
+        resultConsumer.accept(this.value)
+        this.busyIndicator.accept(false)
+      }
       onFailed = EventHandler { _ ->
         busyIndicator.accept(false)
         dialogUi.error("History loading has failed")
