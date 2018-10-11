@@ -495,10 +495,15 @@ public class TaskImpl implements Task {
 
   @Override
   public void move(Task targetSupertask) {
+    move(targetSupertask, -1);
+  }
+
+  @Override
+  public void move(Task targetSupertask, int position) {
     TaskImpl supertaskImpl = (TaskImpl) targetSupertask;
     TaskHierarchyItem targetItem = supertaskImpl.myTaskHierarchyItem;
     myTaskHierarchyItem.delete();
-    targetItem.addNestedItem(myTaskHierarchyItem);
+    targetItem.addNestedItem(myTaskHierarchyItem, position);
     myManager.onTaskMoved(this);
   }
 

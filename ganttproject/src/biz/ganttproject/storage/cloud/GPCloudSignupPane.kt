@@ -20,21 +20,19 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
-
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
-import javafx.scene.control.TextArea
-import javafx.scene.layout.BorderPane
+import javafx.scene.input.Clipboard
+import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.Pane
 import kotlinx.coroutines.experimental.launch
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
-import org.controlsfx.control.NotificationPane
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
@@ -42,7 +40,9 @@ import java.util.function.Consumer
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallback) : GPCloudStorage.PageUi {
+class GPCloudSignupPane internal constructor(
+    val onTokenCallback: AuthTokenCallback,
+    val pageSwitcher: Consumer<Pane>) : GPCloudStorage.PageUi {
   private val i18n = GanttLanguage.getInstance()
 
   private val httpd: HttpServerImpl by lazy {
@@ -52,29 +52,11 @@ class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallb
   override fun createPane(): CompletableFuture<Pane> {
     val result = CompletableFuture<Pane>()
 
-    val notification = NotificationPane()
-
     val rootPane = VBoxBuilder("pane-service-contents", "cloud-storage")
     rootPane.addTitle("GanttProject Cloud")
     rootPane.add(Label("collaborative storage for your projects").apply {
       this.styleClass.add("subtitle")
     })
-
-    val signinMsg = TextArea("").apply {
-      this.styleClass.addAll("text-area", "help")
-      this.isWrapText = true
-      this.isEditable = false
-      this.prefRowCount = 3
-    }
-
-    fun expandMsg(uri: String) {
-      val msgText = """
-        We just've opened a new browser tab to sign in into GanttProject Cloud. If it didn't open, copy this link to your browser address bar:
-        ${uri}""".trimIndent()
-      signinMsg.text = msgText
-      notification.graphic = signinMsg
-      notification.show()
-    }
 
     val btnSignIn = Button("Sign In")
     btnSignIn.styleClass.add("btn-attention")
@@ -114,12 +96,12 @@ class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallb
       this.styleClass.add("doclist-save-box")
     }
 
-    notification.content = rootPane.vbox
-    notification.isShowFromTop = false
-    notification.styleClass.addAll("fill-parent", "alert-info")
-    val wrapperPane = BorderPane(notification)
-    wrapperPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-    result.complete(wrapperPane)
+//    notification.content = rootPane.vbox
+//    notification.isShowFromTop = false
+//    notification.styleClass.addAll("fill-parent", "alert-info")
+//    val wrapperPane = BorderPane(notification)
+    rootPane.vbox.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    result.complete(rootPane.vbox)
     return result
   }
 
@@ -146,4 +128,29 @@ class GPCloudSignupPane internal constructor(val onTokenCallback: AuthTokenCallb
       }
     }
   }
+
+  fun expandMsg(uri: String) {
+    val rootPane = VBoxBuilder("pane-service-contents", "cloud-storage", "signing")
+    rootPane.addTitle("Signing In...")
+    val msgText = """
+        We will open a new browser tab to sign in into GanttProject Cloud.
+        If it doesn't work, copy this link to your browser address bar:
+        ${uri}""".trimIndent()
+    val label = Label(msgText)
+    label.isWrapText = true
+    label.styleClass.add("first-child")
+    rootPane.add(label)
+    val copyBtn = Button("Copy Link")
+    copyBtn.addEventHandler(ActionEvent.ACTION) {
+      Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
+        putString(uri)
+      })
+    }
+    rootPane.add(copyBtn, Pos.CENTER, null).apply {
+      styleClass.add("smallskip")
+    }
+    rootPane.vbox.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    pageSwitcher.accept(rootPane.vbox)
+  }
+
 }

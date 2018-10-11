@@ -11,25 +11,8 @@
     -fx-max-width: infinity;
 }
 
-.alert-info .notification-bar > .pane {
-    -fx-background-color: #99cc99;
-}
-
-.alert-info .notification-bar > .pane .label {
-    -fx-text-fill: black;
-}
-
-.text-area {
-    -fx-border-width: 0;
-    -fx-background-color: #99cc99;
-    -fx-text-fill: black;
-    -fx-background-insets: 0px;
-    -fx-effect: none;
-    -fx-pref-width: 100%;
-}
-
-.text-area .content {
-    -fx-background-color: #99cc99;
+.first-child {
+    -fx-padding: 1ex 0 0 0;
 }
 
 Label.h2 {
@@ -38,4 +21,6 @@ Label.h2 {
     -fx-font-size: 110%;
 }
 
-
+.smallskip {
+    -fx-padding: 0.5ex 0 0 0;
+}

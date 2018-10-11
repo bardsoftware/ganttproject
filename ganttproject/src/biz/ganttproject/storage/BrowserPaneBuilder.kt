@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.lib.fx.VBoxBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -33,11 +34,14 @@ import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * This function takes path and loads path contents from the storage.
@@ -54,6 +58,7 @@ typealias Loader = (path: Path, success: Consumer<ObservableList<FolderItem>>, l
  */
 typealias OnItemAction = Consumer<FolderItem>
 
+typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
@@ -89,7 +94,10 @@ class BrowserPaneBuilder(
   private lateinit var onLaunch: OnItemAction
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { busyIndicator.progress = if (it) -1.0 else 0.0 }
+    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 }}
+
+  val resultConsumer: Consumer<ObservableList<FolderItem>>
+    get() = Consumer { Platform.runLater { this.listView.setResources(it) }}
 
   fun withListView(
       onOpenItem: OnItemAction = Consumer {},
@@ -97,12 +105,13 @@ class BrowserPaneBuilder(
       onDelete: OnItemAction = Consumer {},
       onLock: OnItemAction = Consumer {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
-      canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)) {
+      canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
+      itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap()}) {
     this.listView = FolderView(
         this.dialogUi,
         onDelete,
         onLock,
-        canLock, canDelete)
+        canLock, canDelete, itemActionFactory)
     this.onOpenItem = onOpenItem
     this.onLaunch = onLaunch
   }
@@ -110,7 +119,7 @@ class BrowserPaneBuilder(
   fun withBreadcrumbs() {
     val onSelectCrumb = Consumer { path: Path ->
       loader(path,
-          Consumer { items -> this.listView.setResources(items) },
+          resultConsumer,
           busyIndicatorToggler
       )
     }
@@ -130,18 +139,23 @@ class BrowserPaneBuilder(
 
   private fun installEventHandlers() {
     fun selectItem(item: FolderItem, withEnter: Boolean, withControl: Boolean) {
-      if (!withEnter) {
-        return
-      }
-      if (item.isDirectory) {
-        breadcrumbView.append(item.name)
-        this.onOpenItem.accept(item)
-        filename.text = ""
-      } else if (!item.isDirectory) {
-        this.onOpenItem.accept(item)
-        filename.text = item.name
-        if (withControl) {
-          this.onLaunch.accept(item)
+      when {
+        withEnter && item.isDirectory -> {
+          breadcrumbView.append(item.name)
+          this.onOpenItem.accept(item)
+          filename.text = ""
+        }
+        withEnter && !item.isDirectory -> {
+          this.onOpenItem.accept(item)
+          filename.text = item.name
+          if (withControl) {
+            this.onLaunch.accept(item)
+          }
+        }
+        !withEnter && item.isDirectory -> {
+        }
+        !withEnter && !item.isDirectory -> {
+          this.onOpenItem.accept(item)
         }
       }
     }
@@ -167,9 +181,14 @@ class BrowserPaneBuilder(
       addTitle(String.format("webdav.ui.title.%s",
           this@BrowserPaneBuilder.mode.name.toLowerCase()),
           "GanttProject Cloud")
-      add(breadcrumbView.breadcrumbs)
-      add(errorLabel)
-      add(filename)
+      add(VBox().also {
+        it.styleClass.add("nav-search")
+        it.children.addAll(
+            breadcrumbView.breadcrumbs,
+            errorLabel,
+            filename
+        )
+      })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }

@@ -1,3 +1,9 @@
+* {
+    -gp-light-gray: #e0e0e0;
+    -gp-medium-gray: #616161;
+    -gp-dark-gray: #424242;
+}
+
 webdav-list-cell-button-pane.alert-warning {
     -fx-background-color: derive(orange, 40%);
     -fx-border-color: derive(orange, 20%);
@@ -302,20 +308,73 @@ HBox.title Label {
     -fx-spacing: 5;
 }
 
-.webdav-list-cell {
-    -fx-alignment: center-left;
+.list-cell .label {
+    -fx-text-fill: -gp-medium-gray;
+    -fx-alignment: CENTER-LEFT;
+    -fx-font-size: 120%;
 }
 
-.webdav-list-cell .icon {
-    -fx-text-fill: dimgrey;
+.list-cell:selected {
+    -fx-background-color: -gp-light-gray;
+}
+
+.list-cell:selected .label {
+    -fx-text-fill: -gp-medium-gray;
+    -fx-alignment: CENTER-LEFT;
+}
+
+.list-cell:hover .label {
+    -fx-text-fill: -gp-dark-gray;
 }
 
 .webdav-list-cell-button-pane {
     -fx-alignment: center-right;
 }
 
-.webdav-list-cell-button-pane .icon {
-    -fx-text-fill: dimgray;
-    -fx-min-width: 10;
-    -fx-min-height: 10;
+.item-action {
+    -fx-min-width: 15;
+    -fx-min-height: 15;
+    -fx-font-size: 120%;
+}
+
+.item-action .glyph-icon {
+    -fx-fill: -gp-medium-gray;
+}
+
+.item-action:hover .glyph-icon {
+    -fx-fill: -gp-dark-gray;
+}
+
+.folder-view {
+    -fx-focus-color: -gp-light-gray;
+}
+
+.nav-search {
+    -fx-background-color: -gp-dark-gray;
+    -fx-padding: 10 10 10 10;
+}
+
+
+.bread-crumb-bar {
+    -fx-background-color: transparent;
+}
+.crumb {
+    -fx-padding: 0 8 0 0;
+    -fx-border-insets: 3;
+    -fx-content-display: left;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-shape: null;
+    -fx-fill: -gp-light-gray;
+    -fx-font-size: 1.11em;
+    -fx-text-fill: -gp-light-gray;
+}
+.crumb:hover,
+.crumb:selected,
+.crumb:focused
+{
+    -fx-background-color: -gp-medium-gray;
+}
+.crumb .label {
+    -fx-text-fill: -gp-light-gray;
 }

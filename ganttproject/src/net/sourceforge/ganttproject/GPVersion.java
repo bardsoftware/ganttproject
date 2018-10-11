@@ -51,6 +51,7 @@ public abstract class GPVersion {
   public static String PILSEN_2_8_6 = String.format("2.8.6 Pilsen (build 2233)");
   public static String PILSEN_2_8_7 = String.format("2.8.7 Pilsen (build 2262)");
   public static String PILSEN_2_8_8 = String.format("2.8.8 Pilsen (build 2308)");
+  public static String PILSEN_2_8_9 = String.format("2.8.9 Pilsen (build %s)", BUILD);
   public static String DEV = String.format("3.0 DEV (build %s)", BUILD);
   public static String CURRENT = DEV;
 

@@ -150,7 +150,7 @@ task distWin(dependsOn: distBin) {
             include "ganttproject.l4j.ini"
             include 'ganttproject.nsi'
             include "ganttproject_16.ico"
-            include "ganttproject_32_2.ico"
+            include "ganttproject.ico"
         }
         println '= Building installer...'
         exec {

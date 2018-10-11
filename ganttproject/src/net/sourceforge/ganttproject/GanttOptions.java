@@ -107,7 +107,9 @@ public class GanttOptions extends SaverBase {
 
   private int buttonsshow;
 
-  /** FTP options */
+  /**
+   * FTP options
+   */
   private String FTPUrl = "";
 
   private String FTPDirectory = "";
@@ -116,7 +118,9 @@ public class GanttOptions extends SaverBase {
 
   private String FTPPwd = "";
 
-  /** Export options. */
+  /**
+   * Export options.
+   */
   private boolean bExportName;
 
   private boolean bExportComplete;
@@ -125,7 +129,9 @@ public class GanttOptions extends SaverBase {
 
   private boolean bExport3DBorders;
 
-  /** CSV export options. */
+  /**
+   * CSV export options.
+   */
   private CSVOptions csvOptions;
 
   private Map<String, GPOption<?>> myGPOptions = Maps.newLinkedHashMap();
@@ -154,7 +160,9 @@ public class GanttOptions extends SaverBase {
     return myPluginPreferencesRootNode;
   }
 
-  /** Initialize the options with default values. */
+  /**
+   * Initialize the options with default values.
+   */
   public void initDefault() {
     automatic = false;
     redline = false;
@@ -200,150 +208,155 @@ public class GanttOptions extends SaverBase {
       GPLogger.log(e);
     }
   }
+
   private void doSave(OutputStream out) throws Exception {
-      final TransformerHandler handler = ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();
-      Transformer serializer = handler.getTransformer();
-      serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-      serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-      serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-      handler.setResult(new StreamResult(out));
-      handler.startDocument();
-      // handler.startDTD("ganttproject.sourceforge.net",
-      // "-//GanttProject.org//DTD GanttProject-1.x//EN",
-      // "http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
-      // handler.endDTD();
+    final TransformerHandler handler = ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();
+    Transformer serializer = handler.getTransformer();
+    serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+    serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+    serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+    handler.setResult(new StreamResult(out));
+    handler.startDocument();
+    // handler.startDTD("ganttproject.sourceforge.net",
+    // "-//GanttProject.org//DTD GanttProject-1.x//EN",
+    // "http://ganttproject.sourceforge.net/dtd/ganttproject.dtd");
+    // handler.endDTD();
 
-      final AttributesImpl attrs = new AttributesImpl();
-      addAttribute("version", GPVersion.getCurrentVersionNumber(), attrs);
-      handler.startElement("", "ganttproject-options", "ganttproject-options", attrs);
+    final AttributesImpl attrs = new AttributesImpl();
+    addAttribute("version", GPVersion.getCurrentVersionNumber(), attrs);
+    handler.startElement("", "ganttproject-options", "ganttproject-options", attrs);
 
-      attrs.clear();
-      // write the task Color
+    attrs.clear();
+    // write the task Color
 
-      // Color color = getUIConfiguration().getTaskColor();
-      // attrs.addAttribute("", "red", "red", "CDATA", "" + color.getRed());
-      // attrs.addAttribute("", "green", "green", "CDATA", ""
-      // + color.getGreen());
-      // attrs.addAttribute("", "blue", "blue", "CDATA", ""
-      // + color.getBlue());
-      // handler.startElement("", "task-color", "task-color", attrs);
-      // handler.endElement("", "task-color", "task-color"); attrs.clear();
+    // Color color = getUIConfiguration().getTaskColor();
+    // attrs.addAttribute("", "red", "red", "CDATA", "" + color.getRed());
+    // attrs.addAttribute("", "green", "green", "CDATA", ""
+    // + color.getGreen());
+    // attrs.addAttribute("", "blue", "blue", "CDATA", ""
+    // + color.getBlue());
+    // handler.startElement("", "task-color", "task-color", attrs);
+    // handler.endElement("", "task-color", "task-color"); attrs.clear();
 
-      Color resourceColor = myUIConfig.getResourceColor();
-      if (resourceColor != null) {
-        attrs.addAttribute("", "resources", "resources", "CDATA", ColorConvertion.getColor(resourceColor));
+    Color resourceColor = myUIConfig.getResourceColor();
+    if (resourceColor != null) {
+      attrs.addAttribute("", "resources", "resources", "CDATA", ColorConvertion.getColor(resourceColor));
+    }
+    Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();
+    if (resourceOverloadColor != null) {
+      attrs.addAttribute("", "resourcesOverload", "resourcesOverload", "CDATA",
+          ColorConvertion.getColor(resourceOverloadColor));
+    }
+    Color resourceUnderloadColor = myUIConfig.getResourceUnderloadColor();
+    if (resourceUnderloadColor != null) {
+      attrs.addAttribute("", "resourcesUnderload", "resourcesUnderload", "CDATA",
+          ColorConvertion.getColor(resourceUnderloadColor));
+    }
+    Color weekEndColor = myUIConfig.getWeekEndColor();
+    if (weekEndColor != null) {
+      attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA", ColorConvertion.getColor(weekEndColor));
+    }
+    Color daysOffColor = myUIConfig.getDayOffColor();
+    if (daysOffColor != null) {
+      attrs.addAttribute("", "daysOff", "daysOff", "CDATA", ColorConvertion.getColor(daysOffColor));
+    }
+    handler.startElement("", "colors", "colors", attrs);
+    handler.endElement("", "colors", "colors");
+    attrs.clear();
+
+    // Geometry of the window
+    addAttribute("x", "" + x, attrs);
+    addAttribute("y", "" + y, attrs);
+    addAttribute("width", "" + width, attrs);
+    addAttribute("height", "" + height, attrs);
+    addAttribute("maximized", String.valueOf(this.isMaximized), attrs);
+    emptyElement("geometry", attrs, handler);
+
+    // ToolBar position
+    addAttribute("position", "" + toolBarPosition, attrs);
+    addAttribute("icon-size", "" + iconSize, attrs);
+    addAttribute("show", "" + buttonsshow, attrs);
+    emptyElement("toolBar", attrs, handler);
+    addAttribute("show", "" + bShowStatusBar, attrs);
+    emptyElement("statusBar", attrs, handler);
+
+    // Export options
+    addAttribute("name", "" + bExportName, attrs);
+    addAttribute("complete", "" + bExportComplete, attrs);
+    addAttribute("border3d", "" + bExport3DBorders, attrs);
+    addAttribute("relations", "" + bExportRelations, attrs);
+    emptyElement("export", attrs, handler);
+
+    // csv export options
+    startElement("csv-export", attrs, handler);
+    addAttribute("fixed", "" + csvOptions.bFixedSize, attrs);
+    addAttribute("separatedChar", "" + csvOptions.sSeparatedChar, attrs);
+    addAttribute("separatedTextChar", "" + csvOptions.sSeparatedTextChar, attrs);
+    emptyElement("csv-general", attrs, handler);
+
+    endElement("csv-export", handler);
+
+    addAttribute("id", "csv-export", attrs);
+    startElement("view", attrs, handler);
+    for (Map.Entry<String, BooleanOption> entry : csvOptions.getTaskOptions().entrySet()) {
+      if (entry.getValue().isChecked()) {
+        addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
+        emptyElement("field", attrs, handler);
       }
-      Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();
-      if (resourceOverloadColor != null) {
-        attrs.addAttribute("", "resourcesOverload", "resourcesOverload", "CDATA",
-            ColorConvertion.getColor(resourceOverloadColor));
+    }
+    startElement("resources", attrs, handler);
+    for (Map.Entry<String, BooleanOption> entry : csvOptions.getResourceOptions().entrySet()) {
+      if (entry.getValue().isChecked()) {
+        addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
+        emptyElement("field", attrs, handler);
       }
-      Color resourceUnderloadColor = myUIConfig.getResourceUnderloadColor();
-      if (resourceUnderloadColor != null) {
-        attrs.addAttribute("", "resourcesUnderload", "resourcesUnderload", "CDATA",
-            ColorConvertion.getColor(resourceUnderloadColor));
+    }
+    endElement("resources", handler);
+    if (csvOptions.getBomOption().getValue()) {
+      new OptionSaver().saveOption(
+          "write-bom", csvOptions.getBomOption(), handler);
+    }
+    endElement("view", handler);
+
+    // automatic popup launch
+    addAttribute("value", "" + automatic, attrs);
+    emptyElement("automatic-launch", attrs, handler);
+    // automatic tips of the day launch
+    // Should WebDAV resources be locked, when opening them?
+    addAttribute("value", "" + lockDAVMinutes, attrs);
+    emptyElement("lockdavminutes", attrs, handler);
+    // write the xsl directory
+    addAttribute("dir", xslDir, attrs);
+    emptyElement("xsl-dir", attrs, handler);
+    // write the xslfo directory
+    addAttribute("file", xslFo, attrs);
+    emptyElement("xsl-fo", attrs, handler);
+    // write the working directory directory
+    addAttribute("dir", workingDir, attrs);
+    emptyElement("working-dir", attrs, handler);
+    // The last opened files
+    {
+      startElement("files", attrs, handler);
+
+      for (String recent : myDocumentManager.getRecentDocuments()) {
+        addAttribute("path", recent, attrs);
+        emptyElement("file", attrs, handler);
       }
-      Color weekEndColor = myUIConfig.getWeekEndColor();
-      if (weekEndColor != null) {
-        attrs.addAttribute("", "weekEnd", "weekEnd", "CDATA", ColorConvertion.getColor(weekEndColor));
-      }
-      Color daysOffColor = myUIConfig.getDayOffColor();
-      if (daysOffColor != null) {
-        attrs.addAttribute("", "daysOff", "daysOff", "CDATA", ColorConvertion.getColor(daysOffColor));
-      }
-      handler.startElement("", "colors", "colors", attrs);
-      handler.endElement("", "colors", "colors");
-      attrs.clear();
+      endElement("files", handler);
+    }
 
-      // Geometry of the window
-      addAttribute("x", "" + x, attrs);
-      addAttribute("y", "" + y, attrs);
-      addAttribute("width", "" + width, attrs);
-      addAttribute("height", "" + height, attrs);
-      addAttribute("maximized", String.valueOf(this.isMaximized), attrs);
-      emptyElement("geometry", attrs, handler);
+    //addAttribute("category", "chart-main", attrs);
+    //addAttribute("spec", getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
+    //emptyElement("font", attrs, handler);
 
-      // ToolBar position
-      addAttribute("position", "" + toolBarPosition, attrs);
-      addAttribute("icon-size", "" + iconSize, attrs);
-      addAttribute("show", "" + buttonsshow, attrs);
-      emptyElement("toolBar", attrs, handler);
-      addAttribute("show", "" + bShowStatusBar, attrs);
-      emptyElement("statusBar", attrs, handler);
+    saveRoleSets(handler);
+    new OptionSaver().saveOptionMap(myGPOptions.entrySet(), handler);
+    savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
+    savePreferences(myPluginPreferencesRootNode.node("/instance"), handler);
+    endElement("ganttproject-options", handler);
 
-      // Export options
-      addAttribute("name", "" + bExportName, attrs);
-      addAttribute("complete", "" + bExportComplete, attrs);
-      addAttribute("border3d", "" + bExport3DBorders, attrs);
-      addAttribute("relations", "" + bExportRelations, attrs);
-      emptyElement("export", attrs, handler);
-
-      // csv export options
-      startElement("csv-export", attrs, handler);
-      addAttribute("fixed", "" + csvOptions.bFixedSize, attrs);
-      addAttribute("separatedChar", "" + csvOptions.sSeparatedChar, attrs);
-      addAttribute("separatedTextChar", "" + csvOptions.sSeparatedTextChar, attrs);
-      emptyElement("csv-general", attrs, handler);
-
-      endElement("csv-export", handler);
-
-      addAttribute("id", "csv-export", attrs);
-      startElement("view", attrs, handler);
-      for (Map.Entry<String, BooleanOption> entry: csvOptions.getTaskOptions().entrySet()) {
-        if (entry.getValue().isChecked()) {
-          addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
-          emptyElement("field", attrs, handler);
-        }
-      }
-      startElement("resources", attrs, handler);
-      for (Map.Entry<String, BooleanOption> entry: csvOptions.getResourceOptions().entrySet()) {
-        if (entry.getValue().isChecked()) {
-          addAttribute("id", XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);
-          emptyElement("field", attrs, handler);
-        }
-      }
-      endElement("resources", handler);
-      endElement("view", handler);
-
-      // automatic popup launch
-      addAttribute("value", "" + automatic, attrs);
-      emptyElement("automatic-launch", attrs, handler);
-      // automatic tips of the day launch
-      // Should WebDAV resources be locked, when opening them?
-      addAttribute("value", "" + lockDAVMinutes, attrs);
-      emptyElement("lockdavminutes", attrs, handler);
-      // write the xsl directory
-      addAttribute("dir", xslDir, attrs);
-      emptyElement("xsl-dir", attrs, handler);
-      // write the xslfo directory
-      addAttribute("file", xslFo, attrs);
-      emptyElement("xsl-fo", attrs, handler);
-      // write the working directory directory
-      addAttribute("dir", workingDir, attrs);
-      emptyElement("working-dir", attrs, handler);
-      // The last opened files
-      {
-        startElement("files", attrs, handler);
-
-        for (String recent : myDocumentManager.getRecentDocuments()) {
-          addAttribute("path", recent, attrs);
-          emptyElement("file", attrs, handler);
-        }
-        endElement("files", handler);
-      }
-
-      //addAttribute("category", "chart-main", attrs);
-      //addAttribute("spec", getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
-      //emptyElement("font", attrs, handler);
-
-      saveRoleSets(handler);
-      new OptionSaver().saveOptionMap(myGPOptions.entrySet(), handler);
-      savePreferences(myPluginPreferencesRootNode.node("/configuration"), handler);
-      savePreferences(myPluginPreferencesRootNode.node("/instance"), handler);
-      endElement("ganttproject-options", handler);
-
-      GPLogger.log("[GanttOptions] save(): finished!!");
-      handler.endDocument();
+    GPLogger.log("[GanttOptions] save(): finished!!");
+    handler.endDocument();
   }
 
   private void savePreferences(Preferences node, TransformerHandler handler) throws BackingStoreException, SAXException {
@@ -370,25 +383,25 @@ public class GanttOptions extends SaverBase {
     String result;
     final int BOLDITALIC = Font.BOLD + Font.ITALIC;
     switch (font.getStyle()) {
-    case Font.PLAIN: {
-      result = "plain";
-      break;
-    }
-    case Font.BOLD: {
-      result = "bold";
-      break;
-    }
-    case Font.ITALIC: {
-      result = "italic";
-      break;
-    }
-    case BOLDITALIC: {
-      result = "bolditalic";
-      break;
-    }
-    default: {
-      throw new RuntimeException("Illegal value of font style. style=" + font.getStyle() + " font=" + font);
-    }
+      case Font.PLAIN: {
+        result = "plain";
+        break;
+      }
+      case Font.BOLD: {
+        result = "bold";
+        break;
+      }
+      case Font.ITALIC: {
+        result = "italic";
+        break;
+      }
+      case BOLDITALIC: {
+        result = "bolditalic";
+        break;
+      }
+      default: {
+        throw new RuntimeException("Illegal value of font style. style=" + font.getStyle() + " font=" + font);
+      }
     }
     return result;
   }
@@ -403,7 +416,9 @@ public class GanttOptions extends SaverBase {
     return res;
   }
 
-  /** Load the options file */
+  /**
+   * Load the options file
+   */
   public boolean load() {
     // Use an instance of ourselves as the SAX event handler
     DefaultHandler handler = new GanttXMLOptionsParser();
@@ -483,7 +498,9 @@ public class GanttOptions extends SaverBase {
     return myRoleManager;
   }
 
-  /** Class to parse the xml option file */
+  /**
+   * Class to parse the xml option file
+   */
   class GanttXMLOptionsParser extends DefaultHandler {
 
     private PluginOptionsHandler myPluginOptionsHandler;
@@ -493,8 +510,8 @@ public class GanttOptions extends SaverBase {
 
     @Override
     public void startElement(String namespaceURI, String sName, // simple name
-        String qName, // qualified name
-        Attributes attrs) throws SAXException {
+                             String qName, // qualified name
+                             Attributes attrs) throws SAXException {
 
       if ("ganttproject-options".equals(qName)) {
         myVersion = attrs.getValue("version");
@@ -510,9 +527,15 @@ public class GanttOptions extends SaverBase {
       int r = 0, g = 0, b = 0;
 
       if ("option".equals(qName)) {
-        GPOption option = myGPOptions.get(attrs.getValue("id"));
+        String id = attrs.getValue("id");
+        GPOption option;
+        if (id.equals(csvOptions.getBomOption().getID())) {
+          option = csvOptions.getBomOption();
+        } else {
+          option = myGPOptions.get(id);
+        }
         if (option instanceof ListOption) {
-          myContextOption = (ListOption)option;
+          myContextOption = (ListOption) option;
         } else {
           if (option != null) {
             option.loadPersistentValue(attrs.getValue("value"));
@@ -676,21 +699,21 @@ public class GanttOptions extends SaverBase {
           } else if (qName.equals("csv-resources")) {
             Boolean bValue = Boolean.valueOf(value);
             switch (aName) {
-            case "id":
-              csvOptions.getResourceOptions().get("id").setValue(bValue);
-              break;
-            case "name":
-              csvOptions.getResourceOptions().get(ResourceDefaultColumn.NAME.getStub().getID()).setValue(bValue);
-              break;
-            case "mail":
-              csvOptions.getResourceOptions().get(ResourceDefaultColumn.EMAIL.getStub().getID()).setValue(bValue);
-              break;
-            case "phone":
-              csvOptions.getResourceOptions().get(ResourceDefaultColumn.PHONE.getStub().getID()).setValue(bValue);
-              break;
-            case "role":
-              csvOptions.getResourceOptions().get(ResourceDefaultColumn.ROLE.getStub().getID()).setValue(bValue);
-              break;
+              case "id":
+                csvOptions.getResourceOptions().get("id").setValue(bValue);
+                break;
+              case "name":
+                csvOptions.getResourceOptions().get(ResourceDefaultColumn.NAME.getStub().getID()).setValue(bValue);
+                break;
+              case "mail":
+                csvOptions.getResourceOptions().get(ResourceDefaultColumn.EMAIL.getStub().getID()).setValue(bValue);
+                break;
+              case "phone":
+                csvOptions.getResourceOptions().get(ResourceDefaultColumn.PHONE.getStub().getID()).setValue(bValue);
+                break;
+              case "role":
+                csvOptions.getResourceOptions().get(ResourceDefaultColumn.ROLE.getStub().getID()).setValue(bValue);
+                break;
             }
           }
         }
@@ -723,72 +746,100 @@ public class GanttOptions extends SaverBase {
     }
   }
 
-  /** @return the color for resources. */
+  /**
+   * @return the color for resources.
+   */
   public Color getResourceColor() {
     return getUIConfiguration().getResourceColor();
   }
 
-  /** @return the lock DAV Minutes. */
+  /**
+   * @return the lock DAV Minutes.
+   */
   public int getLockDAVMinutes() {
     return lockDAVMinutes;
   }
 
-  /** @return the undo number */
+  /**
+   * @return the undo number
+   */
   public int getUndoNumber() {
     return undoNumber;
   }
 
-  /** @return the working directory. */
+  /**
+   * @return the working directory.
+   */
   public String getWorkingDir() {
     return workingDir;
   }
 
-  /** @return the xsl directory. */
+  /**
+   * @return the xsl directory.
+   */
   public String getXslDir() {
     return xslDir;
   }
 
-  /** @return the xsl-fo file. */
+  /**
+   * @return the xsl-fo file.
+   */
   public String getXslFo() {
     return (new File(xslFo).exists()) ? xslFo : getClass().getResource("/xslfo/ganttproject.xsl").toString();
   }
 
-  /** @return automatic launch properties box when create a new task. */
+  /**
+   * @return automatic launch properties box when create a new task.
+   */
   public boolean getAutomatic() {
     return automatic;
   }
 
-  /** @return true is options are loaded from the options file. */
+  /**
+   * @return true is options are loaded from the options file.
+   */
   public boolean isLoaded() {
     return isloaded;
   }
 
-  /** @return true if show the status bar. */
+  /**
+   * @return true if show the status bar.
+   */
   public boolean getShowStatusBar() {
     return bShowStatusBar;
   }
 
-  /** set show the status bar. */
+  /**
+   * set show the status bar.
+   */
   public void setShowStatusBar(boolean showStatusBar) {
     bShowStatusBar = showStatusBar;
   }
 
-  /** @return the top left x position of the window. */
+  /**
+   * @return the top left x position of the window.
+   */
   public int getX() {
     return x;
   }
 
-  /** @return the top left y position of the window. */
+  /**
+   * @return the top left y position of the window.
+   */
   public int getY() {
     return y;
   }
 
-  /** @return the width of the window. */
+  /**
+   * @return the width of the window.
+   */
   public int getWidth() {
     return width;
   }
 
-  /** @return the height of the window. */
+  /**
+   * @return the height of the window.
+   */
   public int getHeight() {
     return height;
   }
@@ -797,24 +848,30 @@ public class GanttOptions extends SaverBase {
     return this.isMaximized;
   }
 
-  /** @return the csvOptions. */
+  /**
+   * @return the csvOptions.
+   */
   public CSVOptions getCSVOptions() {
     return csvOptions;
   }
 
-  /** @return the toolbar position. */
+  /**
+   * @return the toolbar position.
+   */
   public int getToolBarPosition() {
     return toolBarPosition;
   }
 
-  /** @return the size of the icons on the toolbar. */
+  /**
+   * @return the size of the icons on the toolbar.
+   */
   public String getIconSize() {
     return iconSize;
   }
 
   /**
    * @return true if you want to export the name of the task on the exported
-   *         chart.
+   * chart.
    */
   public boolean getExportName() {
     return bExportName;
@@ -822,7 +879,7 @@ public class GanttOptions extends SaverBase {
 
   /**
    * @return true if you want to export the complete percent of the task on the
-   *         exported chart.
+   * exported chart.
    */
   public boolean getExportComplete() {
     return bExportComplete;
@@ -830,13 +887,15 @@ public class GanttOptions extends SaverBase {
 
   /**
    * @return true if you want to export the relations of the task on the
-   *         exported chart.
+   * exported chart.
    */
   public boolean getExportRelations() {
     return bExportRelations;
   }
 
-  /** @return the 3d borders export. */
+  /**
+   * @return the 3d borders export.
+   */
   public boolean getExport3dBorders() {
     return bExport3DBorders;
   }
@@ -863,7 +922,7 @@ public class GanttOptions extends SaverBase {
 
   /**
    * @return the button show attribute must be GanttOptions.ICONS or
-   *         GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
+   * GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
    */
   public int getButtonShow() {
     return buttonsshow;
@@ -879,90 +938,124 @@ public class GanttOptions extends SaverBase {
     buttonsshow = buttonShow;
   }
 
-  /** Set a new icon size. Must be 16, 24 (or 32 exceptionnally) */
+  /**
+   * Set a new icon size. Must be 16, 24 (or 32 exceptionnally)
+   */
   public void setIconSize(String sIconSize) {
     iconSize = sIconSize;
   }
 
-  /** set the toolbar position. */
+  /**
+   * set the toolbar position.
+   */
   public void setToolBarPosition(int iToolBarPosition) {
     toolBarPosition = iToolBarPosition;
   }
 
-  /** Set new window position (top left corner) */
+  /**
+   * Set new window position (top left corner)
+   */
   public void setWindowPosition(int x, int y) {
     this.x = x;
     this.y = y;
   }
 
-  /** Set new window position (top left corner) */
+  /**
+   * Set new window position (top left corner)
+   */
   public void setWindowSize(int width, int height, boolean isMaximized) {
     this.width = width;
     this.height = height;
     this.isMaximized = isMaximized;
   }
 
-  /** Set new working directory value. */
+  /**
+   * Set new working directory value.
+   */
   public void setWorkingDirectory(String workingDirectory) {
     workingDir = workingDirectory;
   }
 
-  /** set a new value for web dav locking. */
+  /**
+   * set a new value for web dav locking.
+   */
   public void setLockDAVMinutes(int minuteslock) {
     lockDAVMinutes = minuteslock;
   }
 
-  /** set a new value for undo number. */
+  /**
+   * set a new value for undo number.
+   */
   public void setUndoNumber(int number) {
     undoNumber = number;
   }
 
-  /** set a new default resources color. */
+  /**
+   * set a new default resources color.
+   */
   public void setResourceColor(Color color) {
     getUIConfiguration().setResourceColor(color);
   }
 
-  /** set a new resources overload tasks color. */
+  /**
+   * set a new resources overload tasks color.
+   */
   public void setResourceOverloadColor(Color color) {
     getUIConfiguration().setResourceOverloadColor(color);
   }
 
-  /** set a new resources underload tasks color. */
+  /**
+   * set a new resources underload tasks color.
+   */
   public void setResourceUnderloadColor(Color color) {
     getUIConfiguration().setResourceUnderloadColor(color);
   }
 
-  /** set a new previous tasks color. */
+  /**
+   * set a new previous tasks color.
+   */
   public void setPreviousTaskColor(Color color) {
     getUIConfiguration().setPreviousTaskColor(color);
   }
 
-  /** set a new earlier previous tasks color. */
+  /**
+   * set a new earlier previous tasks color.
+   */
   public void setEarlierPreviousTaskColor(Color color) {
     getUIConfiguration().setEarlierPreviousTaskColor(color);
   }
 
-  /** set a new later previous tasks color. */
+  /**
+   * set a new later previous tasks color.
+   */
   public void setLaterPreviousTaskColor(Color color) {
     getUIConfiguration().setLaterPreviousTaskColor(color);
   }
 
-  /** Set a new week end color. */
+  /**
+   * Set a new week end color.
+   */
   public void setWeekEndColor(Color color) {
     getUIConfiguration().setWeekEndColor(color);
   }
 
-  /** Set a new week end color. */
+  /**
+   * Set a new week end color.
+   */
   public void setDaysOffColor(Color color) {
     getUIConfiguration().setDayOffColor(color);
   }
 
-  /** Set a new xsl directory for html export. */
+  /**
+   * Set a new xsl directory for html export.
+   */
   public void setXslDir(String xslDir) {
     this.xslDir = xslDir;
   }
 
-  /** Set a new xsl-fo file for pdf export. */
+  /**
+   * Set a new xsl-fo file for pdf export.
+   */
   public void setXslFo(String xslFo) {
     this.xslFo = xslFo;
   }
@@ -971,7 +1064,9 @@ public class GanttOptions extends SaverBase {
     this.myUIConfig = uiConfiguration;
   }
 
-  /** set new automatic launch value. */
+  /**
+   * set new automatic launch value.
+   */
   public void setAutomatic(boolean automatic) {
     this.automatic = automatic;
   }
@@ -1018,6 +1113,7 @@ public class GanttOptions extends SaverBase {
       addOptions(group);
     }
   }
+
   public void addOptionGroups(Iterable<GPOptionGroup> optionGroups) {
     for (GPOptionGroup group : optionGroups) {
       addOptions(group);

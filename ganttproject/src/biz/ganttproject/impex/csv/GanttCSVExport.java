@@ -85,7 +85,6 @@ public class GanttCSVExport {
     myCsvOptions = Preconditions.checkNotNull(csvOptions);
   }
 
-
   private CSVFormat getCSVFormat() {
     CSVFormat format = CSVFormat.DEFAULT.withEscape('\\');
     if (myCsvOptions.sSeparatedChar.length() == 1) {
@@ -113,7 +112,7 @@ public class GanttCSVExport {
 
 
   private SpreadsheetWriter getCsvWriter(OutputStream stream) throws IOException {
-    return new CsvWriterImpl(stream, getCSVFormat());
+    return new CsvWriterImpl(stream, getCSVFormat(), myCsvOptions.getBomOption().getValue());
   }
 
   private SpreadsheetWriter getXlsWriter(OutputStream stream) {
@@ -176,53 +175,53 @@ public class GanttCSVExport {
           }
         } else {
           switch (defaultColumn) {
-          case ID:
-            writer.print(String.valueOf(task.getTaskID()));
-            break;
-          case NAME:
-            writer.print(getName(task));
-            break;
-          case BEGIN_DATE:
-            writer.print(task.getStart().toString());
-            break;
-          case END_DATE:
-            writer.print(task.getDisplayEnd().toString());
-            break;
-          case DURATION:
-            writer.print(String.valueOf(task.getDuration().getLength()));
-            break;
-          case COMPLETION:
-            writer.print(String.valueOf(task.getCompletionPercentage()));
-            break;
-          case OUTLINE_NUMBER:
-            List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
-            writer.print(Joiner.on('.').join(outlinePath));
-            break;
-          case COORDINATOR:
-            ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
-            writer.print(coordinator == null ? "" : coordinator.getResource().getName());
-            break;
-          case PREDECESSORS:
-            writer.print(TaskProperties.formatPredecessors(task, ";", true));
-            break;
-          case RESOURCES:
-            writer.print(getAssignments(task));
-            writer.print(buildAssignmentSpec(task));
-            break;
-          case COST:
-            writer.print(task.getCost().getValue().toPlainString());
-            break;
-          case COLOR:
-            if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
-              writer.print(ColorConvertion.getColor(task.getColor()));
-            } else {
-              writer.print("");
-            }
-            break;
-          case INFO:
-          case PRIORITY:
-          case TYPE:
-            break;
+            case ID:
+              writer.print(String.valueOf(task.getTaskID()));
+              break;
+            case NAME:
+              writer.print(getName(task));
+              break;
+            case BEGIN_DATE:
+              writer.print(task.getStart().toString());
+              break;
+            case END_DATE:
+              writer.print(task.getDisplayEnd().toString());
+              break;
+            case DURATION:
+              writer.print(String.valueOf(task.getDuration().getLength()));
+              break;
+            case COMPLETION:
+              writer.print(String.valueOf(task.getCompletionPercentage()));
+              break;
+            case OUTLINE_NUMBER:
+              List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
+              writer.print(Joiner.on('.').join(outlinePath));
+              break;
+            case COORDINATOR:
+              ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();
+              writer.print(coordinator == null ? "" : coordinator.getResource().getName());
+              break;
+            case PREDECESSORS:
+              writer.print(TaskProperties.formatPredecessors(task, ";", true));
+              break;
+            case RESOURCES:
+              writer.print(getAssignments(task));
+              writer.print(buildAssignmentSpec(task));
+              break;
+            case COST:
+              writer.print(task.getCost().getValue().toPlainString());
+              break;
+            case COLOR:
+              if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
+                writer.print(ColorConvertion.getColor(task.getColor()));
+              } else {
+                writer.print("");
+              }
+              break;
+            case INFO:
+            case PRIORITY:
+            case TYPE:
+              break;
           }
         }
       }

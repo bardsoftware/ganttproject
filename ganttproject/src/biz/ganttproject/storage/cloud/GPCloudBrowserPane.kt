@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.BrowserPaneElements
 import biz.ganttproject.storage.FolderItem
@@ -29,9 +30,13 @@ import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
-import java.nio.file.Path
+import net.sourceforge.ganttproject.language.GanttLanguage
 import java.time.Instant
+
+import java.nio.file.Path
+import java.util.*
 import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Wraps JSON node matching a team to FolderItem
@@ -67,9 +72,23 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
     get() = this.node["name"].asText()
   override val isDirectory = false
   val refid: String = this.node["refid"].asText()
-
 }
 
+class VersionJsonAsFolderItem(val node: JsonNode): FolderItem {
+  override val isLocked = false
+  override val isLockable = false
+  override val name: String
+    get() = """${node["author"]} [${this.formatTimestamp()}]"""
+  override val isDirectory = false
+  override val canChangeLock = false
+
+  private fun formatTimestamp(): String {
+    return GanttLanguage.getInstance().formatDateTime(CalendarFactory.newCalendar().let {
+      it.timeInMillis = node["timestamp"].asLong()
+      it.time
+    })
+  }
+}
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -83,6 +102,7 @@ class GPCloudBrowserPane(
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
   private val webSocketClient = WebSocketClient(Consumer { this.reload() })
+  private val historyService = HistoryService(dialogUi)
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
@@ -126,6 +146,17 @@ class GPCloudBrowserPane(
               this@GPCloudBrowserPane.toggleProjectLock(it,
                   Consumer { this@GPCloudBrowserPane.reload() },
                   builder.busyIndicatorToggler)
+            }
+          },
+          itemActionFactory = Function { it ->
+            if (it is ProjectJsonAsFolderItem) {
+              mapOf(
+                  "history" to Consumer { item ->
+                    this@GPCloudBrowserPane.loadHistory(it, builder.resultConsumer, builder.busyIndicatorToggler)
+                  }
+              )
+            } else {
+              Collections.emptyMap<String, Consumer<FolderItem>>()
             }
           }
       )
@@ -197,6 +228,28 @@ class GPCloudBrowserPane(
 
   fun openWebSocket() {
     this.webSocketClient.start()
+  }
+
+  private fun loadHistory(item: ProjectJsonAsFolderItem,
+                          resultConsumer: Consumer<ObservableList<FolderItem>>,
+                          busyIndicator: Consumer<Boolean>) {
+    this.historyService.apply {
+      this.busyIndicator = busyIndicator
+      this.projectNode = item
+      onSucceeded = EventHandler { _ ->
+        resultConsumer.accept(this.value)
+        this.busyIndicator.accept(false)
+      }
+      onFailed = EventHandler { _ ->
+        busyIndicator.accept(false)
+        dialogUi.error("History loading has failed")
+      }
+      onCancelled = EventHandler { _ ->
+        this.busyIndicator.accept(false)
+        GPLogger.log("Loading cancelled!")
+      }
+      restart()
+    }
   }
 }
 

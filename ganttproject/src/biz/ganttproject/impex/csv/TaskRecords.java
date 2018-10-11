@@ -157,13 +157,17 @@ class TaskRecords extends RecordGroup {
         .withStartDate(startDate)
         .withWebLink(getOrNull(record, TaskFields.WEB_LINK.toString()))
         .withNotes(getOrNull(record, TaskFields.NOTES.toString()));
-    if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
-      builder = builder.withDuration(taskManager.createLength(record.get(TaskDefaultColumn.DURATION.getName())));
+    String duration = record.isSet(TaskDefaultColumn.DURATION.getName())
+        ? record.get(TaskDefaultColumn.DURATION.getName()).trim()
+        : "";
+    if (!duration.isEmpty()) {
+      System.out.println("duration="+record.get(TaskDefaultColumn.DURATION.getName()));
+      builder = builder.withDuration(taskManager.createLength(duration));
     }
     if (record.isSet(TaskFields.END_DATE.toString())) {
-      if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
+      if (!duration.isEmpty()) {
         if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
-            && "0".equals(record.get(TaskDefaultColumn.DURATION.getName()))) {
+            && "0".equals(duration)) {
           builder = builder.withLegacyMilestone();
         }
       } else {

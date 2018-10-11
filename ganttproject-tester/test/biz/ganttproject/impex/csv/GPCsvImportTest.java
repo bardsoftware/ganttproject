@@ -340,6 +340,21 @@ public class GPCsvImportTest extends TestCase {
     }
   }
 
+  public void testEmptyDuration() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = "ID,Name,Begin date,Duration,End date";
+    String data1 = "1,t1,23/07/12,,26/07/12";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1).getBytes(Charsets.UTF_8)),
+        SpreadsheetFormat.CSV,
+        taskManager, null, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+  }
+
   private static void assertOrder(String first, String second) {
     assertEquals(-1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, second));
     assertEquals(1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, first));

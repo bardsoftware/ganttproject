@@ -160,6 +160,49 @@ public class GPCsvExportTest extends TaskTestCase {
     assertEquals("3,", lines[4].trim());
   }
 
+  public void testBomOption() throws Exception {
+    TaskManager taskManager = getTaskManager();
+    GanttTask task = taskManager.createTask();
+    CSVOptions csvOptions = enableOnly(
+        TaskDefaultColumn.NAME.getStub().getID());
+    csvOptions.getBomOption().setValue(true);
+    {
+      GanttCSVExport exporter = new GanttCSVExport(
+          taskManager,
+          new HumanResourceManager(null, new CustomColumnsManager()),
+          new RoleManagerImpl(),
+          csvOptions
+      );
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      try (SpreadsheetWriter writer = new CsvWriterImpl(outputStream, CSVFormat.DEFAULT, true)) {
+        exporter.save(writer);
+      }
+
+      byte[] bytes = outputStream.toByteArray();
+      // Binary representation of Unicode FEFF
+      assertEquals((byte) 0xef, bytes[0]);
+      assertEquals((byte) 0xbb, bytes[1]);
+      assertEquals((byte) 0xbf, bytes[2]);
+    }
+    csvOptions.getBomOption().setValue(false);
+    {
+      GanttCSVExport exporter = new GanttCSVExport(
+          taskManager,
+          new HumanResourceManager(null, new CustomColumnsManager()),
+          new RoleManagerImpl(),
+          csvOptions
+      );
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      try (SpreadsheetWriter writer = new CsvWriterImpl(outputStream, CSVFormat.DEFAULT)) {
+        exporter.save(writer);
+      }
+
+      byte[] bytes = outputStream.toByteArray();
+      // No BOM in the first bytes
+      assertEquals('t', bytes[0]);
+    }
+  }
+
   private static CSVOptions enableOnly(String... fields) {
     CSVOptions csvOptions = new CSVOptions();
     Set fieldSet = ImmutableSet.copyOf(fields);
