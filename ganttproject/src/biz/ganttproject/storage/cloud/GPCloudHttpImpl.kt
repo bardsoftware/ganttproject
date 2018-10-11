@@ -33,6 +33,7 @@ import javafx.concurrent.Service
 import javafx.concurrent.Task
 import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
+import okhttp3.*
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -42,6 +43,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
@@ -245,5 +247,48 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
     } else {
       FXCollections.observableArrayList()
     }
+  }
+}
+
+class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebSocketListener() {
+  private var webSocket: WebSocket? = null
+  internal val token: String? get() = Base64.getEncoder().encodeToString(
+      "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
+
+  override fun onOpen(webSocket: WebSocket, response: Response) {
+    println("WebSocket opened")
+    this.webSocket = webSocket
+    this.trySendToken()
+  }
+
+  private fun trySendToken() {
+    println("Trying sending token ${this.token}")
+    if (this.webSocket != null && this.token != null) {
+      this.webSocket?.send("Basic ${this.token}")
+      println("Token is sent!")
+    }
+  }
+
+  override fun onMessage(webSocket: WebSocket?, text: String?) {
+    this.onStructureChange.accept(Any())
+  }
+
+  override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
+    println("WebSocket closed")
+  }
+}
+
+class WebSocketClient(private val onStructureChange: Consumer<Any>) {
+  private val okClient = OkHttpClient()
+  private var isStarted = false
+  private val wsListener = WebSocketListenerImpl(onStructureChange)
+
+  fun start() {
+    if (isStarted) {
+      return
+    }
+    val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
+    this.okClient.newWebSocket(req, this.wsListener)
+    isStarted = true
   }
 }
