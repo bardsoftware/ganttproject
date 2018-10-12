@@ -68,4 +68,10 @@
     <date year="2018" month="5" date="21" type="HOLIDAY"><![CDATA[Whit Monday]]></date>
     <date year="2018" month="5" date="27" type="NEUTRAL"><![CDATA[Mother's Day]]></date>
     <date year="2018" month="6" date="17" type="NEUTRAL"><![CDATA[Father's Day]]></date>
+
+    <date year="2019" month="4" date="22" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
+    <date year="2019" month="5" date="30" type="HOLIDAY"><![CDATA[Ascension Day]]></date>
+    <date year="2019" month="6" date="10" type="HOLIDAY"><![CDATA[Whit Monday]]></date>
+    <date year="2019" month="5" date="26" type="NEUTRAL"><![CDATA[Mother's Day]]></date>
+    <date year="2019" month="6" date="16" type="NEUTRAL"><![CDATA[Father's Day]]></date>
 </calendar >
