@@ -108,7 +108,7 @@ class GPCloudStorage(
 
   private fun doCreateUi(): Pane {
     val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument)
-    val onTokenCallback: AuthTokenCallback = { token, validity, userId ->
+    val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       val validityAsLong = validity?.toLongOrNull()
       with(GPCloudOptions) {
         this.authToken.value = token
@@ -118,6 +118,10 @@ class GPCloudStorage(
           Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
         }
         this.userId.value = userId
+        this.websocketToken = websocketToken
+        if (websocketToken != null) {
+          browserPane.openWebSocket()
+        }
       }
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
@@ -188,12 +192,12 @@ object GPCloudOptions {
       }
     }
   }
-
+  var websocketToken: String? = null
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
 }
 
 // HTTP server for sign in into GP Cloud
-typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?) -> Unit
+typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
 
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
   var onTokenReceived: AuthTokenCallback? = null
@@ -209,8 +213,9 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
     val token = getParam(session, "token")
     val userId = getParam(session, "userId")
     val validity = getParam(session, "validity")
+    val websocketToken = getParam(session, "websocketToken")
 
-    onTokenReceived?.invoke(token, validity, userId)
+    onTokenReceived?.invoke(token, validity, userId, websocketToken)
     val resp = newFixedLengthResponse("")
     resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
     return resp
