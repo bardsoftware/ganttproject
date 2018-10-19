@@ -25,14 +25,16 @@ import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
-import java.nio.file.Path
 import java.time.Instant
+
+import java.nio.file.Path
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -101,6 +103,9 @@ class GPCloudBrowserPane(
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
   private val historyService = HistoryService(dialogUi)
+  private val webSocketClient = WebSocketClient(Consumer {
+    Platform.runLater { this.reload() }
+  })
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
@@ -182,6 +187,7 @@ class GPCloudBrowserPane(
       onSucceeded = EventHandler { _ ->
         setResult.accept(value)
         showMaskPane.accept(false)
+        this@GPCloudBrowserPane.webSocketClient.start()
       }
       onFailed = EventHandler { _ ->
         showMaskPane.accept(false)
@@ -221,6 +227,10 @@ class GPCloudBrowserPane(
       }
       restart()
     }
+  }
+
+  fun openWebSocket() {
+    this.webSocketClient.start()
   }
 
   private fun loadHistory(item: ProjectJsonAsFolderItem,
