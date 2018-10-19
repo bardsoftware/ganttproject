@@ -16,6 +16,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
@@ -380,6 +381,7 @@ fun createButton(id: String): Node {
   val label = Label(text, FontAwesomeIconView(FontAwesomeIcon.valueOf(iconName))).also {
     it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
     it.styleClass.add("item-action")
+    it.alignment = Pos.CENTER
   }
   return label
 }
