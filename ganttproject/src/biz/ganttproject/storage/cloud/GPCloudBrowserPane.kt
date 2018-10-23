@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.BrowserPaneElements
@@ -27,14 +28,18 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import javafx.application.Platform
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.control.Button
+import javafx.scene.control.Label
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
-import java.time.Instant
-
 import java.nio.file.Path
+import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -107,11 +112,12 @@ class GPCloudBrowserPane(
     Platform.runLater { this.reload() }
   })
 
+  private lateinit var paneElements: BrowserPaneElements
+
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
       loadTeams(path, success, loading)
     }
-    var paneElements: BrowserPaneElements? = null
 
     val actionButtonHandler = object {
       var selectedProject: ProjectJsonAsFolderItem? = null
@@ -134,7 +140,7 @@ class GPCloudBrowserPane(
       }
     }
 
-    paneElements = builder.apply {
+    this.paneElements = builder.apply {
       withBreadcrumbs()
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
@@ -176,8 +182,35 @@ class GPCloudBrowserPane(
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
-      this.documentConsumer.accept(GPCloudDocument(item))
+      if (item.isLocked && item.canChangeLock) {
+        this.documentConsumer.accept(GPCloudDocument(item))
+      } else {
+        if (!item.isLocked) {
+          FXUtil.transitionCenterPane(this.paneElements.pane, this.createLockSuggestionPane(GPCloudDocument(item)),
+              this.dialogUi::resize)
+        } else {
+          FXUtil.transitionCenterPane(this.paneElements.pane, Label("LOCKED BY SOMEONE ELSE"), this.dialogUi::resize)
+        }
+      }
     }
+  }
+
+  private fun createLockSuggestionPane(document: GPCloudDocument): Pane {
+    val vbox = VBox()
+    val textRow = HBox()
+    textRow.children.add(Label("You may want to lock this project before making any changes"))
+
+    val btnRow = HBox()
+    val btnLockNow = Button("Lock Now").also {
+      it.addEventHandler(ActionEvent.ACTION) {
+        FXUtil.transitionCenterPane(this.paneElements.pane,
+            this.paneElements.browserPane, this.dialogUi::resize)
+        this.documentConsumer.accept(document)
+      }
+    }
+    btnRow.children.addAll(btnLockNow)
+
+    return vbox.apply { children.addAll(textRow, btnRow) }
   }
 
   private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {

@@ -31,10 +31,7 @@ import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
-import javafx.scene.layout.VBox
+import javafx.scene.layout.*
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Path
@@ -63,7 +60,8 @@ typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
                                val filenameInput: TextField,
-                               val pane: Pane)
+                               val browserPane: Pane,
+                               val pane: BorderPane)
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -192,6 +190,6 @@ class BrowserPaneBuilder(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, BorderPane(rootPane.vbox))
   }
 }
