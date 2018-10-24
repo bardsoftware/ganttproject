@@ -42,7 +42,7 @@ import java.util.function.Consumer
  */
 class GPCloudSignupPane internal constructor(
     val onTokenCallback: AuthTokenCallback,
-    val pageSwitcher: Consumer<Pane>) : GPCloudStorage.PageUi {
+    val pageSwitcher: SceneChanger) : GPCloudStorage.PageUi {
   private val i18n = GanttLanguage.getInstance()
 
   private val httpd: HttpServerImpl by lazy {
@@ -150,7 +150,7 @@ class GPCloudSignupPane internal constructor(
       styleClass.add("smallskip")
     }
     rootPane.vbox.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-    pageSwitcher.accept(rootPane.vbox)
+    pageSwitcher(rootPane.vbox)
   }
 
 }

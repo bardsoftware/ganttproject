@@ -31,7 +31,10 @@ import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
-import javafx.scene.layout.*
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Path
@@ -60,8 +63,7 @@ typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
                                val filenameInput: TextField,
-                               val browserPane: Pane,
-                               val pane: BorderPane)
+                               val browserPane: Pane)
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -178,7 +180,9 @@ class BrowserPaneBuilder(
       vbox.prefWidth = 400.0
       addTitle(String.format("webdav.ui.title.%s",
           this@BrowserPaneBuilder.mode.name.toLowerCase()),
-          "GanttProject Cloud")
+          "GanttProject Cloud").also {
+        it.styleClass.add("title-integrated")
+      }
       add(VBox().also {
         it.styleClass.add("nav-search")
         it.children.addAll(
@@ -190,6 +194,6 @@ class BrowserPaneBuilder(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, BorderPane(rootPane.vbox))
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox)
   }
 }

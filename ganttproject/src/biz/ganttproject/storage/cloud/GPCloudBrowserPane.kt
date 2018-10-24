@@ -18,23 +18,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.BrowserPaneElements
 import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.layout.HBox
+import javafx.scene.control.*
 import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -80,7 +79,7 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
   val refid: String = this.node["refid"].asText()
 }
 
-class VersionJsonAsFolderItem(val node: JsonNode): FolderItem {
+class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLocked = false
   override val isLockable = false
   override val name: String
@@ -95,6 +94,7 @@ class VersionJsonAsFolderItem(val node: JsonNode): FolderItem {
     })
   }
 }
+
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -104,7 +104,8 @@ class VersionJsonAsFolderItem(val node: JsonNode): FolderItem {
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: Consumer<Document>) {
+    private val documentConsumer: Consumer<Document>,
+    private val sceneChanger: SceneChanger) {
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
   private val historyService = HistoryService(dialogUi)
@@ -170,7 +171,8 @@ class GPCloudBrowserPane(
           }
       )
     }.build()
-    return paneElements.pane
+    paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    return paneElements.browserPane
   }
 
   private fun createDocument(selectedTeam: TeamJsonAsFolderItem?, text: String) {
@@ -186,31 +188,50 @@ class GPCloudBrowserPane(
         this.documentConsumer.accept(GPCloudDocument(item))
       } else {
         if (!item.isLocked) {
-          FXUtil.transitionCenterPane(this.paneElements.pane, this.createLockSuggestionPane(GPCloudDocument(item)),
-              this.dialogUi::resize)
+          this.sceneChanger(this.createLockSuggestionPane(GPCloudDocument(item)))
         } else {
-          FXUtil.transitionCenterPane(this.paneElements.pane, Label("LOCKED BY SOMEONE ELSE"), this.dialogUi::resize)
+          this.sceneChanger(Label("LOCKED BY SOMEONE ELSE"))
         }
       }
     }
   }
 
   private fun createLockSuggestionPane(document: GPCloudDocument): Pane {
-    val vbox = VBox()
-    val textRow = HBox()
-    textRow.children.add(Label("You may want to lock this project before making any changes"))
+    val vbox = VBoxBuilder("lock-button-pane")
+    vbox.addTitle("Lock Project")
+    vbox.add(Label("You may want to lock the project to prevent concurrent modifications").apply { styleClass.add("help") })
 
-    val btnRow = HBox()
-    val btnLockNow = Button("Lock Now").also {
-      it.addEventHandler(ActionEvent.ACTION) {
-        FXUtil.transitionCenterPane(this.paneElements.pane,
-            this.paneElements.browserPane, this.dialogUi::resize)
-        this.documentConsumer.accept(document)
+    val lockGroup = ToggleGroup()
+
+    val lock0h = RadioButton("Don't lock").also {
+      it.styleClass.add("mt-5")
+    }
+    val lock1h = RadioButton("Lock for 1h")
+    val lock2h = RadioButton("Lock for 2h")
+    val lock24h = RadioButton("Lock for 24h")
+    listOf(lock0h, lock1h, lock2h, lock24h).forEach {
+      it.styleClass.add("btn-lock-expire")
+      it.toggleGroup = lockGroup
+      vbox.add(it)
+    }
+
+
+    return DialogPane().apply {
+      styleClass.add("dlg-lock")
+      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+
+      content = vbox.vbox
+
+      buttonTypes.add(ButtonType.OK)
+      lookupButton(ButtonType.OK).apply {
+        styleClass.add("btn-attention")
+        addEventHandler(ActionEvent.ACTION) {
+          println("LOCKING!!!")
+          this@GPCloudBrowserPane.documentConsumer.accept(document)
+        }
       }
     }
-    btnRow.children.addAll(btnLockNow)
-
-    return vbox.apply { children.addAll(textRow, btnRow) }
   }
 
   private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {

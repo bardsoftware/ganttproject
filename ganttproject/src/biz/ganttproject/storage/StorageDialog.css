@@ -104,18 +104,25 @@ webdav-list-cell-button-pane.alert-warning {
 }
 
 HBox.title {
-    -fx-background-color: -gp-dark-gray;
 }
+
 HBox.title Button {
     -fx-font-weight: bold;
 }
 
 HBox.title Label {
-    -fx-padding: 10 10 0 10;
     -fx-font-size: 130%;
     -fx-font-weight: bold;
+}
+
+HBox.title-integrated {
+    -fx-background-color: -gp-dark-gray;
+}
+HBox.title-integrated Label {
+    -fx-padding: 10 10 0 10;
     -fx-text-fill: -gp-orange;
 }
+
 
 .help {
     -fx-font-size: 80%;

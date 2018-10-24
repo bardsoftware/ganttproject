@@ -92,12 +92,13 @@ class VBoxBuilder(vararg classes: String) {
     vbox.styleClass.addAll(classes)
   }
 
-  fun addTitle(i18nKey: String, vararg args: String) {
+  fun addTitle(i18nKey: String, vararg args: String): Node {
     val titleBox = HBox()
     titleBox.styleClass.add("title")
     val title = Label(i18n.formatText(i18nKey, *args))
     titleBox.children.add(title)
     add(titleBox)
+    return titleBox
   }
 
   fun add(node: Node) {

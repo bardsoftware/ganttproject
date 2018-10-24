@@ -27,6 +27,7 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.BorderPane
@@ -77,6 +78,8 @@ private const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
 const val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 
+typealias SceneChanger = (Node) -> Unit
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -107,7 +110,7 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, ::nextPage)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       val validityAsLong = validity?.toLongOrNull()
       with(GPCloudOptions) {
@@ -123,14 +126,10 @@ class GPCloudStorage(
           browserPane.openWebSocket()
         }
       }
-      Platform.runLater {
-        nextPage(browserPane.createStorageUi())
-      }
+      nextPage(browserPane.createStorageUi())
     }
 
-    val signupPane = GPCloudSignupPane(onTokenCallback, Consumer {
-      Platform.runLater { nextPage(it) }
-    })
+    val signupPane = GPCloudSignupPane(onTokenCallback, ::nextPage)
     val paneBuilder = VBoxBuilder("pane-service-contents")
     paneBuilder.addTitle("Signing in to GanttProject Cloud")
     if (GPCloudOptions.authToken.value != "") {
@@ -153,9 +152,7 @@ class GPCloudStorage(
     signupPane.tryAccessToken(
         Consumer { _ ->
           println("Auth token is valid!")
-          Platform.runLater {
-            nextPage(browserPane.createStorageUi())
-          }
+          nextPage(browserPane.createStorageUi())
         },
         Consumer {
           println("Auth token is NOT valid!")
@@ -169,9 +166,10 @@ class GPCloudStorage(
     return myPane
   }
 
-  private fun nextPage(newPage: Pane): Pane {
-    FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
-    return newPage
+  private fun nextPage(newPage: Node) {
+    Platform.runLater {
+      FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
+    }
   }
 }
 
@@ -263,8 +261,7 @@ class GPCloudDocument(private val teamRefid: String?,
       teamName = projectJson.node["team"].asText(),
       projectRefid = projectJson.node["refid"].asText(),
       projectName = projectJson.node["name"].asText(),
-      projectJson = projectJson) {
-  }
+      projectJson = projectJson)
 
 
   constructor(team: TeamJsonAsFolderItem, projectName: String) : this(

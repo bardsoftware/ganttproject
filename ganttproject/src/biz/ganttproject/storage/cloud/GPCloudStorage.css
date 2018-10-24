@@ -4,6 +4,29 @@
     -fx-pref-width: 50%;
 }
 
+.dlg-lock {
+    -fx-padding: 20 20 20 20;
+    -fx-font-size: 120%;
+    -fx-background-color: transparent;
+}
+
+.dlg-lock .btn-lock-expire {
+    -fx-padding: 1ex 0 0 0;
+}
+
+.dlg-lock .glyph-icon {
+    -fx-fill: -gp-medium-gray;
+    -glyph-size: 64;
+    -fx-padding: 10 0 0 0;
+}
+
+.dlg-lock .help {
+    -fx-padding: 3 0 1ex 0;
+}
+.dlg-lock .lock-button-pane {
+    -fx-padding: 0 0 0 10;
+}
+
 .fill-parent {
     -fx-pref-height: 100%;
     -fx-pref-width: 100%;

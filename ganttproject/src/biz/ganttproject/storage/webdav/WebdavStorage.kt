@@ -171,7 +171,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
     })
     val browserPaneElements = builder.build()
-    return browserPaneElements.pane
+    return browserPaneElements.browserPane
   }
 
   private fun deleteResource(folderItem: WebDavResourceAsFolderItem) {
