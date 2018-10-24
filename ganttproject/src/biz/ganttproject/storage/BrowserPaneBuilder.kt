@@ -63,7 +63,8 @@ typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
                                val filenameInput: TextField,
-                               val browserPane: Pane)
+                               val browserPane: Pane,
+                               val busyIndicator: Consumer<Boolean>)
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -194,6 +195,6 @@ class BrowserPaneBuilder(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler)
   }
 }

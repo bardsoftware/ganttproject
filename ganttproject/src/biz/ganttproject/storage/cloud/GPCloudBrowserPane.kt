@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.nio.file.Path
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -155,7 +156,8 @@ class GPCloudBrowserPane(
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.toggleProjectLock(it,
                   Consumer { this@GPCloudBrowserPane.reload() },
-                  builder.busyIndicatorToggler)
+                  builder.busyIndicatorToggler
+              )
             }
           },
           itemActionFactory = Function { it ->
@@ -205,10 +207,20 @@ class GPCloudBrowserPane(
 
     val lock0h = RadioButton("Don't lock").also {
       it.styleClass.add("mt-5")
+      it.userData = Duration.ofHours(0)
     }
-    val lock1h = RadioButton("Lock for 1h")
-    val lock2h = RadioButton("Lock for 2h")
-    val lock24h = RadioButton("Lock for 24h")
+    val lock1h = RadioButton("Lock for 1h").also {
+      it.isSelected = true
+      it.userData = Duration.ofHours(1)
+    }
+
+    val lock2h = RadioButton("Lock for 2h").also {
+      it.userData = Duration.ofHours(2)
+    }
+
+    val lock24h = RadioButton("Lock for 24h").also {
+      it.userData = Duration.ofHours(24)
+    }
     listOf(lock0h, lock1h, lock2h, lock24h).forEach {
       it.styleClass.add("btn-lock-expire")
       it.toggleGroup = lockGroup
@@ -226,12 +238,30 @@ class GPCloudBrowserPane(
       buttonTypes.add(ButtonType.OK)
       lookupButton(ButtonType.OK).apply {
         styleClass.add("btn-attention")
-        addEventHandler(ActionEvent.ACTION) {
-          println("LOCKING!!!")
-          this@GPCloudBrowserPane.documentConsumer.accept(document)
+        addEventHandler(ActionEvent.ACTION) { evt ->
+          val lockDuration = lockGroup.selectedToggle.userData as Duration
+          if (lockDuration.isZero) {
+            openDocumentWithLock(document, null)
+          } else {
+            toggleProjectLock(
+                project = document.projectJson!!,
+                done = Consumer { this@GPCloudBrowserPane.openDocumentWithLock(document, it) },
+                busyIndicator = this@GPCloudBrowserPane.paneElements.busyIndicator,
+                requestLockToken = true,
+                lockDuration = lockDuration
+            )
+          }
         }
       }
     }
+  }
+
+  private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {
+    println("Lock node=$jsonLock")
+    if (jsonLock != null) {
+      document.lock = jsonLock
+    }
+    this@GPCloudBrowserPane.documentConsumer.accept(document)
   }
 
   private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
@@ -261,22 +291,26 @@ class GPCloudBrowserPane(
   }
 
 
-  private fun toggleProjectLock(item: ProjectJsonAsFolderItem,
-                                setResult: Consumer<Boolean>,
-                                showMaskPane: Consumer<Boolean>) {
+  private fun toggleProjectLock(project: ProjectJsonAsFolderItem,
+                                done: Consumer<JsonNode>,
+                                busyIndicator: Consumer<Boolean>,
+                                requestLockToken: Boolean = false,
+                                lockDuration: Duration = Duration.ofMinutes(10)) {
     lockService.apply {
-      this.busyIndicator = showMaskPane
-      this.project = item
-      onSucceeded = EventHandler { _ ->
-        setResult.accept(value)
-        showMaskPane.accept(false)
+      this.busyIndicator = busyIndicator
+      this.project = project
+      this.requestLockToken = requestLockToken
+      this.duration = lockDuration
+      onSucceeded = EventHandler {
+        done.accept(value)
+        busyIndicator.accept(false)
       }
-      onFailed = EventHandler { _ ->
-        showMaskPane.accept(false)
+      onFailed = EventHandler {
+        busyIndicator.accept(false)
         dialogUi.error("Loading failed!")
       }
-      onCancelled = EventHandler { _ ->
-        showMaskPane.accept(false)
+      onCancelled = EventHandler {
+        busyIndicator.accept(false)
         GPLogger.log("Loading cancelled!")
       }
       restart()

@@ -43,6 +43,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -155,12 +156,16 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
   }
 }
 
-class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<Boolean>() {
+private val OBJECT_MAPPER = ObjectMapper()
+
+class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<JsonNode>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   lateinit var project: ProjectJsonAsFolderItem
+  var requestLockToken: Boolean = false
+  lateinit var duration: Duration
 
-  override fun createTask(): Task<Boolean> {
-    val task = LockTask(this.busyIndicator, project)
+  override fun createTask(): Task<JsonNode> {
+    val task = LockTask(this.busyIndicator, project, requestLockToken, duration)
     task.onFailed = EventHandler { _ ->
       val errorDetails = if (task.exception != null) {
         GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
@@ -174,8 +179,11 @@ class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service
   }
 }
 
-class LockTask(private val busyIndicator: Consumer<Boolean>, val project: ProjectJsonAsFolderItem) : Task<Boolean>() {
-  override fun call(): Boolean {
+class LockTask(private val busyIndicator: Consumer<Boolean>,
+               val project: ProjectJsonAsFolderItem,
+               val requestLockToken: Boolean,
+               val duration: Duration) : Task<JsonNode>() {
+  override fun call(): JsonNode {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClient()
@@ -189,13 +197,16 @@ class LockTask(private val busyIndicator: Consumer<Boolean>, val project: Projec
       val projectLock = HttpPost("/p/lock")
       val params = listOf(
           BasicNameValuePair("projectRefid", project.refid),
-          BasicNameValuePair("expirationPeriodSeconds", "600"))
+          BasicNameValuePair("expirationPeriodSeconds", this.duration.seconds.toString()),
+          BasicNameValuePair("requestLockToken", requestLockToken.toString())
+      )
       projectLock.entity = UrlEncodedFormEntity(params)
 
       http.client.execute(http.host, projectLock, http.context)
     }
     if (resp.statusLine.statusCode == 200) {
-      return true
+      val jsonBody = CharStreams.toString(InputStreamReader(resp.entity.content))
+      return OBJECT_MAPPER.readTree(jsonBody)
     } else {
       with(log) {
         warning(

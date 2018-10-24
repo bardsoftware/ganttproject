@@ -24,6 +24,7 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.core.option.StringOption
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.StorageDialogBuilder
+import com.fasterxml.jackson.databind.JsonNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.geometry.Pos
@@ -253,7 +254,7 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
                       private val projectRefid: String?,
                       private val projectName: String,
-                      private val projectJson: ProjectJsonAsFolderItem?)
+                      val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument() {
 
   constructor(projectJson: ProjectJsonAsFolderItem) : this(
@@ -317,6 +318,9 @@ class GPCloudDocument(private val teamRefid: String?,
         }
         multipartBuilder.addPart("fileContents", StringBody(
             Base64.getEncoder().encodeToString(this.toByteArray()), ContentType.TEXT_PLAIN))
+        this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
+          multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
+        }
         projectWrite.entity = multipartBuilder.build()
 
         val resp = http.client.execute(http.host, projectWrite, http.context)
@@ -339,4 +343,8 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
+
+  var lock: JsonNode? = null
+    set(value) {lock = value}
+
 }
