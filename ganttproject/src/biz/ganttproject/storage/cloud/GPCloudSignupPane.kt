@@ -29,7 +29,8 @@ import javafx.scene.control.Label
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.Pane
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
@@ -106,7 +107,7 @@ class GPCloudSignupPane internal constructor(
   }
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
-    launch {
+    GlobalScope.launch {
       try {
         callAuthCheck(success, unauthenticated)
       } catch (ex: Exception) {
