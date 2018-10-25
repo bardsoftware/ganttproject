@@ -127,7 +127,9 @@ class GPCloudStorage(
           browserPane.openWebSocket()
         }
       }
-      nextPage(browserPane.createStorageUi())
+      Platform.runLater {
+        nextPage(browserPane.createStorageUi())
+      }
     }
 
     val signupPane = GPCloudSignupPane(onTokenCallback, ::nextPage)
