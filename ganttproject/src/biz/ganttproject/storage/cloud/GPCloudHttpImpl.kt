@@ -19,7 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.FolderItem
+import biz.ganttproject.storage.Path
 import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.getName
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -41,8 +43,6 @@ import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
@@ -59,7 +59,7 @@ import java.util.logging.Level
 // Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
 class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
-  var path: Path = Paths.get("/GanttProject Cloud")
+  var path: Path = listOf("/", "GanttProject Cloud")
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
 
   override fun createTask(): Task<ObservableList<FolderItem>> {
@@ -109,7 +109,7 @@ fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<Jso
 class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
   override fun call(): ObservableList<FolderItem> {
     return FXCollections.observableArrayList(
-        when (path.nameCount) {
+        when (path.size) {
           1 -> filterTeams(jsonNode.value, Predicate { true }).map(::TeamJsonAsFolderItem)
           2 -> {
             filterProjects(
@@ -120,7 +120,10 @@ class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Tas
           else -> emptyList()
         })
   }
-  fun callPublic(): ObservableList<FolderItem> { return this.call() }
+
+  fun callPublic(): ObservableList<FolderItem> {
+    return this.call()
+  }
 }
 
 // Sends HTTP request to GP Cloud and returns a list of teams.
@@ -263,8 +266,9 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
 
 class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebSocketListener() {
   private var webSocket: WebSocket? = null
-  internal val token: String? get() = Base64.getEncoder().encodeToString(
-      "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
+  internal val token: String?
+    get() = Base64.getEncoder().encodeToString(
+        "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
 
   override fun onOpen(webSocket: WebSocket, response: Response) {
     println("WebSocket opened")

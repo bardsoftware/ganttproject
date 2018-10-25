@@ -2,9 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.storage.BrowserPaneBuilder
-import biz.ganttproject.storage.FolderItem
-import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
 import javafx.beans.property.SimpleBooleanProperty
@@ -18,7 +16,6 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.webdav.HttpDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
-import java.nio.file.Path
 import java.util.*
 import java.util.function.Consumer
 
@@ -201,10 +198,10 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
                          setResult: Consumer<ObservableList<WebDavResource>>,
                          dialogUi: StorageDialogBuilder.DialogUi) {
     var path = selectedPath
-    if (path.nameCount > 1) {
-      path = path.subpath(1, path.nameCount)
+    if (path.size > 1) {
+      path = path.subpath(1, path.size)
     } else {
-      path = path.root
+      path = path.getRoot()
     }
     myLoadService.setPath(path.toString())
     myState.folder = myLoadService.createRootResource()

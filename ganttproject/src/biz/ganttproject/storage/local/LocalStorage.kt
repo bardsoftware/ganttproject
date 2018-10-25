@@ -46,7 +46,6 @@ import org.controlsfx.validation.ValidationSupport
 import org.controlsfx.validation.Validator
 import org.controlsfx.validation.decoration.StyleClassValidationDecoration
 import java.io.File
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
@@ -71,8 +70,8 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val isDirectory: Boolean = file.isDirectory
 }
 
-fun absolutePrefix(path: Path, end: Int = path.nameCount): Path {
-  return path.root.resolve(path.subpath(0, end))
+fun absolutePrefix(path: Path, end: Int = path.size): Path {
+  return path.getRoot().resolve(path.subpath(0, end))
 }
 
 /**
@@ -122,9 +121,9 @@ class LocalStorage(
     }
 
     val breadcrumbView = BreadcrumbView(
-        if (filePath.toFile().isDirectory) filePath else filePath.parent, onSelectCrumb)
+        if (filePath.toFile().isDirectory) createPath(filePath.toFile()) else createPath(filePath.parent.toFile()), onSelectCrumb)
     state.currentDir.addListener({ _, _, newValue ->
-      breadcrumbView.path = newValue.toPath().toAbsolutePath()
+      breadcrumbView.path = createPath(newValue)
     })
 
     val listViewHint = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
@@ -141,7 +140,7 @@ class LocalStorage(
 
     fun selectItem(item: FileAsFolderItem, withEnter: Boolean, withControl: Boolean) {
       if (item.isDirectory && withEnter) {
-        breadcrumbView.path = item.file.toPath()
+        breadcrumbView.path = createPath(item.file)
         state.currentDir.set(item.file)
         state.setCurrentFile(null)
         filenameControl.text = ""
@@ -162,17 +161,17 @@ class LocalStorage(
     }
 
     fun onFilenameEnter() {
-      var path = Paths.get(filenameControl.text)
-      if (!path.isAbsolute) {
+      var path = createPath(filenameControl.text)
+      if (!path.isAbsolute()) {
         path = breadcrumbView.path.resolve(path)
       }
       path = path.normalize()
-      breadcrumbView.path = path.parent
-      val filtered = listView.doFilter(path.fileName.toString())
+      breadcrumbView.path = path.getParent()
+      val filtered = listView.doFilter(path.getFileName().toString())
       if (filtered.size == 1) {
         selectItem(filtered[0], true, true)
       } else {
-        filenameControl.text = path.fileName.toString()
+        filenameControl.text = path.getFileName().toString()
       }
     }
     connect(filenameControl, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
@@ -290,12 +289,12 @@ class ValidationHelper(
 
 class State(val currentDocument: Document,
             val mode: StorageMode) {
-  private val currentFilePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
+  private val currentFilePath = createPath(Paths.get(currentDocument.filePath ?: "/").toFile())
 
   var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
   val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
-      absolutePrefix(currentFilePath, currentFilePath.nameCount - 1).toFile())
+      absolutePrefix(currentFilePath, currentFilePath.size - 1).toFile())
 
   val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(absolutePrefix(currentFilePath).toFile())
 

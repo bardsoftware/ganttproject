@@ -179,7 +179,11 @@ object GPCloudOptions {
   val authToken: StringOption = object : DefaultStringOption("authToken", "") {
     override fun getPersistentValue(): String? {
       return GPCloudOptions.validity.value.toLongOrNull()?.let {
-        if (it > 0) { super.getPersistentValue() } else { null }
+        if (it > 0) {
+          super.getPersistentValue()
+        } else {
+          null
+        }
       }
     }
   }
@@ -187,7 +191,11 @@ object GPCloudOptions {
   val userId: StringOption = object : DefaultStringOption("userId") {
     override fun getPersistentValue(): String? {
       return GPCloudOptions.validity.value.toLongOrNull()?.let {
-        if (it > 0) { super.getPersistentValue() } else { null }
+        if (it > 0) {
+          super.getPersistentValue()
+        } else {
+          null
+        }
       }
     }
   }
@@ -345,6 +353,5 @@ class GPCloudDocument(private val teamRefid: String?,
     get() = "?projectRefid=${this.projectRefid}"
 
   var lock: JsonNode? = null
-    set(value) {lock = value}
 
 }

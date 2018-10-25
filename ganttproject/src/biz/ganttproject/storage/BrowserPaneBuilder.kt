@@ -37,8 +37,6 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -95,10 +93,10 @@ class BrowserPaneBuilder(
   private lateinit var onLaunch: OnItemAction
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 }}
+    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
 
   val resultConsumer: Consumer<ObservableList<FolderItem>>
-    get() = Consumer { Platform.runLater { this.listView.setResources(it) }}
+    get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
 
   fun withListView(
       onOpenItem: OnItemAction = Consumer {},
@@ -107,7 +105,7 @@ class BrowserPaneBuilder(
       onLock: OnItemAction = Consumer {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
-      itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap()}) {
+      itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap() }) {
     this.listView = FolderView(
         this.dialogUi,
         onDelete,
@@ -125,7 +123,7 @@ class BrowserPaneBuilder(
       )
     }
 
-    this.breadcrumbView = BreadcrumbView(Paths.get("/", "GanttProject Cloud"), onSelectCrumb)
+    this.breadcrumbView = BreadcrumbView(listOf("/", "GanttProject Cloud"), onSelectCrumb)
   }
 
   fun withActionButton(onAction: EventHandler<ActionEvent>) {
