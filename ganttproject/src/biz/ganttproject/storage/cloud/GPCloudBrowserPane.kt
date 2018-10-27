@@ -139,7 +139,7 @@ class GPCloudBrowserPane(
     }
 
     this.paneElements = builder.apply {
-      withBreadcrumbs()
+      withBreadcrumbs(DocumentUri(listOf(), true, "GanttProject Cloud"))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },

@@ -26,7 +26,6 @@ import javafx.scene.layout.Priority
 import javafx.util.Callback
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import net.sourceforge.ganttproject.gui.UIUtil
-import org.apache.commons.io.FilenameUtils
 import org.controlsfx.control.BreadCrumbBar
 import org.controlsfx.control.textfield.TextFields
 import java.io.File
@@ -270,67 +269,14 @@ fun <T : FolderItem> createListCell(
   }
 }
 
-typealias Path = List<String>
-
-fun (Path).subpath(start: Int, end: Int): Path {
-  return this.subList(start, end)
-}
-
-fun (Path).getRoot(): Path {
-  return this.subList(1, 2)
-}
-
-fun (Path).getName(idx: Int): String {
-  return this.get(idx)
-}
-
-fun (Path).resolve(name: String): Path {
-  return this.toMutableList().apply {
-    add(name)
-    toList()
-  }
-}
-
-fun (Path).resolve(path: Path): Path {
-  val thisAsString = FilenameUtils.normalize(this.joinToString("/"))
-  val thatAsString = FilenameUtils.normalize(path.joinToString("/"))
-  val result = FilenameUtils.concat(thisAsString, thatAsString)
-  return result.split("/").toList()
-}
-
-fun (Path).getParent(): Path {
-  return this.subList(0, this.size - 1)
-}
-
-fun (Path).getFileName(): String {
-  return this.last()
-}
-
-fun (Path).isAbsolute(): Boolean {
-  return this.first() == "/"
-}
-
-fun (Path).toFile(): File {
-  return java.nio.file.Paths.get(this.joinToString(File.separator)).toFile()
-}
-
-fun (Path).normalize(): Path {
-  val thisAsString = FilenameUtils.normalize(this.joinToString("/"))
-  return thisAsString.split("/").toList()
-}
+typealias Path = DocumentUri
 
 fun createPath(file: File): Path {
-  val filePath = file.toPath()
-  val result = mutableListOf<String>()
-  result.add(filePath.root.toString())
-  for (idx in 0 until filePath.nameCount) {
-    result.add(filePath.getName(idx).toString())
-  }
-  return result.toList()
+  return DocumentUri.LocalDocument.createPath(file)
 }
 
 fun createPath(pathAsString: String): Path {
-  return pathAsString.split(File.separatorChar).toList()
+  return DocumentUri.LocalDocument.createPath(pathAsString)
 }
 
 data class BreadcrumbNode(val path: Path, val label: String) {
@@ -343,17 +289,17 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
   var path: Path
     get() = breadcrumbs.selectedCrumb.value.path
     set(value) {
-      var lastItem: TreeItem<BreadcrumbNode>? = null
-      for (idx in 1..value.size) {
+      var lastItem: TreeItem<BreadcrumbNode> = TreeItem(BreadcrumbNode(value.getRoot(), value.getRootName()))
+      for (idx in 0 until value.getNameCount()) {
         val treeItem = TreeItem<BreadcrumbNode>(
             BreadcrumbNode(value.subpath(0, idx),
-                value.getName(idx - 1)))
+                value.getName(idx)))
         if (lastItem != null) {
           lastItem.children.add(treeItem)
         }
         lastItem = treeItem
-        breadcrumbs.selectedCrumb = lastItem
       }
+      breadcrumbs.selectedCrumb = lastItem
       onSelectCrumb.accept(value)
     }
 

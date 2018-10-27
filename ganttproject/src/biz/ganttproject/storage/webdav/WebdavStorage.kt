@@ -133,7 +133,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     isLockingSupported.addListener({ _, _, newValue ->
       System.err.println("is locking supported=" + newValue!!)
     })
-    builder.withBreadcrumbs()
+    builder.withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
     builder.withListView(
         onOpenItem = Consumer { item ->
           if (item is WebDavResourceAsFolderItem) {
@@ -198,8 +198,8 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
                          setResult: Consumer<ObservableList<WebDavResource>>,
                          dialogUi: StorageDialogBuilder.DialogUi) {
     var path = selectedPath
-    if (path.size > 1) {
-      path = path.subpath(1, path.size)
+    if (path.getNameCount() > 1) {
+      path = path.subpath(1, path.getNameCount())
     } else {
       path = path.getRoot()
     }

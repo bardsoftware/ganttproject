@@ -115,7 +115,7 @@ class BrowserPaneBuilder(
     this.onLaunch = onLaunch
   }
 
-  fun withBreadcrumbs() {
+  fun withBreadcrumbs(rootPath: Path) {
     val onSelectCrumb = Consumer { path: Path ->
       loader(path,
           resultConsumer,
@@ -123,7 +123,7 @@ class BrowserPaneBuilder(
       )
     }
 
-    this.breadcrumbView = BreadcrumbView(listOf("/", "GanttProject Cloud"), onSelectCrumb)
+    this.breadcrumbView = BreadcrumbView(rootPath, onSelectCrumb)
   }
 
   fun withActionButton(onAction: EventHandler<ActionEvent>) {

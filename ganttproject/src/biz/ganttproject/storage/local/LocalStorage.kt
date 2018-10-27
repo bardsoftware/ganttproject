@@ -70,7 +70,7 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val isDirectory: Boolean = file.isDirectory
 }
 
-fun absolutePrefix(path: Path, end: Int = path.size): Path {
+fun absolutePrefix(path: Path, end: Int = path.getNameCount()): Path {
   return path.getRoot().resolve(path.subpath(0, end))
 }
 
@@ -113,7 +113,7 @@ class LocalStorage(
         SimpleBooleanProperty(),
         SimpleBooleanProperty(false))
     val onSelectCrumb = Consumer { path: Path ->
-      val dir = path.toFile()
+      val dir = DocumentUri.LocalDocument.toFile(path)
       val result = FXCollections.observableArrayList<FileAsFolderItem>()
       dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
       listView.setResources(result)
@@ -294,9 +294,10 @@ class State(val currentDocument: Document,
   var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
   val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
-      absolutePrefix(currentFilePath, currentFilePath.size - 1).toFile())
+      DocumentUri.LocalDocument.toFile(absolutePrefix(currentFilePath, currentFilePath.getNameCount() - 1))
+  )
 
-  val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(absolutePrefix(currentFilePath).toFile())
+  val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(DocumentUri.LocalDocument.toFile(absolutePrefix(currentFilePath)))
 
   val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
