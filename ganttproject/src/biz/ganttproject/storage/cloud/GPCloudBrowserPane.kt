@@ -34,6 +34,7 @@ import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.controlsfx.control.Notifications
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -69,11 +70,21 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
         false
       }
     }
+  val lockOwner: String?
+    get() {
+      val lockNode = this.node["lock"]
+      return if (lockNode is ObjectNode) {
+        lockNode["name"]?.textValue()
+      } else {
+        null
+      }
+    }
   override val isLockable = true
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory = false
   val refid: String = this.node["refid"].asText()
+
 }
 
 class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
@@ -106,9 +117,6 @@ class GPCloudBrowserPane(
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi)
   private val historyService = HistoryService(dialogUi)
-  private val webSocketClient = WebSocketClient(Consumer {
-    Platform.runLater { this.reload() }
-  })
 
   private lateinit var paneElements: BrowserPaneElements
 
@@ -170,6 +178,8 @@ class GPCloudBrowserPane(
       )
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+
+    webSocket.onStructureChange { Platform.runLater { this.reload() } }
     return paneElements.browserPane
   }
 
@@ -182,13 +192,14 @@ class GPCloudBrowserPane(
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
+      val document = GPCloudDocument(item)
       if (item.isLocked && item.canChangeLock) {
-        this.documentConsumer.accept(GPCloudDocument(item))
+        this.documentConsumer.accept(document)
       } else {
         if (!item.isLocked) {
-          this.sceneChanger(this.createLockSuggestionPane(GPCloudDocument(item)))
+          this.sceneChanger(this.createLockSuggestionPane(document))
         } else {
-          this.sceneChanger(Label("LOCKED BY SOMEONE ELSE"))
+          this.sceneChanger(this.createLockWarningPage(document))
         }
       }
     }
@@ -252,6 +263,50 @@ class GPCloudBrowserPane(
     }
   }
 
+  private fun createLockWarningPage(document: GPCloudDocument): Pane {
+    val lockOwner = document.projectJson!!.lockOwner!!
+    val vbox = VBoxBuilder("lock-button-pane")
+    vbox.addTitle("Project Is Locked")
+    vbox.add(Label("This project is locked by $lockOwner. We recommend keeping it read-only").apply { styleClass.add("help") })
+
+    val notify = CheckBox("Show notification when lock is released").also {
+      it.styleClass.add("mt-5")
+    }
+    notify.isSelected = true
+    vbox.add(notify)
+
+    return DialogPane().apply {
+      styleClass.add("dlg-lock")
+      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
+
+      content = vbox.vbox
+
+      buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
+      lookupButton(ButtonType.OK).apply {
+        styleClass.add("btn-attention")
+        addEventHandler(ActionEvent.ACTION) { evt ->
+          openDocumentWithLock(document, null)
+        }
+        if (notify.isSelected) {
+          val deregister = webSocket.onStructureChange {
+            Notifications.create().title("GanttProject Cloud")
+                .text("Something has changed")
+                .darkStyle()
+                .hideAfter(javafx.util.Duration.seconds(5.0))
+                .showInformation()
+          }
+        }
+      }
+      lookupButton(ButtonType.CANCEL).apply {
+        addEventHandler(ActionEvent.ACTION) {
+          this@GPCloudBrowserPane.sceneChanger(this@GPCloudBrowserPane.paneElements.browserPane)
+        }
+      }
+    }
+
+  }
+
   private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {
     println("Lock node=$jsonLock")
     if (jsonLock != null) {
@@ -267,7 +322,6 @@ class GPCloudBrowserPane(
       onSucceeded = EventHandler { _ ->
         setResult.accept(value)
         showMaskPane.accept(false)
-        this@GPCloudBrowserPane.webSocketClient.start()
       }
       onFailed = EventHandler { _ ->
         showMaskPane.accept(false)
@@ -313,9 +367,6 @@ class GPCloudBrowserPane(
     }
   }
 
-  fun openWebSocket() {
-    this.webSocketClient.start()
-  }
 
   private fun loadHistory(item: ProjectJsonAsFolderItem,
                           resultConsumer: Consumer<ObservableList<FolderItem>>,

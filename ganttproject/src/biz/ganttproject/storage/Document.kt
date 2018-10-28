@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import javafx.beans.value.ObservableObjectValue
 import java.io.File
 import java.nio.file.Paths
 
@@ -139,6 +140,11 @@ class DocumentUri(private val components: List<String>,
       return DocumentUri(components, isAbsolute, root)
     }
   }
+}
+
+data class LockStatus(val locked: Boolean, val lockOwnerName: String, val lockOwnerEmail: String)
+interface LockableDocument {
+  val status: ObservableObjectValue<LockStatus>
 }
 
 

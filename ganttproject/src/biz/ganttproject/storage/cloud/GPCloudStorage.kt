@@ -23,10 +23,13 @@ import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.core.option.StringOption
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.storage.LockStatus
+import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
+import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Label
@@ -124,7 +127,7 @@ class GPCloudStorage(
         this.userId.value = userId
         this.websocketToken = websocketToken
         if (websocketToken != null) {
-          browserPane.openWebSocket()
+          webSocket.start()
         }
       }
       Platform.runLater {
@@ -155,6 +158,7 @@ class GPCloudStorage(
     signupPane.tryAccessToken(
         Consumer { _ ->
           println("Auth token is valid!")
+          webSocket.start()
           nextPage(browserPane.createStorageUi())
         },
         Consumer {
@@ -265,7 +269,9 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val projectRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
-  : AbstractURLDocument() {
+  : AbstractURLDocument(), LockableDocument {
+
+  override val status = SimpleObjectProperty<LockStatus>()
 
   constructor(projectJson: ProjectJsonAsFolderItem) : this(
       teamRefid = null,

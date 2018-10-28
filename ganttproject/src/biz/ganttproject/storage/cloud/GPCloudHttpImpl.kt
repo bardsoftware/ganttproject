@@ -264,8 +264,9 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
   }
 }
 
-class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebSocketListener() {
+class WebSocketListenerImpl() : WebSocketListener() {
   private var webSocket: WebSocket? = null
+  private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   internal val token: String?
     get() = Base64.getEncoder().encodeToString(
         "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
@@ -285,18 +286,26 @@ class WebSocketListenerImpl(private val onStructureChange: Consumer<Any>) : WebS
   }
 
   override fun onMessage(webSocket: WebSocket?, text: String?) {
-    this.onStructureChange.accept(Any())
+    for (listener in this.structureChangeListeners) {
+      listener(Any())
+    }
   }
 
   override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
     println("WebSocket closed")
   }
+
+
+  fun addOnStructureChange(listener: (Any) -> Unit): () -> Unit {
+    this.structureChangeListeners.add(listener)
+    return { this.structureChangeListeners.remove(listener) }
+  }
 }
 
-class WebSocketClient(private val onStructureChange: Consumer<Any>) {
+class WebSocketClient {
   private val okClient = OkHttpClient()
   private var isStarted = false
-  private val wsListener = WebSocketListenerImpl(onStructureChange)
+  private val wsListener = WebSocketListenerImpl()
 
   fun start() {
     if (isStarted) {
@@ -306,4 +315,11 @@ class WebSocketClient(private val onStructureChange: Consumer<Any>) {
     this.okClient.newWebSocket(req, this.wsListener)
     isStarted = true
   }
+
+  fun onStructureChange(listener: (Any) -> Unit): () -> Unit {
+    return this.wsListener.addOnStructureChange(listener)
+
+  }
 }
+
+val webSocket  = WebSocketClient()
