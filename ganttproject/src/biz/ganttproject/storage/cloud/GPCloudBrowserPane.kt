@@ -289,12 +289,14 @@ class GPCloudBrowserPane(
           openDocumentWithLock(document, null)
         }
         if (notify.isSelected) {
-          val deregister = webSocket.onStructureChange {
-            Notifications.create().title("GanttProject Cloud")
-                .text("Something has changed")
-                .darkStyle()
-                .hideAfter(javafx.util.Duration.seconds(5.0))
-                .showInformation()
+          document.listenUnlock(webSocket)
+          document.status.addListener { status, oldValue, newValue ->
+            if (!newValue.locked) {
+              Notifications.create().title("Project Unlocked")
+                  .text("User ${newValue.lockOwnerName} has unlocked project ${document.fileName}")
+                  .darkStyle()
+                  .showInformation()
+            }
           }
         }
       }

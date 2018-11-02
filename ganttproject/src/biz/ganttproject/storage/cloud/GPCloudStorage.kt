@@ -341,7 +341,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
         val resp = http.client.execute(http.host, projectWrite, http.context)
         if (resp.statusLine.statusCode != 200) {
-          throw IOException("Failed to write to GanttProject Cloud")
+          throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
         }
       }
     }
@@ -356,6 +356,15 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")
 
   override fun isLocal(): Boolean = false
+  fun listenUnlock(webSocket: WebSocketClient) {
+    webSocket.onLockStatusChange { msg ->
+      if (!msg["locked"].booleanValue()) {
+        this.status.get().also {
+          this.status.set(LockStatus(false, it.lockOwnerName, it.lockOwnerEmail))
+        }
+      }
+    }
+  }
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"

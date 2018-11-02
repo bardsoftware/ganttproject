@@ -267,6 +267,7 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
 class WebSocketListenerImpl() : WebSocketListener() {
   private var webSocket: WebSocket? = null
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
+  private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   internal val token: String?
     get() = Base64.getEncoder().encodeToString(
         "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
@@ -286,8 +287,26 @@ class WebSocketListenerImpl() : WebSocketListener() {
   }
 
   override fun onMessage(webSocket: WebSocket?, text: String?) {
+    val payload = OBJECT_MAPPER.readTree(text)
+    if (payload is ObjectNode) {
+      payload.get("type")?.textValue()?.let {
+        when (it) {
+          "ProjectLockStatusChange" -> onLockStatusChange(payload)
+          else -> onStructureChange(payload)
+        }
+      }
+    }
+  }
+
+  private fun onStructureChange(payload: ObjectNode) {
     for (listener in this.structureChangeListeners) {
       listener(Any())
+    }
+  }
+
+  private fun onLockStatusChange(payload: ObjectNode) {
+    for (listener in this.lockStatusChangeListeners) {
+      listener(payload)
     }
   }
 
@@ -300,6 +319,11 @@ class WebSocketListenerImpl() : WebSocketListener() {
     this.structureChangeListeners.add(listener)
     return { this.structureChangeListeners.remove(listener) }
   }
+
+  fun addOnLockStatusChange(listener: (ObjectNode) -> Unit) {
+    this.lockStatusChangeListeners.add(listener)
+  }
+
 }
 
 class WebSocketClient {
@@ -318,8 +342,11 @@ class WebSocketClient {
 
   fun onStructureChange(listener: (Any) -> Unit): () -> Unit {
     return this.wsListener.addOnStructureChange(listener)
+  }
 
+  fun onLockStatusChange(listener: (ObjectNode) -> Unit) {
+    return this.wsListener.addOnLockStatusChange(listener)
   }
 }
 
-val webSocket  = WebSocketClient()
+val webSocket = WebSocketClient()
