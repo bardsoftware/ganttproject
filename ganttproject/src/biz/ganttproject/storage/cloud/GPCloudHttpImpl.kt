@@ -289,7 +289,9 @@ class WebSocketListenerImpl() : WebSocketListener() {
   override fun onMessage(webSocket: WebSocket?, text: String?) {
     val payload = OBJECT_MAPPER.readTree(text)
     if (payload is ObjectNode) {
+      println("WebSocket message:\n$payload")
       payload.get("type")?.textValue()?.let {
+        println("type=$it")
         when (it) {
           "ProjectLockStatusChange" -> onLockStatusChange(payload)
           else -> onStructureChange(payload)
@@ -314,6 +316,10 @@ class WebSocketListenerImpl() : WebSocketListener() {
     println("WebSocket closed")
   }
 
+  override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+    println("failure: $response.")
+    t.printStackTrace()
+  }
 
   fun addOnStructureChange(listener: (Any) -> Unit): () -> Unit {
     this.structureChangeListeners.add(listener)

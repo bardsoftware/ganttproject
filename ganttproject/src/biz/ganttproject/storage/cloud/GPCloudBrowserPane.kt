@@ -286,16 +286,18 @@ class GPCloudBrowserPane(
       lookupButton(ButtonType.OK).apply {
         styleClass.add("btn-attention")
         addEventHandler(ActionEvent.ACTION) { evt ->
-          openDocumentWithLock(document, null)
+          openDocumentWithLock(document, document.projectJson.node["lock"])
         }
         if (notify.isSelected) {
           document.listenUnlock(webSocket)
           document.status.addListener { status, oldValue, newValue ->
+            println("new value=$newValue")
             if (!newValue.locked) {
-              Notifications.create().title("Project Unlocked")
-                  .text("User ${newValue.lockOwnerName} has unlocked project ${document.fileName}")
-                  .darkStyle()
-                  .showInformation()
+              Platform.runLater {
+                Notifications.create().title("Project Unlocked")
+                    .text("User ${newValue?.lockOwnerName ?: ""} has unlocked project ${document.fileName}")
+                    .showInformation()
+              }
             }
           }
         }

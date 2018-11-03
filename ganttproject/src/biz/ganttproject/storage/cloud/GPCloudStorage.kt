@@ -126,9 +126,7 @@ class GPCloudStorage(
         }
         this.userId.value = userId
         this.websocketToken = websocketToken
-        if (websocketToken != null) {
-          webSocket.start()
-        }
+        webSocket.start()
       }
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
@@ -358,10 +356,9 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun isLocal(): Boolean = false
   fun listenUnlock(webSocket: WebSocketClient) {
     webSocket.onLockStatusChange { msg ->
+      println(msg)
       if (!msg["locked"].booleanValue()) {
-        this.status.get().also {
-          this.status.set(LockStatus(false, it.lockOwnerName, it.lockOwnerEmail))
-        }
+        this.status.set(LockStatus(false, null, null))
       }
     }
   }
@@ -370,5 +367,13 @@ class GPCloudDocument(private val teamRefid: String?,
     get() = "?projectRefid=${this.projectRefid}"
 
   var lock: JsonNode? = null
+    set(value) {
+      field = value
+      if (value != null) {
+        this.status.set(LockStatus(true, value["name"]?.textValue(), value["email"]?.textValue()))
+      } else {
+        this.status.set(LockStatus(false, null, null))
+      }
+    }
 
 }
