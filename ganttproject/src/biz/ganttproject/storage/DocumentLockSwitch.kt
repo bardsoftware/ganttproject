@@ -1,0 +1,66 @@
+/*
+Copyright 2018 BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.storage
+
+import javafx.application.Platform
+import javafx.beans.value.ObservableObjectValue
+import net.sourceforge.ganttproject.document.Document
+import org.controlsfx.control.ToggleSwitch
+
+/**
+ * @author dbarashev@bardsoftware.com
+ */
+class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
+  val switch = ToggleSwitch()
+
+  init {
+    observableDocument.addListener(this::onDocumentChange)
+  }
+
+  private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
+    Platform.runLater {
+      if (oldDocument is LockableDocument) {
+        oldDocument.status.removeListener(this::onStatusChange)
+      }
+
+      if (newDocument is LockableDocument) {
+        newDocument.status.addListener(this::onStatusChange)
+        this.updateStatus(newDocument.status.value)
+      } else if (newDocument != null) {
+        this.switch.isSelected = false
+        this.switch.isDisable = true
+        this.switch.text = "Unlocked"
+      }
+    }
+
+
+  }
+
+  private fun onStatusChange(observable: Any, oldStatus: LockStatus, newStatus: LockStatus) {
+    Platform.runLater {
+      this.updateStatus(newStatus)
+    }
+  }
+
+  private fun updateStatus(status: LockStatus) {
+    this.switch.isDisable = false
+    this.switch.isSelected = status.locked
+    this.switch.text = if (status.locked) "Locked" else "Unlocked"
+  }
+}

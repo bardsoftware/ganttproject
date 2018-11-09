@@ -366,7 +366,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane(JPanel toolbar) {
+  protected void createContentPane(JComponent toolbar) {
     myContentPaneBuilder.build(toolbar, getContentPane());
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
