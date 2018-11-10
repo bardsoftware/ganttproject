@@ -65,7 +65,7 @@ import java.util.Set;
 /**
  * @author bard
  */
-class ProxyDocument implements Document {
+public class ProxyDocument implements Document {
   private Document myPhysicalDocument;
 
   private IGanttProject myProject;
@@ -93,6 +93,9 @@ class ProxyDocument implements Document {
     myResourceVisibleFields = resourceVisibleFields;
   }
 
+  public Document getRealDocument() {
+    return myPhysicalDocument;
+  }
   @Override
   public void setMirror(Document mirrorDocument) {
     myPhysicalDocument = Preconditions.checkNotNull(mirrorDocument);

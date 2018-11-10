@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import javafx.application.Platform
 import javafx.beans.value.ObservableObjectValue
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.ProxyDocument
 import org.controlsfx.control.ToggleSwitch
 
 /**
@@ -35,14 +36,18 @@ class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
 
   private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
     Platform.runLater {
-      if (oldDocument is LockableDocument) {
-        oldDocument.status.removeListener(this::onStatusChange)
+
+      val newDoc = if (newDocument is ProxyDocument) { newDocument.realDocument } else { newDocument }
+      val oldDoc = if (oldDocument is ProxyDocument) { oldDocument.realDocument } else { oldDocument }
+
+      if (oldDoc is LockableDocument) {
+        oldDoc.status.removeListener(this::onStatusChange)
       }
 
-      if (newDocument is LockableDocument) {
-        newDocument.status.addListener(this::onStatusChange)
-        this.updateStatus(newDocument.status.value)
-      } else if (newDocument != null) {
+      if (newDoc is LockableDocument) {
+        newDoc.status.addListener(this::onStatusChange)
+        this.updateStatus(newDoc.status.value)
+      } else if (newDoc != null) {
         this.switch.isSelected = false
         this.switch.isDisable = true
         this.switch.text = "Unlocked"
