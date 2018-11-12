@@ -53,8 +53,6 @@ class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
         this.switch.text = "Unlocked"
       }
     }
-
-
   }
 
   private fun onStatusChange(observable: Any, oldStatus: LockStatus, newStatus: LockStatus) {

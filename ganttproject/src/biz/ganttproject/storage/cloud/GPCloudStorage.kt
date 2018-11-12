@@ -359,6 +359,8 @@ class GPCloudDocument(private val teamRefid: String?,
       println(msg)
       if (!msg["locked"].booleanValue()) {
         this.status.set(LockStatus(false, null, null))
+      } else {
+        this.status.set(LockStatus(locked = true, lockOwnerName = "Anonymous", lockOwnerEmail = null))
       }
     }
   }
