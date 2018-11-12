@@ -45,6 +45,8 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
@@ -264,13 +266,14 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
   }
 }
 
-class WebSocketListenerImpl() : WebSocketListener() {
+class WebSocketListenerImpl : WebSocketListener() {
   private var webSocket: WebSocket? = null
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   internal val token: String?
     get() = Base64.getEncoder().encodeToString(
         "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
+  lateinit var onAuthCompleted: () -> Unit
 
   override fun onOpen(webSocket: WebSocket, response: Response) {
     println("WebSocket opened")
@@ -282,6 +285,7 @@ class WebSocketListenerImpl() : WebSocketListener() {
     println("Trying sending token ${this.token}")
     if (this.webSocket != null && this.token != null) {
       this.webSocket?.send("Basic ${this.token}")
+      this.onAuthCompleted()
       println("Token is sent!")
     }
   }
@@ -336,13 +340,18 @@ class WebSocketClient {
   private val okClient = OkHttpClient()
   private var isStarted = false
   private val wsListener = WebSocketListenerImpl()
+  private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
+  private lateinit var websocket: WebSocket
 
   fun start() {
     if (isStarted) {
       return
     }
     val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
-    this.okClient.newWebSocket(req, this.wsListener)
+    this.wsListener.onAuthCompleted = {
+      this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
+    }
+    this.websocket = this.okClient.newWebSocket(req, this.wsListener)
     isStarted = true
   }
 
@@ -352,6 +361,10 @@ class WebSocketClient {
 
   fun onLockStatusChange(listener: (ObjectNode) -> Unit) {
     return this.wsListener.addOnLockStatusChange(listener)
+  }
+
+  fun sendHeartbeat() {
+    this.websocket.send("HB")
   }
 }
 
