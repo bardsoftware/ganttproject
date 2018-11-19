@@ -116,14 +116,16 @@ public class StorageDialogBuilder {
         e.printStackTrace();
       }
     });
-    myDocumentUpdater = document -> SwingUtilities.invokeLater(() -> {
-      if (project.getDocument() == null) {
-        project.setDocument(documentManager.getProxyDocument(document));
-      } else {
-        project.getDocument().setMirror(document);
-      }
-      projectUi.saveProject(project);
-    });
+    myDocumentUpdater = document -> {
+      SwingUtilities.invokeLater(() -> {
+        if (project.getDocument() == null) {
+          project.setDocument(documentManager.getProxyDocument(document));
+        } else {
+          project.getDocument().setMirror(document);
+        }
+        projectUi.saveProject(project);
+      });
+    };
     myProject = project;
   }
 

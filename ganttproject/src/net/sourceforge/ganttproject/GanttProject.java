@@ -105,6 +105,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -368,80 +369,90 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         });
       }
     });
-
     System.err.println("5. calculating size and packing...");
-    createToolbar().thenAccept(toolbar -> {
-      SwingUtilities.invokeLater(() -> {
-        createContentPane(toolbar.getComponent());
-        //final List<? extends JComponent> buttons = addButtons(getToolBar());
-        // Chart tabs
-        getTabs().setSelectedIndex(0);
 
-        System.err.println("6. changing language ...");
-        languageChanged(null);
-        // Add Listener after language update (to be sure that it is not updated
-        // twice)
-        language.addListener(this);
+    FXToolbar fxToolbar = null;
+    try {
+      fxToolbar = createToolbar().get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
 
-        System.err.println("7. first attempt to restore bounds");
+    createContentPane(fxToolbar.getComponent());
+    final FXToolbar toolbar = fxToolbar;
+    //final List<? extends JComponent> buttons = addButtons(getToolBar());
+    // Chart tabs
+    getTabs().setSelectedIndex(0);
+
+    System.err.println("6. changing language ...");
+    languageChanged(null);
+    // Add Listener after language update (to be sure that it is not updated
+    // twice)
+    language.addListener(this);
+
+    System.err.println("7. first attempt to restore bounds");
+    restoreBounds();
+    addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent windowEvent) {
+        quitApplication();
+      }
+
+      @Override
+      public void windowOpened(WindowEvent e) {
+        System.err.println("Resizing window...");
+        toolbar.updateButtons();
+        GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         restoreBounds();
-        addWindowListener(new WindowAdapter() {
+        // It is important to run aligners after look and feel is set and font sizes
+        // in the UI manager updated.
+        SwingUtilities.invokeLater(new Runnable() {
           @Override
-          public void windowClosing(WindowEvent windowEvent) {
-            quitApplication();
+          public void run() {
+            for (RowHeightAligner aligner : myRowHeightAligners) {
+              aligner.optionsChanged();
+            }
           }
-
+        });
+        getUiFacadeImpl().getDpiOption().addChangeValueListener(new ChangeValueListener() {
           @Override
-          public void windowOpened(WindowEvent e) {
-            System.err.println("Resizing window...");
-            toolbar.updateButtons();
-            GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
-            restoreBounds();
-            // It is important to run aligners after look and feel is set and font sizes
-            // in the UI manager updated.
+          public void changeValue(ChangeValueEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
               @Override
               public void run() {
-                for (RowHeightAligner aligner : myRowHeightAligners) {
-                  aligner.optionsChanged();
-                }
-              }
-            });
-            getUiFacadeImpl().getDpiOption().addChangeValueListener(new ChangeValueListener() {
-              @Override
-              public void changeValue(ChangeValueEvent event) {
-                SwingUtilities.invokeLater(new Runnable() {
-                  @Override
-                  public void run() {
-                    getContentPane().doLayout();
-                  }
-                });
+                getContentPane().doLayout();
               }
             });
           }
         });
-
-        System.err.println("8. finalizing...");
-        // applyComponentOrientation(GanttLanguage.getInstance()
-        // .getComponentOrientation());
-        myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
-        addMouseListenerToAllContainer(this.getComponents());
-
-        // Add globally available actions/key strokes
-        GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
-        UIUtil.pushAction(getTabs(), true, viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
-
-        GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
-        UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
-
-        try {
-          myObservableDocument.set(getDocumentManager().newUntitledDocument());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-
-      });
+        getGanttChart().reset();
+        getResourceChart().reset();
+        // This will clear any modifications which might be caused by
+        // adjusting widths of table columns during initial layout process.
+        getProject().setModified(false);
+      }
     });
+
+    System.err.println("8. finalizing...");
+    // applyComponentOrientation(GanttLanguage.getInstance()
+    // .getComponentOrientation());
+    myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
+    addMouseListenerToAllContainer(this.getComponents());
+
+    // Add globally available actions/key strokes
+    GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
+    UIUtil.pushAction(getTabs(), true, viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
+
+    GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
+    UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
+
+    try {
+      myObservableDocument.set(getDocumentManager().newUntitledDocument());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 
