@@ -141,7 +141,7 @@ class DocumentUri(private val components: List<String>,
   }
 }
 
-data class LockStatus(val locked: Boolean, val lockOwnerName: String?, val lockOwnerEmail: String?)
+data class LockStatus(val locked: Boolean, val lockOwnerName: String? = null, val lockOwnerEmail: String? = null, val lockOwnerId: String? = null)
 interface LockableDocument {
   val status: ObservableObjectValue<LockStatus>
 }

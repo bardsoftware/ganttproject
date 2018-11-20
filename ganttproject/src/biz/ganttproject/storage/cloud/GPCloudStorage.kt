@@ -124,7 +124,7 @@ class GPCloudStorage(
         } else {
           Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
         }
-        this.userId.value = userId
+        this.userId.value = "firebase:::$userId"
         this.websocketToken = websocketToken
         webSocket.start()
       }
@@ -253,7 +253,7 @@ object HttpClientBuilder {
     val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
     if (GPCloudOptions.authToken.value != "") {
       httpClient.credentialsProvider.setCredentials(
-          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
+          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value.split(":").last(), GPCloudOptions.authToken.value))
       val authCache = BasicAuthCache()
       authCache.put(httpHost, BasicScheme())
       context.setAttribute(ClientContext.AUTH_CACHE, authCache)
@@ -272,9 +272,9 @@ class GPCloudDocument(private val teamRefid: String?,
   override val status = SimpleObjectProperty<LockStatus>()
   init {
     status.set(if (projectJson?.isLocked == true) {
-      LockStatus(true, projectJson.lockOwner, projectJson.lockOwnerEmail)
+      LockStatus(true, projectJson.lockOwner, projectJson.lockOwnerEmail, projectJson.lockOwnerId)
     } else {
-      LockStatus(false, null, null)
+      LockStatus(false)
     })
   }
 
@@ -366,9 +366,12 @@ class GPCloudDocument(private val teamRefid: String?,
     webSocket.onLockStatusChange { msg ->
       println(msg)
       if (!msg["locked"].booleanValue()) {
-        this.status.set(LockStatus(false, null, null))
+        this.status.set(LockStatus(false))
       } else {
-        this.status.set(LockStatus(locked = true, lockOwnerName = "Anonymous", lockOwnerEmail = null))
+        this.status.set(LockStatus(locked = true,
+            lockOwnerName = msg.path("author")?.path("name")?.textValue(),
+            lockOwnerEmail = null,
+            lockOwnerId = msg.path("author")?.path("id")?.textValue()))
       }
     }
   }
@@ -380,9 +383,9 @@ class GPCloudDocument(private val teamRefid: String?,
     set(value) {
       field = value
       if (value != null) {
-        this.status.set(LockStatus(true, value["name"]?.textValue(), value["email"]?.textValue()))
+        this.status.set(LockStatus(true, value["name"]?.textValue(), value["email"]?.textValue(), value["uid"]?.textValue()))
       } else {
-        this.status.set(LockStatus(false, null, null))
+        this.status.set(LockStatus(false))
       }
     }
 

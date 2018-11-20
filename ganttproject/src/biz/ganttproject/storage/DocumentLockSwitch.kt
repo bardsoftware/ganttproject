@@ -18,8 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.storage.cloud.GPCloudOptions
 import javafx.application.Platform
 import javafx.beans.value.ObservableObjectValue
+import javafx.scene.control.Tooltip
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import org.controlsfx.control.ToggleSwitch
@@ -62,8 +64,12 @@ class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
   }
 
   private fun updateStatus(status: LockStatus) {
-    this.switch.isDisable = false
     this.switch.isSelected = status.locked
     this.switch.text = if (status.locked) "Locked" else "Unlocked"
+    this.switch.tooltip = if (status.locked) { Tooltip("by ${status.lockOwnerName}") } else { null }
+
+    println("my user id=${GPCloudOptions.userId.value}")
+    println(status)
+    this.switch.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
   }
 }

@@ -88,6 +88,15 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
         null
       }
     }
+  val lockOwnerId: String?
+    get() {
+      val lockNode = this.node["lock"]
+      return if (lockNode is ObjectNode) {
+        lockNode["uid"]?.textValue()
+      } else {
+        null
+      }
+    }
 
   override val isLockable = true
   override val name: String
