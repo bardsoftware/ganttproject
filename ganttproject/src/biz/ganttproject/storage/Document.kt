@@ -117,7 +117,6 @@ class DocumentUri(private val components: List<String>,
   companion object LocalDocument {
     fun toFile(path: DocumentUri): File {
       val filePath = java.nio.file.Paths.get(path.root, *path.components.toTypedArray())
-      val abs = filePath.toAbsolutePath()
       return filePath.toFile()
     }
 

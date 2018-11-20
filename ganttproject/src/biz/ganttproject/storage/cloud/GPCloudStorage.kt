@@ -270,6 +270,14 @@ class GPCloudDocument(private val teamRefid: String?,
   : AbstractURLDocument(), LockableDocument {
 
   override val status = SimpleObjectProperty<LockStatus>()
+  init {
+    status.set(if (projectJson?.isLocked == true) {
+      LockStatus(true, projectJson.lockOwner, projectJson.lockOwnerEmail)
+    } else {
+      LockStatus(false, null, null)
+    })
+  }
+
 
   constructor(projectJson: ProjectJsonAsFolderItem) : this(
       teamRefid = null,
@@ -354,7 +362,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")
 
   override fun isLocal(): Boolean = false
-  fun listenUnlock(webSocket: WebSocketClient) {
+  fun listenLockChange(webSocket: WebSocketClient) {
     webSocket.onLockStatusChange { msg ->
       println(msg)
       if (!msg["locked"].booleanValue()) {

@@ -79,6 +79,16 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
         null
       }
     }
+  val lockOwnerEmail: String?
+    get() {
+      val lockNode = this.node["lock"]
+      return if (lockNode is ObjectNode) {
+        lockNode["email"]?.textValue()
+      } else {
+        null
+      }
+    }
+
   override val isLockable = true
   override val name: String
     get() = this.node["name"].asText()
@@ -202,6 +212,7 @@ class GPCloudBrowserPane(
           this.sceneChanger(this.createLockWarningPage(document))
         }
       }
+      document.listenLockChange(webSocket)
     }
   }
 
@@ -289,7 +300,6 @@ class GPCloudBrowserPane(
           openDocumentWithLock(document, document.projectJson.node["lock"])
         }
         if (notify.isSelected) {
-          document.listenUnlock(webSocket)
           document.status.addListener { status, oldValue, newValue ->
             println("new value=$newValue")
             if (!newValue.locked) {
