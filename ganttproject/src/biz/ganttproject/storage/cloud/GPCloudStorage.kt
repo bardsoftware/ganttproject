@@ -353,7 +353,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun getPath(): String = """ganttproject.cloud://${this.teamName}/${this.projectName}/${this.projectRefid}"""
+  override fun getPath(): String = """https://GanttProject Cloud/${this.teamName}/${this.projectName}?refid=${this.projectRefid}"""
 
   override fun write() {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

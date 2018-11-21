@@ -141,7 +141,7 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
     val jsonBody = let {
       val resp = http.client.execute(http.host, teamList, http.context)
       if (resp.statusLine.statusCode == 200) {
-        CharStreams.toString(InputStreamReader(resp.entity.content))
+        CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
       } else {
         with(log) {
           warning(
@@ -210,7 +210,7 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
       http.client.execute(http.host, projectLock, http.context)
     }
     if (resp.statusLine.statusCode == 200) {
-      val jsonBody = CharStreams.toString(InputStreamReader(resp.entity.content))
+      val jsonBody = CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
       return OBJECT_MAPPER.readTree(jsonBody)
     } else {
       with(log) {
@@ -245,7 +245,7 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
     val jsonBody = let {
       val resp = http.client.execute(http.host, teamList, http.context)
       if (resp.statusLine.statusCode == 200) {
-        CharStreams.toString(InputStreamReader(resp.entity.content))
+        CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
       } else {
         with(log) {
           warning(
