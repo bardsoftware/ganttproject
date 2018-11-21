@@ -29,11 +29,12 @@ import org.controlsfx.control.ToggleSwitch
 /**
  * @author dbarashev@bardsoftware.com
  */
-class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
+class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<Document>) {
   val switch = ToggleSwitch()
 
   init {
     observableDocument.addListener(this::onDocumentChange)
+    switch.selectedProperty().addListener(this::onSwitchAction)
   }
 
   private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
@@ -63,13 +64,28 @@ class DocumentLockSwitch(observableDocument: ObservableObjectValue<Document>) {
     }
   }
 
+  private var isChangingSelected: Boolean = false
+
   private fun updateStatus(status: LockStatus) {
+    this.isChangingSelected = true
     this.switch.isSelected = status.locked
+    this.isChangingSelected = false
     this.switch.text = if (status.locked) "Locked" else "Unlocked"
     this.switch.tooltip = if (status.locked) { Tooltip("by ${status.lockOwnerName}") } else { null }
 
     println("my user id=${GPCloudOptions.userId.value}")
     println(status)
     this.switch.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
+  }
+
+  private fun onSwitchAction(observable: Any, oldValue: Boolean, newValue: Boolean) {
+    if (this.isChangingSelected) {
+      return
+    }
+    val doc = this.observableDocument.get()
+    val realDoc = if (doc is ProxyDocument) { doc.realDocument } else { doc }
+    if (realDoc is LockableDocument) {
+      realDoc.setLocked(this.switch.isSelected)
+    }
   }
 }

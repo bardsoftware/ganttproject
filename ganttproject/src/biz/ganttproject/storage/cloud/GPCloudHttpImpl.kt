@@ -44,7 +44,6 @@ import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
 import java.time.Duration
-import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -271,8 +270,7 @@ class WebSocketListenerImpl : WebSocketListener() {
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   internal val token: String?
-    get() = Base64.getEncoder().encodeToString(
-        "${GPCloudOptions.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
+    get() = GPCloudOptions.websocketAuthToken
   lateinit var onAuthCompleted: () -> Unit
 
   override fun onOpen(webSocket: WebSocket, response: Response) {

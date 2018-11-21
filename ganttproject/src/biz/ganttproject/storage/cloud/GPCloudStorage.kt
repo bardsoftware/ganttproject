@@ -203,6 +203,9 @@ object GPCloudOptions {
       }
     }
   }
+  val websocketAuthToken: String get() = Base64.getEncoder().encodeToString(
+          "${this.userId.value.split(":").last()}:${GPCloudOptions.authToken.value}".toByteArray())
+
   var websocketToken: String? = null
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
 }
@@ -268,7 +271,6 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument {
-
   override val status = SimpleObjectProperty<LockStatus>()
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -374,6 +376,9 @@ class GPCloudDocument(private val teamRefid: String?,
             lockOwnerId = msg.path("author")?.path("id")?.textValue()))
       }
     }
+  }
+
+  override fun setLocked(locked: Boolean) {
   }
 
   private val queryArgs: String
