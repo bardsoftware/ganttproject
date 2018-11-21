@@ -25,7 +25,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .toolbar-main {
-    -fx-background-color: -gp-light-gray;
+    -fx-background-color: transparent;
     -fx-padding: 1ex 2em 2ex 2em;
 }
 

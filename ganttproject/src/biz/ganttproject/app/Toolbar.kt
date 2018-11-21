@@ -33,6 +33,7 @@ import javafx.scene.control.ToolBar
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color
 import net.sourceforge.ganttproject.action.GPAction
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
@@ -46,7 +47,7 @@ class FXToolbar {
 
   val component: JComponent
       get() = JFXPanel().also {
-        val scene = Scene(toolbar)
+        val scene = Scene(toolbar, Color.TRANSPARENT)
         scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
         it.scene = scene
       }
