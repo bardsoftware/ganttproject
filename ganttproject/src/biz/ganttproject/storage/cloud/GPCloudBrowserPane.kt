@@ -134,7 +134,7 @@ class GPCloudBrowserPane(
     private val documentConsumer: Consumer<Document>,
     private val sceneChanger: SceneChanger) {
   private val loaderService = LoaderService(dialogUi)
-  private val lockService = LockService(dialogUi)
+  private val lockService = LockService(dialogUi::error)
   private val historyService = HistoryService(dialogUi)
 
   private lateinit var paneElements: BrowserPaneElements

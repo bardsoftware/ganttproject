@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Label
@@ -378,7 +379,20 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun setLocked(locked: Boolean) {
+  override fun setLocked(locked: Boolean) : CompletableFuture<LockStatus> {
+    val result = CompletableFuture<LockStatus>()
+    val lockService = LockService() {
+      result.completeExceptionally(RuntimeException(it))
+    }
+    lockService.project = this.projectJson!!
+    lockService.busyIndicator = Consumer {}
+    lockService.requestLockToken = false
+    lockService.duration = Duration.ofHours(1)
+    lockService.onSucceeded = EventHandler { result.complete(json2lockStatus(lockService.value)) }
+    lockService.onFailed = EventHandler { result.completeExceptionally(RuntimeException("Failed")) }
+    lockService.onCancelled = EventHandler { result.completeExceptionally(RuntimeException("Cancelled")) }
+    lockService.restart()
+    return result
   }
 
   private val queryArgs: String
@@ -387,11 +401,17 @@ class GPCloudDocument(private val teamRefid: String?,
   var lock: JsonNode? = null
     set(value) {
       field = value
-      if (value != null) {
-        this.status.set(LockStatus(true, value["name"]?.textValue(), value["email"]?.textValue(), value["uid"]?.textValue()))
-      } else {
-        this.status.set(LockStatus(false))
-      }
+      this.status.set(json2lockStatus(value))
     }
+
+  private fun json2lockStatus(json: JsonNode?): LockStatus {
+    return if (json != null) {
+      LockStatus(true,
+          json["name"]?.textValue(), json["email"]?.textValue(), json["uid"]?.textValue())
+    } else {
+      LockStatus(false)
+    }
+
+  }
 
 }

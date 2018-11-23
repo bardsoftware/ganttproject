@@ -71,7 +71,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     this.switch.isSelected = status.locked
     this.isChangingSelected = false
     this.switch.text = if (status.locked) "Locked" else "Unlocked"
-    this.switch.tooltip = if (status.locked) { Tooltip("by ${status.lockOwnerName}") } else { null }
+    this.switch.tooltip = if (status.locked) { Tooltip("Locked by ${status.lockOwnerName}") } else { null }
 
     println("my user id=${GPCloudOptions.userId.value}")
     println(status)
@@ -85,7 +85,11 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     val doc = this.observableDocument.get()
     val realDoc = if (doc is ProxyDocument) { doc.realDocument } else { doc }
     if (realDoc is LockableDocument) {
-      realDoc.setLocked(this.switch.isSelected)
+      val future = realDoc.setLocked(this.switch.isSelected)
+      future.thenAcceptAsync(this::updateStatus).exceptionally {
+        it.printStackTrace()
+        null
+      }
     }
   }
 }

@@ -162,7 +162,8 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
 
 private val OBJECT_MAPPER = ObjectMapper()
 
-class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<JsonNode>() {
+typealias ErrorUi = (String) -> Unit
+class LockService(private val errorUi: ErrorUi) : Service<JsonNode>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   lateinit var project: ProjectJsonAsFolderItem
   var requestLockToken: Boolean = false
@@ -177,7 +178,7 @@ class LockService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service
       } else {
         ""
       }
-      this.dialogUi.error("Failed to lock project: $errorDetails")
+      this.errorUi("Failed to lock project: $errorDetails")
     }
     return task
   }

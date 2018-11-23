@@ -57,9 +57,9 @@ class FXToolbar {
   }
 }
 
-typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
+private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
-class ButtonVisitor(val action: GPAction) {
+private class ButtonVisitor(val action: GPAction) {
   fun visit(toolbar: FXToolbar) {
     val faChar = action.fontawesomeLabel ?: return
     val icon = FontAwesomeIcon.values().firstOrNull { it.char == faChar[0] } ?: return

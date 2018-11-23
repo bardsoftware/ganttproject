@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import javafx.beans.value.ObservableObjectValue
 import java.io.File
 import java.nio.file.Paths
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -143,7 +144,7 @@ class DocumentUri(private val components: List<String>,
 
 data class LockStatus(val locked: Boolean, val lockOwnerName: String? = null, val lockOwnerEmail: String? = null, val lockOwnerId: String? = null)
 interface LockableDocument {
-  fun setLocked(locked: Boolean)
+  fun setLocked(locked: Boolean): CompletableFuture<LockStatus>
 
   val status: ObservableObjectValue<LockStatus>
 }
