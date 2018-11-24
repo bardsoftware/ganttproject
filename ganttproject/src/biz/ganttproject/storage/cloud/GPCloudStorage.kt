@@ -27,6 +27,7 @@ import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
@@ -381,14 +382,22 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun setLocked(locked: Boolean) : CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
-    val lockService = LockService() {
+    val lockService = LockService {
       result.completeExceptionally(RuntimeException(it))
     }
     lockService.project = this.projectJson!!
     lockService.busyIndicator = Consumer {}
     lockService.requestLockToken = false
     lockService.duration = Duration.ofHours(1)
-    lockService.onSucceeded = EventHandler { result.complete(json2lockStatus(lockService.value)) }
+    lockService.onSucceeded = EventHandler {
+      val status = json2lockStatus(lockService.value)
+      val projectNode = this.projectJson.node
+      if (projectNode is ObjectNode) {
+        projectNode.set("lock", lockService.value)
+      }
+
+      result.complete(status)
+    }
     lockService.onFailed = EventHandler { result.completeExceptionally(RuntimeException("Failed")) }
     lockService.onCancelled = EventHandler { result.completeExceptionally(RuntimeException("Cancelled")) }
     lockService.restart()
@@ -405,7 +414,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
 
   private fun json2lockStatus(json: JsonNode?): LockStatus {
-    return if (json != null) {
+    return if (json?.isMissingNode == false) {
       LockStatus(true,
           json["name"]?.textValue(), json["email"]?.textValue(), json["uid"]?.textValue())
     } else {
