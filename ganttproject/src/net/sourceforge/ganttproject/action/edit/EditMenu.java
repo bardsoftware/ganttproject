@@ -18,22 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
-import net.sourceforge.ganttproject.search.SearchUi;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+
+import javax.swing.*;
 
 public class EditMenu extends JMenu {
   private final UndoAction myUndoAction;
   private final RedoAction myRedoAction;
 
-  public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, SearchUi searchUi, String key) {
+  public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, Runnable searchUi, String key) {
     super(GPAction.createVoidAction(key));
     final GPUndoManager undoManager = uiFacade.getUndoManager();
     myUndoAction = new UndoAction(undoManager);

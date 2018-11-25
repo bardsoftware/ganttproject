@@ -22,7 +22,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
-import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.Scene
@@ -37,7 +36,6 @@ import javafx.scene.paint.Color
 import net.sourceforge.ganttproject.action.GPAction
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
-import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
 class FXToolbar {
@@ -45,12 +43,13 @@ class FXToolbar {
     it.styleClass.addAll("toolbar-main")
   }
 
-  val component: JComponent
-      get() = JFXPanel().also {
-        val scene = Scene(toolbar, Color.TRANSPARENT)
-        scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
-        it.scene = scene
-      }
+  val component: JComponent by lazy {
+    JFXPanel().also {
+      val scene = Scene(toolbar, Color.TRANSPARENT)
+      scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
+      it.scene = scene
+    }
+  }
 
   fun updateButtons() {
 
@@ -84,11 +83,6 @@ fun addSeparator(toolbar: FXToolbar) {
   toolbar.toolbar.items.add(Separator())
 }
 
-fun panelVisitor(panel: JPanel): ToolbarVisitor {
-  return fun(toolbar: FXToolbar) {
-    toolbar.toolbar.items.add(SwingNode().also { it.content = panel })
-  }
-}
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -113,9 +107,6 @@ class FXToolbarBuilder {
       toolbar.toolbar.items.addAll(spring, tail)
     })
   }
-  fun addSearchBox(tailPanel: JPanel) {
-    //visitors.add(panelVisitor(tailPanel))
-  }
 
   fun build(): CompletableFuture<FXToolbar> {
     val result = CompletableFuture<FXToolbar>()
@@ -125,5 +116,12 @@ class FXToolbarBuilder {
       result.complete(toolbar)
     }
     return result
+  }
+
+  fun addSearchBox(searchUi: FXSearchUi) {
+    visitors.add { toolbar ->
+      toolbar.toolbar.items.add(searchUi.node)
+      searchUi.swingToolbar = { toolbar.component }
+    }
   }
 }

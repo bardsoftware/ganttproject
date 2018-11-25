@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
@@ -27,7 +28,6 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.storage.DocumentLockSwitch;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -186,6 +186,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private static Runnable ourQuitCallback;
 
+  private FXSearchUi mySearchUi;
 
   public GanttProject(boolean isOnlyViewer) {
     System.err.println("Creating main frame...");
@@ -318,7 +319,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myProjectMenu = new ProjectMenu(this, mruMenu, "project");
     bar.add(myProjectMenu);
 
-    myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), getSearchUi(), "edit");
+    myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
     bar.add(myEditMenu);
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
@@ -564,22 +565,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * @return the options of the GanttChart
-   */
-  public GPOptionGroup[] getGanttOptionsGroup() {
-    return area.getOptionGroups();
-  }
-
-  public void restoreOptions() {
-    options.initDefault();
-    myUIConfiguration = options.getUIConfiguration();
-    area.repaint();
-  }
-
-  // TODO Move language updating methods which do not belong to GanttProject to
-  // their own class with their own listener
-
-  /**
    * Function to change language of the project
    */
   @Override
@@ -605,16 +590,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   private CompletableFuture<FXToolbar> createToolbar() {
     FXToolbarBuilder builder = new FXToolbarBuilder();
-//        .withHeight(40)
-//        .withDpiOption(getUiFacadeImpl().getDpiOption())
-//        .withLafOption(getUiFacadeImpl().getLafOption(), new Function<String, Float>() {
-//          @Override
-//          public Float apply(@Nullable String s) {
-//            return (s.indexOf("nimbus") >= 0) ? 1.5f : 1f;
-//          }
-//        })
-//        .withSquareButtons()
-//        .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
     builder.addButton(myProjectMenu.getOpenProjectAction().asToolbarAction())
         .addButton(myProjectMenu.getSaveProjectAction().asToolbarAction())
         .addWhitespace();
@@ -702,18 +677,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addButton(myEditMenu.getUndoAction().asToolbarAction())
         .addButton(myEditMenu.getRedoAction().asToolbarAction())
         .addTail(documentLockSwitch.getSwitch());
-    JTextField searchBox = getSearchUi().getSearchField();
+    //JTextField searchBox = getSearchUi().getSearchField();
     //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
-    searchBox.setAlignmentY(CENTER_ALIGNMENT);
-    JPanel tailPanel = new JPanel(new BorderLayout());
-
-    //JPanel searchPanel = new JPanel();
-    //searchPanel.add(searchBox);
-    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
-    tailPanel.add(searchBox, BorderLayout.EAST);
-    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
-    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
-    builder.addSearchBox(tailPanel);
+//    searchBox.setAlignmentY(CENTER_ALIGNMENT);
+//    JPanel tailPanel = new JPanel(new BorderLayout());
+//
+//    //JPanel searchPanel = new JPanel();
+//    //searchPanel.add(searchBox);
+//    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
+//    tailPanel.add(searchBox, BorderLayout.EAST);
+//    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
+//    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+    mySearchUi = new FXSearchUi(getProject(), getUIFacade());
+    builder.addSearchBox(mySearchUi);
 
     //return result;
     return builder.build();
