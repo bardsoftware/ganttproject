@@ -18,37 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
-
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.font.Fonts;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Status bar (located below the main frame)
- * 
+ *
  * @author athomas
  */
 public class GanttStatusBar extends JPanel {
-  boolean bRunning = false;
-
   private JFrame myMainFrame;
-
-  private JLabel myStatusText = new JLabel();
 
   private static IProgressMonitor ourMonitor;
 
@@ -56,7 +45,17 @@ public class GanttStatusBar extends JPanel {
     super(new BorderLayout());
     myMainFrame = mainFrame;
     add(new JPanel(), BorderLayout.CENTER);
-    add(myStatusText, BorderLayout.WEST);
+  }
+
+  public void setLeftNode(Parent leftNode) {
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        JFXPanel panel = new JFXPanel();
+        panel.setScene(new Scene(leftNode, Color.TRANSPARENT));
+        add(panel, BorderLayout.WEST);
+      }
+    });
   }
 
   public IProgressMonitor createProgressMonitor() {
@@ -75,20 +74,20 @@ public class GanttStatusBar extends JPanel {
   /**
    * Show the given text in the first message area for the given amount of
    * milliseconds
-   * 
+   *
    * @param text
    *          to show
    * @param milliseconds
    *          amount of milliseconds to show the text
    */
   public void setFirstText(String text, int milliseconds) {
-    myStatusText.setText(text);
+
   }
 
   /**
    * Show the given text in the second message area for the given amount of
    * milliseconds
-   * 
+   *
    * @param text
    *          to show
    * @param milliseconds

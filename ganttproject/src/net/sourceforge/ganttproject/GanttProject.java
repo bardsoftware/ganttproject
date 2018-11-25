@@ -34,6 +34,7 @@ import biz.ganttproject.storage.cloud.GPCloudOptions;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.JFXPanel;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
@@ -380,6 +381,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (ExecutionException e) {
       e.printStackTrace();
     }
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        DocumentLockSwitch documentLockSwitch = new DocumentLockSwitch(myObservableDocument);
+        getStatusBar().setLeftNode(documentLockSwitch.getSwitch());
+      }
+    });
 
     createContentPane(fxToolbar.getComponent());
     final FXToolbar toolbar = fxToolbar;
@@ -665,8 +673,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    DocumentLockSwitch documentLockSwitch = new DocumentLockSwitch(myObservableDocument);
-
     builder.addButton(deleteAction)
         .addWhitespace()
         .addButton(propertiesAction)
@@ -675,8 +681,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addButton(getPasteAction().asToolbarAction())
         .addWhitespace()
         .addButton(myEditMenu.getUndoAction().asToolbarAction())
-        .addButton(myEditMenu.getRedoAction().asToolbarAction())
-        .addTail(documentLockSwitch.getSwitch());
+        .addButton(myEditMenu.getRedoAction().asToolbarAction());
     //JTextField searchBox = getSearchUi().getSearchField();
     //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
 //    searchBox.setAlignmentY(CENTER_ALIGNMENT);
