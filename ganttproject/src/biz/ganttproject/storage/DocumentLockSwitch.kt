@@ -27,6 +27,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import org.controlsfx.control.ToggleSwitch
@@ -41,15 +42,15 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
   private val label = Label().also {
     it.styleClass.add("lock-label")
   }
-  private val progress = ProgressIndicator().also {
-    it.styleClass.add("lock-progress")
-  }
-
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(switch, label, progress)
+    it.children.addAll(switch, label)
     HBox.setHgrow(label, Priority.ALWAYS)
   }
+
+  private var isChangingSelected: Boolean = false
+  private lateinit var status: LockStatus
+
 
   init {
     observableDocument.addListener(this::onDocumentChange)
@@ -83,8 +84,6 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     }
   }
 
-  private var isChangingSelected: Boolean = false
-
   private fun updateStatus(status: LockStatus) {
     this.isChangingSelected = true
     this.switch.isSelected = status.locked
@@ -99,6 +98,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     }
 
     this.switch.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
+    this.status = status
   }
 
   private fun onSwitchAction(observable: Any, oldValue: Boolean, newValue: Boolean) {
@@ -110,11 +110,17 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     if (realDoc is LockableDocument) {
       val progress = ProgressIndicator()
       lockPanel.children.add(progress)
-      val future = realDoc.setLocked(this.switch.isSelected)
+      val isNowLocked = this.switch.isSelected
+      val savedStatus = this.status
+      val future = realDoc.toggleLocked()
       future.thenAccept(this::updateStatus).handle { ok, ex ->
         lockPanel.children.remove(progress)
         when {
-          ok == null -> ex.printStackTrace()
+          ex != null -> {
+            val msg = if (isNowLocked) { "Lock request failed" } else { "Unlock request failed" }
+            this.updateStatus(savedStatus)
+            GPLogger.log(Exception(msg, ex))
+          }
           else -> null
         }
       }

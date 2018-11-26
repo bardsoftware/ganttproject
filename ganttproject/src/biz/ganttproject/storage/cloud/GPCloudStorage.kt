@@ -380,7 +380,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun setLocked(locked: Boolean) : CompletableFuture<LockStatus> {
+  override fun toggleLocked() : CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
     val lockService = LockService {
       result.completeExceptionally(RuntimeException(it))

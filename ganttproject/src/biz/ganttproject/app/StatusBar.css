@@ -26,14 +26,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .statusbar {
     -fx-background-color: transparent;
+    -fx-text-fill: -gp-dark-gray;
     -fx-padding: 1ex 0;
     -fx-alignment: center-left;
     -fx-min-width: 50em;
 }
 
+.statusbar > * {
+    -fx-text-fill: -gp-dark-gray;
+}
 .lock-label {
     -fx-padding: 0 0 0 0.5em;
-}
-.lock-progress {
-    visibility: hidden;
 }
