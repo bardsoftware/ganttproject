@@ -19,9 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.font.Fonts;
@@ -47,12 +45,12 @@ public class GanttStatusBar extends JPanel {
     add(new JPanel(), BorderLayout.CENTER);
   }
 
-  public void setLeftNode(Parent leftNode) {
+  public void setLeftScene(Scene scene) {
     SwingUtilities.invokeLater(new Runnable() {
       @Override
       public void run() {
         JFXPanel panel = new JFXPanel();
-        panel.setScene(new Scene(leftNode, Color.TRANSPARENT));
+        panel.setScene(scene);
         add(panel, BorderLayout.WEST);
       }
     });

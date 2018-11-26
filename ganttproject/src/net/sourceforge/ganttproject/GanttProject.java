@@ -37,6 +37,7 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -385,7 +386,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void run() {
         DocumentLockSwitch documentLockSwitch = new DocumentLockSwitch(myObservableDocument);
-        getStatusBar().setLeftNode(documentLockSwitch.getSwitch());
+        Scene statusBarScene = new Scene(documentLockSwitch.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
+        statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
+        getStatusBar().setLeftScene(statusBarScene);
       }
     });
 

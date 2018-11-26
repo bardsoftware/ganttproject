@@ -19,9 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.storage.cloud.GPCloudOptions
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.value.ObservableObjectValue
-import javafx.scene.control.Tooltip
+import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import org.controlsfx.control.ToggleSwitch
@@ -30,7 +35,21 @@ import org.controlsfx.control.ToggleSwitch
  * @author dbarashev@bardsoftware.com
  */
 class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<Document>) {
-  val switch = ToggleSwitch()
+  private val switch = ToggleSwitch().also {
+    it.styleClass.add("lock-toggle")
+  }
+  private val label = Label().also {
+    it.styleClass.add("lock-label")
+  }
+  private val progress = ProgressIndicator().also {
+    it.styleClass.add("lock-progress")
+  }
+
+  val lockPanel = HBox().also {
+    it.styleClass.add("statusbar")
+    it.children.addAll(switch, label, progress)
+    HBox.setHgrow(label, Priority.ALWAYS)
+  }
 
   init {
     observableDocument.addListener(this::onDocumentChange)
@@ -53,7 +72,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
       } else if (newDoc != null) {
         this.switch.isSelected = false
         this.switch.isDisable = true
-        this.switch.text = "Unlocked"
+        this.switch.text = ""
       }
     }
   }
@@ -70,11 +89,15 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     this.isChangingSelected = true
     this.switch.isSelected = status.locked
     this.isChangingSelected = false
-    this.switch.text = if (status.locked) "Locked" else "Unlocked"
-    this.switch.tooltip = if (status.locked) { Tooltip("Locked by ${status.lockOwnerName}") } else { null }
+    this.switch.text = ""
+    if (status.locked) {
+      this.label.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
+      this.label.text = "Locked by ${status.lockOwnerName}"
+    } else {
+      this.label.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+      this.label.text = "Not locked"
+    }
 
-    println("my user id=${GPCloudOptions.userId.value}")
-    println(status)
     this.switch.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
   }
 
@@ -85,10 +108,15 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     val doc = this.observableDocument.get()
     val realDoc = if (doc is ProxyDocument) { doc.realDocument } else { doc }
     if (realDoc is LockableDocument) {
+      val progress = ProgressIndicator()
+      lockPanel.children.add(progress)
       val future = realDoc.setLocked(this.switch.isSelected)
-      future.thenAcceptAsync(this::updateStatus).exceptionally {
-        it.printStackTrace()
-        null
+      future.thenAccept(this::updateStatus).handle { ok, ex ->
+        lockPanel.children.remove(progress)
+        when {
+          ok == null -> ex.printStackTrace()
+          else -> null
+        }
       }
     }
   }
