@@ -58,7 +58,7 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
     get() {
       return if (!isLocked) isLockable else {
         val lockNode = this.node["lock"]
-        lockNode["uid"].asText().substringAfterLast(':') == GPCloudOptions.userId.value
+        lockNode["uid"].textValue() == GPCloudOptions.userId.value
       }
     }
   override val isLocked: Boolean

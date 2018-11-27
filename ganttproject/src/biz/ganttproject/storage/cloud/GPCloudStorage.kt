@@ -28,6 +28,7 @@ import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.common.io.CharStreams
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
@@ -126,7 +127,7 @@ class GPCloudStorage(
         } else {
           Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
         }
-        this.userId.value = "firebase:::$userId"
+        this.userId.value = userId
         this.websocketToken = websocketToken
         webSocket.start()
       }
@@ -206,7 +207,7 @@ object GPCloudOptions {
     }
   }
   val websocketAuthToken: String get() = Base64.getEncoder().encodeToString(
-          "${this.userId.value.split(":").last()}:${GPCloudOptions.authToken.value}".toByteArray())
+          "${this.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
 
   var websocketToken: String? = null
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
@@ -258,7 +259,7 @@ object HttpClientBuilder {
     val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
     if (GPCloudOptions.authToken.value != "") {
       httpClient.credentialsProvider.setCredentials(
-          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value.split(":").last(), GPCloudOptions.authToken.value))
+          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
       val authCache = BasicAuthCache()
       authCache.put(httpHost, BasicScheme())
       context.setAttribute(ClientContext.AUTH_CACHE, authCache)
@@ -351,6 +352,8 @@ class GPCloudDocument(private val teamRefid: String?,
 
         val resp = http.client.execute(http.host, projectWrite, http.context)
         if (resp.statusLine.statusCode != 200) {
+          val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
+          println(body)
           throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
         }
       }
