@@ -23,29 +23,31 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.value.ObservableObjectValue
-import javafx.scene.control.Label
+import javafx.event.ActionEvent
+import javafx.scene.control.Button
 import javafx.scene.control.ProgressIndicator
+import javafx.scene.control.Tooltip
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
-import org.controlsfx.control.ToggleSwitch
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<Document>) {
-  private val switch = ToggleSwitch().also {
-    it.styleClass.add("lock-toggle")
+  private val btnLock = Button().also {
+    it.tooltip = Tooltip("Currently not available offline")
   }
-  private val label = Label().also {
-    it.styleClass.add("lock-label")
+  private val btnOffline = Button().also {
+    it.graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
   }
+  private val btnManage = Button("Cloud Options...")
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(switch, label)
-    HBox.setHgrow(label, Priority.ALWAYS)
+    //it.children.addAll(switch, btnLock)
+    it.children.addAll(btnOffline, btnLock, btnManage)
+    //HBox.setHgrow(btnLock, Priority.ALWAYS)
   }
 
   private var isChangingSelected: Boolean = false
@@ -54,7 +56,9 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
 
   init {
     observableDocument.addListener(this::onDocumentChange)
-    switch.selectedProperty().addListener(this::onSwitchAction)
+    btnLock.addEventHandler(ActionEvent.ACTION) {
+      onSwitchAction()
+    }
   }
 
   private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
@@ -71,9 +75,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
         newDoc.status.addListener(this::onStatusChange)
         this.updateStatus(newDoc.status.value)
       } else if (newDoc != null) {
-        this.switch.isSelected = false
-        this.switch.isDisable = true
-        this.switch.text = ""
+        this.lockPanel.isDisable = true
       }
     }
   }
@@ -86,22 +88,20 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
 
   private fun updateStatus(status: LockStatus) {
     this.isChangingSelected = true
-    this.switch.isSelected = status.locked
     this.isChangingSelected = false
-    this.switch.text = ""
     if (status.locked) {
-      this.label.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      this.label.text = "Locked by ${status.lockOwnerName}"
+      this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
+      this.btnLock.tooltip = Tooltip("Locked by ${status.lockOwnerName}")
     } else {
-      this.label.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      this.label.text = "Not locked"
+      this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+      this.btnLock.tooltip = Tooltip("Currently not locked")
     }
 
-    this.switch.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
+    this.lockPanel.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
     this.status = status
   }
 
-  private fun onSwitchAction(observable: Any, oldValue: Boolean, newValue: Boolean) {
+  private fun onSwitchAction() {
     if (this.isChangingSelected) {
       return
     }
@@ -110,7 +110,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
     if (realDoc is LockableDocument) {
       val progress = ProgressIndicator()
       lockPanel.children.add(progress)
-      val isNowLocked = this.switch.isSelected
+      val isNowLocked = this.status.locked
       val savedStatus = this.status
       val future = realDoc.toggleLocked()
       future.thenAccept(this::updateStatus).handle { ok, ex ->

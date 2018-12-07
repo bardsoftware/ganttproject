@@ -27,14 +27,49 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 .statusbar {
     -fx-background-color: transparent;
     -fx-text-fill: -gp-dark-gray;
-    -fx-padding: 1ex 0;
+    -fx-padding: 1ex 24px;
     -fx-alignment: center-left;
     -fx-min-width: 50em;
 }
 
 .statusbar > * {
-    -fx-text-fill: -gp-dark-gray;
+    -fx-text-fill: -gp-medium-gray;
 }
-.lock-label {
-    -fx-padding: 0 0 0 0.5em;
+
+.statusbar Button {
+    -fx-min-width: 26px;
+    -fx-min-height: 26px;
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-border-style: solid;
+    -fx-border-color: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 0.5em;
+}
+
+.statusbar Button .glyph-icon {
+    -fx-alignment: center;
+    -fx-fill: -gp-medium-gray;
+    -glyph-size: 24px;
+}
+
+.statusbar Button:hover {
+    -fx-fill: -gp-dark-gray;
+    -fx-background-color: derive(-gp-light-gray, -5%);
+    -fx-background-radius: 3px;
+}
+
+.statusbar Button:hover .glyph-icon {
+    -fx-fill: -gp-dark-gray;
+    -glyph-size: 24px;
+}
+
+.statusbar Button:pressed, .statusbar Button:hover:pressed {
+    -fx-background-color: derive(-gp-light-gray, -10%);
+    -fx-background-radius: 3px;
+}
+
+.statusbar Button:pressed .glyph-icon, .statusbar Button:hover:pressed .glyph-icon {
+    -fx-fill: derive(-gp-dark-gray, -15%);
 }
