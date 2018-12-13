@@ -19,15 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.core.option.DefaultStringOption
-import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.core.option.StringOption
+import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.common.hash.Hashing
 import com.google.common.io.CharStreams
 import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
@@ -181,6 +180,43 @@ class GPCloudStorage(
   }
 }
 
+data class GPCloudFileOptions(var lockToken: String = "", var fingerprint: String = "", var name: String = "", var isCached: Boolean = false)
+class CloudFileOptions : KeyValueOption("files") {
+  val files = mutableMapOf<String, GPCloudFileOptions>()
+
+  override fun setValueIndex(idx: Int) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun addValue(value: MutableMap.MutableEntry<String, String>?) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun updateValue(oldValue: MutableMap.MutableEntry<String, String>?, newValue: MutableMap.MutableEntry<String, String>?) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun removeValueIndex(idx: Int) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun asEnumerationOption(): EnumerationOption {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  fun save() {
+    this.values =
+        this.files.mapValues {
+          val kv = mutableMapOf<String, String>()
+          kv["gpcloud.file.${it.value.fingerprint}.lockToken"] = it.value.lockToken
+          kv["gpcloud.file.${it.value.fingerprint}.name"] = it.value.name
+          kv
+        }.flatMap {
+          it.value.entries
+        }
+  }
+}
+
 // Persistently stored options
 object GPCloudOptions {
   val authToken: StringOption = object : DefaultStringOption("authToken", "") {
@@ -210,7 +246,9 @@ object GPCloudOptions {
           "${this.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
 
   var websocketToken: String? = null
-  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId)
+  val cloudFiles = CloudFileOptions()
+  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId, cloudFiles)
+
 }
 
 // HTTP server for sign in into GP Cloud
@@ -414,6 +452,14 @@ class GPCloudDocument(private val teamRefid: String?,
     set(value) {
       field = value
       this.status.set(json2lockStatus(value))
+      value?.get("lockToken")?.textValue()?.let {
+        GPCloudOptions.cloudFiles.files[this.projectRefid!!] = GPCloudFileOptions(
+            fingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString(),
+            lockToken = it,
+            name = this.projectName
+        )
+        GPCloudOptions.cloudFiles.save()
+      }
     }
 
   private fun json2lockStatus(json: JsonNode?): LockStatus {
