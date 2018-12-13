@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
@@ -178,77 +177,6 @@ class GPCloudStorage(
       FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
     }
   }
-}
-
-data class GPCloudFileOptions(var lockToken: String = "", var fingerprint: String = "", var name: String = "", var isCached: Boolean = false)
-class CloudFileOptions : KeyValueOption("files") {
-  val files = mutableMapOf<String, GPCloudFileOptions>()
-
-  override fun setValueIndex(idx: Int) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun addValue(value: MutableMap.MutableEntry<String, String>?) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun updateValue(oldValue: MutableMap.MutableEntry<String, String>?, newValue: MutableMap.MutableEntry<String, String>?) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun removeValueIndex(idx: Int) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun asEnumerationOption(): EnumerationOption {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  fun save() {
-    this.values =
-        this.files.mapValues {
-          val kv = mutableMapOf<String, String>()
-          kv["gpcloud.file.${it.value.fingerprint}.lockToken"] = it.value.lockToken
-          kv["gpcloud.file.${it.value.fingerprint}.name"] = it.value.name
-          kv
-        }.flatMap {
-          it.value.entries
-        }
-  }
-}
-
-// Persistently stored options
-object GPCloudOptions {
-  val authToken: StringOption = object : DefaultStringOption("authToken", "") {
-    override fun getPersistentValue(): String? {
-      return GPCloudOptions.validity.value.toLongOrNull()?.let {
-        if (it > 0) {
-          super.getPersistentValue()
-        } else {
-          null
-        }
-      }
-    }
-  }
-  val validity: StringOption = DefaultStringOption("validity", "")
-  val userId: StringOption = object : DefaultStringOption("userId") {
-    override fun getPersistentValue(): String? {
-      return GPCloudOptions.validity.value.toLongOrNull()?.let {
-        if (it > 0) {
-          super.getPersistentValue()
-        } else {
-          null
-        }
-      }
-    }
-  }
-  val websocketAuthToken: String get() = Base64.getEncoder().encodeToString(
-          "${this.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
-
-  var websocketToken: String? = null
-  val cloudFiles = CloudFileOptions()
-  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId, cloudFiles)
-
 }
 
 // HTTP server for sign in into GP Cloud
