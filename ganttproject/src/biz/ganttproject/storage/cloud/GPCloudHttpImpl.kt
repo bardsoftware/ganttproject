@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.io.CharStreams
+import fi.iki.elonen.NanoHTTPD
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -37,10 +38,25 @@ import javafx.concurrent.Task
 import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
 import okhttp3.*
+import org.apache.http.HttpHost
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.HttpClient
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
+import org.apache.http.client.protocol.ClientContext
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.scheme.SchemeRegistry
+import org.apache.http.conn.ssl.SSLSocketFactory
+import org.apache.http.conn.ssl.TrustStrategy
+import org.apache.http.impl.auth.BasicScheme
+import org.apache.http.impl.client.BasicAuthCache
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.conn.PoolingClientConnectionManager
 import org.apache.http.message.BasicNameValuePair
+import org.apache.http.protocol.BasicHttpContext
+import org.apache.http.protocol.HttpContext
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
@@ -369,3 +385,56 @@ class WebSocketClient {
 }
 
 val webSocket = WebSocketClient()
+
+class HttpServerImpl : NanoHTTPD("localhost", 0) {
+  var onTokenReceived: AuthTokenCallback? = null
+
+  private fun getParam(session: IHTTPSession, key: String): String? {
+    val values = session.parameters[key]
+    return if (values?.size == 1) values[0] else null
+  }
+
+  override fun serve(session: IHTTPSession): Response {
+    val args = mutableMapOf<String, String>()
+    session.parseBody(args)
+    val token = getParam(session, "token")
+    val userId = getParam(session, "userId")
+    val validity = getParam(session, "validity")
+    val websocketToken = getParam(session, "websocketToken")
+
+    onTokenReceived?.invoke(token, validity, userId, websocketToken)
+    val resp = newFixedLengthResponse("")
+    resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+    return resp
+  }
+}
+
+data class GPCloudHttpClient(
+    val client: HttpClient, val host: HttpHost, val context: HttpContext)
+
+object HttpClientBuilder {
+  fun buildHttpClient(): GPCloudHttpClient {
+    val httpClient = if (true || System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
+      val trustAll = TrustStrategy { _, _ -> true }
+      val sslSocketFactory = SSLSocketFactory(
+          trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+      val schemeRegistry = SchemeRegistry()
+      schemeRegistry.register(Scheme("https", 443, sslSocketFactory))
+      val connectionManager = PoolingClientConnectionManager(schemeRegistry)
+      DefaultHttpClient(connectionManager)
+    } else {
+      DefaultHttpClient()
+    }
+    val context = BasicHttpContext()
+    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
+    if (GPCloudOptions.authToken.value != "") {
+      httpClient.credentialsProvider.setCredentials(
+          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
+      val authCache = BasicAuthCache()
+      authCache.put(httpHost, BasicScheme())
+      context.setAttribute(ClientContext.AUTH_CACHE, authCache)
+    }
+    return GPCloudHttpClient(httpClient, httpHost, context)
+  }
+}
+

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.hash.Hashing
 import com.google.common.io.CharStreams
-import fi.iki.elonen.NanoHTTPD
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -41,26 +40,11 @@ import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import org.apache.commons.codec.binary.Base64InputStream
-import org.apache.http.HttpHost
-import org.apache.http.auth.AuthScope
-import org.apache.http.auth.UsernamePasswordCredentials
-import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.client.protocol.ClientContext
-import org.apache.http.conn.scheme.Scheme
-import org.apache.http.conn.scheme.SchemeRegistry
-import org.apache.http.conn.ssl.SSLSocketFactory
-import org.apache.http.conn.ssl.TrustStrategy
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.StringBody
-import org.apache.http.impl.auth.BasicScheme
-import org.apache.http.impl.client.BasicAuthCache
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.impl.conn.PoolingClientConnectionManager
-import org.apache.http.protocol.BasicHttpContext
-import org.apache.http.protocol.HttpContext
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.ByteArrayOutputStream
@@ -75,9 +59,9 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-private const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 //private const val GPCLOUD_HOST = "cloud.ganttproject.biz"
-private const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
+const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 private const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
@@ -181,58 +165,6 @@ class GPCloudStorage(
 
 // HTTP server for sign in into GP Cloud
 typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
-
-class HttpServerImpl : NanoHTTPD("localhost", 0) {
-  var onTokenReceived: AuthTokenCallback? = null
-
-  private fun getParam(session: IHTTPSession, key: String): String? {
-    val values = session.parameters[key]
-    return if (values?.size == 1) values[0] else null
-  }
-
-  override fun serve(session: IHTTPSession): Response {
-    val args = mutableMapOf<String, String>()
-    session.parseBody(args)
-    val token = getParam(session, "token")
-    val userId = getParam(session, "userId")
-    val validity = getParam(session, "validity")
-    val websocketToken = getParam(session, "websocketToken")
-
-    onTokenReceived?.invoke(token, validity, userId, websocketToken)
-    val resp = newFixedLengthResponse("")
-    resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
-    return resp
-  }
-}
-
-data class GPCloudHttpClient(
-    val client: HttpClient, val host: HttpHost, val context: HttpContext)
-
-object HttpClientBuilder {
-  fun buildHttpClient(): GPCloudHttpClient {
-    val httpClient = if (true || System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
-      val trustAll = TrustStrategy { _, _ -> true }
-      val sslSocketFactory = SSLSocketFactory(
-          trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
-      val schemeRegistry = SchemeRegistry()
-      schemeRegistry.register(Scheme("https", 443, sslSocketFactory))
-      val connectionManager = PoolingClientConnectionManager(schemeRegistry)
-      DefaultHttpClient(connectionManager)
-    } else {
-      DefaultHttpClient()
-    }
-    val context = BasicHttpContext()
-    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
-    if (GPCloudOptions.authToken.value != "") {
-      httpClient.credentialsProvider.setCredentials(
-          AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
-      val authCache = BasicAuthCache()
-      authCache.put(httpHost, BasicScheme())
-      context.setAttribute(ClientContext.AUTH_CACHE, authCache)
-    }
-    return GPCloudHttpClient(httpClient, httpHost, context)
-  }
-}
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
