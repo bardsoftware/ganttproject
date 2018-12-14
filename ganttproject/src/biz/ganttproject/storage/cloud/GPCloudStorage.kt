@@ -312,10 +312,11 @@ class GPCloudDocument(private val teamRefid: String?,
     set(value) {
       field = value
       this.status.set(json2lockStatus(value))
-      value?.get("lockToken")?.textValue()?.let {
+      value?.let {
         GPCloudOptions.cloudFiles.files[this.projectRefid!!] = GPCloudFileOptions(
             fingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString(),
-            lockToken = it,
+            lockToken = it.get("lockToken")?.textValue() ?: "",
+            lockExpiration = it.get("expirationEpochTs")?.textValue() ?: "",
             name = this.projectName
         )
         GPCloudOptions.cloudFiles.save()

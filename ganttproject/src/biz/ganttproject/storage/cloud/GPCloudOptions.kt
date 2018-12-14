@@ -21,7 +21,12 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.core.option.*
 import java.util.*
 
-data class GPCloudFileOptions(var lockToken: String = "", var fingerprint: String = "", var name: String = "", var isCached: Boolean = false)
+data class GPCloudFileOptions(
+    var lockToken: String = "",
+    var lockExpiration: String = "",
+    var fingerprint: String = "",
+    var name: String = "",
+    var isCached: Boolean = false)
 class CloudFileOptions : KeyValueOption("files") {
   val files = mutableMapOf<String, GPCloudFileOptions>()
 
@@ -49,9 +54,10 @@ class CloudFileOptions : KeyValueOption("files") {
     this.values =
         this.files.mapValues {
           val kv = mutableMapOf<String, String>()
-          kv["${it.value.fingerprint}.lockToken"] = it.value.lockToken
           kv["${it.value.fingerprint}.name"] = it.value.name
-          kv
+          kv["${it.value.fingerprint}.lockToken"] = it.value.lockToken
+          kv["${it.value.fingerprint}.lockExpiration"] = it.value.lockExpiration
+          kv.filterValues { value -> value != "" }
         }.flatMap {
           it.value.entries
         }
