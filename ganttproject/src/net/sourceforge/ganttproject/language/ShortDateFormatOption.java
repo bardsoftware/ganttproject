@@ -18,13 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.language;
 
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.ValidationException;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.ValidationException;
 
 
 public class ShortDateFormatOption extends DefaultStringOption {
@@ -42,6 +42,16 @@ public class ShortDateFormatOption extends DefaultStringOption {
     try {
       myDateFormat = new SimpleDateFormat(value);
       super.setValue(value);
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException();
+    }
+  }
+
+  @Override
+  public void setValue(String value, Object clientId) {
+    try {
+      myDateFormat = new SimpleDateFormat(value);
+      super.setValue(value, clientId);
     } catch (IllegalArgumentException e) {
       throw new ValidationException();
     }
