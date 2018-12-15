@@ -25,6 +25,7 @@ import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.common.base.Strings
 import com.google.common.hash.Hashing
 import com.google.common.io.CharStreams
 import javafx.application.Platform
@@ -139,7 +140,7 @@ class GPCloudStorage(
     nextPage(paneBuilder.vbox)
 
     signupPane.tryAccessToken(
-        Consumer { _ ->
+        Consumer {
           println("Auth token is valid!")
           webSocket.start()
           nextPage(browserPane.createStorageUi())
@@ -173,12 +174,43 @@ class GPCloudDocument(private val teamRefid: String?,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument {
   override val status = SimpleObjectProperty<LockStatus>()
+  private val queryArgs: String
+    get() = "?projectRefid=${this.projectRefid}"
+
+  private val projectIdFingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString()
+  var lock: JsonNode? = null
+    set(value) {
+      field = value
+      this.status.set(json2lockStatus(value))
+      value?.let {
+        if (it["uid"]?.textValue() == GPCloudOptions.userId.value) {
+          GPCloudOptions.cloudFiles.files[this.projectRefid!!] = GPCloudFileOptions(
+              fingerprint = this.projectIdFingerprint,
+              lockToken = it.get("lockToken")?.textValue() ?: "",
+              lockExpiration = it.get("expirationEpochTs")?.longValue()?.toString() ?: "",
+              name = this.projectName
+          )
+          GPCloudOptions.cloudFiles.save()
+        }
+      }
+    }
+
+
   init {
     status.set(if (projectJson?.isLocked == true) {
       LockStatus(true, projectJson.lockOwner, projectJson.lockOwnerEmail, projectJson.lockOwnerId)
     } else {
       LockStatus(false)
     })
+    if (projectJson?.isLocked == true) {
+      val kv = GPCloudOptions.cloudFiles.keyValueMap
+      val fp = this.projectIdFingerprint
+      val lockToken = kv["$fp.lockToken"]
+      if (Strings.nullToEmpty(lockToken) != "") {
+        (projectJson.node as ObjectNode).put("lockToken", lockToken)
+      }
+      this.lock = projectJson.node["lock"]
+    }
   }
 
 
@@ -261,7 +293,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun getPath(): String = """https://GanttProject Cloud/${this.teamName}/${this.projectName}?refid=${this.projectRefid}"""
 
   override fun write() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    error("Not implemented")
   }
 
   override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")
@@ -304,24 +336,6 @@ class GPCloudDocument(private val teamRefid: String?,
     lockService.restart()
     return result
   }
-
-  private val queryArgs: String
-    get() = "?projectRefid=${this.projectRefid}"
-
-  var lock: JsonNode? = null
-    set(value) {
-      field = value
-      this.status.set(json2lockStatus(value))
-      value?.let {
-        GPCloudOptions.cloudFiles.files[this.projectRefid!!] = GPCloudFileOptions(
-            fingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString(),
-            lockToken = it.get("lockToken")?.textValue() ?: "",
-            lockExpiration = it.get("expirationEpochTs")?.textValue() ?: "",
-            name = this.projectName
-        )
-        GPCloudOptions.cloudFiles.save()
-      }
-    }
 
   private fun json2lockStatus(json: JsonNode?): LockStatus {
     return if (json?.isMissingNode == false) {

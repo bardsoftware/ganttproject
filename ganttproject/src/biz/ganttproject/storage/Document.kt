@@ -142,7 +142,10 @@ class DocumentUri(private val components: List<String>,
   }
 }
 
-data class LockStatus(val locked: Boolean, val lockOwnerName: String? = null, val lockOwnerEmail: String? = null, val lockOwnerId: String? = null)
+data class LockStatus(val locked: Boolean,
+                      val lockOwnerName: String? = null,
+                      val lockOwnerEmail: String? = null,
+                      val lockOwnerId: String? = null)
 interface LockableDocument {
   fun toggleLocked(): CompletableFuture<LockStatus>
 

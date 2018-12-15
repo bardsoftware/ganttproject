@@ -20,6 +20,7 @@ package biz.ganttproject.core.option;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -71,4 +72,7 @@ public abstract class KeyValueOption extends GPAbstractOption<Map.Entry<String, 
     return myMap.entrySet();
   }
 
+  public Map<String, String> getKeyValueMap() {
+    return ImmutableMap.copyOf(myMap);
+  }
 }
