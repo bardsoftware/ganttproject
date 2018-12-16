@@ -146,6 +146,6 @@ public class TestTimelineLabelRendererImpl extends TestCase {
     TestTextLengthCalculator lengthCalculator = new TestTextLengthCalculator(10);
     Canvas.Label[] labels = textSelector.getLabels(lengthCalculator);
     assertEquals(1, labels.length);
-    assertEquals("12345678901234568...", labels[0].text);
+    assertEquals("123456789012345678...", labels[0].text);
   }
 }
