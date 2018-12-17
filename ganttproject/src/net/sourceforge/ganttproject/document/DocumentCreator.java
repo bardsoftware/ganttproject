@@ -156,7 +156,12 @@ public class DocumentCreator implements DocumentManager {
       // Generate error for unknown protocol
       throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
     }
-    return new FileDocument(new File(path));
+    File file = new File(path);
+    if (file.toPath().isAbsolute()) {
+      return new FileDocument(file);
+    }
+    File relativeFile = new File(myDocumentsFolder, path);
+    return new FileDocument(relativeFile);
   }
 
   @Override
@@ -174,6 +179,7 @@ public class DocumentCreator implements DocumentManager {
     return proxyDocument;
   }
 
+  @Override
   public Document newUntitledDocument() throws IOException {
     for (int i = 1;; i++) {
       String filename = GanttLanguage.getInstance().formatText("document.storage.untitledDocument", i);
@@ -183,6 +189,11 @@ public class DocumentCreator implements DocumentManager {
       }
       return getDocument(untitledFile.getAbsolutePath());
     }
+  }
+
+  @Override
+  public Document newDocument(String path) throws IOException {
+    return createDocument(path);
   }
 
   @Override

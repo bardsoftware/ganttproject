@@ -18,7 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
+import net.sourceforge.ganttproject.document.Document
 import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
@@ -152,5 +154,9 @@ interface LockableDocument {
   val status: ObservableObjectValue<LockStatus>
 }
 
-
+interface OnlineDocument {
+  var offlineMirror: Document?
+  val isAvailableOffline: ObservableBooleanValue
+  fun toggleAvailableOffline()
+}
 

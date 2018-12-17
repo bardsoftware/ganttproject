@@ -45,9 +45,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
   private val btnManage = Button("Cloud Options...")
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    //it.children.addAll(switch, btnLock)
     it.children.addAll(btnOffline, btnLock, btnManage)
-    //HBox.setHgrow(btnLock, Priority.ALWAYS)
   }
 
   private var isChangingSelected: Boolean = false
@@ -56,6 +54,9 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
 
   init {
     observableDocument.addListener(this::onDocumentChange)
+    btnOffline.addEventHandler(ActionEvent.ACTION) {
+      onOfflineAction()
+    }
     btnLock.addEventHandler(ActionEvent.ACTION) {
       onSwitchAction()
     }
@@ -76,6 +77,10 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
         this.updateStatus(newDoc.status.value)
       } else if (newDoc != null) {
         this.lockPanel.isDisable = true
+      }
+
+      if (newDoc is OnlineDocument) {
+        newDoc.isAvailableOffline.addListener(this::onOfflineChange)
       }
     }
   }
@@ -126,4 +131,30 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
       }
     }
   }
+
+  private fun onOfflineAction() {
+    val doc = this.observableDocument.get()
+    val realDoc = if (doc is ProxyDocument) { doc.realDocument } else { doc }
+    if (realDoc is OnlineDocument) {
+      realDoc.toggleAvailableOffline()
+    }
+  }
+
+  private fun onOfflineChange(observable: Any, oldValue: Boolean, newValue: Boolean) {
+    Platform.runLater {
+      this.updateOfflineStatus(newValue)
+    }
+  }
+
+  private fun updateOfflineStatus(isOffline: Boolean) {
+    if (isOffline) {
+      this.btnOffline.graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
+      this.btnOffline.tooltip = Tooltip("Available offline. Click to remove offline mirror")
+    } else {
+      this.btnOffline.graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
+      this.btnOffline.tooltip = Tooltip("Click to make offline mirror")
+    }
+
+  }
+
 }

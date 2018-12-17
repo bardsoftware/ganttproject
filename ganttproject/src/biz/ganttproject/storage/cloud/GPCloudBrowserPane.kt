@@ -33,6 +33,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.Notifications
 import java.time.Duration
@@ -132,6 +133,7 @@ class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentConsumer: Consumer<Document>,
+    private val documentManager: DocumentManager,
     private val sceneChanger: SceneChanger) {
   private val loaderService = LoaderService(dialogUi)
   private val lockService = LockService(dialogUi::error)
@@ -206,12 +208,15 @@ class GPCloudBrowserPane(
     if (selectedTeam == null) {
       return
     }
-    this.documentConsumer.accept(GPCloudDocument(selectedTeam, text))
+    this.documentConsumer.accept(GPCloudDocument(selectedTeam, text).also {
+      it.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
+    })
   }
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
       val document = GPCloudDocument(item)
+      document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       if (item.isLocked && item.canChangeLock) {
         this.documentConsumer.accept(document)
       } else {

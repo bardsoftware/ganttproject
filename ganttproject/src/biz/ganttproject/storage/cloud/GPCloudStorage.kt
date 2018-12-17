@@ -22,13 +22,16 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
+import biz.ganttproject.storage.OnlineDocument
 import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
 import com.google.common.hash.Hashing
+import com.google.common.io.ByteStreams
 import com.google.common.io.CharStreams
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -40,6 +43,8 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
+import org.apache.commons.codec.Charsets
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -48,10 +53,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.entity.mime.content.StringBody
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -76,7 +78,8 @@ typealias SceneChanger = (Node) -> Unit
 class GPCloudStorage(
     private val mode: StorageDialogBuilder.Mode,
     private val openDocument: Consumer<Document>,
-    private val dialogUi: StorageDialogBuilder.DialogUi) : StorageDialogBuilder.Ui {
+    private val dialogUi: StorageDialogBuilder.DialogUi,
+    private val documentManager: DocumentManager) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane = BorderPane()
 
   internal interface PageUi {
@@ -100,7 +103,7 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, ::nextPage)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager, ::nextPage)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       val validityAsLong = validity?.toLongOrNull()
       with(GPCloudOptions) {
@@ -166,13 +169,16 @@ class GPCloudStorage(
 
 // HTTP server for sign in into GP Cloud
 typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
+typealias OfflineDocumentFactory = (path: String) -> Document?
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
                       private val projectRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
-  : AbstractURLDocument(), LockableDocument {
+  : AbstractURLDocument(), LockableDocument, OnlineDocument {
+
+  override val isAvailableOffline = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
@@ -195,6 +201,7 @@ class GPCloudDocument(private val teamRefid: String?,
       }
     }
 
+  var offlineDocumentFactory: OfflineDocumentFactory = { null }
 
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -202,14 +209,19 @@ class GPCloudDocument(private val teamRefid: String?,
     } else {
       LockStatus(false)
     })
+    val kv = GPCloudOptions.cloudFiles.keyValueMap
+    val fp = this.projectIdFingerprint
     if (projectJson?.isLocked == true) {
-      val kv = GPCloudOptions.cloudFiles.keyValueMap
-      val fp = this.projectIdFingerprint
       val lockToken = kv["$fp.lockToken"]
       if (Strings.nullToEmpty(lockToken) != "") {
         (projectJson.node as ObjectNode).put("lockToken", lockToken)
       }
       this.lock = projectJson.node["lock"]
+    }
+
+    val offlineMirrorPath = kv["$fp.offlineMirror"]
+    if (offlineMirrorPath != null) {
+
     }
   }
 
@@ -261,6 +273,12 @@ class GPCloudDocument(private val teamRefid: String?,
     return object : ByteArrayOutputStream() {
       override fun close() {
         super.close()
+        val documentBody = this.toByteArray()
+        this@GPCloudDocument.offlineMirror?.let { document ->
+          document.outputStream.use {
+            ByteStreams.copy(ByteArrayInputStream(documentBody), it)
+          }
+        }
         val http = HttpClientBuilder.buildHttpClient()
         val projectWrite = HttpPost("/p/write")
         val multipartBuilder = MultipartEntityBuilder.create()
@@ -274,7 +292,7 @@ class GPCloudDocument(private val teamRefid: String?,
               this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
         }
         multipartBuilder.addPart("fileContents", StringBody(
-            Base64.getEncoder().encodeToString(this.toByteArray()), ContentType.TEXT_PLAIN))
+            Base64.getEncoder().encodeToString(documentBody), ContentType.TEXT_PLAIN))
         this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
           multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
         }
@@ -347,4 +365,12 @@ class GPCloudDocument(private val teamRefid: String?,
 
   }
 
+  override var offlineMirror: Document? = null
+
+  override fun toggleAvailableOffline() {
+    if (this.offlineMirror == null) {
+      this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
+    }
+    this.isAvailableOffline.value = (this.offlineMirror != null)
+  }
 }
