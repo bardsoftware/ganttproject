@@ -41,9 +41,12 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.document.FileDocument
 import org.apache.commons.codec.Charsets
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.client.methods.HttpGet
@@ -169,6 +172,7 @@ class GPCloudStorage(
 
 // HTTP server for sign in into GP Cloud
 typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
+
 typealias OfflineDocumentFactory = (path: String) -> Document?
 
 class GPCloudDocument(private val teamRefid: String?,
@@ -178,6 +182,7 @@ class GPCloudDocument(private val teamRefid: String?,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
 
+  private var lastKnownContents: ByteArray = ByteArray(0)
   override val isAvailableOffline = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
   private val queryArgs: String
@@ -258,12 +263,29 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isValidForMRU(): Boolean = true
 
+  suspend fun saveOfflineMirror(contents: ByteArray) {
+    this@GPCloudDocument.offlineMirror?.let { document ->
+      if (document is FileDocument) {
+        document.create()
+      }
+      document.outputStream.use {
+        ByteStreams.copy(ByteArrayInputStream(contents), it)
+      }
+    }
+  }
+
   override fun getInputStream(): InputStream {
     val http = HttpClientBuilder.buildHttpClient()
     val projectRead = HttpGet("/p/read$queryArgs")
     val resp = http.client.execute(http.host, projectRead, http.context)
     if (resp.statusLine.statusCode == 200) {
-      return Base64InputStream(resp.entity.content)
+      val encodedStream = Base64InputStream(resp.entity.content)
+      val documentBody = ByteStreams.toByteArray(encodedStream)
+      this@GPCloudDocument.lastKnownContents = documentBody
+      GlobalScope.launch {
+        saveOfflineMirror(documentBody)
+      }
+      return ByteArrayInputStream(documentBody)
     } else {
       throw IOException("Failed to read from GanttProject Cloud: got response ${resp.statusLine}")
     }
@@ -274,10 +296,9 @@ class GPCloudDocument(private val teamRefid: String?,
       override fun close() {
         super.close()
         val documentBody = this.toByteArray()
-        this@GPCloudDocument.offlineMirror?.let { document ->
-          document.outputStream.use {
-            ByteStreams.copy(ByteArrayInputStream(documentBody), it)
-          }
+        this@GPCloudDocument.lastKnownContents = documentBody
+        GlobalScope.launch {
+          saveOfflineMirror(documentBody)
         }
         val http = HttpClientBuilder.buildHttpClient()
         val projectWrite = HttpPost("/p/write")
@@ -331,7 +352,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun toggleLocked() : CompletableFuture<LockStatus> {
+  override fun toggleLocked(): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
     val lockService = LockService {
       result.completeExceptionally(RuntimeException(it))
@@ -370,6 +391,9 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun toggleAvailableOffline() {
     if (this.offlineMirror == null) {
       this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
+      GlobalScope.launch {
+        saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
+      }
     }
     this.isAvailableOffline.value = (this.offlineMirror != null)
   }
