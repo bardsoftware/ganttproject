@@ -81,6 +81,7 @@ class DocumentLockSwitch(private val observableDocument: ObservableObjectValue<D
 
       if (newDoc is OnlineDocument) {
         newDoc.isAvailableOffline.addListener(this::onOfflineChange)
+        this.updateOfflineStatus(newDoc.isAvailableOffline.value)
       }
     }
   }

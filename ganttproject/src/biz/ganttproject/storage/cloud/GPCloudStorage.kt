@@ -58,6 +58,8 @@ import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -195,18 +197,40 @@ class GPCloudDocument(private val teamRefid: String?,
       this.status.set(json2lockStatus(value))
       value?.let {
         if (it["uid"]?.textValue() == GPCloudOptions.userId.value) {
-          GPCloudOptions.cloudFiles.files[this.projectRefid!!] = GPCloudFileOptions(
-              fingerprint = this.projectIdFingerprint,
-              lockToken = it.get("lockToken")?.textValue() ?: "",
-              lockExpiration = it.get("expirationEpochTs")?.longValue()?.toString() ?: "",
-              name = this.projectName
-          )
+          val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectRefid!!) {
+            GPCloudFileOptions(
+                fingerprint = this.projectIdFingerprint,
+                name = this.projectName
+            )
+          }
+          options.lockToken = it.get("lockToken")?.textValue() ?: ""
+          options.lockExpiration = it.get("expirationEpochTs")?.longValue()?.toString() ?: ""
           GPCloudOptions.cloudFiles.save()
         }
       }
     }
 
+  override var offlineMirror: Document? = null
+    set(value) {
+      field = value
+      value?.let {
+        val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectRefid!!) {
+          GPCloudFileOptions(
+              fingerprint = this.projectIdFingerprint,
+              name = this.projectName
+          )
+        }
+        options.offlineMirror = it.filePath
+        GPCloudOptions.cloudFiles.save()
+      }
+      this.isAvailableOffline.value = (field != null)
+    }
+
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
+  set(value) {
+    field = value
+    this.initOfflineMirror()
+  }
 
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -214,19 +238,14 @@ class GPCloudDocument(private val teamRefid: String?,
     } else {
       LockStatus(false)
     })
-    val kv = GPCloudOptions.cloudFiles.keyValueMap
     val fp = this.projectIdFingerprint
+    val fileOptions = GPCloudOptions.cloudFiles.getFileOptions(fp)
     if (projectJson?.isLocked == true) {
-      val lockToken = kv["$fp.lockToken"]
+      val lockToken = fileOptions.lockToken
       if (Strings.nullToEmpty(lockToken) != "") {
         (projectJson.node as ObjectNode).put("lockToken", lockToken)
       }
       this.lock = projectJson.node["lock"]
-    }
-
-    val offlineMirrorPath = kv["$fp.offlineMirror"]
-    if (offlineMirrorPath != null) {
-
     }
   }
 
@@ -263,7 +282,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isValidForMRU(): Boolean = true
 
-  suspend fun saveOfflineMirror(contents: ByteArray) {
+  fun saveOfflineMirror(contents: ByteArray) {
     this@GPCloudDocument.offlineMirror?.let { document ->
       if (document is FileDocument) {
         document.create()
@@ -386,8 +405,6 @@ class GPCloudDocument(private val teamRefid: String?,
 
   }
 
-  override var offlineMirror: Document? = null
-
   override fun toggleAvailableOffline() {
     if (this.offlineMirror == null) {
       this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
@@ -395,6 +412,14 @@ class GPCloudDocument(private val teamRefid: String?,
         saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
       }
     }
-    this.isAvailableOffline.value = (this.offlineMirror != null)
+  }
+
+  private fun initOfflineMirror() {
+    val fp = this.projectIdFingerprint
+    val fileOptions = GPCloudOptions.cloudFiles.getFileOptions(fp)
+    val offlineMirrorPath = fileOptions.offlineMirror
+    if (offlineMirrorPath != null && Files.exists(Paths.get(offlineMirrorPath))) {
+      this.offlineMirror = this.offlineDocumentFactory(offlineMirrorPath)
+    }
   }
 }

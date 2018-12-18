@@ -26,9 +26,26 @@ data class GPCloudFileOptions(
     var lockExpiration: String = "",
     var fingerprint: String = "",
     var name: String = "",
-    var isCached: Boolean = false)
+    var offlineMirror: String = "")
 class CloudFileOptions : KeyValueOption("files") {
   val files = mutableMapOf<String, GPCloudFileOptions>()
+
+  override fun loadPersistentValue(value: String?) {
+    super.loadPersistentValue(value)
+    val sortedMap = keyValueMap.toSortedMap()
+    for ((k, v) in sortedMap) {
+      val (fp, property) = k.split(delimiters = *arrayOf("."), limit = 2)
+      val options = this.files.getOrPut(fp) {
+        GPCloudFileOptions(fingerprint = fp)
+      }
+      when (property) {
+        "lockToken" -> options.lockToken = v
+        "lockExpiration" -> options.lockExpiration = v
+        "name" -> options.name = v
+        "offlineMirror" -> options.offlineMirror = v
+      }
+    }
+  }
 
   override fun setValueIndex(idx: Int) {
     error("This method is not implemented")
@@ -57,10 +74,15 @@ class CloudFileOptions : KeyValueOption("files") {
           kv["${it.value.fingerprint}.name"] = it.value.name
           kv["${it.value.fingerprint}.lockToken"] = it.value.lockToken
           kv["${it.value.fingerprint}.lockExpiration"] = it.value.lockExpiration
+          kv["${it.value.fingerprint}.offlineMirror"] = it.value.offlineMirror
           kv.filterValues { value -> value != "" }
         }.flatMap {
           it.value.entries
         }
+  }
+
+  fun getFileOptions(fp: String): GPCloudFileOptions {
+    return this.files.getOrDefault(fp, GPCloudFileOptions(fingerprint = fp))
   }
 }
 
