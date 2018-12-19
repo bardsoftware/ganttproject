@@ -212,9 +212,17 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override var offlineMirror: Document? = null
     set(value) {
+      val currentValue = field
+      if (value == null && currentValue is FileDocument) {
+        currentValue.delete()
+        GPCloudOptions.cloudFiles.files[this.projectIdFingerprint!!]?.let {
+          it.offlineMirror = null
+          GPCloudOptions.cloudFiles.save()
+        }
+      }
       field = value
       value?.let {
-        val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectRefid!!) {
+        val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectIdFingerprint!!) {
           GPCloudFileOptions(
               fingerprint = this.projectIdFingerprint,
               name = this.projectName
@@ -227,10 +235,10 @@ class GPCloudDocument(private val teamRefid: String?,
     }
 
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
-  set(value) {
-    field = value
-    this.initOfflineMirror()
-  }
+    set(value) {
+      field = value
+      this.initOfflineMirror()
+    }
 
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -406,10 +414,16 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun toggleAvailableOffline() {
-    if (this.offlineMirror == null) {
-      this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
-      GlobalScope.launch {
-        saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
+    val mirror = this.offlineMirror
+    when (mirror) {
+      null -> {
+        this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
+        GlobalScope.launch {
+          saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
+        }
+      }
+      else -> {
+        this.offlineMirror = null
       }
     }
   }

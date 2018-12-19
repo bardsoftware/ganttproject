@@ -155,4 +155,12 @@ public class FileDocument extends AbstractDocument {
     }
     file.createNewFile();
   }
+
+  public void delete() throws IOException {
+    if (file.exists()) {
+      if (!file.delete()) {
+        throw new IOException("Failed to delete file " + file.getPath());
+      }
+    }
+  }
 }
