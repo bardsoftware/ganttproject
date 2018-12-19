@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
+import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -41,6 +42,7 @@ import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.logging.Level
 
 /**
  * Wraps JSON node matching a team to FolderItem
@@ -123,6 +125,15 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   }
 }
 
+class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : FolderItem {
+  override val isLockable: Boolean = false
+  override val name: String = options.name
+  override val isDirectory: Boolean = false
+  override val canChangeLock: Boolean = false
+  override val isLocked: Boolean
+    get() = Instant.ofEpochMilli(options.lockExpiration.toLong()).isAfter(Instant.now())
+
+}
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -353,7 +364,17 @@ class GPCloudBrowserPane(
       }
       onFailed = EventHandler { _ ->
         showMaskPane.accept(false)
-        dialogUi.error("Loading failed!")
+        when (loaderService.exception) {
+          is OfflineException -> loadOfflineMirrors(setResult)
+          null -> dialogUi.error("Loading failed!")
+          else -> {
+            val ex = loaderService.exception
+            GPLogger.getLogger("GPCloud").log(Level.WARNING, "", ex)
+            val errorDetails = ex.message
+            dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
+          }
+
+        }
       }
       onCancelled = EventHandler { _ ->
         showMaskPane.accept(false)
@@ -368,6 +389,15 @@ class GPCloudBrowserPane(
     this.loaderService.restart()
   }
 
+  private fun loadOfflineMirrors(consumer: Consumer<ObservableList<FolderItem>>) {
+    val mirrors = GPCloudOptions.cloudFiles.files.entries.map { (fp, options) ->
+      options.offlineMirror?.let {
+        OfflineMirrorOptionsAsFolderItem(options)
+      }
+    }.filterNotNull()
+    consumer.accept(FXCollections.observableArrayList<FolderItem>(mirrors))
+
+  }
 
   private fun toggleProjectLock(project: ProjectJsonAsFolderItem,
                                 done: Consumer<JsonNode>,

@@ -125,10 +125,20 @@ class GPCloudStorage(
           nextPage(browserPane.createStorageUi())
         },
         Consumer {
-          println("Auth token is NOT valid!")
-          Platform.runLater {
-            signupPane.createPane().thenApply { pane ->
-              nextPage(pane)
+          when (it) {
+            "INVALID" -> {
+              println("Auth token is NOT valid!")
+              Platform.runLater {
+                signupPane.createPane().thenApply { pane ->
+                  nextPage(pane)
+                }
+              }
+            }
+            "OFFLINE" -> {
+              this.dialogUi.error("We seem to be offine")
+              nextPage(browserPane.createStorageUi())
+            }
+            else -> {
             }
           }
         }

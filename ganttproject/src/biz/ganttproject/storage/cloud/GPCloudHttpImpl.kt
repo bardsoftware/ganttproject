@@ -82,17 +82,7 @@ class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Servi
 
   override fun createTask(): Task<ObservableList<FolderItem>> {
     if (jsonResult.value == null) {
-      val task = LoaderTask(busyIndicator, this.path, this.jsonResult)
-      task.onFailed = EventHandler { _ ->
-        val errorDetails = if (task.exception != null) {
-          GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
-          "\n${task.exception.message}"
-        } else {
-          ""
-        }
-        this.dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
-      }
-      return task
+      return LoaderTask(busyIndicator, this.path, this.jsonResult)
     } else {
       return CachedTask(this.path, this.jsonResult)
     }
@@ -144,6 +134,8 @@ class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Tas
   }
 }
 
+class OfflineException(cause: Exception) : RuntimeException(cause)
+
 // Sends HTTP request to GP Cloud and returns a list of teams.
 class LoaderTask(private val busyIndicator: Consumer<Boolean>,
                  val path: Path,
@@ -154,26 +146,30 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
     val http = HttpClientBuilder.buildHttpClient()
     val teamList = HttpGet("/team/list?owned=true&participated=true")
 
-    val jsonBody = let {
-      val resp = http.client.execute(http.host, teamList, http.context)
-      if (resp.statusLine.statusCode == 200) {
-        CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
-      } else {
-        with(log) {
-          warning(
-              "Failed to get team list. Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
-          fine(EntityUtils.toString(resp.entity))
+    return try {
+      val jsonBody = let {
+        val resp = http.client.execute(http.host, teamList, http.context)
+        if (resp.statusLine.statusCode == 200) {
+          CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
+        } else {
+          with(log) {
+            warning(
+                "Failed to get team list. Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
+            fine(EntityUtils.toString(resp.entity))
+          }
+          throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
         }
-        throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
       }
-    }
-    println("Team list:\n$jsonBody")
+      println("Team list:\n$jsonBody")
 
-    val objectMapper = ObjectMapper()
-    val jsonNode = objectMapper.readTree(jsonBody)
-    resultStorage.value = jsonNode
-    return CachedTask(this.path, this.resultStorage).callPublic()
-    //return FXCollections.observableArrayList(filterTeams(jsonNode, Predicate { true }).map(::TeamJsonAsFolderItem))
+      val jsonNode = OBJECT_MAPPER.readTree(jsonBody)
+      resultStorage.value = jsonNode
+      CachedTask(this.path, this.resultStorage).callPublic()
+    } catch (ex: IOException) {
+      log.log(Level.SEVERE, "Failed to contact ${http.host}", ex)
+      throw OfflineException(ex)
+    }
+
   }
 }
 

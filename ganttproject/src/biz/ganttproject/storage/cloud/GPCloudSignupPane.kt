@@ -31,11 +31,14 @@ import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.Pane
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
+import java.net.UnknownHostException
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
+import java.util.logging.Level
 
 
 /**
@@ -111,8 +114,12 @@ class GPCloudSignupPane internal constructor(
       try {
         callAuthCheck(success, unauthenticated)
       } catch (ex: Exception) {
-        ex.printStackTrace()
-        unauthenticated.accept("")
+        if (ex is UnknownHostException) {
+          unauthenticated.accept("OFFLINE")
+        } else {
+          GPLogger.getLogger("GPCloud").log(Level.SEVERE, "Failed to contact GPCloud server", ex)
+          unauthenticated.accept("")
+        }
       }
     }
   }
@@ -125,7 +132,7 @@ class GPCloudSignupPane internal constructor(
       200 -> onSuccess.accept("")
       401 -> onUnauthenticated.accept("")
       else -> {
-        onUnauthenticated.accept("")
+        onUnauthenticated.accept("INVALID")
       }
     }
   }
