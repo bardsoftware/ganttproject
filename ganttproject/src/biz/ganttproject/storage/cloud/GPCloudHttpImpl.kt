@@ -180,6 +180,7 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
 private val OBJECT_MAPPER = ObjectMapper()
 
 typealias ErrorUi = (String) -> Unit
+
 class LockService(private val errorUi: ErrorUi) : Service<JsonNode>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   lateinit var project: ProjectJsonAsFolderItem
@@ -228,7 +229,11 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
     }
     if (resp.statusLine.statusCode == 200) {
       val jsonBody = CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
-      return if (jsonBody == "") { MissingNode.getInstance() } else { OBJECT_MAPPER.readTree(jsonBody) }
+      return if (jsonBody == "") {
+        MissingNode.getInstance()
+      } else {
+        OBJECT_MAPPER.readTree(jsonBody)
+      }
     } else {
       with(log) {
         warning(
