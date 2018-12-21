@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
+import com.google.common.io.Closer
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -35,10 +36,16 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
+import java.io.IOException
+import java.net.Socket
 import java.net.UnknownHostException
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.logging.Level
+
+
+
+
 
 
 /**
@@ -109,13 +116,30 @@ class GPCloudSignupPane internal constructor(
     return result
   }
 
+  private fun isNetworkAvailable(): Boolean {
+    return try {
+      Closer.create().use { closer ->
+        val pingSocket = Socket(GPCLOUD_IP, 80).also { closer.register(it) }
+        closer.register(pingSocket.getOutputStream())
+        closer.register(pingSocket.getInputStream())
+      }
+      true
+    } catch (e: IOException) {
+      false
+    }
+  }
+
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
     GlobalScope.launch {
       try {
         callAuthCheck(success, unauthenticated)
       } catch (ex: Exception) {
         if (ex is UnknownHostException) {
-          unauthenticated.accept("OFFLINE")
+          if (!isNetworkAvailable()) {
+            unauthenticated.accept("OFFLINE")
+          } else {
+            unauthenticated.accept("")
+          }
         } else {
           GPLogger.getLogger("GPCloud").log(Level.SEVERE, "Failed to contact GPCloud server", ex)
           unauthenticated.accept("")
@@ -130,7 +154,7 @@ class GPCloudSignupPane internal constructor(
     val resp = http.client.execute(http.host, teamList, http.context)
     when (resp.statusLine.statusCode) {
       200 -> onSuccess.accept("")
-      401 -> onUnauthenticated.accept("")
+      401 -> onUnauthenticated.accept("INVALID")
       else -> {
         onUnauthenticated.accept("INVALID")
       }

@@ -14,6 +14,10 @@
     -fx-padding: 1ex 0 0 0;
 }
 
+.dlg-lock .content-pane {
+    -fx-padding: 0 0 0 2em;
+}
+
 .dlg-lock .glyph-icon {
     -fx-fill: -gp-medium-gray;
     -glyph-size: 64;
@@ -22,9 +26,6 @@
 
 .dlg-lock .help {
     -fx-padding: 3 0 1ex 0;
-}
-.dlg-lock .lock-button-pane {
-    -fx-padding: 0 0 0 10;
 }
 
 .fill-parent {

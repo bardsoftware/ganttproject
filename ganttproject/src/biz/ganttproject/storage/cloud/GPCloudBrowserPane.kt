@@ -301,7 +301,7 @@ class GPCloudBrowserPane(
 
   private fun createLockWarningPage(document: GPCloudDocument): Pane {
     val lockOwner = document.projectJson!!.lockOwner!!
-    val vbox = VBoxBuilder("lock-button-pane")
+    val vbox = VBoxBuilder("content-pane")
     vbox.addTitle("Project Is Locked")
     vbox.add(Label("This project is locked by $lockOwner. We recommend keeping it read-only").apply { styleClass.add("help") })
 
