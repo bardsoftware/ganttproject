@@ -27,9 +27,11 @@ import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
@@ -39,14 +41,11 @@ import org.controlsfx.control.HyperlinkLabel
 import java.io.IOException
 import java.net.Socket
 import java.net.UnknownHostException
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.logging.Level
-
-
-
-
-
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -185,4 +184,24 @@ class GPCloudSignupPane internal constructor(
     pageSwitcher(rootPane.vbox)
   }
 
+  val progressIndicator: Pane by lazy {
+    val paneBuilder = VBoxBuilder("pane-service-contents")
+    paneBuilder.addTitle("Signing into GanttProject Cloud")
+    if (GPCloudOptions.authToken.value != "") {
+      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLong())
+      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
+      if (!remainingDuration.isNegative) {
+        val hours = remainingDuration.toHours()
+        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
+        val expirationLabel = if (hours > 0) {
+          "${hours}h ${minutes}m"
+        } else {
+          "${minutes}m"
+        }
+        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
+      }
+    }
+    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
+    paneBuilder.vbox
+  }
 }

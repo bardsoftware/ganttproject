@@ -24,6 +24,7 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
+import javafx.event.ActionEvent
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -32,7 +33,6 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
-import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -80,6 +80,41 @@ class GPCloudStorage(
     return doCreateUi()
   }
 
+  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
+    init {
+      offlinePane.controller = this
+    }
+
+    fun start() {
+      sceneChanger(signupPane.progressIndicator)
+
+      signupPane.tryAccessToken(
+          success = Consumer {
+            println("Auth token is valid!")
+            webSocket.start()
+            sceneChanger(browserPane.createStorageUi())
+          },
+          unauthenticated = Consumer {
+            when (it) {
+              "INVALID" -> {
+                println("Auth token is NOT valid!")
+                Platform.runLater {
+                  signupPane.createPane().thenApply { pane ->
+                    sceneChanger(pane)
+                  }
+                }
+              }
+              "OFFLINE" -> {
+                sceneChanger(offlinePane.createPane())
+              }
+              else -> {
+              }
+            }
+          }
+      )
+    }
+  }
+
   private fun doCreateUi(): Pane {
     val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager, ::nextPage)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
@@ -102,49 +137,7 @@ class GPCloudStorage(
 
     val offlinePane = GPCloudOfflinePane()
     val signupPane = GPCloudSignupPane(onTokenCallback, ::nextPage)
-    val paneBuilder = VBoxBuilder("pane-service-contents")
-    paneBuilder.addTitle("Signing into GanttProject Cloud")
-    if (GPCloudOptions.authToken.value != "") {
-      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLong())
-      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
-      if (!remainingDuration.isNegative) {
-        val hours = remainingDuration.toHours()
-        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
-        val expirationLabel = if (hours > 0) {
-          "${hours}h ${minutes}m"
-        } else {
-          "${minutes}m"
-        }
-        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
-      }
-    }
-    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
-    nextPage(paneBuilder.vbox)
-
-    signupPane.tryAccessToken(
-        success = Consumer {
-          println("Auth token is valid!")
-          webSocket.start()
-          nextPage(browserPane.createStorageUi())
-        },
-        unauthenticated = Consumer {
-          when (it) {
-            "INVALID" -> {
-              println("Auth token is NOT valid!")
-              Platform.runLater {
-                signupPane.createPane().thenApply { pane ->
-                  nextPage(pane)
-                }
-              }
-            }
-            "OFFLINE" -> {
-              nextPage(offlinePane.createPane())
-            }
-            else -> {
-            }
-          }
-        }
-    )
+    Controller(signupPane, offlinePane, browserPane, this::nextPage).start()
     return myPane
   }
 
@@ -156,6 +149,8 @@ class GPCloudStorage(
 }
 
 class GPCloudOfflinePane {
+  var controller: GPCloudStorage.Controller? = null
+
   fun createPane(): Pane {
     val rootPane = VBoxBuilder("pane-service-contents", "cloud-storage")
     rootPane.add(Pane(), Pos.CENTER, Priority.ALWAYS)
@@ -168,6 +163,22 @@ class GPCloudOfflinePane {
     val vbox = VBoxBuilder("content-pane")
     vbox.addTitle("You seem to be offline")
     vbox.add(Label("We couldn't contact $GPCLOUD_HOST by name nor by IP address").apply { styleClass.add("help") })
+
+    val toggleGroup = ToggleGroup()
+
+    val btnOffline = RadioButton("Open offline project mirror").also {
+      it.styleClass.add("mt-5")
+      it.isSelected = true
+      it.styleClass.add("btn-lock-expire")
+      it.toggleGroup = toggleGroup
+      vbox.add(it)
+    }
+    val btnTryAgain = RadioButton("Try contacting GanttProject Cloud again").also {
+      it.styleClass.add("btn-lock-expire")
+      it.toggleGroup = toggleGroup
+      vbox.add(it)
+    }
+
     return DialogPane().apply {
       styleClass.add("dlg-lock")
       stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
@@ -175,18 +186,26 @@ class GPCloudOfflinePane {
 
       content = vbox.vbox
 
-      buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
+      buttonTypes.addAll(ButtonType.OK)
       lookupButton(ButtonType.OK).apply {
         if (this is Button) {
-          text = "Use offline mirrors"
-        }
-      }
-      lookupButton(ButtonType.CANCEL).apply {
-        if (this is Button) {
-          text = "Try again"
-        }
-      }
+          text = "Continue"
+          styleClass.add("btn-attention")
+          addEventHandler(ActionEvent.ACTION) { evt ->
+            when {
+              btnTryAgain.isSelected -> {
+                controller?.start()
+              }
+              btnOffline.isSelected -> {
+                println("OLOLO!")
+              }
+              else -> {
 
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
