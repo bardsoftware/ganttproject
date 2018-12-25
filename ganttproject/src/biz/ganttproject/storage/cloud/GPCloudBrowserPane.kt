@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
-import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -125,15 +124,6 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   }
 }
 
-class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : FolderItem {
-  override val isLockable: Boolean = false
-  override val name: String = options.name
-  override val isDirectory: Boolean = false
-  override val canChangeLock: Boolean = false
-  override val isLocked: Boolean
-    get() = Instant.ofEpochMilli(options.lockExpiration.toLong()).isAfter(Instant.now())
-
-}
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -387,16 +377,6 @@ class GPCloudBrowserPane(
   private fun reload() {
     this.loaderService.jsonResult.set(null)
     this.loaderService.restart()
-  }
-
-  private fun loadOfflineMirrors(consumer: Consumer<ObservableList<FolderItem>>) {
-    val mirrors = GPCloudOptions.cloudFiles.files.entries.map { (fp, options) ->
-      options.offlineMirror?.let {
-        OfflineMirrorOptionsAsFolderItem(options)
-      }
-    }.filterNotNull()
-    consumer.accept(FXCollections.observableArrayList<FolderItem>(mirrors))
-
   }
 
   private fun toggleProjectLock(project: ProjectJsonAsFolderItem,

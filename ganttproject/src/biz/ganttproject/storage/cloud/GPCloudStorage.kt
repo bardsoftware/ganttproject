@@ -19,18 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.StorageDialogBuilder
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
-import javafx.event.ActionEvent
-import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
@@ -135,7 +128,7 @@ class GPCloudStorage(
       }
     }
 
-    val offlinePane = GPCloudOfflinePane()
+    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi)
     val signupPane = GPCloudSignupPane(onTokenCallback, ::nextPage)
     Controller(signupPane, offlinePane, browserPane, this::nextPage).start()
     return myPane
@@ -148,64 +141,3 @@ class GPCloudStorage(
   }
 }
 
-class GPCloudOfflinePane {
-  var controller: GPCloudStorage.Controller? = null
-
-  fun createPane(): Pane {
-    val rootPane = VBoxBuilder("pane-service-contents", "cloud-storage")
-    rootPane.add(Pane(), Pos.CENTER, Priority.ALWAYS)
-    rootPane.add(buildContentPane(), Pos.CENTER, Priority.NEVER)
-    rootPane.add(Pane(), Pos.CENTER, Priority.ALWAYS)
-    return rootPane.vbox
-  }
-
-  private fun buildContentPane(): Pane {
-    val vbox = VBoxBuilder("content-pane")
-    vbox.addTitle("You seem to be offline")
-    vbox.add(Label("We couldn't contact $GPCLOUD_HOST by name nor by IP address").apply { styleClass.add("help") })
-
-    val toggleGroup = ToggleGroup()
-
-    val btnOffline = RadioButton("Open offline project mirror").also {
-      it.styleClass.add("mt-5")
-      it.isSelected = true
-      it.styleClass.add("btn-lock-expire")
-      it.toggleGroup = toggleGroup
-      vbox.add(it)
-    }
-    val btnTryAgain = RadioButton("Try contacting GanttProject Cloud again").also {
-      it.styleClass.add("btn-lock-expire")
-      it.toggleGroup = toggleGroup
-      vbox.add(it)
-    }
-
-    return DialogPane().apply {
-      styleClass.add("dlg-lock")
-      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.SIGNAL)
-
-      content = vbox.vbox
-
-      buttonTypes.addAll(ButtonType.OK)
-      lookupButton(ButtonType.OK).apply {
-        if (this is Button) {
-          text = "Continue"
-          styleClass.add("btn-attention")
-          addEventHandler(ActionEvent.ACTION) { evt ->
-            when {
-              btnTryAgain.isSelected -> {
-                controller?.start()
-              }
-              btnOffline.isSelected -> {
-                println("OLOLO!")
-              }
-              else -> {
-
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}

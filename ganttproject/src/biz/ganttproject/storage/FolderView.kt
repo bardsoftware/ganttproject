@@ -163,6 +163,8 @@ fun <T : FolderItem> createListCell(
         doUpdateItem(item, empty)
       } catch (e: WebDavResource.WebDavException) {
         dialogUi.error(e)
+      } catch (e: Exception) {
+        println(e)
       }
 
     }
