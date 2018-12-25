@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="China" type="country">
-	<date year="" month="01" date="01"/> 
-	<date year="" month="05" date="01"/> #Labour Day
-	<date year="" month="10" date="1"/> #National Day
+<calendar id="cn" name="Chinese Holidays 2019" type="country">
+<!-- http://www.officeholidays.com/countries/china/ -->
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="05" date="01"><![CDATA[Labor Day]]></date>
+	<date year="" month="10" date="1"><![CDATA[National Day]]></date>
+
+	<date year="2019" month="02" date="02" type="WORKING_DAY"><![CDATA[Compensation of 2019-02-07]]></date>
+	<date year="2019" month="02" date="03" type="WORKING_DAY"><![CDATA[Compensation of 2019-02-08]]></date>
+	<date year="2019" month="02" date="04"><![CDATA[Chinese New Year Eve]]></date>
+	<date year="2019" month="02" date="05"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="02" date="06"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="02" date="07"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="02" date="08"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="02" date="09"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="02" date="10"><![CDATA[Chinese New Year]]></date>
+	<date year="2019" month="04" date="05"><![CDATA[Ching Ming Festival]]></date>
+	<date year="2019" month="06" date="07"><![CDATA[Dragon Boat Festival]]></date>
+	<date year="2019" month="09" date="13"><![CDATA[Mid Autumn Festival]]></date>
+	<date year="2019" month="09" date="29" type="WORKING_DAY"><![CDATA[Compensation of 2019-10-04]]></date>
+	<date year="2019" month="10" date="02"><![CDATA[National Day Holiday]]></date>
+	<date year="2019" month="10" date="03"><![CDATA[National Day Holiday]]></date>
+	<date year="2019" month="10" date="04"><![CDATA[National Day Holiday]]></date>
+	<date year="2019" month="10" date="07"><![CDATA[National Day Holiday]]></date>
+	<date year="2019" month="10" date="12" type="WORKING_DAY"><![CDATA[Compensation of 2019-10-07]]></date>
+
 	<date year="2011" month="02" date="03"/> #Chinese New Year
 	<date year="2011" month="04" date="05"/> #Qingming Festival
 	<date year="2011" month="06" date="06"/> #Duanwu Festival
@@ -26,7 +47,6 @@
 	<date year="2016" month="02" date="08"/> #Chinese New Year
 	<date year="2017" month="01" date="28"/> #Chinese New Year
 	<date year="2018" month="02" date="16"/> #Chinese New Year
-	<date year="2019" month="02" date="05"/> #Chinese New Year
 	<date year="2020" month="01" date="25"/> #Chinese New Year
 	<date year="2021" month="02" date="12"/> #Chinese New Year
 	<date year="2022" month="02" date="01"/> #Chinese New Year
@@ -43,5 +63,5 @@
 </calendar >
 
 
- 
+
 
