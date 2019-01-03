@@ -466,15 +466,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     myEarliestBeginEnabled.setSelected(originalEarliestBeginEnabled == 1);
     myOnEarliestBeginToggle.actionPerformed(null);
 
+
     if (mileStoneCheckBox1 != null) {
       mileStoneCheckBox1.setSelected(originalIsMilestone);
     } else if (projectTaskCheckBox1 != null) {
       projectTaskCheckBox1.setSelected(originalIsProjectTask);
     }
-    myTaskScheduleDates.setMilestone(isMilestone());
-
-    boolean isSupertask = myUnpluggedClone.getManager().getTaskHierarchy().hasNestedTasks(selectedTasks[0]);
-    myTaskScheduleDates.setSupertask(isSupertask);
+    myTaskScheduleDates.setupFields(isMilestone(), isSupertask());
 
     tfWebLink.setText(originalWebLink);
 
@@ -492,6 +490,10 @@ public class GanttTaskPropertiesBean extends JPanel {
     myShowInTimeline.setSelected(myUIfacade.getCurrentTaskView().getTimelineTasks().contains(selectedTasks[0]));
   }
 
+  private boolean isSupertask() {
+    return myUnpluggedClone.getManager().getTaskHierarchy().hasNestedTasks(selectedTasks[0]);
+  }
+
 
   private boolean isMilestone() {
     if (mileStoneCheckBox1 == null) {
@@ -499,6 +501,8 @@ public class GanttTaskPropertiesBean extends JPanel {
     }
     return mileStoneCheckBox1.isSelected();
   }
+
+
 
   private boolean isProjectTask() {
     return projectTaskCheckBox1.isSelected();
@@ -622,7 +626,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       mileStoneCheckBox1 = new JCheckBox(new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-          myTaskScheduleDates.setMilestone(isMilestone());
+          myTaskScheduleDates.setupFields(isMilestone(), isSupertask());
         }
       });
       result = Pair.create(language.getText("meetingPoint"), mileStoneCheckBox1);

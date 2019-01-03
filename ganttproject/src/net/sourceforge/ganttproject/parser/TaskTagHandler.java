@@ -18,28 +18,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
-import java.awt.Color;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.util.List;
-import java.util.Map;
-
+import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.time.GanttCalendar;
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
-
 import org.xml.sax.Attributes;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import biz.ganttproject.core.chart.render.ShapePaint;
-import biz.ganttproject.core.time.GanttCalendar;
+import java.awt.*;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.util.List;
+import java.util.Map;
 
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
   private final ParsingContext myContext;
@@ -116,10 +113,6 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
     Task task = builder.build();
 
     myTaskIdToExpansionState.put(task.getTaskID(), task.getExpand());
-//    String newMilestone = attrs.getValue("milestone");
-//    if ("1".equals(newMilestone)) {
-//      task.setMilestone(true);
-//    }
     String project = attrs.getValue("project");
     if (project != null) {
       task.setProjectTask(true);
