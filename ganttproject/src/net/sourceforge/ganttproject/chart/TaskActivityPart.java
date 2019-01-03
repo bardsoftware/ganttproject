@@ -81,7 +81,8 @@ class TaskActivityPart implements TaskActivity {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     TaskActivityPart that = (TaskActivityPart) o;
-    return Objects.equals(myEndDate, that.myEndDate) &&
+    return Objects.equals(getOwner(), that.getOwner()) &&
+        Objects.equals(myEndDate, that.myEndDate) &&
         Objects.equals(myStartDate, that.myStartDate) &&
         Objects.equals(myDuration, that.myDuration);
   }
