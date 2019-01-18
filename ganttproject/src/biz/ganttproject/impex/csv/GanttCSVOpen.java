@@ -127,6 +127,18 @@ public class GanttCSVOpen {
     return resourceManager == null ? null : new ResourceRecords(resourceManager, roleManager);
   }
 
+  private static boolean isEmpty(CSVRecord record) {
+    if (record.size() == 0) {
+      return true;
+    }
+    for (int i = 0; i < record.size(); i++) {
+      if (!Strings.isNullOrEmpty(record.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private int doLoad(CSVParser parser, int numGroup, int linesToSkip) {
     final Logger logger = GPLogger.getLogger(GanttCSVOpen.class);
     int lineCounter = 0;
@@ -141,11 +153,12 @@ public class GanttCSVOpen {
 
     for (Iterator<CSVRecord> it = parser.iterator(); it.hasNext();) {
       CSVRecord record = it.next();
+
       lineCounter++;
       if (linesToSkip-- > 0) {
         continue;
       }
-      if (record.size() == 0 || record.size() == 1 && Strings.isNullOrEmpty(record.get(0))) {
+      if (isEmpty(record)) {
         // If line is empty then current record group is probably finished.
         // Let's search for the next group header.
         searchHeader = true;
@@ -159,7 +172,13 @@ public class GanttCSVOpen {
           if (nextGroup.isHeader(record)) {
             debug(logger, "[CSV] ^^^ This seems to be a header");
 
-            nextGroup.setHeader(Lists.newArrayList(record.iterator()));
+            List<String> headerCells = Lists.newArrayList(record.iterator());
+            for (int i = headerCells.size() - 1; i >= 0; i--) {
+              if (Strings.isNullOrEmpty(headerCells.get(i))) {
+                headerCells.remove(i);
+              }
+            }
+            nextGroup.setHeader(headerCells);
             return lineCounter;
           }
         }

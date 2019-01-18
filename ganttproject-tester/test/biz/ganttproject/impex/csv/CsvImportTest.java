@@ -18,18 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.impex.csv;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableSet;
+import junit.framework.TestCase;
+import org.apache.commons.csv.CSVRecord;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.csv.CSVRecord;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableSet;
-
-import junit.framework.TestCase;
 
 /**
  * Tests for CSV import.
@@ -88,7 +86,7 @@ public class CsvImportTest extends TestCase {
     assertTrue(wasCalled.get());
   }
 
-  public void testTwoGroups() throws Exception {
+  private void doTestTwoGroups(String groupSeparator) throws Exception {
     String header1 = "A, B";
     String data1 = "a1, b1";
     final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
@@ -121,10 +119,16 @@ public class CsvImportTest extends TestCase {
         return true;
       }
     };
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, "", header2, data2)),
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, groupSeparator, header2, data2)),
         recordGroup1, recordGroup2);
     importer.load();
     assertTrue(wasCalled1.get() && wasCalled2.get());
+  }
+
+  public void testTwoGroups() throws Exception {
+    doTestTwoGroups("");
+    doTestTwoGroups(",,,,,,,,");
+    doTestTwoGroups("           ");
   }
 
   public void testIncompleteHeader() throws IOException {
@@ -199,5 +203,45 @@ public class CsvImportTest extends TestCase {
     importer.load();
     assertTrue(wasCalled.get());
     assertEquals(2, importer.getSkippedLineCount());
+  }
+
+  public void testTrailingEmptyCells() throws IOException {
+    String header1 = "A, B, C, D";
+    String data1 = "a1, b1, c1, d1";
+    final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
+    RecordGroup recordGroup1 = new RecordGroup("ABCD", ImmutableSet.<String> of("A", "B", "C", "D")) {
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
+        assertEquals("a1", record.get("A"));
+        assertEquals("b1", record.get("B"));
+        assertEquals("c1", record.get("C"));
+        assertEquals("d1", record.get("D"));
+        wasCalled1.set(true);
+        return true;
+      }
+    };
+
+    String header2 = "E,,,";
+    String data2 = "e1,,,";
+    final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
+    RecordGroup recordGroup2 = new RecordGroup("E", ImmutableSet.<String> of("E")) {
+      @Override
+      protected boolean doProcess(CSVRecord record) {
+        if (!super.doProcess(record)) {
+          return false;
+        }
+        assertEquals("e1", record.get("E"));
+        assertFalse(record.isMapped("B"));
+        wasCalled2.set(true);
+        return true;
+      }
+    };
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, ",,,", header2, data2)),
+        recordGroup1, recordGroup2);
+    importer.load();
+    assertTrue(wasCalled1.get() && wasCalled2.get());
   }
 }
