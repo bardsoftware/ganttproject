@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
+import biz.ganttproject.storage.NetworkUnavailableException
 import biz.ganttproject.storage.OnlineDocument
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -45,7 +46,9 @@ import org.apache.http.entity.mime.content.StringBody
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
+import java.net.SocketException
 import java.net.URI
+import java.net.UnknownHostException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
@@ -199,6 +202,16 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
+  fun (Exception).isNetworkUnavailable(): Boolean {
+    if (this is SocketException  && this.message?.contains("network is unreachable", true) != false) {
+      return true
+    }
+    if (this is UnknownHostException) {
+      return true
+    }
+    return false;
+  }
+
   override fun getOutputStream(): OutputStream {
     return object : ByteArrayOutputStream() {
       override fun close() {
@@ -227,11 +240,20 @@ class GPCloudDocument(private val teamRefid: String?,
         }
         projectWrite.entity = multipartBuilder.build()
 
-        val resp = http.client.execute(http.host, projectWrite, http.context)
-        if (resp.statusLine.statusCode != 200) {
-          val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
-          println(body)
-          throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+        try {
+          val resp = http.client.execute(http.host, projectWrite, http.context)
+          if (resp.statusLine.statusCode != 200) {
+            val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
+            println(body)
+            throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+          }
+        } catch (ex: Exception) {
+          when {
+            ex.isNetworkUnavailable() -> {
+              throw NetworkUnavailableException(ex)
+            }
+            else -> throw ex
+          }
         }
       }
     }

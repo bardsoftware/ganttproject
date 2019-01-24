@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.storage.NetworkUnavailableException;
+import biz.ganttproject.storage.OnlineDocument;
 import biz.ganttproject.storage.StorageDialogAction;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -27,6 +29,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentManager;
+import net.sourceforge.ganttproject.document.ProxyDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter;
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard;
@@ -105,6 +108,17 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       saveProject(document);
       afterSaveProject(project);
       return true;
+    } catch (NetworkUnavailableException e) {
+      if (document instanceof ProxyDocument) {
+        ProxyDocument proxyDocument = (ProxyDocument) document;
+        if (proxyDocument.getRealDocument() instanceof OnlineDocument) {
+          OnlineDocument onlineDocument = (OnlineDocument) proxyDocument.getRealDocument();
+          if (onlineDocument.isAvailableOffline().get()) {
+            myWorkbenchFacade.showConfirmationDialog("Use offline mirror?", "You seem to be offline");
+          }
+        }
+      }
+      return false;
     } catch (Throwable e) {
       myWorkbenchFacade.showErrorDialog(e);
       return false;

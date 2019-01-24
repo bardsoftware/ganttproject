@@ -154,6 +154,8 @@ interface LockableDocument {
   val status: ObservableObjectValue<LockStatus>
 }
 
+class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
+
 interface OnlineDocument {
   var offlineMirror: Document?
   val isAvailableOffline: ObservableBooleanValue
