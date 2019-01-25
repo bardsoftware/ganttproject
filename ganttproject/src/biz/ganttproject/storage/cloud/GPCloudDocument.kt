@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.storage.LockStatus
-import biz.ganttproject.storage.LockableDocument
-import biz.ganttproject.storage.NetworkUnavailableException
-import biz.ganttproject.storage.OnlineDocument
+import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
@@ -118,6 +115,14 @@ class GPCloudDocument(private val teamRefid: String?,
       this.isAvailableOffline.value = (field != null)
     }
 
+  override var mode: OnlineDocumentMode = OnlineDocumentMode.ONLINE_ONLY
+  set(value) {
+    if (field == OnlineDocumentMode.OFFLINE_ONLY && value == OnlineDocumentMode.MIRROR) {
+      // This will throw exception if network is unavailable
+      this.saveOnline(this.lastKnownContents)
+    }
+    field = value
+  }
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
     set(value) {
       field = value
@@ -216,57 +221,73 @@ class GPCloudDocument(private val teamRefid: String?,
     return object : ByteArrayOutputStream() {
       override fun close() {
         super.close()
+        val doc = this@GPCloudDocument
         val documentBody = this.toByteArray()
-        this@GPCloudDocument.lastKnownContents = documentBody
-        GlobalScope.launch {
-          saveOfflineMirror(documentBody)
+        doc.lastKnownContents = documentBody
+        when(doc.mode) {
+          OnlineDocumentMode.ONLINE_ONLY -> {
+            saveOnline(documentBody)
+          }
+          OnlineDocumentMode.MIRROR -> {
+            GlobalScope.launch {
+              saveOfflineMirror(documentBody)
+            }
+            saveOnline(documentBody)
+          }
+          OnlineDocumentMode.OFFLINE_ONLY -> {
+            saveOfflineMirror(documentBody)
+          }
         }
-        val http = HttpClientBuilder.buildHttpClient()
-        val projectWrite = HttpPost("/p/write")
-        val multipartBuilder = MultipartEntityBuilder.create()
-        if (this@GPCloudDocument.projectRefid != null) {
-          multipartBuilder.addPart("projectRefid", StringBody(
-              this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
-        } else {
-          multipartBuilder.addPart("teamRefid", StringBody(
-              this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
-          multipartBuilder.addPart("filename", StringBody(
-              this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
-        }
-        multipartBuilder.addPart("fileContents", StringBody(
-            Base64.getEncoder().encodeToString(documentBody), ContentType.TEXT_PLAIN))
-        this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
-          multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
-        }
-        projectWrite.entity = multipartBuilder.build()
+      }
+    }
+  }
 
-        try {
-          val resp = http.client.execute(http.host, projectWrite, http.context)
-          when (resp.statusLine.statusCode) {
-            200 -> {
-              if (this@GPCloudDocument.isAvailableOffline.get()) {
-                resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
-                  GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
-                    it.lastWrittenVersion = writtenGeneration
-                    GPCloudOptions.cloudFiles.save()
-                  }
-                }
+  @Throws(NetworkUnavailableException::class)
+  private fun saveOnline(body: ByteArray) {
+    val http = HttpClientBuilder.buildHttpClient()
+    val projectWrite = HttpPost("/p/write")
+    val multipartBuilder = MultipartEntityBuilder.create()
+    if (this@GPCloudDocument.projectRefid != null) {
+      multipartBuilder.addPart("projectRefid", StringBody(
+          this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
+    } else {
+      multipartBuilder.addPart("teamRefid", StringBody(
+          this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
+      multipartBuilder.addPart("filename", StringBody(
+          this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
+    }
+    multipartBuilder.addPart("fileContents", StringBody(
+        Base64.getEncoder().encodeToString(body), ContentType.TEXT_PLAIN))
+    this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
+      multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
+    }
+    projectWrite.entity = multipartBuilder.build()
+
+    try {
+      val resp = http.client.execute(http.host, projectWrite, http.context)
+      when (resp.statusLine.statusCode) {
+        200 -> {
+          if (this@GPCloudDocument.isAvailableOffline.get()) {
+            resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
+              GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
+                it.lastWrittenVersion = writtenGeneration
+                GPCloudOptions.cloudFiles.save()
               }
             }
-            else -> {
-              val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
-              println(body)
-              throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
-            }
-          }
-        } catch (ex: Exception) {
-          when {
-            ex.isNetworkUnavailable() -> {
-              throw NetworkUnavailableException(ex)
-            }
-            else -> throw ex
           }
         }
+        else -> {
+          val respBody = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
+          println(respBody)
+          throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+        }
+      }
+    } catch (ex: Exception) {
+      when {
+        ex.isNetworkUnavailable() -> {
+          throw NetworkUnavailableException(ex)
+        }
+        else -> throw ex
       }
     }
   }
@@ -336,9 +357,11 @@ class GPCloudDocument(private val teamRefid: String?,
         GlobalScope.launch {
           saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
         }
+        this.mode = OnlineDocumentMode.MIRROR
       }
       else -> {
         this.offlineMirror = null
+        this.mode = OnlineDocumentMode.ONLINE_ONLY
       }
     }
   }

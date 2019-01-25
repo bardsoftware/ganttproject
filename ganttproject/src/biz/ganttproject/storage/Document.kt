@@ -156,9 +156,13 @@ interface LockableDocument {
 
 class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
 
+enum class OnlineDocumentMode {
+  ONLINE_ONLY, MIRROR, OFFLINE_ONLY
+}
 interface OnlineDocument {
   var offlineMirror: Document?
   val isAvailableOffline: ObservableBooleanValue
   fun toggleAvailableOffline()
+  var mode: OnlineDocumentMode
 }
 

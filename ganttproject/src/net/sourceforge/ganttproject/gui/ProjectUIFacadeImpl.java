@@ -21,11 +21,13 @@ package net.sourceforge.ganttproject.gui;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.storage.NetworkUnavailableException;
 import biz.ganttproject.storage.OnlineDocument;
+import biz.ganttproject.storage.OnlineDocumentMode;
 import biz.ganttproject.storage.StorageDialogAction;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -103,25 +105,54 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     return saveProjectTrySave(project, document);
   }
 
+  private static OnlineDocument asOnlineDocument(Document doc) {
+    if (doc instanceof ProxyDocument) {
+      ProxyDocument proxyDocument = (ProxyDocument) doc;
+      if (proxyDocument.getRealDocument() instanceof OnlineDocument) {
+        return (OnlineDocument) proxyDocument.getRealDocument();
+      }
+    }
+    return null;
+  }
+
   private boolean saveProjectTrySave(IGanttProject project, Document document) {
+    OnlineDocument onlineDoc = asOnlineDocument(document);
     try {
       saveProject(document);
       afterSaveProject(project);
+      if (onlineDoc != null && onlineDoc.getMode() == OnlineDocumentMode.OFFLINE_ONLY) {
+        tryConnectOnline(onlineDoc);
+      }
       return true;
     } catch (NetworkUnavailableException e) {
-      if (document instanceof ProxyDocument) {
-        ProxyDocument proxyDocument = (ProxyDocument) document;
-        if (proxyDocument.getRealDocument() instanceof OnlineDocument) {
-          OnlineDocument onlineDocument = (OnlineDocument) proxyDocument.getRealDocument();
-          if (onlineDocument.isAvailableOffline().get()) {
-            myWorkbenchFacade.showConfirmationDialog("Use offline mirror?", "You seem to be offline");
-          }
-        }
+      if (onlineDoc != null) {
+        myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
+            "You seem to be offline. Continue working with offline mirror?",
+            new Action[] {new CancelAction(), new OkAction() {
+              @Override
+              public void actionPerformed(ActionEvent actionEvent) {
+                onlineDoc.setMode(OnlineDocumentMode.OFFLINE_ONLY);
+              }
+            }});
       }
       return false;
     } catch (Throwable e) {
       myWorkbenchFacade.showErrorDialog(e);
       return false;
+    }
+  }
+
+  private void tryConnectOnline(OnlineDocument onlineDoc) {
+    try {
+      onlineDoc.setMode(OnlineDocumentMode.MIRROR);
+      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, "You are online", new Action[] {new OkAction() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+
+        }
+      }});
+    } catch (Exception e) {
+
     }
   }
 
