@@ -242,10 +242,22 @@ class GPCloudDocument(private val teamRefid: String?,
 
         try {
           val resp = http.client.execute(http.host, projectWrite, http.context)
-          if (resp.statusLine.statusCode != 200) {
-            val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
-            println(body)
-            throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+          when (resp.statusLine.statusCode) {
+            200 -> {
+              if (this@GPCloudDocument.isAvailableOffline.get()) {
+                resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
+                  GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
+                    it.lastWrittenVersion = writtenGeneration
+                    GPCloudOptions.cloudFiles.save()
+                  }
+                }
+              }
+            }
+            else -> {
+              val body = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
+              println(body)
+              throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+            }
           }
         } catch (ex: Exception) {
           when {
