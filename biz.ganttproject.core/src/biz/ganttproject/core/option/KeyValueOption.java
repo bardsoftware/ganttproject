@@ -62,9 +62,12 @@ public abstract class KeyValueOption extends GPAbstractOption<Map.Entry<String, 
 
   @Override
   public void setValues(Iterable<Map.Entry<String, String>> values) {
+    Map oldValue = Maps.newHashMap(myMap);
+    myMap.clear();
     for (Map.Entry<String, String> e : values) {
       myMap.put(e.getKey(), e.getValue());
     }
+    fireChangeValueEvent(new ChangeValueEvent(getID(), oldValue, myMap, this));
   }
 
   @Override

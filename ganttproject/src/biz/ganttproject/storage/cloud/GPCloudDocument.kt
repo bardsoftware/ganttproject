@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import org.apache.commons.codec.Charsets
 import org.apache.commons.codec.binary.Base64InputStream
+import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
@@ -201,13 +202,14 @@ class GPCloudDocument(private val teamRefid: String?,
       GlobalScope.launch {
         saveOfflineMirror(documentBody)
       }
+      this.saveEtag(resp)
       return ByteArrayInputStream(documentBody)
     } else {
       throw IOException("Failed to read from GanttProject Cloud: got response ${resp.statusLine}")
     }
   }
 
-  fun (Exception).isNetworkUnavailable(): Boolean {
+  private fun (Exception).isNetworkUnavailable(): Boolean {
     if (this is SocketException  && this.message?.contains("network is unreachable", true) != false) {
       return true
     }
@@ -215,6 +217,17 @@ class GPCloudDocument(private val teamRefid: String?,
       return true
     }
     return false;
+  }
+
+  private fun saveEtag(resp: HttpResponse) {
+    if (this@GPCloudDocument.isAvailableOffline.get()) {
+      resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
+        GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
+          it.lastWrittenVersion = writtenGeneration
+          GPCloudOptions.cloudFiles.save()
+        }
+      }
+    }
   }
 
   override fun getOutputStream(): OutputStream {
@@ -267,14 +280,7 @@ class GPCloudDocument(private val teamRefid: String?,
       val resp = http.client.execute(http.host, projectWrite, http.context)
       when (resp.statusLine.statusCode) {
         200 -> {
-          if (this@GPCloudDocument.isAvailableOffline.get()) {
-            resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
-              GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
-                it.lastWrittenVersion = writtenGeneration
-                GPCloudOptions.cloudFiles.save()
-              }
-            }
-          }
+          this.saveEtag(resp)
         }
         else -> {
           val respBody = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
