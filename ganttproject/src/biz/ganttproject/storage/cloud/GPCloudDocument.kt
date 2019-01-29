@@ -117,13 +117,13 @@ class GPCloudDocument(private val teamRefid: String?,
     }
 
   override var mode: OnlineDocumentMode = OnlineDocumentMode.ONLINE_ONLY
-  set(value) {
-    if (field == OnlineDocumentMode.OFFLINE_ONLY && value == OnlineDocumentMode.MIRROR) {
-      // This will throw exception if network is unavailable
-      this.saveOnline(this.lastKnownContents)
+    set(value) {
+      if (field == OnlineDocumentMode.OFFLINE_ONLY && value == OnlineDocumentMode.MIRROR) {
+        // This will throw exception if network is unavailable
+        this.saveOnline(this.lastKnownContents)
+      }
+      field = value
     }
-    field = value
-  }
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
     set(value) {
       field = value
@@ -210,7 +210,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   private fun (Exception).isNetworkUnavailable(): Boolean {
-    if (this is SocketException  && this.message?.contains("network is unreachable", true) != false) {
+    if (this is SocketException && this.message?.contains("network is unreachable", true) != false) {
       return true
     }
     if (this is UnknownHostException) {
@@ -237,7 +237,7 @@ class GPCloudDocument(private val teamRefid: String?,
         val doc = this@GPCloudDocument
         val documentBody = this.toByteArray()
         doc.lastKnownContents = documentBody
-        when(doc.mode) {
+        when (doc.mode) {
           OnlineDocumentMode.ONLINE_ONLY -> {
             saveOnline(documentBody)
           }
@@ -274,6 +274,11 @@ class GPCloudDocument(private val teamRefid: String?,
     this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
       multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
     }
+    if (this.isAvailableOffline.get()) {
+      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
+        multipartBuilder.addPart("oldVersion", StringBody(it.lastWrittenVersion ?: "-1", ContentType.TEXT_PLAIN))
+      }
+    }
     projectWrite.entity = multipartBuilder.build()
 
     try {
@@ -281,6 +286,9 @@ class GPCloudDocument(private val teamRefid: String?,
       when (resp.statusLine.statusCode) {
         200 -> {
           this.saveEtag(resp)
+        }
+        412 -> {
+          throw VersionMismatchException()
         }
         else -> {
           val respBody = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))

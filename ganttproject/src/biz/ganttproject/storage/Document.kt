@@ -148,6 +148,7 @@ data class LockStatus(val locked: Boolean,
                       val lockOwnerName: String? = null,
                       val lockOwnerEmail: String? = null,
                       val lockOwnerId: String? = null)
+
 interface LockableDocument {
   fun toggleLocked(): CompletableFuture<LockStatus>
 
@@ -155,10 +156,12 @@ interface LockableDocument {
 }
 
 class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
+class VersionMismatchException : RuntimeException()
 
 enum class OnlineDocumentMode {
   ONLINE_ONLY, MIRROR, OFFLINE_ONLY
 }
+
 interface OnlineDocument {
   var offlineMirror: Document?
   val isAvailableOffline: ObservableBooleanValue

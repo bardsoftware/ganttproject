@@ -23,6 +23,7 @@ import biz.ganttproject.storage.NetworkUnavailableException;
 import biz.ganttproject.storage.OnlineDocument;
 import biz.ganttproject.storage.OnlineDocumentMode;
 import biz.ganttproject.storage.StorageDialogAction;
+import biz.ganttproject.storage.VersionMismatchException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -57,6 +58,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private final GPUndoManager myUndoManager;
 
   private final GPOptionGroup myConverterGroup = new GPOptionGroup("convert", ProjectOpenStrategy.getMilestonesOption());
+
   public ProjectUIFacadeImpl(UIFacade workbenchFacade, DocumentManager documentManager, GPUndoManager undoManager) {
     myWorkbenchFacade = workbenchFacade;
     myDocumentManager = documentManager;
@@ -128,10 +130,22 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       if (onlineDoc != null) {
         myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
             "You seem to be offline. Continue working with offline mirror?",
-            new Action[] {new CancelAction(), new OkAction() {
+            new Action[]{new CancelAction(), new OkAction() {
               @Override
               public void actionPerformed(ActionEvent actionEvent) {
                 onlineDoc.setMode(OnlineDocumentMode.OFFLINE_ONLY);
+              }
+            }});
+      }
+      return false;
+    } catch (VersionMismatchException e) {
+      if (onlineDoc != null) {
+        myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
+            "Your document has diverged from the cloud",
+            new Action[]{new CancelAction(), new OkAction() {
+              @Override
+              public void actionPerformed(ActionEvent actionEvent) {
+
               }
             }});
       }
@@ -145,7 +159,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   private void tryConnectOnline(OnlineDocument onlineDoc) {
     try {
       onlineDoc.setMode(OnlineDocumentMode.MIRROR);
-      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, "You are online", new Action[] {new OkAction() {
+      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, "You are online", new Action[]{new OkAction() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
 
@@ -186,7 +200,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   @Override
   public void saveProjectAs(IGanttProject project) {
     new StorageDialogAction(project, myWorkbenchFacade, this, project.getDocumentManager(),
-        ((WebDavStorageImpl)project.getDocumentManager().getWebDavStorageUi()).getServersOption()).actionPerformed(null);
+        ((WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi()).getServersOption()).actionPerformed(null);
     /*
      * if (project.getDocument() instanceof AbstractURLDocument) {
      * saveProjectRemotely(project); return; }
@@ -239,7 +253,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
    * project
    *
    * @return true when the project is <b>not</b> modified or is allowed to be
-   *         discarded
+   * discarded
    */
   @Override
   public boolean ensureProjectSaved(IGanttProject project) {
@@ -294,9 +308,9 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
     try (ProjectOpenStrategy strategy = new ProjectOpenStrategy(project, myWorkbenchFacade)) {
       strategy.openFileAsIs(document)
-        .checkLegacyMilestones()
-        .checkEarliestStartConstraints()
-        .runUiTasks();
+          .checkLegacyMilestones()
+          .checkEarliestStartConstraints()
+          .runUiTasks();
     } catch (Exception e) {
       throw new DocumentException("Can't open document " + document, e);
     }
@@ -325,7 +339,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
 
   @Override
   public GPOptionGroup[] getOptionGroups() {
-    return new GPOptionGroup[] { myConverterGroup };
+    return new GPOptionGroup[]{myConverterGroup};
   }
 
   private GPUndoManager getUndoManager() {
