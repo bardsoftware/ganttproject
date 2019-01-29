@@ -36,12 +36,12 @@ public class ResourceDeleteAction extends ResourceAction {
   private final GanttProject myProject;
 
   public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
-      UIFacade uiFacade) {
+                              UIFacade uiFacade) {
     this(hrManager, context, project, uiFacade, IconSize.TOOLBAR_SMALL);
   }
 
   private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
-      UIFacade uiFacade, IconSize size) {
+                               UIFacade uiFacade, IconSize size) {
     super("resource.delete", hrManager, context, size);
     myUIFacade = uiFacade;
     myProject = project;
@@ -56,7 +56,7 @@ public class ResourceDeleteAction extends ResourceAction {
         @Override
         public void run() {
           deleteResources(selectedResources);
-          myProject.repaint2();
+          myUIFacade.refresh();
         }
       });
     }
