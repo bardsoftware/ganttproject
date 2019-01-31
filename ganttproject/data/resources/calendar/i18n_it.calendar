@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="it" name="Italy Bank Holidays 2015-2018" type="country">
+<calendar id="it" name="Italy Bank Holidays 2015-2019" type="country">
 <!-- http://en.wikipedia.org/wiki/Public_holidays_in_Italy -->
 <!-- http://www.officeholidays.com/countries/italy/index.php -->
 <!-- http://www.timeanddate.com/holidays/italy/ -->
@@ -28,6 +28,7 @@
 	<date year="2016" month="03" date="28"><![CDATA[Easter Monday]]></date>
 	<date year="2017" month="04" date="17"><![CDATA[Easter Monday]]></date>
 	<date year="2018" month="04" date="02"><![CDATA[Easter Monday]]></date>
+	<date year="2019" month="04" date="22"><![CDATA[Easter Monday]]></date>
 
 
 </calendar >

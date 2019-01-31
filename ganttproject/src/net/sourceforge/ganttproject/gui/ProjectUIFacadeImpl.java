@@ -164,7 +164,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
         File projectfile = fc.getSelectedFile();
         String extension = FileUtil.getExtension(projectfile).toLowerCase();
         if (!"gan".equals(extension) && !"xml".equals(extension)) {
-          projectfile = FileUtil.replaceExtension(projectfile, "gan");
+          projectfile = FileUtil.appendExtension(projectfile, "gan");
         }
 
         if (projectfile.exists()) {

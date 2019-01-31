@@ -18,23 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-
 import com.google.common.collect.Lists;
-
+import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import junit.framework.TestCase;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Tests for TimelineLabelRendererImpl
@@ -127,5 +125,27 @@ public class TestTimelineLabelRendererImpl extends TestCase {
     task.setStart(MONDAY);
     task.setEnd(TUESDAY);
     testHasTimelineLabel(task, false);
+  }
+
+  public void testShortLabelsAreDisplayedFully() {
+    Task task = testApi.getTaskManager().createTask();
+    task.setName("foo");
+    TimelineLabelRendererImpl renderer = new TimelineLabelRendererImpl(testApi);
+    TimelineLabelRendererImpl.LabelTextSelector textSelector = new TimelineLabelRendererImpl.LabelTextSelector(task, renderer.getLabelLayer().createText(0, 0, ""));
+    TestTextLengthCalculator lengthCalculator = new TestTextLengthCalculator(10);
+    Canvas.Label[] labels = textSelector.getLabels(lengthCalculator);
+    assertEquals(1, labels.length);
+    assertEquals("foo", labels[0].text);
+  }
+
+  public void testLongLabelsAreDisplayedTruncated() {
+    Task task = testApi.getTaskManager().createTask();
+    task.setName("123456789012345678901");
+    TimelineLabelRendererImpl renderer = new TimelineLabelRendererImpl(testApi);
+    TimelineLabelRendererImpl.LabelTextSelector textSelector = new TimelineLabelRendererImpl.LabelTextSelector(task, renderer.getLabelLayer().createText(0, 0, ""));
+    TestTextLengthCalculator lengthCalculator = new TestTextLengthCalculator(10);
+    Canvas.Label[] labels = textSelector.getLabels(lengthCalculator);
+    assertEquals(1, labels.length);
+    assertEquals("123456789012345678...", labels[0].text);
   }
 }

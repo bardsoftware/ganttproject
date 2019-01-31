@@ -18,20 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.util.Date;
-import java.util.List;
-
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
-
 import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author dbarashev
@@ -57,6 +55,8 @@ public interface ChartModel {
 
   int getBottomUnitWidth();
 
+  int calculateRowHeight();
+
   void setRowHeight(int rowHeight);
 
   void setTopTimeUnit(TimeUnit topTimeUnit);
@@ -76,6 +76,7 @@ public interface ChartModel {
   void addRenderer(SceneBuilder renderer);
 
   void resetOffsets();
+
   OffsetList getTopUnitOffsets();
 
   OffsetList getBottomUnitOffsets();

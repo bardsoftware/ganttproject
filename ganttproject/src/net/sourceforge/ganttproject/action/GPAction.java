@@ -58,7 +58,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
   }
 
-  /** Location of the icon files */
+  /**
+   * Location of the icon files
+   */
   private static final String ICON_FILE_DIRECTORY = "/icons";
 
   private boolean iconVisible = true;
@@ -155,9 +157,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return resource == null ? null : new ImageIcon(resource);
 
   }
+
   /**
    * @return translation of "ID.description" if available, otherwise translation
-   *         of "ID"
+   * of "ID"
    */
   protected String getLocalizedDescription() {
     if (getID() == null) {
@@ -170,7 +173,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return description == null ? "" : description;
   }
 
-  /** @return translation of ID */
+  /**
+   * @return translation of ID
+   */
   protected String getLocalizedName() {
     return getID() == null ? null : getI18n(getID());
   }
@@ -319,6 +324,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.properties");
       if (DesktopIntegration.isMacOs()) {
         PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.macos.properties");
+        PropertiesUtil.loadProperties(ourKeyboardProperties, "/keyboard.macos.properties");
       } else {
         PropertiesUtil.loadProperties(ourKeyboardProperties, "/mouse.properties");
       }

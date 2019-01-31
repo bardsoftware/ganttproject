@@ -23,20 +23,12 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import org.apache.commons.csv.CSVRecord;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 
 /**
  * Record group is a set of homogeneous CSV records. CSV file consists of a few
@@ -67,7 +59,7 @@ public abstract class RecordGroup {
 
   boolean isHeader(SpreadsheetRecord record) {
     Set<String> thoseFields = Sets.newHashSet();
-    for (Iterator<String> it = record.iterator(); it.hasNext();) {
+    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
       thoseFields.add(it.next());
     }
     return thoseFields.containsAll(myMandatoryFields);
@@ -76,7 +68,7 @@ public abstract class RecordGroup {
   boolean process(SpreadsheetRecord record) {
     assert record.size() > 0;
     boolean allEmpty = true;
-    for (Iterator<String> it = record.iterator(); it.hasNext();) {
+    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
       if (!Strings.isNullOrEmpty(it.next())) {
         allEmpty = false;
         break;
@@ -116,7 +108,8 @@ public abstract class RecordGroup {
     return (myHeader != null);
   }
 
-  protected void postProcess() {}
+  protected void postProcess() {
+  }
 
   public void setHeader(List<String> header) {
     myHeader = header;
