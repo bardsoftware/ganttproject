@@ -67,6 +67,8 @@ class GPCloudDocument(private val teamRefid: String?,
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
 
   private var lastKnownContents: ByteArray = ByteArray(0)
+  private var lastKnownVersion: String = ""
+
   override val isAvailableOffline = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
   private val queryArgs: String
@@ -97,14 +99,14 @@ class GPCloudDocument(private val teamRefid: String?,
       val currentValue = field
       if (value == null && currentValue is FileDocument) {
         currentValue.delete()
-        GPCloudOptions.cloudFiles.files[this.projectIdFingerprint!!]?.let {
+        GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
           it.offlineMirror = null
           GPCloudOptions.cloudFiles.save()
         }
       }
       field = value
       value?.let {
-        val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectIdFingerprint!!) {
+        val options = GPCloudOptions.cloudFiles.files.getOrPut(this.projectIdFingerprint) {
           GPCloudFileOptions(
               fingerprint = this.projectIdFingerprint,
               name = this.projectName
@@ -153,7 +155,8 @@ class GPCloudDocument(private val teamRefid: String?,
       teamName = projectJson.node["team"].asText(),
       projectRefid = projectJson.node["refid"].asText(),
       projectName = projectJson.node["name"].asText(),
-      projectJson = projectJson)
+      projectJson = projectJson
+  )
 
 
   constructor(team: TeamJsonAsFolderItem, projectName: String) : this(
@@ -180,7 +183,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isValidForMRU(): Boolean = true
 
-  fun saveOfflineMirror(contents: ByteArray) {
+  private fun saveOfflineMirror(contents: ByteArray) {
     this@GPCloudDocument.offlineMirror?.let { document ->
       if (document is FileDocument) {
         document.create()
@@ -188,6 +191,18 @@ class GPCloudDocument(private val teamRefid: String?,
       document.outputStream.use {
         ByteStreams.copy(ByteArrayInputStream(contents), it)
       }
+    }
+  }
+
+  private fun saveEtag(resp: HttpResponse) {
+    val etagValue = resp.getFirstHeader("ETag")?.value ?: return
+    println("ETag value: $etagValue")
+    this.lastKnownVersion = etagValue
+    if (this.isAvailableOffline.get()) {
+      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
+        it.lastWrittenVersion = etagValue
+        GPCloudOptions.cloudFiles.save()
+      } ?: println("No record ${this.projectIdFingerprint} in the options")
     }
   }
 
@@ -216,18 +231,7 @@ class GPCloudDocument(private val teamRefid: String?,
     if (this is UnknownHostException) {
       return true
     }
-    return false;
-  }
-
-  private fun saveEtag(resp: HttpResponse) {
-    if (this@GPCloudDocument.isAvailableOffline.get()) {
-      resp.getFirstHeader("ETag")?.value?.let { writtenGeneration ->
-        GPCloudOptions.cloudFiles.files[this@GPCloudDocument.projectIdFingerprint]?.let {
-          it.lastWrittenVersion = writtenGeneration
-          GPCloudOptions.cloudFiles.save()
-        }
-      }
-    }
+    return false
   }
 
   override fun getOutputStream(): OutputStream {
@@ -260,25 +264,21 @@ class GPCloudDocument(private val teamRefid: String?,
     val http = HttpClientBuilder.buildHttpClient()
     val projectWrite = HttpPost("/p/write")
     val multipartBuilder = MultipartEntityBuilder.create()
-    if (this@GPCloudDocument.projectRefid != null) {
+    if (this.projectRefid != null) {
       multipartBuilder.addPart("projectRefid", StringBody(
-          this@GPCloudDocument.projectRefid, ContentType.TEXT_PLAIN))
+          this.projectRefid, ContentType.TEXT_PLAIN))
     } else {
       multipartBuilder.addPart("teamRefid", StringBody(
-          this@GPCloudDocument.teamRefid, ContentType.TEXT_PLAIN))
+          this.teamRefid, ContentType.TEXT_PLAIN))
       multipartBuilder.addPart("filename", StringBody(
-          this@GPCloudDocument.projectName, ContentType.TEXT_PLAIN))
+          this.projectName, ContentType.TEXT_PLAIN))
     }
     multipartBuilder.addPart("fileContents", StringBody(
         Base64.getEncoder().encodeToString(body), ContentType.TEXT_PLAIN))
-    this@GPCloudDocument.lock?.get("lockToken")?.textValue()?.let {
+    this.lock?.get("lockToken")?.textValue()?.let {
       multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
     }
-    if (this.isAvailableOffline.get()) {
-      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
-        multipartBuilder.addPart("oldVersion", StringBody(it.lastWrittenVersion ?: "-1", ContentType.TEXT_PLAIN))
-      }
-    }
+    multipartBuilder.addPart("oldVersion", StringBody(this.lastKnownVersion, ContentType.TEXT_PLAIN))
     projectWrite.entity = multipartBuilder.build()
 
     try {
