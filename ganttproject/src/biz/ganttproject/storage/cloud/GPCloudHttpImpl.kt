@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.io.CharStreams
+import com.google.common.io.Closer
 import fi.iki.elonen.NanoHTTPD
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
@@ -60,6 +61,7 @@ import org.apache.http.protocol.HttpContext
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
+import java.net.Socket
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -439,3 +441,15 @@ object HttpClientBuilder {
   }
 }
 
+fun isNetworkAvailable(): Boolean {
+  return try {
+    Closer.create().use { closer ->
+      val pingSocket = Socket(GPCLOUD_IP, 80).also { closer.register(it) }
+      closer.register(pingSocket.getOutputStream())
+      closer.register(pingSocket.getInputStream())
+    }
+    true
+  } catch (e: IOException) {
+    false
+  }
+}

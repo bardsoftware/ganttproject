@@ -19,9 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.storage.NetworkUnavailableException;
 import biz.ganttproject.storage.OnlineDocument;
-import biz.ganttproject.storage.OnlineDocumentMode;
 import biz.ganttproject.storage.StorageDialogAction;
 import biz.ganttproject.storage.VersionMismatchException;
 import net.sourceforge.ganttproject.GPLogger;
@@ -122,22 +120,7 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     try {
       saveProject(document);
       afterSaveProject(project);
-      if (onlineDoc != null && onlineDoc.getMode() == OnlineDocumentMode.OFFLINE_ONLY) {
-        tryConnectOnline(onlineDoc);
-      }
       return true;
-    } catch (NetworkUnavailableException e) {
-      if (onlineDoc != null) {
-        myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
-            "You seem to be offline. Continue working with offline mirror?",
-            new Action[]{new CancelAction(), new OkAction() {
-              @Override
-              public void actionPerformed(ActionEvent actionEvent) {
-                onlineDoc.setMode(OnlineDocumentMode.OFFLINE_ONLY);
-              }
-            }});
-      }
-      return false;
     } catch (VersionMismatchException e) {
       if (onlineDoc != null) {
         myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
@@ -153,20 +136,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
     } catch (Throwable e) {
       myWorkbenchFacade.showErrorDialog(e);
       return false;
-    }
-  }
-
-  private void tryConnectOnline(OnlineDocument onlineDoc) {
-    try {
-      onlineDoc.setMode(OnlineDocumentMode.MIRROR);
-      myWorkbenchFacade.showOptionDialog(JOptionPane.INFORMATION_MESSAGE, "You are online", new Action[]{new OkAction() {
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-
-        }
-      }});
-    } catch (Exception e) {
-
     }
   }
 

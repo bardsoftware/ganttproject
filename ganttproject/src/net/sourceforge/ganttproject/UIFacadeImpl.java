@@ -137,10 +137,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
   };
   private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
+
   @Override
   public IntegerOption getDpiOption() {
     return myDpiOption;
   }
+
   public GPOption<String> getLafOption() {
     return myLafOption;
   }
@@ -152,7 +154,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private FontSpec myLastFontSpec;
 
   UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
-      final IGanttProject project, UIFacade fallbackDelegate) {
+               final IGanttProject project, UIFacade fallbackDelegate) {
     myMainFrame = mainFrame;
     myProject = project;
     myDialogBuilder = new DialogBuilder(mainFrame);
@@ -186,6 +188,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
           }
         });
       }
+
       @Override
       protected void applyLocale(Locale locale) {
         if (locale == null) {
@@ -234,8 +237,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 //    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
 //    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[] { myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
-        dateSampleOption };
+    GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+        dateSampleOption};
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
@@ -279,18 +282,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     String no = GanttLanguage.getInstance().getText("no");
     String cancel = GanttLanguage.getInstance().getText("cancel");
     int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE, null, new String[] { yes, no, cancel }, yes);
+        JOptionPane.QUESTION_MESSAGE, null, new String[]{yes, no, cancel}, yes);
     switch (result) {
-    case JOptionPane.YES_OPTION:
-      return Choice.YES;
-    case JOptionPane.NO_OPTION:
-      return Choice.NO;
-    case JOptionPane.CANCEL_OPTION:
-      return Choice.CANCEL;
-    case JOptionPane.CLOSED_OPTION:
-      return Choice.CANCEL;
-    default:
-      return Choice.CANCEL;
+      case JOptionPane.YES_OPTION:
+        return Choice.YES;
+      case JOptionPane.NO_OPTION:
+        return Choice.NO;
+      case JOptionPane.CANCEL_OPTION:
+        return Choice.CANCEL;
+      case JOptionPane.CLOSED_OPTION:
+        return Choice.CANCEL;
+      default:
+        return Choice.CANCEL;
     }
   }
 
@@ -306,7 +309,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       if (action == null) {
         menu.addSeparator();
       } else {
-        Boolean isSelected = (Boolean)action.getValue(Action.SELECTED_KEY);
+        Boolean isSelected = (Boolean) action.getValue(Action.SELECTED_KEY);
         if (isSelected == null) {
           menu.add(action);
         } else {
@@ -330,28 +333,33 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
-    JOptionPane optionPane = new JOptionPane(message, messageType);
-    Object[] options = new Object[actions.length];
-    Object defaultOption = null;
-    for (int i = 0; i < actions.length; i++) {
-      options[i] = actions[i].getValue(Action.NAME);
-      if (actions[i].getValue(Action.DEFAULT) != null) {
-        defaultOption = options[i];
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        JOptionPane optionPane = new JOptionPane(message, messageType);
+        Object[] options = new Object[actions.length];
+        Object defaultOption = null;
+        for (int i = 0; i < actions.length; i++) {
+          options[i] = actions[i].getValue(Action.NAME);
+          if (actions[i].getValue(Action.DEFAULT) != null) {
+            defaultOption = options[i];
+          }
+        }
+        optionPane.setOptions(options);
+        if (defaultOption != null) {
+          optionPane.setInitialValue(defaultOption);
+        }
+        JDialog dialog = optionPane.createDialog(myMainFrame, "");
+        dialog.setVisible(true);
+        Object choice = optionPane.getValue();
+        for (Action a : actions) {
+          if (a.getValue(Action.NAME).equals(choice)) {
+            a.actionPerformed(null);
+            break;
+          }
+        }
       }
-    }
-    optionPane.setOptions(options);
-    if (defaultOption != null) {
-      optionPane.setInitialValue(defaultOption);
-    }
-    JDialog dialog = optionPane.createDialog(myMainFrame, "");
-    dialog.setVisible(true);
-    Object choice = optionPane.getValue();
-    for (Action a : actions) {
-      if (a.getValue(Action.NAME).equals(choice)) {
-        a.actionPerformed(null);
-        break;
-      }
-    }
+    });
   }
 
   @Override
@@ -359,7 +367,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myNotificationManager;
   }
 
-  /** Show and log the exception */
+  /**
+   * Show and log the exception
+   */
   @Override
   public void showErrorDialog(Throwable e) {
     GPLogger.logToLogger(e);
@@ -392,18 +402,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         channel,
         Collections.singletonList(new NotificationItem(i18n(i18nPrefix + "itemTitle"),
             GanttLanguage.getInstance().formatText(i18nPrefix + "itemBody", message), new HyperlinkListener() {
-              @Override
-              public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() != EventType.ACTIVATED) {
-                  return;
-                }
-                if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
-                  onViewLog();
-                } else {
-                  NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
-                }
-              }
-            })));
+          @Override
+          public void hyperlinkUpdate(HyperlinkEvent e) {
+            if (e.getEventType() != EventType.ACTIVATED) {
+              return;
+            }
+            if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
+              onViewLog();
+            } else {
+              NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+            }
+          }
+        })));
   }
 
   @Override
@@ -619,7 +629,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private void updateFonts() {
     if (myOriginalFonts.isEmpty()) {
       UIDefaults defaults = UIManager.getDefaults();
-      for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements();) {
+      for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements(); ) {
         String key = String.valueOf(keys.nextElement());
         Object obj = UIManager.get(key);
         if (obj instanceof Font) {
@@ -637,7 +647,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         if (Strings.isNullOrEmpty(currentSpec.getFamily())) {
           newFont = font.getValue().deriveFont(newSize);
         } else {
-          newFont = new FontUIResource(currentSpec.getFamily(), font.getValue().getStyle(), (int)newSize);
+          newFont = new FontUIResource(currentSpec.getFamily(), font.getValue().getStyle(), (int) newSize);
         }
         UIManager.put(font.getKey(), newFont);
       }

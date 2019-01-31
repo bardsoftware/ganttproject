@@ -69,8 +69,10 @@ class GPCloudDocument(private val teamRefid: String?,
   private var lastKnownContents: ByteArray = ByteArray(0)
   private var lastKnownVersion: String = ""
 
-  override val isAvailableOffline = SimpleBooleanProperty()
+  override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
+  override val mode = SimpleObjectProperty<OnlineDocumentMode>(OnlineDocumentMode.ONLINE_ONLY)
+
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
 
@@ -115,17 +117,20 @@ class GPCloudDocument(private val teamRefid: String?,
         options.offlineMirror = it.filePath
         GPCloudOptions.cloudFiles.save()
       }
-      this.isAvailableOffline.value = (field != null)
+      this.isMirrored.value = (field != null)
     }
 
-  override var mode: OnlineDocumentMode = OnlineDocumentMode.ONLINE_ONLY
+  private var modeValue: OnlineDocumentMode = this.mode.get()
     set(value) {
-      if (field == OnlineDocumentMode.OFFLINE_ONLY && value == OnlineDocumentMode.MIRROR) {
+      if (this.mode.get() == OnlineDocumentMode.OFFLINE_ONLY && value == OnlineDocumentMode.MIRROR) {
         // This will throw exception if network is unavailable
         this.saveOnline(this.lastKnownContents)
+      } else if (this.mode.get() == OnlineDocumentMode.ONLINE_ONLY && value == OnlineDocumentMode.OFFLINE_ONLY) {
+        this.toggleMirrored()
       }
-      field = value
+      this.mode.set(value)
     }
+
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
     set(value) {
       field = value
@@ -148,7 +153,6 @@ class GPCloudDocument(private val teamRefid: String?,
       this.lock = projectJson.node["lock"]
     }
   }
-
 
   constructor(projectJson: ProjectJsonAsFolderItem) : this(
       teamRefid = null,
@@ -184,7 +188,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun isValidForMRU(): Boolean = true
 
   private fun saveOfflineMirror(contents: ByteArray) {
-    this@GPCloudDocument.offlineMirror?.let { document ->
+    this.offlineMirror?.let { document ->
       if (document is FileDocument) {
         document.create()
       }
@@ -198,7 +202,7 @@ class GPCloudDocument(private val teamRefid: String?,
     val etagValue = resp.getFirstHeader("ETag")?.value ?: return
     println("ETag value: $etagValue")
     this.lastKnownVersion = etagValue
-    if (this.isAvailableOffline.get()) {
+    if (this.isMirrored.get()) {
       GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
         it.lastWrittenVersion = etagValue
         GPCloudOptions.cloudFiles.save()
@@ -241,7 +245,7 @@ class GPCloudDocument(private val teamRefid: String?,
         val doc = this@GPCloudDocument
         val documentBody = this.toByteArray()
         doc.lastKnownContents = documentBody
-        when (doc.mode) {
+        when (doc.modeValue) {
           OnlineDocumentMode.ONLINE_ONLY -> {
             saveOnline(documentBody)
           }
@@ -290,6 +294,13 @@ class GPCloudDocument(private val teamRefid: String?,
         412 -> {
           throw VersionMismatchException()
         }
+        404 -> {
+          if (!isNetworkAvailable()) {
+            this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
+          } else {
+            throw IOException("Got 404")
+          }
+        }
         else -> {
           val respBody = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
           println(respBody)
@@ -299,7 +310,7 @@ class GPCloudDocument(private val teamRefid: String?,
     } catch (ex: Exception) {
       when {
         ex.isNetworkUnavailable() -> {
-          throw NetworkUnavailableException(ex)
+          this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
         }
         else -> throw ex
       }
@@ -363,7 +374,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   }
 
-  override fun toggleAvailableOffline() {
+  override fun toggleMirrored() {
     val mirror = this.offlineMirror
     when (mirror) {
       null -> {
@@ -371,11 +382,11 @@ class GPCloudDocument(private val teamRefid: String?,
         GlobalScope.launch {
           saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
         }
-        this.mode = OnlineDocumentMode.MIRROR
+        this.modeValue = OnlineDocumentMode.MIRROR
       }
       else -> {
         this.offlineMirror = null
-        this.mode = OnlineDocumentMode.ONLINE_ONLY
+        this.modeValue = OnlineDocumentMode.ONLINE_ONLY
       }
     }
   }

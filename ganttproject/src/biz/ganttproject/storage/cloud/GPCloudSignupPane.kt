@@ -20,7 +20,6 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
-import com.google.common.io.Closer
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -38,8 +37,6 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.client.methods.HttpGet
 import org.controlsfx.control.HyperlinkLabel
-import java.io.IOException
-import java.net.Socket
 import java.net.UnknownHostException
 import java.time.Duration
 import java.time.Instant
@@ -113,19 +110,6 @@ class GPCloudSignupPane internal constructor(
     rootPane.vbox.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
     result.complete(rootPane.vbox)
     return result
-  }
-
-  private fun isNetworkAvailable(): Boolean {
-    return try {
-      Closer.create().use { closer ->
-        val pingSocket = Socket(GPCLOUD_IP, 80).also { closer.register(it) }
-        closer.register(pingSocket.getOutputStream())
-        closer.register(pingSocket.getInputStream())
-      }
-      true
-    } catch (e: IOException) {
-      false
-    }
   }
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {

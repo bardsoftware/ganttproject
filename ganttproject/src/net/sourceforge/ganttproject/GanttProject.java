@@ -29,8 +29,8 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
-import biz.ganttproject.storage.DocumentLockSwitch;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
+import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
@@ -385,8 +385,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     Platform.runLater(new Runnable() {
       @Override
       public void run() {
-        DocumentLockSwitch documentLockSwitch = new DocumentLockSwitch(myObservableDocument);
-        Scene statusBarScene = new Scene(documentLockSwitch.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
+        GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(myObservableDocument, getUIFacade());
+        Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
         statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
         getStatusBar().setLeftScene(statusBarScene);
       }

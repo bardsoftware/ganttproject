@@ -164,8 +164,9 @@ enum class OnlineDocumentMode {
 
 interface OnlineDocument {
   var offlineMirror: Document?
-  val isAvailableOffline: ObservableBooleanValue
-  fun toggleAvailableOffline()
-  var mode: OnlineDocumentMode
+  val isMirrored: ObservableBooleanValue
+  val mode: ObservableObjectValue<OnlineDocumentMode>
+
+  fun toggleMirrored()
 }
 
