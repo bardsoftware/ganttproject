@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="co" name="Columbia Holidays 2019" type="country">
+    <!-- Data sources
+    https://www.officeholidays.com/countries/colombia/2019.php
+    https://www.timeanddate.com/holidays/colombia/2019
+    -->
+    <date year="" month="1" date="1"><![CDATA[New Year's Day]]></date>
+    <date year="" month="5" date="1"><![CDATA[Labour Day]]></date>
+    <date year="" month="7" date="20"><![CDATA[Independence Day]]></date>
+    <date year="" month="8" date="7"><![CDATA[Battle of Boyacá]]></date>
+    <date year="" month="12" date="8"><![CDATA[Immaculate Conception]]></date>
+    <date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+
+    <date year="2019" month="1" date="7"><![CDATA[Epiphany]]></date>
+    <date year="2019" month="3" date="25"><![CDATA[Saint Joseph's Day]]></date>
+    <date year="2019" month="4" date="18"><![CDATA[Maundy Thursday]]></date>
+    <date year="2019" month="4" date="19"><![CDATA[Good Friday]]></date>
+    <date year="2019" month="6" date="3"><![CDATA[Ascension]]></date>
+    <date year="2019" month="6" date="24"><![CDATA[Corpus Christi]]></date>
+    <date year="2019" month="7" date="1"><![CDATA[Sacred Heart / Saint Peter and Saint Paul]]></date>
+    <date year="2019" month="8" date="19"><![CDATA[Assumption Day]]></date>
+    <date year="2019" month="10" date="14"><![CDATA[Columbus Day]]></date>
+    <date year="2019" month="11" date="11"><![CDATA[Independence of Cartagena]]></date>
+</calendar>

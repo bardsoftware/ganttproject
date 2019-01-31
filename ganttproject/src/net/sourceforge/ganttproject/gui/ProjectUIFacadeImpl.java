@@ -201,51 +201,6 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
   public void saveProjectAs(IGanttProject project) {
     new StorageDialogAction(project, myWorkbenchFacade, this, project.getDocumentManager(),
         ((WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi()).getServersOption()).actionPerformed(null);
-    /*
-     * if (project.getDocument() instanceof AbstractURLDocument) {
-     * saveProjectRemotely(project); return; }
-     */
-//    JFileChooser fc = new JFileChooser(myDocumentManager.getWorkingDirectory());
-//    FileFilter ganttFilter = new GanttXMLFileFilter();
-//    fc.addChoosableFileFilter(ganttFilter);
-//
-//    // Remove the possibility to use a file filter for all files
-//    FileFilter[] filefilters = fc.getChoosableFileFilters();
-//    for (int i = 0; i < filefilters.length; i++) {
-//      if (filefilters[i] != ganttFilter) {
-//        fc.removeChoosableFileFilter(filefilters[i]);
-//      }
-//    }
-//
-//    try {
-//      for (;;) {
-//        int userChoice = fc.showSaveDialog(myWorkbenchFacade.getMainFrame());
-//        if (userChoice != JFileChooser.APPROVE_OPTION) {
-//          break;
-//        }
-//        File projectfile = fc.getSelectedFile();
-//        String extension = FileUtil.getExtension(projectfile).toLowerCase();
-//        if (!"gan".equals(extension) && !"xml".equals(extension)) {
-//          projectfile = FileUtil.replaceExtension(projectfile, "gan");
-//        }
-//
-//        if (projectfile.exists()) {
-//          UIFacade.Choice overwritingChoice = myWorkbenchFacade.showConfirmationDialog(
-//              projectfile + "\n" + i18n.getText("msg18"), i18n.getText("warning"));
-//          if (overwritingChoice != UIFacade.Choice.YES) {
-//            continue;
-//          }
-//        }
-//
-//        Document document = myDocumentManager.getDocument(projectfile.getAbsolutePath());
-//        saveProject(document);
-//        project.setDocument(document);
-//        afterSaveProject(project);
-//        break;
-//      }
-//    } catch (Throwable e) {
-//      myWorkbenchFacade.showErrorDialog(e);
-//    }
   }
 
   /**

@@ -18,25 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
-import java.awt.Color;
-import java.awt.Component;
+import net.sourceforge.ganttproject.gui.UIUtil;
+import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
+import org.jdesktop.swingx.JXTable;
 
-import javax.swing.Box;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-
-import net.sourceforge.ganttproject.gui.UIUtil;
-
-import org.jdesktop.swingx.JXTable;
-
-import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
+import java.awt.*;
 
 public class FontSubstitutionPanel {
 
@@ -64,13 +55,13 @@ public class FontSubstitutionPanel {
       public Object getValueAt(int rowIndex, int columnIndex) {
         FontSubstitution substitution = getSubstitution(rowIndex);
         switch (columnIndex) {
-        case 0:
-          return substitution.myOriginalFamily;
-        case 1:
-          return substitution.getSubstitutionFamily();
-        default:
-          assert false;
-          throw new IllegalStateException();
+          case 0:
+            return substitution.myOriginalFamily;
+          case 1:
+            return substitution.getSubstitutionFamily();
+          default:
+            assert false;
+            throw new IllegalStateException();
         }
       }
 
@@ -90,18 +81,17 @@ public class FontSubstitutionPanel {
       @Override
       public String getColumnName(int column) {
         switch (column) {
-        case 0:
-          return "Theme font";
-        case 1:
-          return "Substitution";
-        default:
-          assert false;
-          throw new IllegalStateException();
+          case 0:
+            return "Theme font";
+          case 1:
+            return "Substitution";
+          default:
+            assert false;
+            throw new IllegalStateException();
         }
       }
     };
     JTable table = new JXTable(tableModel);
-    table.setRowHeight(30);
     UIUtil.setupTableUI(table);
 
     class CellRendererImpl implements TableCellRenderer {
@@ -109,7 +99,7 @@ public class FontSubstitutionPanel {
 
       @Override
       public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-          int row, int column) {
+                                                     int row, int column) {
         JLabel result = (JLabel) myDefaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus,
             row, column);
         FontSubstitution substitution = getSubstitution(row);

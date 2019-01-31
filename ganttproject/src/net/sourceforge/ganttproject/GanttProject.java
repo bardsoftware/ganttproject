@@ -1284,16 +1284,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
   }
 
-  public void setRowHeight(int value) {
-    tree.getTreeTable().getTable().setRowHeight(value);
-  }
-
-  public void repaint2() {
-    getResourcePanel().getResourceTreeTableModel().updateResources();
-    getResourcePanel().getResourceTreeTable().setRowHeight(20);
-    super.repaint();
-  }
-
   @Override
   public int getViewIndex() {
     if (getTabs() == null) {
@@ -1317,7 +1307,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void refresh() {
     getTaskManager().processCriticalPath(getTaskManager().getRootTask());
     getResourcePanel().getResourceTreeTableModel().updateResources();
-    getResourcePanel().getResourceTreeTable().setRowHeight(20);
+    getResourcePanel().getResourceTreeTable().setRowHeight(getResourceChart().getModel().calculateRowHeight());
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
     }

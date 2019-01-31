@@ -43,6 +43,7 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
   private final TaskManager myManager;
   private final TaskTreeUIFacade myTreeFacade;
   private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
+
   public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
     super("task");
     myManager = mgr;
@@ -113,10 +114,6 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
     Task task = builder.build();
 
     myTaskIdToExpansionState.put(task.getTaskID(), task.getExpand());
-//    String newMilestone = attrs.getValue("milestone");
-//    if ("1".equals(newMilestone)) {
-//      task.setMilestone(true);
-//    }
     String project = attrs.getValue("project");
     if (project != null) {
       task.setProjectTask(true);
@@ -178,7 +175,7 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
     String shape = attrs.getValue("shape");
     if (shape != null) {
       java.util.StringTokenizer st1 = new java.util.StringTokenizer(shape, ",");
-      int[] array = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+      int[] array = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       String token = "";
       int count = 0;
       while (st1.hasMoreTokens()) {

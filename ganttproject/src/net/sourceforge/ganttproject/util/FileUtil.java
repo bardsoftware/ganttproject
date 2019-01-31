@@ -40,6 +40,12 @@ public abstract class FileUtil {
     return new File(containingFolder, filenameWithouExtension + FILE_EXTENSION_SEPARATOR + newExtension);
   }
 
+  public static File appendExtension(File f, String extension) {
+    File containingFolder = f.getParentFile();
+    return new File(containingFolder, f.getName() + FILE_EXTENSION_SEPARATOR + extension);
+  }
+
+
   /**
    * @return f with the suffix added before the extension (or at the end of the
    *         name if no extension is present)

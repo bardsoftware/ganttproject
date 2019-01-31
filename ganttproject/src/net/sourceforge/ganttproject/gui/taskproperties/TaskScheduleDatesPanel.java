@@ -294,7 +294,7 @@ public class TaskScheduleDatesPanel {
     return myStart;
   }
 
-  public void setMilestone(boolean isMilestone) {
+  public void setupFields(boolean isMilestone, boolean isSupertask) {
     if (isMilestone) {
       ourStartDateLock.setValue(false);
       ourDurationLock.setValue(true);
@@ -302,28 +302,21 @@ public class TaskScheduleDatesPanel {
       myLockHyperlink.setEnabled(false);
       myLockLabel.setEnabled(false);
     } else {
-      ourDurationLock.setValue(false);
-      ourEndDateLock.setValue(false);
-      myLockHyperlink.setEnabled(true);
-      myLockLabel.setEnabled(true);
-      ourPrevLock.setValue(true);
+      if (isSupertask) {
+        ourStartDateLock.setValue(true);
+        ourDurationLock.setValue(true);
+        ourEndDateLock.setValue(true);
+        myLockHyperlink.setEnabled(false);
+        myLockLabel.setEnabled(false);
+      } else {
+        ourStartDateLock.setValue(false);
+        ourDurationLock.setValue(false);
+        ourEndDateLock.setValue(false);
+        myLockHyperlink.setEnabled(true);
+        myLockLabel.setEnabled(true);
+        ourPrevLock.setValue(true);
+      }
     }
     this.isMilestone = isMilestone;
-  }
-
-  public void setSupertask(boolean isSupertask) {
-    if (isSupertask) {
-      ourStartDateLock.setValue(true);
-      ourDurationLock.setValue(true);
-      ourEndDateLock.setValue(true);
-      myLockHyperlink.setEnabled(false);
-      myLockLabel.setEnabled(false);
-    } else {
-      ourDurationLock.setValue(false);
-      ourStartDateLock.setValue(false);
-      myLockHyperlink.setEnabled(true);
-      ourPrevLock.setValue(true);
-      myLockLabel.setEnabled(true);
-    }
   }
 }

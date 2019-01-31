@@ -86,27 +86,54 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
 
   private Text createTimelineLabel(int leftX, final Task task) {
     final Text text = myLabelsLayer.createText(leftX, myChartModel.getTimelineTopLineHeight(), "");
-    text.setSelector(new TextSelector() {
-      @Override
-      public Label[] getLabels(TextMetrics textLengthCalculator) {
-        int height = textLengthCalculator.getTextHeight(task.getName());
-        int fullLength = textLengthCalculator.getTextLength(task.getName());
-        Label result;
-        if (fullLength <= MAX_TIMELINE_LABEL_WIDTH) {
-          result = text.createLabel(task.getName(), fullLength, height);
-        } else {
-          int idLength = textLengthCalculator.getTextLength(String.valueOf(task.getTaskID()));
-          result = text.createLabel("#" + String.valueOf(task.getTaskID()), idLength, height);
-        }
-        return new Label[] {result};
-      }
-    });
-    text.setStyle("text.timeline.label");
+    text.setSelector(new LabelTextSelector(task, text));
+    text.setStyle("myText.timeline.label");
     myLabelsLayer.bind(text, task);
     return text;
   }
 
   Canvas getLabelLayer() {
     return myLabelsLayer;
+  }
+
+  public static class LabelTextSelector implements TextSelector {
+    private final Text myText;
+    private final Task myTask;
+
+    public LabelTextSelector(Task task, Text text) {
+      this.myTask = task;
+      this.myText = text;
+    }
+    private Label createMaxWidthLabel(TextMetrics textLengthCalculator, String taskName, int maxWidth) {
+      int stepSize = taskName.length() / 2;
+      int upperBound = taskName.length();
+      String substring = "";
+      int textLength = 0;
+      while (stepSize > 0) {
+        substring = taskName.substring(0, upperBound);
+        if (upperBound < taskName.length()) {
+          substring = substring + "...";
+        }
+        textLength = textLengthCalculator.getTextLength(substring);
+        if (textLength <= maxWidth) {
+          if (upperBound < taskName.length()) {
+            upperBound += stepSize;
+          } else {
+            break;
+          }
+        } else {
+          upperBound -= stepSize;
+        }
+        stepSize /= 2;
+        assert upperBound <= taskName.length();
+      }
+      int height = textLengthCalculator.getTextHeight(taskName);
+      return myText.createLabel(substring, textLength, height);
+    }
+
+    @Override
+    public Label[] getLabels(TextMetrics textLengthCalculator) {
+      return new Label[] {createMaxWidthLabel(textLengthCalculator, myTask.getName(), MAX_TIMELINE_LABEL_WIDTH)};
+    }
   }
 }

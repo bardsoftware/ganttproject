@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="us.federal" name="United States Federal Holidays 2008-2018" type="country">
+<calendar id="us.federal" name="United States Federal Holidays 2008-2019" type="country">
 <!-- Data sources
 http://www.opm.gov/operating_status_schedules/fedhol/2012.asp -->
 http://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays/#url=2015 -->
@@ -139,6 +139,17 @@ http://www.officeholidays.com/countries/usa/index.php
     <date year="2018" month="10" date="8" type="HOLIDAY"><![CDATA[Columbus Day]]></date>
     <date year="2018" month="11" date="22" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
     <date year="2018" month="11" date="23" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
+
+    <date year="2019" month="1" date="21" type="HOLIDAY"><![CDATA[Martin Luther King Day]]></date>
+    <date year="2019" month="2" date="18" type="HOLIDAY"><![CDATA[Presidents' Day]]></date>
+    <date year="2019" month="5" date="12" type="NEUTRAL"><![CDATA[Mother's Day]]></date>
+    <date year="2019" month="5" date="27" type="HOLIDAY"><![CDATA[Memorial Day]]></date>
+    <date year="2019" month="6" date="16" type="NEUTRAL"><![CDATA[Father's Day]]></date>
+    <date year="2019" month="9" date="2" type="HOLIDAY"><![CDATA[Labor Day]]></date>
+    <date year="2019" month="10" date="14" type="HOLIDAY"><![CDATA[Columbus Day]]></date>
+    <date year="2019" month="11" date="28" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
+    <date year="2019" month="11" date="29" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
+
 
 </calendar >
 

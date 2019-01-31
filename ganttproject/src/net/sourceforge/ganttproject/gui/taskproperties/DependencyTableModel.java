@@ -186,6 +186,7 @@ public class DependencyTableModel extends AbstractTableModel {
       break;
     }
     case 1: {
+      myMutator.deleteDependency(dep);
       dep.delete();
       myDependencies.remove(row);
       if (value == null) {

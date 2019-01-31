@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="cl" name="Chile Holidays 2019" type="country">
+    <!-- Data sources
+    https://www.officeholidays.com/countries/chile/2019.php
+    https://www.timeanddate.com/holidays/chile/2019
+    https://en.wikipedia.org/wiki/Public_holidays_in_Chile
+    -->
+    <date year="" month="1" date="1"><![CDATA[New Year's Day]]></date>
+    <date year="" month="5" date="1"><![CDATA[Labour Day]]></date>
+    <date year="" month="5" date="21"><![CDATA[Navy Day]]></date>
+    <date year="" month="7" date="16"><![CDATA[Our Lady of Mount Carmel]]></date>
+    <date year="" month="8" date="15"><![CDATA[Assumption Day]]></date>
+    <date year="" month="9" date="18"><![CDATA[Independence Day]]></date>
+    <date year="" month="9" date="19"><![CDATA[Army Day]]></date>
+    <date year="" month="10" date="31"><![CDATA[Reformation Day]]></date>
+    <date year="" month="11" date="1"><![CDATA[All Saints Day]]></date>
+    <date year="" month="12" date="8"><![CDATA[Immaculate Conception]]></date>
+    <date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+
+    <date year="2019" month="4" date="19"><![CDATA[Good Friday]]></date>
+    <date year="2019" month="4" date="20"><![CDATA[Holy Saturday]]></date>
+    <date year="2019" month="7" date="1"><![CDATA[Saint Peter and Saint Paul]]></date>
+    <date year="2019" month="9" date="20"><![CDATA[National Day Holiday]]></date>
+    <date year="2019" month="10" date="14"><![CDATA[Columbus Day]]></date>
+</calendar>

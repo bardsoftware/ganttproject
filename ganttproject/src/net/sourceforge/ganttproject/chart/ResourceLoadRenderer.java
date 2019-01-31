@@ -19,29 +19,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.TextMetrics;
-import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+import biz.ganttproject.core.chart.canvas.TextSelector;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
-
-import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.LoadDistribution;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Renders resource load chart
@@ -156,7 +155,9 @@ class ResourceLoadRenderer extends ChartRendererBase {
     }
     nextRect.setStyle(style);
     nextRect.setModelObject(new ResourceLoad(prevLoad.load));
-    createLoadText(nextRect, prevLoad);
+    if (!prevLoad.isResourceUnavailable()) {
+      createLoadText(nextRect, prevLoad);
+    }
   }
 
   /**

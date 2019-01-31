@@ -38,8 +38,8 @@ import org.apache.commons.csv.CSVFormat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -87,13 +87,13 @@ public class GanttCSVOpen {
   }
 
   public GanttCSVOpen(Supplier<InputStream> inputSupplier, SpreadsheetFormat format, final TaskManager taskManager,
-      final HumanResourceManager resourceManager, RoleManager roleManager, TimeUnitStack timeUnitStack) {
+                      final HumanResourceManager resourceManager, RoleManager roleManager, TimeUnitStack timeUnitStack) {
     this(inputSupplier, format, createTaskRecordGroup(taskManager, resourceManager, timeUnitStack),
         createResourceRecordGroup(resourceManager, roleManager));
   }
 
   public GanttCSVOpen(final File file, final TaskManager taskManager, final HumanResourceManager resourceManager,
-      final RoleManager roleManager, TimeUnitStack timeUnitStack) {
+                      final RoleManager roleManager, TimeUnitStack timeUnitStack) {
     this(() -> {
       try {
         return new FileInputStream(file);
@@ -104,7 +104,7 @@ public class GanttCSVOpen {
   }
 
   private static RecordGroup createTaskRecordGroup(final TaskManager taskManager,
-      final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
+                                                   final HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
     return new TaskRecords(taskManager, resourceManager, timeUnitStack);
   }
 
@@ -116,6 +116,18 @@ public class GanttCSVOpen {
 
   private static RecordGroup createResourceRecordGroup(HumanResourceManager resourceManager, RoleManager roleManager) {
     return resourceManager == null ? null : new ResourceRecords(resourceManager, roleManager);
+  }
+
+  private static boolean isEmpty(SpreadsheetRecord record) {
+    if (record.size() == 0) {
+      return true;
+    }
+    for (int i = 0; i < record.size(); i++) {
+      if (!Strings.isNullOrEmpty(record.get(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private int doLoad(SpreadsheetReader reader, int numGroup, int linesToSkip) {
@@ -136,7 +148,7 @@ public class GanttCSVOpen {
       if (linesToSkip-- > 0) {
         continue;
       }
-      if (record.size() == 0 || record.size() == 1 && Strings.isNullOrEmpty(record.get(0))) {
+      if (isEmpty(record)) {
         // If line is empty then current record group is probably finished.
         // Let's search for the next group header.
         searchHeader = true;
@@ -150,7 +162,13 @@ public class GanttCSVOpen {
           if (nextGroup.isHeader(record)) {
             debug(logger, "[CSV] ^^^ This seems to be a header");
 
-            nextGroup.setHeader(Lists.newArrayList(record.iterator()));
+            List<String> headerCells = Lists.newArrayList(record.iterator());
+            for (int i = headerCells.size() - 1; i >= 0; i--) {
+              if (Strings.isNullOrEmpty(headerCells.get(i))) {
+                headerCells.remove(i);
+              }
+            }
+            nextGroup.setHeader(headerCells);
             return lineCounter;
           }
         }
