@@ -82,7 +82,7 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
   @Override
   public TimeUnit getDefaultTimeUnit() {
-    return DAY;
+    return HOUR;
   }
 
   @Override
