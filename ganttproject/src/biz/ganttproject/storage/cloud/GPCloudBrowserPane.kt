@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.OptionElementData
+import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
@@ -29,7 +31,10 @@ import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.scene.control.*
+import javafx.scene.control.ButtonType
+import javafx.scene.control.CheckBox
+import javafx.scene.control.DialogPane
+import javafx.scene.control.Label
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -232,58 +237,30 @@ class GPCloudBrowserPane(
   }
 
   private fun createLockSuggestionPane(document: GPCloudDocument): Pane {
-    val vbox = VBoxBuilder("lock-button-pane")
-    vbox.addTitle("Lock Project")
-    vbox.add(Label("You may want to lock the project to prevent concurrent modifications").apply { styleClass.add("help") })
-
-    val lockGroup = ToggleGroup()
-
-    val lock0h = RadioButton("Don't lock").also {
-      it.styleClass.add("mt-5")
-      it.userData = Duration.ofHours(0)
-    }
-    val lock1h = RadioButton("Lock for 1h").also {
-      it.isSelected = true
-      it.userData = Duration.ofHours(1)
-    }
-
-    val lock2h = RadioButton("Lock for 2h").also {
-      it.userData = Duration.ofHours(2)
-    }
-
-    val lock24h = RadioButton("Lock for 24h").also {
-      it.userData = Duration.ofHours(24)
-    }
-    listOf(lock0h, lock1h, lock2h, lock24h).forEach {
-      it.styleClass.add("btn-lock-expire")
-      it.toggleGroup = lockGroup
-      vbox.add(it)
-    }
-
-
-    return DialogPane().apply {
-      styleClass.add("dlg-lock")
-      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    return OptionPaneBuilder<Duration>().run {
+      i18nRootKey = "cloud.lockOptionPane"
+      styleClass = "dlg-lock"
+      styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+      elements = listOf(
+          OptionElementData("lock0h", Duration.ZERO),
+          OptionElementData("lock1h", Duration.ofHours(1), isSelected = true),
+          OptionElementData("lock2h", Duration.ofHours(2)),
+          OptionElementData("lock24h", Duration.ofHours(24))
+      )
 
-      content = vbox.vbox
-
-      buttonTypes.add(ButtonType.OK)
-      lookupButton(ButtonType.OK).apply {
-        styleClass.add("btn-attention")
-        addEventHandler(ActionEvent.ACTION) { evt ->
-          val lockDuration = lockGroup.selectedToggle.userData as Duration
-          if (lockDuration.isZero) {
-            openDocumentWithLock(document, null)
-          } else {
-            toggleProjectLock(
-                project = document.projectJson!!,
-                done = Consumer { this@GPCloudBrowserPane.openDocumentWithLock(document, it) },
-                busyIndicator = this@GPCloudBrowserPane.paneElements.busyIndicator,
-                requestLockToken = true,
-                lockDuration = lockDuration
-            )
-          }
+      buildPane {
+        val pane = this@GPCloudBrowserPane
+        if (it.isZero) {
+          openDocumentWithLock(document, null)
+        } else {
+          toggleProjectLock(
+              project = document.projectJson!!,
+              done = Consumer { pane.openDocumentWithLock(document, it) },
+              busyIndicator = pane.paneElements.busyIndicator,
+              requestLockToken = true,
+              lockDuration = it
+          )
         }
       }
     }

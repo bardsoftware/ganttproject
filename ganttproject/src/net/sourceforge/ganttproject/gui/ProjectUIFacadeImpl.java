@@ -18,10 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.OptionElementData;
+import biz.ganttproject.app.OptionPaneBuilder;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.storage.OnlineDocument;
 import biz.ganttproject.storage.StorageDialogAction;
 import biz.ganttproject.storage.VersionMismatchException;
+import com.google.common.collect.Lists;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -123,14 +130,33 @@ public class ProjectUIFacadeImpl implements ProjectUIFacade {
       return true;
     } catch (VersionMismatchException e) {
       if (onlineDoc != null) {
-        myWorkbenchFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE,
-            "Your document has diverged from the cloud",
-            new Action[]{new CancelAction(), new OkAction() {
+        OptionPaneBuilder<GPAction> optionPaneBuilder = new OptionPaneBuilder<>();
+        optionPaneBuilder.setI18nRootKey("cloud.versionMismatch");
+        optionPaneBuilder.setStyleClass("dlg-lock");
+        optionPaneBuilder.setStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css");
+        optionPaneBuilder.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.CODE_FORK));
+        optionPaneBuilder.setElements(Lists.newArrayList(
+            new OptionElementData<>("option.overwrite", new CancelAction(), false),
+            new OptionElementData<>("option.makeCopy", new OkAction() {
               @Override
               public void actionPerformed(ActionEvent actionEvent) {
 
               }
-            }});
+            }, true)
+        ));
+        optionPaneBuilder.showDialog(new Function1<GPAction, Unit>() {
+          @Override
+          public Unit invoke(GPAction gpAction) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                  gpAction.actionPerformed(null);
+                }
+              }
+            );
+            return null;
+          }
+        });
       }
       return false;
     } catch (Throwable e) {

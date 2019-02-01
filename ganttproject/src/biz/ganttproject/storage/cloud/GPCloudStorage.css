@@ -10,7 +10,7 @@
     -fx-background-color: transparent;
 }
 
-.dlg-lock .btn-lock-expire {
+.dlg-lock .btn-option {
     -fx-padding: 1ex 0 0 0;
 }
 
