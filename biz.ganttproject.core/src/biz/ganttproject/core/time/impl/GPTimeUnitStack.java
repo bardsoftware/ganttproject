@@ -48,9 +48,8 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
   public GPTimeUnitStack() {
     myPairs = new TimeUnitPair[] {
-
-            new TimeUnitPair(DAY, HOUR, this, 85), new TimeUnitPair(DAY, HOUR, this, 75),
-            new TimeUnitPair(WEEK, DAY, this, 65), new TimeUnitPair(WEEK, DAY, this, 55),
+        new TimeUnitPair(DAY, HOUR, this, 20), new TimeUnitPair(DAY, HOUR, this, 20),
+        new TimeUnitPair(WEEK, DAY, this, 65), new TimeUnitPair(WEEK, DAY, this, 55),
         new TimeUnitPair(MONTH, DAY, this, 44), new TimeUnitPair(MONTH, DAY, this, 34),
         new TimeUnitPair(MONTH, WEEK, this, 24), new TimeUnitPair(MONTH, WEEK, this, 21),
         new TimeUnitPair(YEAR, WEEK, this, 13), new TimeUnitPair(YEAR, WEEK, this, 8),

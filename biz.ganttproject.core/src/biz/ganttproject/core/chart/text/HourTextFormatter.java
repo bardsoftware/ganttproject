@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2019 BarD Software s.r.o., Dmitry Lifatov
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -24,7 +24,9 @@ import biz.ganttproject.core.chart.grid.Offset;
 import java.text.MessageFormat;
 import java.util.Date;
 
-
+/**
+ * @author Dmitry Lifatov
+ */
 public class HourTextFormatter extends CachingTextFormatter implements TimeFormatter {
 
   @Override
@@ -41,21 +43,3 @@ public class HourTextFormatter extends CachingTextFormatter implements TimeForma
     return super.format(curOffset);
   }
 }
-
-//
-//
-//
-//  private final Calendar myCalendar;
-//
-//  QuarterTextFormatter() {
-//    myCalendar = CalendarFactory.newCalendar();
-//  }
-//
-//  @Override
-//  protected TimeUnitText[] createTimeUnitText(Date startDate) {
-//    myCalendar.setTime(startDate);
-//    int month = myCalendar.get(Calendar.MONTH);
-//    int quarter = month / 4 + 1;
-//    String shortText = "Q" + quarter;
-//    return new TimeUnitText[] { new TimeUnitText(shortText) };
-//  }
