@@ -56,6 +56,7 @@ public class TimeFormatters {
   public TimeFormatters(LocaleApi localeApi) {
     Map<String, TimeFormatter> commonFormatters = new HashMap<String, TimeFormatter>();
 
+    commonFormatters.put(GPTimeUnitStack.HOUR.getName(), new HourTextFormatter());
     commonFormatters.put(GPTimeUnitStack.DAY.getName(), new DayTextFormatter());
     commonFormatters.put(GPTimeUnitStack.QUARTER.getName(), new QuarterTextFormatter());
     commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());
