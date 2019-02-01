@@ -22,7 +22,6 @@ import biz.ganttproject.core.time.TimeUnitStack;
 public class GPTimeUnitStack implements TimeUnitStack {
   private static TimeUnitGraph ourGraph = new TimeUnitGraph();
 
-  //private static final TimeUnit MINUTE = ourGraph.createAtomTimeUnit("min");
   public static final TimeUnit HOUR;
   public static final TimeUnit DAY;
 
