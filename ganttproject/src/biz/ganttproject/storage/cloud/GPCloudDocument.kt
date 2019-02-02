@@ -58,6 +58,7 @@ import java.util.function.Consumer
 typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
 
 typealias OfflineDocumentFactory = (path: String) -> Document?
+typealias ProxyDocumentFactory = (document: Document) -> Document
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
@@ -136,6 +137,8 @@ class GPCloudDocument(private val teamRefid: String?,
       field = value
       this.initOfflineMirror()
     }
+
+  var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
 
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -321,6 +324,11 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun write() {
     error("Not implemented")
+  }
+
+  override fun write(force: Boolean) {
+    this.lastKnownVersion = ""
+    this.proxyDocumentFactory(this).write()
   }
 
   override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")

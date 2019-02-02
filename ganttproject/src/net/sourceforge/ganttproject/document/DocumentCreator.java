@@ -10,7 +10,6 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.storage.cloud.GPCloudDocument;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
@@ -33,8 +32,6 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
@@ -148,10 +145,6 @@ public class DocumentCreator implements DocumentManager {
       }
     } else if (lowerPath.startsWith("ftp:")) {
       return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
-    } else if (lowerPath.startsWith("ganttproject.cloud:")) {
-      Path p = Paths.get(path.substring("ganttproject.cloud:/".length()));
-      return new GPCloudDocument(
-          null, p.getName(0).toString(), p.getName(2).toString(), p.getName(1).toString(), null);
     } else if (!lowerPath.startsWith("file://") && path.contains("://")) {
       // Generate error for unknown protocol
       throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));

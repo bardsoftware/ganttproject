@@ -216,6 +216,7 @@ class GPCloudBrowserPane(
     }
     this.documentConsumer.accept(GPCloudDocument(selectedTeam, text).also {
       it.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
+      it.proxyDocumentFactory = this.documentManager::getProxyDocument
     })
   }
 
@@ -223,6 +224,8 @@ class GPCloudBrowserPane(
     if (item.node is ObjectNode) {
       val document = GPCloudDocument(item)
       document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
+      document.proxyDocumentFactory = this.documentManager::getProxyDocument
+
       if (item.isLocked && item.canChangeLock) {
         this.documentConsumer.accept(document)
       } else {

@@ -168,5 +168,6 @@ interface OnlineDocument {
   val mode: ObservableObjectValue<OnlineDocumentMode>
 
   fun toggleMirrored()
+  fun write(force: Boolean = false)
 }
 
