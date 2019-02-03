@@ -21,7 +21,6 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
-import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -29,12 +28,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.scene.control.ButtonType
 import javafx.scene.control.CheckBox
-import javafx.scene.control.DialogPane
-import javafx.scene.control.Label
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -269,51 +264,49 @@ class GPCloudBrowserPane(
     }
   }
 
+  enum class ActionOnLocked { OPEN, CANCEL }
+
   private fun createLockWarningPage(document: GPCloudDocument): Pane {
     val lockOwner = document.projectJson!!.lockOwner!!
-    val vbox = VBoxBuilder("content-pane")
-    vbox.addTitle("Project Is Locked")
-    vbox.add(Label("This project is locked by $lockOwner. We recommend keeping it read-only").apply { styleClass.add("help") })
-
     val notify = CheckBox("Show notification when lock is released").also {
       it.styleClass.add("mt-5")
+      it.isSelected = true
     }
-    notify.isSelected = true
-    vbox.add(notify)
-
-    return DialogPane().apply {
-      styleClass.add("dlg-lock")
-      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    return OptionPaneBuilder<ActionOnLocked>().run {
+      i18nRootKey = "cloud.lockWarningPane"
+      titleHelpString.args = arrayOf(lockOwner)
+      styleClass = "dlg-lock"
+      styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
       graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
+      elements = listOf(
+          OptionElementData("open", ActionOnLocked.OPEN, isSelected = true, customContent = notify),
+          OptionElementData("cancel", ActionOnLocked.CANCEL)
+      )
 
-      content = vbox.vbox
 
-      buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
-      lookupButton(ButtonType.OK).apply {
-        styleClass.add("btn-attention")
-        addEventHandler(ActionEvent.ACTION) { evt ->
-          openDocumentWithLock(document, document.projectJson.node["lock"])
-        }
-        if (notify.isSelected) {
-          document.status.addListener { status, oldValue, newValue ->
-            println("new value=$newValue")
-            if (!newValue.locked) {
-              Platform.runLater {
-                Notifications.create().title("Project Unlocked")
-                    .text("User ${newValue?.lockOwnerName ?: ""} has unlocked project ${document.fileName}")
-                    .showInformation()
+      buildPane { choice ->
+        when (choice) {
+          ActionOnLocked.OPEN -> {
+            openDocumentWithLock(document, document.projectJson.node["lock"])
+            if (notify.isSelected) {
+              document.status.addListener { status, oldValue, newValue ->
+                println("new value=$newValue")
+                if (!newValue.locked) {
+                  Platform.runLater {
+                    Notifications.create().title("Project Unlocked")
+                        .text("User ${newValue?.lockOwnerName ?: ""} has unlocked project ${document.fileName}")
+                        .showInformation()
+                  }
+                }
               }
             }
           }
-        }
-      }
-      lookupButton(ButtonType.CANCEL).apply {
-        addEventHandler(ActionEvent.ACTION) {
-          this@GPCloudBrowserPane.sceneChanger(this@GPCloudBrowserPane.paneElements.browserPane)
+          ActionOnLocked.CANCEL -> {
+            this@GPCloudBrowserPane.sceneChanger(this@GPCloudBrowserPane.paneElements.browserPane)
+          }
         }
       }
     }
-
   }
 
   private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {

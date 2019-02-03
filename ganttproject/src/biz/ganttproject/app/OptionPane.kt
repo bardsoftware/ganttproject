@@ -26,13 +26,14 @@ import javafx.scene.control.*
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.language.GanttLanguage
 
-typealias I18N = (String) -> String
-
+interface I18N {
+  fun formatText(key: String, args: Array<Any> = arrayOf()): String
+}
 /**
  * Input data of a single option: its key for i18n purposes, user data for the handler and flag indicating if option
  * is initially selected.
  */
-data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSelected: Boolean = false)
+data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSelected: Boolean = false, val customContent: Node? = null)
 
 /**
  * This is a helper class which builds a UI widget consisting of a few mutually exclusive options where user is supposed
@@ -45,7 +46,17 @@ class OptionPaneBuilder<T> {
   /**
    * This function converts i18n key to the displayed value, depending on the current user interface language.
    */
-  var i18n: I18N = { key -> GanttLanguage.getInstance().getText(key) }
+  var i18n: I18N = object : I18N {
+    override fun formatText(key: String, args: Array<Any>): String {
+      return GanttLanguage.getInstance().formatText(key, *args)
+    }
+  }
+  inner class LocalizedString(val key: String, var args: Array<Any> = arrayOf()) {
+    var value: String = ""
+    get() = this@OptionPaneBuilder.i18n.formatText("$i18nRootKey.$key", args)
+  }
+  val titleString = LocalizedString("title")
+  val titleHelpString = LocalizedString("titleHelp")
 
   /**
    * The root key in i18n key hierarchy for this widget. Builder automatically appends suffixes to this root key:
@@ -91,18 +102,20 @@ class OptionPaneBuilder<T> {
 
   private fun buildDialogPane(pane: DialogPane, optionHandler: (T) -> Unit) {
     val vbox = VBoxBuilder()
-    vbox.addTitle(this.i18n("$i18nRootKey.title"))
-    vbox.add(Label(this.i18n("$i18nRootKey.titleHelp")).apply { styleClass.add("help") })
+    vbox.addTitle(this.titleString.value)
+    vbox.add(Label(this.titleHelpString.value).apply { this.styleClass.add("help") })
 
     val lockGroup = ToggleGroup()
-    this.elements.map {
-      RadioButton(i18n("${i18nRootKey}.${it.i18nKey}")).also { btn ->
+    this.elements.forEach {
+      val btn = RadioButton(this.i18n.formatText("${i18nRootKey}.${it.i18nKey}")).also { btn ->
         btn.styleClass.add("btn-option")
         btn.userData = it.userData
         btn.toggleGroup = lockGroup
         btn.isSelected = it.isSelected
       }
-    }.forEach(vbox::add)
+      vbox.add(btn)
+      it.customContent?.let { vbox.add(it) }
+    }
 
     val builder = this
     pane.apply {
