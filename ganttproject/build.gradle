@@ -44,6 +44,7 @@ dependencies {
     mavenDeps group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     mavenDeps group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
     mavenDeps group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.+'
+    mavenDeps group: 'com.evanlennick', name:'retry4j', version:'0.+'
 }
 
 compileKotlin {

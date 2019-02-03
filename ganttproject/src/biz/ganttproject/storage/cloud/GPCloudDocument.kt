@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.*
+import com.evanlennick.retry4j.CallExecutorBuilder
+import com.evanlennick.retry4j.config.RetryConfigBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
@@ -50,8 +52,11 @@ import java.net.UnknownHostException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 
 // HTTP server for sign in into GP Cloud
@@ -69,6 +74,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private var lastKnownContents: ByteArray = ByteArray(0)
   private var lastKnownVersion: String = ""
+  private val retryExecutor = Executors.newSingleThreadExecutor()
 
   override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
@@ -128,6 +134,9 @@ class GPCloudDocument(private val teamRefid: String?,
         this.saveOnline(this.lastKnownContents)
       } else if (this.mode.get() == OnlineDocumentMode.ONLINE_ONLY && value == OnlineDocumentMode.OFFLINE_ONLY) {
         this.toggleMirrored()
+      }
+      if (value == OnlineDocumentMode.OFFLINE_ONLY) {
+        this.startReconnectPing()
       }
       this.mode.set(value)
     }
@@ -406,5 +415,20 @@ class GPCloudDocument(private val teamRefid: String?,
     if (offlineMirrorPath != null && Files.exists(Paths.get(offlineMirrorPath))) {
       this.offlineMirror = this.offlineDocumentFactory(offlineMirrorPath)
     }
+  }
+
+  private fun startReconnectPing() {
+    val callable = Callable<Boolean> { isNetworkAvailable() }
+    val retryConfig = RetryConfigBuilder()
+        .retryOnReturnValue(false)
+        .retryOnAnyException()
+        .withMaxNumberOfTries(10).withRandomExponentialBackoff().withDelayBetweenTries(1, ChronoUnit.SECONDS).build()
+    val executor = CallExecutorBuilder<Boolean>().config(retryConfig)
+        .onSuccessListener {
+          this.modeValue = OnlineDocumentMode.MIRROR
+        }
+        .beforeNextTryListener { println("Next try") }
+        .buildAsync(this.retryExecutor)
+    executor.execute(callable)
   }
 }
