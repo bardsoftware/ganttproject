@@ -212,11 +212,13 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private fun saveEtag(resp: HttpResponse) {
     val etagValue = resp.getFirstHeader("ETag")?.value ?: return
-    println("ETag value: $etagValue")
+    val digestValue = resp.getFirstHeader("Digest")?.value
+    println("ETag value: $etagValue digest: $digestValue")
     this.lastKnownVersion = etagValue
     if (this.isMirrored.get()) {
       GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
         it.lastWrittenVersion = etagValue
+        it.lastChecksum = digestValue
         GPCloudOptions.cloudFiles.save()
       } ?: println("No record ${this.projectIdFingerprint} in the options")
     }

@@ -27,7 +27,8 @@ data class GPCloudFileOptions(
     var fingerprint: String = "",
     var name: String = "",
     var offlineMirror: String? = null,
-    var lastWrittenVersion: String? = null)
+    var lastWrittenVersion: String? = null,
+    var lastChecksum: String? = null)
 
 class CloudFileOptions : KeyValueOption("files") {
   val files = mutableMapOf<String, GPCloudFileOptions>()
@@ -46,6 +47,7 @@ class CloudFileOptions : KeyValueOption("files") {
         "name" -> options.name = v
         "offlineMirror" -> options.offlineMirror = v
         "offlineMirrorVersion" -> options.lastWrittenVersion = v
+        "offlineMirrorChecksum" -> options.lastChecksum = v
       }
     }
   }
@@ -79,6 +81,8 @@ class CloudFileOptions : KeyValueOption("files") {
           kv["${it.value.fingerprint}.lockExpiration"] = it.value.lockExpiration
           kv["${it.value.fingerprint}.offlineMirror"] = it.value.offlineMirror ?: ""
           kv["${it.value.fingerprint}.offlineMirrorVersion"] = it.value.lastWrittenVersion ?: ""
+          kv["${it.value.fingerprint}.offlineMirrorChecksum"] = it.value.lastChecksum ?: ""
+
               kv.filterValues { value -> value != "" }
         }.flatMap {
           it.value.entries
