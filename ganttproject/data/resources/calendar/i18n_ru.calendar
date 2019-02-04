@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="ru" name="Russian Holidays 2015-2018" type="country">
+<calendar id="ru" name="Russian Holidays 2015-2019" type="country">
 <!-- Data sources
 Calendar contributed by Dmitry Barashev
 http://www.consultant.ru/law/ref/calendar/proizvodstvennye/2018/
@@ -57,6 +57,14 @@ http://www.consultant.ru/law/ref/calendar/proizvodstvennye/2018/
         <date year="2018" month="6" date="11"><![CDATA[Перенесённый выходной (с 9 июня)]]></date>
         <date year="2018" month="12" date="29" type="WORKING_DAY"><![CDATA[Рабочий день взамен 31 декабря]]></date>
         <date year="2018" month="12" date="31"><![CDATA[Перенесённый выходной (с 29 декабря)]]></date>
+
+        <date year="2019" month="1" date="2" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="3" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="4" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="8" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2018" month="5" date="2"><![CDATA[Перенесённый выходной (с 5 января)]]></date>
+        <date year="2018" month="5" date="3"><![CDATA[Перенесённый выходной (с 6 января)]]></date>
+        <date year="2018" month="5" date="10"><![CDATA[Перенесённый выходной (с 23 февраля)]]></date>
 
 </calendar >
 

@@ -64,7 +64,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   private final UIFacade myUIFacade;
 
   private static Pair<ResourceTreeTable, ResourceTreeTableModel> createTreeTable(IGanttProject project,
-      UIFacade uiFacade) {
+                                                                                 UIFacade uiFacade) {
     ResourceTreeTableModel model = new ResourceTreeTableModel(project.getHumanResourceManager(),
         project.getTaskManager(), project.getResourceCustomPropertyManager());
     return Pair.create(new ResourceTreeTable(project, model, uiFacade), model);
@@ -81,14 +81,14 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     final GPAction resourceDeleteAction = myResourceActionSet.getResourceDeleteAction();
     final GPAction assignmentDeleteAction = myResourceActionSet.getAssignmentDelete();
     GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
-  		@Override
-  		public AbstractAction getActiveAction() {
-  			if (getResourceAssignments().length > 0) {
-  				return assignmentDeleteAction;
-  			}
-  			return resourceDeleteAction;
-  		}
-  	}, new Action[] {resourceDeleteAction, assignmentDeleteAction});
+      @Override
+      public AbstractAction getActiveAction() {
+        if (getResourceAssignments().length > 0) {
+          return assignmentDeleteAction;
+        }
+        return resourceDeleteAction;
+      }
+    }, new Action[]{resourceDeleteAction, assignmentDeleteAction});
     setArtefactActions(myResourceActionSet.getResourceNewAction(),
         myResourceActionSet.getResourcePropertiesAction(),
         deleteAction);
@@ -147,7 +147,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     List<Task> selectedTasks = Lists.newArrayList();
     for (DefaultMutableTreeTableNode node : selection) {
       if (node instanceof AssignmentNode) {
-        selectedTasks.add(((AssignmentNode)node).getTask());
+        selectedTasks.add(((AssignmentNode) node).getTask());
       }
     }
     if (selectedTasks.isEmpty()) {
@@ -177,7 +177,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         getTaskSelectionManager().addTask(assignmentNode.getTask());
         Point popupPoint = getPopupMenuPoint(e);
         getUIFacade().showPopupMenu(this,
-            new Action[] { myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete() }, popupPoint.x,
+            new Action[]{myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete()}, popupPoint.x,
             popupPoint.y);
       } else {
         createPopupMenu(e);
@@ -191,7 +191,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return new Point(x, y);
   }
 
-  /** Create the popup menu */
+  /**
+   * Create the popup menu
+   */
   private void createPopupMenu(MouseEvent e) {
     JPopupMenu menu = new JPopupMenu();
     AbstractAction[] resourceActions = myResourceActionSet.getActions();
@@ -268,7 +270,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return res;
   }
 
-  /** Create a new Human */
+  /**
+   * Create a new Human
+   */
   public void newHuman(HumanResource people) {
     if (people != null) {
       try {
@@ -281,7 +285,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     }
   }
 
-  /** Return the list of the person */
+  /**
+   * Return the list of the person
+   */
   public List<HumanResource> getPeople() {
     return getTreeModel().getAllResouces();
   }
@@ -294,12 +300,16 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return getTreeModel();
   }
 
-  /** Return the number of people on the list */
+  /**
+   * Return the number of people on the list
+   */
   public int nbPeople() {
     return getTreeModel().getAllResouces().size();
   }
 
-  /** Reset all human... */
+  /**
+   * Reset all human...
+   */
   public void reset() {
     getTreeModel().reset();
   }
@@ -386,7 +396,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   public AbstractAction[] getTreeActions() {
-    return new AbstractAction[] {getMoveUpAction(), getMoveDownAction()};
+    return new AbstractAction[]{getMoveUpAction(), getMoveDownAction()};
   }
 
   @Override

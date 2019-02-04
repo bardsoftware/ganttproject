@@ -18,28 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-
-import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
-
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
-
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+
+import java.awt.*;
 
 /**
  * Provides functions for writing charts to PDF writer.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
 class ChartWriter implements ChartImageVisitor {
@@ -122,6 +116,7 @@ class ChartWriter implements ChartImageVisitor {
   public void acceptChart(ChartDimensions d, ChartModel model) {
     Graphics2D g = getGraphics(d);
     g.translate(d.getTreeWidth(), -d.getLogoHeight() - d.getTableHeaderHeight());
+    g.clip(new java.awt.Rectangle(d.getChartWidth(), d.getChartHeight()));
     model.paint(g);
   }
 }

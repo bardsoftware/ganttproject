@@ -56,7 +56,7 @@
              homepage="https://www.ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="openjdk-7-jre | openjdk-8-jre | openjdk-9-jre | openjdk-10-jre | openjdk-7-jdk | openjdk-8-jdk | openjdk-9-jdk | openjdk-10-jdk | oracle-java7-jre | oracle-java8-jre | oracle-java9-jre | oracle-java7-jdk | oracle-java8-jdk | oracle-java9-jdk | oracle-java7-installer | oracle-java8-installer | oracle-java10-installer"
+             depends="openjdk-7-jre | openjdk-8-jre | openjdk-9-jre | openjdk-10-jre | openjdk-11-jre | openjdk-7-jdk | openjdk-8-jdk | openjdk-9-jdk | openjdk-10-jdk | openjdk-11-jdk | oracle-java7-jre | oracle-java8-jre | oracle-java9-jre | oracle-java7-jdk | oracle-java8-jdk | oracle-java9-jdk | oracle-java7-installer | oracle-java8-installer | oracle-java10-installer"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"
@@ -97,7 +97,7 @@
                    identifier="net.sourceforge.ganttproject"
                    shortversion="${version}"
                    icon="ganttproject.icns"
-                   copyright="Copyright 2018 BarD Software s.r.o. Distributed under GPL3"
+                   copyright="Copyright 2019 BarD Software s.r.o. Distributed under GPL3"
                    applicationCategory="public.app-category.productivity"
                    mainclassname="org.bardsoftware.eclipsito.Boot">
 
@@ -111,10 +111,23 @@
             <argument value="-log"/>
             <argument value="true"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
+            <option value="-Dcom.apple.macos.useScreenMenuBar=true"/>
             <option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
             <option value="-Xdock:name=GanttProject"/>
             <option value="-Xmx512m"/>
             <option value="-ea"/>
+            <option value="-Dfile.encoding=UTF-8"/>
+
+            <bundledocument contentTypes="com.bardsoftware.ganttproject"
+                            name="GanttProject"
+                            role="Editor"
+                            icon="ganttproject.icns">
+      		</bundledocument>
+            <typedeclaration identifier="com.bardsoftware.ganttproject"
+                             description="GanttProject document"
+                             conformsTo="public.xml"
+                             extensions="gan"
+                             icon="ganttproject.icns"/>
         </bundleapp>
         <copy todir="${distMacWork}/GanttProject.app/Contents/Java">
             <fileset dir="${distBin}">
@@ -124,7 +137,6 @@
             </fileset>
         </copy>
         <copy todir="${distMacWork}" file="HouseBuildingSample.gan"/>
-        <patch patchfile="Info.plist.patch" originalfile="${distMacWork}/GanttProject.app/Contents/Info.plist"/>
 
         <mkdir dir="${distMacWork}/GanttProject.app/Contents/Java/Classes"/>
         <copy todir="${distMacWork}/GanttProject.app/Contents/Java/Classes" file="logging.properties"/>

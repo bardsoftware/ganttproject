@@ -98,6 +98,9 @@ public class TaskProperties {
         sb.append(" " + task.getName() + " ");
         res = sb.toString();
       } else if (propertyID.equals(ID_TASK_LENGTH)) {
+        if (task.isMilestone()) {
+          return "";
+        }
         sb.append(" [ ");
         sb.append(task.getDuration().getLength() + " " + GanttLanguage.getInstance().getText("days"));
         sb.append(" ] ");
