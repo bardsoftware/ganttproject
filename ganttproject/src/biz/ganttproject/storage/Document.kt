@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.ProxyDocument
 import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
@@ -162,12 +163,29 @@ enum class OnlineDocumentMode {
   ONLINE_ONLY, MIRROR, OFFLINE_ONLY
 }
 
+data class FetchResult(val mirrorChecksum: String,
+                       val mirrorVersion: Long,
+                       val onlineChecksum: String,
+                       val onlineVersion: Long,
+                       val body: ByteArray)
+
 interface OnlineDocument {
   var offlineMirror: Document?
   val isMirrored: ObservableBooleanValue
   val mode: ObservableObjectValue<OnlineDocumentMode>
 
   fun toggleMirrored()
+  fun fetch(): CompletableFuture<FetchResult>
   fun write(force: Boolean = false)
 }
+
+fun (Document).asOnlineDocument(): OnlineDocument? {
+  if (this is ProxyDocument) {
+    if (this.realDocument is OnlineDocument) {
+      return this.realDocument as OnlineDocument
+    }
+  }
+  return null
+}
+
 

@@ -22,9 +22,9 @@ package net.sourceforge.ganttproject.gui
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.storage.OnlineDocument
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.VersionMismatchException
+import biz.ganttproject.storage.asOnlineDocument
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -35,7 +35,6 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
-import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
@@ -56,7 +55,7 @@ import javax.swing.SwingUtilities
 class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val documentManager: DocumentManager, private val undoManager: GPUndoManager) : ProjectUIFacade {
   private val i18n = GanttLanguage.getInstance()
 
-  private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.getMilestonesOption())
+  private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
 
   override fun saveProject(project: IGanttProject) {
     if (project.document == null) {
@@ -97,19 +96,10 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
     return saveProjectTrySave(project, document)
   }
 
-  private fun asOnlineDocument(doc: Document): OnlineDocument? {
-    if (doc is ProxyDocument) {
-      if (doc.realDocument is OnlineDocument) {
-        return doc.realDocument as OnlineDocument
-      }
-    }
-    return null
-  }
-
   enum class VersionMismatchChoice { OVERWRITE, MAKE_COPY }
 
   private fun saveProjectTrySave(project: IGanttProject, document: Document): Boolean {
-    val onlineDoc = asOnlineDocument(document)
+    val onlineDoc = document.asOnlineDocument()
     try {
       saveProject(document)
       afterSaveProject(project)

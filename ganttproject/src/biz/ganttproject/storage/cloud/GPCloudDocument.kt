@@ -65,6 +65,8 @@ typealias AuthTokenCallback = (token: String?, validity: String?, userId: String
 typealias OfflineDocumentFactory = (path: String) -> Document?
 typealias ProxyDocumentFactory = (document: Document) -> Document
 
+private val ourExecutor = Executors.newSingleThreadExecutor()
+
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
                       private val projectRefid: String?,
@@ -74,7 +76,6 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private var lastKnownContents: ByteArray = ByteArray(0)
   private var lastKnownVersion: String = ""
-  private val retryExecutor = Executors.newSingleThreadExecutor()
 
   override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
@@ -140,6 +141,15 @@ class GPCloudDocument(private val teamRefid: String?,
       }
       this.mode.set(value)
     }
+
+  private val mirrorOptions: GPCloudFileOptions?
+  get() {
+    return if (this.isMirrored.get()) {
+      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]
+    } else {
+      null
+    }
+  }
 
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
     set(value) {
@@ -242,6 +252,45 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
+  override fun fetch(): CompletableFuture<FetchResult> {
+    val future = CompletableFuture<FetchResult>()
+    ourExecutor.submit {
+      try {
+        future.complete(callReadProject())
+      } catch (ex: Exception) {
+        future.completeExceptionally(ex)
+      }
+    }
+    return future
+  }
+
+  private fun callReadProject(): FetchResult {
+    val http = HttpClientBuilder.buildHttpClient()
+    val projectRead = HttpGet("/p/read$queryArgs")
+    val resp = http.client.execute(http.host, projectRead, http.context)
+    if (resp.statusLine.statusCode == 200) {
+      val etagValue = resp.getFirstHeader("ETag")?.value
+      val digestValue = resp.getFirstHeader("Digest")?.value
+      val encodedStream = Base64InputStream(resp.entity.content)
+      val documentBody = ByteStreams.toByteArray(encodedStream)
+
+      return FetchResult(
+          this.mirrorOptions?.lastChecksum ?: "",
+          this.mirrorOptions?.lastWrittenVersion?.toLong() ?: -1L,
+          digestValue ?: "",
+          etagValue?.toLong() ?: -1,
+          documentBody)
+//      this@GPCloudDocument.lastKnownContents = documentBody
+
+//      GlobalScope.launch {
+//        saveOfflineMirror(documentBody)
+//      }
+//      this.saveEtag(resp)
+//      return ByteArrayInputStream(documentBody)
+    } else {
+      throw IOException("Failed to read from GanttProject Cloud: got response ${resp.statusLine}")
+    }
+  }
   private fun (Exception).isNetworkUnavailable(): Boolean {
     if (this is SocketException && this.message?.contains("network is unreachable", true) != false) {
       return true
@@ -430,7 +479,7 @@ class GPCloudDocument(private val teamRefid: String?,
           this.modeValue = OnlineDocumentMode.MIRROR
         }
         .beforeNextTryListener { println("Next try") }
-        .buildAsync(this.retryExecutor)
+        .buildAsync(ourExecutor)
     executor.execute(callable)
   }
 }
