@@ -39,9 +39,6 @@ sourceSets {
 }
 
 test {
-  doLast {
-        configurations.testRuntime.each { println it }
-   }
   include '**'
   testLogging {
         exceptionFormat = 'full'
