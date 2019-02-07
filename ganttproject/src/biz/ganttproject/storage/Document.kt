@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import com.google.common.hash.Hashing
+import com.google.common.io.ByteStreams
+import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
 import net.sourceforge.ganttproject.document.Document
@@ -163,18 +166,17 @@ enum class OnlineDocumentMode {
   ONLINE_ONLY, MIRROR, OFFLINE_ONLY
 }
 
-data class FetchResult(val mirrorChecksum: String,
-                       val mirrorVersion: Long,
-                       val onlineChecksum: String,
-                       val onlineVersion: Long,
+data class FetchResult(val syncChecksum: String,
+                       val syncVersion: Long,
+                       val actualChecksum: String,
+                       val actualVersion: Long,
                        val body: ByteArray)
 
 interface OnlineDocument {
   var offlineMirror: Document?
   val isMirrored: ObservableBooleanValue
-  val mode: ObservableObjectValue<OnlineDocumentMode>
+  val mode: ObjectProperty<OnlineDocumentMode>
 
-  fun toggleMirrored()
   fun fetch(): CompletableFuture<FetchResult>
   fun write(force: Boolean = false)
 }
@@ -188,4 +190,7 @@ fun (Document).asOnlineDocument(): OnlineDocument? {
   return null
 }
 
+fun (Document).checksum(): String {
+  return Hashing.crc32c().hashBytes(ByteStreams.toByteArray(this.inputStream)).toString()
+}
 

@@ -180,7 +180,10 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       doc
     }
     if (realDoc is OnlineDocument) {
-      realDoc.toggleMirrored()
+      when (realDoc.mode.value) {
+        OnlineDocumentMode.ONLINE_ONLY -> realDoc.mode.value = OnlineDocumentMode.MIRROR
+        OnlineDocumentMode.MIRROR -> realDoc.mode.value = OnlineDocumentMode.ONLINE_ONLY
+      }
     }
   }
 

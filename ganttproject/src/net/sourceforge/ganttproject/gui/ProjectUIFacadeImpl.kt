@@ -25,6 +25,7 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.VersionMismatchException
 import biz.ganttproject.storage.asOnlineDocument
+import biz.ganttproject.storage.checksum
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -233,15 +234,63 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
 
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
-        strategy.openFileAsIs(document)
+        val offlineTail = {
+          strategy.openFileAsIs(document)
             .checkLegacyMilestones()
             .checkEarliestStartConstraints()
             .runUiTasks()
+        }
+        strategy.fetchOnlineDocument(document)
+            .thenApplyAsync {
+              if (it == null) {
+                offlineTail()
+              } else {
+                val onlineDoc = document.asOnlineDocument()
+                val mirrorDoc = onlineDoc?.offlineMirror
+                val offlineChecksum = mirrorDoc?.checksum()
+                if (offlineChecksum == null) {
+                  offlineTail()
+                } else {
+                  if (offlineChecksum == it.actualChecksum) {
+                    // Offline mirror and actual file online are identical, only version could change
+                    // Just read the online
+                    offlineTail()
+                  }
+                  if (it.syncVersion == it.actualVersion) {
+                    // This is the case when we have local modifications not yet written online,
+                    // e.g. because we have been offline for a while and went online
+                    // when GP was closed.
+
+                  } else {
+                    // Online is different from mirror, and we have to find out if we had
+                    // any offline modifications.
+                    if (offlineChecksum == it.syncChecksum) {
+                      // No local modifications comparing to the last sync
+
+                    } else {
+                      // Files modified both locally and online. Ask user which one wins
+                    }
+                  }
+                }
+              }
+            }
+            .exceptionally {
+              when (it) {
+                is DocumentException -> handleDocumentException(it)
+                else -> {
+                  myWorkbenchFacade.showErrorDialog(it)
+                }
+              }
+            }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }
 
+  }
+
+  private fun handleDocumentException(ex: DocumentException) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
   private fun beforeClose() {
