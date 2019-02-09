@@ -166,7 +166,8 @@ enum class OnlineDocumentMode {
   ONLINE_ONLY, MIRROR, OFFLINE_ONLY
 }
 
-data class FetchResult(val syncChecksum: String,
+data class FetchResult(val onlineDocument: OnlineDocument,
+                       val syncChecksum: String,
                        val syncVersion: Long,
                        val actualChecksum: String,
                        val actualVersion: Long,
@@ -177,6 +178,7 @@ interface OnlineDocument {
   val isMirrored: ObservableBooleanValue
   val mode: ObjectProperty<OnlineDocumentMode>
 
+  fun setMirrored(mirrored: Boolean)
   fun fetch(): CompletableFuture<FetchResult>
   fun write(force: Boolean = false)
 }

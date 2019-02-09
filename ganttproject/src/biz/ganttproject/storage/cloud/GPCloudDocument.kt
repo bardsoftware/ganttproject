@@ -73,7 +73,6 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
-
   private var lastFetch: FetchResult? = null
   private var lastOfflineContents: ByteArray? = null
   private var lastKnownVersion: String = ""
@@ -126,7 +125,6 @@ class GPCloudDocument(private val teamRefid: String?,
         options.offlineMirror = it.filePath
         GPCloudOptions.cloudFiles.save()
       }
-      this.isMirrored.value = (field != null)
     }
     get() {
       return (field ?: {
@@ -148,6 +146,7 @@ class GPCloudDocument(private val teamRefid: String?,
       if (value == this.mode.get()) {
         return
       }
+      this.mode.set(value)
       if (value == OnlineDocumentMode.OFFLINE_ONLY) {
         this.startReconnectPing()
       }
@@ -167,16 +166,11 @@ class GPCloudDocument(private val teamRefid: String?,
         return
       }
 
-      this.mode.set(value)
     }
 
   private val mirrorOptions: GPCloudFileOptions?
   get() {
-    return if (this.isMirrored.get()) {
-      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]
-    } else {
-      null
-    }
+    return GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]
   }
 
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
@@ -233,6 +227,9 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isValidForMRU(): Boolean = true
 
+  override fun setMirrored(mirrored: Boolean) =
+      if (mirrored) this.modeValue = OnlineDocumentMode.MIRROR else this.modeValue = OnlineDocumentMode.ONLINE_ONLY
+
   private fun saveOfflineMirror(contents: ByteArray) {
     this.offlineMirror?.let { document ->
       if (document is FileDocument) {
@@ -246,15 +243,13 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private fun saveEtag(resp: HttpResponse) {
     val etagValue = resp.getFirstHeader("ETag")?.value ?: return
-    val digestValue = resp.getFirstHeader("Digest")?.value
+    val digestValue = resp.getFirstHeader("Digest")?.value?.substringAfter("crc32c=")
     println("ETag value: $etagValue digest: $digestValue")
     this.lastKnownVersion = etagValue
-    if (this.isMirrored.get()) {
-      GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]?.let {
-        it.lastOnlineVersion = etagValue
-        it.lastOnlineChecksum = digestValue
-        GPCloudOptions.cloudFiles.save()
-      } ?: println("No record ${this.projectIdFingerprint} in the options")
+    this.mirrorOptions?.let {
+      it.lastOnlineVersion = etagValue
+      it.lastOnlineChecksum = digestValue
+      GPCloudOptions.cloudFiles.save()
     }
   }
 
@@ -292,11 +287,13 @@ class GPCloudDocument(private val teamRefid: String?,
     val resp = http.client.execute(http.host, projectRead, http.context)
     if (resp.statusLine.statusCode == 200) {
       val etagValue = resp.getFirstHeader("ETag")?.value
-      val digestValue = resp.getFirstHeader("Digest")?.value
+      val digestValue = resp.getFirstHeader("Digest")?.value?.substringAfter("crc32c=")
+
       val encodedStream = Base64InputStream(resp.entity.content)
       val documentBody = ByteStreams.toByteArray(encodedStream)
 
       return FetchResult(
+          this@GPCloudDocument,
           this.mirrorOptions?.lastOnlineChecksum ?: "",
           this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
           digestValue ?: "",
