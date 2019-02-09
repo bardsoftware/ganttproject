@@ -28,7 +28,14 @@ data class GPCloudFileOptions(
     var name: String = "",
     var offlineMirror: String? = null,
     var lastOnlineVersion: String? = null,
-    var lastOnlineChecksum: String? = null)
+    var lastOnlineChecksum: String? = null) {
+  fun clearOfflineMirror() {
+    this.name = ""
+    this.offlineMirror = null
+    this.lastOnlineChecksum = null
+    this.lastOnlineVersion = null
+  }
+}
 
 class CloudFileOptions : KeyValueOption("files") {
   val files = mutableMapOf<String, GPCloudFileOptions>()
