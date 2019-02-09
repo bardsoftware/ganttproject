@@ -97,7 +97,7 @@ class CloudFileOptions : KeyValueOption("files") {
   }
 
   fun getFileOptions(fp: String): GPCloudFileOptions {
-    return this.files.getOrDefault(fp, GPCloudFileOptions(fingerprint = fp))
+    return this.files.getOrPut(fp) { GPCloudFileOptions(fingerprint = fp) }
   }
 }
 

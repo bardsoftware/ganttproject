@@ -196,3 +196,7 @@ fun (Document).checksum(): String {
   return Hashing.crc32c().hashBytes(ByteStreams.toByteArray(this.inputStream)).toString()
 }
 
+fun (ByteArray).checksum(): String {
+  return Hashing.crc32c().hashBytes(this).toString()
+}
+

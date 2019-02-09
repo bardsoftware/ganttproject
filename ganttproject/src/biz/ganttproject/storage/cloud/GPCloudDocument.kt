@@ -29,8 +29,6 @@ import com.google.common.io.ByteStreams
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
@@ -74,7 +72,14 @@ class GPCloudDocument(private val teamRefid: String?,
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
 
-  private val projectIdFingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString()
+  val projectIdFingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString()
+
+  var offlineDocumentFactory: OfflineDocumentFactory = { null }
+  var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
+  var httpClientFactory: () -> GPCloudHttpClient = HttpClientBuilder::buildHttpClient
+  var isNetworkAvailable = Callable<Boolean> { isNetworkAvailable() }
+  var executor = ourExecutor
+
   var lock: JsonNode? = null
     set(value) {
       field = value
@@ -131,14 +136,18 @@ class GPCloudDocument(private val teamRefid: String?,
       }
     }
 
-  private var modeValue: OnlineDocumentMode = this.mode.get()
+  private var modeValue: OnlineDocumentMode
+    get() {
+      return this.mode.get()
+    }
     set(value) {
       if (value == this.mode.get()) {
         return
       }
       val change = this.mode.value to value
       when (change) {
-        Any() to OnlineDocumentMode.OFFLINE_ONLY -> {
+        OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.OFFLINE_ONLY,
+        OnlineDocumentMode.MIRROR      to OnlineDocumentMode.OFFLINE_ONLY-> {
           this.startReconnectPing()
         }
         OnlineDocumentMode.OFFLINE_ONLY to OnlineDocumentMode.MIRROR -> {
@@ -160,15 +169,11 @@ class GPCloudDocument(private val teamRefid: String?,
       this.mode.set(value)
     }
 
-  private val mirrorOptions: GPCloudFileOptions?
+  val mirrorOptions: GPCloudFileOptions?
   get() {
     return GPCloudOptions.cloudFiles.files[this.projectIdFingerprint]
   }
   private fun makeMirrorOptions() = GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint)
-
-  var offlineDocumentFactory: OfflineDocumentFactory = { null }
-
-  var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
 
   init {
     status.set(if (projectJson?.isLocked == true) {
@@ -258,9 +263,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun getInputStream(): InputStream {
     val fetchResult = this.lastFetch ?: fetch().get()
-    GlobalScope.launch {
-      saveOfflineMirror(fetchResult)
-    }
+    saveOfflineMirror(fetchResult)
     return ByteArrayInputStream(fetchResult.body)
   }
 
@@ -280,7 +283,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   private fun callReadProject(): FetchResult {
-    val http = HttpClientBuilder.buildHttpClient()
+    val http = this.httpClientFactory()
     val resp = http.sendGet("/p/read$queryArgs")
     if (resp.code == 200) {
       val etagValue = resp.header("ETag")
@@ -333,7 +336,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   @Throws(NetworkUnavailableException::class)
   private fun saveOnline(body: ByteArray) {
-    val http = HttpClientBuilder.buildHttpClient()
+    val http = this.httpClientFactory()
     try {
       val resp = http.sendPost("/p/write", mapOf(
           "projectRefid" to this.projectRefid,
@@ -447,7 +450,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   private fun startReconnectPing() {
-    val callable = Callable<Boolean> { isNetworkAvailable() }
+    val callable = this.isNetworkAvailable
     val retryConfig = RetryConfigBuilder()
         .retryOnReturnValue(false)
         .retryOnAnyException()
@@ -457,7 +460,7 @@ class GPCloudDocument(private val teamRefid: String?,
           this.modeValue = OnlineDocumentMode.MIRROR
         }
         .beforeNextTryListener { println("Next try") }
-        .buildAsync(ourExecutor)
+        .buildAsync(executor)
     executor.execute(callable)
   }
 }

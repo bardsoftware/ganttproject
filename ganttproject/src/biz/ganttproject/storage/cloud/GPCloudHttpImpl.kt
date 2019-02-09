@@ -425,7 +425,9 @@ interface GPCloudHttpClient {
     val reason: String
     fun header(name: String): String?
   }
+  @Throws(IOException::class)
   fun sendGet(uri: String): Response
+  @Throws(IOException::class)
   fun sendPost(uri: String, parts: Map<String, String?>): Response
 }
 
