@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
 import com.google.common.hash.Hashing
 import com.google.common.io.ByteStreams
-import com.google.common.io.CharStreams
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -35,13 +34,6 @@ import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
-import org.apache.commons.codec.Charsets
-import org.apache.commons.codec.binary.Base64InputStream
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.ContentType
-import org.apache.http.entity.mime.MultipartEntityBuilder
-import org.apache.http.entity.mime.content.StringBody
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
@@ -289,14 +281,12 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private fun callReadProject(): FetchResult {
     val http = HttpClientBuilder.buildHttpClient()
-    val projectRead = HttpGet("/p/read$queryArgs")
-    val resp = http.client.execute(http.host, projectRead, http.context)
-    if (resp.statusLine.statusCode == 200) {
-      val etagValue = resp.getFirstHeader("ETag")?.value
-      val digestValue = resp.getFirstHeader("Digest")?.value?.substringAfter("crc32c=")
+    val resp = http.sendGet("/p/read$queryArgs")
+    if (resp.code == 200) {
+      val etagValue = resp.header("ETag")
+      val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
 
-      val encodedStream = Base64InputStream(resp.entity.content)
-      val documentBody = ByteStreams.toByteArray(encodedStream)
+      val documentBody = resp.body
 
       return FetchResult(
           this@GPCloudDocument,
@@ -305,15 +295,8 @@ class GPCloudDocument(private val teamRefid: String?,
           digestValue ?: "",
           etagValue?.toLong() ?: -1,
           documentBody)
-//      this@GPCloudDocument.lastKnownContents = documentBody
-
-//      GlobalScope.launch {
-//        saveOfflineMirror(documentBody)
-//      }
-//      this.saveEtag(resp)
-//      return ByteArrayInputStream(documentBody)
     } else {
-      throw IOException("Failed to read from GanttProject Cloud: got response ${resp.statusLine}")
+      throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
     }
   }
   private fun (Exception).isNetworkUnavailable(): Boolean {
@@ -351,32 +334,19 @@ class GPCloudDocument(private val teamRefid: String?,
   @Throws(NetworkUnavailableException::class)
   private fun saveOnline(body: ByteArray) {
     val http = HttpClientBuilder.buildHttpClient()
-    val projectWrite = HttpPost("/p/write")
-    val multipartBuilder = MultipartEntityBuilder.create()
-    if (this.projectRefid != null) {
-      multipartBuilder.addPart("projectRefid", StringBody(
-          this.projectRefid, ContentType.TEXT_PLAIN))
-    } else {
-      multipartBuilder.addPart("teamRefid", StringBody(
-          this.teamRefid, ContentType.TEXT_PLAIN))
-      multipartBuilder.addPart("filename", StringBody(
-          this.projectName, ContentType.TEXT_PLAIN))
-    }
-    multipartBuilder.addPart("fileContents", StringBody(
-        Base64.getEncoder().encodeToString(body), ContentType.TEXT_PLAIN))
-    this.lock?.get("lockToken")?.textValue()?.let {
-      multipartBuilder.addPart("lockToken", StringBody(it, ContentType.TEXT_PLAIN))
-    }
-    multipartBuilder.addPart("oldVersion",
-        StringBody(this.lastFetch?.actualVersion?.toString(), ContentType.TEXT_PLAIN))
-    projectWrite.entity = multipartBuilder.build()
-
     try {
-      val resp = http.client.execute(http.host, projectWrite, http.context)
-      when (resp.statusLine.statusCode) {
+      val resp = http.sendPost("/p/write", mapOf(
+          "projectRefid" to this.projectRefid,
+          "teamRefid" to this.teamRefid,
+          "filename" to this.projectName,
+          "fileContents" to Base64.getEncoder().encodeToString(body),
+          "lockToken" to this.lock?.get("lockToken")?.textValue(),
+          "oldVersion" to this.lastFetch?.actualVersion?.toString()
+      ))
+      when (resp.code) {
         200 -> {
-          val etagValue = resp.getFirstHeader("ETag")?.value
-          val digestValue = resp.getFirstHeader("Digest")?.value?.substringAfter("crc32c=")
+          val etagValue = resp.header("ETag")
+          val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
           val fetch = FetchResult(
               this@GPCloudDocument,
               this.mirrorOptions?.lastOnlineChecksum ?: "",
@@ -399,9 +369,9 @@ class GPCloudDocument(private val teamRefid: String?,
           }
         }
         else -> {
-          val respBody = CharStreams.toString(resp.entity.content.bufferedReader(Charsets.UTF_8))
+          val respBody = resp.body.toString(com.google.common.base.Charsets.UTF_8)
           println(respBody)
-          throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.statusLine.statusCode}: ${resp.statusLine.reasonPhrase}")
+          throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.code}: ${resp.reason}")
         }
       }
     } catch (ex: Exception) {
@@ -475,25 +445,6 @@ class GPCloudDocument(private val teamRefid: String?,
     }
 
   }
-
-//  override fun toggleMirrored() {
-//    val mirror = this.offlineMirror
-//    when (mirror) {
-//      null -> {
-//        this.offlineMirror = this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
-//
-//        GlobalScope.launch {
-//          saveOfflineMirror(this@GPCloudDocument.lastKnownContents)
-//        }
-//        this.modeValue = OnlineDocumentMode.MIRROR
-//      }
-//      else -> {
-//        this.offlineMirror = null
-//        this.modeValue = OnlineDocumentMode.ONLINE_ONLY
-//      }
-//    }
-//  }
-//
 
   private fun startReconnectPing() {
     val callable = Callable<Boolean> { isNetworkAvailable() }

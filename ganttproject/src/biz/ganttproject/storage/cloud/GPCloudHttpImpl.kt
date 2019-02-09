@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.common.io.ByteStreams
 import com.google.common.io.CharStreams
 import com.google.common.io.Closer
 import fi.iki.elonen.NanoHTTPD
@@ -39,7 +40,9 @@ import javafx.concurrent.Task
 import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
 import okhttp3.*
+import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
+import org.apache.http.HttpResponse
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
@@ -51,6 +54,9 @@ import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.conn.ssl.TrustStrategy
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.entity.mime.content.StringBody
 import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.BasicAuthCache
 import org.apache.http.impl.client.DefaultHttpClient
@@ -145,7 +151,7 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
   override fun call(): ObservableList<FolderItem>? {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
-    val http = HttpClientBuilder.buildHttpClient()
+    val http = HttpClientBuilder.buildHttpClientApache()
     val teamList = HttpGet("/team/list?owned=true&participated=true")
 
     return try {
@@ -207,7 +213,7 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
   override fun call(): JsonNode {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
-    val http = HttpClientBuilder.buildHttpClient()
+    val http = HttpClientBuilder.buildHttpClientApache()
     val resp = if (project.isLocked) {
       val projectUnlock = HttpPost("/p/unlock")
       val params = listOf(
@@ -259,7 +265,7 @@ class HistoryTask(private val busyIndicator: Consumer<Boolean>,
   override fun call(): ObservableList<FolderItem> {
     this.busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
-    val http = HttpClientBuilder.buildHttpClient()
+    val http = HttpClientBuilder.buildHttpClientApache()
     val teamList = HttpGet("/p/versions?projectRefid=${project.refid}")
 
     val jsonBody = let {
@@ -412,11 +418,59 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
   }
 }
 
-data class GPCloudHttpClient(
-    val client: HttpClient, val host: HttpHost, val context: HttpContext)
+interface GPCloudHttpClient {
+  interface Response {
+    val body: ByteArray
+    val code: Int
+    val reason: String
+    fun header(name: String): String?
+  }
+  fun sendGet(uri: String): Response
+  fun sendPost(uri: String, parts: Map<String, String?>): Response
+}
+
+class HttpClientApache(
+    val client: HttpClient, val host: HttpHost, val context: HttpContext) : GPCloudHttpClient {
+  class ResponseImpl(val resp: HttpResponse) : GPCloudHttpClient.Response {
+    override val body: ByteArray by lazy {
+      val encodedStream = Base64InputStream(resp.entity.content)
+      ByteStreams.toByteArray(encodedStream)
+    }
+
+    override val code: Int by lazy {
+      resp.statusLine.statusCode
+    }
+
+    override val reason: String by lazy {
+      resp.statusLine.reasonPhrase
+    }
+
+    override fun header(name: String): String? {
+      return resp.getFirstHeader(name)?.value
+    }
+  }
+
+  override fun sendGet(uri: String): GPCloudHttpClient.Response {
+    return ResponseImpl(this.client.execute(this.host, HttpGet(uri), this.context))
+  }
+
+  override fun sendPost(uri: String, parts: Map<String, String?>): GPCloudHttpClient.Response {
+    val httpPost = HttpPost(uri)
+    val multipartBuilder = MultipartEntityBuilder.create()
+    parts.filterValues { it != null }.forEach { key, value ->
+      multipartBuilder.addPart(key, StringBody(value, ContentType.TEXT_PLAIN))
+    }
+    httpPost.entity = multipartBuilder.build()
+    return ResponseImpl(this.client.execute(this.host, httpPost, this.context))
+  }
+}
 
 object HttpClientBuilder {
   fun buildHttpClient(): GPCloudHttpClient {
+    return buildHttpClientApache()
+  }
+
+  fun buildHttpClientApache(): HttpClientApache {
     val httpClient = if (true || System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
       val trustAll = TrustStrategy { _, _ -> true }
       val sslSocketFactory = SSLSocketFactory(
@@ -437,7 +491,7 @@ object HttpClientBuilder {
       authCache.put(httpHost, BasicScheme())
       context.setAttribute(ClientContext.AUTH_CACHE, authCache)
     }
-    return GPCloudHttpClient(httpClient, httpHost, context)
+    return HttpClientApache(httpClient, httpHost, context)
   }
 }
 
