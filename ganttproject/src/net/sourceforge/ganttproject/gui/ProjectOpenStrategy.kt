@@ -129,12 +129,12 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     } else {
       // Online is different from mirror, and we have to find out if we had
       // any offline modifications.
-      if (offlineChecksum == fetchResult.syncChecksum) {
+      return if (offlineChecksum == fetchResult.syncChecksum) {
         // No local modifications comparing to the last sync
-        return true
+        true
       } else {
         // Files modified both locally and online. Ask user which one wins
-        return suspendCoroutine { continuation -> showForkDialog(continuation, fetchResult) }
+        suspendCoroutine { continuation -> showForkDialog(continuation, fetchResult) }
       }
     }
 
@@ -262,6 +262,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
             myResetModifiedState = false
           }
           ProjectOpenStrategy.ConvertMilestones.FALSE -> taskManager.isZeroMilestones = false
+          else -> taskManager.isZeroMilestones = false
         }
       }
       return Step2()

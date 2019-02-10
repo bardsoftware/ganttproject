@@ -147,8 +147,11 @@ class GPCloudDocument(private val teamRefid: String?,
       }
       val change = this.mode.value to value
       when (change) {
-        OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.OFFLINE_ONLY,
-        OnlineDocumentMode.MIRROR      to OnlineDocumentMode.OFFLINE_ONLY-> {
+        OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.OFFLINE_ONLY -> {
+          this.startReconnectPing()
+        }
+        OnlineDocumentMode.MIRROR      to OnlineDocumentMode.OFFLINE_ONLY -> {
+          this.lastOfflineContents?.let { this.saveOfflineBody(it) }
           this.startReconnectPing()
         }
         OnlineDocumentMode.OFFLINE_ONLY to OnlineDocumentMode.MIRROR -> {
