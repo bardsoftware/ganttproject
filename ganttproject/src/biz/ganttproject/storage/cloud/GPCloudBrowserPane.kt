@@ -238,7 +238,7 @@ class GPCloudBrowserPane(
     return OptionPaneBuilder<Duration>().run {
       i18nRootKey = "cloud.lockOptionPane"
       styleClass = "dlg-lock"
-      styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
+      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
       elements = listOf(
           OptionElementData("lock0h", Duration.ZERO),
@@ -276,7 +276,7 @@ class GPCloudBrowserPane(
       i18nRootKey = "cloud.lockWarningPane"
       titleHelpString.args = arrayOf(lockOwner)
       styleClass = "dlg-lock"
-      styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
+      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
       elements = listOf(
           OptionElementData("open", ActionOnLocked.OPEN, isSelected = true, customContent = notify),

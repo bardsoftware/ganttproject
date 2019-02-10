@@ -64,7 +64,6 @@ class RecentProjects(
 
   override fun createUi(): Pane {
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-    val filePath = Paths.get(myCurrentDocument.filePath)
     val state = State(myCurrentDocument, myMode)
 
     val rootPane = VBoxBuilder("pane-service-contents")

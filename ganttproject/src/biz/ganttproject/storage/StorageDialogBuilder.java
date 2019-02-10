@@ -192,8 +192,12 @@ public class StorageDialogBuilder {
   }
 
   private Pane buildStoragePane(Mode mode) {
-    StoragePane storagePane = new StoragePane(myCloudStorageOptions, myProject.getDocumentManager(), new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
-    return storagePane.buildStoragePane(mode);
+    if (myProject.getDocument() != null) {
+      StoragePane storagePane = new StoragePane(myCloudStorageOptions, myProject.getDocumentManager(), new ReadOnlyProxyDocument(myProject.getDocument()), myDocumentReceiver, myDocumentUpdater, myDialogUi);
+      return storagePane.buildStoragePane(mode);
+    } else {
+      return new Pane(new Label("No document!"));
+    }
   }
 
   public enum Mode {

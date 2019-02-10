@@ -28,6 +28,8 @@ dependencies {
 
     mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
+    mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
+
     mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
     mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
     mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'

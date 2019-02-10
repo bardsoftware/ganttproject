@@ -28,6 +28,11 @@
     -fx-padding: 3 0 1ex 0;
 }
 
+.dlg-lock .option-help {
+    -fx-padding: 0 0 0 2em;
+    -fx-font-size: 80%;
+    -fx-wrap-text: true;
+}
 .fill-parent {
     -fx-pref-height: 100%;
     -fx-pref-width: 100%;

@@ -171,7 +171,9 @@ data class FetchResult(val onlineDocument: OnlineDocument,
                        val syncVersion: Long,
                        val actualChecksum: String,
                        val actualVersion: Long,
-                       val body: ByteArray)
+                       val body: ByteArray) {
+  var useMirror: Boolean = false
+}
 
 interface OnlineDocument {
   var offlineMirror: Document?
@@ -179,7 +181,7 @@ interface OnlineDocument {
   val mode: ObjectProperty<OnlineDocumentMode>
 
   fun setMirrored(mirrored: Boolean)
-  fun fetch(): CompletableFuture<FetchResult>
+  suspend fun fetch(): FetchResult
   fun write(force: Boolean = false)
 }
 

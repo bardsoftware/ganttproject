@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 
 interface I18N {
   fun formatText(key: String, args: Array<Any> = arrayOf()): String
+  fun hasKey(key: String): Boolean
 }
 /**
  * Input data of a single option: its key for i18n purposes, user data for the handler and flag indicating if option
@@ -49,6 +50,10 @@ class OptionPaneBuilder<T> {
   var i18n: I18N = object : I18N {
     override fun formatText(key: String, args: Array<Any>): String {
       return GanttLanguage.getInstance().formatText(key, *args)
+    }
+
+    override fun hasKey(key: String): Boolean {
+      return GanttLanguage.getInstance().getText(key) != null
     }
   }
   inner class LocalizedString(val key: String, var args: Array<Any> = arrayOf()) {
@@ -73,7 +78,7 @@ class OptionPaneBuilder<T> {
   /**
    * Stylesheet which is associated with the widget
    */
-  var styleSheet = ""
+  var styleSheets: MutableList<String> = mutableListOf()
 
   /**
    * Graphic node shown in the left side of the widget
@@ -114,13 +119,18 @@ class OptionPaneBuilder<T> {
         btn.isSelected = it.isSelected
       }
       vbox.add(btn)
+
+      if (this.i18n.hasKey("${i18nRootKey}.${it.i18nKey}.help")) {
+        val helpText = this.i18n.formatText("${i18nRootKey}.${it.i18nKey}.help")
+        vbox.add(Label(helpText).apply { this.styleClass.add("option-help") })
+      }
       it.customContent?.let { vbox.add(it) }
     }
 
     val builder = this
     pane.apply {
       styleClass.add(builder.styleClass)
-      stylesheets.add(builder.styleSheet)
+      stylesheets.addAll(builder.styleSheets)
       builder.graphic?.let {
         graphic = it
       }

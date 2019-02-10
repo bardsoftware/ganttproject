@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.storage.LockStatus
 import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.OnlineDocument
@@ -79,6 +80,10 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
     btnLock.addEventHandler(ActionEvent.ACTION) {
       onSwitchAction()
+    }
+
+    btnManage.addEventFilter(ActionEvent.ACTION) {
+      OptionPaneBuilder<Boolean>().showDialog {  }
     }
   }
 

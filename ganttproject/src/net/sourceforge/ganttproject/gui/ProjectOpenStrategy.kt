@@ -19,12 +19,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui
 
+import biz.ganttproject.app.OptionElementData
+import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.FetchResult
 import biz.ganttproject.storage.asOnlineDocument
+import biz.ganttproject.storage.checksum
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
@@ -37,8 +46,10 @@ import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection
 import org.jdesktop.swingx.JXRadioGroup
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
-import java.util.concurrent.CompletableFuture
 import javax.swing.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * When we open a file, we need to complete a number of steps in order to be sure
@@ -51,8 +62,8 @@ import javax.swing.*
  */
 internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) : AutoCloseable {
 
-  private val myUiFacade: UIFacade
-  private val myProject: IGanttProject
+  private val myUiFacade: UIFacade = Preconditions.checkNotNull(uiFacade)
+  private val myProject: IGanttProject = Preconditions.checkNotNull(project)
   private val myDiagnostics: ProjectOpenDiagnosticImpl
   private val myCloseables = Lists.newArrayList<AutoCloseable>()
   private val myEnableAlgorithmsCmd: AutoCloseable
@@ -67,8 +78,6 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   }
 
   init {
-    myProject = Preconditions.checkNotNull(project)
-    myUiFacade = Preconditions.checkNotNull(uiFacade)
     myDiagnostics = ProjectOpenDiagnosticImpl(myUiFacade)
     myAlgs = myProject.taskManager.algorithmCollection
     myEnableAlgorithmsCmd = AutoCloseable {
@@ -89,10 +98,114 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     }
   }
 
-  fun fetchOnlineDocument(document: Document): CompletableFuture<FetchResult> {
-    val online = document.asOnlineDocument() ?: return CompletableFuture.completedFuture(null)
+  fun open(document: Document, offlineTail: (Document) -> Unit) {
+    GlobalScope.launch(Dispatchers.Main) {
+      val fetchResult = fetchOnlineDocument(document)
+      if (fetchResult == null || processFetchResult(fetchResult)) {
+        offlineTail(document)
+      }
+    }
+  }
+
+  private suspend fun fetchOnlineDocument(document: Document): FetchResult? {
+    val online = document.asOnlineDocument() ?: return null
     return online.fetch()
   }
+
+  private suspend fun processFetchResult(fetchResult: FetchResult): Boolean {
+    val onlineDoc = fetchResult.onlineDocument
+    val mirrorDoc = onlineDoc.offlineMirror
+    val offlineChecksum = mirrorDoc?.checksum() ?: return true
+    if (offlineChecksum == fetchResult.actualChecksum) {
+      // Offline mirror and actual file online are identical, only version could change
+      // Just read the online
+      return true
+    }
+    if (fetchResult.syncVersion == fetchResult.actualVersion) {
+      // This is the case when we have local modifications not yet written online,
+      // e.g. because we have been offline for a while and went online
+      // when GP was closed.
+      return suspendCoroutine { continuation -> showOfflineIsAheadDialog(continuation, fetchResult) }
+    } else {
+      // Online is different from mirror, and we have to find out if we had
+      // any offline modifications.
+      if (offlineChecksum == fetchResult.syncChecksum) {
+        // No local modifications comparing to the last sync
+        return true
+      } else {
+        // Files modified both locally and online. Ask user which one wins
+        return suspendCoroutine { continuation -> showForkDialog(continuation, fetchResult) }
+      }
+    }
+
+  }
+
+  enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
+  private fun showOfflineIsAheadDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
+    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
+      i18nRootKey = "cloud.openWhenOfflineIsAhead"
+      styleClass = "dlg-lock"
+      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+      elements = listOf(
+          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
+          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
+          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
+      )
+
+      showDialog { choice ->
+        when (choice) {
+          OpenOnlineDocumentChoice.USE_OFFLINE -> {
+            fetchResult.useMirror = true
+            continuation.resume(true)
+          }
+          OpenOnlineDocumentChoice.USE_ONLINE -> {
+            continuation.resume(true)
+          }
+          OpenOnlineDocumentChoice.CANCEL -> {
+            continuation.resume(false)
+          }
+        }
+      }
+    }
+  }
+
+  private fun showForkDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
+    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
+      i18nRootKey = "cloud.openWhenDiverged"
+      styleClass = "dlg-lock"
+      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
+      elements = listOf(
+          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
+          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
+          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
+      )
+
+      showDialog { choice ->
+        when (choice) {
+          OpenOnlineDocumentChoice.USE_OFFLINE -> {
+            fetchResult.useMirror = true
+            continuation.resume(true)
+          }
+          OpenOnlineDocumentChoice.USE_ONLINE -> {
+            continuation.resume(true)
+          }
+          OpenOnlineDocumentChoice.CANCEL -> {
+            continuation.resume(false)
+          }
+        }
+      }
+    }
+  }
+
+  private fun handleDocumentException(ex: Document.DocumentException) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+
   // First we open file "as is", that is, without running any algorithms which
   // change task dates.
   @Throws(Exception::class)

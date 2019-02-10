@@ -29,6 +29,7 @@ import com.google.common.io.ByteStreams
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
@@ -262,24 +263,21 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun getInputStream(): InputStream {
-    val fetchResult = this.lastFetch ?: fetch().get()
-    saveOfflineMirror(fetchResult)
-    return ByteArrayInputStream(fetchResult.body)
+    var fetchResult = this.lastFetch ?: runBlocking { fetch() }
+    if (fetchResult.useMirror) {
+      val mirrorBytes = this.offlineMirror!!.inputStream.readBytes()
+      saveOnline(mirrorBytes)
+      return ByteArrayInputStream(mirrorBytes)
+    } else {
+      saveOfflineMirror(fetchResult)
+      return ByteArrayInputStream(fetchResult.body)
+    }
   }
 
-  override fun fetch(): CompletableFuture<FetchResult> {
-    val future = CompletableFuture<FetchResult>()
-    ourExecutor.submit {
-      try {
-        callReadProject().also {
-          this@GPCloudDocument.lastFetch = it
-          future.complete(it)
-        }
-      } catch (ex: Exception) {
-        future.completeExceptionally(ex)
-      }
+  override suspend fun fetch(): FetchResult {
+    return callReadProject().also {
+      this.lastFetch = it
     }
-    return future
   }
 
   private fun callReadProject(): FetchResult {

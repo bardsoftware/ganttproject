@@ -22,7 +22,9 @@ package net.sourceforge.ganttproject.gui
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.storage.*
+import biz.ganttproject.storage.StorageDialogAction
+import biz.ganttproject.storage.VersionMismatchException
+import biz.ganttproject.storage.asOnlineDocument
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -44,7 +46,6 @@ import java.io.File
 import java.io.IOException
 import java.text.MessageFormat
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.logging.Level
 import javax.swing.Action
 import javax.swing.JFileChooser
@@ -108,7 +109,7 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
         OptionPaneBuilder<VersionMismatchChoice>().also {
           it.i18nRootKey = "cloud.versionMismatch"
           it.styleClass = "dlg-lock"
-          it.styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
+          it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK)
           it.elements = Lists.newArrayList(
               OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
@@ -233,99 +234,34 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
         val offlineTail = { doc: Document ->
-          strategy.openFileAsIs(doc)
-            .checkLegacyMilestones()
-            .checkEarliestStartConstraints()
-            .runUiTasks()
+          SwingUtilities.invokeLater {
+            strategy.openFileAsIs(doc)
+                .checkLegacyMilestones()
+                .checkEarliestStartConstraints()
+                .runUiTasks()
+          }
         }
-        strategy.fetchOnlineDocument(document)
-            .thenCompose {
-              if (it == null) { CompletableFuture.completedFuture(document) } else { processFetchResult(it) }
-            }
-            .thenApply {
-              offlineTail(it ?: document)
-            }
-            .exceptionally {
-              when (it) {
-                is DocumentException -> handleDocumentException(it)
-                else -> {
-                  myWorkbenchFacade.showErrorDialog(it)
-                }
-              }
-            }
+        strategy.open(document, offlineTail)
+
+//        strategy.fetchOnlineDocument(document)
+//            .thenCompose {
+//              if (it == null) { CompletableFuture.completedFuture(document) } else { processFetchResult(it) }
+//            }
+//            .thenApply {
+//              offlineTail(it ?: document)
+//            }
+//            .exceptionally {
+//              when (it) {
+//                is DocumentException -> handleDocumentException(it)
+//                else -> {
+//                  myWorkbenchFacade.showErrorDialog(it)
+//                }
+//              }
+//            }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }
-  }
-
-  private fun processFetchResult(fetchResult: FetchResult): CompletableFuture<Document?> {
-    val onlineDoc = fetchResult.onlineDocument
-    val mirrorDoc = onlineDoc.offlineMirror
-    val offlineChecksum = mirrorDoc?.checksum() ?: return CompletableFuture.completedFuture(null)
-    if (offlineChecksum == fetchResult.actualChecksum) {
-      // Offline mirror and actual file online are identical, only version could change
-      // Just read the online
-      return CompletableFuture.completedFuture(null)
-    }
-    if (fetchResult.syncVersion == fetchResult.actualVersion) {
-      // This is the case when we have local modifications not yet written online,
-      // e.g. because we have been offline for a while and went online
-      // when GP was closed.
-      return showOfflineIsAheadDialog(fetchResult)
-    } else {
-      // Online is different from mirror, and we have to find out if we had
-      // any offline modifications.
-      if (offlineChecksum == fetchResult.syncChecksum) {
-        // No local modifications comparing to the last sync
-        return CompletableFuture.completedFuture(null)
-      } else {
-        // Files modified both locally and online. Ask user which one wins
-        return showForkDialog(fetchResult)
-      }
-    }
-
-  }
-
-  enum class OfflineIsAheadChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
-  private fun showOfflineIsAheadDialog(fetchResult: FetchResult): CompletableFuture<Document?> {
-    val result = CompletableFuture<Document?>()
-    OptionPaneBuilder<OfflineIsAheadChoice>().run {
-      i18nRootKey = "cloud.openWhenOfflineIsAhead"
-      styleClass = "dlg-lock"
-      styleSheet = "/biz/ganttproject/storage/cloud/GPCloudStorage.css"
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("useOffline", OfflineIsAheadChoice.USE_OFFLINE, true),
-          OptionElementData("useOnline", OfflineIsAheadChoice.USE_ONLINE),
-          OptionElementData("cancel", OfflineIsAheadChoice.CANCEL)
-      )
-
-      showDialog { choice ->
-        when (choice) {
-          OfflineIsAheadChoice.USE_OFFLINE -> {
-
-          }
-          OfflineIsAheadChoice.USE_ONLINE -> {
-            result.complete(null)
-          }
-          OfflineIsAheadChoice.CANCEL -> {
-            result.cancel(true)
-          }
-        }
-      }
-    }
-    return result
-  }
-
-  private fun showForkDialog(fetchResult: FetchResult): CompletableFuture<Document?> {
-    return CompletableFuture.completedFuture(null)
-  }
-
-
-
-  private fun handleDocumentException(ex: DocumentException) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
   private fun beforeClose() {
