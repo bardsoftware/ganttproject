@@ -8,14 +8,14 @@ apply plugin: 'eclipse'
 archivesBaseName = 'ganttproject'
 version = "${rootProject.semver}-r${getBuildNum()}"
 
-ant.importBuild 'build.xml'
-ant.properties.distBin = 'dist-bin'
-ant.properties.distDebWork = "deb"
-ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
-ant.properties.distMacWork = 'dist-mac'
-ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
-ant.properties.version = "${rootProject.semver}"
-ant.properties.version_build = "${version}"
+//ant.importBuild 'build.xml'
+//ant.properties.distBin = 'dist-bin'
+//ant.properties.distDebWork = "deb"
+//ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
+//ant.properties.distMacWork = 'dist-mac'
+//ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
+//ant.properties.version = "${rootProject.semver}"
+//ant.properties.version_build = "${version}"
 
 
 def devNull = new OutputStream() {
@@ -74,64 +74,64 @@ task distZip(type: Zip, dependsOn: distBin) {
     into archivesBaseName + '-' + version
 }
 
-task distWin(dependsOn: distBin) {
-    doLast {
-        println '======== Building Windows Installer ========'
-        println '= Generating NSIS script ...'
-        exec {
-            workingDir '.'
-            commandLine './gen-nsis', semver, version
-        }
-        println '= Generating ganttproject.exe with launch4j ...'
-        exec {
-            workingDir '.'
-            commandLine launch4j, 'ganttproject-launch4j.xml'
-            standardOutput = devNull
-        }
-        println '= Copying required files to dist-win...'
-        copy {
-            from 'dist-bin'
-            into 'dist-win'
-            include '**'
-        }
-        copy {
-            from '.'
-            into 'dist-win'
-            include "ganttproject.l4j.ini"
-            include 'ganttproject.nsi'
-            include "ganttproject_16.ico"
-            include "ganttproject.ico"
-        }
-        println '= Building installer...'
-        exec {
-            workingDir 'dist-win'
-            commandLine 'makensis', 'ganttproject.nsi'
-            standardOutput = devNull
-        }
-        copy {
-            from 'dist-win'
-            into new File(buildDir, '/distributions')
-            include "ganttproject-${version}.exe"
-        }
-        println "===== Windows installer is ready in ${buildDir}/distributions ====="
-    }
-}
-
-task distDebPre {
-    doLast {
-        copy {
-            into('deb/usr/share/doc/ganttproject')
-            from(fileTree(".")) {
-                include "AUTHORS"
-                include "CHANGELOG"
-                include "LICENSE"
-                include "README"
-            }
-        }
-        "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
-        "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
-    }
-}
+//task distWin(dependsOn: distBin) {
+//    doLast {
+//        println '======== Building Windows Installer ========'
+//        println '= Generating NSIS script ...'
+//        exec {
+//            workingDir '.'
+//            commandLine './gen-nsis', semver, version
+//        }
+//        println '= Generating ganttproject.exe with launch4j ...'
+//        exec {
+//            workingDir '.'
+//            commandLine launch4j, 'ganttproject-launch4j.xml'
+//            standardOutput = devNull
+//        }
+//        println '= Copying required files to dist-win...'
+//        copy {
+//            from 'dist-bin'
+//            into 'dist-win'
+//            include '**'
+//        }
+//        copy {
+//            from '.'
+//            into 'dist-win'
+//            include "ganttproject.l4j.ini"
+//            include 'ganttproject.nsi'
+//            include "ganttproject_16.ico"
+//            include "ganttproject.ico"
+//        }
+//        println '= Building installer...'
+//        exec {
+//            workingDir 'dist-win'
+//            commandLine 'makensis', 'ganttproject.nsi'
+//            standardOutput = devNull
+//        }
+//        copy {
+//            from 'dist-win'
+//            into new File(buildDir, '/distributions')
+//            include "ganttproject-${version}.exe"
+//        }
+//        println "===== Windows installer is ready in ${buildDir}/distributions ====="
+//    }
+//}
+//
+//task distDebPre {
+//    doLast {
+//        copy {
+//            into('deb/usr/share/doc/ganttproject')
+//            from(fileTree(".")) {
+//                include "AUTHORS"
+//                include "CHANGELOG"
+//                include "LICENSE"
+//                include "README"
+//            }
+//        }
+//        "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
+//        "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
+//    }
+//}
 
 task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
     doLast {

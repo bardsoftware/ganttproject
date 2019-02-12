@@ -89,21 +89,30 @@ task updateVersion {
     }
 }
 
-task copyPluginFiles(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-        include "plugin.xml"
-        include "lib/core/**.jar"
-        exclude "lib/core/eclipsito.jar"
-        include "lib/mvn/**.jar"
-        include "data/resources/**.ttf"
-        include "data/resources/**.properties"
-        include "data/resources/calendar/**"
-        include "data/resources/icons/**"
-        include "data/resources/language/**"
-        include "data/resources/xslfo/**"
-        include "data/resources/xslt/**"
+
+task copyPluginFiles {
+    copy {
+        into(new File(rootProject.pluginsDir, project.name))
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(fileTree(".")) {
+            include "plugin.xml"
+            include "lib/core/**.jar"
+            exclude "lib/core/eclipsito.jar"
+            include "lib/mvn/**.jar"
+            include "data/resources/**.ttf"
+            include "data/resources/**.properties"
+            include "data/resources/calendar/**"
+            include "data/resources/icons/**"
+            include "data/resources/language/**"
+            include "data/resources/xslfo/**"
+            include "data/resources/xslt/**"
+        }
+    }
+    copy {
+        into(new File(rootProject.pluginsDir, "${project.name}/lib/javafx"))
+        from(configurations.compileClasspath) {
+            include "javafx**"
+        }
     }
 }
 
