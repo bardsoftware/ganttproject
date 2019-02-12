@@ -1,0 +1,74 @@
+// This installs dependencyUpdates plugin
+// Run gradle dependencyUpdates to get the report
+plugins {
+    id 'com.github.ben-manes.versions' version '0.13.0'
+    id "com.jfrog.bintray" version "1.7"
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+// Path to launch4j binary
+ext.launch4j = '/opt/launch4j/launch4j'
+// Directories where we build the distro
+ext.semver = '3.0.0'
+ext.distBinDir = file('ganttproject-builder/dist-bin')
+ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins-${semver}")
+ext.buildNum = getBuildNum()
+
+archivesBaseName = 'ganttproject'
+version = "${semver}-r${getBuildNum()}"
+
+def getBuildNum() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        workingDir "ganttproject-builder"
+        commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
+        standardOutput = stdout
+    }
+    return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+}
+
+// Config for all projects: deps come from Maven repository,
+// compile using Java 8, libs normally sit in lib
+allprojects {
+    configurations {
+        mavenDeps
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    ext {
+        libDir = 'lib'
+        mvnDir = 'lib/mvn'
+    }
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    task updateMavenDeps(type: Copy) {
+        doFirst {
+            mkdir project.ext.mvnDir
+            delete project.ext.mvnDir
+        }
+        from configurations.mavenDeps
+        into project.ext.mvnDir
+    }
+}
+
+clean {
+    delete += "dist-bin"
+}
+
+task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
+    doLast {
+        println "== Finished updating libs =="
+    }
+}
+
+
+build {
+    dependsOn updateMavenDeps
+}

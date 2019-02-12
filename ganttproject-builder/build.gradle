@@ -1,88 +1,38 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
-plugins {
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "com.jfrog.bintray" version "1.7"
-}
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-// Path to launch4j binary
-ext.launch4j = '/opt/launch4j/launch4j'
-// Directories where we build the distro
-ext.semver = '3.0.0'
-ext.distBinDir = file('dist-bin')
-ext.pluginsDir = file("dist-bin/plugins-${semver}")
-ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
-version = "${semver}-r${getBuildNum()}"
+version = "${rootProject.semver}-r${getBuildNum()}"
 
 ant.importBuild 'build.xml'
 ant.properties.distBin = 'dist-bin'
 ant.properties.distDebWork = "deb"
-ant.properties.distDebPackage = "${buildDir}/distributions"
+ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
 ant.properties.distMacWork = 'dist-mac'
-ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
-ant.properties.version = "${semver}"
+ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
+ant.properties.version = "${rootProject.semver}"
 ant.properties.version_build = "${version}"
 
-// What is counted as java project for the purposes of this build
-def javaProjects() {
-    subprojects.findAll { project ->
-        project.name != rootProject.name && project.path != ':..'
-    }
-}
 
 def devNull = new OutputStream() {
     @Override
     public void write(int b) {}
 }
 
-// Config for all projects: deps come from Maven repository,
-// compile using Java 8, libs normally sit in lib
-allprojects {
-  configurations {
-    mavenDeps
-  }
-  repositories {
-    mavenCentral()
-    jcenter()
-  }
-  apply plugin: 'java'
-  apply plugin: 'eclipse'
-  ext {
-    libDir = 'lib'
-    mvnDir = 'lib/mvn'
-  }
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
-
-  task updateMavenDeps(type: Copy) {
-    doFirst {
-      mkdir project.ext.mvnDir
-      delete project.ext.mvnDir
-    }
-    from configurations.mavenDeps
-    into project.ext.mvnDir
-  }
-}
-
-clean {
-    delete += "dist-bin"
-}
-
 task updateEclipsito(type: Jar) {
     destinationDir rootProject.distBinDir
     archiveName 'eclipsito.jar'
-    from zipTree(project(":..:ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
+    from zipTree(project(":ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
     from(".") {
         include "ganttproject-eclipsito-config.xml"
     }
 }
 
-task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
+task distBin(dependsOn: rootProject.getTasksByName('assemble', true) + rootProject.getTasksByName('copyPlugin', true)) {
     println "===== Building GanttProject ${version} ====="
     println "===== Building generic binary distro ====="
     doLast {
