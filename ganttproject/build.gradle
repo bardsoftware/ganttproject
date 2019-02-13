@@ -30,52 +30,51 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.swing', 'javafx.web' ]
 }
 dependencies {
+    providedCompile project(':biz.ganttproject.core')
+
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
+    direct 'commons-beanutils:commons-beanutils:1.8.0'
+    direct 'commons-codec:commons-codec:1.10'
+    direct 'commons-collections:commons-collections:3.2.1'
+    direct 'commons-io:commons-io:1.4'
+    direct 'commons-lang:commons-lang:2.6'
+    direct 'commons-logging:commons-logging:1.2'
+
+    direct 'com.beust:jcommander:1.17'
+    direct 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
+
+    direct 'com.evanlennick:retry4j:0.+'
+    direct 'com.fasterxml.jackson.core:jackson-core:2.9.+'
+    direct 'com.fasterxml.jackson.core:jackson-databind:2.9.+'
+    direct 'com.jgoodies:jgoodies-common:1.7.0'
+    direct 'com.jgoodies:jgoodies-looks:2.5.3'
+    direct 'com.squareup.okhttp3:okhttp:3.+'
+
+    direct 'de.jensd:fontawesomefx-commons:9.1.2'
+    direct 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
+
+    direct 'net.java.balloontip:balloontip:1.2.4.1'
+    direct 'net.sf.ezmorph:ezmorph:1.0.6'
+    direct group: 'net.sf.json-lib', name:'json-lib', version:'2.4', classifier:'jdk15'
+
+    direct 'org.apache.httpcomponents:httpclient:4.5.6'
+    direct 'org.apache.httpcomponents:httpcore:4.4.10'
+    direct 'org.apache.httpcomponents:httpmime:4.5.6'
+    direct 'org.apache.poi:poi:3.17'
+    direct 'org.controlsfx:controlsfx:9.0.+'
+    direct 'org.nanohttpd:nanohttpd:2.3.+'
+    direct 'org.jdom:jdom:1.1.+'
+    direct 'org.slf4j:slf4j-api:1.7.+'
+    direct 'org.slf4j:slf4j-simple:1.7.+'
+    direct 'org.swinglabs:jxlayer:3.0.4'
+
+    direct 'xml-apis:xml-apis:2.0.2'
+
+    compile configurations.direct
+    compile configurations.providedCompile
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile project(':biz.ganttproject.core')
     compile files('data/resources')
-
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
-
-
-    compile 'commons-beanutils:commons-beanutils:1.8.0'
-    compile 'commons-codec:commons-codec:1.10'
-    compile 'commons-collections:commons-collections:3.2.1'
-    compile 'commons-io:commons-io:1.4'
-    compile 'commons-lang:commons-lang:2.6'
-    compile 'commons-logging:commons-logging:1.2'
-
-    compile 'com.beust:jcommander:1.17'
-    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
-
-    compile 'com.jgoodies:jgoodies-common:1.7.0'
-    compile 'com.jgoodies:jgoodies-looks:2.5.3'
-
-    compile 'de.jensd:fontawesomefx-commons:9.1.2'
-    compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
-
-    compile 'net.java.balloontip:balloontip:1.2.4.1'
-    compile 'net.sf.ezmorph:ezmorph:1.0.6'
-
-    compile 'org.apache.httpcomponents:httpclient:4.5.6'
-    compile 'org.apache.httpcomponents:httpcore:4.4.10'
-    compile 'org.apache.httpcomponents:httpmime:4.5.6'
-    compile 'org.jdom:jdom:1.1.+'
-    compile 'org.swinglabs:jxlayer:3.0.4'
-
-
-    compile group: 'org.controlsfx', name: 'controlsfx', version: '9.0.+'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'
-    compile group: 'org.apache.poi', name: 'poi', version: '3.17'
-    compile group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.+'
-    compile group: 'net.sf.json-lib', name: 'json-lib', version: '2.4', classifier: 'jdk15'
-    compile group: 'xml-apis', name: 'xml-apis', version: '2.0.2'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
-    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.+'
-    compile group: 'com.evanlennick', name:'retry4j', version:'0.+'
 }
 
 compileKotlin {
@@ -126,7 +125,7 @@ task copyPluginFiles {
     }
     copy {
         into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
-        from(configurations.compileClasspath) {
+        from(configurations.compileClasspath.minus(configurations.providedCompile)) {
             include "*.jar"
         }
     }
