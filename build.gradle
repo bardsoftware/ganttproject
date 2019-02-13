@@ -2,7 +2,6 @@
 // Run gradle dependencyUpdates to get the report
 plugins {
     id 'org.openjfx.javafxplugin' version "0.0.7"
-    id 'org.beryx.runtime' version '1.1.5'
 }
 
 apply plugin: 'java'
@@ -56,11 +55,11 @@ allprojects {
         from configurations.mavenDeps
         into project.ext.mvnDir
     }
+    clean {
+        delete += "dist-bin"
+    }
 }
 
-clean {
-    delete += "dist-bin"
-}
 
 task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
     doLast {
@@ -68,15 +67,12 @@ task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
     }
 }
 
-application {
-    mainClassName = 'org.bardsoftware.eclipsito.Boot'
-}
 javafx {
     modules = [ 'javafx.controls', 'javafx.swing', 'javafx.web' ]
 }
-
-runtime {
-    distDir = rootProject.distBinDir
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    modules = ['java.base']
-}
+//
+//runtime {
+//    distDir = rootProject.distBinDir
+//    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+//    modules = ['java.base']
+//}
