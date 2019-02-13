@@ -31,7 +31,6 @@ javafx {
 }
 dependencies {
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
     compile project(':biz.ganttproject.core')
     compile files('data/resources')
 
@@ -39,19 +38,40 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
 
+
+    compile 'commons-beanutils:commons-beanutils:1.8.0'
+    compile 'commons-codec:commons-codec:1.10'
+    compile 'commons-collections:commons-collections:3.2.1'
+    compile 'commons-io:commons-io:1.4'
+    compile 'commons-lang:commons-lang:2.6'
+    compile 'commons-logging:commons-logging:1.2'
+
+    compile 'com.beust:jcommander:1.17'
+    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
+
+    compile 'com.jgoodies:jgoodies-common:1.7.0'
+    compile 'com.jgoodies:jgoodies-looks:2.5.3'
+
+    compile 'de.jensd:fontawesomefx-commons:9.1.2'
+    compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
+
+    compile 'net.java.balloontip:balloontip:1.2.4.1'
+    compile 'net.sf.ezmorph:ezmorph:1.0.6'
+
+    compile 'org.apache.httpcomponents:httpclient:4.5.6'
+    compile 'org.apache.httpcomponents:httpcore:4.4.10'
+    compile 'org.apache.httpcomponents:httpmime:4.5.6'
+    compile 'org.jdom:jdom:1.1.+'
+    compile 'org.swinglabs:jxlayer:3.0.4'
+
+
     compile group: 'org.controlsfx', name: 'controlsfx', version: '9.0.+'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'
-    compile group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.7.0-11', transitive: true
-    // https://mvnrepository.com/artifact/org.apache.poi/poi
     compile group: 'org.apache.poi', name: 'poi', version: '3.17'
     compile group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.+'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.+'
-    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.+'
-    compile group: 'org.jdom', name: 'jdom', version: '1.1.+'
     compile group: 'net.sf.json-lib', name: 'json-lib', version: '2.4', classifier: 'jdk15'
     compile group: 'xml-apis', name: 'xml-apis', version: '2.0.2'
-    compile group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version: '1.4.2'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
     compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.+'
@@ -78,7 +98,6 @@ sourceSets {
     main.kotlin.srcDirs += 'src'
 }
 
-assemble.dependsOn += updateMavenDeps
 
 task updateVersion {
     doFirst {
@@ -93,12 +112,9 @@ task updateVersion {
 task copyPluginFiles {
     copy {
         into(new File(rootProject.pluginsDir, project.name))
-//        from(jar.outputs.getFiles().getFiles().flatten())
+        from(jar.outputs.getFiles().getFiles().flatten())
         from(fileTree(".")) {
             include "plugin.xml"
-//            include "lib/core/**.jar"
-//            exclude "lib/core/eclipsito.jar"
-//            include "lib/mvn/**.jar"
             include "data/resources/**.ttf"
             include "data/resources/**.properties"
             include "data/resources/calendar/**"
