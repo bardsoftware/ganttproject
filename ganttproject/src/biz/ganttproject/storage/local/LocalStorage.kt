@@ -18,9 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
+import biz.ganttproject.app.DefaultStringSupplier
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -77,7 +79,7 @@ class LocalStorage(
   override val category = "desktop"
 
   private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, state: LocalStorageState) {
-    val dir = DocumentUri.LocalDocument.toFile(path)
+    val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FolderItem>()
     dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
     success.accept(result)
@@ -139,7 +141,9 @@ class LocalStorage(
       }
     }
 
+    val listViewHint = SimpleStringProperty(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
     this.paneElements = builder.apply {
+      withI18N(DefaultStringSupplier("storageService.local"))
       withBreadcrumbs(if (filePath.toFile().isDirectory) createPath(filePath.toFile()) else createPath(filePath.parent.toFile()))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
@@ -150,53 +154,21 @@ class LocalStorage(
             }
           }
       )
-      withValidation(ValidationHelper(
-          Supplier { -> this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
+      withValidator(createLocalStorageValidator(
+          Supplier { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
           state
       ))
+      withListViewHint(listViewHint)
     }.build()
     paneElements.browserPane.stylesheets.addAll(
         "biz/ganttproject/storage/StorageDialog.css",
         "biz/ganttproject/storage/local/LocalStorage.css"
     )
-// TODO: restore list view hint?
-//    val listViewHint = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
-//    listViewHint.styleClass.addAll("hint", "noerror")
-//    listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
-//      if (listView.listView.selectionModel.isEmpty) {
-//        listViewHint.styleClass.remove("warning")
-//        listViewHint.styleClass.addAll("noerror")
-//      } else {
-//        listViewHint.styleClass.remove("noerror")
-//        listViewHint.styleClass.addAll("warning")
-//      }
-//    })
-//
 
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "doclist-browse")
     this.paneElements.filenameInput.right = btnBrowse
 
     state.validationSupport = builder.validationSupport
-
-//    rootPane.apply {
-//      vbox.prefWidth = 400.0
-//      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/local/LocalStorage.css")
-//      addTitle(myUtil.i18nKey("storageService.local.%s.title"))
-//      add(breadcrumbView.breadcrumbs)
-//      add(filenameControl)
-//      add(errorLabel)
-//      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
-//      add(listViewHint)
-//    }
-
-//    val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-//    setupSaveButton(btnSave, state, myDocumentReceiver)
-
-//    validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
-//      if (validationResult.errors.size + validationResult.warnings.size == 0) {
-//        state.setCurrentFile(state.resolveFile(filenameControl.text))
-//      }
-//    })
 
 // TODO: restore overwrite confirmation?
 //    if (myMode is StorageMode.Save) {
@@ -220,12 +192,8 @@ class LocalStorage(
     return paneElements.browserPane
   }
 
-  fun deleteResource() {
-
-  }
-
   override fun createSettingsUi(): Optional<Pane> {
-    return Optional.empty<Pane>()
+    return Optional.empty()
   }
 }
 
@@ -233,9 +201,9 @@ fun setupSaveButton(
     btnSave: Button,
     state: LocalStorageState,
     receiver: Consumer<Document>) {
-  btnSave.addEventHandler(ActionEvent.ACTION, { receiver.accept(FileDocument(state.currentFile.get())) })
+  btnSave.addEventHandler(ActionEvent.ACTION) { receiver.accept(FileDocument(state.currentFile.get())) }
   btnSave.styleClass.add("btn-attention")
-  state.submitOk.addListener({ _, _, newValue -> btnSave.disableProperty().set(!newValue) })
+  state.submitOk.addListener { _, _, newValue -> btnSave.disableProperty().set(!newValue) }
 }
 
 

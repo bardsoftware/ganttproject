@@ -2,6 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DefaultStringSupplier
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
@@ -133,6 +134,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
     isLockingSupported.addListener({ _, _, newValue ->
       System.err.println("is locking supported=" + newValue!!)
     })
+    builder.withI18N(DefaultStringSupplier("storageService.webdav"))
     builder.withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
     builder.withListView(
         onOpenItem = Consumer { item ->

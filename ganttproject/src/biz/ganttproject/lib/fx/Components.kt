@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
+import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.LocalizedString
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory
 import javafx.event.ActionEvent
@@ -29,7 +31,6 @@ import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
 import javafx.scene.layout.*
-import net.sourceforge.ganttproject.language.GanttLanguage
 
 class ListItemBuilder(val contentNode: Node) {
   private val result: HBox = HBox()
@@ -85,7 +86,7 @@ fun test(): Pane {
 }
 
 class VBoxBuilder(vararg classes: String) {
-  private val i18n = GanttLanguage.getInstance()
+  private val i18n = DefaultStringSupplier()
   internal val vbox = VBox()
 
   init {
@@ -93,9 +94,13 @@ class VBoxBuilder(vararg classes: String) {
   }
 
   fun addTitle(i18nKey: String, vararg args: String): Node {
+    return addTitle(i18n.create(i18nKey).update(*args))
+  }
+
+  fun addTitle(title: LocalizedString): Node {
     val titleBox = HBox()
     titleBox.styleClass.add("title")
-    val title = Label(i18n.formatText(i18nKey, *args))
+    val title = Label().also { it.textProperty().bind(title) }
     titleBox.children.add(title)
     add(titleBox)
     return titleBox

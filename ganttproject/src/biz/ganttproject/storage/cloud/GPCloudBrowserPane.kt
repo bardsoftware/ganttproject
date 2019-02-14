@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.DefaultStringSupplier
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
@@ -169,6 +170,7 @@ class GPCloudBrowserPane(
     }
 
     this.paneElements = builder.apply {
+      withI18N(DefaultStringSupplier("storageService.cloud"))
       withBreadcrumbs(DocumentUri(listOf(), true, "GanttProject Cloud"))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
@@ -274,7 +276,7 @@ class GPCloudBrowserPane(
     }
     return OptionPaneBuilder<ActionOnLocked>().run {
       i18nRootKey = "cloud.lockWarningPane"
-      titleHelpString.args = arrayOf(lockOwner)
+      titleHelpString.update(lockOwner)
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)

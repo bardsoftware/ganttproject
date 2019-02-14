@@ -18,14 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.DefaultStringSupplier
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.local.ValidationHelper
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.value.ObservableValue
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -35,11 +37,11 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import org.controlsfx.control.textfield.CustomTextField
 import org.controlsfx.validation.ValidationResult
 import org.controlsfx.validation.ValidationSupport
+import org.controlsfx.validation.Validator
 import org.controlsfx.validation.decoration.StyleClassValidationDecoration
 import java.util.*
 import java.util.function.Consumer
@@ -81,7 +83,6 @@ class BrowserPaneBuilder(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val loader: Loader) {
-  private val i18n = GanttLanguage.getInstance()
   private val rootPane = VBoxBuilder("pane-service-contents")
 
   private lateinit var listView: FolderView<FolderItem>
@@ -93,12 +94,16 @@ class BrowserPaneBuilder(
     styleClass.addAll("hint", "noerror")
   }
   private val filename = CustomTextField()
+  private val listViewHint = Label().also {
+    it.styleClass.addAll("hint", "noerror")
+  }
 
   private lateinit var breadcrumbView: BreadcrumbView
   private lateinit var saveBox: HBox
   private lateinit var onOpenItem: OnItemAction
   private lateinit var onLaunch: OnItemAction
   lateinit var validationSupport: ValidationSupport
+  private lateinit var i18n: DefaultStringSupplier
 
 
   val busyIndicatorToggler: Consumer<Boolean>
@@ -106,6 +111,11 @@ class BrowserPaneBuilder(
 
   val resultConsumer: Consumer<ObservableList<FolderItem>>
     get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
+
+
+  fun withI18N(i18n: DefaultStringSupplier) {
+    this.i18n = i18n
+  }
 
   fun withListView(
       onOpenItem: OnItemAction = Consumer {},
@@ -136,7 +146,9 @@ class BrowserPaneBuilder(
   }
 
   fun withActionButton(onAction: EventHandler<ActionEvent>) {
-    val btnSave = Button(i18n.getText("storageService.local.${this.mode.name.toLowerCase()}.actionLabel"))
+    val btnSave = Button().also {
+      it.textProperty().bind(i18n.create("${this.mode.name.toLowerCase()}.actionLabel"))
+    }
     btnSave.addEventHandler(ActionEvent.ACTION, onAction)
     btnSave.styleClass.add("btn-attention")
     this.saveBox = HBox().apply {
@@ -145,10 +157,10 @@ class BrowserPaneBuilder(
     }
   }
 
-  fun withValidation(validationHelper: ValidationHelper) {
+  fun withValidator(validator: Validator<String>) {
     errorLabel.styleClass.addAll("hint", "noerror")
     this.validationSupport = ValidationSupport().apply {
-      registerValidator(filename, validationHelper.validator)
+      registerValidator(filename, validator)
       validationDecorator = StyleClassValidationDecoration("error", "warning")
     }
 
@@ -171,7 +183,10 @@ class BrowserPaneBuilder(
         errorLabel.styleClass.add("noerror")
       }
     }
+  }
 
+  fun withListViewHint(value: ObservableValue<String>) {
+    this.listViewHint.textProperty().bind(value)
   }
 
   private fun installEventHandlers() {
@@ -208,6 +223,16 @@ class BrowserPaneBuilder(
       }
     }
 
+    listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
+      if (listView.listView.selectionModel.isEmpty) {
+        listViewHint.styleClass.remove("warning")
+        listViewHint.styleClass.addAll("noerror")
+      } else {
+        listViewHint.styleClass.remove("noerror")
+        listViewHint.styleClass.addAll("warning")
+      }
+    })
+
     connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
   }
 
@@ -215,9 +240,7 @@ class BrowserPaneBuilder(
     installEventHandlers()
     rootPane.apply {
       vbox.prefWidth = 400.0
-      addTitle(String.format("webdav.ui.title.%s",
-          this@BrowserPaneBuilder.mode.name.toLowerCase()),
-          "GanttProject Cloud").also {
+      addTitle(i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
       add(VBox().also {
@@ -229,6 +252,7 @@ class BrowserPaneBuilder(
         )
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
+      add(listViewHint)
       add(saveBox)
     }
     return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel)

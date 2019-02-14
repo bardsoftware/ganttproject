@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.DefaultStringSupplier
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.BrowserPaneBuilder
 import biz.ganttproject.storage.DocumentUri
@@ -122,6 +123,7 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, val dialogUi: Stor
     }
 
     val paneElements = builder.apply {
+      withI18N(DefaultStringSupplier("storageService.cloudOffline"))
       withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
       withActionButton(EventHandler { })
       withListView(

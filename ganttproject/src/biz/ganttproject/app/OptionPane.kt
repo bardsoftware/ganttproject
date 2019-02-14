@@ -24,12 +24,12 @@ import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.Pane
-import net.sourceforge.ganttproject.language.GanttLanguage
 
 interface I18N {
   fun formatText(key: String, args: Array<Any> = arrayOf()): String
   fun hasKey(key: String): Boolean
 }
+
 /**
  * Input data of a single option: its key for i18n purposes, user data for the handler and flag indicating if option
  * is initially selected.
@@ -44,31 +44,19 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  * to JOptionPane class.
  */
 class OptionPaneBuilder<T> {
-  /**
-   * This function converts i18n key to the displayed value, depending on the current user interface language.
-   */
-  var i18n: I18N = object : I18N {
-    override fun formatText(key: String, args: Array<Any>): String {
-      return GanttLanguage.getInstance().formatText(key, *args)
-    }
-
-    override fun hasKey(key: String): Boolean {
-      return GanttLanguage.getInstance().getText(key) != null
-    }
-  }
-  inner class LocalizedString(val key: String, var args: Array<Any> = arrayOf()) {
-    var value: String = ""
-    get() = this@OptionPaneBuilder.i18n.formatText("$i18nRootKey.$key", args)
-  }
-  val titleString = LocalizedString("title")
-  val titleHelpString = LocalizedString("titleHelp")
+  val i18n = DefaultStringSupplier()
+  val titleString = i18n.create("title")
+  val titleHelpString = i18n.create("titleHelp")
 
   /**
    * The root key in i18n key hierarchy for this widget. Builder automatically appends suffixes to this root key:
    * - title
    * - titleHelp
    */
-  var i18nRootKey = ""
+  var i18nRootKey: String = ""
+    set(value) {
+      this.i18n.rootKey = value
+    }
 
   /**
    * Style class added to the widget
@@ -108,7 +96,10 @@ class OptionPaneBuilder<T> {
   private fun buildDialogPane(pane: DialogPane, optionHandler: (T) -> Unit) {
     val vbox = VBoxBuilder()
     vbox.addTitle(this.titleString.value)
-    vbox.add(Label(this.titleHelpString.value).apply { this.styleClass.add("help") })
+    vbox.add(Label().apply {
+      this.textProperty().bind(this@OptionPaneBuilder.titleHelpString)
+      this.styleClass.add("help")
+    })
 
     val lockGroup = ToggleGroup()
     this.elements.forEach {
