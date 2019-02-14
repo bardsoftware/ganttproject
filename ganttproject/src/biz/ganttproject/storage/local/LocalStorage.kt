@@ -18,29 +18,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
-import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.beans.property.ReadOnlyObjectProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
+import javafx.event.EventHandler
 import javafx.scene.control.Button
-import javafx.scene.control.CheckBox
 import javafx.scene.control.Control
 import javafx.scene.control.Label
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.textfield.CustomTextField
 import org.controlsfx.validation.ValidationResult
 import org.controlsfx.validation.ValidationSupport
 import org.controlsfx.validation.Validator
@@ -79,11 +72,15 @@ fun absolutePrefix(path: Path, end: Int = path.getNameCount()): Path {
  */
 class LocalStorage(
     private val myDialogUi: StorageDialogBuilder.DialogUi,
-    private val myMode: StorageMode,
+    private val mode: StorageDialogBuilder.Mode,
     private val currentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+  private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private val i18n = GanttLanguage.getInstance()
   private val myUtil = StorageUtil(myMode)
+  private lateinit var paneElements: BrowserPaneElements
+  private lateinit var state: LocalStorageState
+
 
   override fun getName(): String {
     return "This Computer"
@@ -93,161 +90,152 @@ class LocalStorage(
     return "desktop"
   }
 
+  private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, loading: Consumer<Boolean>, state: LocalStorageState) {
+    val dir = DocumentUri.LocalDocument.toFile(path)
+    val result = FXCollections.observableArrayList<FolderItem>()
+    dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
+    success.accept(result)
+    state.currentDir.set(dir)
+  }
+
+  private fun onBrowse() {
+    val fileChooser = FileChooser()
+    var initialDir: File? = this.state.resolveFile(this.paneElements.filenameInput.text)
+    while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
+      initialDir = initialDir.parentFile
+    }
+    if (initialDir != null) {
+      fileChooser.initialDirectory = initialDir
+    }
+    fileChooser.title = myUtil.i18nKey("storageService.local.%s.fileChooser.title")
+    fileChooser.extensionFilters.addAll(
+        FileChooser.ExtensionFilter("GanttProject Files", "*.gan"))
+    val chosenFile = fileChooser.showOpenDialog(null)
+    if (chosenFile != null) {
+      state.setCurrentFile(chosenFile)
+      state.currentDir.set(chosenFile.parentFile)
+      this.paneElements.filenameInput.text = chosenFile.name
+    }
+  }
+
   override fun createUi(): Pane {
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
-    val filenameControl = CustomTextField()
-    val state = State(currentDocument, myMode)
+    this.state = LocalStorageState(currentDocument, myMode)
 
-    val rootPane = VBoxBuilder("pane-service-contents", "local-storage")
-
-    filenameControl.text = when (myMode) {
-      is StorageMode.Open -> ""
-      is StorageMode.Save -> currentDocument.fileName
+    val builder = BrowserPaneBuilder(this.mode, myDialogUi) { path, success, loading ->
+      loadFiles(path, success, loading, state)
     }
-    filenameControl.styleClass.add("filename")
+    val actionButtonHandler = object {
+      var selectedProject: FileAsFolderItem? = null
+      var selectedDir: FileAsFolderItem? = null
 
-    val listView = FolderView(
-        myDialogUi,
-        Consumer { _: FileAsFolderItem -> this.deleteResource() },
-        Consumer { _: FileAsFolderItem -> },
-        SimpleBooleanProperty(),
-        SimpleBooleanProperty(false))
-    val onSelectCrumb = Consumer { path: Path ->
-      val dir = DocumentUri.LocalDocument.toFile(path)
-      val result = FXCollections.observableArrayList<FileAsFolderItem>()
-      dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
-      listView.setResources(result)
-      state.currentDir.set(dir)
-    }
-
-    val breadcrumbView = BreadcrumbView(
-        if (filePath.toFile().isDirectory) createPath(filePath.toFile()) else createPath(filePath.parent.toFile()), onSelectCrumb)
-    state.currentDir.addListener({ _, _, newValue ->
-      breadcrumbView.path = createPath(newValue)
-    })
-
-    val listViewHint = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
-    listViewHint.styleClass.addAll("hint", "noerror")
-    listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
-      if (listView.listView.selectionModel.isEmpty) {
-        listViewHint.styleClass.remove("warning")
-        listViewHint.styleClass.addAll("noerror")
-      } else {
-        listViewHint.styleClass.remove("noerror")
-        listViewHint.styleClass.addAll("warning")
+      fun onOpenItem(item: FolderItem) {
+        if (item is FileAsFolderItem) {
+          when {
+            item.isDirectory -> {
+              selectedDir = item
+              state.currentDir.set(item.file)
+              state.setCurrentFile(null)
+            }
+            else -> {
+              selectedProject = item
+              state.currentDir.set(item.file.parentFile)
+              state.setCurrentFile(item.file)
+            }
+          }
+        }
       }
-    })
 
-    fun selectItem(item: FileAsFolderItem, withEnter: Boolean, withControl: Boolean) {
-      if (item.isDirectory && withEnter) {
-        breadcrumbView.path = createPath(item.file)
-        state.currentDir.set(item.file)
-        state.setCurrentFile(null)
-        filenameControl.text = ""
-      } else {
-        state.currentDir.set(item.file.parentFile)
-        state.setCurrentFile(item.file)
-        filenameControl.text = item.name
-        if (withControl && state.submitOk.get()) {
-          myDocumentReceiver.accept(FileDocument(state.currentFile.get()))
+      fun onAction() {
+        selectedProject?.let {
+          myDocumentReceiver.accept(FileDocument(it.file))
         }
       }
     }
 
-    fun selectItem(withEnter: Boolean, withControl: Boolean) {
-      listView.selectedResource.ifPresent { item ->
-        selectItem(item, withEnter, withControl)
-      }
-    }
-
-    fun onFilenameEnter() {
-      var path = createPath(filenameControl.text)
-      if (!path.isAbsolute()) {
-        path = breadcrumbView.path.resolve(path)
-      }
-      path = path.normalize()
-      breadcrumbView.path = path.getParent()
-      val filtered = listView.doFilter(path.getFileName().toString())
-      if (filtered.size == 1) {
-        selectItem(filtered[0], true, true)
-      } else {
-        filenameControl.text = path.getFileName().toString()
-      }
-    }
-    connect(filenameControl, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
-
-
-    fun onBrowse() {
-      val fileChooser = FileChooser()
-      var initialDir: File? = state.resolveFile(filenameControl.text)
-      while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
-        initialDir = initialDir.parentFile
-      }
-      if (initialDir != null) {
-        fileChooser.initialDirectory = initialDir
-      }
-      fileChooser.title = myUtil.i18nKey("storageService.local.%s.fileChooser.title")
-      fileChooser.extensionFilters.addAll(
-          FileChooser.ExtensionFilter("GanttProject Files", "*.gan"))
-      val chosenFile = fileChooser.showOpenDialog(null)
-      if (chosenFile != null) {
-        state.setCurrentFile(chosenFile)
-        state.currentDir.set(chosenFile.parentFile)
-        filenameControl.text = chosenFile.name
-      }
-    }
+    this.paneElements = builder.apply {
+      withBreadcrumbs(if (filePath.toFile().isDirectory) createPath(filePath.toFile()) else createPath(filePath.parent.toFile()))
+      withActionButton(EventHandler { actionButtonHandler.onAction() })
+      withListView(
+          onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
+          onLaunch = Consumer {
+            if (it is FileAsFolderItem) {
+              myDocumentReceiver.accept(FileDocument(it.file))
+            }
+          }
+      )
+    }.build()
+    paneElements.browserPane.stylesheets.addAll(
+        "biz/ganttproject/storage/StorageDialog.css",
+        "biz/ganttproject/storage/local/LocalStorage.css"
+    )
+// TODO: restore list view hint?
+//    val listViewHint = Label(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
+//    listViewHint.styleClass.addAll("hint", "noerror")
+//    listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
+//      if (listView.listView.selectionModel.isEmpty) {
+//        listViewHint.styleClass.remove("warning")
+//        listViewHint.styleClass.addAll("noerror")
+//      } else {
+//        listViewHint.styleClass.remove("noerror")
+//        listViewHint.styleClass.addAll("warning")
+//      }
+//    })
+//
 
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "doclist-browse")
-    filenameControl.right = btnBrowse
+    this.paneElements.filenameInput.right = btnBrowse
 
-    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
-    errorLabel.styleClass.add("errorLabel")
-    val validationHelper = ValidationHelper(
-        filenameControl,
-        Supplier { -> listView.listView.items.isEmpty() },
-        state)
-    state.validationSupport = validationHelper.validationSupport
-    setupErrorLabel(errorLabel, validationHelper)
+    // TODO: restore validation
+//    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+//    errorLabel.styleClass.add("errorLabel")
+//    val validationHelper = ValidationHelper(
+//        filenameControl,
+//        Supplier { -> listView.listView.items.isEmpty() },
+//        state)
+//    state.validationSupport = validationHelper.validationSupport
+//    setupErrorLabel(errorLabel, validationHelper)
 
-    rootPane.apply {
-      vbox.prefWidth = 400.0
-      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/local/LocalStorage.css")
-      addTitle(myUtil.i18nKey("storageService.local.%s.title"))
-      add(breadcrumbView.breadcrumbs)
-      add(filenameControl)
-      add(errorLabel)
-      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
-      add(listViewHint)
-    }
+//    rootPane.apply {
+//      vbox.prefWidth = 400.0
+//      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/local/LocalStorage.css")
+//      addTitle(myUtil.i18nKey("storageService.local.%s.title"))
+//      add(breadcrumbView.breadcrumbs)
+//      add(filenameControl)
+//      add(errorLabel)
+//      add(listView.listView, alignment = null, growth = Priority.ALWAYS)
+//      add(listViewHint)
+//    }
 
-    val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-    setupSaveButton(btnSave, state, myDocumentReceiver)
+//    val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
+//    setupSaveButton(btnSave, state, myDocumentReceiver)
 
-    validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
-      if (validationResult.errors.size + validationResult.warnings.size == 0) {
-        state.setCurrentFile(state.resolveFile(filenameControl.text))
-      }
-    })
-    if (myMode is StorageMode.Save) {
-      val confirmation = CheckBox("Overwrite")
-      confirmation.visibleProperty().set(false)
-      fun updateConfirmation() {
-        if (state.confirmationRequired.get()) {
-          confirmation.visibleProperty().set(true)
-          confirmation.text = "Overwrite file " + state.currentFile.get().name
-          confirmation.selectedProperty().set(false)
-        } else {
-          confirmation.visibleProperty().set(false)
-        }
-      }
-      state.confirmationRequired.addListener({ _, _, _ -> updateConfirmation() })
-      state.currentFile.addListener({ _, _, _ -> updateConfirmation() })
+//    validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
+//      if (validationResult.errors.size + validationResult.warnings.size == 0) {
+//        state.setCurrentFile(state.resolveFile(filenameControl.text))
+//      }
+//    })
 
-      confirmation.selectedProperty().addListener({ _, _, newValue -> state.confirmationReceived.set(newValue) })
-      rootPane.add(confirmation)
-    }
-    rootPane.add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
-    return rootPane.vbox
+// TODO: restore overwrite confirmation?
+//    if (myMode is StorageMode.Save) {
+//      val confirmation = CheckBox("Overwrite")
+//      confirmation.visibleProperty().set(false)
+//      fun updateConfirmation() {
+//        if (state.confirmationRequired.get()) {
+//          confirmation.visibleProperty().set(true)
+//          confirmation.text = "Overwrite file " + state.currentFile.get().name
+//          confirmation.selectedProperty().set(false)
+//        } else {
+//          confirmation.visibleProperty().set(false)
+//        }
+//      }
+//      state.confirmationRequired.addListener({ _, _, _ -> updateConfirmation() })
+//      state.currentFile.addListener({ _, _, _ -> updateConfirmation() })
+//
+//      confirmation.selectedProperty().addListener({ _, _, newValue -> state.confirmationReceived.set(newValue) })
+//      rootPane.add(confirmation)
+//    }
+    return paneElements.browserPane
   }
 
   fun deleteResource() {
@@ -262,7 +250,7 @@ class LocalStorage(
 class ValidationHelper(
     val filename: Control,
     val isListEmpty: Supplier<Boolean>,
-    val state: State) {
+    val state: LocalStorageState) {
   val validator: Validator<String> = Validator { control, value ->
     if (value == null) {
       return@Validator ValidationResult()
@@ -287,82 +275,10 @@ class ValidationHelper(
   }
 }
 
-class State(val currentDocument: Document,
-            val mode: StorageMode) {
-  private val currentFilePath = createPath(Paths.get(currentDocument.filePath ?: "/").toFile())
-
-  var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false)
-
-  val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
-      DocumentUri.LocalDocument.toFile(absolutePrefix(currentFilePath, currentFilePath.getNameCount() - 1))
-  )
-
-  val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(DocumentUri.LocalDocument.toFile(absolutePrefix(currentFilePath)))
-
-  val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
-
-  val submitOk: SimpleBooleanProperty = SimpleBooleanProperty(false)
-
-  var validationSupport: ValidationSupport? = null
-    set(value) {
-      if (value != null) {
-        validationResult = value.validationResultProperty()
-        value.invalidProperty().addListener({ _, _, _ ->
-          validate()
-        })
-        confirmationReceived.addListener({ _, _, _ -> validate() })
-      }
-    }
-
-  var validationResult: ReadOnlyObjectProperty<ValidationResult>? = null
-
-  private fun validate() {
-    val result = validationResult?.get()
-    val needsConfirmation = confirmationRequired.get() && !confirmationReceived.get()
-    if (result == null) {
-      submitOk.set(!needsConfirmation)
-      return
-    }
-    submitOk.set((result.errors.size + result.warnings.size == 0) && !needsConfirmation)
-  }
-
-  fun resolveFile(typedString: String): File {
-    val typedPath = Paths.get(typedString)
-    return if (typedPath.isAbsolute) {
-      typedPath.toFile()
-    } else {
-      File(this.currentDir.get(), typedString)
-    }
-  }
-
-  fun trySetFile(typedString: String) {
-    val resolvedFile = resolveFile(typedString)
-    mode.tryFile(resolvedFile)
-  }
-
-  fun setCurrentFile(file: File?) {
-    if (mode is StorageMode.Save
-        && file != null
-        && file.exists()
-        && currentDocument.uri != FileDocument(file).uri
-        && (file != currentFile.get() || !confirmationReceived.get())) {
-      confirmationReceived.set(false)
-      confirmationRequired.set(true)
-    } else {
-      confirmationRequired.set(false)
-    }
-    println("setCurrentFile 1=" + file)
-    this.currentFile.set(file)
-    println("setCurrentFile 2=" + this.currentFile.get())
-    validationResult = null
-    validate()
-  }
-
-}
 
 fun setupSaveButton(
     btnSave: Button,
-    state: State,
+    state: LocalStorageState,
     receiver: Consumer<Document>) {
   btnSave.addEventHandler(ActionEvent.ACTION, { receiver.accept(FileDocument(state.currentFile.get())) })
   btnSave.styleClass.add("btn-attention")

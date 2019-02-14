@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.local.State
+import biz.ganttproject.storage.local.LocalStorageState
 import biz.ganttproject.storage.local.ValidationHelper
 import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.storage.local.setupSaveButton
@@ -52,7 +52,7 @@ class RecentProjects(
     val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
   private val i18n = GanttLanguage.getInstance()
-  private val  myUtil = StorageUtil(myMode)
+  private val myUtil = StorageUtil(myMode)
 
   override fun getCategory(): String {
     return "desktop"
@@ -64,38 +64,40 @@ class RecentProjects(
 
   override fun createUi(): Pane {
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
-    val state = State(myCurrentDocument, myMode)
+    val state = LocalStorageState(myCurrentDocument, myMode)
 
     val rootPane = VBoxBuilder("pane-service-contents")
 
     val listView = ListView<Path>()
-    listView.cellFactory = Callback  {_ -> object: ListCell<Path>() {
-      override fun updateItem(item: Path?, empty: Boolean) {
-        if (item == null) {
-          text = ""
-          graphic = null
-          return
+    listView.cellFactory = Callback { _ ->
+      object : ListCell<Path>() {
+        override fun updateItem(item: Path?, empty: Boolean) {
+          if (item == null) {
+            text = ""
+            graphic = null
+            return
+          }
+          super.updateItem(item, empty)
+          if (empty) {
+            text = ""
+            graphic = null
+            return
+          }
+          val pane = StackPane()
+          pane.minWidth = 0.0
+          pane.prefWidth = 1.0
+          val pathLabel = Label(item.parent?.normalize()?.toString() ?: "")
+          pathLabel.styleClass.add("list-item-path")
+          val nameLabel = Label(item.fileName.toString())
+          nameLabel.styleClass.add("list-item-filename")
+          val labelBox = VBox()
+          labelBox.children.addAll(pathLabel, nameLabel)
+          StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
+          pane.children.add(labelBox)
+          graphic = pane
         }
-        super.updateItem(item, empty)
-        if (empty) {
-          text = ""
-          graphic = null
-          return
-        }
-        val pane = StackPane()
-        pane.minWidth = 0.0
-        pane.prefWidth = 1.0
-        val pathLabel = Label(item.parent?.normalize()?.toString() ?: "")
-        pathLabel.styleClass.add("list-item-path")
-        val nameLabel = Label(item.fileName.toString())
-        nameLabel.styleClass.add("list-item-filename")
-        val labelBox = VBox()
-        labelBox.children.addAll(pathLabel, nameLabel)
-        StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
-        pane.children.add(labelBox)
-        graphic = pane
       }
-    }}
+    }
     listView.items.add(Paths.get(myCurrentDocument.path))
     for (doc in myDocumentManager.recentDocuments) {
       listView.items.add(Paths.get(doc))
@@ -108,7 +110,7 @@ class RecentProjects(
     }
 
     val validationHelper = ValidationHelper(fakeTextField,
-        Supplier{-> listView.items.isEmpty()},
+        Supplier { -> listView.items.isEmpty() },
         state)
     setupSaveButton(btnSave, state, myDocumentReceiver)
     val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))

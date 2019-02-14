@@ -186,7 +186,7 @@ class GPCloudBrowserPane(
               )
             }
           },
-          itemActionFactory = Function { it ->
+          itemActionFactory = Function {
             if (it is ProjectJsonAsFolderItem) {
               mapOf(
                   "history" to Consumer { item ->

@@ -158,7 +158,7 @@ class StoragePane internal constructor(
     }
     myStorageUiList.add(LocalStorage(
         myDialogUi,
-        if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save(),
+        mode,
         myCurrentDocument,
         openDocument)
     )

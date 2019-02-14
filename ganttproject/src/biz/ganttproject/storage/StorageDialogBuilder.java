@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.SegmentedButton;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Optional;
@@ -105,7 +104,7 @@ public class StorageDialogBuilder {
   };
 
 
-  public StorageDialogBuilder(@Nonnull IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, @Nonnull GPCloudStorageOptions cloudStorageOptions) {
+  public StorageDialogBuilder(IGanttProject project, ProjectUIFacade projectUi, DocumentManager documentManager, GPCloudStorageOptions cloudStorageOptions) {
     myCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions);
     myDocumentReceiver = document -> SwingUtilities.invokeLater(() -> {
       try {

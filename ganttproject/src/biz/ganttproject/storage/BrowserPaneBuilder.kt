@@ -30,13 +30,13 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.control.Label
-import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
+import org.controlsfx.control.textfield.CustomTextField
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -60,7 +60,7 @@ typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 
 data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
-                               val filenameInput: TextField,
+                               val filenameInput: CustomTextField,
                                val browserPane: Pane,
                                val busyIndicator: Consumer<Boolean>)
 
@@ -85,7 +85,7 @@ class BrowserPaneBuilder(
   private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)).apply {
     styleClass.addAll("hint", "noerror")
   }
-  private val filename = TextField()
+  private val filename = CustomTextField()
 
   private lateinit var breadcrumbView: BreadcrumbView
   private lateinit var saveBox: HBox
