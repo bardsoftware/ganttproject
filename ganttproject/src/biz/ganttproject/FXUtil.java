@@ -4,40 +4,14 @@ package biz.ganttproject;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.concurrent.Worker;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.util.Duration;
-import net.sourceforge.ganttproject.GPLogger;
-import netscape.javascript.JSException;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.html.HTMLAnchorElement;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Set;
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 public class FXUtil {
+  /*
   public static Label createHtmlLabel(String htmlContent, String css) {
     WebView browser = new WebView();
     WebEngine webEngine = browser.getEngine();
@@ -95,7 +69,7 @@ public class FXUtil {
       }
     });
   }
-
+*/
   public static void createBreathingButton(javafx.scene.control.Button button) {
     ScaleTransition animation = new ScaleTransition(Duration.seconds(2), button);
     animation.setAutoReverse(true);
@@ -105,94 +79,95 @@ public class FXUtil {
     animation.play();
   }
 
-  public static final class WebViewFitContent extends Region {
+  /*
+    public static final class WebViewFitContent extends Region {
 
-    final WebView webview = new WebView();
-    final WebEngine webEngine = webview.getEngine();
-    private Runnable myOnReady;
+      final WebView webview = new WebView();
+      final WebEngine webEngine = webview.getEngine();
+      private Runnable myOnReady;
 
-    public WebViewFitContent(String content) {
-      webview.setPrefHeight(5);
-      widthProperty().addListener(new ChangeListener<Object>() {
-        @Override
-        public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
-          Double width = (Double)newValue;
-          webview.setPrefWidth(width);
-          adjustHeight();
-        }
-      });
-
-      webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-        @Override
-        public void changed(ObservableValue<? extends Worker.State> arg0, Worker.State oldState, Worker.State newState)         {
-          if (newState == Worker.State.SUCCEEDED) {
+      public WebViewFitContent(String content) {
+        webview.setPrefHeight(5);
+        widthProperty().addListener(new ChangeListener<Object>() {
+          @Override
+          public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+            Double width = (Double)newValue;
+            webview.setPrefWidth(width);
             adjustHeight();
           }
-        }
-      });
-      webview.getChildrenUnmodifiable().addListener(new ListChangeListener<javafx.scene.Node>() {
-        @Override
-        public void onChanged(Change<? extends javafx.scene.Node> change) {
-          Set<javafx.scene.Node> scrolls = webview.lookupAll(".scroll-bar");
-          for (javafx.scene.Node scroll : scrolls) {
-            scroll.setVisible(false);
-          }
-        }
-      });
-      webEngine.loadContent(content);
-      getChildren().add(webview);
-    }
+        });
 
-    public WebEngine getWebEngine() {
-      return webEngine;
-    }
-
-    public WebView getWebView() {
-      return webview;
-    }
-
-    @Override
-    protected void layoutChildren() {
-      double w = getWidth();
-      double h = getHeight();
-      layoutInArea(webview,0,0,w,h,0, HPos.CENTER, VPos.CENTER);
-    }
-
-    private void adjustHeight() {
-      Platform.runLater(new Runnable(){
-        @Override
-        public void run() {
-          try {
-            {
-              Object result = webEngine.executeScript("document.getElementById('body').offsetHeight");
-              if (result instanceof Integer) {
-                Integer i = (Integer) result;
-                double height = new Double(i);
-                height = height + 20;
-                webview.setPrefHeight(height);
-                //getPrefHeight();
-              }
+        webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+          @Override
+          public void changed(ObservableValue<? extends Worker.State> arg0, Worker.State oldState, Worker.State newState)         {
+            if (newState == Worker.State.SUCCEEDED) {
+              adjustHeight();
             }
-            {
-              Object result = webEngine.executeScript("document.getElementById('body').offsetWidth");
-              if (result instanceof Integer) {
-                Integer i = (Integer) result;
-                if (i != 0) {
-                  webview.setPrefWidth(new Double(i));
+          }
+        });
+        webview.getChildrenUnmodifiable().addListener(new ListChangeListener<javafx.scene.Node>() {
+          @Override
+          public void onChanged(Change<? extends javafx.scene.Node> change) {
+            Set<javafx.scene.Node> scrolls = webview.lookupAll(".scroll-bar");
+            for (javafx.scene.Node scroll : scrolls) {
+              scroll.setVisible(false);
+            }
+          }
+        });
+        webEngine.loadContent(content);
+        getChildren().add(webview);
+      }
+
+      public WebEngine getWebEngine() {
+        return webEngine;
+      }
+
+      public WebView getWebView() {
+        return webview;
+      }
+
+      @Override
+      protected void layoutChildren() {
+        double w = getWidth();
+        double h = getHeight();
+        layoutInArea(webview,0,0,w,h,0, HPos.CENTER, VPos.CENTER);
+      }
+
+      private void adjustHeight() {
+        Platform.runLater(new Runnable(){
+          @Override
+          public void run() {
+            try {
+              {
+                Object result = webEngine.executeScript("document.getElementById('body').offsetHeight");
+                if (result instanceof Integer) {
+                  Integer i = (Integer) result;
+                  double height = new Double(i);
+                  height = height + 20;
+                  webview.setPrefHeight(height);
+                  //getPrefHeight();
                 }
               }
-            }
-            myOnReady.run();
-          } catch (JSException e) { }
-        }
-      });
-    }
+              {
+                Object result = webEngine.executeScript("document.getElementById('body').offsetWidth");
+                if (result instanceof Integer) {
+                  Integer i = (Integer) result;
+                  if (i != 0) {
+                    webview.setPrefWidth(new Double(i));
+                  }
+                }
+              }
+              myOnReady.run();
+            } catch (JSException e) { }
+          }
+        });
+      }
 
-    public void setOnReady(Runnable onReady) {
-      myOnReady = onReady;
+      public void setOnReady(Runnable onReady) {
+        myOnReady = onReady;
+      }
     }
-  }
-
+  */
   public static void transitionCenterPane(BorderPane borderPane, javafx.scene.Node newCenter, Runnable resizer) {
     Runnable replacePane = () -> {
       borderPane.setCenter(newCenter);

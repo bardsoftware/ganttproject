@@ -2,7 +2,9 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 dependencies {
-  compile project(':..:ganttproject')
+    providedCompile project(path: ':ganttproject', configuration: 'exported')
+
+    compile configurations.providedCompile
 }
 
 sourceSets {
@@ -15,14 +17,22 @@ sourceSets {
     }
 }
 
-task copyPlugin(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-      include "plugin.xml"
-      include "resources/**"
+task copyPlugin {
+    copy {
+        into(new File(rootProject.pluginsDir, project.name))
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(fileTree(".")) {
+            include "plugin.xml"
+            include "resources/**"
+        }
+    }
+    copy {
+        into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+        from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
+            include "*.jar"
+        }
     }
     doLast {
-      println "Copying $project.name to $rootProject.pluginsDir"
+        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }

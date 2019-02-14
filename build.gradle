@@ -1,0 +1,62 @@
+// This installs dependencyUpdates plugin
+// Run gradle dependencyUpdates to get the report
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+// Path to launch4j binary
+ext.launch4j = '/opt/launch4j/launch4j'
+// Directories where we build the distro
+ext.semver = '3.0.0'
+ext.distBinDir = file('ganttproject-builder/dist-bin')
+ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins-${semver}")
+ext.buildNum = getBuildNum()
+
+archivesBaseName = 'ganttproject'
+version = "${semver}-r${getBuildNum()}"
+
+def getBuildNum() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        workingDir "ganttproject-builder"
+        commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
+        standardOutput = stdout
+    }
+    return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+}
+
+// Config for all projects: deps come from Maven repository,
+// compile using Java 8, libs normally sit in lib
+allprojects {
+    configurations {
+        direct
+        providedCompile
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "http://sandec.bintray.com/repo"
+        }
+
+    }
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    ext {
+        libDir = 'lib'
+        mvnDir = 'lib/mvn'
+    }
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    clean {
+        delete += "dist-bin"
+    }
+}
+
+
+//
+//runtime {
+//    distDir = rootProject.distBinDir
+//    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+//    modules = ['java.base']
+//}

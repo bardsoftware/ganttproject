@@ -2,8 +2,11 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
-  compile project(':..:ganttproject')
+    providedCompile project(path: ':ganttproject', configuration: 'exported')
+    compile 'backport-util-concurrent:backport-util-concurrent:3.1'
+    compile 'org.mnode.ical4j:ical4j:1.0.3'
+
+    compile configurations.providedCompile
 }
 
 sourceSets {
@@ -16,14 +19,21 @@ sourceSets {
     }
 }
 
-task copyPlugin(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-      include "plugin.xml"
-      include "lib/**.jar"
+task copyPlugin {
+    copy {
+        into(new File(rootProject.pluginsDir, project.name))
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(fileTree(".")) {
+            include "plugin.xml"
+        }
+    }
+    copy {
+        into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+        from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
+            include "*.jar"
+        }
     }
     doLast {
-      println "Copying $project.name to $rootProject.pluginsDir"
+        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }

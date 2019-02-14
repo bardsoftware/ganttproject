@@ -1,4 +1,5 @@
 language: java
+jdk: openjdk11
 script: ./ganttproject-builder/build-travis.sh
 branches:
   only:

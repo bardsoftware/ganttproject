@@ -10,35 +10,8 @@
         <library name="biz.ganttproject.impex.msproject2.jar">
             <export name="*"/>
         </library>
-        <library name="lib/">
+        <library name="lib/*">
             <export name="*">
-            </export>
-        </library>
-        <library name="lib/activation-1.1.1.jar">
-            <export name="*"/>
-        </library>
-        <library name="lib/commons-collections4-4.1.jar">
-            <export name="*"/>
-        </library>
-        <library name="lib/jaxb-api-2.3.0.jar">
-            <export name="*"/>
-        </library>
-        <library name="lib/jaxb-impl-2.0.2.jar">
-            <export name="*"/>
-        </library>
-        <library name="lib/mpxj-7.4.2.jar">
-            <export
-                    name="*">
-            </export>
-        </library>
-        <library name="lib/poi-3.17.jar">
-            <export
-                    name="*">
-            </export>
-        </library>
-        <library name="lib/rtfparserkit-1.10.0.jar">
-            <export
-                    name="*">
             </export>
         </library>
     </runtime>

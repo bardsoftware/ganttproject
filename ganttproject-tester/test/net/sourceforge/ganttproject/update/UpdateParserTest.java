@@ -49,7 +49,7 @@ public class UpdateParserTest extends TestCase {
   }
 
   public void testParseRss_Successful() {
-    InputStream updateRss = ClassLoader.class.getResourceAsStream("/update.rss");
+    InputStream updateRss = UpdateParserTest.class.getResourceAsStream("/update.rss");
 
     RssParser parser = new RssParser("2.8.6", "2262");
     RssFeed feed = parser.parse(updateRss, null);

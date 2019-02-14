@@ -141,6 +141,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   }
 
   enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
+
   private fun showOfflineIsAheadDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
     OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
       i18nRootKey = "cloud.openWhenOfflineIsAhead"
@@ -324,6 +325,10 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     @Throws(Exception::class)
     fun checkEarliestStartConstraints(): Step3 {
       myAlgs.scheduler.setDiagnostic(myDiagnostics)
+      // ==== Uncomment to see Scheduler Report in any project
+      // myDiagnostics.info("Lorem ipsum dolor sit amet!")
+      // myProject.taskManager.tasks.forEach { t -> myDiagnostics.addModifiedTask(t, Date(), Date()) }
+      // ====
       try {
         // This actually runs the scheduler by enabling it
         myEnableAlgorithmsCmd.close()

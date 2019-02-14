@@ -44,11 +44,13 @@ class FXToolbar {
   }
 
   val component: JComponent by lazy {
-    JFXPanel().also {
+    val result = JFXPanel()
+    Platform.runLater {
       val scene = Scene(toolbar, Color.TRANSPARENT)
       scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
-      it.scene = scene
+      result.scene = scene
     }
+    return@lazy result
   }
 
   fun updateButtons() {
@@ -61,7 +63,7 @@ private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 private class ButtonVisitor(val action: GPAction) {
   fun visit(toolbar: FXToolbar) {
     val faChar = action.fontawesomeLabel ?: return
-    val icon = FontAwesomeIcon.values().firstOrNull { it.char == faChar[0] } ?: return
+    val icon = FontAwesomeIcon.values().firstOrNull { it.unicode() == faChar } ?: return
     val btn = Button("", FontAwesomeIconView(icon)).apply {
       this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
       this.addEventHandler(ActionEvent.ACTION) {

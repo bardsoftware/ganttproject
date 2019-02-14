@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import com.google.common.io.ByteStreams;
 import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -30,7 +31,6 @@ import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-import org.apache.commons.io.IOUtils;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -86,7 +86,7 @@ public class PasteAction extends GPAction {
         if (data instanceof InputStream == false) {
           return;
         }
-        pasteExternalDocument((InputStream)data);
+        pasteExternalDocument((InputStream) data);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -95,7 +95,7 @@ public class PasteAction extends GPAction {
 
   private void pasteExternalDocument(InputStream data) {
     try {
-      byte[] bytes = IOUtils.toByteArray(data);
+      byte[] bytes = ByteStreams.toByteArray(data);
       final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);
       File tmpFile = File.createTempFile("ganttPaste", "");
       Files.write(tmpFile.toPath(), bytes);
@@ -130,7 +130,7 @@ public class PasteAction extends GPAction {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean)evt.getNewValue());
+          result.setEnabled((Boolean) evt.getNewValue());
         }
       }
     });

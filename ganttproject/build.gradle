@@ -2,51 +2,74 @@ buildscript {
     ext.kotlin_version = '1.3.+'
     repositories {
         mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.openjfx:javafx-plugin:0.0.+'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'org.openjfx.javafxplugin'
+
 
 ext {
     libDir = 'lib/core'
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
+javafx {
+    modules = ['javafx.controls', 'javafx.swing']
+}
+
+configurations {
+    exportedLibs
+    exported.extendsFrom archives, providedCompile, exportedLibs
 }
 
 dependencies {
+    providedCompile project(':biz.ganttproject.core')
+
+    exportedLibs files("lib/core/eclipsito.jar", "lib/core/swingx-1.6.4.jar")
+    exportedLibs 'commons-codec:commons-codec:1.10'
+    exportedLibs 'org.apache.poi:poi:3.17'
+    exportedLibs 'com.beust:jcommander:1.17'
+
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
+    direct 'commons-io:commons-io:2.4'
+
+    direct 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
+    direct 'com.evanlennick:retry4j:0.+'
+    direct 'com.fasterxml.jackson.core:jackson-core:2.9.+'
+    direct 'com.fasterxml.jackson.core:jackson-databind:2.9.+'
+    direct 'com.jgoodies:jgoodies-common:1.7.0'
+    direct 'com.jgoodies:jgoodies-looks:2.5.3'
+    direct 'com.sandec:mdfx:0.+'
+    direct 'com.squareup.okhttp3:okhttp:3.+'
+
+    direct 'de.jensd:fontawesomefx-commons:9.1.2'
+    direct 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
+
+    direct 'net.java.balloontip:balloontip:1.2.4.1'
+
+    direct 'org.apache.httpcomponents:httpclient:4.5.6'
+    direct 'org.apache.httpcomponents:httpmime:4.5.6'
+    direct 'org.controlsfx:controlsfx:9.0.+'
+    direct 'org.nanohttpd:nanohttpd:2.3.+'
+    direct 'org.jdom:jdom:1.+'
+    direct 'org.slf4j:slf4j-api:1.7.+'
+    direct 'org.slf4j:slf4j-simple:1.7.+'
+    direct 'org.swinglabs:jxlayer:3.0.4'
+
+    compile configurations.direct
+    compile configurations.providedCompile
+    compile configurations.exportedLibs
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
-    compile project(':..:biz.ganttproject.core')
     compile files('data/resources')
-
-    mavenDeps "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
-    mavenDeps 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
-
-    mavenDeps group: 'org.controlsfx', name: 'controlsfx', version: '8.40.+'
-    mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.+'
-    mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.+'
-    mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.+', transitive: true
-    // https://mvnrepository.com/artifact/org.apache.poi/poi
-    mavenDeps group: 'org.apache.poi', name: 'poi', version: '3.17'
-    mavenDeps group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.+'
-    mavenDeps group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.+'
-    mavenDeps group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.+'
-    mavenDeps group: 'org.jdom', name: 'jdom', version: '1.1.+'
-    mavenDeps group: 'net.sf.json-lib', name: 'json-lib', version: '2.4', classifier: 'jdk15'
-    mavenDeps group: 'xml-apis', name: 'xml-apis', version: '2.0.2'
-    mavenDeps group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version: '1.4.2'
-    mavenDeps group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
-    mavenDeps group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
-    mavenDeps group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.+'
-    mavenDeps group: 'com.evanlennick', name:'retry4j', version:'0.+'
 }
 
 compileKotlin {
@@ -69,7 +92,6 @@ sourceSets {
     main.kotlin.srcDirs += 'src'
 }
 
-assemble.dependsOn += updateMavenDeps
 
 task updateVersion {
     doFirst {
@@ -80,21 +102,27 @@ task updateVersion {
     }
 }
 
-task copyPluginFiles(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-        include "plugin.xml"
-        include "lib/core/**.jar"
-        exclude "lib/core/eclipsito.jar"
-        include "lib/mvn/**.jar"
-        include "data/resources/**.ttf"
-        include "data/resources/**.properties"
-        include "data/resources/calendar/**"
-        include "data/resources/icons/**"
-        include "data/resources/language/**"
-        include "data/resources/xslfo/**"
-        include "data/resources/xslt/**"
+
+task copyPluginFiles {
+    copy {
+        into(new File(rootProject.pluginsDir, project.name))
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(fileTree(".")) {
+            include "plugin.xml"
+            include "data/resources/**.ttf"
+            include "data/resources/**.properties"
+            include "data/resources/calendar/**"
+            include "data/resources/icons/**"
+            include "data/resources/language/**"
+            include "data/resources/xslfo/**"
+            include "data/resources/xslt/**"
+        }
+    }
+    copy {
+        into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
+        from(configurations.compileClasspath.minus(configurations.providedCompile)) {
+            include "*.jar"
+        }
     }
 }
 
@@ -105,6 +133,8 @@ task copyEclipsito(type: Copy) {
     }
 }
 
-task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << {
-    println "Copying $project.name to $rootProject.pluginsDir"
+task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
+    doFirst {
+        println "Copying $project.name to $rootProject.pluginsDir"
+    }
 }
