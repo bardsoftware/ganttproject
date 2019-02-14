@@ -1,11 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 
-dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
-  compile project(':ganttproject')
-}
-
 sourceSets {
     main {
         java {
@@ -16,14 +11,35 @@ sourceSets {
     }
 }
 
-task copyPlugin(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-      include "plugin.xml"
-      include "lib/**"
+dependencies {
+    providedCompile project(path: ':ganttproject', configuration: 'exported')
+    compile('net.sf.mpxj:mpxj:7.4.+') {
+        exclude group: 'org.xerial', module: 'sqlite-jdbc'
+        exclude group: 'com.jgoodies'
+    }
+    compile 'javax.xml.bind:jaxb-api:2.3.+'
+    compile 'javax.xml:jaxb-impl:2.1'
+
+    compile configurations.providedCompile
+    compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+}
+
+task copyPlugin {
+    copy {
+        into(new File(rootProject.pluginsDir, project.name))
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(fileTree(".")) {
+            include "plugin.xml"
+            include "lib/**"
+        }
+    }
+    copy {
+        into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+        from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
+            include "*.jar"
+        }
     }
     doLast {
-      println "Copying $project.name to $rootProject.pluginsDir"
+        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }

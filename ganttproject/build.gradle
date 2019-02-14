@@ -24,19 +24,25 @@ ext {
 javafx {
     modules = ['javafx.controls', 'javafx.swing']
 }
+
+configurations {
+    exportedLibs
+    exported.extendsFrom archives, providedCompile, exportedLibs
+}
+
 dependencies {
     providedCompile project(':biz.ganttproject.core')
 
+    exportedLibs files("lib/core/eclipsito.jar", "lib/core/swingx-1.6.4.jar")
+    exportedLibs 'commons-codec:commons-codec:1.10'
+    exportedLibs 'org.apache.poi:poi:3.17'
+    exportedLibs 'com.beust:jcommander:1.17'
+
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
-// [milton-api]
-    direct 'commons-codec:commons-codec:1.10'
-// [milton-api]
     direct 'commons-io:commons-io:2.4'
 
-    direct 'com.beust:jcommander:1.17'
     direct 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
-
     direct 'com.evanlennick:retry4j:0.+'
     direct 'com.fasterxml.jackson.core:jackson-core:2.9.+'
     direct 'com.fasterxml.jackson.core:jackson-databind:2.9.+'
@@ -52,10 +58,8 @@ dependencies {
 
     direct 'org.apache.httpcomponents:httpclient:4.5.6'
     direct 'org.apache.httpcomponents:httpmime:4.5.6'
-    direct 'org.apache.poi:poi:3.17'
     direct 'org.controlsfx:controlsfx:9.0.+'
     direct 'org.nanohttpd:nanohttpd:2.3.+'
-// [milton-client]
     direct 'org.jdom:jdom:1.+'
     direct 'org.slf4j:slf4j-api:1.7.+'
     direct 'org.slf4j:slf4j-simple:1.7.+'
@@ -63,6 +67,7 @@ dependencies {
 
     compile configurations.direct
     compile configurations.providedCompile
+    compile configurations.exportedLibs
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile files('data/resources')
 }

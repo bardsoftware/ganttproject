@@ -60,13 +60,13 @@ task distBin(dependsOn: rootProject.getTasksByName('assemble', true) + rootProje
 distBin.finalizedBy(updateEclipsito)
 
 def getBuildNum() {
-  def stdout = new ByteArrayOutputStream()
-  exec {
-    workingDir "."
-    commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
-    standardOutput = stdout
-  }
-  return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        workingDir "."
+        commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
+        standardOutput = stdout
+    }
+    return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
 }
 
 task distZip(type: Zip, dependsOn: distBin) {
@@ -133,27 +133,18 @@ task distZip(type: Zip, dependsOn: distBin) {
 //    }
 //}
 
-task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
-    doLast {
-        println "== Finished updating libs =="
-    }
-}
-
 task runApp(type: JavaExec, dependsOn: distBin) {
-  workingDir = 'dist-bin'
-  classpath = (fileTree(dir: 'dist-bin', includes:['eclipsito.jar']) + files('dist-bin'))
-  main = 'org.bardsoftware.eclipsito.Boot'
-  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
-  jvmArgs '-ea'
+    workingDir = 'dist-bin'
+    classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
+    main = 'org.bardsoftware.eclipsito.Boot'
+    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    jvmArgs '-ea'
 }
 task debugApp(type: JavaExec, dependsOn: distBin) {
-  workingDir = 'dist-bin'
-  classpath = (fileTree(dir: 'dist-bin', includes:['eclipsito.jar']) + files('dist-bin'))
-  main = 'org.bardsoftware.eclipsito.Boot'
-  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
-  jvmArgs  '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
+    workingDir = 'dist-bin'
+    classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
+    main = 'org.bardsoftware.eclipsito.Boot'
+    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    jvmArgs '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
 }
 
-build {
-  dependsOn updateMavenDeps
-}

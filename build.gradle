@@ -1,9 +1,5 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
-plugins {
-    id 'org.openjfx.javafxplugin' version "0.0.7"
-}
-
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
@@ -32,7 +28,6 @@ def getBuildNum() {
 // compile using Java 8, libs normally sit in lib
 allprojects {
     configurations {
-        mavenDeps
         direct
         providedCompile
     }
@@ -53,29 +48,12 @@ allprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-    task updateMavenDeps(type: Copy) {
-        doFirst {
-            mkdir project.ext.mvnDir
-            delete project.ext.mvnDir
-        }
-        from configurations.mavenDeps
-        into project.ext.mvnDir
-    }
     clean {
         delete += "dist-bin"
     }
 }
 
 
-task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
-    doLast {
-        println "== Finished updating libs =="
-    }
-}
-
-javafx {
-    modules = [ 'javafx.controls', 'javafx.swing', 'javafx.web' ]
-}
 //
 //runtime {
 //    distDir = rootProject.distBinDir
