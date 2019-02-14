@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.storage.local.ValidationHelper
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -37,9 +38,14 @@ import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.StatusBar
 import org.controlsfx.control.textfield.CustomTextField
+import org.controlsfx.validation.ValidationResult
+import org.controlsfx.validation.ValidationSupport
+import org.controlsfx.validation.decoration.StyleClassValidationDecoration
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /**
  * This function takes path and loads path contents from the storage.
@@ -62,7 +68,8 @@ data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val listView: FolderView<FolderItem>,
                                val filenameInput: CustomTextField,
                                val browserPane: Pane,
-                               val busyIndicator: Consumer<Boolean>)
+                               val busyIndicator: Consumer<Boolean>,
+                               val errorLabel: Label)
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -91,6 +98,8 @@ class BrowserPaneBuilder(
   private lateinit var saveBox: HBox
   private lateinit var onOpenItem: OnItemAction
   private lateinit var onLaunch: OnItemAction
+  lateinit var validationSupport: ValidationSupport
+
 
   val busyIndicatorToggler: Consumer<Boolean>
     get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
@@ -134,6 +143,35 @@ class BrowserPaneBuilder(
       children.addAll(busyIndicator, btnSave)
       styleClass.add("doclist-save-box")
     }
+  }
+
+  fun withValidation(validationHelper: ValidationHelper) {
+    errorLabel.styleClass.addAll("hint", "noerror")
+    this.validationSupport = ValidationSupport().apply {
+      registerValidator(filename, validationHelper.validator)
+      validationDecorator = StyleClassValidationDecoration("error", "warning")
+    }
+
+    validationSupport.validationResultProperty().addListener { _, _, validationResult ->
+      if (validationResult.errors.size + validationResult.warnings.size > 0) {
+        errorLabel.text = formatError(validationResult)
+        errorLabel.styleClass.remove("noerror")
+        if (validationResult.errors.isNotEmpty()) {
+          errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
+          errorLabel.styleClass.remove("warning")
+          errorLabel.styleClass.add("error")
+        } else if (validationResult.warnings.isNotEmpty()) {
+          errorLabel.graphic = null
+          errorLabel.styleClass.remove("error")
+          errorLabel.styleClass.add("warning")
+        }
+      } else {
+        errorLabel.text = ""
+        errorLabel.styleClass.removeAll("error", "warning")
+        errorLabel.styleClass.add("noerror")
+      }
+    }
+
   }
 
   private fun installEventHandlers() {
@@ -193,6 +231,12 @@ class BrowserPaneBuilder(
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel)
   }
+}
+
+private fun formatError(validation: ValidationResult): String {
+  return Stream.concat(validation.errors.stream(), validation.warnings.stream())
+      .map { error -> error.text }
+      .collect(Collectors.joining("\n"))
 }

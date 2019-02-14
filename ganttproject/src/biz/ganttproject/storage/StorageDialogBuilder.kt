@@ -154,9 +154,9 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
 
       val buttonBar = SegmentedButton()
       buttonBar.styleClass.add(SegmentedButton.STYLE_CLASS_DARK)
-      btnOpen.addEventHandler(ActionEvent.ACTION) { e -> showOpenStorageUi(borderPane) }
+      btnOpen.addEventHandler(ActionEvent.ACTION) { showOpenStorageUi(borderPane) }
       //
-      btnSave.addEventHandler(ActionEvent.ACTION) { e -> showSaveStorageUi(borderPane) }
+      btnSave.addEventHandler(ActionEvent.ACTION) { showSaveStorageUi(borderPane) }
       buttonBar.buttons.addAll(btnSave, btnOpen)
       val buttonWrapper = HBox()
       buttonWrapper.styleClass.addAll("open-save-buttons")
@@ -220,7 +220,7 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
 
     fun error(e: Throwable)
 
-    fun error(s: String)
+    fun error(message: String)
 
     fun message(message: String)
   }

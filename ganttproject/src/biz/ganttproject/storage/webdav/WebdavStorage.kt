@@ -62,17 +62,17 @@ class WebdavStorage(
 
   private val myBorderPane = BorderPane()
 
-  override fun getName(): String {
-    return myServer.getName()
-  }
+  override val name: String
+    get() {
+      return myServer.getName()
+    }
 
-  override fun getCategory(): String {
-    return "webdav"
-  }
+  override val category = "webdav"
 
-  override fun getId(): String {
-    return myServer.rootUrl
-  }
+  override val id: String
+    get() {
+      return myServer.rootUrl
+    }
 
   private fun doCreateUi(): Pane = if (Strings.isNullOrEmpty(myServer.password)) createPasswordUi() else createStorageUi()
 

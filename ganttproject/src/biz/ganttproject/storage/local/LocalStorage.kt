@@ -21,30 +21,21 @@ package biz.ganttproject.storage.local
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.control.Button
-import javafx.scene.control.Control
-import javafx.scene.control.Label
 import javafx.scene.layout.Pane
 import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.validation.ValidationResult
-import org.controlsfx.validation.ValidationSupport
-import org.controlsfx.validation.Validator
-import org.controlsfx.validation.decoration.StyleClassValidationDecoration
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Supplier
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem> {
   override fun compareTo(other: FileAsFolderItem): Int {
@@ -82,15 +73,10 @@ class LocalStorage(
   private lateinit var state: LocalStorageState
 
 
-  override fun getName(): String {
-    return "This Computer"
-  }
+  override val name = "This Computer"
+  override val category = "desktop"
 
-  override fun getCategory(): String {
-    return "desktop"
-  }
-
-  private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, loading: Consumer<Boolean>, state: LocalStorageState) {
+  private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.LocalDocument.toFile(path)
     val result = FXCollections.observableArrayList<FolderItem>()
     dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
@@ -123,7 +109,7 @@ class LocalStorage(
     this.state = LocalStorageState(currentDocument, myMode)
 
     val builder = BrowserPaneBuilder(this.mode, myDialogUi) { path, success, loading ->
-      loadFiles(path, success, loading, state)
+      loadFiles(path, success, state)
     }
     val actionButtonHandler = object {
       var selectedProject: FileAsFolderItem? = null
@@ -164,6 +150,10 @@ class LocalStorage(
             }
           }
       )
+      withValidation(ValidationHelper(
+          Supplier { -> this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
+          state
+      ))
     }.build()
     paneElements.browserPane.stylesheets.addAll(
         "biz/ganttproject/storage/StorageDialog.css",
@@ -186,15 +176,7 @@ class LocalStorage(
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "doclist-browse")
     this.paneElements.filenameInput.right = btnBrowse
 
-    // TODO: restore validation
-//    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
-//    errorLabel.styleClass.add("errorLabel")
-//    val validationHelper = ValidationHelper(
-//        filenameControl,
-//        Supplier { -> listView.listView.items.isEmpty() },
-//        state)
-//    state.validationSupport = validationHelper.validationSupport
-//    setupErrorLabel(errorLabel, validationHelper)
+    state.validationSupport = builder.validationSupport
 
 //    rootPane.apply {
 //      vbox.prefWidth = 400.0
@@ -247,35 +229,6 @@ class LocalStorage(
   }
 }
 
-class ValidationHelper(
-    val filename: Control,
-    val isListEmpty: Supplier<Boolean>,
-    val state: LocalStorageState) {
-  val validator: Validator<String> = Validator { control, value ->
-    if (value == null) {
-      return@Validator ValidationResult()
-    }
-    try {
-      if (value == "") {
-        return@Validator ValidationResult.fromWarning(control, "Type file name")
-      }
-      state.trySetFile(value)
-      return@Validator ValidationResult()
-    } catch (e: StorageMode.FileException) {
-      when {
-        "document.storage.error.read.notExists" == e.message && !isListEmpty.get() ->
-          return@Validator ValidationResult.fromWarning(control, GanttLanguage.getInstance().formatText(e.message, e.args))
-        else -> return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
-      }
-    }
-  }
-  val validationSupport = ValidationSupport().apply {
-    registerValidator(filename, validator)
-    validationDecorator = StyleClassValidationDecoration("error", "warning")
-  }
-}
-
-
 fun setupSaveButton(
     btnSave: Button,
     state: LocalStorageState,
@@ -285,31 +238,4 @@ fun setupSaveButton(
   state.submitOk.addListener({ _, _, newValue -> btnSave.disableProperty().set(!newValue) })
 }
 
-private fun formatError(validation: ValidationResult): String {
-  return Stream.concat(validation.errors.stream(), validation.warnings.stream())
-      .map { error -> error.text }
-      .collect(Collectors.joining("\n"))
-}
 
-fun setupErrorLabel(errorLabel: Label, validationHelper: ValidationHelper) {
-  errorLabel.styleClass.addAll("hint", "noerror")
-  validationHelper.validationSupport.validationResultProperty().addListener({ _, _, validationResult ->
-    if (validationResult.errors.size + validationResult.warnings.size > 0) {
-      errorLabel.text = formatError(validationResult)
-      errorLabel.styleClass.remove("noerror")
-      if (validationResult.errors.isNotEmpty()) {
-        errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
-        errorLabel.styleClass.remove("warning")
-        errorLabel.styleClass.add("error")
-      } else if (validationResult.warnings.isNotEmpty()) {
-        errorLabel.graphic = null
-        errorLabel.styleClass.remove("error")
-        errorLabel.styleClass.add("warning")
-      }
-    } else {
-      errorLabel.text = ""
-      errorLabel.styleClass.removeAll("error", "warning")
-      errorLabel.styleClass.add("noerror")
-    }
-  })
-}

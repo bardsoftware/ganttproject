@@ -57,17 +57,13 @@ class GPCloudStorage(
     fun createPane(): CompletableFuture<Pane>
   }
 
-  override fun getName(): String {
-    return "GanttProject Cloud"
-  }
+  override val name = "GanttProject Cloud"
 
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
   }
 
-  override fun getCategory(): String {
-    return "cloud"
-  }
+  override val category = "cloud"
 
   override fun createUi(): Pane {
     return doCreateUi()

@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities
 class StorageDialogAction(private val myProject: IGanttProject, private val myUiFacade: UIFacade, private val myProjectUiFacade: ProjectUIFacade,
                           private val myDocumentManager: DocumentManager, private val myCloudStorageOptions: GPCloudStorageOptions) : GPAction("myProjects.action") {
 
-  override fun actionPerformed(actionEvent: ActionEvent) {
+  override fun actionPerformed(actionEvent: ActionEvent?) {
 
     UIUtil.initJavaFx {
       Platform.runLater {

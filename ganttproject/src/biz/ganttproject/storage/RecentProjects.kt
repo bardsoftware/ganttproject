@@ -18,13 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+//import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.local.LocalStorageState
-import biz.ganttproject.storage.local.ValidationHelper
-import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.storage.local.setupSaveButton
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
@@ -40,7 +37,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Supplier
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -54,13 +50,9 @@ class RecentProjects(
   private val i18n = GanttLanguage.getInstance()
   private val myUtil = StorageUtil(myMode)
 
-  override fun getCategory(): String {
-    return "desktop"
-  }
-
-  override fun getId(): String {
-    return "recent"
-  }
+  override val name = "Recent Projects"
+  override val category = "desktop"
+  override val id = "recent"
 
   override fun createUi(): Pane {
     val btnSave = Button(i18n.getText(myUtil.i18nKey("storageService.local.%s.actionLabel")))
@@ -109,12 +101,12 @@ class RecentProjects(
       }
     }
 
-    val validationHelper = ValidationHelper(fakeTextField,
-        Supplier { -> listView.items.isEmpty() },
-        state)
+//    val validationHelper = ValidationHelper(fakeTextField,
+//        Supplier { -> listView.items.isEmpty() },
+//        state)
     setupSaveButton(btnSave, state, myDocumentReceiver)
-    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
-    setupErrorLabel(errorLabel, validationHelper)
+//    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
+//    setupErrorLabel(errorLabel, validationHelper)
     rootPane.apply {
       vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/RecentProjects.css")
       vbox.prefWidth = 400.0
@@ -124,9 +116,6 @@ class RecentProjects(
     return rootPane.vbox
   }
 
-  override fun getName(): String {
-    return "Recent Projects"
-  }
 
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
