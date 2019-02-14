@@ -18,23 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
-import javax.swing.BorderFactory;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-
-import org.apache.commons.io.FileUtils;
-
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.GPOptionGroup;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -42,13 +31,18 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.GPOptionGroup;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.text.DateFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   public static final String ID = "ui.general";
@@ -109,40 +103,40 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   }
 
   private static Pair<Boolean, File> checkLocale(Locale l) {
-      if (Arrays.asList(DateFormat.getAvailableLocales()).contains(l)) {
-        return Pair.create(Boolean.TRUE, null);
-      }
-      File extDir = getExtDir();
-      if (!extDir.exists()) {
-        return Pair.create(Boolean.FALSE, null);
-      }
-      if (!extDir.isDirectory()) {
-        return Pair.create(Boolean.FALSE, null);
-      }
-      if (extDir.canWrite()) {
-        GPLogger.logToLogger("Java extensions directory " + extDir + " is writable");
-        URL libUrl = InterfaceOptionPageProvider.class.getResource("lib");
-        if (libUrl != null) {
-          try {
-            File galicianLocaleJar = new File(new File(libUrl.toURI()), "javagalician.jar");
-            File targetJar = new File(extDir, galicianLocaleJar.getName());
-            GPLogger.logToLogger("Locale extension " + galicianLocaleJar);
-            if (galicianLocaleJar.exists() && !targetJar.exists()) {
-              GPLogger.logToLogger("Exists. Installing now");
-              FileUtils.copyFileToDirectory(galicianLocaleJar, extDir);
-              return Pair.create(Boolean.TRUE, extDir);
-            }
-          } catch (IOException e) {
-            GPLogger.log(e);
-          } catch (URISyntaxException e) {
-            GPLogger.log(e);
+    if (Arrays.asList(DateFormat.getAvailableLocales()).contains(l)) {
+      return Pair.create(Boolean.TRUE, null);
+    }
+    File extDir = getExtDir();
+    if (!extDir.exists()) {
+      return Pair.create(Boolean.FALSE, null);
+    }
+    if (!extDir.isDirectory()) {
+      return Pair.create(Boolean.FALSE, null);
+    }
+    if (extDir.canWrite()) {
+      GPLogger.logToLogger("Java extensions directory " + extDir + " is writable");
+      URL libUrl = InterfaceOptionPageProvider.class.getResource("lib");
+      if (libUrl != null) {
+        try {
+          File galicianLocaleJar = new File(new File(libUrl.toURI()), "javagalician.jar");
+          File targetJar = new File(extDir, galicianLocaleJar.getName());
+          GPLogger.logToLogger("Locale extension " + galicianLocaleJar);
+          if (galicianLocaleJar.exists() && !targetJar.exists()) {
+            GPLogger.logToLogger("Exists. Installing now");
+            Files.copy(galicianLocaleJar.toPath(), extDir.toPath());
+            return Pair.create(Boolean.TRUE, extDir);
           }
+        } catch (IOException e) {
+          GPLogger.log(e);
+        } catch (URISyntaxException e) {
+          GPLogger.log(e);
         }
-        return Pair.create(Boolean.FALSE, extDir);
-      } else {
-        GPLogger.logToLogger("Java extensions directory " + extDir + " is not writable");
       }
       return Pair.create(Boolean.FALSE, extDir);
+    } else {
+      GPLogger.logToLogger("Java extensions directory " + extDir + " is not writable");
+    }
+    return Pair.create(Boolean.FALSE, extDir);
   }
 
   private static File getExtDir() {

@@ -39,6 +39,10 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url "http://sandec.bintray.com/repo"
+        }
+
     }
     apply plugin: 'java'
     apply plugin: 'eclipse'

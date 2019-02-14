@@ -21,25 +21,18 @@ ext {
     libDir = 'lib/core'
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
-
 javafx {
-    modules = [ 'javafx.controls', 'javafx.swing', 'javafx.web' ]
+    modules = ['javafx.controls', 'javafx.swing']
 }
 dependencies {
     providedCompile project(':biz.ganttproject.core')
 
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
-    direct 'commons-beanutils:commons-beanutils:1.8.0'
+// [milton-api]
     direct 'commons-codec:commons-codec:1.10'
-    direct 'commons-collections:commons-collections:3.2.1'
-    direct 'commons-io:commons-io:1.4'
-    direct 'commons-lang:commons-lang:2.6'
-    direct 'commons-logging:commons-logging:1.2'
+// [milton-api]
+    direct 'commons-io:commons-io:2.4'
 
     direct 'com.beust:jcommander:1.17'
     direct 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
@@ -49,27 +42,24 @@ dependencies {
     direct 'com.fasterxml.jackson.core:jackson-databind:2.9.+'
     direct 'com.jgoodies:jgoodies-common:1.7.0'
     direct 'com.jgoodies:jgoodies-looks:2.5.3'
+    direct 'com.sandec:mdfx:0.+'
     direct 'com.squareup.okhttp3:okhttp:3.+'
 
     direct 'de.jensd:fontawesomefx-commons:9.1.2'
     direct 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
 
     direct 'net.java.balloontip:balloontip:1.2.4.1'
-    direct 'net.sf.ezmorph:ezmorph:1.0.6'
-    direct group: 'net.sf.json-lib', name:'json-lib', version:'2.4', classifier:'jdk15'
 
     direct 'org.apache.httpcomponents:httpclient:4.5.6'
-    direct 'org.apache.httpcomponents:httpcore:4.4.10'
     direct 'org.apache.httpcomponents:httpmime:4.5.6'
     direct 'org.apache.poi:poi:3.17'
     direct 'org.controlsfx:controlsfx:9.0.+'
     direct 'org.nanohttpd:nanohttpd:2.3.+'
-    direct 'org.jdom:jdom:1.1.+'
+// [milton-client]
+    direct 'org.jdom:jdom:1.+'
     direct 'org.slf4j:slf4j-api:1.7.+'
     direct 'org.slf4j:slf4j-simple:1.7.+'
     direct 'org.swinglabs:jxlayer:3.0.4'
-
-    direct 'xml-apis:xml-apis:2.0.2'
 
     compile configurations.direct
     compile configurations.providedCompile
