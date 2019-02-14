@@ -138,7 +138,7 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
     }
   }
 
-  internal fun build(): JFXPanel {
+  fun build(): JFXPanel {
     val borderPane = BorderPane()
     borderPane.styleClass.add("body")
 
