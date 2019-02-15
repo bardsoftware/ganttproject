@@ -18,7 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -103,8 +104,7 @@ class BrowserPaneBuilder(
   private lateinit var onOpenItem: OnItemAction
   private lateinit var onLaunch: OnItemAction
   lateinit var validationSupport: ValidationSupport
-  private lateinit var i18n: DefaultStringSupplier
-
+  private lateinit var i18n: Localizer
 
   val busyIndicatorToggler: Consumer<Boolean>
     get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
@@ -113,7 +113,7 @@ class BrowserPaneBuilder(
     get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
 
 
-  fun withI18N(i18n: DefaultStringSupplier) {
+  fun withI18N(i18n: DefaultLocalizer) {
     this.i18n = i18n
   }
 
@@ -124,7 +124,7 @@ class BrowserPaneBuilder(
       onLock: OnItemAction = Consumer {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
-      itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap() }) {
+      itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
     this.listView = FolderView(
         this.dialogUi,
         onDelete,
@@ -264,3 +264,5 @@ private fun formatError(validation: ValidationResult): String {
       .map { error -> error.text }
       .collect(Collectors.joining("\n"))
 }
+
+val BROWSE_PANE_LOCALIZER = DefaultLocalizer("storageService._default")

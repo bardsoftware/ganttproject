@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
-import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -111,6 +111,7 @@ class LocalStorage(
     this.state = LocalStorageState(currentDocument, myMode)
 
     val builder = BrowserPaneBuilder(this.mode, myDialogUi) { path, success, loading ->
+      println("Selected path=$path")
       loadFiles(path, success, state)
     }
     val actionButtonHandler = object {
@@ -143,7 +144,7 @@ class LocalStorage(
 
     val listViewHint = SimpleStringProperty(i18n.getText(myUtil.i18nKey("storageService.local.%s.listViewHint")))
     this.paneElements = builder.apply {
-      withI18N(DefaultStringSupplier("storageService.local"))
+      withI18N(DefaultLocalizer("storageService.local", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(if (filePath.toFile().isDirectory) createPath(filePath.toFile()) else createPath(filePath.parent.toFile()))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(

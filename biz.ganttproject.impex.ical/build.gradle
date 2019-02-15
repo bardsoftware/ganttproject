@@ -19,7 +19,10 @@ sourceSets {
     }
 }
 
-task copyPlugin {
+task copyPlugin(dependsOn: assemble) {
+    doFirst {
+        println ">>> Building $project.name"
+    }
     copy {
         into(new File(rootProject.pluginsDir, project.name))
         from(jar.outputs.getFiles().getFiles().flatten())
@@ -34,6 +37,6 @@ task copyPlugin {
         }
     }
     doLast {
-        println "Copying $project.name to $rootProject.pluginsDir"
+        println "<<< $project.name"
     }
 }

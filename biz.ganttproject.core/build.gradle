@@ -30,9 +30,9 @@ sourceSets {
     }
 }
 
-task copyPlugin() {
+task copyPlugin(dependsOn: assemble) {
     doFirst {
-        println "Copying $project.name to $rootProject.pluginsDir"
+        println "Building $project.name"
     }
     copy {
         into(new File(rootProject.pluginsDir, project.name))

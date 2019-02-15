@@ -103,7 +103,10 @@ task updateVersion {
 }
 
 
-task copyPluginFiles {
+task copyPluginFiles(dependsOn: assemble) {
+    doFirst {
+        println ">>> Building $project.name"
+    }
     copy {
         into(new File(rootProject.pluginsDir, project.name))
         from(jar.outputs.getFiles().getFiles().flatten())
@@ -123,6 +126,9 @@ task copyPluginFiles {
         from(configurations.compileClasspath.minus(configurations.providedCompile)) {
             include "*.jar"
         }
+    }
+    doLast {
+        println("<<< $project.name")
     }
 }
 

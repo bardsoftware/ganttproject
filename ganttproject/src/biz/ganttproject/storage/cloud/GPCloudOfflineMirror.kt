@@ -18,12 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.BrowserPaneBuilder
-import biz.ganttproject.storage.DocumentUri
-import biz.ganttproject.storage.FolderItem
-import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.collections.FXCollections
@@ -54,7 +51,7 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : Folder
 /**
  * Builds offline notification pane and offline browser pane.
  */
-class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, val dialogUi: StorageDialogBuilder.DialogUi) {
+class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, private val dialogUi: StorageDialogBuilder.DialogUi) {
   var controller: GPCloudStorage.Controller? = null
 
   fun createPane(): Pane {
@@ -123,7 +120,7 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, val dialogUi: Stor
     }
 
     val paneElements = builder.apply {
-      withI18N(DefaultStringSupplier("storageService.cloudOffline"))
+      withI18N(DefaultLocalizer("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
       withActionButton(EventHandler { })
       withListView(

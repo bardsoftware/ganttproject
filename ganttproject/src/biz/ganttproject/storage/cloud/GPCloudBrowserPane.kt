@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
@@ -170,7 +170,7 @@ class GPCloudBrowserPane(
     }
 
     this.paneElements = builder.apply {
-      withI18N(DefaultStringSupplier("storageService.cloud"))
+      withI18N(DefaultLocalizer("storageService.cloud", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, "GanttProject Cloud"))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(

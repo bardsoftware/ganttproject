@@ -310,7 +310,7 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
     val defaultCrumbFactory = breadcrumbs.crumbFactory
     breadcrumbs.crumbFactory = Callback { treeItem ->
       val btn = defaultCrumbFactory.call(treeItem)
-      btn.graphic = Label("/")
+      btn.graphic = Label(" ")
       btn.contentDisplay = ContentDisplay.LEFT
       btn
     }

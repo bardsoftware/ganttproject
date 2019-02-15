@@ -24,7 +24,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 
 class LocalizedString(
     private val key: String,
-    private val i18n: DefaultStringSupplier,
+    private val i18n: Localizer,
     private val observable: SimpleStringProperty = SimpleStringProperty(),
     private var args: List<String> = emptyList()) : ObservableValue<String> by observable {
   init {
@@ -37,19 +37,38 @@ class LocalizedString(
     return this
   }
 
-  private fun build(): String =
-      if (i18n.rootKey == "") i18n.formatText(key, this.args)
-      else i18n.formatText("${i18n.rootKey}.$key", this.args)
+  private fun build(): String = i18n.formatText(key, args)
+}
+
+interface Localizer {
+  fun create(key: String): LocalizedString
+  fun formatText(key: String, vararg args: Any): String
+}
+
+object DummyLocalizer : Localizer {
+  override fun create(key: String): LocalizedString {
+    return LocalizedString(key, this)
+  }
+
+  override fun formatText(key: String, vararg args: Any): String {
+    return key
+  }
+
 }
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class DefaultStringSupplier(var rootKey: String = "") {
-  fun create(key: String): LocalizedString = LocalizedString(key, this)
+class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: Localizer = DummyLocalizer) : Localizer {
+  override fun create(key: String): LocalizedString = LocalizedString(key, this)
 
-  fun formatText(key: String, vararg args: Any): String {
-    return GanttLanguage.getInstance().formatText(key, *args)
+  override fun formatText(key: String, vararg args: Any): String {
+    val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
+    return if (hasKey(key1)) {
+      GanttLanguage.getInstance().formatText(key1, *args)
+    } else {
+      this.fallbackLocalizer.formatText(key, args)
+    }
   }
 
   fun hasKey(key: String): Boolean {

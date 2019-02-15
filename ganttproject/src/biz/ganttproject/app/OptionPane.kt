@@ -44,7 +44,7 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  * to JOptionPane class.
  */
 class OptionPaneBuilder<T> {
-  val i18n = DefaultStringSupplier()
+  val i18n = DefaultLocalizer()
   val titleString = i18n.create("title")
   val titleHelpString = i18n.create("titleHelp")
 

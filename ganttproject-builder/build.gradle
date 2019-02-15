@@ -32,7 +32,7 @@ task updateEclipsito(type: Jar) {
     }
 }
 
-task distBin(dependsOn: rootProject.getTasksByName('assemble', true) + rootProject.getTasksByName('copyPlugin', true)) {
+task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
     println "===== Building GanttProject ${version} ====="
     println "===== Building generic binary distro ====="
     doLast {

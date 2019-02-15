@@ -2,7 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DefaultStringSupplier
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
@@ -131,44 +131,46 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       loadFolder(path, loading, consumer, myDialogUi)
     }
     val isLockingSupported = SimpleBooleanProperty()
-    isLockingSupported.addListener({ _, _, newValue ->
+    isLockingSupported.addListener { _, _, newValue ->
       System.err.println("is locking supported=" + newValue!!)
-    })
-    builder.withI18N(DefaultStringSupplier("storageService.webdav"))
-    builder.withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
-    builder.withListView(
-        onOpenItem = Consumer { item ->
-          if (item is WebDavResourceAsFolderItem) {
-            if (item.isDirectory) {
-              myState.folder = item.myResource
-              myState.filename = null
-              myState.resource = null
-            } else {
-              myState.resource = item.myResource
+    }
+    builder.apply {
+      withI18N(DefaultLocalizer("storageService.webdav", BROWSE_PANE_LOCALIZER))
+      withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
+      withListView(
+          onOpenItem = Consumer { item ->
+            if (item is WebDavResourceAsFolderItem) {
+              if (item.isDirectory) {
+                myState.folder = item.myResource
+                myState.filename = null
+                myState.resource = null
+              } else {
+                myState.resource = item.myResource
+              }
             }
-          }
-        },
-        onLaunch = Consumer {
-          myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
-        },
-        onDelete = Consumer { item ->
-          if (item is WebDavResourceAsFolderItem) {
-            deleteResource(item)
-          }
-        },
-        onLock = Consumer { item ->
-          if (item is WebDavResourceAsFolderItem) {
-            toggleLockResource(item)
-          }
-        },
-        canLock = isLockingSupported,
-        canDelete = SimpleBooleanProperty(true)
-    )
+          },
+          onLaunch = Consumer {
+            myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+          },
+          onDelete = Consumer { item ->
+            if (item is WebDavResourceAsFolderItem) {
+              deleteResource(item)
+            }
+          },
+          onLock = Consumer { item ->
+            if (item is WebDavResourceAsFolderItem) {
+              toggleLockResource(item)
+            }
+          },
+          canLock = isLockingSupported,
+          canDelete = SimpleBooleanProperty(true)
+      )
 
 
-    builder.withActionButton(EventHandler {
-      myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
-    })
+      withActionButton(EventHandler {
+        myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+      })
+    }
     val browserPaneElements = builder.build()
     return browserPaneElements.browserPane
   }
