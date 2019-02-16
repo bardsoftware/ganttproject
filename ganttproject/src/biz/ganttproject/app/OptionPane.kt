@@ -49,16 +49,6 @@ class OptionPaneBuilder<T> {
   val titleHelpString = i18n.create("titleHelp")
 
   /**
-   * The root key in i18n key hierarchy for this widget. Builder automatically appends suffixes to this root key:
-   * - title
-   * - titleHelp
-   */
-  var i18nRootKey: String = ""
-    set(value) {
-      this.i18n.rootKey = value
-    }
-
-  /**
    * Style class added to the widget
    */
   var styleClass = ""
@@ -95,15 +85,16 @@ class OptionPaneBuilder<T> {
 
   private fun buildDialogPane(pane: DialogPane, optionHandler: (T) -> Unit) {
     val vbox = VBoxBuilder()
-    vbox.addTitle(this.titleString.value)
+    vbox.addTitle(this.titleString.update().value)
     vbox.add(Label().apply {
-      this.textProperty().bind(this@OptionPaneBuilder.titleHelpString)
+      this.textProperty().bind(this@OptionPaneBuilder.titleHelpString.update())
       this.styleClass.add("help")
     })
 
     val lockGroup = ToggleGroup()
     this.elements.forEach {
-      val btn = RadioButton(this.i18n.formatText("${i18nRootKey}.${it.i18nKey}")).also { btn ->
+      val btn = RadioButton().also { btn ->
+        btn.textProperty().bind(i18n.create(it.i18nKey))
         btn.styleClass.add("btn-option")
         btn.userData = it.userData
         btn.toggleGroup = lockGroup
@@ -111,9 +102,11 @@ class OptionPaneBuilder<T> {
       }
       vbox.add(btn)
 
-      if (this.i18n.hasKey("${i18nRootKey}.${it.i18nKey}.help")) {
-        val helpText = this.i18n.formatText("${i18nRootKey}.${it.i18nKey}.help")
-        vbox.add(Label(helpText).apply { this.styleClass.add("option-help") })
+      if (this.i18n.hasKey("${it.i18nKey}.help")) {
+        vbox.add(Label().apply {
+          this.textProperty().bind(i18n.create("${it.i18nKey}.help"))
+          this.styleClass.add("option-help")
+        })
       }
       it.customContent?.let { vbox.add(it) }
     }

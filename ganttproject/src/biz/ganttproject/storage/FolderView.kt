@@ -58,13 +58,13 @@ class FolderView<T : FolderItem>(
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
     isDeleteSupported: ReadOnlyBooleanProperty,
-    private val itemActionFactory: ItemActionFactory = Function { _ -> Collections.emptyMap() }) {
+    private val itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
 
   var myContents: ObservableList<T> = FXCollections.observableArrayList()
   val listView: ListView<ListViewItem<T>> = ListView()
 
   init {
-    listView.setCellFactory { _ ->
+    listView.setCellFactory {
       createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, this.itemActionFactory)
     }
     listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
@@ -81,7 +81,7 @@ class FolderView<T : FolderItem>(
   /**
    * Loads the list of folder contents into the view.
    */
-  fun setResources(folderContents: ObservableList<T>, keepSelection: Boolean = true) {
+  fun setResources(folderContents: ObservableList<T>) {
     val selectedItem = listView.selectionModel.selectedItem
     myContents = folderContents
     reloadItems(folderContents)
@@ -94,8 +94,8 @@ class FolderView<T : FolderItem>(
   private fun reloadItems(folderContents: ObservableList<T>) {
     val items = FXCollections.observableArrayList(createExtractor<T>())
     folderContents.stream()
-        .map({ resource -> ListViewItem(resource) })
-        .forEach({ items.add(it) })
+        .map { resource -> ListViewItem(resource) }
+        .forEach { items.add(it) }
     listView.items = items
   }
 
@@ -236,16 +236,16 @@ fun <T : FolderItem> createListCell(
             }
 
         if (btnLock != null) {
-          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> onToggleLockResource.accept(item.resource.value) }
+          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { onToggleLockResource.accept(item.resource.value) }
           btnBox.children.add(btnLock)
         }
         if (btnDelete != null) {
-          btnDelete.addEventHandler(ActionEvent.ACTION) { _ -> onDeleteResource.accept(item.resource.value) }
+          btnDelete.addEventHandler(ActionEvent.ACTION) { onDeleteResource.accept(item.resource.value) }
           btnBox.children.add(btnDelete)
         }
         itemActionFactory.apply(item.resource.value).forEach { key, action ->
           createButton(key).also {
-            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { _ -> action.accept(item.resource.value) }
+            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { action.accept(item.resource.value) }
             btnBox.children.add(it)
           }
         }
@@ -274,11 +274,11 @@ fun <T : FolderItem> createListCell(
 typealias Path = DocumentUri
 
 fun createPath(file: File): Path {
-  return DocumentUri.LocalDocument.createPath(file)
+  return DocumentUri.createPath(file)
 }
 
 fun createPath(pathAsString: String): Path {
-  return DocumentUri.LocalDocument.createPath(pathAsString)
+  return DocumentUri.createPath(pathAsString)
 }
 
 data class BreadcrumbNode(val path: Path, val label: String) {
@@ -288,17 +288,16 @@ data class BreadcrumbNode(val path: Path, val label: String) {
 
 class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
   val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
+  val defaultCrumbFactory = breadcrumbs.crumbFactory
   var path: Path
     get() = breadcrumbs.selectedCrumb.value.path
     set(value) {
       var lastItem: TreeItem<BreadcrumbNode> = TreeItem(BreadcrumbNode(value.getRoot(), value.getRootName()))
       for (idx in 0 until value.getNameCount()) {
         val treeItem = TreeItem<BreadcrumbNode>(
-            BreadcrumbNode(value.subpath(0, idx),
+            BreadcrumbNode(value.subpath(0, idx+1),
                 value.getName(idx)))
-        if (lastItem != null) {
-          lastItem.children.add(treeItem)
-        }
+        lastItem.children?.add(treeItem)
         lastItem = treeItem
       }
       breadcrumbs.selectedCrumb = lastItem
@@ -307,17 +306,21 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
 
   init {
     breadcrumbs.styleClass.add("breadcrumb")
-    val defaultCrumbFactory = breadcrumbs.crumbFactory
+    breadcrumbs.onCrumbAction = EventHandler { event ->
+      event.selectedCrumb.children.clear()
+      val idx = event.selectedCrumb.value.path.getNameCount()
+      val selectedButton = breadcrumbs.childrenUnmodifiable[idx]
+      breadcrumbs.childrenUnmodifiable.forEach { it.styleClass.add("crumb-selected") }
+      onSelectCrumb.accept(event.selectedCrumb.value.path)
+    }
     breadcrumbs.crumbFactory = Callback { treeItem ->
-      val btn = defaultCrumbFactory.call(treeItem)
-      btn.graphic = Label(" ")
-      btn.contentDisplay = ContentDisplay.LEFT
-      btn
+      defaultCrumbFactory.call(treeItem).also {
+        if (treeItem.isLeaf) {
+          it.styleClass.add("crumb-selected")
+        }
+      }
     }
-    breadcrumbs.onCrumbAction = EventHandler { node ->
-      node.selectedCrumb.children.clear()
-      onSelectCrumb.accept(node.selectedCrumb.value.path)
-    }
+
     path = initialPath
   }
 
@@ -373,7 +376,7 @@ fun <T : FolderItem> connect(
     // Filter folder with user text and map each item to its name. Return the result if
     // filtered list has less than 5 items.
     listView.doFilter(req.userText).let {
-      if (it.size <= 5) it.map { it -> it.name }.toList() else emptyList<String>()
+      if (it.size <= 5) it.map { it.name }.toList() else emptyList<String>()
     }
   }
   filename.onKeyPressed = EventHandler { keyEvent ->

@@ -107,7 +107,7 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
     } catch (e: VersionMismatchException) {
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18nRootKey = "cloud.versionMismatch"
+          it.i18n.rootKey = "cloud.versionMismatch"
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK)

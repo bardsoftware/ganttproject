@@ -376,23 +376,15 @@ HBox.title-integrated Label {
     -fx-background-color: transparent;
 }
 .crumb {
-    -fx-padding: 0 8 0 0;
-    -fx-border-insets: 3;
-    -fx-content-display: left;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-shape: null;
     -fx-fill: -gp-light-gray;
-    -fx-font-size: 1.11em;
     -fx-text-fill: -gp-light-gray;
 }
 .crumb:hover,
 .crumb:selected,
-.crumb:focused
+.crumb:focused,
+.crumb-selected
 {
-    -fx-padding: 0 8 0 0;
     -fx-background-color: -gp-medium-gray;
-}
-.crumb .label {
-    -fx-text-fill: -gp-light-gray;
 }

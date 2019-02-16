@@ -238,7 +238,7 @@ class GPCloudBrowserPane(
 
   private fun createLockSuggestionPane(document: GPCloudDocument): Pane {
     return OptionPaneBuilder<Duration>().run {
-      i18nRootKey = "cloud.lockOptionPane"
+      i18n.rootKey = "cloud.lockOptionPane"
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
@@ -275,7 +275,7 @@ class GPCloudBrowserPane(
       it.isSelected = true
     }
     return OptionPaneBuilder<ActionOnLocked>().run {
-      i18nRootKey = "cloud.lockWarningPane"
+      i18n.rootKey = "cloud.lockWarningPane"
       titleHelpString.update(lockOwner)
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
