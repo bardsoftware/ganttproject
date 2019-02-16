@@ -111,7 +111,6 @@ class LocalStorage(
     this.state = LocalStorageState(currentDocument, myMode)
 
     val builder = BrowserPaneBuilder(this.mode, myDialogUi) { path, success, loading ->
-      println("Selected path=$path")
       loadFiles(path, success, state)
     }
     val actionButtonHandler = object {
@@ -166,7 +165,7 @@ class LocalStorage(
         "biz/ganttproject/storage/local/LocalStorage.css"
     )
 
-    val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "doclist-browse")
+    val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "local-storage-browse")
     this.paneElements.filenameInput.right = btnBrowse
 
     state.validationSupport = builder.validationSupport
