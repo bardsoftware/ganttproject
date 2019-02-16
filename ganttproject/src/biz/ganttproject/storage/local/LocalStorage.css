@@ -7,13 +7,6 @@
     /*-fx-padding: 0 0 0 0;*/
 /*}*/
 
-.custom-text-field:right-node-visible .right-pane {
-    -fx-padding: 0 0 0 3;
-}
-
-.custom-text-field.error {
-    -fx-effect: dropshadow(three-pass-box, red, 7, 0, 0, 0);
-}
 /*.custom-text-field.error:focused,*/
 /*.custom-text-field.error:text-field-has-focus {*/
     /*-fx-highlight-fill: -fx-accent;*/
@@ -33,6 +26,8 @@
     -fx-fill: -gp-light-gray;
     -fx-text-fill: -gp-light-gray;
     -fx-border-insets: 0;
+    -fx-border-radius: 0;
+    -fx-background-insets: 1px;
 }
 .local-storage-browse .glyph-icon {
     -fx-fill: -gp-light-gray;

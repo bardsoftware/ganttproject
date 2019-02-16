@@ -103,7 +103,7 @@ task updateVersion {
 }
 
 
-task copyPluginFiles(dependsOn: assemble) {
+task copyPluginFiles(dependsOn: jar) {
     doFirst {
         println ">>> Building $project.name"
     }

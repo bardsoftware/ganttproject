@@ -34,16 +34,16 @@ fun createLocalStorageValidator(
     if (value == null) {
       return@Validator ValidationResult()
     }
+    if (value.isBlank()) {
+      return@Validator ValidationResult.fromWarning(control, "Type file name")
+    }
     try {
-      if (value == "") {
-        return@Validator ValidationResult.fromWarning(control, "Type file name")
-      }
       state.trySetFile(value)
       return@Validator ValidationResult()
     } catch (e: StorageMode.FileException) {
       when {
         "document.storage.error.read.notExists" == e.message && !isListEmpty.get() ->
-          return@Validator ValidationResult.fromWarning(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+          return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
         else -> return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
       }
     }

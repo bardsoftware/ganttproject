@@ -31,13 +31,18 @@ webdav-list-cell-button-pane.alert-warning {
 }
 
 .btn-attention {
-    -fx-background-color: #ffc241;
+    -fx-background-color: -gp-orange;
     -fx-text-fill: black;
     -fx-font-weight: bold;
     -fx-font-size: 120%;
     -fx-padding: 1ex 2em 1ex 2em;
     -fx-cursor: hand;
 }
+.btn-attention:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
 
 .btn-done {
     -fx-font-weight: bold;
@@ -98,6 +103,14 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-padding: 5 0;
 }
 
+.custom-text-field:right-node-visible .right-pane {
+    -fx-padding: 0;
+}
+
+.custom-text-field.error {
+    -fx-effect: innershadow(three-pass-box, #ff6f85, 3, 1, 0, 0);
+}
+
 .doclist-save-box {
     -fx-padding: 1ex 0em;
     -fx-pref-width: 100%;
@@ -136,13 +149,18 @@ HBox.title-integrated Label {
     visibility: hidden;
 }
 
+.hint {
+    -fx-padding: 0.25ex 0 0 0;
+    -fx-text-fill: -gp-light-gray;
+}
+.hint .glyph-icon {
+    -fx-fill: -gp-light-gray;
+}
 .hint.error {
-    -fx-text-fill: derive(darkred, +10%);
     visibility: visible;
 }
 
 .hint.warning {
-    -fx-text-fill: derive(darkgray, +20%);
     visibility: visible;
 }
 
@@ -303,6 +321,9 @@ HBox.title-integrated Label {
     -fx-padding: 10px 0 10px 0;
 }
 
+.status-bar {
+    -fx-background-color: transparent;
+}
 .subtitle {
     -fx-padding: 0 0 3 0;
     -fx-font-weight: bold;
@@ -374,6 +395,7 @@ HBox.title-integrated Label {
 
 .bread-crumb-bar {
     -fx-background-color: transparent;
+    -fx-padding: 0 0 1em 0;
 }
 .crumb {
     -fx-background-color: transparent;

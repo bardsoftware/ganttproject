@@ -81,7 +81,7 @@ class LocalStorage(
   private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FolderItem>()
-    dir.listFiles().map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
+    dir.listFiles().filter { !it.name.startsWith(".") }.map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
     success.accept(result)
     state.currentDir.set(dir)
   }
@@ -168,7 +168,7 @@ class LocalStorage(
     val btnBrowse = buildFontAwesomeButton(FontAwesomeIcon.SEARCH.name, "Browse...", { onBrowse() }, "local-storage-browse")
     this.paneElements.filenameInput.right = btnBrowse
 
-    state.validationSupport = builder.validationSupport
+    state.validationSupport = paneElements.validationSupport
 
 // TODO: restore overwrite confirmation?
 //    if (myMode is StorageMode.Save) {

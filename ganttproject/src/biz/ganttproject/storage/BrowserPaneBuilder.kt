@@ -72,7 +72,8 @@ data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
                                val filenameInput: CustomTextField,
                                val browserPane: Pane,
                                val busyIndicator: Consumer<Boolean>,
-                               val errorLabel: Label)
+                               val errorLabel: Label,
+                               val validationSupport: ValidationSupport)
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -98,12 +99,13 @@ class BrowserPaneBuilder(
   private val listViewHint = Label().also {
     it.styleClass.addAll("hint", "noerror")
   }
+  private lateinit var btnSave: Button
 
   private lateinit var breadcrumbView: BreadcrumbView
   private lateinit var saveBox: HBox
   private lateinit var onOpenItem: OnItemAction
   private lateinit var onLaunch: OnItemAction
-  lateinit var validationSupport: ValidationSupport
+  private var validationSupport: ValidationSupport = ValidationSupport()
   private lateinit var i18n: Localizer
 
   val busyIndicatorToggler: Consumer<Boolean>
@@ -146,11 +148,12 @@ class BrowserPaneBuilder(
   }
 
   fun withActionButton(onAction: EventHandler<ActionEvent>) {
-    val btnSave = Button().also {
+    this.btnSave = Button().also {
       it.textProperty().bind(i18n.create("${this.mode.name.toLowerCase()}.actionLabel"))
     }
     btnSave.addEventHandler(ActionEvent.ACTION, onAction)
     btnSave.styleClass.add("btn-attention")
+
     this.saveBox = HBox().apply {
       children.addAll(busyIndicator, btnSave)
       styleClass.add("doclist-save-box")
@@ -159,7 +162,7 @@ class BrowserPaneBuilder(
 
   fun withValidator(validator: Validator<String>) {
     errorLabel.styleClass.addAll("hint", "noerror")
-    this.validationSupport = ValidationSupport().apply {
+    this.validationSupport.apply {
       registerValidator(filename, validator)
       validationDecorator = StyleClassValidationDecoration("error", "warning")
     }
@@ -172,15 +175,23 @@ class BrowserPaneBuilder(
           errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
           errorLabel.styleClass.remove("warning")
           errorLabel.styleClass.add("error")
+          filename.styleClass.remove("warning")
+          filename.styleClass.add("error")
+          btnSave.isDisable = true
         } else if (validationResult.warnings.isNotEmpty()) {
           errorLabel.graphic = null
           errorLabel.styleClass.remove("error")
           errorLabel.styleClass.add("warning")
+          filename.styleClass.remove("error")
+          filename.styleClass.add("warning")
+          btnSave.isDisable = false
         }
       } else {
         errorLabel.text = ""
+        filename.styleClass.removeAll("error", "warning")
         errorLabel.styleClass.removeAll("error", "warning")
         errorLabel.styleClass.add("noerror")
+        btnSave.isDisable = false
       }
     }
   }
@@ -208,6 +219,7 @@ class BrowserPaneBuilder(
         }
         !withEnter && !item.isDirectory -> {
           this.onOpenItem.accept(item)
+          filename.text = item.name
         }
       }
     }
@@ -247,15 +259,15 @@ class BrowserPaneBuilder(
         it.styleClass.add("nav-search")
         it.children.addAll(
             breadcrumbView.breadcrumbs,
-            errorLabel,
-            filename
+            filename,
+            errorLabel
         )
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(listViewHint)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport)
   }
 }
 
