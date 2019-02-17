@@ -402,6 +402,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun getURI(): URI = URI("""$GPCLOUD_PROJECT_READ_URL$queryArgs""")
 
   override fun isLocal(): Boolean = false
+
   fun listenLockChange(webSocket: WebSocketClient) {
     webSocket.onLockStatusChange { msg ->
       println(msg)
@@ -416,15 +417,15 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun toggleLocked(): CompletableFuture<LockStatus> {
+  override fun toggleLocked(duration: Duration?): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
     val lockService = LockService {
       result.completeExceptionally(RuntimeException(it))
     }
     lockService.project = this.projectJson!!
     lockService.busyIndicator = Consumer {}
-    lockService.requestLockToken = false
-    lockService.duration = Duration.ofHours(1)
+    lockService.requestLockToken = true
+    lockService.duration = if (duration != null) duration else Duration.ZERO
     lockService.onSucceeded = EventHandler {
       val status = json2lockStatus(lockService.value)
       val projectNode = this.projectJson.node
@@ -443,7 +444,7 @@ class GPCloudDocument(private val teamRefid: String?,
   private fun json2lockStatus(json: JsonNode?): LockStatus {
     return if (json?.isMissingNode == false) {
       LockStatus(true,
-          json["name"]?.textValue(), json["email"]?.textValue(), json["uid"]?.textValue())
+          json["name"]?.textValue(), json["email"]?.textValue(), json["uid"]?.textValue(), json)
     } else {
       LockStatus(false)
     }

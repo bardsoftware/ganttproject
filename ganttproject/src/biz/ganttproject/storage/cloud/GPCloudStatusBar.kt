@@ -18,11 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.OptionPaneBuilder
-import biz.ganttproject.storage.LockStatus
-import biz.ganttproject.storage.LockableDocument
-import biz.ganttproject.storage.OnlineDocument
-import biz.ganttproject.storage.OnlineDocumentMode
+import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -66,7 +62,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private val btnManage = Button("Cloud Options...")
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(btnOffline, btnLock, btnManage)
+    it.children.addAll(btnManage, btnOffline, btnLock)
   }
 
   private var isChangingSelected: Boolean = false
@@ -82,8 +78,13 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       onSwitchAction()
     }
 
-    btnManage.addEventFilter(ActionEvent.ACTION) {
-      OptionPaneBuilder<Boolean>().showDialog {  }
+    btnManage.addEventHandler(ActionEvent.ACTION) {
+      this.observableDocument.get().apply {
+        val onlineDocument = this.asOnlineDocument()
+        if (onlineDocument is GPCloudDocument) {
+          DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument, onLockDone = {})
+        }
+      }
     }
   }
 
@@ -158,7 +159,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       lockPanel.children.add(progress)
       val isNowLocked = this.status.locked
       val savedStatus = this.status
-      val future = realDoc.toggleLocked()
+      val future = realDoc.toggleLocked(duration = null)
       future.thenAccept(this::updateLockStatus).handle { ok, ex ->
         lockPanel.children.remove(progress)
         when {

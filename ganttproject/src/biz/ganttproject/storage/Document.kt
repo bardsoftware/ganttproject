@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.hash.Hashing
 import com.google.common.io.ByteStreams
 import javafx.beans.property.ObjectProperty
@@ -27,6 +28,7 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import java.io.File
 import java.nio.file.Paths
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -151,10 +153,11 @@ class DocumentUri(private val components: List<String>,
 data class LockStatus(val locked: Boolean,
                       val lockOwnerName: String? = null,
                       val lockOwnerEmail: String? = null,
-                      val lockOwnerId: String? = null)
+                      val lockOwnerId: String? = null,
+                      val raw: JsonNode? = null)
 
 interface LockableDocument {
-  fun toggleLocked(): CompletableFuture<LockStatus>
+  fun toggleLocked(duration: Duration?): CompletableFuture<LockStatus>
 
   val status: ObservableObjectValue<LockStatus>
 }

@@ -37,7 +37,6 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.Notifications
-import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -138,7 +137,6 @@ class GPCloudBrowserPane(
     private val documentManager: DocumentManager,
     private val sceneChanger: SceneChanger) {
   private val loaderService = LoaderService(dialogUi)
-  private val lockService = LockService(dialogUi::error)
   private val historyService = HistoryService(dialogUi)
 
   private lateinit var paneElements: BrowserPaneElements
@@ -179,7 +177,7 @@ class GPCloudBrowserPane(
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
             }
-          },
+          },/*
           onLock = Consumer {
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.toggleProjectLock(it,
@@ -187,7 +185,7 @@ class GPCloudBrowserPane(
                   builder.busyIndicatorToggler
               )
             }
-          },
+          },*/
           itemActionFactory = Function {
             if (it is ProjectJsonAsFolderItem) {
               mapOf(
@@ -227,42 +225,17 @@ class GPCloudBrowserPane(
         this.documentConsumer.accept(document)
       } else {
         if (!item.isLocked) {
-          this.sceneChanger(this.createLockSuggestionPane(document))
+          val propertiesUi = DocPropertiesUi(
+              errorUi = dialogUi::error,
+              busyUi = this.paneElements.busyIndicator::accept)
+          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
+            lockNode -> openDocumentWithLock(document, lockNode)
+          })
         } else {
           this.sceneChanger(this.createLockWarningPage(document))
         }
       }
       document.listenLockChange(webSocket)
-    }
-  }
-
-  private fun createLockSuggestionPane(document: GPCloudDocument): Pane {
-    return OptionPaneBuilder<Duration>().run {
-      i18n.rootKey = "cloud.lockOptionPane"
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("lock0h", Duration.ZERO),
-          OptionElementData("lock1h", Duration.ofHours(1), isSelected = true),
-          OptionElementData("lock2h", Duration.ofHours(2)),
-          OptionElementData("lock24h", Duration.ofHours(24))
-      )
-
-      buildPane {
-        val pane = this@GPCloudBrowserPane
-        if (it.isZero) {
-          openDocumentWithLock(document, null)
-        } else {
-          toggleProjectLock(
-              project = document.projectJson!!,
-              done = Consumer { pane.openDocumentWithLock(document, it) },
-              busyIndicator = pane.paneElements.busyIndicator,
-              requestLockToken = true,
-              lockDuration = it
-          )
-        }
-      }
     }
   }
 
@@ -323,11 +296,11 @@ class GPCloudBrowserPane(
     loaderService.apply {
       busyIndicator = showMaskPane
       this.path = path
-      onSucceeded = EventHandler { _ ->
+      onSucceeded = EventHandler {
         setResult.accept(value)
         showMaskPane.accept(false)
       }
-      onFailed = EventHandler { _ ->
+      onFailed = EventHandler {
         showMaskPane.accept(false)
         when (loaderService.exception) {
           is OfflineException -> loadOfflineMirrors(setResult)
@@ -341,7 +314,7 @@ class GPCloudBrowserPane(
 
         }
       }
-      onCancelled = EventHandler { _ ->
+      onCancelled = EventHandler {
         showMaskPane.accept(false)
         GPLogger.log("Loading cancelled!")
       }
@@ -354,32 +327,6 @@ class GPCloudBrowserPane(
     this.loaderService.restart()
   }
 
-  private fun toggleProjectLock(project: ProjectJsonAsFolderItem,
-                                done: Consumer<JsonNode>,
-                                busyIndicator: Consumer<Boolean>,
-                                requestLockToken: Boolean = false,
-                                lockDuration: Duration = Duration.ofMinutes(10)) {
-    lockService.apply {
-      this.busyIndicator = busyIndicator
-      this.project = project
-      this.requestLockToken = requestLockToken
-      this.duration = lockDuration
-      onSucceeded = EventHandler {
-        done.accept(value)
-        busyIndicator.accept(false)
-      }
-      onFailed = EventHandler {
-        busyIndicator.accept(false)
-        dialogUi.error("Loading failed!")
-      }
-      onCancelled = EventHandler {
-        busyIndicator.accept(false)
-        GPLogger.log("Loading cancelled!")
-      }
-      restart()
-    }
-  }
-
 
   private fun loadHistory(item: ProjectJsonAsFolderItem,
                           resultConsumer: Consumer<ObservableList<FolderItem>>,
@@ -387,15 +334,15 @@ class GPCloudBrowserPane(
     this.historyService.apply {
       this.busyIndicator = busyIndicator
       this.projectNode = item
-      onSucceeded = EventHandler { _ ->
+      onSucceeded = EventHandler {
         resultConsumer.accept(this.value)
         this.busyIndicator.accept(false)
       }
-      onFailed = EventHandler { _ ->
+      onFailed = EventHandler {
         busyIndicator.accept(false)
         dialogUi.error("History loading has failed")
       }
-      onCancelled = EventHandler { _ ->
+      onCancelled = EventHandler {
         this.busyIndicator.accept(false)
         GPLogger.log("Loading cancelled!")
       }
