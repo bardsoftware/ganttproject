@@ -23,7 +23,6 @@ import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.layout.Pane
 
 interface I18N {
   fun formatText(key: String, args: Array<Any> = arrayOf()): String
@@ -68,7 +67,7 @@ class OptionPaneBuilder<T> {
    */
   var elements: List<OptionElementData<T>> = listOf()
 
-  fun buildPane(optionHandler: (T) -> Unit): Pane {
+  fun buildDialogPane(optionHandler: (T) -> Unit): DialogPane {
     return DialogPane().also {
       this.buildDialogPane(it, optionHandler)
     }

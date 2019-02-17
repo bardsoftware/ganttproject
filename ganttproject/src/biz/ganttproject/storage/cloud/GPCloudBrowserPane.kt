@@ -259,7 +259,7 @@ class GPCloudBrowserPane(
       )
 
 
-      buildPane { choice ->
+      buildDialogPane { choice ->
         when (choice) {
           ActionOnLocked.OPEN -> {
             openDocumentWithLock(document, document.projectJson.node["lock"])

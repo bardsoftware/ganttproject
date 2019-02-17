@@ -53,7 +53,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           OptionElementData("lock24h", Duration.ofHours(24))
       )
 
-      buildPane { duration ->
+      buildDialogPane { duration ->
         if (duration.isZero) {
           if (document.status.get().locked) {
 
