@@ -46,14 +46,9 @@ public class GanttStatusBar extends JPanel {
   }
 
   public void setLeftScene(Scene scene) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        JFXPanel panel = new JFXPanel();
-        panel.setScene(scene);
-        add(panel, BorderLayout.WEST);
-      }
-    });
+    JFXPanel panel = new JFXPanel();
+    panel.setScene(scene);
+    SwingUtilities.invokeLater(() -> add(panel, BorderLayout.WEST));
   }
 
   public IProgressMonitor createProgressMonitor() {
@@ -186,23 +181,13 @@ public class GanttStatusBar extends JPanel {
       isCanceled = false;
       myWorked = 0;
       GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.start(name, totalWork);
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.start(name, totalWork));
     }
 
     @Override
     public void done() {
       GPLogger.log("[ProgressMonitorImpl] finished Task");
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.done();
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.done());
     }
 
     @Override
@@ -231,22 +216,14 @@ public class GanttStatusBar extends JPanel {
       } else {
         GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
       }
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.setSubTask(name);
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.setSubTask(name));
     }
 
     @Override
     public void worked(final int work) {
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myWorked += work;
-          myProgressDialog.setProgress(myWorked);
-        }
+      SwingUtilities.invokeLater(() -> {
+        myWorked += work;
+        myProgressDialog.setProgress(myWorked);
       });
     }
   }
