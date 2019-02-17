@@ -162,7 +162,7 @@ class GPCloudBrowserPane(
 
       fun onAction() {
         selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
-            ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements!!.filenameInput.text)
+            ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
 
       }
     }
@@ -186,11 +186,11 @@ class GPCloudBrowserPane(
               )
             }
           },*/
-          itemActionFactory = Function {
-            if (it is ProjectJsonAsFolderItem) {
+          itemActionFactory = Function { folderItem ->
+            if (folderItem is ProjectJsonAsFolderItem) {
               mapOf(
-                  "history" to Consumer { item ->
-                    this@GPCloudBrowserPane.loadHistory(it, builder.resultConsumer, builder.busyIndicatorToggler)
+                  "history" to Consumer {
+                    this@GPCloudBrowserPane.loadHistory(folderItem, builder.resultConsumer, builder.busyIndicatorToggler)
                   }
               )
             } else {
@@ -264,7 +264,7 @@ class GPCloudBrowserPane(
           ActionOnLocked.OPEN -> {
             openDocumentWithLock(document, document.projectJson.node["lock"])
             if (notify.isSelected) {
-              document.status.addListener { status, oldValue, newValue ->
+              document.status.addListener { _, _, newValue ->
                 println("new value=$newValue")
                 if (!newValue.locked) {
                   Platform.runLater {

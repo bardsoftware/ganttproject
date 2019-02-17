@@ -20,28 +20,33 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.LockableDocument
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
+import javafx.event.ActionEvent
+import javafx.geometry.Pos
+import javafx.scene.control.Button
+import javafx.scene.control.ButtonType
 import javafx.scene.control.Dialog
-import javafx.scene.control.DialogPane
+import javafx.scene.control.ToggleGroup
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
 import java.time.Duration
-import java.util.function.Consumer
 
 typealias OnLockDone = (JsonNode?) -> Unit
 typealias BusyUi = (Boolean) -> Unit
-
+typealias LockDurationHandler = (Duration) -> Unit
 /**
  * @author dbarashev@bardsoftware.com
  */
 class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
-  fun createLockSuggestionPane(document: LockableDocument, onLockDone: OnLockDone): Pane {
-    return OptionPaneBuilder<Duration>().run {
+  private fun lockPaneBuilder(): OptionPaneBuilder<Duration> {
+    return OptionPaneBuilder<Duration>().apply {
       i18n.rootKey = "cloud.lockOptionPane"
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
@@ -52,34 +57,38 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           OptionElementData("lock2h", Duration.ofHours(2)),
           OptionElementData("lock24h", Duration.ofHours(24))
       )
+    }
+  }
 
-      buildDialogPane { duration ->
-        if (duration.isZero) {
-          if (document.status.get().locked) {
-
-          } else {
-            onLockDone(null)
-          }
-        } else {
-          toggleProjectLock(
-              document = document,
-              done = Consumer { onLockDone(it) },
-              busyIndicator = busyUi,
-              lockDuration = duration
-          )
-        }
+  private fun lockDurationHandler(document: LockableDocument, onLockDone: OnLockDone): LockDurationHandler {
+    return { duration ->
+      if (!duration.isZero || document.status.get().locked) {
+        toggleProjectLock(
+            document = document,
+            done = onLockDone,
+            busyIndicator = busyUi,
+            lockDuration = duration
+        )
+      } else {
+        onLockDone(null)
       }
     }
   }
 
+  fun createLockSuggestionPane(document: LockableDocument, onLockDone: OnLockDone): Pane {
+    return lockPaneBuilder().run {
+      buildDialogPane(lockDurationHandler(document, onLockDone))
+    }
+  }
+
   private fun toggleProjectLock(document: LockableDocument,
-                                done: Consumer<JsonNode>,
+                                done: OnLockDone,
                                 busyIndicator: BusyUi,
                                 lockDuration: Duration = Duration.ofMinutes(10)) {
     busyIndicator(true)
     document.toggleLocked(lockDuration)
         .thenAccept { status ->
-          done.accept(status.raw!!)
+          done(status?.raw)
           busyIndicator(false)
         }
         .exceptionally { ex ->
@@ -92,9 +101,32 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   fun showDialog(document: LockableDocument, onLockDone: OnLockDone) {
     Platform.runLater {
-      Dialog<Unit>().apply {
-        this.dialogPane = createLockSuggestionPane(document, onLockDone) as DialogPane
-        show()
+      val toggleGroup = ToggleGroup()
+      val lockDurationHandler = lockDurationHandler(document, onLockDone)
+      val vboxBuilder = VBoxBuilder().apply {
+        add(node = lockPaneBuilder().let {
+          it.toggleGroup = toggleGroup
+          it.buildPane()
+        }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
+        add(node = Button("Lock").also {
+          it.addEventHandler(ActionEvent.ACTION) {
+            val selectedDuration = toggleGroup.selectedToggle.userData as Duration
+            lockDurationHandler(selectedDuration)
+          }
+        })
+      }
+      Dialog<Unit>().also {
+        it.dialogPane.apply {
+          content = vboxBuilder.vbox
+          styleClass.addAll("dlg-lock")
+          stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+
+          buttonTypes.add(ButtonType.OK)
+          lookupButton(ButtonType.OK).apply {
+            styleClass.add("btn-attention")
+          }
+        }
+        it.show()
       }
     }
 

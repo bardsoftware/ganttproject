@@ -23,6 +23,7 @@ import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.layout.Pane
 
 interface I18N {
   fun formatText(key: String, args: Array<Any> = arrayOf()): String
@@ -67,22 +68,13 @@ class OptionPaneBuilder<T> {
    */
   var elements: List<OptionElementData<T>> = listOf()
 
-  fun buildDialogPane(optionHandler: (T) -> Unit): DialogPane {
-    return DialogPane().also {
-      this.buildDialogPane(it, optionHandler)
-    }
+  var toggleGroup: ToggleGroup = ToggleGroup()
+
+  fun buildPane(): Pane {
+    return buildPaneImpl(this.toggleGroup)
   }
 
-  fun showDialog(optionHandler: (T) -> Unit) {
-    Platform.runLater {
-      Dialog<Unit>().apply {
-        buildDialogPane(dialogPane, optionHandler)
-        show()
-      }
-    }
-  }
-
-  private fun buildDialogPane(pane: DialogPane, optionHandler: (T) -> Unit) {
+  private fun buildPaneImpl(lockGroup: ToggleGroup): Pane {
     val vbox = VBoxBuilder()
     vbox.addTitle(this.titleString.update().value)
     vbox.add(Label().apply {
@@ -90,7 +82,6 @@ class OptionPaneBuilder<T> {
       this.styleClass.add("help")
     })
 
-    val lockGroup = ToggleGroup()
     this.elements.forEach {
       val btn = RadioButton().also { btn ->
         btn.textProperty().bind(i18n.create(it.i18nKey))
@@ -109,7 +100,27 @@ class OptionPaneBuilder<T> {
       }
       it.customContent?.let { vbox.add(it) }
     }
+    return vbox.vbox
+  }
 
+  fun buildDialogPane(optionHandler: (T) -> Unit): DialogPane {
+    return DialogPane().also {
+      this.buildDialogPane(it, optionHandler)
+    }
+  }
+
+  fun showDialog(optionHandler: (T) -> Unit) {
+    Platform.runLater {
+      Dialog<Unit>().apply {
+        buildDialogPane(dialogPane, optionHandler)
+        show()
+      }
+    }
+  }
+
+  private fun buildDialogPane(pane: DialogPane, optionHandler: (T) -> Unit) {
+    val lockGroup = ToggleGroup()
+    val optionsPane = buildPaneImpl(lockGroup)
     val builder = this
     pane.apply {
       styleClass.add(builder.styleClass)
@@ -118,11 +129,11 @@ class OptionPaneBuilder<T> {
         graphic = it
       }
 
-      content = vbox.vbox
+      content = optionsPane
       buttonTypes.add(ButtonType.OK)
       lookupButton(ButtonType.OK).apply {
         styleClass.add("btn-attention")
-        addEventHandler(ActionEvent.ACTION) { evt ->
+        addEventHandler(ActionEvent.ACTION) {
           val userData = lockGroup.selectedToggle.userData as T
           optionHandler(userData)
         }
