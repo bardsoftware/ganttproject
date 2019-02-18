@@ -33,6 +33,13 @@
     -fx-font-size: 80%;
     -fx-wrap-text: true;
 }
+
+.dlg-lock .tab {
+    -fx-background-color: transparent;
+}
+.dlg-lock .tab:hover, .dlg-lock .tab:focused {
+    -fx-background-color: -gp-medium-gray;
+}
 .fill-parent {
     -fx-pref-height: 100%;
     -fx-pref-width: 100%;
