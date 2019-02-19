@@ -104,31 +104,28 @@ task updateVersion {
 
 
 task copyPluginFiles(dependsOn: jar) {
-    doFirst {
-        println ">>> Building $project.name"
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, project.name))
-        from(jar.outputs.getFiles().getFiles().flatten())
-        from(fileTree(".")) {
-            include "plugin.xml"
-            include "data/resources/**.ttf"
-            include "data/resources/**.properties"
-            include "data/resources/calendar/**"
-            include "data/resources/icons/**"
-            include "data/resources/language/**"
-            include "data/resources/xslfo/**"
-            include "data/resources/xslt/**"
-        }
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
-        from(configurations.compileClasspath.minus(configurations.providedCompile)) {
-            include "*.jar"
-        }
-    }
     doLast {
-        println("<<< $project.name")
+        println ">>> Installing $project.name"
+        copy {
+            into(new File(rootProject.pluginsDir, project.name))
+            from(jar.outputs.getFiles().getFiles().flatten())
+            from(fileTree(".")) {
+                include "plugin.xml"
+                include "data/resources/**.ttf"
+                include "data/resources/**.properties"
+                include "data/resources/calendar/**"
+                include "data/resources/icons/**"
+                include "data/resources/language/**"
+                include "data/resources/xslfo/**"
+                include "data/resources/xslt/**"
+            }
+        }
+        copy {
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
+            from(configurations.compileClasspath.minus(configurations.providedCompile)) {
+                include "*.jar"
+            }
+        }
     }
 }
 
