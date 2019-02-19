@@ -20,24 +20,22 @@ sourceSets {
 }
 
 task copyPlugin(dependsOn: assemble) {
-    doFirst {
-        println ">>> Building $project.name"
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, project.name))
-        from(jar.outputs.getFiles().getFiles().flatten())
-        from(fileTree(".")) {
-            include "plugin.xml"
-            include "resource/**"
-        }
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-        from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
-            include "*.jar"
-        }
-    }
     doLast {
+        println ">>> Installing $project.name"
+        copy {
+            into(new File(rootProject.pluginsDir, project.name))
+            from(jar.outputs.getFiles().getFiles().flatten())
+            from(fileTree(".")) {
+                include "plugin.xml"
+                include "resource/**"
+            }
+        }
+        copy {
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
+                include "*.jar"
+            }
+        }
         println "<<< $project.name"
     }
 }

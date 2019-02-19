@@ -31,22 +31,23 @@ sourceSets {
 }
 
 task copyPlugin(dependsOn: assemble) {
-    doFirst {
-        println "Building $project.name"
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, project.name))
-        from(jar.outputs.getFiles().getFiles().flatten())
-        from(fileTree(".")) {
-            include "plugin.xml"
-            include "resources/**"
+    doLast {
+        println "Installing $project.name"
+        copy {
+            into(new File(rootProject.pluginsDir, project.name))
+            from(jar.outputs.getFiles().getFiles().flatten())
+            from(fileTree(".")) {
+                include "plugin.xml"
+                include "resources/**"
+            }
         }
-    }
-    copy {
-        into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-        from(configurations.compileClasspath) {
-            include "*.jar"
+        copy {
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(configurations.compileClasspath) {
+                include "*.jar"
+            }
         }
+        println "<<< $project.name"
     }
 
 }

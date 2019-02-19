@@ -126,6 +126,7 @@ task copyPluginFiles(dependsOn: jar) {
                 include "*.jar"
             }
         }
+        println "<<< $project.name"
     }
 }
 
