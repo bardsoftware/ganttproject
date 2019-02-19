@@ -49,15 +49,16 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   // Locking stuff
   fun createLockSuggestionPane(document: LockableDocument, onLockDone: OnLockDone): Pane {
     return lockPaneBuilder().run {
-      buildDialogPane(lockDurationHandler(document, onLockDone))
+      buildDialogPane(lockDurationHandler(document, onLockDone)).also {
+        it.styleClass.add("dlg-lock")
+        it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      }
     }
   }
 
   private fun lockPaneBuilder(): OptionPaneBuilder<Duration> {
     return OptionPaneBuilder<Duration>().apply {
       i18n.rootKey = "cloud.lockOptionPane"
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
       elements = listOf(
           OptionElementData("lock0h", Duration.ZERO),
@@ -106,8 +107,6 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   fun mirrorPaneBuilder(document: OnlineDocument): OptionPaneBuilder<OnlineDocumentMode> {
     return OptionPaneBuilder<OnlineDocumentMode>().apply {
       i18n.rootKey = "cloud.offlineMirrorOptionPane"
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       elements = listOf(
           OptionElementData(OnlineDocumentMode.MIRROR.name.toLowerCase(), OnlineDocumentMode.MIRROR,
               isSelected = document.mode.value == OnlineDocumentMode.MIRROR),
@@ -135,20 +134,24 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       val mirrorToggleGroup = ToggleGroup()
       val mirrorOptionHandler = mirrorOptionHandler(document)
 
-      val vboxBuilder = VBoxBuilder().apply {
+      val vboxBuilder = VBoxBuilder("tab-contents").apply {
         add(node = mirrorPaneBuilder(document).let {
           it.toggleGroup = mirrorToggleGroup
+          it.styleClass = "section"
           it.buildPane()
         }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
         add(node = lockPaneBuilder().let {
           it.toggleGroup = lockToggleGroup
+          it.styleClass = "section"
           it.buildPane()
         }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
       }
 
       val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
       val versions = Tab("Versions", Label("Versions go here"))
-      val tabPane = TabPane(lockingOffline, versions)
+      val tabPane = TabPane(lockingOffline, versions).also {
+        it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+      }
       Dialog<Unit>().also {
         it.dialogPane.apply {
 

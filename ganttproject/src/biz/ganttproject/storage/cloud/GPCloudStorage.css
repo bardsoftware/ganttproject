@@ -36,9 +36,49 @@
 
 .dlg-lock .tab {
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-padding: 0.25ex 1em;
 }
+
 .dlg-lock .tab:hover, .dlg-lock .tab:focused {
+    -fx-background-color: -gp-light-gray;
+    -fx-border-color: derive(-gp-light-gray, 10%);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-border-radius: 3;
+}
+.dlg-lock .tab-pane .focus-indicator {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+}
+
+.dlg-lock .tab:selected {
     -fx-background-color: -gp-medium-gray;
+    -fx-border-color: derive(-gp-light-gray, 10%);
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+}
+
+.dlg-lock .tab:selected .tab-label {
+    -fx-text-fill: white;
+
+}
+.dlg-lock .tab-contents {
+    -fx-padding: 0 1em 0 1em;
+}
+
+.dlg-lock .tab-contents .section {
+    -fx-padding: 0 0 2em 0;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0 0 1ex 0;
+}
+.tab-pane .tab-header-area .tab-header-background
+{
+    -fx-background-color: transparent;
 }
 .fill-parent {
     -fx-pref-height: 100%;

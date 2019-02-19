@@ -71,7 +71,9 @@ class OptionPaneBuilder<T> {
   var toggleGroup: ToggleGroup = ToggleGroup()
 
   fun buildPane(): Pane {
-    return buildPaneImpl(this.toggleGroup)
+    return buildPaneImpl(this.toggleGroup).also {
+      it.styleClass.add(this@OptionPaneBuilder.styleClass)
+    }
   }
 
   private fun buildPaneImpl(lockGroup: ToggleGroup): Pane {
