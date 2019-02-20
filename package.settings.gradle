@@ -1,0 +1,2 @@
+rootProject.buildFileName = "package.gradle"
+include 'ganttproject', 'biz.ganttproject.core', 'biz.ganttproject.impex.ical', 'biz.ganttproject.impex.msproject2', 'org.ganttproject.impex.htmlpdf', 'org.ganttproject.chart.pert', 'ganttproject-tester', 'ganttproject-builder'
