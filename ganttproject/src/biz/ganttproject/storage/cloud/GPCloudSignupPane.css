@@ -30,7 +30,10 @@ body {
 }
 
 h1 {
-    font-size: 130%;
+    color: black;
+    font-size: 120%;
+    border-bottom: solid #ffaf1a 1px;
+    padding-bottom: 2px;
 }
 
 h2 {

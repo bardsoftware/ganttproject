@@ -25,14 +25,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,6 +48,7 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
   interface ShowDialogCallback {
     void showDialog(JComponent contentPane);
   }
+
   private final UIFacade myUiFacade;
 
   List<String> myMessages = Lists.newArrayList();
@@ -65,6 +64,7 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
   void info(String message) {
     myMessages.add(message);
   }
+
   @Override
   public void addModifiedTask(Task t, Date newStart, Date newEnd) {
     Pair<Date, Date> entry = myModifiedTasks.get(t);
@@ -82,66 +82,50 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
     }
     myModifiedTasks.put(t, entry);
   }
+
   void addReason(Task t, String reasonKey) {
     myReasons.put(t, reasonKey);
   }
+
   void showDialog() {
-    myMessages.add(0,  "");
-    String intro = Joiner.on("<li>").join(myMessages);
+    myMessages.add(0, "");
+    String intro = Joiner.on("\n* ").join(myMessages);
     String startDateChangeTable = buildStartDateChangeTable();
     String endDateChangeTable = myHasOnlyEndDateChange ? buildEndDateChangeTable() : "";
     //String reasonTable = buildReasonTable();
     final String msg = String.format(i18n.getText("scheduler.warning.template"),
-        i18n.getText("zz.dialog.css"),
         i18n.getText("scheduler.warning.h1"),
         i18n.getText("scheduler.warning.intro1"),
         intro,
         i18n.getText("scheduler.warning.intro2"),
-        i18n.getText("scheduler.warning.details.url"),
         i18n.getText("updateRss.question.2"),
+        i18n.getText("scheduler.warning.details.url"),
         startDateChangeTable,
         endDateChangeTable
     );
-    final ShowDialogCallback showDialog = new ShowDialogCallback() {
-      @Override
-      public void showDialog(JComponent contentPane) {
-        Dimension htmlSize = contentPane.getPreferredSize();
-        final JScrollPane scrollPane = new JScrollPane(contentPane);
-        scrollPane.setAutoscrolls(false);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setPreferredSize(new Dimension(Math.min(600, htmlSize.width + 50), Math.min(400, htmlSize.height + 50)));
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
-        myUiFacade.createDialog(scrollPane, new Action[] {CancelAction.CLOSE}, "").show();
-      }
-    };
-    try {
-      Class.forName("javafx.beans.value.ChangeListener");
-      new ProjectOpenDiagnosticUiFx().run(msg, showDialog);
-    } catch (ClassNotFoundException e) {
-      new ProjectOpenDiagnosticUiSwing().run(msg, showDialog);
-    }
+    new ProjectOpenDiagnosticUiFx().run(msg);
   }
 
   private String buildStartDateChangeTable() {
     List<String> tableRows = Lists.newArrayList();
     for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
       Task t = entry.getKey();
-      Pair<Date,Date> changes = entry.getValue();
+      Pair<Date, Date> changes = entry.getValue();
       if (changes.first() != null) {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.first())),
             i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
-                "scheduler.warning.table.reason.other") + ".url"),
+                "scheduler.warning.table.reason.other") + ".label"),
             i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
-                "scheduler.warning.table.reason.other") + ".label")
-         );
+                "scheduler.warning.table.reason.other") + ".url")
+        );
         tableRows.add(row);
       }
     }
-    String rows =  Joiner.on('\n').join(tableRows);
+    String rows = Joiner.on('\n').join(tableRows);
     String table = String.format(i18n.getText("scheduler.warning.table.template"),
         i18n.getText("scheduler.warning.section.startDate.title"),
         i18n.getText("scheduler.warning.section.startDate.desc"),
@@ -151,26 +135,27 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
         rows);
     return table;
   }
+
   private String buildEndDateChangeTable() {
     List<String> tableRows = Lists.newArrayList();
     for (Entry<Task, Pair<Date, Date>> entry : myModifiedTasks.entrySet()) {
       Task t = entry.getKey();
-      Pair<Date,Date> changes = entry.getValue();
+      Pair<Date, Date> changes = entry.getValue();
       if (changes.first() == null) {
         String row = String.format(i18n.getText("scheduler.warning.table.row"),
             t.getName(),
             i18n.formatDate(CalendarFactory.createGanttCalendar(changes.second())),
             i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
-                "scheduler.warning.table.reason.other") + ".url"),
+                "scheduler.warning.table.reason.other") + ".label"),
             i18n.getText(MoreObjects.firstNonNull(
                 myReasons.get(t),
-                "scheduler.warning.table.reason.other") + ".label")
-         );
+                "scheduler.warning.table.reason.other") + ".url")
+        );
         tableRows.add(row);
       }
     }
-    String rows =  Joiner.on('\n').join(tableRows);
+    String rows = Joiner.on('\n').join(tableRows);
     String table = String.format(i18n.getText("scheduler.warning.table.template"),
         i18n.getText("scheduler.warning.section.endDate.title"),
         i18n.getText("scheduler.warning.section.endDate.desc"),

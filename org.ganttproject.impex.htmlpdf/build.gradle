@@ -2,9 +2,12 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
-  compile project(':..:ganttproject')
+    providedCompile project(path: ':ganttproject', configuration: 'exported')
+    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.3.1'
+
+    compile configurations.providedCompile
 }
+
 
 sourceSets {
     main {
@@ -16,15 +19,23 @@ sourceSets {
     }
 }
 
-task copyPlugin(type: Copy) {
-    into(new File(rootProject.pluginsDir, project.name))
-    from(jar.outputs.getFiles().getFiles().flatten())
-    from(fileTree(".")) {
-      include "plugin.xml"
-      include "lib/**.jar"
-      include "resource/**"
-    }
+task copyPlugin(dependsOn: assemble) {
     doLast {
-      println "Copying $project.name to $rootProject.pluginsDir"
+        println ">>> Installing $project.name"
+        copy {
+            into(new File(rootProject.pluginsDir, project.name))
+            from(jar.outputs.getFiles().getFiles().flatten())
+            from(fileTree(".")) {
+                include "plugin.xml"
+                include "resource/**"
+            }
+        }
+        copy {
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
+                include "*.jar"
+            }
+        }
+        println "<<< $project.name"
     }
 }

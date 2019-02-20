@@ -8,7 +8,11 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.controlsfx.control.PropertySheet;
@@ -33,6 +37,11 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
     myWebdavServer = webdavServer.clone();
     myValueConsumer = valueConsumer;
     myHasDelete = hasDelete;
+  }
+
+  @Override
+  public String getId() {
+    return "webdav-setup";
   }
 
   @Override
@@ -68,14 +77,14 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
     propertySheet.getItems().add(new BeanProperty(
         myWebdavServer, new WebDavPropertyDescriptor("username", "option.webdav.server.username.label")));
     propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("password", "option.webdav.server.password.label")){
+        myWebdavServer, new WebDavPropertyDescriptor("password", "option.webdav.server.password.label")) {
       @Override
       public Optional<Class<? extends PropertyEditor<?>>> getPropertyEditorClass() {
         return Optional.of(PasswordPropertyEditor.class);
       }
     });
     propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")) );
+        myWebdavServer, new WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")));
     Button btnDone = new Button("Done");
     btnDone.getStyleClass().add("btn-done");
     FXUtil.createBreathingButton(btnDone);
@@ -125,6 +134,7 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
       setDisplayName(GanttLanguage.getInstance().getText(i18nKey));
     }
   }
+
   public static class PasswordPropertyEditor extends AbstractPropertyEditor<String, PasswordField> {
 
     public PasswordPropertyEditor(PropertySheet.Item property) {

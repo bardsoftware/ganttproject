@@ -1,28 +1,44 @@
 
-.local-storage .custom-text-field:right-node-visible {
-    -fx-padding: 0 0 0 .3em;
-}
-.local-storage .custom-text-field:right-node-visible .right-pane {
-    -fx-padding: 0 0 0 0;
-}
+/*.local-storage .custom-text-field:right-node-visible {*/
+    /*-fx-padding: 0 0 0 0em;*/
 
-.custom-text-field.error {
-    -fx-effect: dropshadow(three-pass-box, red, 7, 0, 0, 0);
-}
-.custom-text-field.error:focused,
-.custom-text-field.error:text-field-has-focus {
-    -fx-highlight-fill: -fx-accent;
-    -fx-highlight-text-fill: white;
-    -fx-background-color:
-            -fx-control-inner-background,
-            linear-gradient(from 0px 0px to 0px 5px, derive(-fx-control-inner-background, -9%), -fx-control-inner-background);
-    -fx-background-insets: 1, 3;
-    -fx-background-radius: 2, 0;
-    -fx-prompt-text-fill: transparent;
-}
+/*}*/
+/*.local-storage .custom-text-field:right-node-visible .right-pane {*/
+    /*-fx-padding: 0 0 0 0;*/
+/*}*/
+
+/*.custom-text-field.error:focused,*/
+/*.custom-text-field.error:text-field-has-focus {*/
+    /*-fx-highlight-fill: -fx-accent;*/
+    /*-fx-highlight-text-fill: white;*/
+    /*-fx-background-color:*/
+            /*-fx-control-inner-background,*/
+            /*linear-gradient(from 0px 0px to 0px 5px, derive(-fx-control-inner-background, -9%), -fx-control-inner-background);*/
+    /*-fx-background-insets: 1, 3;*/
+    /*-fx-background-radius: 2, 0;*/
+    /*-fx-prompt-text-fill: transparent;*/
+/*}*/
 .local-storage .errorLabel {
     -fx-padding: 0.2ex 0 1ex 0;
 }
+.local-storage-browse {
+    -fx-background-color: -gp-medium-gray;
+    -fx-fill: -gp-light-gray;
+    -fx-text-fill: -gp-light-gray;
+    -fx-border-insets: 0;
+    -fx-border-radius: 0;
+    -fx-background-insets: 1px;
+}
+.local-storage-browse .glyph-icon {
+    -fx-fill: -gp-light-gray;
+}
+
+.local-storage-browse:hover {
+    -fx-cursor: hand;
+}
+.local-storage-browse:hover .glyph-icon {
+}
+
 /*.local-storage .path-dropdown {*/
     /*-fx-background-color: derive(orange, 20%);*/
     /*-fx-border-insets: 0 0 1em 0;*/

@@ -1,0 +1,75 @@
+/*
+Copyright 2018 BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+* {
+    -gp-orange: #ffca28;
+    -gp-light-gray: #e0e0e0;
+    -gp-medium-gray: #616161;
+    -gp-dark-gray: #424242;
+}
+
+.toolbar-main {
+    -fx-background-color: transparent;
+    -fx-padding: 1ex 2em 2ex 2em;
+}
+
+.toolbar-main Button {
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-border-style: solid;
+    -fx-border-color: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+}
+
+.toolbar-main Button .glyph-icon {
+    -fx-alignment: center;
+    -fx-fill: -gp-medium-gray;
+    -glyph-size: 32px;
+}
+
+.toolbar-main Button:hover {
+    -fx-background-color: derive(-gp-light-gray, -10%);
+    -fx-background-radius: 3px;
+}
+
+.toolbar-main Button:hover .glyph-icon {
+    -fx-fill: derive(-gp-medium-gray, -10%);
+    -glyph-size: 32px;
+}
+
+.toolbar-main Button:pressed, .toolbar-main Button:hover:pressed {
+    -fx-background-color: derive(-gp-light-gray, -15%);
+}
+
+.toolbar-main Button:pressed .glyph-icon, .toolbar-main Button:hover:pressed .glyph-icon {
+    -fx-fill: derive(-gp-medium-gray, -15%);
+}
+
+.toolbar-main Separator {
+    -fx-min-width: 2em;
+    -fx-border-style: none;
+}
+
+.toolbar-main Separator > .line {
+    -fx-border-style: none;
+    -fx-border-width: 0;
+}

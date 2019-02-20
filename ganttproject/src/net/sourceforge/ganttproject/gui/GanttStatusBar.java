@@ -18,37 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
-
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.font.Fonts;
-
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Status bar (located below the main frame)
- * 
+ *
  * @author athomas
  */
 public class GanttStatusBar extends JPanel {
-  boolean bRunning = false;
-
   private JFrame myMainFrame;
-
-  private JLabel myStatusText = new JLabel();
 
   private static IProgressMonitor ourMonitor;
 
@@ -56,7 +43,12 @@ public class GanttStatusBar extends JPanel {
     super(new BorderLayout());
     myMainFrame = mainFrame;
     add(new JPanel(), BorderLayout.CENTER);
-    add(myStatusText, BorderLayout.WEST);
+  }
+
+  public void setLeftScene(Scene scene) {
+    JFXPanel panel = new JFXPanel();
+    panel.setScene(scene);
+    SwingUtilities.invokeLater(() -> add(panel, BorderLayout.WEST));
   }
 
   public IProgressMonitor createProgressMonitor() {
@@ -75,20 +67,20 @@ public class GanttStatusBar extends JPanel {
   /**
    * Show the given text in the first message area for the given amount of
    * milliseconds
-   * 
+   *
    * @param text
    *          to show
    * @param milliseconds
    *          amount of milliseconds to show the text
    */
   public void setFirstText(String text, int milliseconds) {
-    myStatusText.setText(text);
+
   }
 
   /**
    * Show the given text in the second message area for the given amount of
    * milliseconds
-   * 
+   *
    * @param text
    *          to show
    * @param milliseconds
@@ -189,23 +181,13 @@ public class GanttStatusBar extends JPanel {
       isCanceled = false;
       myWorked = 0;
       GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.start(name, totalWork);
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.start(name, totalWork));
     }
 
     @Override
     public void done() {
       GPLogger.log("[ProgressMonitorImpl] finished Task");
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.done();
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.done());
     }
 
     @Override
@@ -234,22 +216,14 @@ public class GanttStatusBar extends JPanel {
       } else {
         GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
       }
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myProgressDialog.setSubTask(name);
-        }
-      });
+      SwingUtilities.invokeLater(() -> myProgressDialog.setSubTask(name));
     }
 
     @Override
     public void worked(final int work) {
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          myWorked += work;
-          myProgressDialog.setProgress(myWorked);
-        }
+      SwingUtilities.invokeLater(() -> {
+        myWorked += work;
+        myProgressDialog.setProgress(myWorked);
       });
     }
   }

@@ -18,23 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.KeyValueOption;
 import biz.ganttproject.core.option.ListOption;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
+
+import java.awt.*;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author bard
@@ -75,50 +68,11 @@ public class ChartUIConfiguration {
 
   private ChartPropertiesOption myChartStylesOption;
 
-  private static class ChartPropertiesOption extends GPAbstractOption<Map.Entry<String, String>> implements ListOption<Map.Entry<String, String>> {
-    private static final Function<Entry<String, String>, String> ENTRY_TO_KEY_VALUE = new Function<Entry<String, String>, String>() {
-      @Override
-      public String apply(Entry<String, String> entry) {
-        return String.format("%s = %s", entry.getKey(), entry.getValue());
-      }
-    };
-    private Map<String, String> myMap = Maps.newHashMap();
-
+  private static class ChartPropertiesOption extends KeyValueOption {
     public ChartPropertiesOption() {
       super("chart.styles");
       setHasUi(false);
     }
-
-    @Override
-    public String getPersistentValue() {
-      return "\n" + Joiner.on('\n').join(Iterables.transform(getValues(), ENTRY_TO_KEY_VALUE)) + "\n";
-    }
-
-    @Override
-    public void loadPersistentValue(String value) {
-      myMap.clear();
-      for (String line : value.split("\n")) {
-        String[] keyValue = line.split("=");
-        if (keyValue.length < 2) {
-          continue;
-        }
-        myMap.put(keyValue[0].trim(), keyValue[1].trim());
-      }
-      fireChangeValueEvent(new ChangeValueEvent(getID(), null, null, this));
-    }
-
-    @Override
-    public void setValues(Iterable<Entry<String, String>> values) {
-      for (Entry<String, String> e : values) {
-        myMap.put(e.getKey(), e.getValue());
-      }
-    }
-
-    @Override
-    public Iterable<Entry<String, String>> getValues() {
-      return myMap.entrySet();
-    }
-
     @Override
     public void setValueIndex(int idx) {
       throw new UnsupportedOperationException();

@@ -4,6 +4,26 @@
  */
 package net.sourceforge.ganttproject.document;
 
+import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.StringOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttOptions;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.document.webdav.HttpDocument;
+import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.parser.ParserFactory;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -17,31 +37,8 @@ import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttOptions;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.document.webdav.HttpDocument;
-import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
-import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
-import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.parser.ParserFactory;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.time.CalendarFactory;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 /**
  * This is a helper class, to create new instances of Document easily. It
@@ -123,8 +120,7 @@ public class DocumentCreator implements DocumentManager {
    * @param pass
    *          password
    * @return an implementation of the interface Document
-   * @throws an
-   *           Exception when the specified protocol is not supported
+   * @throws Exception when the specified protocol is not supported
    */
   private Document createDocument(String path, String user, String pass) {
     assert path != null;
@@ -153,7 +149,12 @@ public class DocumentCreator implements DocumentManager {
       // Generate error for unknown protocol
       throw new RuntimeException("Unknown protocol: " + path.substring(0, path.indexOf("://")));
     }
-    return new FileDocument(new File(path));
+    File file = new File(path);
+    if (file.toPath().isAbsolute()) {
+      return new FileDocument(file);
+    }
+    File relativeFile = new File(myDocumentsFolder, path);
+    return new FileDocument(relativeFile);
   }
 
   @Override
@@ -171,6 +172,7 @@ public class DocumentCreator implements DocumentManager {
     return proxyDocument;
   }
 
+  @Override
   public Document newUntitledDocument() throws IOException {
     for (int i = 1;; i++) {
       String filename = GanttLanguage.getInstance().formatText("document.storage.untitledDocument", i);
@@ -180,6 +182,11 @@ public class DocumentCreator implements DocumentManager {
       }
       return getDocument(untitledFile.getAbsolutePath());
     }
+  }
+
+  @Override
+  public Document newDocument(String path) throws IOException {
+    return createDocument(path);
   }
 
   @Override

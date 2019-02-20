@@ -20,9 +20,12 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.xml.XmlEscapers;
@@ -64,6 +67,9 @@ import java.io.OutputStream;
 import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class is able to load and save options on the file
@@ -142,6 +148,24 @@ public class GanttOptions extends SaverBase {
   private final PluginPreferencesImpl myPluginPreferencesRootNode;
 
   private String myVersion;
+
+  private ExecutorService mySaveExecutor = Executors.newSingleThreadExecutor();
+  private AtomicBoolean mySaveScheduled = new AtomicBoolean(true);
+
+  private ChangeValueListener myOnOptionValueChange = new ChangeValueListener() {
+    @Override
+    public void changeValue(ChangeValueEvent event) {
+      if (!Objects.equal(event.getOldValue(), event.getNewValue())) {
+        if (!mySaveScheduled.get()) {
+          mySaveScheduled.set(true);
+          mySaveExecutor.submit(() -> {
+            GanttOptions.this.save();
+            mySaveScheduled.set(false);
+          });
+        }
+      }
+    }
+  };
 
   public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {
     myDocumentManager = documentManager;
@@ -454,6 +478,7 @@ public class GanttOptions extends SaverBase {
     }
 
     isloaded = true;
+    mySaveScheduled.set(false);
     return true;
   }
 
@@ -1124,6 +1149,7 @@ public class GanttOptions extends SaverBase {
     GPOption[] options = optionGroup.getOptions();
     for (int i = 0; i < options.length; i++) {
       GPOption nextOption = options[i];
+      nextOption.addChangeValueListener(myOnOptionValueChange);
       myGPOptions.put(optionGroup.getID() + "." + nextOption.getID(), nextOption);
       if (nextOption instanceof GP1XOptionConverter) {
         GP1XOptionConverter nextConverter = (GP1XOptionConverter) nextOption;

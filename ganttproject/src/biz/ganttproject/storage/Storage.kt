@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.storage.cloud.GPCloudStorage
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
@@ -56,7 +57,7 @@ sealed class StorageMode(val name: String) {
 
   class FileException(message: String, vararg val args: Any) : Exception(message)
 
-  abstract fun tryFile(file: File): Unit
+  abstract fun tryFile(file: File)
 
   class Open : StorageMode("open") {
     override fun tryFile(file: File) {
@@ -87,7 +88,7 @@ sealed class StorageMode(val name: String) {
 
 }
 
-class StorageUtil(val myMode: StorageMode) {
+class StorageUtil(private val myMode: StorageMode) {
   internal fun i18nKey(pattern: String): String {
     return String.format(pattern, myMode.name.toLowerCase())
   }
@@ -123,11 +124,11 @@ class StoragePane internal constructor(
     storageUiPane.setPrefSize(400.0, 400.0)
 
     borderPane.center = storageUiPane
-    reloadStorageLabels(storageButtons, mode, Optional.empty<String>())
+    reloadStorageLabels(storageButtons, mode, Optional.empty())
     myCloudStorageOptions.list.addListener(ListChangeListener { _ ->
       reloadStorageLabels(
           storageButtons, mode,
-          if (myActiveStorageLabel == null) Optional.empty<String>()
+          if (myActiveStorageLabel == null) Optional.empty()
           else Optional.of(myActiveStorageLabel!!.id)
       )
     })
@@ -157,7 +158,7 @@ class StoragePane internal constructor(
     }
     myStorageUiList.add(LocalStorage(
         myDialogUi,
-        if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save(),
+        mode,
         myCurrentDocument,
         openDocument)
     )
@@ -167,14 +168,14 @@ class StoragePane internal constructor(
         myCurrentDocument,
         openDocument)
     myStorageUiList.add(recentProjects)
-    //myStorageUiList.add(GPCloudStorage(mode, myCloudStorageOptions, openDocument, myDialogUi))
+    myStorageUiList.add(GPCloudStorage(mode, openDocument, myDialogUi, myDocumentManager))
     myCloudStorageOptions.webdavServers.mapTo(myStorageUiList) {
       WebdavStorage(it, mode, openDocument, myDialogUi, myCloudStorageOptions)
     }
 
     val initialStorageId = selectedId.orElse(recentProjects.id)
     myStorageUiList.forEach { storageUi ->
-      myStorageUiMap.put(storageUi.id, Suppliers.memoize { storageUi.createUi() })
+      myStorageUiMap[storageUi.id] = Suppliers.memoize { storageUi.createUi() }
 
       val itemLabel = i18n.formatText(
           String.format("storageView.service.%s.label", storageUi.category), storageUi.name)
@@ -210,7 +211,7 @@ class StoragePane internal constructor(
     onStorageChange(storageUiPane, initialStorageId)
   }
 
-  private fun setSelected(pane: Parent): Unit {
+  private fun setSelected(pane: Parent) {
     pane.styleClass.add("active")
     if (myActiveStorageLabel != null) {
       myActiveStorageLabel!!.styleClass.remove("active")
@@ -218,7 +219,7 @@ class StoragePane internal constructor(
     myActiveStorageLabel = pane
   }
 
-  private fun onStorageChange(borderPane: BorderPane, storageId: String): Unit {
+  private fun onStorageChange(borderPane: BorderPane, storageId: String) {
     val ui = myStorageUiMap[storageId]?.get() ?: return
     FXUtil.transitionCenterPane(borderPane, ui) { myDialogUi.resize() }
   }

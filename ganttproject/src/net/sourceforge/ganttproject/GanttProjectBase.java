@@ -53,7 +53,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.search.SearchUiImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -96,7 +95,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   private final RssFeedChecker myRssChecker;
   private final ContentPaneBuilder myContentPaneBuilder;
-  private final SearchUiImpl mySearchUi;
 
   protected GanttProjectBase() {
     super("GanttProject");
@@ -135,8 +133,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
-
-    mySearchUi = new SearchUiImpl(getProject(), getUIFacade());
   }
 
   @Override
@@ -366,7 +362,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane(JPanel toolbar) {
+  protected void createContentPane(JComponent toolbar) {
     myContentPaneBuilder.build(toolbar, getContentPane());
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -402,10 +398,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected RssFeedChecker getRssFeedChecker() {
     return myRssChecker;
-  }
-
-  protected SearchUiImpl getSearchUi() {
-    return mySearchUi;
   }
 
   @Override

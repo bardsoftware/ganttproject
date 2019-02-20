@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,12 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.Icon;
-import javax.swing.JTabbedPane;
 
 public class GanttTabbedPane extends JTabbedPane {
 
@@ -31,16 +29,6 @@ public class GanttTabbedPane extends JTabbedPane {
 
   public GanttTabbedPane() {
     super();
-  }
-
-  public void addTab(String title, Component component, Object userObject) {
-    super.addTab(title, component);
-    myUserObjectsMap.put(component, userObject);
-  }
-
-  public void addTab(String title, Icon icon, Component component, Object userObject) {
-    super.addTab(title, icon, component);
-    myUserObjectsMap.put(component, userObject);
   }
 
   public void addTab(String title, Icon icon, Component component, String tip, Object userObject) {

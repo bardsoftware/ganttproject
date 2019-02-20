@@ -1,4 +1,11 @@
-.alert-warning {
+* {
+    -gp-orange: #ffca28;
+    -gp-light-gray: #e0e0e0;
+    -gp-medium-gray: #616161;
+    -gp-dark-gray: #424242;
+}
+
+webdav-list-cell-button-pane.alert-warning {
     -fx-background-color: derive(orange, 40%);
     -fx-border-color: derive(orange, 20%);
     -fx-text-fill: dimgray;
@@ -12,18 +19,35 @@
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
+
 .body > .button-bar {
     -fx-pref-height: 0;
 }
+
 .bordered {
     -fx-border-width: 1;
     -fx-border-style: dotted;
     -fx-border-color: red;
 }
 
+.btn-attention {
+    -fx-background-color: -gp-orange;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-cursor: hand;
+}
+.btn-attention:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+
 .btn-done {
     -fx-font-weight: bold;
 }
+
 .btn-radio {
     -fx-padding: 3px 0 3px 0;
 }
@@ -51,7 +75,7 @@
 }
 
 .btn-service.active {
-    -fx-background-color: #ffab00;
+    -fx-background-color: #ffc241;
 }
 
 .btn-signup {
@@ -62,11 +86,9 @@
     -fx-font-weight: bold;
 }
 
-
 .button-pane {
     -fx-padding: 5px 0px 0px 0px;
 }
-
 
 .center {
     -fx-alignment: center;
@@ -81,24 +103,39 @@
     -fx-padding: 5 0;
 }
 
-.doclist-save {
-    -fx-background-color: #ffab00;
-    -fx-text-fill: black;
-    -fx-font-weight: bold;
-    -fx-font-size: 120%;
-    -fx-padding: 1ex 2em 1ex 2em;
+.custom-text-field:right-node-visible .right-pane {
+    -fx-padding: 0;
 }
+
+.custom-text-field.error {
+    -fx-effect: innershadow(three-pass-box, #ff6f85, 3, 1, 0, 0);
+}
+
 .doclist-save-box {
     -fx-padding: 1ex 0em;
+    -fx-pref-width: 100%;
+}
+
+HBox.title {
 }
 
 HBox.title Button {
     -fx-font-weight: bold;
 }
+
 HBox.title Label {
     -fx-font-size: 130%;
     -fx-font-weight: bold;
 }
+
+HBox.title-integrated {
+    -fx-background-color: -gp-dark-gray;
+}
+HBox.title-integrated Label {
+    -fx-padding: 10 10 0 10;
+    -fx-text-fill: -gp-orange;
+}
+
 
 .help {
     -fx-font-size: 80%;
@@ -107,17 +144,26 @@ HBox.title Label {
     -fx-max-width: 400px;
     -fx-wrap-text: true;
 }
+
 .hide {
     visibility: hidden;
 }
+
+.hint {
+    -fx-padding: 0.25ex 0 0 0;
+    -fx-text-fill: -gp-light-gray;
+}
+.hint .glyph-icon {
+    -fx-fill: -gp-light-gray;
+}
 .hint.error {
-    -fx-text-fill: derive(darkred, +10%);
     visibility: visible;
 }
+
 .hint.warning {
-    -fx-text-fill: derive(darkgray, +20%);
     visibility: visible;
 }
+
 .hint.noerror {
     visibility: hidden;
 }
@@ -125,7 +171,6 @@ HBox.title Label {
 .notification {
     -fx-padding: 5px 10px 0px 10px;
     -fx-background-color: rgba(255, 255, 255, 0);
-
 }
 
 .notification.alert-error > *.content {
@@ -151,6 +196,8 @@ HBox.title Label {
     -fx-padding: 10 10 0 10;
     -fx-font-family: Arial;
     -fx-fill-width: true;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
 }
 
 .pane-service-contents > * {
@@ -167,6 +214,12 @@ HBox.title Label {
 
 .pane-service-contents > .breadcrumb {
     -fx-padding: 0 0 5 0;
+}
+
+.pane-service-contents > .progress-indicator {
+    -fx-progress-color: #99cc99;
+    -fx-scale-x: 0.75;
+    -fx-scale-y: 0.75;
 }
 
 .pane-service-contents > .title-help {
@@ -201,19 +254,23 @@ HBox.title Label {
     -fx-font-size: 90%;
     -fx-padding: 3 0 0 0;
 }
+
 .pane-service-contents.local-storage HBox.browse Button {
     -fx-background-radius: 20;
-    -fx-background-insets: 0,1,1;
+    -fx-background-insets: 0, 1, 1;
     -fx-text-fill: black;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0.0, 0, 1);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 3, 0.0, 0, 1);
 }
+
 .webdav-server-password {
     -fx-alignment: center;
     -fx-border-color: red;
 }
+
 .webdav-server-password HBox {
     -fx-padding: 5px 10px 0px 10px;
 }
+
 .pane-service-contents.webdav-server-setup > PropertySheet {
     -fx-background-color: white;
 }
@@ -229,9 +286,11 @@ HBox.title Label {
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
+
 .pane-storage > * {
     -fx-font-family: Arial;
 }
+
 .pane-storage .title-box {
     -fx-pref-width: 100%;
     -fx-fill-width: true;
@@ -247,6 +306,7 @@ HBox.title Label {
     -fx-font-size: 130%;
     -fx-padding: 0;
 }
+
 .pane-storage .title-box .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 90%;
@@ -261,10 +321,13 @@ HBox.title Label {
     -fx-padding: 10px 0 10px 0;
 }
 
+.status-bar {
+    -fx-background-color: transparent;
+}
 .subtitle {
-    -fx-font-size: 110%;
-    -fx-padding: 10 0 3 0;
+    -fx-padding: 0 0 3 0;
     -fx-font-weight: bold;
+    -fx-text-fill: dimgray;
 }
 
 .webdav-button-pane {
@@ -272,12 +335,78 @@ HBox.title Label {
     -fx-alignment: center-right;
     -fx-spacing: 5;
 }
-.webdav-list-cell {
-    -fx-alignment: center-left;
+
+.list-cell {
+    -fx-padding: 10 5 10 10;
 }
-.webdav-list-cell .icon {
-    -fx-text-fill: dimgrey;
+
+.list-cell .label {
+    -fx-text-fill: -gp-medium-gray;
+    -fx-alignment: CENTER-LEFT;
+    -fx-font-size: 120%;
 }
+
+.list-cell:selected {
+    -fx-background-color: -gp-light-gray;
+}
+
+.list-cell:selected .label {
+    -fx-text-fill: -gp-medium-gray;
+    -fx-alignment: CENTER-LEFT;
+}
+
+.list-cell:hover .label {
+    -fx-text-fill: -gp-dark-gray;
+}
+
 .webdav-list-cell-button-pane {
     -fx-alignment: center-right;
+}
+
+.item-action {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+
+.item-action .glyph-icon {
+    -fx-alignment: center;
+    -fx-fill: -gp-medium-gray;
+    -glyph-size: 16;
+}
+
+
+.item-action:hover .glyph-icon {
+    -fx-fill: derive(-gp-medium-gray, -10%);
+    -glyph-size: 18;
+}
+
+.folder-view {
+    -fx-focus-color: -gp-light-gray;
+}
+
+.nav-search {
+    -fx-background-color: -gp-dark-gray;
+    -fx-padding: 10 10 10 10;
+}
+
+
+.bread-crumb-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 1em 0;
+}
+.crumb {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-fill: -gp-light-gray;
+    -fx-text-fill: -gp-light-gray;
+}
+.crumb:hover,
+.crumb:selected,
+.crumb:focused,
+.crumb-selected
+{
+    -fx-background-color: -gp-medium-gray;
 }

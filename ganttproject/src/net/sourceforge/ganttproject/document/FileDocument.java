@@ -142,4 +142,25 @@ public class FileDocument extends AbstractDocument {
   public boolean isLocal() {
     return true;
   }
+
+  public void create() throws IOException {
+    if (file.exists()) {
+      return;
+    }
+    if (!file.getParentFile().exists()) {
+      boolean result = file.getParentFile().mkdirs();
+      if (!result) {
+        throw new IOException("Failed to create parent directories to file " + file.getPath());
+      }
+    }
+    file.createNewFile();
+  }
+
+  public void delete() throws IOException {
+    if (file.exists()) {
+      if (!file.delete()) {
+        throw new IOException("Failed to delete file " + file.getPath());
+      }
+    }
+  }
 }

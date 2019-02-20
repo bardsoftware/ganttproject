@@ -18,21 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import net.sourceforge.ganttproject.action.GPAction;
+
 import java.awt.event.ActionEvent;
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.search.SearchUi;
-
 public class SearchDialogAction extends GPAction {
-  private final SearchUi mySearchUi;
+  private final Runnable mySearchUi;
 
-  public SearchDialogAction(SearchUi searchUi) {
+  public SearchDialogAction(Runnable searchUi) {
     super("search.dialog.open");
     mySearchUi = searchUi;
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    mySearchUi.requestFocus();
+    mySearchUi.run();
   }
 }

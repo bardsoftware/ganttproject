@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.FXSearchUi;
+import biz.ganttproject.app.FXToolbar;
+import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -25,13 +28,16 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.storage.cloud.GPCloudOptions;
+import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -48,8 +54,6 @@ import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.overview.GPToolbar;
-import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentCreator;
@@ -58,7 +62,6 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -83,7 +86,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -104,6 +106,8 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -134,11 +138,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final ProjectMenu myProjectMenu;
 
-  /**
-   * The project filename
-   */
-  public Document projectDocument = null;
-
+  private SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
   /**
    * Informations for the current project.
    */
@@ -188,6 +188,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private static Runnable ourQuitCallback;
 
+  private FXSearchUi mySearchUi;
 
   public GanttProject(boolean isOnlyViewer) {
     System.err.println("Creating main frame...");
@@ -281,6 +282,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
     options.addOptionGroups(getProjectUIFacade().getOptionGroups());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
+    options.addOptions(GPCloudOptions.INSTANCE.getOptionGroup());
     options.addOptions(getRssFeedChecker().getOptions());
 
     System.err.println("2. loading options");
@@ -319,7 +321,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myProjectMenu = new ProjectMenu(this, mruMenu, "project");
     bar.add(myProjectMenu);
 
-    myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), getSearchUi(), "edit");
+    myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
     bar.add(myEditMenu);
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
@@ -370,10 +372,28 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         });
       }
     });
-
     System.err.println("5. calculating size and packing...");
-    final GPToolbar toolbar = createToolbar();
-    createContentPane(toolbar.getToolbar());
+
+    FXToolbar fxToolbar = null;
+    try {
+      fxToolbar = createToolbar().get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(myObservableDocument, getUIFacade());
+        Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
+        statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
+        getStatusBar().setLeftScene(statusBarScene);
+      }
+    });
+
+    createContentPane(fxToolbar.getComponent());
+    final FXToolbar toolbar = fxToolbar;
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
@@ -419,6 +439,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             });
           }
         });
+        getGanttChart().reset();
+        getResourceChart().reset();
+        // This will clear any modifications which might be caused by
+        // adjusting widths of table columns during initial layout process.
+        getProject().setModified(false);
       }
     });
 
@@ -436,11 +461,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
 
     try {
-      projectDocument = getDocumentManager().newUntitledDocument();
+      myObservableDocument.set(getDocumentManager().newUntitledDocument());
     } catch (IOException e) {
       e.printStackTrace();
     }
-
   }
 
 
@@ -552,22 +576,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * @return the options of the GanttChart
-   */
-  public GPOptionGroup[] getGanttOptionsGroup() {
-    return area.getOptionGroups();
-  }
-
-  public void restoreOptions() {
-    options.initDefault();
-    myUIConfiguration = options.getUIConfiguration();
-    area.repaint();
-  }
-
-  // TODO Move language updating methods which do not belong to GanttProject to
-  // their own class with their own listener
-
-  /**
    * Function to change language of the project
    */
   @Override
@@ -591,20 +599,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * Create the button on toolbar
    */
-  private GPToolbar createToolbar() {
-    ToolbarBuilder builder = new ToolbarBuilder()
-        .withHeight(40)
-        .withDpiOption(getUiFacadeImpl().getDpiOption())
-        .withLafOption(getUiFacadeImpl().getLafOption(), new Function<String, Float>() {
-          @Override
-          public Float apply(@Nullable String s) {
-            return (s.indexOf("nimbus") >= 0) ? 1.5f : 1f;
-          }
-        })
-        .withSquareButtons()
-        .withBorder(BorderFactory.createEmptyBorder(3, 3, 5, 3));
-    builder.addButton(new TestGanttRolloverButton(myProjectMenu.getOpenProjectAction().asToolbarAction()))
-        .addButton(new TestGanttRolloverButton(myProjectMenu.getSaveProjectAction().asToolbarAction()))
+  private CompletableFuture<FXToolbar> createToolbar() {
+    FXToolbarBuilder builder = new FXToolbarBuilder();
+    builder.addButton(myProjectMenu.getOpenProjectAction().asToolbarAction())
+        .addButton(myProjectMenu.getSaveProjectAction().asToolbarAction())
         .addWhitespace();
 
     final ArtefactAction newAction;
@@ -617,24 +615,24 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
         }
       }, new Action[]{taskNewAction, resourceNewAction});
-      final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
-      final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
-      builder.addButton(bNewTask).addButton(bnewResource);
-      getTabs().addChangeListener(new ChangeListener() {
-        @Override
-        public void stateChanged(ChangeEvent changeEvent) {
-          switch (getTabs().getSelectedIndex()) {
-            case UIFacade.GANTT_INDEX:
-              bNewTask.setVisible(true);
-              bnewResource.setVisible(false);
-              return;
-            case UIFacade.RESOURCES_INDEX:
-              bNewTask.setVisible(false);
-              bnewResource.setVisible(true);
-              return;
-          }
-        }
-      });
+//      final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
+//      final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
+      builder.addButton(taskNewAction).addButton(resourceNewAction);
+//      getTabs().addChangeListener(new ChangeListener() {
+//        @Override
+//        public void stateChanged(ChangeEvent changeEvent) {
+//          switch (getTabs().getSelectedIndex()) {
+//            case UIFacade.GANTT_INDEX:
+//              bNewTask.setVisible(true);
+//              bnewResource.setVisible(false);
+//              return;
+//            case UIFacade.RESOURCES_INDEX:
+//              bNewTask.setVisible(false);
+//              bnewResource.setVisible(true);
+//              return;
+//          }
+//        }
+//      });
     }
 
     final ArtefactAction deleteAction;
@@ -678,38 +676,38 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    builder.addButton(new TestGanttRolloverButton(deleteAction))
+    builder.addButton(deleteAction)
         .addWhitespace()
-        .addButton(new TestGanttRolloverButton(propertiesAction))
-        .addButton(new TestGanttRolloverButton(getCutAction().asToolbarAction()))
-        .addButton(new TestGanttRolloverButton(getCopyAction().asToolbarAction()))
-        .addButton(new TestGanttRolloverButton(getPasteAction().asToolbarAction()))
+        .addButton(propertiesAction)
+        .addButton(getCutAction().asToolbarAction())
+        .addButton(getCopyAction().asToolbarAction())
+        .addButton(getPasteAction().asToolbarAction())
         .addWhitespace()
-        .addButton(new TestGanttRolloverButton(myEditMenu.getUndoAction().asToolbarAction()))
-        .addButton(new TestGanttRolloverButton(myEditMenu.getRedoAction().asToolbarAction()));
-
-    JTextField searchBox = getSearchUi().getSearchField();
+        .addButton(myEditMenu.getUndoAction().asToolbarAction())
+        .addButton(myEditMenu.getRedoAction().asToolbarAction());
+    //JTextField searchBox = getSearchUi().getSearchField();
     //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
-    searchBox.setAlignmentY(CENTER_ALIGNMENT);
-    JPanel tailPanel = new JPanel(new BorderLayout());
-
-    //JPanel searchPanel = new JPanel();
-    //searchPanel.add(searchBox);
-    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
-    tailPanel.add(searchBox, BorderLayout.EAST);
-    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
-    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
-    builder.addPanel(tailPanel);
+//    searchBox.setAlignmentY(CENTER_ALIGNMENT);
+//    JPanel tailPanel = new JPanel(new BorderLayout());
+//
+//    //JPanel searchPanel = new JPanel();
+//    //searchPanel.add(searchBox);
+//    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
+//    tailPanel.add(searchBox, BorderLayout.EAST);
+//    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
+//    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+    mySearchUi = new FXSearchUi(getProject(), getUIFacade());
+    builder.addSearchBox(mySearchUi);
 
     //return result;
-    final GPToolbar toolbar = builder.build();
-    getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
-      @Override
-      public void run() {
-        toolbar.resize();
-      }
-    });
-    return toolbar;
+    return builder.build();
+//    getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
+//      @Override
+//      public void run() {
+//        toolbar.resize();
+//      }
+//    });
+    //return toolbar;
   }
 
   @Override
@@ -760,7 +758,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     document.read();
     getDocumentManager().addToRecentDocuments(document);
     //myMRU.add(document.getPath(), true);
-    projectDocument = document;
+    myObservableDocument.set(document);
     setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
@@ -1140,12 +1138,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public Document getDocument() {
-    return projectDocument;
+    return myObservableDocument.get();
   }
 
   @Override
   public void setDocument(Document document) {
-    projectDocument = document;
+    myObservableDocument.set(document);
   }
 
   @Override
@@ -1179,7 +1177,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     fireProjectClosed();
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
-    projectDocument = null;
+    myObservableDocument.set(null);
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 

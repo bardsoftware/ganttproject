@@ -1,87 +1,38 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
-plugins {
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "com.jfrog.bintray" version "1.7"
-}
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-// Path to launch4j binary
-ext.launch4j = '/opt/launch4j/launch4j'
-// Directories where we build the distro
-ext.semver = '2.8.10'
-ext.distBinDir = file('dist-bin')
-ext.pluginsDir = file("dist-bin/plugins-${semver}")
-ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
-version = "${semver}-r${getBuildNum()}"
+version = "${rootProject.semver}-r${getBuildNum()}"
 
-ant.importBuild 'build.xml'
-ant.properties.distBin = 'dist-bin'
-ant.properties.distDebWork = "deb"
-ant.properties.distDebPackage = "${buildDir}/distributions"
-ant.properties.distMacWork = 'dist-mac'
-ant.properties.distMacZip = "${buildDir}/distributions/ganttproject.app-${version}.zip"
-ant.properties.version = "${semver}"
-ant.properties.version_build = "${version}"
+//ant.importBuild 'build.xml'
+//ant.properties.distBin = 'dist-bin'
+//ant.properties.distDebWork = "deb"
+//ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
+//ant.properties.distMacWork = 'dist-mac'
+//ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
+//ant.properties.version = "${rootProject.semver}"
+//ant.properties.version_build = "${version}"
 
-// What is counted as java project for the purposes of this build
-def javaProjects() {
-    subprojects.findAll { project ->
-        project.name != rootProject.name && project.path != ':..'
-    }
-}
 
 def devNull = new OutputStream() {
     @Override
     public void write(int b) {}
 }
 
-// Config for all projects: deps come from Maven repository,
-// compile using Java 8, libs normally sit in lib
-allprojects {
-  configurations {
-    mavenDeps
-  }
-  repositories {
-    mavenCentral()
-    jcenter()
-  }
-  apply plugin: 'java'
-  apply plugin: 'eclipse'
-  ext {
-    libDir = 'lib'
-    mvnDir = 'lib/mvn'
-  }
-  targetCompatibility = 1.8
-
-  task updateMavenDeps(type: Copy) {
-    doFirst {
-      mkdir project.ext.mvnDir
-      delete project.ext.mvnDir
-    }
-    from configurations.mavenDeps
-    into project.ext.mvnDir
-  }
-}
-
-clean {
-    delete += "dist-bin"
-}
-
 task updateEclipsito(type: Jar) {
     destinationDir rootProject.distBinDir
     archiveName 'eclipsito.jar'
-    from zipTree(project(":..:ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
+    from zipTree(project(":ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
     from(".") {
         include "ganttproject-eclipsito-config.xml"
     }
 }
 
-task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyPlugin', true)) {
+task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
     println "===== Building GanttProject ${version} ====="
     println "===== Building generic binary distro ====="
     doLast {
@@ -109,13 +60,13 @@ task distBin(dependsOn: getTasksByName('assemble', true) + getTasksByName('copyP
 distBin.finalizedBy(updateEclipsito)
 
 def getBuildNum() {
-  def stdout = new ByteArrayOutputStream()
-  exec {
-    workingDir "."
-    commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
-    standardOutput = stdout
-  }
-  return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        workingDir "."
+        commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
+        standardOutput = stdout
+    }
+    return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
 }
 
 task distZip(type: Zip, dependsOn: distBin) {
@@ -123,86 +74,77 @@ task distZip(type: Zip, dependsOn: distBin) {
     into archivesBaseName + '-' + version
 }
 
-task distWin(dependsOn: distBin) {
-    doLast {
-        println '======== Building Windows Installer ========'
-        println '= Generating NSIS script ...'
-        exec {
-            workingDir '.'
-            commandLine './gen-nsis', semver, version
-        }
-        println '= Generating ganttproject.exe with launch4j ...'
-        exec {
-            workingDir '.'
-            commandLine launch4j, 'ganttproject-launch4j.xml'
-            standardOutput = devNull
-        }
-        println '= Copying required files to dist-win...'
-        copy {
-            from 'dist-bin'
-            into 'dist-win'
-            include '**'
-        }
-        copy {
-            from '.'
-            into 'dist-win'
-            include "ganttproject.l4j.ini"
-            include 'ganttproject.nsi'
-            include "ganttproject_16.ico"
-            include "ganttproject.ico"
-        }
-        println '= Building installer...'
-        exec {
-            workingDir 'dist-win'
-            commandLine 'makensis', 'ganttproject.nsi'
-            standardOutput = devNull
-        }
-        copy {
-            from 'dist-win'
-            into new File(buildDir, '/distributions')
-            include "ganttproject-${version}.exe"
-        }
-        println "===== Windows installer is ready in ${buildDir}/distributions ====="
-    }
-}
-
-task distDebPre {
-    doLast {
-        copy {
-            into('deb/usr/share/doc/ganttproject')
-            from(fileTree(".")) {
-                include "AUTHORS"
-                include "CHANGELOG"
-                include "LICENSE"
-                include "README"
-            }
-        }
-        "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
-        "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
-    }
-}
-
-task updateLibs(dependsOn: getTasksByName('updateMavenDeps', true)) {
-    doLast {
-        println "== Finished updating libs =="
-    }
-}
+//task distWin(dependsOn: distBin) {
+//    doLast {
+//        println '======== Building Windows Installer ========'
+//        println '= Generating NSIS script ...'
+//        exec {
+//            workingDir '.'
+//            commandLine './gen-nsis', semver, version
+//        }
+//        println '= Generating ganttproject.exe with launch4j ...'
+//        exec {
+//            workingDir '.'
+//            commandLine launch4j, 'ganttproject-launch4j.xml'
+//            standardOutput = devNull
+//        }
+//        println '= Copying required files to dist-win...'
+//        copy {
+//            from 'dist-bin'
+//            into 'dist-win'
+//            include '**'
+//        }
+//        copy {
+//            from '.'
+//            into 'dist-win'
+//            include "ganttproject.l4j.ini"
+//            include 'ganttproject.nsi'
+//            include "ganttproject_16.ico"
+//            include "ganttproject.ico"
+//        }
+//        println '= Building installer...'
+//        exec {
+//            workingDir 'dist-win'
+//            commandLine 'makensis', 'ganttproject.nsi'
+//            standardOutput = devNull
+//        }
+//        copy {
+//            from 'dist-win'
+//            into new File(buildDir, '/distributions')
+//            include "ganttproject-${version}.exe"
+//        }
+//        println "===== Windows installer is ready in ${buildDir}/distributions ====="
+//    }
+//}
+//
+//task distDebPre {
+//    doLast {
+//        copy {
+//            into('deb/usr/share/doc/ganttproject')
+//            from(fileTree(".")) {
+//                include "AUTHORS"
+//                include "CHANGELOG"
+//                include "LICENSE"
+//                include "README"
+//            }
+//        }
+//        "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
+//        "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
+//    }
+//}
 
 task runApp(type: JavaExec, dependsOn: distBin) {
-  workingDir = 'dist-bin'
-  classpath = (fileTree(dir: 'dist-bin', includes:['eclipsito.jar']) + files('dist-bin'))
-  main = 'org.bardsoftware.eclipsito.Boot'
-  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
-  jvmArgs '-ea'
+    workingDir = 'dist-bin'
+    classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
+    main = 'org.bardsoftware.eclipsito.Boot'
+    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    jvmArgs '-ea'
 }
 task debugApp(type: JavaExec, dependsOn: distBin) {
-  workingDir = 'dist-bin'
-  classpath = (fileTree(dir: 'dist-bin', includes:['eclipsito.jar']) + files('dist-bin'))
-  main = 'org.bardsoftware.eclipsito.Boot'
-  args '-app','net.sourceforge.ganttproject.GanttProject','-plugins-dir',"plugins-${semver}"
-  jvmArgs  '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
+    workingDir = 'dist-bin'
+    classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
+    main = 'org.bardsoftware.eclipsito.Boot'
+    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    jvmArgs '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
 }
 
-build {
-  dependsOn updateMavenDeps
-}
