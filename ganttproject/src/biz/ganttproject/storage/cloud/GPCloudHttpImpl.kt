@@ -250,20 +250,20 @@ class LockTask(private val busyIndicator: Consumer<Boolean>,
 
 
 // History service and tasks load project change history.
-class HistoryService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
-  var busyIndicator: Consumer<Boolean> = Consumer {}
+class HistoryService : Service<ObservableList<VersionJsonAsFolderItem>>() {
+  var busyIndicator: (Boolean) -> Unit = {}
   lateinit var projectNode: ProjectJsonAsFolderItem
 
-  override fun createTask(): Task<ObservableList<FolderItem>> {
+  override fun createTask(): Task<ObservableList<VersionJsonAsFolderItem>> {
     return HistoryTask(busyIndicator, projectNode)
   }
 
 }
 
-class HistoryTask(private val busyIndicator: Consumer<Boolean>,
-                  private val project: ProjectJsonAsFolderItem) : Task<ObservableList<FolderItem>>() {
-  override fun call(): ObservableList<FolderItem> {
-    this.busyIndicator.accept(true)
+class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
+                  private val project: ProjectJsonAsFolderItem) : Task<ObservableList<VersionJsonAsFolderItem>>() {
+  override fun call(): ObservableList<VersionJsonAsFolderItem> {
+    this.busyIndicator(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClientApache()
     val teamList = HttpGet("/p/versions?projectRefid=${project.refid}")

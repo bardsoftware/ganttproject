@@ -49,15 +49,18 @@ interface FolderItem {
   val canChangeLock: Boolean
 }
 
+private val unsupported = SimpleBooleanProperty(false)
+
+private typealias ExceptionUi = (Exception) -> Unit
 /**
  * Encapsulates a list view showing the contents of a single folder.
  */
 class FolderView<T : FolderItem>(
-    val myDialogUi: StorageDialogBuilder.DialogUi,
-    onDeleteResource: Consumer<T>,
-    onToggleLockResource: Consumer<T>,
-    isLockingSupported: BooleanProperty,
-    isDeleteSupported: ReadOnlyBooleanProperty,
+    val exceptionUi: ExceptionUi,
+    onDeleteResource: Consumer<T> = Consumer {  },
+    onToggleLockResource: Consumer<T> = Consumer {  },
+    isLockingSupported: BooleanProperty = unsupported,
+    isDeleteSupported: ReadOnlyBooleanProperty = unsupported,
     private val itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
 
   var myContents: ObservableList<T> = FXCollections.observableArrayList()
@@ -65,7 +68,7 @@ class FolderView<T : FolderItem>(
 
   init {
     listView.setCellFactory {
-      createListCell(myDialogUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, this.itemActionFactory)
+      createListCell(exceptionUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, this.itemActionFactory)
     }
     listView.selectionModel.selectedItemProperty().addListener { _, oldValue, newValue ->
       if (oldValue != null) {
@@ -151,7 +154,7 @@ fun <T : FolderItem> createExtractor(): Callback<ListViewItem<T>, Array<Observab
 }
 
 fun <T : FolderItem> createListCell(
-    dialogUi: StorageDialogBuilder.DialogUi,
+    exceptionUi: ExceptionUi,
     onDeleteResource: Consumer<T>,
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
@@ -162,7 +165,7 @@ fun <T : FolderItem> createListCell(
       try {
         doUpdateItem(item, empty)
       } catch (e: WebDavResource.WebDavException) {
-        dialogUi.error(e)
+        exceptionUi(e)
       } catch (e: Exception) {
         println(e)
       }
@@ -286,9 +289,9 @@ data class BreadcrumbNode(val path: Path, val label: String) {
 
 }
 
-class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
+class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path>) {
   val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
-  val defaultCrumbFactory = breadcrumbs.crumbFactory
+  private val defaultCrumbFactory = breadcrumbs.crumbFactory
   var path: Path
     get() = breadcrumbs.selectedCrumb.value.path
     set(value) {
@@ -343,7 +346,7 @@ class BreadcrumbView(initialPath: Path, val onSelectCrumb: Consumer<Path>) {
 }
 
 fun <T : FolderItem> connect(
-    filename: TextField, listView: FolderView<T>, breadcrumbView: BreadcrumbView,
+    filename: TextField?, listView: FolderView<T>, breadcrumbView: BreadcrumbView?,
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
     onFilenameEnter: () -> Unit) {
   listView.listView.onMouseClicked = EventHandler { evt ->
@@ -359,13 +362,13 @@ fun <T : FolderItem> connect(
         selectItem(true, (keyEvent.isControlDown || keyEvent.isMetaDown))
       }
       KeyCode.UP -> {
-        if (listView.isSelectedTopmost()) {
+        if (listView.isSelectedTopmost() && filename != null) {
           filename.requestFocus()
           listView.listView.selectionModel.clearSelection()
         }
       }
       KeyCode.BACK_SPACE -> {
-        breadcrumbView.pop()
+        breadcrumbView?.pop()
       }
       else -> {
       }
@@ -379,7 +382,7 @@ fun <T : FolderItem> connect(
       if (it.size <= 5) it.map { it.name }.toList() else emptyList<String>()
     }
   }
-  filename.onKeyPressed = EventHandler { keyEvent ->
+  filename?.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.DOWN -> listView.requestFocus()
       KeyCode.ENTER -> {

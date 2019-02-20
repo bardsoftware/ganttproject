@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.storage.FolderView
 import biz.ganttproject.storage.LockableDocument
 import biz.ganttproject.storage.OnlineDocument
 import biz.ganttproject.storage.OnlineDocumentMode
@@ -29,6 +30,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.Pane
@@ -126,6 +128,47 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
   }
 
+  // -------------------------------------------------------------------------------
+  // History stuff
+  private val historyService = HistoryService()
+
+  private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
+  private fun createHistoryPane(): HistoryPaneData {
+    val folderView = FolderView<VersionJsonAsFolderItem>(
+        exceptionUi = {}
+    )
+    val vboxBuilder = VBoxBuilder("tab-contents").apply {
+      addTitle("cloud.historyPane.title")
+      add(folderView.listView.also {
+        it.styleClass.add("section")
+      }, alignment = null, growth = Priority.ALWAYS)
+    }
+    val loader = { doc: GPCloudDocument ->
+      doc.projectJson?.also { projectJson ->
+        this.historyService.apply {
+          this.busyIndicator = this@DocPropertiesUi.busyUi
+          this.projectNode = projectJson
+          onSucceeded = EventHandler {
+            Platform.runLater { folderView.setResources(this.value) }
+            this.busyIndicator(false)
+          }
+          onFailed = EventHandler {
+            busyIndicator(false)
+            //dialogUi.error("History loading has failed")
+          }
+          onCancelled = EventHandler {
+            this.busyIndicator(false)
+            GPLogger.log("Loading cancelled!")
+          }
+          restart()
+        }
+      }
+      null
+    }
+    return HistoryPaneData(vboxBuilder.vbox, loader)
+  }
+
+
   fun showDialog(document: GPCloudDocument, onLockDone: OnLockDone) {
     Platform.runLater {
       val lockToggleGroup = ToggleGroup()
@@ -148,9 +191,16 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       }
 
       val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
-      val versions = Tab("Versions", Label("Versions go here"))
+      val historyPane = createHistoryPane()
+      val versions = Tab("History", historyPane.pane)
       val tabPane = TabPane(lockingOffline, versions).also {
         it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+      }
+      tabPane.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+        when (newValue) {
+          versions -> historyPane.loader(document)
+          else -> {}
+        }
       }
       Dialog<Unit>().also {
         it.dialogPane.apply {

@@ -128,7 +128,7 @@ class BrowserPaneBuilder(
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
       itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
     this.listView = FolderView(
-        this.dialogUi,
+        this.dialogUi::error,
         onDelete,
         onLock,
         canLock, canDelete, itemActionFactory)
