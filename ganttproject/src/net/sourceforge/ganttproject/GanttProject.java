@@ -36,7 +36,6 @@ import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
@@ -101,13 +100,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -374,26 +372,16 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     });
     System.err.println("5. calculating size and packing...");
 
-    FXToolbar fxToolbar = null;
-    try {
-      fxToolbar = createToolbar().get();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } catch (ExecutionException e) {
-      e.printStackTrace();
-    }
-    Platform.runLater(new Runnable() {
-      @Override
-      public void run() {
-        GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(myObservableDocument, getUIFacade());
-        Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
-        statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
-        getStatusBar().setLeftScene(statusBarScene);
-      }
+    FXToolbar fxToolbar = createToolbar();
+    Platform.runLater(() -> {
+      GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(myObservableDocument, getUIFacade());
+      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
+      statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
+      getStatusBar().setLeftScene(statusBarScene);
     });
 
     createContentPane(fxToolbar.getComponent());
-    final FXToolbar toolbar = fxToolbar;
+    //final FXToolbar toolbar = fxToolbar;
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
     getTabs().setSelectedIndex(0);
@@ -415,7 +403,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public void windowOpened(WindowEvent e) {
         System.err.println("Resizing window...");
-        toolbar.updateButtons();
         GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
         restoreBounds();
         // It is important to run aligners after look and feel is set and font sizes
@@ -599,7 +586,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * Create the button on toolbar
    */
-  private CompletableFuture<FXToolbar> createToolbar() {
+  private FXToolbar createToolbar() {
     FXToolbarBuilder builder = new FXToolbarBuilder();
     builder.addButton(myProjectMenu.getOpenProjectAction().asToolbarAction())
         .addButton(myProjectMenu.getSaveProjectAction().asToolbarAction())
@@ -615,24 +602,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
         }
       }, new Action[]{taskNewAction, resourceNewAction});
-//      final TestGanttRolloverButton bNewTask = new TestGanttRolloverButton(taskNewAction);
-//      final TestGanttRolloverButton bnewResource = new TestGanttRolloverButton(resourceNewAction);
       builder.addButton(taskNewAction).addButton(resourceNewAction);
-//      getTabs().addChangeListener(new ChangeListener() {
-//        @Override
-//        public void stateChanged(ChangeEvent changeEvent) {
-//          switch (getTabs().getSelectedIndex()) {
-//            case UIFacade.GANTT_INDEX:
-//              bNewTask.setVisible(true);
-//              bnewResource.setVisible(false);
-//              return;
-//            case UIFacade.RESOURCES_INDEX:
-//              bNewTask.setVisible(false);
-//              bnewResource.setVisible(true);
-//              return;
-//          }
-//        }
-//      });
     }
 
     final ArtefactAction deleteAction;
@@ -660,8 +630,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
 
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
-    // UIUtil.registerActions(toolBar, false, newAction, propertiesAction,
-    // deleteAction);
     UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     getTabs().addChangeListener(new ChangeListener() {
@@ -685,31 +653,31 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addWhitespace()
         .addButton(myEditMenu.getUndoAction().asToolbarAction())
         .addButton(myEditMenu.getRedoAction().asToolbarAction());
-    //JTextField searchBox = getSearchUi().getSearchField();
-    //searchBox.setMaximumSize(new Dimension(searchBox.getPreferredSize().width, buttons.get(0).getPreferredSize().height));
-//    searchBox.setAlignmentY(CENTER_ALIGNMENT);
-//    JPanel tailPanel = new JPanel(new BorderLayout());
-//
-//    //JPanel searchPanel = new JPanel();
-//    //searchPanel.add(searchBox);
-//    //searchPanel.setAlignmentY(CENTER_ALIGNMENT);
-//    tailPanel.add(searchBox, BorderLayout.EAST);
-//    //tailPanel.setAlignmentY(CENTER_ALIGNMENT);
-//    tailPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
     mySearchUi = new FXSearchUi(getProject(), getUIFacade());
     builder.addSearchBox(mySearchUi);
 
     //return result;
     return builder.build();
-//    getUiFacadeImpl().addOnUpdateComponentTreeUi(new Runnable() {
-//      @Override
-//      public void run() {
-//        toolbar.resize();
-//      }
-//    });
-    //return toolbar;
   }
 
+  private void doShow() {
+    setVisible(true);
+    GPLogger.log(String.format("Bounds after setVisible: %s", getBounds()));
+    try {
+      Class.forName("java.awt.desktop.AboutHandler");
+      DesktopIntegration.setup(GanttProject.this);
+    } catch (ClassNotFoundException e) {
+      if (DesktopIntegration.isMacOs()) {
+        OSXAdapter.registerMacOSXApplication(GanttProject.this);
+      }
+    } finally {
+      OSXAdapter.setupSystemProperties();
+    }
+    getActiveChart().reset();
+    getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
+    getRssFeedChecker().run();
+    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+  }
   @Override
   public List<GanttPreviousState> getBaselines() {
     return myPreviousStates;
@@ -956,7 +924,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * The main
    */
-  public static boolean main(String[] arg) {
+  public static boolean main(String[] arg) throws InvocationTargetException, InterruptedException {
     URL logConfig = GanttProject.class.getResource("/logging.properties");
     if (logConfig != null) {
       try {
@@ -1020,51 +988,41 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (InterruptedException e1) {
       GPLogger.log(e1);
     }
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          new JFXPanel(); // initializes JavaFX environment
-          final GanttProject ganttFrame = new GanttProject(false);
-          System.err.println("Main frame created");
-          ganttFrame.fireProjectCreated();
-          if (mainArgs.file != null && !mainArgs.file.isEmpty()) {
-            ganttFrame.openStartupDocument(mainArgs.file.get(0));
+
+
+    AtomicReference<GanttProject> mainWindow = new AtomicReference<>(null);
+    SwingUtilities.invokeAndWait(() -> {
+      try {
+        GanttProject ganttFrame = new GanttProject(false);
+        System.err.println("Main frame created");
+        mainWindow.set(ganttFrame);
+      } catch (Throwable e) {
+        e.printStackTrace();
+      } finally {
+        splash.get().close();
+        System.err.println("Splash closed");
+        Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+          @Override
+          public void uncaughtException(Thread t, Throwable e) {
+            GPLogger.log(e);
           }
-          ganttFrame.setVisible(true);
-          GPLogger.log(String.format("Bounds after setVisible: %s", ganttFrame.getBounds()));
-          try {
-            Class.forName("java.awt.desktop.AboutHandler");
-            DesktopIntegration.setup(ganttFrame);
-          } catch (ClassNotFoundException e) {
-            if (DesktopIntegration.isMacOs()) {
-              OSXAdapter.registerMacOSXApplication(ganttFrame);
-            }
-          } finally {
-            OSXAdapter.setupSystemProperties();
-          }
-          ganttFrame.getActiveChart().reset();
-          ganttFrame.getRssFeedChecker().setOptionsVersion(ganttFrame.getGanttOptions().getVersion());
-          ganttFrame.getRssFeedChecker().run();
-          ganttFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        } catch (Throwable e) {
-          e.printStackTrace();
-        } finally {
-          splash.get().close();
-          System.err.println("Splash closed");
-          Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-              GPLogger.log(e);
-            }
-          });
-        }
+        });
       }
     });
+
+    SwingUtilities.invokeLater(() -> mainWindow.get().doShow());
+    SwingUtilities.invokeLater(() -> mainWindow.get().doOpenStartupDocument(mainArgs));
     if (autosaveCleanup != null) {
       ourExecutor.submit(autosaveCleanup);
     }
     return true;
+  }
+
+  private void doOpenStartupDocument(Args args) {
+    fireProjectCreated();
+    if (args.file != null && !args.file.isEmpty()) {
+      openStartupDocument(args.file.get(0));
+    }
   }
 
   // ///////////////////////////////////////////////////////

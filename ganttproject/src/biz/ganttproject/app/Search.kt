@@ -38,10 +38,12 @@ import javax.swing.SwingUtilities
  * @author dbarashev@bardsoftware.com
  */
 class FXSearchUi(private val project: IGanttProject, private val uiFacade: UIFacade) : SearchUi {
-  private val textField = TextField().also {
-    it.onKeyPressed = EventHandler { evt ->
-      if (evt.code == KeyCode.ENTER) {
-        this.runSearch()
+  private val textField: TextField by lazy {
+    TextField().also {
+      it.onKeyPressed = EventHandler { evt ->
+        if (evt.code == KeyCode.ENTER) {
+          this.runSearch()
+        }
       }
     }
   }

@@ -48,7 +48,11 @@ public class GanttStatusBar extends JPanel {
   public void setLeftScene(Scene scene) {
     JFXPanel panel = new JFXPanel();
     panel.setScene(scene);
-    SwingUtilities.invokeLater(() -> add(panel, BorderLayout.WEST));
+    SwingUtilities.invokeLater(() -> {
+      add(panel, BorderLayout.WEST);
+      panel.doLayout();
+      doLayout();
+    });
   }
 
   public IProgressMonitor createProgressMonitor() {
