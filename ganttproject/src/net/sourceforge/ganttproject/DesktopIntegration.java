@@ -26,31 +26,31 @@ public class DesktopIntegration {
     final UIFacade uiFacade = app.getUIFacade();
     final ProjectUIFacade projectUiFacade = app.getProjectUIFacade();
 
-    DesktopAdapter.install(new GanttProjectApi() {
-      @Override
-      public void showAboutDialog() {
-        AboutDialog2 abd = new AboutDialog2(uiFacade);
-        abd.show();
-      }
-
-      @Override
-      public void showPreferencesDialog() {
-        new SettingsDialogAction(project, uiFacade).actionPerformed(null);
-      }
-
-      @Override
-      public void maybeQuit(QuitResponse quitResponse) {
-        if (app.quitApplication()) {
-          quitResponse.performQuit();
-        } else {
-          quitResponse.cancelQuit();
+    try {
+      DesktopAdapter.install(new GanttProjectApi() {
+        @Override
+        public void showAboutDialog() {
+          AboutDialog2 abd = new AboutDialog2(uiFacade);
+          abd.show();
         }
-      }
 
-      @Override
-      public void openFile(final File file) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-          public void run() {
+        @Override
+        public void showPreferencesDialog() {
+          new SettingsDialogAction(project, uiFacade).actionPerformed(null);
+        }
+
+        @Override
+        public void maybeQuit(QuitResponse quitResponse) {
+          if (app.quitApplication()) {
+            quitResponse.performQuit();
+          } else {
+            quitResponse.cancelQuit();
+          }
+        }
+
+        @Override
+        public void openFile(final File file) {
+          javax.swing.SwingUtilities.invokeLater(() -> {
             if (projectUiFacade.ensureProjectSaved(project)) {
               Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
               try {
@@ -59,9 +59,11 @@ public class DesktopIntegration {
                 uiFacade.showErrorDialog(ex);
               }
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      });
+    } catch (UnsupportedOperationException e) {
+      // Intentionally empty
+    }
   }
 }
