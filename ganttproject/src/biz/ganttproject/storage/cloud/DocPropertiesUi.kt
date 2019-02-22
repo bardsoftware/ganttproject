@@ -21,10 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.FolderView
-import biz.ganttproject.storage.LockableDocument
-import biz.ganttproject.storage.OnlineDocument
-import biz.ganttproject.storage.OnlineDocumentMode
+import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -134,14 +131,20 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
   private fun createHistoryPane(): HistoryPaneData {
-    val folderView = FolderView<VersionJsonAsFolderItem>(
-        exceptionUi = {}
+    val folderView = FolderView(
+        exceptionUi = {},
+        cellFactory = this@DocPropertiesUi::createHistoryCell
     )
-    val vboxBuilder = VBoxBuilder("tab-contents").apply {
+    val vboxBuilder = VBoxBuilder("tab-contents", "history-pane").apply {
       addTitle("cloud.historyPane.title")
+      add(Label().also {
+        it.textProperty().bind(this.i18n.create("cloud.historyPane.titleHelp"))
+        it.styleClass.add("help")
+      })
       add(folderView.listView.also {
-        it.styleClass.add("section")
+        //it.styleClass.add("section")
       }, alignment = null, growth = Priority.ALWAYS)
+      vbox.stylesheets.add("/biz/ganttproject/storage/cloud/HistoryPane.css")
     }
     val loader = { doc: GPCloudDocument ->
       doc.projectJson?.also { projectJson ->
@@ -168,6 +171,32 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     return HistoryPaneData(vboxBuilder.vbox, loader)
   }
 
+  private fun createHistoryCell(): ListCell<ListViewItem<VersionJsonAsFolderItem>> {
+    return object : ListCell<ListViewItem<VersionJsonAsFolderItem>>() {
+      override fun updateItem(item: ListViewItem<VersionJsonAsFolderItem>?, empty: Boolean) {
+        if (item == null) {
+          text = ""
+          graphic = null
+          return
+        }
+        super.updateItem(item, empty)
+        if (empty) {
+          text = ""
+          graphic = null
+          return
+        }
+
+        val vboxBuilder = VBoxBuilder()
+        vboxBuilder.add(Label(item.resource.value.formatTimestamp()).also {
+          it.styleClass.add("timestamp")
+        })
+        vboxBuilder.add(Label(item.resource.value.name).also {
+          it.styleClass.add("author")
+        })
+        graphic = vboxBuilder.vbox
+      }
+    }
+  }
 
   fun showDialog(document: GPCloudDocument, onLockDone: OnLockDone) {
     Platform.runLater {

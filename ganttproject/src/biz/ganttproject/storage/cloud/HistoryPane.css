@@ -1,0 +1,8 @@
+
+.history-pane .list-cell .timestamp {
+    -fx-font-weight: bold;
+}
+
+.history-pane .list-cell .author {
+    -fx-font-size: 82%;
+}

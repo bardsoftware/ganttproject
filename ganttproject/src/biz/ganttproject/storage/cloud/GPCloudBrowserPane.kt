@@ -110,11 +110,11 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLocked = false
   override val isLockable = false
   override val name: String
-    get() = """${node["author"]} [${this.formatTimestamp()}]"""
+    get() = node["author"].toString().removeSurrounding("\"")
   override val isDirectory = false
   override val canChangeLock = false
 
-  private fun formatTimestamp(): String {
+  fun formatTimestamp(): String {
     return GanttLanguage.getInstance().formatDateTime(CalendarFactory.newCalendar().let {
       it.timeInMillis = node["timestamp"].asLong()
       it.time
