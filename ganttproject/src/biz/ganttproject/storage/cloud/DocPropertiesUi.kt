@@ -30,6 +30,7 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
+import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
@@ -141,9 +142,21 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         it.textProperty().bind(this.i18n.create("cloud.historyPane.titleHelp"))
         it.styleClass.add("help")
       })
-      add(folderView.listView.also {
-        //it.styleClass.add("section")
-      }, alignment = null, growth = Priority.ALWAYS)
+      val listView = folderView.listView
+      add(listView, alignment = null, growth = Priority.ALWAYS)
+
+      val btnGet = Button().also {
+        it.textProperty().bind(this.i18n.create("cloud.historyPane.btnGet"))
+        it.styleClass.add("btn-small-attention")
+        it.isDisable = listView.selectionModel.isEmpty
+      }
+      listView.selectionModel.selectedItemProperty().addListener { _, _, _ -> btnGet.isDisable = listView.selectionModel.isEmpty }
+      btnGet.addEventHandler(ActionEvent.ACTION) {
+
+      }
+      add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+        it.styleClass.add("pane-buttons")
+      }
       vbox.stylesheets.add("/biz/ganttproject/storage/cloud/HistoryPane.css")
     }
     val loader = { doc: GPCloudDocument ->
@@ -211,12 +224,36 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           it.toggleGroup = mirrorToggleGroup
           it.styleClass = "section"
           it.buildPane()
-        }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
+        })
+        val btnChangeMode = Button().also {
+          it.textProperty().bind(this.i18n.create("cloud.offlineMirrorOptionPane.btnApply"))
+          it.styleClass.add("btn-small-attention")
+          it.addEventHandler(ActionEvent.ACTION) {
+            val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
+            mirrorOptionHandler(selectedMode)
+          }
+        }
+        add(btnChangeMode, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+          it.styleClass.add("pane-buttons")
+        }
+
         add(node = lockPaneBuilder().let {
           it.toggleGroup = lockToggleGroup
           it.styleClass = "section"
           it.buildPane()
-        }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
+        })
+        val btnChangeLock = Button().also {
+          it.textProperty().bind(this.i18n.create("cloud.lockOptionPane.btnApply"))
+          it.styleClass.add("btn-small-attention")
+          it.addEventHandler(ActionEvent.ACTION) {
+            val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
+            lockDurationHandler(selectedDuration)
+          }
+        }
+        add(btnChangeLock, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+          it.styleClass.add("pane-buttons")
+        }
+
       }
 
       val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
@@ -224,6 +261,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       val versions = Tab("History", historyPane.pane)
       val tabPane = TabPane(lockingOffline, versions).also {
         it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+
       }
       tabPane.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
         when (newValue) {
@@ -235,20 +273,22 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         it.dialogPane.apply {
 
           content = tabPane
-          styleClass.addAll("dlg-lock")
+          styleClass.addAll("dlg-lock", "dlg-cloud-file-options")
           stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
 
-          buttonTypes.add(ButtonType.OK)
-          lookupButton(ButtonType.OK).apply {
-            styleClass.add("btn-attention")
-            addEventHandler(ActionEvent.ACTION) {
-              val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
-              lockDurationHandler(selectedDuration)
-
-              val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
-              mirrorOptionHandler(selectedMode)
-            }
+          val window = scene.window
+          window.onCloseRequest = EventHandler {
+            window.hide()
           }
+          scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable{ window.hide() }
+//          buttonTypes.add(ButtonType.OK)
+//          lookupButton(ButtonType.OK).apply {
+//            this.isVisible = false
+//            styleClass.add("btn-attention")
+//            addEventHandler(ActionEvent.ACTION) {
+//
+//            }
+//          }
         }
         it.show()
       }
