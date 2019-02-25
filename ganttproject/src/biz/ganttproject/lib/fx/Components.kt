@@ -86,7 +86,7 @@ fun test(): Pane {
 }
 
 class VBoxBuilder(vararg classes: String) {
-  private val i18n = DefaultLocalizer()
+  val i18n = DefaultLocalizer()
   internal val vbox = VBox()
 
   init {

@@ -21,16 +21,16 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.LockableDocument
-import biz.ganttproject.storage.OnlineDocument
-import biz.ganttproject.storage.OnlineDocumentMode
+import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
+import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.GPLogger
@@ -126,6 +126,91 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
   }
 
+  // -------------------------------------------------------------------------------
+  // History stuff
+  private val historyService = HistoryService()
+
+  private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
+  private fun createHistoryPane(): HistoryPaneData {
+    val folderView = FolderView(
+        exceptionUi = {},
+        cellFactory = this@DocPropertiesUi::createHistoryCell
+    )
+    val vboxBuilder = VBoxBuilder("tab-contents", "history-pane").apply {
+      addTitle("cloud.historyPane.title")
+      add(Label().also {
+        it.textProperty().bind(this.i18n.create("cloud.historyPane.titleHelp"))
+        it.styleClass.add("help")
+      })
+      val listView = folderView.listView
+      add(listView, alignment = null, growth = Priority.ALWAYS)
+
+      val btnGet = Button().also {
+        it.textProperty().bind(this.i18n.create("cloud.historyPane.btnGet"))
+        it.styleClass.add("btn-small-attention")
+        it.isDisable = listView.selectionModel.isEmpty
+      }
+      listView.selectionModel.selectedItemProperty().addListener { _, _, _ -> btnGet.isDisable = listView.selectionModel.isEmpty }
+      btnGet.addEventHandler(ActionEvent.ACTION) {
+
+      }
+      add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+        it.styleClass.add("pane-buttons")
+      }
+      vbox.stylesheets.add("/biz/ganttproject/storage/cloud/HistoryPane.css")
+    }
+    val loader = { doc: GPCloudDocument ->
+      doc.projectJson?.also { projectJson ->
+        this.historyService.apply {
+          this.busyIndicator = this@DocPropertiesUi.busyUi
+          this.projectNode = projectJson
+          onSucceeded = EventHandler {
+            Platform.runLater { folderView.setResources(this.value) }
+            this.busyIndicator(false)
+          }
+          onFailed = EventHandler {
+            busyIndicator(false)
+            //dialogUi.error("History loading has failed")
+          }
+          onCancelled = EventHandler {
+            this.busyIndicator(false)
+            GPLogger.log("Loading cancelled!")
+          }
+          restart()
+        }
+      }
+      null
+    }
+    return HistoryPaneData(vboxBuilder.vbox, loader)
+  }
+
+  private fun createHistoryCell(): ListCell<ListViewItem<VersionJsonAsFolderItem>> {
+    return object : ListCell<ListViewItem<VersionJsonAsFolderItem>>() {
+      override fun updateItem(item: ListViewItem<VersionJsonAsFolderItem>?, empty: Boolean) {
+        if (item == null) {
+          text = ""
+          graphic = null
+          return
+        }
+        super.updateItem(item, empty)
+        if (empty) {
+          text = ""
+          graphic = null
+          return
+        }
+
+        val vboxBuilder = VBoxBuilder()
+        vboxBuilder.add(Label(item.resource.value.formatTimestamp()).also {
+          it.styleClass.add("timestamp")
+        })
+        vboxBuilder.add(Label(item.resource.value.name).also {
+          it.styleClass.add("author")
+        })
+        graphic = vboxBuilder.vbox
+      }
+    }
+  }
+
   fun showDialog(document: GPCloudDocument, onLockDone: OnLockDone) {
     Platform.runLater {
       val lockToggleGroup = ToggleGroup()
@@ -139,37 +224,71 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           it.toggleGroup = mirrorToggleGroup
           it.styleClass = "section"
           it.buildPane()
-        }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
+        })
+        val btnChangeMode = Button().also {
+          it.textProperty().bind(this.i18n.create("cloud.offlineMirrorOptionPane.btnApply"))
+          it.styleClass.add("btn-small-attention")
+          it.addEventHandler(ActionEvent.ACTION) {
+            val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
+            mirrorOptionHandler(selectedMode)
+          }
+        }
+        add(btnChangeMode, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+          it.styleClass.add("pane-buttons")
+        }
+
         add(node = lockPaneBuilder().let {
           it.toggleGroup = lockToggleGroup
           it.styleClass = "section"
           it.buildPane()
-        }, alignment = Pos.CENTER, growth = Priority.ALWAYS)
+        })
+        val btnChangeLock = Button().also {
+          it.textProperty().bind(this.i18n.create("cloud.lockOptionPane.btnApply"))
+          it.styleClass.add("btn-small-attention")
+          it.addEventHandler(ActionEvent.ACTION) {
+            val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
+            lockDurationHandler(selectedDuration)
+          }
+        }
+        add(btnChangeLock, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
+          it.styleClass.add("pane-buttons")
+        }
+
       }
 
       val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
-      val versions = Tab("Versions", Label("Versions go here"))
+      val historyPane = createHistoryPane()
+      val versions = Tab("History", historyPane.pane)
       val tabPane = TabPane(lockingOffline, versions).also {
         it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+
+      }
+      tabPane.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+        when (newValue) {
+          versions -> historyPane.loader(document)
+          else -> {}
+        }
       }
       Dialog<Unit>().also {
         it.dialogPane.apply {
 
           content = tabPane
-          styleClass.addAll("dlg-lock")
+          styleClass.addAll("dlg-lock", "dlg-cloud-file-options")
           stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
 
-          buttonTypes.add(ButtonType.OK)
-          lookupButton(ButtonType.OK).apply {
-            styleClass.add("btn-attention")
-            addEventHandler(ActionEvent.ACTION) {
-              val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
-              lockDurationHandler(selectedDuration)
-
-              val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
-              mirrorOptionHandler(selectedMode)
-            }
+          val window = scene.window
+          window.onCloseRequest = EventHandler {
+            window.hide()
           }
+          scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable{ window.hide() }
+//          buttonTypes.add(ButtonType.OK)
+//          lookupButton(ButtonType.OK).apply {
+//            this.isVisible = false
+//            styleClass.add("btn-attention")
+//            addEventHandler(ActionEvent.ACTION) {
+//
+//            }
+//          }
         }
         it.show()
       }

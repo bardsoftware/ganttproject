@@ -34,8 +34,7 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-background-color: -gp-orange;
     -fx-text-fill: black;
     -fx-font-weight: bold;
-    -fx-font-size: 120%;
-    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-padding: 0.5ex 2em 0.5ex 2em;
     -fx-cursor: hand;
 }
 .btn-attention:disabled {
