@@ -67,6 +67,7 @@ class FolderView<T : FolderItem>(
       createListCell(exceptionUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, itemActionFactory)
     }) {
 
+  var document: OnlineDocument? = null
   var myContents: ObservableList<T> = FXCollections.observableArrayList()
   val listView: ListView<ListViewItem<T>> = ListView()
 

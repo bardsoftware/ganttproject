@@ -63,12 +63,12 @@ class GPCloudDocument(private val teamRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
-  private var lastFetch: FetchResult? = null
   private var lastOfflineContents: ByteArray? = null
 
   override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
   override val mode = SimpleObjectProperty<OnlineDocumentMode>(OnlineDocumentMode.ONLINE_ONLY)
+  override val fetchResultProperty = SimpleObjectProperty<FetchResult>()
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
@@ -162,7 +162,7 @@ class GPCloudDocument(private val teamRefid: String?,
         }
         OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.MIRROR -> {
           this.offlineMirror = this.offlineMirror ?: this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
-          this.lastFetch?.let {
+          this.fetchResultProperty.get()?.let {
             this.saveOfflineMirror(it)
           }
         }
@@ -266,7 +266,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun getInputStream(): InputStream {
-    var fetchResult = this.lastFetch ?: runBlocking { fetch() }
+    var fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch() }
     if (fetchResult.useMirror) {
       val mirrorBytes = this.offlineMirror!!.inputStream.readBytes()
       saveOnline(mirrorBytes)
@@ -279,13 +279,19 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override suspend fun fetch(): FetchResult {
     return callReadProject().also {
-      this.lastFetch = it
+      this.fetchResultProperty.set(it)
     }
   }
 
-  private fun callReadProject(): FetchResult {
+  override suspend fun fetchVersion(version: Long): FetchResult {
+    return callReadProject(version).also {
+      this.fetchResultProperty.set(it)
+    }
+  }
+
+  private fun callReadProject(version: Long = -1): FetchResult {
     val http = this.httpClientFactory()
-    val resp = http.sendGet("/p/read$queryArgs")
+    val resp = if (version == -1L) http.sendGet("/p/read$queryArgs") else http.sendGet("/p/read$queryArgs&generation=$version")
     if (resp.code == 200) {
       val etagValue = resp.header("ETag")
       val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
@@ -303,6 +309,7 @@ class GPCloudDocument(private val teamRefid: String?,
       throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
     }
   }
+
   private fun (Exception).isNetworkUnavailable(): Boolean {
     if (this is SocketException && this.message?.contains("network is unreachable", true) != false) {
       return true
@@ -345,7 +352,7 @@ class GPCloudDocument(private val teamRefid: String?,
           "filename" to this.projectName,
           "fileContents" to Base64.getEncoder().encodeToString(body),
           "lockToken" to this.lock?.get("lockToken")?.textValue(),
-          "oldVersion" to this.lastFetch?.actualVersion?.toString()
+          "oldVersion" to this.fetchResultProperty.get()?.actualVersion?.toString()
       ))
       when (resp.code) {
         200 -> {
@@ -359,7 +366,7 @@ class GPCloudDocument(private val teamRefid: String?,
               etagValue?.toLong() ?: -1,
               body)
           this.saveOfflineMirror(fetch)
-          this.lastFetch = fetch
+          this.fetchResultProperty.set(fetch)
 
         }
         412 -> {
@@ -395,7 +402,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun write(force: Boolean) {
-    this.lastFetch = null
+    this.fetchResultProperty.set(null)
     this.proxyDocumentFactory(this).write()
   }
 
