@@ -18,24 +18,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.Date;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
+import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.grid.OffsetManager;
-import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import junit.framework.TestCase;
+import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.util.Date;
 
 /**
  * Tests OffsetManager
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class OffsetManagerTest extends TestCase {
+public class OffsetManagerTest extends TaskTestCase {
     class TestOffsetBuilderFactory implements OffsetManager.OffsetBuilderFactory {
         private OffsetBuilder myTopAndBottomOffsetBuilder;
         private OffsetBuilder myAtomicOffsetBuilder;
