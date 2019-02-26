@@ -40,19 +40,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-min-height: 26px;
     -fx-alignment: center;
     -fx-background-color: transparent;
-    -fx-border-style: solid;
-    -fx-border-color: none;
-    -fx-border-width: 0;
-    -fx-border-insets: 0;
-    -fx-border-radius: 3px;
     -fx-padding: 0 0.5em;
-}
-
-.statusbar Button.rect {
-    -fx-min-width: 26px;
-    -fx-min-height: 26px;
-    -fx-max-width: 26px;
-    -fx-max-height: 26px;
 }
 
 .statusbar Button .glyph-icon {
@@ -63,19 +51,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .statusbar Button:hover {
     -fx-fill: -gp-dark-gray;
-    -fx-background-color: derive(-gp-light-gray, -5%);
-    -fx-background-radius: 3px;
+    -fx-cursor: hand;
 }
 
 .statusbar Button:hover .glyph-icon {
     -fx-fill: -gp-dark-gray;
-    -glyph-size: 20px;
 }
 
-.statusbar Button:pressed, .statusbar Button:hover:pressed {
-    -fx-background-color: derive(-gp-light-gray, -10%);
-    -fx-background-radius: 3px;
-}
 
 .statusbar Button:pressed .glyph-icon, .statusbar Button:hover:pressed .glyph-icon {
     -fx-fill: derive(-gp-dark-gray, -15%);
