@@ -33,6 +33,8 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import java.time.Duration
 
@@ -152,7 +154,10 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       }
       listView.selectionModel.selectedItemProperty().addListener { _, _, _ -> btnGet.isDisable = listView.selectionModel.isEmpty }
       btnGet.addEventHandler(ActionEvent.ACTION) {
-
+        val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
+        GlobalScope.launch {
+          folderView.document?.fetchVersion(selected.generation)
+        }
       }
       add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
         it.styleClass.add("pane-buttons")
@@ -160,6 +165,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       vbox.stylesheets.add("/biz/ganttproject/storage/cloud/HistoryPane.css")
     }
     val loader = { doc: GPCloudDocument ->
+      folderView.document = doc
       doc.projectJson?.also { projectJson ->
         this.historyService.apply {
           this.busyIndicator = this@DocPropertiesUi.busyUi

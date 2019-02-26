@@ -114,6 +114,9 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isDirectory = false
   override val canChangeLock = false
 
+  val generation: Long
+    get() = node["number"].asLong(-1)
+
   fun formatTimestamp(): String {
     return GanttLanguage.getInstance().formatDateTime(CalendarFactory.newCalendar().let {
       it.timeInMillis = node["timestamp"].asLong()

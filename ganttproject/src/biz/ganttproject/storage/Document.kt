@@ -182,9 +182,11 @@ interface OnlineDocument {
   var offlineMirror: Document?
   val isMirrored: ObservableBooleanValue
   val mode: ObjectProperty<OnlineDocumentMode>
+  val fetchResultProperty: ObservableObjectValue<FetchResult?>
 
   fun setMirrored(mirrored: Boolean)
   suspend fun fetch(): FetchResult
+  suspend fun fetchVersion(version: Long): FetchResult
   fun write(force: Boolean = false)
 }
 

@@ -100,16 +100,15 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
 
   fun open(document: Document, offlineTail: (Document) -> Unit) {
     GlobalScope.launch(Dispatchers.Main) {
-      val fetchResult = fetchOnlineDocument(document)
-      if (fetchResult == null || processFetchResult(fetchResult)) {
+      val online = document.asOnlineDocument() ?: return@launch
+      val currentFetch = online.fetch()
+      if (processFetchResult(currentFetch)) {
+        online.fetchResultProperty.addListener { _, _, _ ->
+          offlineTail(document)
+        }
         offlineTail(document)
       }
     }
-  }
-
-  private suspend fun fetchOnlineDocument(document: Document): FetchResult? {
-    val online = document.asOnlineDocument() ?: return null
-    return online.fetch()
   }
 
   private suspend fun processFetchResult(fetchResult: FetchResult): Boolean {
@@ -382,10 +381,9 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
       if (tasks.isEmpty()) {
         return
       }
-      val task = tasks[0]
+      val task = tasks.removeAt(0)
       val wrapper = Runnable {
         task.run()
-        tasks.removeAt(0)
         processTasks(tasks)
       }
       SwingUtilities.invokeLater(wrapper)

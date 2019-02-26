@@ -18,25 +18,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.chart.grid.OffsetBuilder;
-import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.grid.OffsetBuilderImpl;
+import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import junit.framework.TestCase;
+import net.sourceforge.ganttproject.test.task.TaskTestCase;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Tests OffsetBuilder
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class TestOffsetBuilder extends TestCase {
+public class TestOffsetBuilder extends TaskTestCase {
     public void testBasicOffsets() {
         GPCalendarCalc calendar = GPCalendarCalc.PLAIN;
         Date start = TestSetupHelper.newMonday().getTime();
