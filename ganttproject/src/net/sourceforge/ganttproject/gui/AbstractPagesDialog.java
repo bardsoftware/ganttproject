@@ -18,36 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.HashSet;
+import java.util.List;
+
 public abstract class AbstractPagesDialog {
   private final UIFacade myUIFacade;
   private final List<ListItem> myItems;
-  private final HashSet<String> myPageIds = new HashSet<String>();
+  private final HashSet<String> myPageIds = new HashSet<>();
   private final String myTitleKey;
   private JList<ListItem> myPagesList;
 
@@ -75,7 +61,7 @@ public abstract class AbstractPagesDialog {
         onOk();
       }
     };
-    myUIFacade.createDialog(getComponent(), new Action[] { okAction, CancelAction.EMPTY },
+    myUIFacade.createDialog(getComponent(), new Action[]{okAction, CancelAction.EMPTY},
         GanttLanguage.getInstance().getCorrectedLabel(myTitleKey)).show();
     if (pageID != null) {
       for (int i = 0; i < myItems.size(); i++) {
@@ -128,7 +114,7 @@ public abstract class AbstractPagesDialog {
 
       @Override
       public Component getListCellRendererComponent(JList list, Object value, int idx, boolean isSelected,
-          boolean cellHasFocus) {
+                                                    boolean cellHasFocus) {
         ListItem listItem = (ListItem) value;
         Component defaultResult = super.getListCellRendererComponent(list, listItem.name, idx, isSelected, false);
         Font font = defaultResult.getFont();

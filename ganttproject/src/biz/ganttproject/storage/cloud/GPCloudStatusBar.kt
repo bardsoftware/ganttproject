@@ -77,7 +77,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     this.observableDocument.get().apply {
       val onlineDocument = this.asOnlineDocument()
       if (onlineDocument is GPCloudDocument) {
-        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument, onLockDone = {})
+        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument)
       }
     }
   }
