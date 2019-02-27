@@ -7,6 +7,10 @@
 .dlg-lock {
     -fx-font-size: 120%;
     -fx-background-color: transparent;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+    -fx-fill-width: 1;
+    -fx-fill-height: 1;
 }
 
 .dlg-lock .btn-option {
@@ -32,7 +36,6 @@
     -fx-font-size: 80%;
     -fx-wrap-text: true;
 }
-
 .dlg-lock .tab {
     -fx-background-color: transparent;
     -fx-border-width: 0 0 3 0;

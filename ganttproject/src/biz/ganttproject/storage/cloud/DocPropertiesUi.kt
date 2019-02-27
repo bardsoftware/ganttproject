@@ -324,7 +324,11 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
     if (onlineDocument is GPCloudDocument) {
       val docPropertiesUi = DocPropertiesUi(errorUi = {}, busyUi = {})
-      return Scene(docPropertiesUi.buildPane(onlineDocument, {}))
+      val vboxBuilder = VBoxBuilder("dlg-lock").also {
+        it.add(docPropertiesUi.buildPane(onlineDocument, {}), Pos.CENTER, Priority.ALWAYS)
+        it.vbox.stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+      }
+      return Scene(vboxBuilder.vbox)
     } else {
       return buildNotOnlineDocumentScene()
     }
