@@ -50,7 +50,7 @@ import java.util.logging.Level
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudSignupPane internal constructor(
+class GPCloudSignupPane(
     val onTokenCallback: AuthTokenCallback,
     val pageSwitcher: SceneChanger) {
   private val i18n = DefaultLocalizer("cloud.signup", RootLocalizer)
@@ -63,7 +63,7 @@ class GPCloudSignupPane internal constructor(
     this.httpd.onTokenReceived = this.onTokenCallback
   }
 
-  suspend fun createPane(msgIntro: String? = null): Pane {
+  fun createPane(msgIntro: String? = null): Pane {
 
     val vboxBuilder = VBoxBuilder("dlg-lock")
     vboxBuilder.addTitle(i18n.formatText("title"))
@@ -82,34 +82,6 @@ class GPCloudSignupPane internal constructor(
     vboxBuilder.add(mdfx, Pos.CENTER, Priority.ALWAYS)
 
 
-//    val btnSignIn = Button("Sign In")
-//    btnSignIn.styleClass.add("btn-attention")
-//
-//    btnSignIn.addEventHandler(ActionEvent.ACTION) {
-//      val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
-//      expandMsg(uri)
-//
-//      this.httpd.onTokenReceived = this.onTokenCallback
-//      openInBrowser(uri)
-//    }
-//
-//    rootPane.add(btnSignIn, Pos.CENTER, null).apply {
-//      this.styleClass.add("doclist-save-box")
-//    }
-
-//    vboxBuilder.add(Label("Not registered yet? Sign up now!").apply {
-//      this.styleClass.add("h2")
-//    })
-//    vboxBuilder.add(HyperlinkLabel("GanttProject Cloud is free for up to 2 users per month. [Learn more]").apply {
-//      this.styleClass.add("help")
-//      this.onAction = EventHandler {
-//        val link = it.source as Hyperlink?
-//        when (link?.text) {
-//          "Learn more" -> openInBrowser(GPCLOUD_LANDING_URL)
-//          else -> Unit
-//        }
-//      }
-//    })
     val signupBtn = Button(i18n.formatText("generic.signUp"))
     signupBtn.styleClass.add("btn-attention")
     signupBtn.addEventHandler(ActionEvent.ACTION) {
@@ -129,12 +101,7 @@ class GPCloudSignupPane internal constructor(
     vboxBuilder.add(btnSignIn, Pos.CENTER, Priority.NEVER).also {
       it.styleClass.add("smallskip")
     }
-//
-//    notification.content = rootPane.vbox
-//    notification.isShowFromTop = false
-//    notification.styleClass.addAll("fill-parent", "alert-info")
-//    val wrapperPane = BorderPane(notification)
-    //vboxBuilder.vbox.stylesheets
+
     return DialogPane().also {
       it.styleClass.addAll("dlg-lock", "signup-pane")
       it.stylesheets.addAll(
@@ -149,6 +116,14 @@ class GPCloudSignupPane internal constructor(
   }
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
+    if (Strings.isNullOrEmpty(GPCloudOptions.authToken.value)) {
+      unauthenticated.accept("NO_ACCESS_TOKEN")
+      return
+    }
+    if (Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0).isBefore(Instant.now())) {
+      unauthenticated.accept("ACCESS_TOKEN_EXPIRED")
+      return
+    }
     GlobalScope.launch {
       try {
         callAuthCheck(success, unauthenticated)
@@ -169,8 +144,8 @@ class GPCloudSignupPane internal constructor(
 
   private fun callAuthCheck(onSuccess: Consumer<String>, onUnauthenticated: Consumer<String>) {
     val http = HttpClientBuilder.buildHttpClientApache()
-    val teamList = HttpGet("/access-token/check")
-    val resp = http.client.execute(http.host, teamList, http.context)
+    val accessTokenCheck = HttpGet("/access-token/check")
+    val resp = http.client.execute(http.host, accessTokenCheck, http.context)
     when (resp.statusLine.statusCode) {
       200 -> onSuccess.accept("")
       401 -> onUnauthenticated.accept("INVALID")
@@ -231,7 +206,7 @@ class GPCloudSignupPane internal constructor(
     val paneBuilder = VBoxBuilder("pane-service-contents")
     paneBuilder.addTitle("Signing into GanttProject Cloud")
     if (GPCloudOptions.authToken.value != "") {
-      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLong())
+      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
       val remainingDuration = Duration.between(Instant.now(), expirationInstant)
       if (!remainingDuration.isNegative) {
         val hours = remainingDuration.toHours()

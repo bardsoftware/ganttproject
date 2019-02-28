@@ -99,8 +99,8 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   }
 
   fun open(document: Document, offlineTail: (Document) -> Unit) {
+    val online = document.asOnlineDocument() ?: return offlineTail(document)
     GlobalScope.launch(Dispatchers.Main) {
-      val online = document.asOnlineDocument() ?: return@launch
       val currentFetch = online.fetch()
       if (processFetchResult(currentFetch)) {
         online.fetchResultProperty.addListener { _, _, _ ->

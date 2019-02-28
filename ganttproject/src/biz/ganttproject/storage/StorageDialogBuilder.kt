@@ -21,7 +21,6 @@ package biz.ganttproject.storage
 import biz.ganttproject.FXUtil
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Preconditions
-import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -29,7 +28,6 @@ import javafx.scene.Scene
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.control.ToggleButton
-import javafx.scene.input.KeyCode
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -101,16 +99,6 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
 
   fun setDialog(dlg: UIFacade.Dialog) {
     myDialog = dlg
-    myScene!!.setOnKeyPressed { keyEvent ->
-      if (keyEvent.code == KeyCode.ESCAPE) {
-        dlg.hide()
-      }
-    }
-//    dlg.show()
-    Platform.runLater {
-      //      myJfxPanel!!.scene = null
-//      myJfxPanel!!.scene = myScene
-    }
   }
 
 

@@ -39,6 +39,23 @@ class StorageDialogAction(private val myProject: IGanttProject, private val myUi
           }
           this.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
 
+          val dialogUi = object : UIFacade.Dialog {
+            override fun show() {
+              this@apply.show()
+            }
+
+            override fun hide() {
+              window.hide()
+            }
+
+            override fun layout() {
+              this@apply.dialogPane.layout()
+            }
+
+            override fun center(centering: UIFacade.Centering?) {
+            }
+          }
+          dialogBuilder.setDialog(dialogUi)
           this.show()
         }
         //dialogBuilder

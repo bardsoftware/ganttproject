@@ -82,9 +82,19 @@ class GPCloudStorage(
           },
           unauthenticated = Consumer {
             when (it) {
-              "INVALID" -> {
+              "NO_ACCESS_TOKEN" -> {
                 GlobalScope.launch(Dispatchers.Main) {
                   sceneChanger(signupPane.createPane())
+                }
+              }
+              "ACCESS_TOKEN_EXPIRED" -> {
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signupPane.createSigninPane())
+                }
+              }
+              "INVALID" -> {
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signupPane.createSigninPane())
                 }
               }
               "OFFLINE" -> {

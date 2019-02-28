@@ -339,6 +339,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 
   private fun buildNotOnlineDocumentScene(): Scene {
-    return Scene(Label("This project is not yet on GanttProject Cloud"))
+    val signupPane = GPCloudSignupPane(onTokenCallback = { _, _, _, _ -> }, pageSwitcher = {})
+    return Scene(signupPane.createPane())
   }
 }
