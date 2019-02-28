@@ -33,10 +33,12 @@ webdav-list-cell-button-pane.alert-warning {
 .btn-attention {
     -fx-background-color: -gp-orange;
     -fx-text-fill: black;
+    -fx-font-size: 110%;
     -fx-font-weight: bold;
-    -fx-padding: 0.5ex 2em 0.5ex 2em;
+    -fx-padding: 0.75ex 2em;
     -fx-cursor: hand;
 }
+
 .btn-attention:disabled {
     -fx-opacity: 0.5;
     -fx-cursor: default;
@@ -77,12 +79,36 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-background-color: #ffc241;
 }
 
-.btn-signup {
-    -fx-background-color: orangered;
-    -fx-border-width: 1;
-    -fx-border-color: derive(orangered, -10%);
+.btn-secondary {
+    -fx-min-height: 26px;
+    -fx-alignment: center;
+    -fx-background-color: -gp-light-gray;
+    -fx-padding: 0.5ex 1em;
+}
+
+.btn-secondary .glyph-icon {
+    -fx-alignment: center;
+    -fx-fill: -gp-medium-gray;
+    -glyph-size: 20px;
+}
+
+.btn-secondary:hover {
+    -fx-fill: white;
     -fx-text-fill: white;
-    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-color: -gp-medium-gray;
+}
+
+.btn-secondary:hover .glyph-icon {
+    -fx-fill: white;
+    -fx-text-fill: white;
+}
+
+
+.btn-secondary:pressed, .btn-secondary:hover:pressed {
+    -fx-background-color: -gp-dark-gray;
+    -fx-fill: white;
+    -fx-text-fill: white;
 }
 
 .button-pane {
@@ -130,6 +156,7 @@ HBox.title Label {
 HBox.title-integrated {
     -fx-background-color: -gp-dark-gray;
 }
+
 HBox.title-integrated Label {
     -fx-padding: 10 10 0 10;
     -fx-text-fill: -gp-orange;
@@ -152,9 +179,11 @@ HBox.title-integrated Label {
     -fx-padding: 0.25ex 0 0 0;
     -fx-text-fill: -gp-light-gray;
 }
+
 .hint .glyph-icon {
     -fx-fill: -gp-light-gray;
 }
+
 .hint.error {
     visibility: visible;
 }
@@ -280,8 +309,8 @@ HBox.title-integrated Label {
 }
 
 .pane-storage {
-    -fx-min-height: 400;
-    -fx-min-width: 400;
+    -fx-min-height: 600;
+    -fx-min-width: 600;
     -fx-padding: 0;
     -fx-border-insets: 0;
 }
@@ -323,6 +352,7 @@ HBox.title-integrated Label {
 .status-bar {
     -fx-background-color: transparent;
 }
+
 .subtitle {
     -fx-padding: 0 0 3 0;
     -fx-font-weight: bold;
@@ -396,16 +426,17 @@ HBox.title-integrated Label {
     -fx-background-color: transparent;
     -fx-padding: 0 0 1em 0;
 }
+
 .crumb {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-fill: -gp-light-gray;
     -fx-text-fill: -gp-light-gray;
 }
+
 .crumb:hover,
 .crumb:selected,
 .crumb:focused,
-.crumb-selected
-{
+.crumb-selected {
     -fx-background-color: -gp-medium-gray;
 }

@@ -24,12 +24,14 @@ import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
 const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
@@ -53,10 +55,6 @@ class GPCloudStorage(
     private val documentManager: DocumentManager) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane = BorderPane()
 
-  internal interface PageUi {
-    fun createPane(): CompletableFuture<Pane>
-  }
-
   override val name = "GanttProject Cloud"
 
   override fun createSettingsUi(): Optional<Pane> {
@@ -79,18 +77,14 @@ class GPCloudStorage(
 
       signupPane.tryAccessToken(
           success = Consumer {
-            println("Auth token is valid!")
             webSocket.start()
             sceneChanger(browserPane.createStorageUi())
           },
           unauthenticated = Consumer {
             when (it) {
               "INVALID" -> {
-                println("Auth token is NOT valid!")
-                Platform.runLater {
-                  signupPane.createPane().thenApply { pane ->
-                    sceneChanger(pane)
-                  }
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signupPane.createPane())
                 }
               }
               "OFFLINE" -> {

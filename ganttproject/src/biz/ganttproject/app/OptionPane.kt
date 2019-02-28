@@ -128,6 +128,7 @@ class OptionPaneBuilder<T> {
       styleClass.add(builder.styleClass)
       stylesheets.addAll(builder.styleSheets)
       builder.graphic?.let {
+        it.styleClass.add("img")
         graphic = it
       }
 
@@ -141,6 +142,5 @@ class OptionPaneBuilder<T> {
         }
       }
     }
-
   }
 }

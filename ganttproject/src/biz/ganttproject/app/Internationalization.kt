@@ -74,5 +74,6 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   fun hasKey(key: String): Boolean {
     return GanttLanguage.getInstance().getText(key) != null
   }
-
 }
+
+val RootLocalizer = DefaultLocalizer()

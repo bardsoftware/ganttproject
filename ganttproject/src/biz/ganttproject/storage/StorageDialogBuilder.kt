@@ -22,9 +22,9 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Preconditions
 import javafx.application.Platform
-import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
@@ -60,7 +60,7 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
   private var mySaveStorage: Pane? = null
   private var myScene: Scene? = null
   private var myDialog: UIFacade.Dialog? = null
-  private var myJfxPanel: JFXPanel? = null
+//  private var myJfxPanel: JFXPanel? = null
 
   private val myDialogUi = object : DialogUi {
 
@@ -91,11 +91,11 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
 
     override fun resize() {
       //
-      if (myJfxPanel != null) {
-        myJfxPanel!!.scene = null
-        myJfxPanel!!.scene = myScene
-        SwingUtilities.invokeLater { myDialog!!.layout() }
-      }
+//      if (myJfxPanel != null) {
+//        myJfxPanel!!.scene = null
+//        myJfxPanel!!.scene = myScene
+//        SwingUtilities.invokeLater { myDialog!!.layout() }
+//      }
     }
   }
 
@@ -106,10 +106,10 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
         dlg.hide()
       }
     }
-    dlg.show()
+//    dlg.show()
     Platform.runLater {
-      myJfxPanel!!.scene = null
-      myJfxPanel!!.scene = myScene
+      //      myJfxPanel!!.scene = null
+//      myJfxPanel!!.scene = myScene
     }
   }
 
@@ -138,7 +138,7 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
     }
   }
 
-  fun build(): JFXPanel {
+  fun build(): Parent {
     val borderPane = BorderPane()
     borderPane.styleClass.add("body")
 
@@ -166,10 +166,11 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
       borderPane.top = titleBox
     }
 
-    myScene = Scene(borderPane)
-    myScene!!.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
-    val jfxPanel = JFXPanel()
-    jfxPanel.scene = myScene
+    borderPane.stylesheets.add("biz/ganttproject/storage/StorageDialog.css")
+//    myScene = Scene(borderPane)
+//    myScene!!.stylesheets
+//    val jfxPanel = JFXPanel()
+//    jfxPanel.scene = myScene
 
     if (myProject.isModified) {
       btnSave.fire()
@@ -177,9 +178,7 @@ class StorageDialogBuilder(private val myProject: IGanttProject, projectUi: Proj
       btnOpen.fire()
     }
 
-
-    myJfxPanel = jfxPanel
-    return jfxPanel
+    return borderPane
   }
 
   private fun showOpenStorageUi(container: BorderPane) {
