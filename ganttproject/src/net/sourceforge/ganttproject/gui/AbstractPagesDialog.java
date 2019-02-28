@@ -23,8 +23,6 @@ import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
@@ -146,32 +144,24 @@ public abstract class AbstractPagesDialog {
       }
     });
     myPagesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    myPagesList.addListSelectionListener(new ListSelectionListener() {
-      @Override
-      public void valueChanged(ListSelectionEvent e) {
-        ListItem listItem = myPagesList.getSelectedValue();
-        if (listItem.isGroupHeader) {
-          // Assumes that the list does not end with a GroupHeader!
-          myPagesList.setSelectedIndex(myPagesList.getSelectedIndex() + 1);
-        } else {
-          final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
-          cardLayout.show(contentPanel, listItem.id);
-        }
+    myPagesList.addListSelectionListener(e -> {
+      ListItem listItem = myPagesList.getSelectedValue();
+      if (listItem.isGroupHeader) {
+        // Assumes that the list does not end with a GroupHeader!
+        myPagesList.setSelectedIndex(myPagesList.getSelectedIndex() + 1);
+      } else {
+        final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
+        cardLayout.show(contentPanel, listItem.id);
       }
     });
     myPagesList.setBorder(BorderFactory.createEtchedBorder());
 
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        myPagesList.setSelectedIndex(0);
-      }
-    });
+    SwingUtilities.invokeLater(() -> myPagesList.setSelectedIndex(0));
 
     JPanel rootPanel = new JPanel(new BorderLayout());
     rootPanel.add(myPagesList, BorderLayout.WEST);
     JPanel contentPanelWrapper = new JPanel(new BorderLayout());
-    contentPanelWrapper.add(contentPanel, BorderLayout.NORTH);
+    contentPanelWrapper.add(contentPanel, BorderLayout.CENTER);
     rootPanel.add(contentPanelWrapper, BorderLayout.CENTER);
     rootPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     return rootPanel;

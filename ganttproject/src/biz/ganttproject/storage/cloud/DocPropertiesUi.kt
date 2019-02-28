@@ -42,8 +42,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
+import java.awt.BorderLayout
 import java.awt.Component
 import java.time.Duration
+import javax.swing.JPanel
 
 typealias OnLockDone = (JsonNode?) -> Unit
 typealias BusyUi = (Boolean) -> Unit
@@ -314,10 +316,12 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
 
   override fun buildPageComponent(): Component {
     val jfxPanel = JFXPanel()
+    val wrapper = JPanel(BorderLayout())
+    wrapper.add(jfxPanel, BorderLayout.CENTER)
     GlobalScope.launch(Dispatchers.Main) {
       jfxPanel.scene = buildScene()
     }
-    return jfxPanel
+    return wrapper
   }
 
   private fun buildScene(): Scene {
