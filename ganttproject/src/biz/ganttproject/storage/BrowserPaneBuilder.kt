@@ -252,7 +252,7 @@ class BrowserPaneBuilder(
     installEventHandlers()
     rootPane.apply {
       vbox.prefWidth = 400.0
-      addTitle(i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
+      addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
       add(VBox().also {

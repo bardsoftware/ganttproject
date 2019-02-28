@@ -6,6 +6,8 @@
     -fx-pref-height: 100%;
     -fx-fill-width: 1;
     -fx-fill-height: 1;
+    -fx-min-width: 400;
+    -fx-min-height: 400;
 }
 
 .dlg-lock .btn-option {
@@ -139,4 +141,12 @@ Label.h2 {
 
 .signup-pane .signup-body {
     -fx-padding: 2ex 1em;
+}
+
+.progress-indicator {
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+    -fx-fill-height: 1;
+    -fx-fill-width: 1;
+    -fx-padding: 20px;
 }

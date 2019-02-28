@@ -124,6 +124,9 @@ class GPCloudSignupPane(
       unauthenticated.accept("ACCESS_TOKEN_EXPIRED")
       return
     }
+
+    pageSwitcher(createTokenVerificationProgressUi())
+
     GlobalScope.launch {
       try {
         callAuthCheck(success, unauthenticated)
@@ -202,24 +205,64 @@ class GPCloudSignupPane(
     }
   }
 
-  val progressIndicator: Pane by lazy {
-    val paneBuilder = VBoxBuilder("pane-service-contents")
-    paneBuilder.addTitle("Signing into GanttProject Cloud")
-    if (GPCloudOptions.authToken.value != "") {
+  fun createTokenVerificationProgressUi(): Pane {
+    val i18nSignin = DefaultLocalizer("cloud.authPane", i18n)
+    val vboxBuilder = VBoxBuilder("dlg-lock")
+    vboxBuilder.addTitle(i18nSignin.formatText("title"))
+
+    val expirationValue = {
       val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
       val remainingDuration = Duration.between(Instant.now(), expirationInstant)
       if (!remainingDuration.isNegative) {
         val hours = remainingDuration.toHours()
         val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
-        val expirationLabel = if (hours > 0) {
-          "${hours}h ${minutes}m"
+        if (hours > 0) {
+          i18nSignin.formatText("expirationValue_hm", hours, minutes)
         } else {
-          "${minutes}m"
+          i18nSignin.formatText("expirationValue_m", minutes)
         }
-        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
-      }
+      } else ""
+    }()
+
+    vboxBuilder.add(Label(i18nSignin.formatText("expirationMsg", expirationValue)).apply {
+      this.styleClass.add("help")
+    })
+    vboxBuilder.add(ProgressIndicator(-1.0).also {
+      it.maxWidth = Double.MAX_VALUE
+      it.maxHeight = Double.MAX_VALUE
+    }, Pos.CENTER, Priority.ALWAYS)
+    vboxBuilder.add(Label(i18nSignin.formatText("progressLabel")), Pos.CENTER, Priority.NEVER).also {
+      it.styleClass.add("medskip")
     }
-    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
-    paneBuilder.vbox
+
+    return DialogPane().also {
+      it.styleClass.addAll("dlg-lock", "signup-pane")
+      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      it.graphic = ImageView(Image(
+          this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
+          64.0, 64.0, false, true))
+      it.content = vboxBuilder.vbox
+    }
   }
+
+//  val progressIndicator: Pane by lazy {
+//    val paneBuilder = VBoxBuilder("pane-service-contents")
+//    paneBuilder.addTitle("Signing into GanttProject Cloud")
+//    if (GPCloudOptions.authToken.value != "") {
+//      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
+//      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
+//      if (!remainingDuration.isNegative) {
+//        val hours = remainingDuration.toHours()
+//        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
+//        val expirationLabel = if (hours > 0) {
+//          "${hours}h ${minutes}m"
+//        } else {
+//          "${minutes}m"
+//        }
+//        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
+//      }
+//    }
+//    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
+//    paneBuilder.vbox
+//  }
 }

@@ -73,8 +73,6 @@ class GPCloudStorage(
     }
 
     fun start() {
-      sceneChanger(signupPane.progressIndicator)
-
       signupPane.tryAccessToken(
           success = Consumer {
             webSocket.start()

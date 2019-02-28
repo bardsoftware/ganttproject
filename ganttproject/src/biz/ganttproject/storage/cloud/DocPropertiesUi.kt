@@ -292,6 +292,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   fun showDialog(document: GPCloudDocument) {
     Platform.runLater {
       Dialog<Unit>().also {
+        it.isResizable = true
         it.dialogPane.apply {
           content = buildPane(document, {})
           styleClass.addAll("dlg-lock", "dlg-cloud-file-options")
@@ -302,6 +303,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
             window.hide()
           }
           scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
+        }
+        it.onShown = EventHandler { _ ->
+          it.dialogPane.scene.window.sizeToScene()
         }
         it.show()
       }
