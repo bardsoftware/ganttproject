@@ -30,6 +30,8 @@ import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Runnable
@@ -101,11 +103,8 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   fun open(document: Document, offlineTail: (Document) -> Unit) {
     val online = document.asOnlineDocument() ?: return offlineTail(document)
     GlobalScope.launch(Dispatchers.Main) {
-      val currentFetch = online.fetch()
+      val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
       if (processFetchResult(currentFetch)) {
-        online.fetchResultProperty.addListener { _, _, _ ->
-          offlineTail(document)
-        }
         offlineTail(document)
       }
     }
@@ -358,7 +357,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   // This step runs the collected UI tasks. First (optional) task is legacy milestones question;
   // the remaining are added here.
   internal inner class Step3 {
-    fun runUiTasks() {
+    fun runUiTasks(): Step4 {
       myTasks.add(Runnable {
         if (!myDiagnostics.myMessages.isEmpty()) {
           myDiagnostics.showDialog()
@@ -375,6 +374,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         }
       })
       processTasks(myTasks)
+      return Step4()
     }
 
     private fun processTasks(tasks: MutableList<Runnable>) {
@@ -390,6 +390,26 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     }
   }
 
+  internal inner class Step4 {
+    fun onFetchResultChange(document: Document, callback: () -> Unit) {
+      val onlineDocument = document.asOnlineDocument()
+      if (onlineDocument != null) {
+        val changeListener = object : ChangeListener<FetchResult?> {
+          override fun changed(observable: ObservableValue<out FetchResult?>?, oldFetch: FetchResult?, newFetch: FetchResult?) {
+            println("oldFetch=${oldFetch?.actualChecksum} newFetch=${newFetch?.actualChecksum}")
+            if (oldFetch != null && newFetch != null) {
+              if (oldFetch.actualVersion != newFetch.actualVersion) {
+                observable?.removeListener(this)
+                callback()
+              }
+            }
+          }
+        }
+        onlineDocument.fetchResultProperty.addListener(changeListener)
+      }
+
+    }
+  }
   companion object {
     val milestonesOption = DefaultEnumerationOption(
         "milestones_to_zero", ConvertMilestones.values())

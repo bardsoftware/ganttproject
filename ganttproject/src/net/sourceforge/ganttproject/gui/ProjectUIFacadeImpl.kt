@@ -127,7 +127,6 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
                 }
               }
             }
-            null
           }
 
         }
@@ -228,6 +227,7 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
 
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject) {
+
     beforeClose()
     project.close()
 
@@ -239,25 +239,14 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
                 .checkLegacyMilestones()
                 .checkEarliestStartConstraints()
                 .runUiTasks()
+                .onFetchResultChange(doc) {
+                  SwingUtilities.invokeLater {
+                    openProject(doc, project)
+                  }
+                }
           }
         }
         strategy.open(document, offlineTail)
-
-//        strategy.fetchOnlineDocument(document)
-//            .thenCompose {
-//              if (it == null) { CompletableFuture.completedFuture(document) } else { processFetchResult(it) }
-//            }
-//            .thenApply {
-//              offlineTail(it ?: document)
-//            }
-//            .exceptionally {
-//              when (it) {
-//                is DocumentException -> handleDocumentException(it)
-//                else -> {
-//                  myWorkbenchFacade.showErrorDialog(it)
-//                }
-//              }
-//            }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
