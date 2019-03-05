@@ -115,6 +115,7 @@ class OptionPaneBuilder<T> {
     Platform.runLater {
       Dialog<Unit>().apply {
         buildDialogPane(dialogPane, optionHandler)
+        isResizable = true
         show()
       }
     }
@@ -133,6 +134,7 @@ class OptionPaneBuilder<T> {
       }
 
       content = optionsPane
+      content.styleClass.add("content-pane")
       buttonTypes.add(ButtonType.OK)
       lookupButton(ButtonType.OK).apply {
         styleClass.add("btn-attention")

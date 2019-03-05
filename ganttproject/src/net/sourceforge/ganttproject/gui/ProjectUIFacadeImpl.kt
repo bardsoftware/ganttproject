@@ -110,7 +110,10 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
           it.i18n.rootKey = "cloud.versionMismatch"
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-          it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK)
+          it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+          it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64").also {icon ->
+            icon.styleClass.add("img")
+          }
           it.elements = Lists.newArrayList(
               OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
               OptionElementData("option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)

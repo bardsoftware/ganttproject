@@ -8,6 +8,7 @@
     -fx-fill-height: 1;
     -fx-min-width: 400;
     -fx-min-height: 400;
+    -fx-padding: 10px;
 }
 
 .dlg-lock .btn-option {
@@ -15,16 +16,13 @@
 }
 
 .dlg-lock .content-pane {
-    -fx-padding: 0 0 0 2em;
+    -fx-padding: 20px;
 }
 
 .dlg-lock .img {
-    -fx-padding: 10 0 0 0;
-}
-
-.dlg-lock .img .glyph-icon {
+    -fx-padding: 30px 0 0 20px;
     -fx-fill: -gp-medium-gray;
-    -glyph-size: 64;
+    -glyph-size: 64px;
 }
 
 .dlg-lock .help {
