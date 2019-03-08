@@ -19,24 +19,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.DefaultLocalizer
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
-import javafx.scene.control.CheckBox
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.Notifications
 import java.time.Instant
 import java.util.function.Consumer
 import java.util.logging.Level
@@ -213,65 +207,22 @@ class GPCloudBrowserPane(
       if (item.isLocked && item.canChangeLock || true) {
         this.documentConsumer.accept(document)
       } else {
-        if (!item.isLocked) {
-          val propertiesUi = DocPropertiesUi(
-              errorUi = dialogUi::error,
-              busyUi = this.paneElements.busyIndicator::accept)
-          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
-            lockNode -> openDocumentWithLock(document, lockNode)
-          })
-        } else {
-          this.sceneChanger(this.createLockWarningPage(document))
-        }
+//        if (!item.isLocked) {
+//          val propertiesUi = DocPropertiesUi(
+//              errorUi = dialogUi::error,
+//              busyUi = this.paneElements.busyIndicator::accept)
+//          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
+//            lockNode -> openDocumentWithLock(document, lockNode)
+//          })
+//        } else {
+//          this.sceneChanger(this.createLockWarningPage(document))
+//        }
       }
       document.listenLockChange(webSocket)
     }
   }
 
   enum class ActionOnLocked { OPEN, CANCEL }
-
-  private fun createLockWarningPage(document: GPCloudDocument): Pane {
-    val lockOwner = document.projectJson!!.lockOwner!!
-    val notify = CheckBox("Show notification when lock is released").also {
-      it.styleClass.add("mt-5")
-      it.isSelected = true
-    }
-    return OptionPaneBuilder<ActionOnLocked>().run {
-      i18n.rootKey = "cloud.lockWarningPane"
-      titleHelpString.update(lockOwner)
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      elements = listOf(
-          OptionElementData("open", ActionOnLocked.OPEN, isSelected = true, customContent = notify),
-          OptionElementData("cancel", ActionOnLocked.CANCEL)
-      )
-
-
-      buildDialogPane { choice ->
-        when (choice) {
-          ActionOnLocked.OPEN -> {
-            openDocumentWithLock(document, document.projectJson.node["lock"])
-            if (notify.isSelected) {
-              document.status.addListener { _, _, newValue ->
-                println("new value=$newValue")
-                if (!newValue.locked) {
-                  Platform.runLater {
-                    Notifications.create().title("Project Unlocked")
-                        .text("User ${newValue?.lockOwnerName ?: ""} has unlocked project ${document.fileName}")
-                        .showInformation()
-                  }
-                }
-              }
-            }
-          }
-          ActionOnLocked.CANCEL -> {
-            this@GPCloudBrowserPane.sceneChanger(this@GPCloudBrowserPane.paneElements.browserPane)
-          }
-        }
-      }
-    }
-  }
 
   private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {
     println("Lock node=$jsonLock")

@@ -130,15 +130,16 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private fun updateLockStatus(status: LockStatus) {
     if (status.locked) {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      this.btnLock.text = "Locked"
-      this.btnLock.tooltip = Tooltip("Locked by ${status.lockOwnerName}")
+      val lockOwner = "Locked by ${status.lockOwnerName}"
+      this.btnLock.text = if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) "Locked" else lockOwner
+      this.btnLock.tooltip = Tooltip(lockOwner)
     } else {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
       this.btnLock.text = "Not Locked"
       this.btnLock.tooltip = Tooltip("Currently not locked")
     }
 
-    this.lockPanel.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
+    //this.lockPanel.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
     this.status = status
   }
 

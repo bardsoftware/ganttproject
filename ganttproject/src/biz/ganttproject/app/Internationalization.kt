@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
 import net.sourceforge.ganttproject.language.GanttLanguage
+import java.text.MessageFormat
 
 class LocalizedString(
     private val key: String,
@@ -32,12 +33,12 @@ class LocalizedString(
   }
 
   fun update(vararg args: String): LocalizedString {
-    this.args = listOf(*args)
+    this.args = args.toList()
     observable.value = build()
     return this
   }
 
-  private fun build(): String = i18n.formatText(key, args)
+  private fun build(): String = i18n.formatText(key, *args.toTypedArray())
 }
 
 interface Localizer {
@@ -65,7 +66,9 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   override fun formatText(key: String, vararg args: Any): String {
     val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
     return if (hasKey(key1)) {
-      GanttLanguage.getInstance().formatText(key1, *args)
+      val message = GanttLanguage.getInstance().getText(key1)
+      return if (message == null) key1 else MessageFormat.format(message, *args)
+
     } else {
       this.fallbackLocalizer.formatText(key, args)
     }

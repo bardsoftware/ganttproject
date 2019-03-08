@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.storage.cloud.GPCloudOptions
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.hash.Hashing
 import com.google.common.io.ByteStreams
@@ -154,7 +155,10 @@ data class LockStatus(val locked: Boolean,
                       val lockOwnerName: String? = null,
                       val lockOwnerEmail: String? = null,
                       val lockOwnerId: String? = null,
-                      val raw: JsonNode? = null)
+                      val raw: JsonNode? = null) {
+  val lockedBySomeone: Boolean get() = locked && (lockOwnerId != GPCloudOptions.userId.value)
+  val lockExpiration: Long get() = raw?.get("expirationEpochTs")?.longValue() ?: -1
+}
 
 interface LockableDocument {
   fun toggleLocked(duration: Duration?): CompletableFuture<LockStatus>
