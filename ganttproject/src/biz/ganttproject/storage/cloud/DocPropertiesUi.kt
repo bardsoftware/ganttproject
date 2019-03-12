@@ -79,20 +79,20 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   }
 
 
-  fun createLockSuggestionPane(document: LockableDocument, onLockDone: OnLockDone): Pane {
-    if (document.status.value.lockedBySomeone) {
-      return Pane(Label("Locked by ${document.status.value.lockOwnerName}"))
-    } else {
-
-      return lockPaneBuilder(document.status.value).run {
-        buildDialogPane(lockDurationHandler(document, onLockDone)).also {
-          it.styleClass.add("dlg-lock")
-          it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-        }
-      }
-    }
-  }
-
+//  fun createLockSuggestionPane(document: LockableDocument, onLockDone: OnLockDone): Pane {
+//    if (document.status.value.lockedBySomeone) {
+//      return Pane(Label("Locked by ${document.status.value.lockOwnerName}"))
+//    } else {
+//
+//      return lockPaneBuilder(document.status.value).run {
+//        buildDialogPane(lockDurationHandler(document, onLockDone)).also {
+//          it.styleClass.add("dlg-lock")
+//          it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+//        }
+//      }
+//    }
+//  }
+//
   private fun lockPaneBuilder(lockStatus: LockStatus): OptionPaneBuilder<Duration> {
     return OptionPaneBuilder<Duration>().apply {
       i18n.rootKey = "cloud.lockOptionPane"
@@ -102,8 +102,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       }
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
       elements = listOf(
-          OptionElementData("lock0h", Duration.ZERO),
-          OptionElementData("lock1h", Duration.ofHours(1), isSelected = true),
+          OptionElementData(if (lockStatus.locked) "lockRelease" else "lock0h", Duration.ZERO, isSelected = !lockStatus.locked),
+          OptionElementData("lockKeep", Duration.ofHours(-1), isSelected = lockStatus.locked),
+          OptionElementData("lock1h", Duration.ofHours(1)),
           OptionElementData("lock2h", Duration.ofHours(2)),
           OptionElementData("lock24h", Duration.ofHours(24))
       )
@@ -112,16 +113,13 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private fun lockDurationHandler(document: LockableDocument, onLockDone: OnLockDone): LockDurationHandler {
     return { duration ->
-
-      if (!duration.isZero || document.status.get().locked) {
+      if (!duration.isNegative) {
         toggleProjectLock(
             document = document,
             done = onLockDone,
             busyIndicator = busyUi,
             lockDuration = duration
         )
-      } else {
-        onLockDone(null)
       }
     }
   }
