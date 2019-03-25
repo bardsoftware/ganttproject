@@ -332,6 +332,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
         }
         it.onShown = EventHandler { _ ->
+          it.dialogPane.layout()
           it.dialogPane.scene.window.sizeToScene()
         }
         it.show()

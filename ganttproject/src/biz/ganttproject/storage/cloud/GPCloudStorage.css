@@ -2,8 +2,6 @@
 .dlg-lock {
     -fx-font-size: 120%;
     -fx-background-color: transparent;
-    -fx-pref-width: 100%;
-    -fx-pref-height: 100%;
     -fx-fill-width: 1;
     -fx-fill-height: 1;
     -fx-min-width: 400;
