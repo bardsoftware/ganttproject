@@ -63,6 +63,8 @@ class GPCloudSignupPane(
     this.httpd.onTokenReceived = this.onTokenCallback
   }
 
+  val tokenVerificationUi: Pane by lazy { createTokenVerificationProgressUi() }
+
   fun createPane(msgIntro: String? = null): Pane {
 
     val vboxBuilder = VBoxBuilder("dlg-lock")
@@ -125,7 +127,7 @@ class GPCloudSignupPane(
       return
     }
 
-    pageSwitcher(createTokenVerificationProgressUi())
+    pageSwitcher(tokenVerificationUi)
 
     GlobalScope.launch {
       try {

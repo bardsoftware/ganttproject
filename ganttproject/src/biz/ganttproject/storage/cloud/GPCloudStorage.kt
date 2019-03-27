@@ -73,31 +73,36 @@ class GPCloudStorage(
       browserPane.controller = this
     }
 
+    val storageUi: Pane by lazy { browserPane.createStorageUi() }
+    val signupUi: Pane by lazy { signupPane.createPane() }
+    val signinUi: Pane by lazy { signupPane.createSigninPane() }
+    val offlineUi: Pane by lazy { offlinePane.createPane() }
+
     fun start() {
       signupPane.tryAccessToken(
           success = Consumer {
             webSocket.start()
-            sceneChanger(browserPane.createStorageUi())
+            sceneChanger(storageUi)
           },
           unauthenticated = Consumer {
             when (it) {
               "NO_ACCESS_TOKEN" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupPane.createPane())
+                  sceneChanger(signupUi)
                 }
               }
               "ACCESS_TOKEN_EXPIRED" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupPane.createSigninPane())
+                  sceneChanger(signinUi)
                 }
               }
               "INVALID" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupPane.createSigninPane())
+                  sceneChanger(signupUi)
                 }
               }
               "OFFLINE" -> {
-                sceneChanger(offlinePane.createPane())
+                sceneChanger(offlineUi)
               }
               else -> {
               }
