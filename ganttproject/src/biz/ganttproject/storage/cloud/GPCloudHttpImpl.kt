@@ -21,7 +21,6 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.storage.DocumentUri
 import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.Path
-import biz.ganttproject.storage.StorageDialogBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -43,6 +42,7 @@ import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
 import org.apache.http.HttpResponse
+import org.apache.http.HttpStatus
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
@@ -75,6 +75,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
 
+class GPCloudException(val status: Int) : Exception()
 /**
  * Background tasks which communicate with GP Cloud server and load
  * user team and project list.
@@ -83,7 +84,7 @@ import java.util.logging.Level
  */
 
 // Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
-class LoaderService(private val dialogUi: StorageDialogBuilder.DialogUi) : Service<ObservableList<FolderItem>>() {
+class LoaderService() : Service<ObservableList<FolderItem>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   var path: Path = DocumentUri(listOf(), true, "GanttProject Cloud")
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
@@ -165,17 +166,15 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
                 "Failed to get team list. Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
             fine(EntityUtils.toString(resp.entity))
           }
-          throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
+          throw GPCloudException(resp.statusLine.statusCode)
         }
       }
-      println("Team list:\n$jsonBody")
-
       val jsonNode = OBJECT_MAPPER.readTree(jsonBody)
       resultStorage.value = jsonNode
       CachedTask(this.path, this.resultStorage).callPublic()
     } catch (ex: IOException) {
       log.log(Level.SEVERE, "Failed to contact ${http.host}", ex)
-      throw OfflineException(ex)
+      throw GPCloudException(HttpStatus.SC_SERVICE_UNAVAILABLE)
     }
 
   }

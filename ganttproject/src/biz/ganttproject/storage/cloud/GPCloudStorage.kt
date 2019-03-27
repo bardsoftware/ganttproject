@@ -34,9 +34,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.function.Consumer
 
-const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+//const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 const val GPCLOUD_IP = "216.239.32.21"
-//const val GPCLOUD_HOST = "cloud.ganttproject.biz"
+const val GPCLOUD_HOST = "cloud.ganttproject.biz"
 const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
@@ -70,6 +70,7 @@ class GPCloudStorage(
   data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
     init {
       offlinePane.controller = this
+      browserPane.controller = this
     }
 
     fun start() {
@@ -107,7 +108,7 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager, ::nextPage)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       val validityAsLong = validity?.toLongOrNull()
       with(GPCloudOptions) {

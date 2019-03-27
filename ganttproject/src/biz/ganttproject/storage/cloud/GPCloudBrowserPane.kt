@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.apache.http.HttpStatus
 import java.time.Instant
 import java.util.function.Consumer
 import java.util.logging.Level
@@ -129,11 +130,11 @@ class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentConsumer: Consumer<Document>,
-    private val documentManager: DocumentManager,
-    private val sceneChanger: SceneChanger) {
-  private val loaderService = LoaderService(dialogUi)
+    private val documentManager: DocumentManager) {
+  private val loaderService = LoaderService()
 
   private lateinit var paneElements: BrowserPaneElements
+  var controller: GPCloudStorage.Controller? = null
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
@@ -242,11 +243,21 @@ class GPCloudBrowserPane(
       }
       onFailed = EventHandler {
         showMaskPane.accept(false)
-        when (loaderService.exception) {
-          is OfflineException -> loadOfflineMirrors(setResult)
+        val ex = this.exception
+        when (ex) {
+          is GPCloudException -> {
+            when (ex.status) {
+              HttpStatus.SC_SERVICE_UNAVAILABLE -> loadOfflineMirrors(setResult)
+              HttpStatus.SC_FORBIDDEN, HttpStatus.SC_UNAUTHORIZED -> {
+                this@GPCloudBrowserPane.controller!!.start()
+              }
+              else -> dialogUi.error(ex.message ?: "")
+            }
+
+          }
           null -> dialogUi.error("Loading failed!")
           else -> {
-            val ex = loaderService.exception
+
             GPLogger.getLogger("GPCloud").log(Level.WARNING, "", ex)
             val errorDetails = ex.message
             dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
