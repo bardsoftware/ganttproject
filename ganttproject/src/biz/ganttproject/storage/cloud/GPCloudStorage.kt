@@ -67,7 +67,7 @@ class GPCloudStorage(
     return doCreateUi()
   }
 
-  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
+  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, private val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
     init {
       offlinePane.controller = this
       browserPane.controller = this
@@ -77,12 +77,19 @@ class GPCloudStorage(
     val signupUi: Pane by lazy { signupPane.createPane() }
     val signinUi: Pane by lazy { signupPane.createSigninPane() }
     val offlineUi: Pane by lazy { offlinePane.createPane() }
+    var startCount = 0
 
     fun start() {
+      if (startCount++ >= 5) {
+        return
+      }
       signupPane.tryAccessToken(
           success = Consumer {
             webSocket.start()
-            sceneChanger(storageUi)
+            GlobalScope.launch(Dispatchers.Main) {
+              sceneChanger(storageUi)
+              browserPane.reset()
+            }
           },
           unauthenticated = Consumer {
             when (it) {

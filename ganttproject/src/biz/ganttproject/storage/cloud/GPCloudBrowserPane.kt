@@ -120,6 +120,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   }
 }
 
+val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -164,7 +165,7 @@ class GPCloudBrowserPane(
 
     this.paneElements = builder.apply {
       withI18N(DefaultLocalizer("storageService.cloud", BROWSE_PANE_LOCALIZER))
-      withBreadcrumbs(DocumentUri(listOf(), true, "GanttProject Cloud"))
+      withBreadcrumbs(ROOT_URI)
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
@@ -274,8 +275,13 @@ class GPCloudBrowserPane(
   }
 
   private fun reload() {
+    reset()
+  }
+
+  fun reset() {
     this.loaderService.jsonResult.set(null)
     this.loaderService.restart()
+    this.paneElements.breadcrumbView.path = ROOT_URI
   }
 }
 
