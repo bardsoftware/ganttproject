@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.gui
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.VersionMismatchException
 import biz.ganttproject.storage.asOnlineDocument
@@ -133,6 +134,24 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
           }
 
         }
+      }
+      return false
+    } catch (e: ForbiddenException) {
+      OptionPaneBuilder<VersionMismatchChoice>().also {
+        it.i18n.rootKey = "cloud.forbidden"
+        it.styleClass = "dlg-lock"
+        it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+        it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+        it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64").also {icon ->
+          icon.styleClass.add("img")
+        }
+        it.elements = Lists.newArrayList(
+            OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
+            OptionElementData("option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
+        )
+        it.showDialog { choice ->
+        }
+
       }
       return false
     } catch (e: Throwable) {

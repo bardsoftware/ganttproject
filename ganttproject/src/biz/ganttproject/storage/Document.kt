@@ -168,6 +168,7 @@ interface LockableDocument {
 
 class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
 class VersionMismatchException : RuntimeException()
+class ForbiddenException : RuntimeException()
 
 enum class OnlineDocumentMode {
   ONLINE_ONLY, MIRROR, OFFLINE_ONLY

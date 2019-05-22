@@ -342,7 +342,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  @Throws(NetworkUnavailableException::class)
+  @Throws(NetworkUnavailableException::class, VersionMismatchException::class, ForbiddenException::class)
   private fun saveOnline(body: ByteArray) {
     val http = this.httpClientFactory()
     try {
@@ -368,6 +368,9 @@ class GPCloudDocument(private val teamRefid: String?,
           this.saveOfflineMirror(fetch)
           this.fetchResultProperty.set(fetch)
 
+        }
+        403 -> {
+          throw ForbiddenException()
         }
         412 -> {
           throw VersionMismatchException()
