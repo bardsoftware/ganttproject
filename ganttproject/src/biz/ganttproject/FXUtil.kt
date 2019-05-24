@@ -1,16 +1,37 @@
-// Copyright (C) 2016 BarD Software
-package biz.ganttproject;
+/*
+Copyright 2019 BarD Software s.r.o
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.Timeline;
-import javafx.scene.layout.BorderPane;
-import javafx.util.Duration;
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject
+
+import javafx.animation.FadeTransition
+import javafx.animation.ScaleTransition
+import javafx.animation.Timeline
+import javafx.application.Platform
+import javafx.event.EventHandler
+import javafx.scene.control.Dialog
+import javafx.scene.input.KeyCombination
+import javafx.scene.layout.BorderPane
+import javafx.util.Duration
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-public class FXUtil {
+object FXUtil {
   /*
   public static Label createHtmlLabel(String htmlContent, String css) {
     WebView browser = new WebView();
@@ -70,13 +91,13 @@ public class FXUtil {
     });
   }
 */
-  public static void createBreathingButton(javafx.scene.control.Button button) {
-    ScaleTransition animation = new ScaleTransition(Duration.seconds(2), button);
-    animation.setAutoReverse(true);
-    animation.setCycleCount(Timeline.INDEFINITE);
-    animation.setByX(0.1);
-    animation.setByY(0.1);
-    animation.play();
+  fun createBreathingButton(button: javafx.scene.control.Button) {
+    val animation = ScaleTransition(Duration.seconds(2.0), button)
+    animation.isAutoReverse = true
+    animation.cycleCount = Timeline.INDEFINITE
+    animation.byX = 0.1
+    animation.byY = 0.1
+    animation.play()
   }
 
   /*
@@ -168,27 +189,52 @@ public class FXUtil {
       }
     }
   */
-  public static void transitionCenterPane(BorderPane borderPane, javafx.scene.Node newCenter, Runnable resizer) {
-    Runnable replacePane = () -> {
-      borderPane.setCenter(newCenter);
-      resizer.run();
-    };
-    if (borderPane.getCenter() == null) {
-      replacePane.run();
-    } else {
-      FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), borderPane);
-      fadeIn.setFromValue(0.0);
-      fadeIn.setToValue(1.0);
-
-      FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), borderPane);
-      fadeOut.setFromValue(1.0);
-      fadeOut.setToValue(0.1);
-      fadeOut.play();
-      fadeOut.setOnFinished(e -> {
-        replacePane.run();
-        fadeIn.setOnFinished(e1 -> resizer.run());
-        fadeIn.play();
-      });
+  fun transitionCenterPane(borderPane: BorderPane, newCenter: javafx.scene.Node?, resizer: () -> Unit) {
+    if (newCenter == null) { return }
+    val replacePane = Runnable {
+      borderPane.center = newCenter
+      resizer()
     }
+    if (borderPane.center == null) {
+      replacePane.run()
+    } else {
+      val fadeIn = FadeTransition(Duration.seconds(0.5), borderPane)
+      fadeIn.fromValue = 0.0
+      fadeIn.toValue = 1.0
+
+      val fadeOut = FadeTransition(Duration.seconds(0.5), borderPane)
+      fadeOut.fromValue = 1.0
+      fadeOut.toValue = 0.1
+      fadeOut.play()
+      fadeOut.setOnFinished {
+        replacePane.run()
+        fadeIn.setOnFinished { resizer() }
+        fadeIn.play()
+      }
+    }
+  }
+
+  fun showDialog(dlg: Dialog<Unit>) {
+    Platform.runLater {
+      dlg.also {
+        it.isResizable = true
+        it.dialogPane.apply {
+          styleClass.addAll("dlg-lock", "dlg-cloud-file-options")
+          stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+
+          val window = scene.window
+          window.onCloseRequest = EventHandler {
+            window.hide()
+          }
+          scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
+        }
+        it.onShown = EventHandler { _ ->
+          it.dialogPane.layout()
+          it.dialogPane.scene.window.sizeToScene()
+        }
+        it.show()
+      }
+    }
+
   }
 }
