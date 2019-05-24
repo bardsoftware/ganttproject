@@ -122,18 +122,7 @@ class GPCloudStorage(
   private fun doCreateUi(): Pane {
     val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
-      val validityAsLong = validity?.toLongOrNull()
-      with(GPCloudOptions) {
-        this.authToken.value = token
-        this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
-          ""
-        } else {
-          Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
-        }
-        this.userId.value = userId
-        this.websocketToken = websocketToken
-        webSocket.start()
-      }
+      GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
       }
@@ -149,6 +138,21 @@ class GPCloudStorage(
     Platform.runLater {
       FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
     }
+  }
+}
+
+fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
+  return { token, validity, userId, websocketToken ->
+    val validityAsLong = validity?.toLongOrNull()
+      this.authToken.value = token
+      this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
+        ""
+      } else {
+        Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
+      }
+      this.userId.value = userId
+      this.websocketToken = websocketToken
+      webSocket.start()
   }
 }
 
