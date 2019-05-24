@@ -289,24 +289,31 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
+  @Throws(ForbiddenException::class)
   private fun callReadProject(version: Long = -1): FetchResult {
     val http = this.httpClientFactory()
     val resp = if (version == -1L) http.sendGet("/p/read$queryArgs") else http.sendGet("/p/read$queryArgs&generation=$version")
-    if (resp.code == 200) {
-      val etagValue = resp.header("ETag")
-      val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
+    when (resp.code) {
+      200 -> {
+        val etagValue = resp.header("ETag")
+        val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
 
-      val documentBody = resp.body
+        val documentBody = resp.body
 
-      return FetchResult(
-          this@GPCloudDocument,
-          this.mirrorOptions?.lastOnlineChecksum ?: "",
-          this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
-          digestValue ?: "",
-          etagValue?.toLong() ?: -1,
-          documentBody)
-    } else {
-      throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
+        return FetchResult(
+            this@GPCloudDocument,
+            this.mirrorOptions?.lastOnlineChecksum ?: "",
+            this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+            digestValue ?: "",
+            etagValue?.toLong() ?: -1,
+            documentBody)
+      }
+      403 -> {
+        throw ForbiddenException()
+      }
+      else -> {
+        throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
+      }
     }
   }
 
