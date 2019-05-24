@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.option.GPOptionGroup
@@ -26,9 +27,16 @@ import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.VersionMismatchException
 import biz.ganttproject.storage.asOnlineDocument
+import biz.ganttproject.storage.cloud.AuthTokenCallback
+import biz.ganttproject.storage.cloud.GPCloudOptions
+import biz.ganttproject.storage.cloud.GPCloudSignupPane
+import biz.ganttproject.storage.cloud.onAuthToken
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
+import javafx.scene.control.Dialog
+import javafx.scene.control.DialogPane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.CancelAction
@@ -53,7 +61,7 @@ import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
-class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val documentManager: DocumentManager, private val undoManager: GPUndoManager) : ProjectUIFacade {
+class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val documentManager: DocumentManager, private val undoManager: GPUndoManager) : ProjectUIFacade {
   private val i18n = GanttLanguage.getInstance()
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
@@ -137,21 +145,18 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
       }
       return false
     } catch (e: ForbiddenException) {
-      OptionPaneBuilder<VersionMismatchChoice>().also {
-        it.i18n.rootKey = "cloud.forbidden"
-        it.styleClass = "dlg-lock"
-        it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-        it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-        it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64").also {icon ->
-          icon.styleClass.add("img")
+      Platform.runLater {
+        val dlg = Dialog<Unit>()
+        val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
+          GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
+          Platform.runLater {
+            dlg.dialogPane.scene.window.hide()
+          }
+          saveProjectTrySave(project, document)
         }
-        it.elements = Lists.newArrayList(
-            OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
-            OptionElementData("option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
-        )
-        it.showDialog { choice ->
-        }
-
+        val pane = GPCloudSignupPane(onAuthToken, {})
+        dlg.dialogPane = pane.createSigninPane() as DialogPane?
+        FXUtil.showDialog(dlg)
       }
       return false
     } catch (e: Throwable) {
@@ -209,15 +214,15 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
         return false
       }
       if (UIFacade.Choice.YES == saveChoice) {
-        try {
+        return try {
           saveProject(project)
           // If all those complex save procedures complete successfully and project gets saved
           // then its modified state becomes false
           // Otherwise it remains true which means we have not saved and can't continue
-          return !project.isModified
+          !project.isModified
         } catch (e: Exception) {
           myWorkbenchFacade.showErrorDialog(e)
-          return false
+          false
         }
 
       }
@@ -227,7 +232,7 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
 
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(project: IGanttProject) {
-    if (false == ensureProjectSaved(project)) {
+    if (!ensureProjectSaved(project)) {
       return
     }
     val fc = JFileChooser(documentManager.workingDirectory)
@@ -281,7 +286,7 @@ class ProjectUIFacadeImpl(internal val myWorkbenchFacade: UIFacade, private val 
   }
 
   override fun createProject(project: IGanttProject) {
-    if (false == ensureProjectSaved(project)) {
+    if (!ensureProjectSaved(project)) {
       return
     }
     beforeClose()
