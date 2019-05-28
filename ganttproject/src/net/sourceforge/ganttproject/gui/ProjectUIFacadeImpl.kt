@@ -37,6 +37,11 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.scene.control.Dialog
 import javafx.scene.control.DialogPane
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.CancelAction
@@ -145,18 +150,8 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
       }
       return false
     } catch (e: ForbiddenException) {
-      Platform.runLater {
-        val dlg = Dialog<Unit>()
-        val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
-          GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-          Platform.runLater {
-            dlg.dialogPane.scene.window.hide()
-          }
-          saveProjectTrySave(project, document)
-        }
-        val pane = GPCloudSignupPane(onAuthToken, {})
-        dlg.dialogPane = pane.createSigninPane() as DialogPane?
-        FXUtil.showDialog(dlg)
+      signin {
+        saveProjectTrySave(project, document)
       }
       return false
     } catch (e: Throwable) {
@@ -166,6 +161,21 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
 
   }
 
+  private fun signin(onAuth: ()->Unit) {
+    Platform.runLater {
+      val dlg = Dialog<Unit>()
+      val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
+        GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
+        Platform.runLater {
+          dlg.dialogPane.scene.window.hide()
+        }
+        onAuth()
+      }
+      val pane = GPCloudSignupPane(onAuthToken, {})
+      dlg.dialogPane = pane.createSigninPane() as DialogPane?
+      FXUtil.showDialog(dlg)
+    }
+  }
   private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
     assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
     val errorCode = Document.ErrorCode.values()[canWrite.code]
@@ -260,20 +270,42 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
 
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
-        val offlineTail = { doc: Document ->
-          SwingUtilities.invokeLater {
-            strategy.openFileAsIs(doc)
-                .checkLegacyMilestones()
-                .checkEarliestStartConstraints()
-                .runUiTasks()
-                .onFetchResultChange(doc) {
-                  SwingUtilities.invokeLater {
-                    openProject(doc, project)
+        val successChannel = Channel<Document>()
+        // Run coroutine which fetches document and wait until it sends the result to the channel.
+        val job = GlobalScope.launch(Dispatchers.Main) {
+          strategy.open(document, successChannel)
+          try {
+            val doc = successChannel.receive()
+            // If document is obtained, we need to run further steps.
+            // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
+            SwingUtilities.invokeLater {
+              strategy.openFileAsIs(doc)
+                  .checkLegacyMilestones()
+                  .checkEarliestStartConstraints()
+                  .runUiTasks()
+                  .onFetchResultChange(doc) {
+                    SwingUtilities.invokeLater {
+                      openProject(doc, project)
+                    }
                   }
+            }
+          } catch (ex: Exception) {
+            when (ex) {
+              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
+              is ForbiddenException -> {
+                signin {
+                  openProject(document, project)
                 }
+              }
+              else -> {
+                throw DocumentException("Can't open document $document", ex )
+              }
+            }
           }
         }
-        strategy.open(document, offlineTail)
+        runBlocking {
+          job.join()
+        }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)

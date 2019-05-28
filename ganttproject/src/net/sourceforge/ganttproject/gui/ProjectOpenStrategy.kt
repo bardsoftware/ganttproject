@@ -35,6 +35,7 @@ import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
@@ -100,12 +101,16 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     }
   }
 
-  fun open(document: Document, offlineTail: (Document) -> Unit) {
-    val online = document.asOnlineDocument() ?: return offlineTail(document)
-    GlobalScope.launch(Dispatchers.Main) {
-      val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
-      if (processFetchResult(currentFetch)) {
-        offlineTail(document)
+  suspend fun open(document: Document, successChannel: Channel<Document>) {
+    val online = document.asOnlineDocument() ?: return successChannel.send(document)
+    GlobalScope.launch(Dispatchers.IO) {
+      try {
+        val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
+        if (processFetchResult(currentFetch)) {
+          successChannel.send(document)
+        }
+      } catch (ex: Exception) {
+        successChannel.close(ex)
       }
     }
   }
