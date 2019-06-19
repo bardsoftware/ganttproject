@@ -60,6 +60,7 @@ task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
 distBin.finalizedBy(updateEclipsito)
 
 def getBuildNum() {
+/*
     def stdout = new ByteArrayOutputStream()
     exec {
         workingDir "."
@@ -67,6 +68,8 @@ def getBuildNum() {
         standardOutput = stdout
     }
     return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
+*/
+    return "3000"
 }
 
 task distZip(type: Zip, dependsOn: distBin) {

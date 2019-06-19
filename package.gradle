@@ -3,6 +3,7 @@
  */
 
 import org.gradle.internal.os.OperatingSystem
+import org.apache.tools.ant.filters.ReplaceTokens
 
 ext {
     operatingSystem = OperatingSystem.current()
@@ -83,16 +84,15 @@ task checkBundlingEnvironment {
 
 task createBundle(type: Exec, dependsOn: [checkBundlingEnvironment]) {
     description 'Build the installable bundle'
-//    if (operatingSystem.isWindows()) {
-//        commandLine 'cmd', '/c',
-//                bundlerScript,
-//                "${javafxModulePath}",
-//                applicationLibraryPath,
-//                bundlePath,
-//                mainJar,
-//                publishedVersion,
-//                appIcon
-//    } else {
+    if (operatingSystem.isWindows()) {
+        commandLine 'cmd', '/c',
+                bundlerScript,
+                "${javafxModulePath}",
+                applicationLibraryPath,
+                "build/pkg",
+                publishedVersion,
+                appIcon
+    } else {
     commandLine = ['sh',
                    bundlerScript,
                    "${-> file("${javaPackagerPath}")}",
