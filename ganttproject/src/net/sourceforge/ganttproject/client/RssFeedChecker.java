@@ -33,6 +33,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.eclipse.core.runtime.Platform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +73,7 @@ public class RssFeedChecker {
   private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
+  private static final String UPDATE_URL = "http://dl.ganttproject.biz/updates/ganttproject-3.0.json";
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",
@@ -122,6 +124,15 @@ public class RssFeedChecker {
   }
 
   public void run() {
+    Platform.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
+      if (!updateMetadata.isEmpty()) {
+        UpdateDialog.show(myUiFacade, updateMetadata.get(updateMetadata.size() - 1));
+      }
+    }).exceptionally(ex -> {
+      GPLogger.log(ex);
+      return null;
+    });
+
     Runnable command = null;
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
@@ -230,10 +241,10 @@ public class RssFeedChecker {
   }
 
   private void createUpdateDialog(String content) {
-    RssUpdate update = parser.parseUpdate(content);
-    if (update != null) {
-      UpdateDialog.show(myUiFacade, update);
-    }
+//    RssUpdate update = parser.parseUpdate(content);
+//    if (update != null) {
+//      UpdateDialog.show(myUiFacade, update);
+//    }
   }
 
   private boolean wasToday(Date date) {

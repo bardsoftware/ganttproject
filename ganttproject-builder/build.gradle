@@ -55,6 +55,12 @@ task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
             }
             fileMode 0755
         }
+        copy {
+            into(rootProject.distBinDir.toPath().resolve("plugins-${semver}".toString()).toFile())
+            from(fileTree(".")) {
+                include "VERSION"
+            }
+        }
     }
 }
 distBin.finalizedBy(updateEclipsito)
@@ -136,8 +142,8 @@ task distZip(type: Zip, dependsOn: distBin) {
 task runApp(type: JavaExec, dependsOn: distBin) {
     workingDir = 'dist-bin'
     classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
-    main = 'org.bardsoftware.eclipsito.Boot'
-    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    main = 'com.bardsoftware.eclipsito.Launch'
+    args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "."
     jvmArgs '-ea'
 }
 task debugApp(type: JavaExec, dependsOn: distBin) {

@@ -18,21 +18,23 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.update;
 
-import net.sourceforge.ganttproject.DownloadWorker;
+import com.bardsoftware.eclipsito.update.UpdateMetadata;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.client.RssUpdate;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.Platform;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class UpdateDialog {
-  public static void show(UIFacade uiFacade, RssUpdate update) {
-    JEditorPane versionRow = createHtml(GanttLanguage.getInstance().formatText("updateAvailable", update.getVersion()));
-    JEditorPane descriptionRow = createHtml(update.getDescription());
+  public static void show(UIFacade uiFacade, UpdateMetadata update) {
+    JEditorPane versionRow = createHtml(GanttLanguage.getInstance().formatText("updateAvailable", update.version));
+    JEditorPane descriptionRow = createHtml(update.description);
 
     Box dialogBox = Box.createVerticalBox();
     dialogBox.add(versionRow);
@@ -45,7 +47,16 @@ public class UpdateDialog {
       OkAction okAction = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-          new DownloadWorker(uiFacade, update.getUrl()).execute();
+          try {
+            Platform.getUpdater().installUpdate(update, percents -> System.out.println(String.format("Downloading... %d%% done", percents)))
+                .thenAccept(file -> System.out.println("Installed into " + file))
+                .exceptionally(ex -> {
+                  GPLogger.log(ex);
+                  return null;
+                });
+          } catch (IOException ex) {
+            ex.printStackTrace();
+          }
         }
       };
 
