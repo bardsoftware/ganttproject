@@ -19,28 +19,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.DefaultLocalizer
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
-import javafx.scene.control.CheckBox
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.Notifications
+import org.apache.http.HttpStatus
 import java.time.Instant
-import java.util.*
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.logging.Level
 
 /**
@@ -112,11 +105,14 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLocked = false
   override val isLockable = false
   override val name: String
-    get() = """${node["author"]} [${this.formatTimestamp()}]"""
+    get() = node["author"].toString().removeSurrounding("\"")
   override val isDirectory = false
   override val canChangeLock = false
 
-  private fun formatTimestamp(): String {
+  val generation: Long
+    get() = node["number"].asLong(-1)
+
+  fun formatTimestamp(): String {
     return GanttLanguage.getInstance().formatDateTime(CalendarFactory.newCalendar().let {
       it.timeInMillis = node["timestamp"].asLong()
       it.time
@@ -124,6 +120,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   }
 }
 
+val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -134,12 +131,11 @@ class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentConsumer: Consumer<Document>,
-    private val documentManager: DocumentManager,
-    private val sceneChanger: SceneChanger) {
-  private val loaderService = LoaderService(dialogUi)
-  private val historyService = HistoryService(dialogUi)
+    private val documentManager: DocumentManager) {
+  private val loaderService = LoaderService()
 
   private lateinit var paneElements: BrowserPaneElements
+  var controller: GPCloudStorage.Controller? = null
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
@@ -169,7 +165,7 @@ class GPCloudBrowserPane(
 
     this.paneElements = builder.apply {
       withI18N(DefaultLocalizer("storageService.cloud", BROWSE_PANE_LOCALIZER))
-      withBreadcrumbs(DocumentUri(listOf(), true, "GanttProject Cloud"))
+      withBreadcrumbs(ROOT_URI)
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
@@ -177,7 +173,7 @@ class GPCloudBrowserPane(
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
             }
-          },/*
+          }/*
           onLock = Consumer {
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.toggleProjectLock(it,
@@ -186,17 +182,6 @@ class GPCloudBrowserPane(
               )
             }
           },*/
-          itemActionFactory = Function { folderItem ->
-            if (folderItem is ProjectJsonAsFolderItem) {
-              mapOf(
-                  "history" to Consumer {
-                    this@GPCloudBrowserPane.loadHistory(folderItem, builder.resultConsumer, builder.busyIndicatorToggler)
-                  }
-              )
-            } else {
-              Collections.emptyMap<String, Consumer<FolderItem>>()
-            }
-          }
       )
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
@@ -221,68 +206,25 @@ class GPCloudBrowserPane(
       document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       document.proxyDocumentFactory = this.documentManager::getProxyDocument
 
-      if (item.isLocked && item.canChangeLock) {
+      if (item.isLocked && item.canChangeLock || true) {
         this.documentConsumer.accept(document)
       } else {
-        if (!item.isLocked) {
-          val propertiesUi = DocPropertiesUi(
-              errorUi = dialogUi::error,
-              busyUi = this.paneElements.busyIndicator::accept)
-          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
-            lockNode -> openDocumentWithLock(document, lockNode)
-          })
-        } else {
-          this.sceneChanger(this.createLockWarningPage(document))
-        }
+//        if (!item.isLocked) {
+//          val propertiesUi = DocPropertiesUi(
+//              errorUi = dialogUi::error,
+//              busyUi = this.paneElements.busyIndicator::accept)
+//          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
+//            lockNode -> openDocumentWithLock(document, lockNode)
+//          })
+//        } else {
+//          this.sceneChanger(this.createLockWarningPage(document))
+//        }
       }
       document.listenLockChange(webSocket)
     }
   }
 
   enum class ActionOnLocked { OPEN, CANCEL }
-
-  private fun createLockWarningPage(document: GPCloudDocument): Pane {
-    val lockOwner = document.projectJson!!.lockOwner!!
-    val notify = CheckBox("Show notification when lock is released").also {
-      it.styleClass.add("mt-5")
-      it.isSelected = true
-    }
-    return OptionPaneBuilder<ActionOnLocked>().run {
-      i18n.rootKey = "cloud.lockWarningPane"
-      titleHelpString.update(lockOwner)
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      elements = listOf(
-          OptionElementData("open", ActionOnLocked.OPEN, isSelected = true, customContent = notify),
-          OptionElementData("cancel", ActionOnLocked.CANCEL)
-      )
-
-
-      buildDialogPane { choice ->
-        when (choice) {
-          ActionOnLocked.OPEN -> {
-            openDocumentWithLock(document, document.projectJson.node["lock"])
-            if (notify.isSelected) {
-              document.status.addListener { _, _, newValue ->
-                println("new value=$newValue")
-                if (!newValue.locked) {
-                  Platform.runLater {
-                    Notifications.create().title("Project Unlocked")
-                        .text("User ${newValue?.lockOwnerName ?: ""} has unlocked project ${document.fileName}")
-                        .showInformation()
-                  }
-                }
-              }
-            }
-          }
-          ActionOnLocked.CANCEL -> {
-            this@GPCloudBrowserPane.sceneChanger(this@GPCloudBrowserPane.paneElements.browserPane)
-          }
-        }
-      }
-    }
-  }
 
   private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {
     println("Lock node=$jsonLock")
@@ -302,11 +244,21 @@ class GPCloudBrowserPane(
       }
       onFailed = EventHandler {
         showMaskPane.accept(false)
-        when (loaderService.exception) {
-          is OfflineException -> loadOfflineMirrors(setResult)
+        val ex = this.exception
+        when (ex) {
+          is GPCloudException -> {
+            when (ex.status) {
+              HttpStatus.SC_SERVICE_UNAVAILABLE -> loadOfflineMirrors(setResult)
+              HttpStatus.SC_FORBIDDEN, HttpStatus.SC_UNAUTHORIZED -> {
+                this@GPCloudBrowserPane.controller!!.start()
+              }
+              else -> dialogUi.error(ex.message ?: "")
+            }
+
+          }
           null -> dialogUi.error("Loading failed!")
           else -> {
-            val ex = loaderService.exception
+
             GPLogger.getLogger("GPCloud").log(Level.WARNING, "", ex)
             val errorDetails = ex.message
             dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
@@ -323,31 +275,13 @@ class GPCloudBrowserPane(
   }
 
   private fun reload() {
-    this.loaderService.jsonResult.set(null)
-    this.loaderService.restart()
+    reset()
   }
 
-
-  private fun loadHistory(item: ProjectJsonAsFolderItem,
-                          resultConsumer: Consumer<ObservableList<FolderItem>>,
-                          busyIndicator: Consumer<Boolean>) {
-    this.historyService.apply {
-      this.busyIndicator = busyIndicator
-      this.projectNode = item
-      onSucceeded = EventHandler {
-        resultConsumer.accept(this.value)
-        this.busyIndicator.accept(false)
-      }
-      onFailed = EventHandler {
-        busyIndicator.accept(false)
-        dialogUi.error("History loading has failed")
-      }
-      onCancelled = EventHandler {
-        this.busyIndicator.accept(false)
-        GPLogger.log("Loading cancelled!")
-      }
-      restart()
-    }
+  fun reset() {
+    this.loaderService.jsonResult.set(null)
+    this.loaderService.restart()
+    this.paneElements.breadcrumbView.path = ROOT_URI
   }
 }
 

@@ -18,18 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.print;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.awt.print.PrinterJob;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttExportSettings;
+import net.sourceforge.ganttproject.chart.Chart;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.chart.Chart;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.awt.print.PrinterJob;
 
 public class PrintManager {
 
@@ -46,7 +45,7 @@ public class PrintManager {
     attr.add(MediaSizeName.ISO_A4);
     attr.add(OrientationRequested.LANDSCAPE);
 
-    if (printJob.printDialog(attr)) {
+    if (printJob.printDialog()) {
       try {
         printJob.print(attr);
       } catch (Exception e) {

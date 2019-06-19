@@ -86,7 +86,7 @@ fun test(): Pane {
 }
 
 class VBoxBuilder(vararg classes: String) {
-  private val i18n = DefaultLocalizer()
+  val i18n = DefaultLocalizer()
   internal val vbox = VBox()
 
   init {
@@ -119,6 +119,8 @@ class VBoxBuilder(vararg classes: String) {
           wrapper.alignment = alignment
           wrapper.children.add(node)
           wrapper.maxWidth = Double.MAX_VALUE
+
+          HBox.setHgrow(node, Priority.ALWAYS)
           wrapper
         }
     vbox.children.add(child)

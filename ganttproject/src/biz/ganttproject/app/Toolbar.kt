@@ -20,7 +20,6 @@ package biz.ganttproject.app
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.scene.Node
@@ -33,28 +32,26 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
-import java.util.concurrent.CompletableFuture
-import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 class FXToolbar {
-  val toolbar = ToolBar().also {
-    it.styleClass.addAll("toolbar-main")
-  }
+  val component = JFXPanel()
 
-  val component: JComponent by lazy {
-    val result = JFXPanel()
-    Platform.runLater {
-      val scene = Scene(toolbar, Color.TRANSPARENT)
-      scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
-      result.scene = scene
+  internal val toolbar: ToolBar by lazy {
+    ToolBar().also {
+      it.styleClass.addAll("toolbar-main")
     }
-    return@lazy result
   }
 
-  fun updateButtons() {
-
+  internal fun init(initializer: (FXToolbar) -> Unit) {
+    val scene = Scene(toolbar, Color.TRANSPARENT)
+    scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
+    initializer(this)
+    component.scene = scene
   }
 }
 
@@ -110,14 +107,14 @@ class FXToolbarBuilder {
     })
   }
 
-  fun build(): CompletableFuture<FXToolbar> {
-    val result = CompletableFuture<FXToolbar>()
-    Platform.runLater {
-      val toolbar = FXToolbar()
-      visitors.forEach { it(toolbar) }
-      result.complete(toolbar)
+  fun build(): FXToolbar {
+    val toolbar = FXToolbar()
+    GlobalScope.launch(Dispatchers.Main) {
+      toolbar.init { toolbar ->
+        visitors.forEach { it(toolbar) }
+      }
     }
-    return result
+    return toolbar
   }
 
   fun addSearchBox(searchUi: FXSearchUi) {

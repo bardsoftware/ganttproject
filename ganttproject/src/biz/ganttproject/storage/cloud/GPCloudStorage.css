@@ -1,13 +1,11 @@
-.btn-attention {
-    -fx-max-width: 20em;
-    -fx-min-width: 10em;
-    -fx-pref-width: 50%;
-}
 
 .dlg-lock {
-    -fx-padding: 20 20 20 20;
     -fx-font-size: 120%;
     -fx-background-color: transparent;
+    -fx-fill-width: 1;
+    -fx-fill-height: 1;
+    -fx-min-width: 400;
+    -fx-min-height: 400;
 }
 
 .dlg-lock .btn-option {
@@ -15,13 +13,13 @@
 }
 
 .dlg-lock .content-pane {
-    -fx-padding: 0 0 0 2em;
+    -fx-padding: 20px;
 }
 
-.dlg-lock .glyph-icon {
+.dlg-lock .img {
+    -fx-padding: 30px 0 0 20px;
     -fx-fill: -gp-medium-gray;
-    -glyph-size: 64;
-    -fx-padding: 10 0 0 0;
+    -glyph-size: 64px;
 }
 
 .dlg-lock .help {
@@ -36,50 +34,77 @@
 
 .dlg-lock .tab {
     -fx-background-color: transparent;
+    -fx-border-width: 0 0 3 0;
     -fx-border-color: transparent;
-    -fx-border-width: 1;
-    -fx-border-radius: 3;
-    -fx-padding: 0.25ex 1em;
+    -fx-border-radius: 0;
+    -fx-padding: 1ex 1em;
 }
 
 .dlg-lock .tab:hover, .dlg-lock .tab:focused {
-    -fx-background-color: -gp-light-gray;
-    -fx-border-color: derive(-gp-light-gray, 10%);
-    -fx-border-width: 1;
+    -fx-border-color: -gp-medium-gray;
     -fx-cursor: hand;
-    -fx-border-radius: 3;
 }
+
 .dlg-lock .tab-pane .focus-indicator {
     -fx-border-width: 0;
     -fx-border-color: transparent;
 }
 
+.dlg-lock .tab .tab-label {
+    -fx-text-fill: -gp-medium-gray;
+}
+
 .dlg-lock .tab:selected {
-    -fx-background-color: -gp-medium-gray;
-    -fx-border-color: derive(-gp-light-gray, 10%);
-    -fx-border-width: 1;
-    -fx-border-radius: 3;
+    -fx-border-color: -gp-orange;
 }
 
 .dlg-lock .tab:selected .tab-label {
-    -fx-text-fill: white;
+    -fx-text-fill: -gp-dark-gray;
 
 }
+
 .dlg-lock .tab-contents {
-    -fx-padding: 0 1em 0 1em;
+    -fx-padding: 1ex 2em 1ex 2em;
+}
+
+
+.dlg-lock .tab-contents .pane-buttons {
+    -fx-padding: 1ex 0;
+
+}
+
+.dlg-lock .tab-contents .btn-small-attention {
+    -fx-background-color: -gp-orange;
+    -fx-text-fill: -gp-dark-gray;
+    -fx-padding: 0.5ex 1em 0.5ex 1em;
+    -fx-cursor: hand;
+}
+
+.dlg-lock .tab-contents .btn-small-attention:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
 }
 
 .dlg-lock .tab-contents .section {
-    -fx-padding: 0 0 2em 0;
+    -fx-padding: 2ex 0 0 0;
+}
+
+.tab-pane {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0;
 }
 
 .tab-pane .tab-header-area {
-    -fx-padding: 0 0 1ex 0;
+    -fx-padding: 1ex 0 0 0;
+    -fx-background-color: #eee;
+    -fx-pref-width: 100%;
 }
-.tab-pane .tab-header-area .tab-header-background
-{
+
+.tab-pane .tab-header-area .tab-header-background {
     -fx-background-color: transparent;
 }
+
 .fill-parent {
     -fx-pref-height: 100%;
     -fx-pref-width: 100%;
@@ -99,4 +124,24 @@ Label.h2 {
 
 .smallskip {
     -fx-padding: 0.5ex 0 0 0;
+}
+
+.medskip {
+    -fx-padding: 2ex 0 0 0;
+}
+
+.signup-pane {
+    -fx-padding: 20px;
+}
+
+.signup-pane .signup-body {
+    -fx-padding: 2ex 1em;
+}
+
+.progress-indicator {
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+    -fx-fill-height: 1;
+    -fx-fill-width: 1;
+    -fx-padding: 20px;
 }

@@ -24,17 +24,19 @@ import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
-const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+//const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 const val GPCLOUD_IP = "216.239.32.21"
-//const val GPCLOUD_HOST = "cloud.ganttproject.biz"
+const val GPCLOUD_HOST = "cloud.ganttproject.biz"
 const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
 const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
@@ -53,10 +55,6 @@ class GPCloudStorage(
     private val documentManager: DocumentManager) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane = BorderPane()
 
-  internal interface PageUi {
-    fun createPane(): CompletableFuture<Pane>
-  }
-
   override val name = "GanttProject Cloud"
 
   override fun createSettingsUi(): Optional<Pane> {
@@ -69,32 +67,49 @@ class GPCloudStorage(
     return doCreateUi()
   }
 
-  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
+  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, private val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
     init {
       offlinePane.controller = this
+      browserPane.controller = this
     }
 
-    fun start() {
-      sceneChanger(signupPane.progressIndicator)
+    val storageUi: Pane by lazy { browserPane.createStorageUi() }
+    val signupUi: Pane by lazy { signupPane.createPane() }
+    val signinUi: Pane by lazy { signupPane.createSigninPane() }
+    val offlineUi: Pane by lazy { offlinePane.createPane() }
+    var startCount = 0
 
+    fun start() {
+      if (startCount++ >= 5) {
+        return
+      }
       signupPane.tryAccessToken(
           success = Consumer {
-            println("Auth token is valid!")
             webSocket.start()
-            sceneChanger(browserPane.createStorageUi())
+            GlobalScope.launch(Dispatchers.Main) {
+              sceneChanger(storageUi)
+              browserPane.reset()
+            }
           },
           unauthenticated = Consumer {
             when (it) {
+              "NO_ACCESS_TOKEN" -> {
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signupUi)
+                }
+              }
+              "ACCESS_TOKEN_EXPIRED" -> {
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signinUi)
+                }
+              }
               "INVALID" -> {
-                println("Auth token is NOT valid!")
-                Platform.runLater {
-                  signupPane.createPane().thenApply { pane ->
-                    sceneChanger(pane)
-                  }
+                GlobalScope.launch(Dispatchers.Main) {
+                  sceneChanger(signupUi)
                 }
               }
               "OFFLINE" -> {
-                sceneChanger(offlinePane.createPane())
+                sceneChanger(offlineUi)
               }
               else -> {
               }
@@ -105,20 +120,9 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager, ::nextPage)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
-      val validityAsLong = validity?.toLongOrNull()
-      with(GPCloudOptions) {
-        this.authToken.value = token
-        this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
-          ""
-        } else {
-          Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
-        }
-        this.userId.value = userId
-        this.websocketToken = websocketToken
-        webSocket.start()
-      }
+      GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {
         nextPage(browserPane.createStorageUi())
       }
@@ -134,6 +138,21 @@ class GPCloudStorage(
     Platform.runLater {
       FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
     }
+  }
+}
+
+fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
+  return { token, validity, userId, websocketToken ->
+    val validityAsLong = validity?.toLongOrNull()
+      this.authToken.value = token
+      this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
+        ""
+      } else {
+        Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
+      }
+      this.userId.value = userId
+      this.websocketToken = websocketToken
+      webSocket.start()
   }
 }
 

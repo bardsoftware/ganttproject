@@ -87,7 +87,7 @@ public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
         myWebdavServer, new WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")));
     Button btnDone = new Button("Done");
     btnDone.getStyleClass().add("btn-done");
-    FXUtil.createBreathingButton(btnDone);
+    FXUtil.INSTANCE.createBreathingButton(btnDone);
     btnDone.addEventHandler(ActionEvent.ACTION, event -> onDone());
     HBox bottomBox = new HBox();
     bottomBox.getStyleClass().add("button-bar");
