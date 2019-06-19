@@ -33,8 +33,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "@executable.location@"; DestDir: "{app}"; Flags: ignoreversion
-Source: "@bundle.content@"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\GanttProject\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -45,7 +44,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Registry]
-Root: HKLM; Subkey: "Software\Classes\.santa"; ValueType: string; ValueName: ""; ValueData: "SantulatorSession"; Flags: uninsdeletevalue
-Root: HKLM; Subkey: "Software\Classes\SantulatorSession"; ValueType: string; ValueName: ""; ValueData: "Santulator Session"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Classes\SantulatorSession\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\SantulatorSession.ico"
-Root: HKLM; Subkey: "Software\Classes\SantulatorSession\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Santulator.exe"" ""%1"""
+Root: HKLM; Subkey: "Software\Classes\.gan"; ValueType: string; ValueName: ""; ValueData: "GanttProjectFile"; Flags: uninsdeletevalue
+Root: HKLM; Subkey: "Software\Classes\GanttProjectFile"; ValueType: string; ValueName: ""; ValueData: "GanttProject File"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Classes\GanttProjectFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\GanttProject.ico"
+Root: HKLM; Subkey: "Software\Classes\GanttProjectFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\GanttProject.exe"" ""%1"""
