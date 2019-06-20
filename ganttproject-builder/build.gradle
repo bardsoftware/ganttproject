@@ -56,7 +56,7 @@ task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
             fileMode 0755
         }
         copy {
-            into(rootProject.distBinDir.toPath().resolve("plugins-${semver}".toString()).toFile())
+            into(rootProject.pluginsDir)
             from(fileTree(".")) {
                 include "VERSION"
             }

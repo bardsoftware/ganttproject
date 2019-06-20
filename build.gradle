@@ -8,7 +8,7 @@ ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.semver = '3.0.0'
 ext.distBinDir = file('ganttproject-builder/dist-bin')
-ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins-${semver}")
+ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
@@ -16,7 +16,7 @@ version = "${semver}-r${getBuildNum()}"
 
 def getBuildNum() {
     return "3000"
-/*  
+/*
   def stdout = new ByteArrayOutputStream()
     exec {
         workingDir "ganttproject-builder"

@@ -27,7 +27,7 @@ java --module-path "%JAVA_HOME%\bin" ^
     --main-jar eclipsito.jar ^
     --class com.bardsoftware.eclipsito.Launch ^
     --version %VERSION% ^
-    --arguments "--verbosity 4 --version-dirs . --app net.sourceforge.ganttproject.GanttProject"  ^
+    --arguments "--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject"  ^
     --runtime-image "%OUTPUT%\runtime" ^
     --identifier biz.ganttproject ^
     --description "Free desktop project scheduling and project management application" ^
@@ -36,4 +36,5 @@ java --module-path "%JAVA_HOME%\bin" ^
     --vendor "BarD Software s.r.o" ^
     --license-file LICENSE ^
     --file-associations build-cfg\file-associations.properties ^
-    --icon build-cfg\ganttproject.ico
+    --icon build-cfg\ganttproject.ico ^
+    -BinstalldirChooser=true
