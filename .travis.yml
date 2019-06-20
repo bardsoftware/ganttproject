@@ -1,8 +1,12 @@
+addons:
+  apt:
+    packages:
+      - fakeroot
 language: java
 jdk: openjdk11
 script: ./ganttproject-builder/build-travis.sh
 branches:
   only:
-  - master
-  - /^tkt-.*$/
-  - /^prj-.*$/
+    - master
+    - /^tkt-.*$/
+    - /^prj-.*$/

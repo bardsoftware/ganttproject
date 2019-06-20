@@ -3,6 +3,8 @@
 set -e
 
 OUTPUT=${1}
+INPUT=${2}
+VERSION=${3}
 
 JLINK=${JAVA_HOME}/bin/jlink
 MODULE_PATH=${JAVA_HOME}/jmods
@@ -17,8 +19,7 @@ ${JLINK} \
   --strip-debug \
   --compress=2
 
-INPUT=${2}
-VERSION=${3}
+ls -l ${OUTPUT}/runtime
 
 java --module-path build-bin \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
