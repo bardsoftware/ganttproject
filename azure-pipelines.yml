@@ -22,7 +22,7 @@ steps:
       testResultsFiles: '**/TEST-*.xml'
       tasks: 'distbin'
 
-  - task: BatchScript@2
+  - task: BatchScript@1
     inputs:
       filename: build-bin/package-win.bat
       workingFolder: ''
