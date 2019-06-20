@@ -37,4 +37,4 @@ java --module-path "%JAVA_HOME%\bin" ^
     --license-file LICENSE ^
     --file-associations build-cfg\file-associations.properties ^
     --icon build-cfg\ganttproject.ico ^
-    -BinstalldirChooser=true
+    --win-dir-chooser --win-menu
