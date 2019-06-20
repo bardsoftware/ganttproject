@@ -10,6 +10,8 @@ set VERSION=%3
   --strip-debug ^
   --compress=2
 
-dir
+dir "C:\Program Files\Java"
+dir "C:\Program Files\Java\zulu-11-azure-jdk_11.29.3-11.0.2-win_x64"
+dir "C:\Program Files\Java\zulu-11-azure-jdk_11.29.3-11.0.2-win_x64\bin"
 
 "C:\Program Files\Java\zulu-11-azure-jdk_11.29.3-11.0.2-win_x64\bin\java" -version

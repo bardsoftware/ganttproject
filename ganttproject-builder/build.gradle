@@ -146,14 +146,14 @@ task runApp(type: JavaExec, dependsOn: distBin) {
     workingDir = 'dist-bin'
     classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
     main = 'com.bardsoftware.eclipsito.Launch'
-    args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "."
+    args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "plugins"
     jvmArgs '-ea'
 }
 task debugApp(type: JavaExec, dependsOn: distBin) {
     workingDir = 'dist-bin'
     classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
-    main = 'org.bardsoftware.eclipsito.Boot'
-    args '-app', 'net.sourceforge.ganttproject.GanttProject', '-plugins-dir', "plugins-${semver}"
+    main = 'com.bardsoftware.eclipsito.Launch'
+    args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "plugins"
     jvmArgs '-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'
 }
 
