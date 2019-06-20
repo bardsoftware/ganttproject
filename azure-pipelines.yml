@@ -21,3 +21,10 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       tasks: 'distbin'
+
+  - task: BatchScript@2
+    inputs:
+      filename: build-bin/package-win.bat
+      workingFolder: ''
+      arguments: build ganttproject-builder\dist-bin 2.99.0
+

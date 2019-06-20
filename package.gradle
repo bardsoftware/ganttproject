@@ -24,7 +24,7 @@ ext {
     } else if (operatingSystem.isWindows()) {
 //        appIcon = file('icons/windows/Santulator.ico')
 //        sessionIcon = file('icons/windows/SantulatorSession.ico')
-//        bundlerScript = file('bin/build-package.bat')
+//        bundlerScript = file('bin/package-win.bat')
 //        generatedInnoSetupFile = file("${buildDir}/resources/main/application.iss")
 //        windowsExecutable = file("${bundlePath}/Santulator/Santulator.exe")
 //        bundleContent = file("${bundlePath}/Santulator/*")
