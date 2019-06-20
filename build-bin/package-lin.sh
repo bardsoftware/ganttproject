@@ -24,7 +24,7 @@ echo "Testing Java Runtime"
 ${OUTPUT}/runtime/bin/java -version
 
 echo "Building packages"
-java --module-path build-bin \
+java --module-path build-bin/lin \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
   -m jdk.packager/jdk.packager.Main \
   create-installer  \
