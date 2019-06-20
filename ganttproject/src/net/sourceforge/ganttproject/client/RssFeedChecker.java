@@ -18,15 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
-import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DateOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultDateOption;
+import biz.ganttproject.core.option.DefaultEnumerationOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.platform.UpdateKt;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.update.UpdateDialog;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -81,7 +87,7 @@ public class RssFeedChecker {
           GanttLanguage.getInstance().getText("updateRss.question.0"),
           GanttLanguage.getInstance().getText("updateRss.question.1"),
           GanttLanguage.getInstance().getText("updateRss.question.2")),
-          NotificationManager.DEFAULT_HYPERLINK_LISTENER);
+      NotificationManager.DEFAULT_HYPERLINK_LISTENER);
   private String myOptionsVersion;
 
   public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
@@ -126,7 +132,7 @@ public class RssFeedChecker {
   public void run() {
     Platform.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
       if (!updateMetadata.isEmpty()) {
-        UpdateDialog.show(myUiFacade, updateMetadata.get(updateMetadata.size() - 1));
+        UpdateKt.showUpdateDialog(myUiFacade, updateMetadata);
       }
     }).exceptionally(ex -> {
       GPLogger.log(ex);
@@ -190,9 +196,9 @@ public class RssFeedChecker {
           for (int i = 0; i < MAX_ATTEMPTS; i++) {
             HttpResponse result = httpClient.execute(getRssUrl);
             switch (result.getStatusLine().getStatusCode()) {
-            case HttpStatus.SC_OK:
-              processResponse(result.getEntity().getContent());
-              return;
+              case HttpStatus.SC_OK:
+                processResponse(result.getEntity().getContent());
+                return;
             }
           }
         } catch (MalformedURLException e) {
