@@ -2,6 +2,7 @@ addons:
   apt:
     packages:
       - fakeroot
+      - rpm
 language: java
 jdk: openjdk11
 script: ./ganttproject-builder/build-travis.sh

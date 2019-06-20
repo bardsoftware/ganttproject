@@ -11,6 +11,7 @@ MODULE_PATH=${JAVA_HOME}/jmods
 
 rm -rf "${OUTPUT}/runtime"
 
+echo "Building Java Runtime"
 ${JLINK} \
   --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported \
   --module-path ${MODULE_PATH} \
@@ -19,8 +20,10 @@ ${JLINK} \
   --strip-debug \
   --compress=2
 
-ls -l ${OUTPUT}/runtime
+echo "Testing Java Runtime"
+${OUTPUT}/runtime/bin/java -version
 
+echo "Building packages"
 java --module-path build-bin \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
   -m jdk.packager/jdk.packager.Main \
@@ -44,5 +47,4 @@ java --module-path build-bin \
   --license-file LICENSE \
   --linux-deb-maintainer "Dmitry Barashev, BarD Software s.r.o" \
   --linux-bundle-name "ganttproject" \
-  --runtime-image "${OUTPUT}/runtime" \
-  ${EXTRA_BUNDLER_ARGUMENTS}
+  --runtime-image "${OUTPUT}/runtime"
