@@ -17,19 +17,13 @@ ${JLINK} \
   --strip-debug \
   --compress=2
 
-if [[ -z "${2}" ]]; then
-  echo "Packaging was not requested. Bye!";
-  exit 0;
-fi
+INPUT=${2}
+VERSION=${3}
 
-PACKAGER=${2}
-INSTALLER_TYPE=${3}
-INPUT=${4}
-VERSION=${5}
-EXTRA_BUNDLER_ARGUMENTS=${6}
-
-${PACKAGER} \
-  create-installer ${INSTALLER_TYPE} \
+java --module-path build-bin \
+  --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
+  -m jdk.packager/jdk.packager.Main \
+  create-installer  \
   --verbose \
   --echo-mode \
   --input "${INPUT}" \
@@ -48,6 +42,6 @@ ${PACKAGER} \
   --vendor "BarD Software s.r.o" \
   --license-file LICENSE \
   --linux-deb-maintainer "Dmitry Barashev, BarD Software s.r.o" \
-  --linux-bundle-name "ganttproject-${VERSION}" \
+  --linux-bundle-name "ganttproject" \
   --runtime-image "${OUTPUT}/runtime" \
   ${EXTRA_BUNDLER_ARGUMENTS}
