@@ -206,9 +206,8 @@ class GPCloudBrowserPane(
       document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       document.proxyDocumentFactory = this.documentManager::getProxyDocument
 
-      if (item.isLocked && item.canChangeLock || true) {
-        this.documentConsumer.accept(document)
-      } else {
+//      if (item.isLocked && item.canChangeLock || true) {
+//      } else {
 //        if (!item.isLocked) {
 //          val propertiesUi = DocPropertiesUi(
 //              errorUi = dialogUi::error,
@@ -219,7 +218,8 @@ class GPCloudBrowserPane(
 //        } else {
 //          this.sceneChanger(this.createLockWarningPage(document))
 //        }
-      }
+//      }
+      this.documentConsumer.accept(document)
       document.listenLockChange(webSocket)
     }
   }

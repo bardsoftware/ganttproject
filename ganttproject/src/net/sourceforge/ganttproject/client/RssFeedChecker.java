@@ -132,7 +132,7 @@ public class RssFeedChecker {
   public void run() {
     Platform.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
       if (!updateMetadata.isEmpty()) {
-        UpdateKt.showUpdateDialog(myUiFacade, updateMetadata);
+        UpdateKt.showUpdateDialog(updateMetadata, myUiFacade);
       }
     }).exceptionally(ex -> {
       GPLogger.log(ex);

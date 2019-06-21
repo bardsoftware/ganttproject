@@ -1,3 +1,22 @@
+.dlg-information .body {
+    -fx-padding: 2ex 1em;
+}
+
+.dlg-platform-update .body .title {
+    -fx-fill: -gp-dark-gray;
+    -fx-font-size: 110%;
+}
+
+.dlg-platform-update .body .subtitle {
+    -fx-fill: -gp-medium-gray;
+    -fx-font-size: 80%;
+    -fx-font-weight: normal;
+}
+
+.dlg-platform-update .body .par {
+    -fx-fill: -gp-medium-gray;
+    -fx-padding: 0.5ex 0 2ex 0;
+}
 
 .dlg-lock {
     -fx-font-size: 120%;
