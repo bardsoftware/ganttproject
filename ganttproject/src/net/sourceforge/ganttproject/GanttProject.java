@@ -1,26 +1,27 @@
 /*
-GanttProject is an opensource project management tool.
-Copyright (C) 2002-2011 Alexandre Thomas, Dmitry Barashev, GanttProject Team
+Copyright 2002-2019 Alexandre Thomas, BarD Software s.r.o
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an open-source project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
+import biz.ganttproject.app.SplashKt;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -106,6 +107,7 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -678,6 +680,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getRssFeedChecker().run();
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
+
   @Override
   public List<GanttPreviousState> getBaselines() {
     return myPreviousStates;
@@ -975,14 +978,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     Runnable autosaveCleanup = DocumentCreator.createAutosaveCleanup();
 
-    final AtomicReference<GanttSplash> splash = new AtomicReference<>(null);
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        splash.set(new GanttSplash());
-        splash.get().setVisible(true);
-      }
-    });
+    final CompletableFuture<Runnable> splashCloser = SplashKt.showAsync();
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e1) {
@@ -991,16 +987,24 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
 
     AtomicReference<GanttProject> mainWindow = new AtomicReference<>(null);
-    SwingUtilities.invokeAndWait(() -> {
+    SwingUtilities.invokeLater(() -> {
       try {
         GanttProject ganttFrame = new GanttProject(false);
         System.err.println("Main frame created");
         mainWindow.set(ganttFrame);
+        ganttFrame.addWindowListener(new WindowAdapter() {
+          @Override
+          public void windowOpened(WindowEvent e) {
+            try {
+              splashCloser.get().run();
+            } catch (Exception ex) {
+              ex.printStackTrace();
+            }
+          }
+        });
       } catch (Throwable e) {
         e.printStackTrace();
       } finally {
-        splash.get().close();
-        System.err.println("Splash closed");
         Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
           @Override
           public void uncaughtException(Thread t, Throwable e) {
