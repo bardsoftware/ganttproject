@@ -126,6 +126,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
   }
 
   private fun onDownload(btn: Button) {
+    btn.disableProperty().set(true)
     var installFuture: CompletableFuture<File>? = null
     for (update in updates.reversed()) {
       val progressMonitor: (Int) -> Unit = { percents: Int ->
@@ -138,7 +139,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
     installFuture?.thenAccept {
       GlobalScope.launch(Dispatchers.Main) {
         btn.disableProperty().set(false)
-        btn.text = "Restart GanttProject"
+        btn.text = i18n.formatText("platform.update.restart")
         btn.properties["restart"] = true
       }
     }?.exceptionally { ex ->
@@ -152,10 +153,6 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
 private fun (UpdateMetadata).install(monitor: (Int) -> Unit): CompletableFuture<File> {
   return Eclipsito.getUpdater().installUpdate(this) { percents ->
     monitor(percents)
-//    GlobalScope.launch(Dispatchers.Main) {
-//      btn.text = String.format("Downloaded %d%%", percents)
-//      btn.disableProperty().set(true)
-//    }
   }
 }
 
