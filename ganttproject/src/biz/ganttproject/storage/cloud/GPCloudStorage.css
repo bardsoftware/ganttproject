@@ -15,7 +15,13 @@
 
 .dlg-platform-update .body .par {
     -fx-fill: -gp-medium-gray;
-    -fx-padding: 0.5ex 0 2ex 0;
+    -fx-padding: 0.5ex 0 0.5ex 0;
+}
+
+.dlg-platform-update .body .progress {
+    -fx-font-size: 80%;
+    -fx-fill: -gp-medium-gray;
+    -fx-padding: 0 0 2ex 0;
 }
 
 .dlg-lock {
