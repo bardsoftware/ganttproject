@@ -28,9 +28,12 @@ dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
 
-    exportedLibs files("lib/core/eclipsito.jar", "lib/core/swingx-1.6.4.jar")
+    exportedLibs files("lib/core/eclipsito.jar")
     exportedLibs 'commons-codec:commons-codec:1.10'
     exportedLibs 'org.apache.poi:poi:3.17'
+
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
 
 
     compile configurations.direct
