@@ -53,6 +53,11 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-cursor: default;
 }
 
+.btn-attention:pressed {
+    -fx-effect: none;
+    -fx-background-color: derive(-gp-orange, 10%);
+    -fx-text-fill: derive(-gp-dark-gray, -10%);
+}
 
 .btn-done {
     -fx-font-weight: bold;

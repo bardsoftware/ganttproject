@@ -17,6 +17,14 @@
     -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
 }
 
+.dlg-information Button:pressed {
+    -fx-effect: none;
+}
+
+.dlg-information Button:focused {
+    -fx-border-color: -gp-dark-gray;
+}
+
 .dlg-platform-update .body {
     -fx-padding: 0 1em;
 }
