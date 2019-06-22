@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+        id="biz.ganttproject.app.libs"
+        name="GanttProject Dependencies"
+        version="3.0">
+
+    <runtime>
+        <library name="lib/*">
+            <export name="*"/>
+        </library>
+    </runtime>
+</plugin>

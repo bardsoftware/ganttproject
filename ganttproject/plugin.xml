@@ -9,12 +9,6 @@
         <library name="ganttproject.jar">
             <export name="*"/>
         </library>
-        <library name="lib/mvn/*">
-            <export name="*"/>
-        </library>
-        <library name="lib/javafx/*">
-            <export name="*"/>
-        </library>
         <library name="lib/core/*">
             <export name="*"/>
         </library>
@@ -25,6 +19,7 @@
     <requires>
         <import plugin="org.eclipse.core.runtime"/>
         <import plugin="biz.ganttproject.core"/>
+        <import plugin="biz.ganttproject.app.libs"/>
     </requires>
     <extension-point id="exporter" name="Exporter"/>
     <extension-point id="importer" name="Importer"/>

@@ -15,8 +15,9 @@ apply plugin: 'kotlin'
 
 dependencies {
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile fileTree(dir: project.ext.mvnDir, include: ['*.jar'])
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.20"
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.+"
     compile "com.google.guava:guava:25.+"
 }
 
@@ -31,6 +32,9 @@ sourceSets {
 }
 
 task copyPlugin(dependsOn: assemble) {
+    doFirst {
+        println "Copying $project.name to $rootProject.pluginsDir"
+    }
     doLast {
         println "Installing $project.name"
         copy {

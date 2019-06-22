@@ -32,7 +32,15 @@ task updateEclipsito(type: Jar) {
     }
 }
 
-task distBin(dependsOn: rootProject.getTasksByName('copyPlugin', true)) {
+task distBin(dependsOn: [
+        ':biz.ganttproject.app.libs:copyPlugin',
+        ':biz.ganttproject.core:copyPlugin',
+        ':ganttproject:copyPlugin',
+        ':biz.ganttproject.impex.ical:copyPlugin',
+        ':biz.ganttproject.impex.msproject2:copyPlugin',
+        ':org.ganttproject.chart.pert:copyPlugin',
+        ':org.ganttproject.impex.htmlpdf:copyPlugin'
+    ]) {
     println "===== Building GanttProject ${version} ====="
     println "===== Building generic binary distro ====="
     doLast {
