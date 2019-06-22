@@ -3,6 +3,7 @@
     -gp-light-gray: #e0e0e0;
     -gp-medium-gray: #616161;
     -gp-dark-gray: #424242;
+    -gp-control-background: white;
 }
 
 webdav-list-cell-button-pane.alert-warning {
@@ -32,11 +33,19 @@ webdav-list-cell-button-pane.alert-warning {
 
 .btn-attention {
     -fx-background-color: -gp-orange;
-    -fx-text-fill: black;
-    -fx-font-size: 110%;
-    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-text-fill: -gp-dark-gray;
+/*    -fx-font-size: 110%;*/
+    -fx-font-weight: 130%;
     -fx-padding: 0.75ex 2em;
     -fx-cursor: hand;
+}
+
+.btn-attention:hover {
+    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+    -fx-background-color: derive(-gp-orange, 10%);
+    -fx-text-fill: derive(-gp-dark-gray, -10%);
 }
 
 .btn-attention:disabled {

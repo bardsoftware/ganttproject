@@ -1,5 +1,24 @@
-.dlg-information .body {
-    -fx-padding: 2ex 1em;
+
+.dlg-information .body > * {
+    -fx-background-color: transparent;
+}
+
+.dlg-information Button {
+    -fx-background-color: white;
+    -fx-border-color: -gp-light-gray;
+    -fx-text-fill: -gp-dark-gray;
+    -fx-cursor: hand;
+    -fx-padding: 0.75ex 2em;
+    -fx-border-insets: 0;
+    -fx-background-insets: 0;
+}
+
+.dlg-information Button:hover {
+    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+}
+
+.dlg-platform-update .body {
+    -fx-padding: 0 1em;
 }
 
 .dlg-platform-update .body .title {
@@ -24,13 +43,17 @@
     -fx-padding: 0 0 2ex 0;
 }
 
+.dlg-platform-update .content-pane .help {
+    -fx-padding: 0 0 2ex 0;
+}
+
 .dlg-lock {
     -fx-font-size: 120%;
     -fx-background-color: transparent;
     -fx-fill-width: 1;
     -fx-fill-height: 1;
-    -fx-min-width: 400;
-    -fx-min-height: 400;
+    -fx-pref-width: 400;
+    -fx-pref-height: 400;
 }
 
 .dlg-lock .btn-option {

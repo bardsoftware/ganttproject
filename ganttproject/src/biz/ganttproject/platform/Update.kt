@@ -27,9 +27,9 @@ import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
-import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -73,7 +73,7 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
 private class UpdateDialog(private val updates: List<UpdateMetadata>, private val uiFacade: UIFacade) {
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
 
-  fun createPane(): Pane {
+  fun createPane(): Node {
     val vboxBuilder = VBoxBuilder("content-pane")
     vboxBuilder.addTitle(i18n.formatText("title"))
     vboxBuilder.add(Label().apply {
@@ -82,7 +82,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
     })
 
 
-    val bodyBuilder = VBoxBuilder("body")
+    val bodyBuilder = VBoxBuilder("updates")
     this.updates.map {
       UpdateComponentUi(it).also { ui ->
         version2ui[it.version] = ui
@@ -93,8 +93,15 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       bodyBuilder.add(it.text)
       bodyBuilder.add(it.progress)
     }
-    vboxBuilder.add(bodyBuilder.vbox, Pos.CENTER, Priority.ALWAYS)
+    vboxBuilder.add(ScrollPane(bodyBuilder.vbox).also {
+      it.styleClass.add("body")
+      it.isFitToWidth = true
+      it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+      it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
+    }, Pos.CENTER, Priority.ALWAYS)
+
     return vboxBuilder.vbox
+
   }
 
   fun addContent(dialogPane: DialogPane) {
@@ -116,6 +123,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
         }
       }
     }
+
     dialogPane.content = this.createPane()
   }
 
