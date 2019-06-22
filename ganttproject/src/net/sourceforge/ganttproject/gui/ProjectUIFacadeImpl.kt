@@ -270,9 +270,10 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
 
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
-        val successChannel = Channel<Document>()
         // Run coroutine which fetches document and wait until it sends the result to the channel.
         val job = GlobalScope.launch(Dispatchers.Main) {
+          val successChannel = Channel<Document>()
+
           strategy.open(document, successChannel)
           try {
             val doc = successChannel.receive()

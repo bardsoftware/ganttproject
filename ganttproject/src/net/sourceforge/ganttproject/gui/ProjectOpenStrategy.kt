@@ -102,15 +102,19 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   }
 
   suspend fun open(document: Document, successChannel: Channel<Document>) {
-    val online = document.asOnlineDocument() ?: return successChannel.send(document)
     GlobalScope.launch(Dispatchers.IO) {
-      try {
-        val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
-        if (processFetchResult(currentFetch)) {
-          successChannel.send(document)
+      val online = document.asOnlineDocument()
+      if (online == null) {
+        successChannel.send(document)
+      } else {
+        try {
+          val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
+          if (processFetchResult(currentFetch)) {
+            successChannel.send(document)
+          }
+        } catch (ex: Exception) {
+          successChannel.close(ex)
         }
-      } catch (ex: Exception) {
-        successChannel.close(ex)
       }
     }
   }
