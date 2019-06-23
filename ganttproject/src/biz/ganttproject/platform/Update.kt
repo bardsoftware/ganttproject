@@ -28,9 +28,11 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
+import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCombination
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -41,6 +43,7 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
+
 
 fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
   val dlg = UpdateDialog(updates, uiFacade)
@@ -71,7 +74,10 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
  * @author dbarashev@bardsoftware.com
  */
 private class UpdateDialog(private val updates: List<UpdateMetadata>, private val uiFacade: UIFacade) {
+  private lateinit var dialogPane: DialogPane
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
+  private val stackPane = StackPane()
+  private var buttonBar: Parent? = null
 
   fun createPane(): Node {
     val vboxBuilder = VBoxBuilder("content-pane")
@@ -105,10 +111,14 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
   }
 
   fun addContent(dialogPane: DialogPane) {
+    this.dialogPane = dialogPane
     dialogPane.buttonTypes.addAll(ButtonType.APPLY, ButtonType.CLOSE)
     dialogPane.lookupButton(ButtonType.APPLY).apply {
       if (this is Button) {
         val btn = this
+        buttonBar = btn.parent.also {
+          println("button bar=$it")
+        }
         ButtonBar.setButtonUniformSize(btn, false)
         styleClass.add("btn-attention")
         text = i18n.formatText("button.ok")
@@ -124,7 +134,12 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       }
     }
 
-    dialogPane.content = this.createPane()
+    stackPane.children.add(this.createPane())
+//    dialogPane.content = NotificationPane(this.createPane()).also {
+//      it.isShowFromTop = true
+//      this.notificationPane = it
+//    }
+    dialogPane.content = stackPane
   }
 
   private fun onRestart() {
@@ -151,7 +166,41 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
         btn.properties["restart"] = true
       }
     }?.exceptionally { ex ->
-      GPLogger.log(ex)
+      GPLogger.logToLogger(ex)
+      Platform.runLater {
+        val notificationPane = BorderPane().also { pane ->
+          val contentPane = this.stackPane.children[0]
+          contentPane.apply {
+            val bb = BoxBlur()
+            bb.width = 5.0
+            bb.height = 5.0
+            bb.iterations = 3
+
+            this.effect = bb
+          }
+          pane.styleClass.add("alert-glasspane")
+          val vboxBuilder = VBoxBuilder("alert-box")
+          vboxBuilder.addTitle(i18n.create("alert.title")).also {hbox ->
+            hbox.alignment = Pos.CENTER_LEFT
+            hbox.isFillHeight = true
+            hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS)})
+            val btnClose = Button("x")
+            hbox.children.add(btnClose)
+            btnClose.addEventHandler(ActionEvent.ACTION) {
+              this.stackPane.children.remove(pane)
+              contentPane.effect = null
+            }
+
+          }
+          vboxBuilder.add(ScrollPane(MDFXNode(ex.message)).also { scroll ->
+            scroll.isFitToWidth = true
+            scroll.isFitToHeight = true
+          }, Pos.CENTER, Priority.ALWAYS)
+          pane.center = vboxBuilder.vbox
+        }
+        this.stackPane.children.add(notificationPane)
+
+      }
       null
     }
   }

@@ -22,7 +22,49 @@
 }
 
 .dlg-information Button:focused {
-    -fx-border-color: -gp-dark-gray;
+    -fx-border-color: #26C7E0;
+}
+
+.dlg-information .alert-glasspane {
+    -fx-padding: 40px 20px;
+
+}
+.dlg-information .alert-box {
+    -fx-background-color: #ff7777;
+    -fx-padding: 2ex 2em;
+    -fx-background-radius: 5px;
+}
+
+.dlg-information .alert-box .title Button {
+    -fx-pref-width: 1.1em;
+    -fx-pref-height: 1.1em;
+    -fx-min-width: 1.1em;
+    -fx-max-height: 1.1em;
+    -fx-padding: 0;
+    -fx-text-alignment: center;
+    -fx-border: none;
+}
+
+.dlg-information .alert-box .title Button:hover {
+    -fx-background-color: -gp-light-gray;
+    -fx-background-color: 50%;
+}
+
+.dlg-information .alert-box > * {
+    -fx-padding: 3px;
+    -fx-background-color: #ff7777;
+}
+
+.dlg-information .alert-box ScrollPane {
+    -fx-background-color: #ff7777;
+}
+
+.dlg-information .alert-box ScrollPane MDFXNode {
+    -fx-background-color: #ff7777;
+}
+
+.dlg-information .alert-box Button {
+    -fx-background-color: transparent;
 }
 
 .dlg-platform-update .body {

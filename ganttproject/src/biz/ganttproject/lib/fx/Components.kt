@@ -97,7 +97,7 @@ class VBoxBuilder(vararg classes: String) {
     return addTitle(i18n.create(i18nKey).update(*args))
   }
 
-  fun addTitle(title: LocalizedString): Node {
+  fun addTitle(title: LocalizedString): HBox {
     val titleBox = HBox()
     titleBox.styleClass.add("title")
     val title = Label().also { it.textProperty().bind(title) }
