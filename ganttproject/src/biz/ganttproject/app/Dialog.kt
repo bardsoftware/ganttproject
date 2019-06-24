@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.lib.fx.VBoxBuilder
+import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.animation.FadeTransition
@@ -29,10 +30,7 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.control.Button
-import javafx.scene.control.ButtonType
-import javafx.scene.control.Dialog
-import javafx.scene.control.DialogPane
+import javafx.scene.control.*
 import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.*
@@ -55,13 +53,13 @@ import javafx.util.Duration
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialog(contentBuilder: (DialogBuildApi) -> Unit) {
+fun dialog(contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     Dialog<Unit>().also {
       it.isResizable = true
-      val dialogBuildApi = DialogBuildApi(it.dialogPane)
+      val dialogBuildApi = DialogController(it.dialogPane)
       it.dialogPane.apply {
-        styleClass.addAll("dlg-information")
+        styleClass.addAll("dlg-information", "dlg")
         stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
 
         contentBuilder(dialogBuildApi)
@@ -80,8 +78,8 @@ fun dialog(contentBuilder: (DialogBuildApi) -> Unit) {
   }
 }
 
-class DialogBuildApi(private val dialogPane: DialogPane) {
-  private val stackPane = StackPane()
+class DialogController(private val dialogPane: DialogPane) {
+  private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
   fun setContent(content: Node) {
@@ -116,6 +114,15 @@ class DialogBuildApi(private val dialogPane: DialogPane) {
     header.styleClass.add("header")
     this.dialogPane.header = header
   }
+
+  fun hide() {
+    this.dialogPane.scene.window.hide()
+  }
+
+  fun removeButtonBar() {
+    this.dialogPane.children.remove(this.dialogPane.children.first { it.styleClass.contains("button-bar") })
+  }
+
 }
 
 fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
@@ -159,3 +166,9 @@ fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedSt
   }
   ParallelTransition(fadeIn, washOut).play()
 }
+
+fun createAlertBody(message: String): Node =
+    ScrollPane(MDFXNode(message)).also { scroll ->
+      scroll.isFitToWidth = true
+      scroll.isFitToHeight = true
+    }

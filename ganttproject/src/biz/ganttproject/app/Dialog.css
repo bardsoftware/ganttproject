@@ -44,6 +44,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-text-fill: derive(-gp-dark-gray, -10%);
 }
 
+.dlg .layers {
+    -fx-padding: 0;
+}
+
 .dlg-information {
     -fx-background-color: transparent;
 }
@@ -53,8 +57,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg-information Button {
-    -fx-background-color: white;
-    -fx-border-color: -gp-light-gray;
     -fx-text-fill: -gp-dark-gray;
     -fx-cursor: hand;
     -fx-padding: 0.75ex 2em;
@@ -72,6 +74,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .dlg-information Button:focused {
     -fx-border-color: #26C7E0;
+}
+
+.dlg-information .btn {
+    -fx-background-color: white;
+    -fx-border-color: -gp-light-gray;
 }
 
 .dlg-information .alert-glasspane {

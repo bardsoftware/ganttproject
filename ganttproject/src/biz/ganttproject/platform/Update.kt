@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
-import biz.ganttproject.app.DefaultLocalizer
-import biz.ganttproject.app.DialogBuildApi
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.sandec.mdfx.MDFXNode
@@ -50,7 +47,7 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
  * @author dbarashev@bardsoftware.com
  */
 private class UpdateDialog(private val updates: List<UpdateMetadata>, private val uiFacade: UIFacade) {
-  private lateinit var dialogApi: DialogBuildApi
+  private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
 
   fun createPane(): Node {
@@ -73,7 +70,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
     }
   }
 
-  fun addContent(dialogApi: DialogBuildApi) {
+  fun addContent(dialogApi: DialogController) {
     this.dialogApi = dialogApi
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
@@ -103,7 +100,9 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
         }
       }
     }
-    dialogApi.setupButton(ButtonType.CLOSE)
+    dialogApi.setupButton(ButtonType.CLOSE) { btn ->
+      btn.styleClass.add("btn")
+    }
     dialogApi.setContent(this.createPane())
   }
 
@@ -132,11 +131,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       }
     }?.exceptionally { ex ->
       GPLogger.logToLogger(ex)
-      val alertBody = ScrollPane(MDFXNode(ex.message)).also { scroll ->
-        scroll.isFitToWidth = true
-        scroll.isFitToHeight = true
-      }
-      this.dialogApi.showAlert(i18n.create("alert.title"), alertBody)
+      this.dialogApi.showAlert(i18n.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
   }

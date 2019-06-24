@@ -205,7 +205,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
   }
 
   override fun saveProjectAs(project: IGanttProject) {
-    StorageDialogAction(project, myWorkbenchFacade, this, project.documentManager,
+    StorageDialogAction(project, this, project.documentManager,
         (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption).actionPerformed(null)
   }
 

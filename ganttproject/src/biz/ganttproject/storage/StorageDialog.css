@@ -1,3 +1,21 @@
+/*
+Copyright 2019 BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 * {
     -gp-orange: #ffca28;
     -gp-light-gray: #e0e0e0;
@@ -29,34 +47,6 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-border-width: 1;
     -fx-border-style: dotted;
     -fx-border-color: red;
-}
-
-.btn-attention {
-    -fx-background-color: -gp-orange;
-    -fx-border-color: transparent;
-    -fx-border-radius: 0;
-    -fx-text-fill: -gp-dark-gray;
-/*    -fx-font-size: 110%;*/
-    -fx-font-weight: 130%;
-    -fx-padding: 0.75ex 2em;
-    -fx-cursor: hand;
-}
-
-.btn-attention:hover {
-    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
-    -fx-background-color: derive(-gp-orange, 10%);
-    -fx-text-fill: derive(-gp-dark-gray, -10%);
-}
-
-.btn-attention:disabled {
-    -fx-opacity: 0.5;
-    -fx-cursor: default;
-}
-
-.btn-attention:pressed {
-    -fx-effect: none;
-    -fx-background-color: derive(-gp-orange, 10%);
-    -fx-text-fill: derive(-gp-dark-gray, -10%);
 }
 
 .btn-done {
@@ -92,6 +82,8 @@ webdav-list-cell-button-pane.alert-warning {
 .btn-service.active {
     -fx-background-color: #ffc241;
 }
+
+
 
 .btn-secondary {
     -fx-min-height: 26px;
@@ -151,7 +143,7 @@ webdav-list-cell-button-pane.alert-warning {
 }
 
 .doclist-save-box {
-    -fx-padding: 1ex 0em;
+    -fx-padding: 1ex 0 0 0;
     -fx-pref-width: 100%;
 }
 
@@ -226,16 +218,33 @@ HBox.title-integrated Label {
 }
 
 .pane-service-buttons {
-    -fx-border-width: 0 1 1 0;
+    -fx-border-width: 0 1 0 0;
     -fx-background-color: #e5e5e5;
     -fx-border-color: derive(#e5e5e5, -15%);
-    -fx-padding: 10;
+    -fx-padding: 10 10;
     -fx-spacing: 8;
     -fx-alignment: top-left;
 }
 
+.pane-service-buttons .btn-create {
+    -fx-background-color: -gp-dark-gray;
+    -fx-text-fill: -gp-light-gray;
+    -fx-fill: -gp-light-gray;
+    -fx-border-color: transparent;
+}
+
+.pane-service-buttons .btn-create .glyph-icon {
+    -fx-fill: -gp-light-gray;
+}
+
+.pane-service-buttons .btn-create:hover {
+    -fx-background-color: derive(-gp-dark-gray, 10%);
+    -fx-text-fill: derive(-gp-light-gray, -10%);
+    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+}
+
 .pane-service-contents {
-    -fx-padding: 10 10 0 10;
+    -fx-padding: 10 10 10 10;
     -fx-font-family: Arial;
     -fx-fill-width: true;
     -fx-pref-width: 100%;
@@ -333,23 +342,13 @@ HBox.title-integrated Label {
     -fx-font-family: Arial;
 }
 
-.pane-storage .title-box {
-    -fx-pref-width: 100%;
-    -fx-fill-width: true;
-    -fx-spacing: 5;
-    -fx-padding: 15;
-    -fx-background-color: #eee;
-    -fx-background-insets: 0 0 4 0;
-    -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
-}
-
-.pane-storage .title-box Label {
+.dlg-storage .header Label {
     -fx-font-weight: bold;
     -fx-font-size: 130%;
     -fx-padding: 0;
 }
 
-.pane-storage .title-box .open-save-buttons {
+.dlg-storage .header .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 90%;
 }
@@ -365,6 +364,14 @@ HBox.title-integrated Label {
 
 .status-bar {
     -fx-background-color: transparent;
+}
+
+.storage-list {
+    -fx-padding: 2em 0 0 0;
+}
+
+.storage-list .storage-name {
+    -fx-effect: none;
 }
 
 .subtitle {

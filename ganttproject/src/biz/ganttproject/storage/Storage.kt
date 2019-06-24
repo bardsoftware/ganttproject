@@ -1,7 +1,7 @@
 /*
-Copyright 2017 Dmitry Barashev, BarD Software s.r.o
+Copyright 2019 BarD Software s.r.o
 
-This file is part of GanttProject, an opensource project management tool.
+This file is part of GanttProject, an open-source project management tool.
 
 GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -115,17 +115,22 @@ class StoragePane internal constructor(
 
     val storagePane = BorderPane()
     storagePane.styleClass.add("pane-service-buttons")
-    val storageButtons = VBox()
+    val storageButtons = VBox().also {
+      it.styleClass.add("storage-list")
+    }
     storagePane.center = storageButtons
-    val addStorage = Button("New Storage", FontAwesomeIconView(FontAwesomeIcon.PLUS))
-    addStorage.addEventHandler(ActionEvent.ACTION) { onNewWebdavServer(storageUiPane) }
-    storagePane.bottom = HBox(addStorage)
+    Button("New Storage", FontAwesomeIconView(FontAwesomeIcon.PLUS)).also {
+      it.styleClass.add("btn-create")
+      it.addEventHandler(ActionEvent.ACTION) { onNewWebdavServer(storageUiPane) }
+      storagePane.top = HBox(it)
+    }
+
 
     storageUiPane.setPrefSize(400.0, 400.0)
 
     borderPane.center = storageUiPane
     reloadStorageLabels(storageButtons, mode, Optional.empty())
-    myCloudStorageOptions.list.addListener(ListChangeListener { _ ->
+    myCloudStorageOptions.list.addListener(ListChangeListener {
       reloadStorageLabels(
           storageButtons, mode,
           if (myActiveStorageLabel == null) Optional.empty()

@@ -1,69 +1,46 @@
-// Copyright (C) 2016 BarD Software
+/*
+Copyright 2019 BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.dialog
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import javafx.application.Platform
-import javafx.event.EventHandler
-import javafx.scene.control.Dialog
-import javafx.scene.input.KeyCombination
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
-import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.gui.UIUtil
 import java.awt.event.ActionEvent
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class StorageDialogAction(private val myProject: IGanttProject, private val myUiFacade: UIFacade, private val myProjectUiFacade: ProjectUIFacade,
-                          private val myDocumentManager: DocumentManager, private val myCloudStorageOptions: GPCloudStorageOptions) : GPAction("myProjects.action") {
+class StorageDialogAction(
+    private val myProject: IGanttProject,
+    private val myProjectUiFacade: ProjectUIFacade,
+    private val myDocumentManager: DocumentManager,
+    private val myCloudStorageOptions: GPCloudStorageOptions) : GPAction("myProjects.action") {
 
   override fun actionPerformed(actionEvent: ActionEvent?) {
-
-    UIUtil.initJavaFx {
-      Platform.runLater {
-
-        val dialogBuilder = StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions)
-        val contentPane = dialogBuilder.build()
-        Dialog<Unit>().apply {
-          this.dialogPane.content = contentPane
-          this.isResizable = true
-          this.width = 600.0
-          this.height = 600.0
-
-          val window = this.dialogPane.scene.window
-          window.onCloseRequest = EventHandler {
-            window.hide()
-          }
-          this.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-
-          val dialogUi = object : UIFacade.Dialog {
-            override fun show() {
-              this@apply.show()
-            }
-
-            override fun hide() {
-              window.hide()
-            }
-
-            override fun layout() {
-              this@apply.dialogPane.layout()
-            }
-
-            override fun center(centering: UIFacade.Centering?) {
-            }
-          }
-          dialogBuilder.setDialog(dialogUi)
-          this.show()
-        }
-        //dialogBuilder
-//        SwingUtilities.invokeLater {
-//          val dlg = myUiFacade.createDialog(contentPane, arrayOfNulls(0), GPAction.getI18n("myProjects.title"))
-//          dialogBuilder.setDialog(dlg)
-//        }
-        //dialog.show();
+    Platform.runLater {
+      dialog { dialogBuildApi ->
+        val dialogBuilder = StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions, dialogBuildApi)
+        dialogBuilder.build()
       }
     }
   }
