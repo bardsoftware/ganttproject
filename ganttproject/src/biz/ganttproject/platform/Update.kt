@@ -19,22 +19,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.platform
 
 import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.DialogBuildApi
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.dialog
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.sandec.mdfx.MDFXNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
-import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.effect.BoxBlur
-import javafx.scene.input.KeyCombination
-import javafx.scene.layout.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -49,48 +43,18 @@ import org.eclipse.core.runtime.Platform as Eclipsito
 
 fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
   val dlg = UpdateDialog(updates, uiFacade)
-  Platform.runLater {
-    Dialog<Unit>().also {
-      it.isResizable = true
-      it.dialogPane.apply {
-        styleClass.addAll("dlg-lock", "dlg-information", "dlg-platform-update")
-        stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
-
-        dlg.addContent(this)
-        val window = scene.window
-        window.onCloseRequest = EventHandler {
-          window.hide()
-        }
-        scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-      }
-      it.onShown = EventHandler { _ ->
-        it.dialogPane.layout()
-        it.dialogPane.scene.window.sizeToScene()
-      }
-      it.show()
-    }
-  }
+  dialog(dlg::addContent)
 }
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 private class UpdateDialog(private val updates: List<UpdateMetadata>, private val uiFacade: UIFacade) {
-  private lateinit var dialogPane: DialogPane
+  private lateinit var dialogApi: DialogBuildApi
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
-  private val stackPane = StackPane()
-  private var buttonBar: Parent? = null
 
   fun createPane(): Node {
-    val vboxBuilder = VBoxBuilder("content-pane")
-    vboxBuilder.addTitle(i18n.formatText("title"))
-    vboxBuilder.add(Label().apply {
-      this.text = i18n.formatText("titleHelp", this@UpdateDialog.updates.first().version)
-      this.styleClass.add("help")
-    })
-
-
-    val bodyBuilder = VBoxBuilder("updates")
+    val bodyBuilder = VBoxBuilder()
     this.updates.map {
       UpdateComponentUi(it).also { ui ->
         version2ui[it.version] = ui
@@ -101,47 +65,46 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       bodyBuilder.add(it.text)
       bodyBuilder.add(it.progress)
     }
-    vboxBuilder.add(ScrollPane(bodyBuilder.vbox).also {
+    return ScrollPane(bodyBuilder.vbox).also {
       it.styleClass.add("body")
       it.isFitToWidth = true
       it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
       it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
-    }, Pos.CENTER, Priority.ALWAYS)
-
-    return vboxBuilder.vbox
-
+    }
   }
 
-  fun addContent(dialogPane: DialogPane) {
-    this.dialogPane = dialogPane
-    dialogPane.buttonTypes.addAll(ButtonType.APPLY, ButtonType.CLOSE)
-    dialogPane.lookupButton(ButtonType.APPLY).apply {
-      if (this is Button) {
-        val btn = this
-        buttonBar = btn.parent.also {
-          println("button bar=$it")
-        }
-        ButtonBar.setButtonUniformSize(btn, false)
-        styleClass.add("btn-attention")
-        text = i18n.formatText("button.ok")
-        maxWidth = Double.MAX_VALUE
-        addEventFilter(ActionEvent.ACTION) { event ->
-          if (btn.properties["restart"] == true) {
-            onRestart()
-          } else {
-            event.consume()
-            onDownload(btn)
-          }
+  fun addContent(dialogApi: DialogBuildApi) {
+    this.dialogApi = dialogApi
+    dialogApi.addStyleClass("dlg-platform-update")
+    dialogApi.addStyleSheet(
+        "/biz/ganttproject/platform/Update.css",
+        "/biz/ganttproject/storage/StorageDialog.css",
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+
+    val vboxBuilder = VBoxBuilder()
+    vboxBuilder.addTitle(i18n.formatText("title"))
+    vboxBuilder.add(Label().apply {
+      this.text = i18n.formatText("titleHelp", this@UpdateDialog.updates.first().version)
+      this.styleClass.add("help")
+    })
+
+    dialogApi.setHeader(vboxBuilder.vbox)
+    dialogApi.setupButton(ButtonType.APPLY) { btn ->
+      ButtonBar.setButtonUniformSize(btn, false)
+      btn.styleClass.add("btn-attention")
+      btn.text = i18n.formatText("button.ok")
+      btn.maxWidth = Double.MAX_VALUE
+      btn.addEventFilter(ActionEvent.ACTION) { event ->
+        if (btn.properties["restart"] == true) {
+          onRestart()
+        } else {
+          event.consume()
+          onDownload(btn)
         }
       }
     }
-
-    stackPane.children.add(this.createPane())
-//    dialogPane.content = NotificationPane(this.createPane()).also {
-//      it.isShowFromTop = true
-//      this.notificationPane = it
-//    }
-    dialogPane.content = stackPane
+    dialogApi.setupButton(ButtonType.CLOSE)
+    dialogApi.setContent(this.createPane())
   }
 
   private fun onRestart() {
@@ -169,44 +132,14 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       }
     }?.exceptionally { ex ->
       GPLogger.logToLogger(ex)
-      Platform.runLater {
-        val notificationPane = BorderPane().also { pane ->
-          val contentPane = this.stackPane.children[0]
-          contentPane.apply {
-            val bb = BoxBlur()
-            bb.width = 5.0
-            bb.height = 5.0
-            bb.iterations = 2
-
-            this.effect = bb
-          }
-          pane.styleClass.add("alert-glasspane")
-          val vboxBuilder = VBoxBuilder("alert-box")
-          vboxBuilder.addTitle(i18n.create("alert.title")).also { hbox ->
-            hbox.alignment = Pos.CENTER_LEFT
-            hbox.isFillHeight = true
-            hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
-            val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
-            hbox.children.add(btnClose)
-            btnClose.addEventHandler(ActionEvent.ACTION) {
-              this.stackPane.children.remove(pane)
-              contentPane.effect = null
-            }
-
-          }
-          vboxBuilder.add(ScrollPane(MDFXNode(ex.message)).also { scroll ->
-            scroll.isFitToWidth = true
-            scroll.isFitToHeight = true
-          }, Pos.CENTER, Priority.ALWAYS)
-          pane.center = vboxBuilder.vbox
-        }
-        this.stackPane.children.add(notificationPane)
-
+      val alertBody = ScrollPane(MDFXNode(ex.message)).also { scroll ->
+        scroll.isFitToWidth = true
+        scroll.isFitToHeight = true
       }
+      this.dialogApi.showAlert(i18n.create("alert.title"), alertBody)
       null
     }
   }
-
 }
 
 private fun (UpdateMetadata).install(monitor: (Int) -> Unit): CompletableFuture<File> {
