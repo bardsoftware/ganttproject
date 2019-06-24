@@ -122,7 +122,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
   }
 
   fun createStorageUi(): Pane {
-    val builder = BrowserPaneBuilder(this.myMode, this.myDialogUi) { path, success, loading ->
+    val builder = BrowserPaneBuilder(this.myMode, this.myDialogUi::error) { path, success, loading ->
       val wrappers = FXCollections.observableArrayList<FolderItem>()
       val consumer = Consumer { webDavResources: ObservableList<WebDavResource> ->
         webDavResources.forEach { resource -> wrappers.add(WebDavResourceAsFolderItem(resource)) }

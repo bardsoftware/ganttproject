@@ -138,7 +138,7 @@ class GPCloudBrowserPane(
   var controller: GPCloudStorage.Controller? = null
 
   fun createStorageUi(): Pane {
-    val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
+    val builder = BrowserPaneBuilder(this.mode, this.dialogUi::error) { path, success, loading ->
       loadTeams(path, success, loading)
     }
 
@@ -281,7 +281,7 @@ class GPCloudBrowserPane(
   fun reset() {
     this.loaderService.jsonResult.set(null)
     this.loaderService.restart()
-    this.paneElements.breadcrumbView.path = ROOT_URI
+    this.paneElements.breadcrumbView?.path = ROOT_URI
   }
 }
 

@@ -110,7 +110,7 @@ class LocalStorage(
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.state = LocalStorageState(currentDocument, myMode)
 
-    val builder = BrowserPaneBuilder(this.mode, myDialogUi) { path, success, loading ->
+    val builder = BrowserPaneBuilder(this.mode, myDialogUi::error) { path, success, loading ->
       loadFiles(path, success, state)
     }
     val actionButtonHandler = object {

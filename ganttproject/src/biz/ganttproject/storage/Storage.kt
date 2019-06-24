@@ -168,7 +168,7 @@ class StoragePane internal constructor(
         openDocument)
     )
     val recentProjects = RecentProjects(
-        if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save(),
+        mode,
         myDocumentManager,
         myCurrentDocument,
         openDocument)

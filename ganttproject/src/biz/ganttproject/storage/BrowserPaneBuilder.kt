@@ -67,7 +67,7 @@ typealias OnItemAction = Consumer<FolderItem>
 
 typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
 
-data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
+data class BrowserPaneElements(val breadcrumbView: BreadcrumbView?,
                                val listView: FolderView<FolderItem>,
                                val filenameInput: CustomTextField,
                                val browserPane: Pane,
@@ -83,7 +83,7 @@ data class BrowserPaneElements(val breadcrumbView: BreadcrumbView,
  */
 class BrowserPaneBuilder(
     private val mode: StorageDialogBuilder.Mode,
-    private val dialogUi: StorageDialogBuilder.DialogUi,
+    private val exceptionUi: ExceptionUi,
     private val loader: Loader) {
   private val rootPane = VBoxBuilder("pane-service-contents")
 
@@ -101,7 +101,7 @@ class BrowserPaneBuilder(
   }
   private lateinit var btnSave: Button
 
-  private lateinit var breadcrumbView: BreadcrumbView
+  private var breadcrumbView: BreadcrumbView? = null
   private lateinit var saveBox: HBox
   private lateinit var onOpenItem: OnItemAction
   private lateinit var onLaunch: OnItemAction
@@ -128,7 +128,7 @@ class BrowserPaneBuilder(
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
       itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
     this.listView = FolderView(
-        this.dialogUi::error,
+        this.exceptionUi,
         onDelete,
         onLock,
         canLock, canDelete, itemActionFactory)
@@ -204,7 +204,7 @@ class BrowserPaneBuilder(
     fun selectItem(item: FolderItem, withEnter: Boolean, withControl: Boolean) {
       when {
         withEnter && item.isDirectory -> {
-          breadcrumbView.append(item.name)
+          breadcrumbView?.append(item.name)
           this.onOpenItem.accept(item)
           filename.text = ""
         }
@@ -255,10 +255,10 @@ class BrowserPaneBuilder(
       addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
-      add(VBox().also {
-        it.styleClass.add("nav-search")
-        it.children.addAll(
-            breadcrumbView.breadcrumbs,
+      add(VBox().also {vbox ->
+        vbox.styleClass.add("nav-search")
+        breadcrumbView?.let { vbox.children.add(it.breadcrumbs) }
+        vbox.children.addAll(
             filename,
             errorLabel
         )

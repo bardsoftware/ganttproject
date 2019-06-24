@@ -52,7 +52,7 @@ interface FolderItem {
 private val unsupported = SimpleBooleanProperty(false)
 
 private typealias CellFactory<T> = () -> ListCell<ListViewItem<T>>
-private typealias ExceptionUi = (Exception) -> Unit
+typealias ExceptionUi = (Exception) -> Unit
 /**
  * Encapsulates a list view showing the contents of a single folder.
  */
@@ -335,7 +335,7 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
   fun append(name: String) {
     val selectedPath = breadcrumbs.selectedCrumb.value.path
     val appendPath = selectedPath.resolve(name)
-    val treeItem = TreeItem<BreadcrumbNode>(BreadcrumbNode(appendPath, name))
+    val treeItem = TreeItem(BreadcrumbNode(appendPath, name))
     breadcrumbs.selectedCrumb.children.add(treeItem)
     breadcrumbs.selectedCrumb = treeItem
     onSelectCrumb.accept(appendPath)
@@ -384,7 +384,7 @@ fun <T : FolderItem> connect(
     // Filter folder with user text and map each item to its name. Return the result if
     // filtered list has less than 5 items.
     listView.doFilter(req.userText).let {
-      if (it.size <= 5) it.map { it.name }.toList() else emptyList<String>()
+      if (it.size <= 5) it.map { it.name }.toList() else emptyList()
     }
   }
   filename?.onKeyPressed = EventHandler { keyEvent ->

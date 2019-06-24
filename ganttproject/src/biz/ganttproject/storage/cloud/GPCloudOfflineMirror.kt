@@ -115,7 +115,7 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, private val dialog
   val browser: Pane by lazy(this::createBrowserPane)
 
   private fun createBrowserPane(): Pane {
-    val builder = BrowserPaneBuilder(this.mode, this.dialogUi) { path, success, loading ->
+    val builder = BrowserPaneBuilder(this.mode, this.dialogUi::error) { path, success, loading ->
       loadOfflineMirrors(success)
     }
 
@@ -138,11 +138,11 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, private val dialog
 }
 
 fun loadOfflineMirrors(consumer: Consumer<ObservableList<FolderItem>>) {
-  val mirrors = GPCloudOptions.cloudFiles.files.entries.map { (fp, options) ->
+  val mirrors = GPCloudOptions.cloudFiles.files.entries.mapNotNull { (fp, options) ->
     options.offlineMirror?.let {
       OfflineMirrorOptionsAsFolderItem(options)
     }
-  }.filterNotNull()
-  consumer.accept(FXCollections.observableArrayList<FolderItem>(mirrors))
+  }
+  consumer.accept(FXCollections.observableArrayList(mirrors))
 }
 
