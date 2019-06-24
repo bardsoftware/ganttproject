@@ -27,27 +27,13 @@
 
 .dlg-information .alert-glasspane {
     -fx-padding: 40px 20px;
+    -fx-effect: dropshadow(gaussian, -gp-dark-gray, 8, 0.5, 0, 0);
 
 }
 .dlg-information .alert-box {
     -fx-background-color: #ff7777;
     -fx-padding: 2ex 2em;
     -fx-background-radius: 5px;
-}
-
-.dlg-information .alert-box .title Button {
-    -fx-pref-width: 1.1em;
-    -fx-pref-height: 1.1em;
-    -fx-min-width: 1.1em;
-    -fx-max-height: 1.1em;
-    -fx-padding: 0;
-    -fx-text-alignment: center;
-    -fx-border: none;
-}
-
-.dlg-information .alert-box .title Button:hover {
-    -fx-background-color: -gp-light-gray;
-    -fx-background-color: 50%;
 }
 
 .dlg-information .alert-box > * {
@@ -65,6 +51,26 @@
 
 .dlg-information .alert-box Button {
     -fx-background-color: transparent;
+}
+
+.dlg-information .alert-dismiss {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-pref-width: 2em;
+    -fx-pref-height: 2em;
+    -fx-min-width: 2em;
+    -fx-min-height: 2em;
+    -fx-max-width: 2em;
+    -fx-max-height: 2em;
+    -fx-padding: 0;
+    -fx-text-alignment: center;
+    -fx-border: none;
+}
+
+.dlg-information .alert-dismiss:hover {
+    -fx-background-color: -gp-light-gray;
+    -fx-background-radius: 50%;
+    -fx-effect: none;
 }
 
 .dlg-platform-update .body {

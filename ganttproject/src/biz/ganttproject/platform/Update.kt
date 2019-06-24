@@ -23,6 +23,8 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.sandec.mdfx.MDFXNode
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -174,17 +176,17 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
             val bb = BoxBlur()
             bb.width = 5.0
             bb.height = 5.0
-            bb.iterations = 3
+            bb.iterations = 2
 
             this.effect = bb
           }
           pane.styleClass.add("alert-glasspane")
           val vboxBuilder = VBoxBuilder("alert-box")
-          vboxBuilder.addTitle(i18n.create("alert.title")).also {hbox ->
+          vboxBuilder.addTitle(i18n.create("alert.title")).also { hbox ->
             hbox.alignment = Pos.CENTER_LEFT
             hbox.isFillHeight = true
-            hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS)})
-            val btnClose = Button("x")
+            hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
+            val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
             hbox.children.add(btnClose)
             btnClose.addEventHandler(ActionEvent.ACTION) {
               this.stackPane.children.remove(pane)
