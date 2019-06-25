@@ -23,12 +23,16 @@ import biz.ganttproject.app.DefaultLocalizer
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
+import javafx.geometry.Pos
+import javafx.scene.control.Label
+import javafx.scene.control.ListCell
 import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
-import org.apache.poi.ss.formula.functions.T
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -43,83 +47,16 @@ class RecentProjects(
     private val myCurrentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
-  private val myMode: StorageMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   override val name = "Recent Projects"
   override val category = "desktop"
   override val id = "recent"
-
-  override fun createUi(): Pane {
-//    val i18n = DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER)
-//    val btnSave = Button().also { it.textProperty().bind(i18n.create("${myMode.name}.actionLabel")) }
-//    val state = LocalStorageState(myCurrentDocument, myMode)
-//
-//    val rootPane = VBoxBuilder("pane-service-contents")
-//
-//    val listView = ListView<Path>()
-//    listView.cellFactory = Callback {
-//      object : ListCell<Path>() {
-//        override fun updateItem(item: Path?, empty: Boolean) {
-//          if (item == null) {
-//            text = ""
-//            graphic = null
-//            return
-//          }
-//          super.updateItem(item, empty)
-//          if (empty) {
-//            text = ""
-//            graphic = null
-//            return
-//          }
-//          val pane = StackPane()
-//          pane.minWidth = 0.0
-//          pane.prefWidth = 1.0
-//          val pathLabel = Label(item.parent?.normalize()?.toString() ?: "")
-//          pathLabel.styleClass.add("list-item-path")
-//          val nameLabel = Label(item.fileName.toString())
-//          nameLabel.styleClass.add("list-item-filename")
-//          val labelBox = VBox()
-//          labelBox.children.addAll(pathLabel, nameLabel)
-//          StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
-//          pane.children.add(labelBox)
-//          graphic = pane
-//        }
-//      }
-//    }
-//    listView.items.add(Paths.get(myCurrentDocument.path))
-//    for (doc in myDocumentManager.recentDocuments) {
-//      listView.items.add(Paths.get(doc))
-//    }
-//    val fakeTextField = TextField()
-//    listView.onMouseClicked = EventHandler {
-//      if (listView.selectionModel.selectedItem != null) {
-//        fakeTextField.text = listView.selectionModel.selectedItem.toString()
-//      }
-//    }
-//
-////    val validationHelper = ValidationHelper(fakeTextField,
-////        Supplier { -> listView.items.isEmpty() },
-////        state)
-//    setupSaveButton(btnSave, state, myDocumentReceiver)
-//    btnSave.textProperty().bind(i18n.create("${myMode.name}.actionLabel"))
-////    val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
-////    setupErrorLabel(errorLabel, validationHelper)
-//    rootPane.apply {
-//      vbox.stylesheets.addAll("biz/ganttproject/storage/StorageDialog.css", "biz/ganttproject/storage/RecentProjects.css")
-//      vbox.prefWidth = 400.0
-//      add(listView, alignment = null, growth = Priority.ALWAYS)
-//      add(btnSave, alignment = Pos.BASELINE_RIGHT, growth = null).styleClass.add("doclist-save-box")
-//    }
-//    return rootPane.vbox
-    return createBrowserPane()
-  }
-
 
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
   }
 
-  private fun createBrowserPane(): Pane {
-    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { path, success, loading ->
+  override fun createUi(): Pane {
+    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, _ ->
       loadRecentDocs(success)
     }
 
@@ -144,18 +81,20 @@ class RecentProjects(
     }
 
     val paneElements = builder.apply {
-      withI18N(DefaultLocalizer("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
-      //withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
+      withI18N(DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER))
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
           onLaunch = Consumer { actionButtonHandler.onAction() },
           itemActionFactory = java.util.function.Function {
             Collections.emptyMap()
-          }
+          },
+          cellFactory = { createListCell() }
       )
     }.build()
-    paneElements.browserPane.stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "biz/ganttproject/storage/RecentProjects.css")
+    paneElements.browserPane.stylesheets.addAll(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/RecentProjects.css")
 
     return paneElements.browserPane.also {
       loadRecentDocs(builder.resultConsumer)
@@ -163,6 +102,35 @@ class RecentProjects(
 
   }
 
+  private fun createListCell(): ListCell<ListViewItem<RecentDocAsFolderItem>> {
+    return object : ListCell<ListViewItem<RecentDocAsFolderItem>>() {
+      override fun updateItem(item: ListViewItem<RecentDocAsFolderItem>?, empty: Boolean) {
+        if (item == null) {
+          text = ""
+          graphic = null
+          return
+        }
+        super.updateItem(item, empty)
+        if (empty) {
+          text = ""
+          graphic = null
+          return
+        }
+        val pane = StackPane()
+        pane.minWidth = 0.0
+        pane.prefWidth = 1.0
+        val pathLabel = Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "")
+        pathLabel.styleClass.add("list-item-path")
+        val nameLabel = Label(item.resource.get().docPath.fileName.toString())
+        nameLabel.styleClass.add("list-item-filename")
+        val labelBox = VBox()
+        labelBox.children.addAll(pathLabel, nameLabel)
+        StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
+        pane.children.add(labelBox)
+        graphic = pane
+      }
+    }
+  }
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
     result.add(RecentDocAsFolderItem(Paths.get(myCurrentDocument.path)))

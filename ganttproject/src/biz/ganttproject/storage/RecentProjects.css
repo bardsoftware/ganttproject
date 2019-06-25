@@ -1,7 +1,7 @@
-.list-item-path {
-    -fx-text-fill: grey;
+.list-cell Label.list-item-path {
+    -fx-text-fill: derive(-gp-medium-gray, 10%);
     -fx-font-size: 90%;
 }
-.list-item-filename {
+.list-cell Label.list-item-filename {
     -fx-font-size: 110%;
 }
