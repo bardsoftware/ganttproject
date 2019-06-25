@@ -36,10 +36,11 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.logging.Level
 
+abstract class CloudJsonAsFolderItem : FolderItem
 /**
  * Wraps JSON node matching a team to FolderItem
  */
-class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
+class TeamJsonAsFolderItem(val node: JsonNode) : CloudJsonAsFolderItem() {
   override val isLocked = false
   override val isLockable = false
   override val canChangeLock = false
@@ -48,7 +49,7 @@ class TeamJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isDirectory = true
 }
 
-class ProjectJsonAsFolderItem(val node: JsonNode) : FolderItem {
+class ProjectJsonAsFolderItem(val node: JsonNode) : CloudJsonAsFolderItem() {
   override val canChangeLock: Boolean
     get() {
       return if (!isLocked) isLockable else {
@@ -132,13 +133,13 @@ class GPCloudBrowserPane(
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentConsumer: Consumer<Document>,
     private val documentManager: DocumentManager) {
-  private val loaderService = LoaderService()
+  private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
-  private lateinit var paneElements: BrowserPaneElements
+  private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>
   var controller: GPCloudStorage.Controller? = null
 
   fun createStorageUi(): Pane {
-    val builder = BrowserPaneBuilder(this.mode, this.dialogUi::error) { path, success, loading ->
+    val builder = BrowserPaneBuilder<CloudJsonAsFolderItem>(this.mode, this.dialogUi::error) { path, success, loading ->
       loadTeams(path, success, loading)
     }
 
@@ -234,12 +235,12 @@ class GPCloudBrowserPane(
     this@GPCloudBrowserPane.documentConsumer.accept(document)
   }
 
-  private fun loadTeams(path: Path, setResult: Consumer<ObservableList<FolderItem>>, showMaskPane: Consumer<Boolean>) {
+  private fun <T: CloudJsonAsFolderItem> loadTeams(path: Path, setResult: Consumer<ObservableList<T>>, showMaskPane: Consumer<Boolean>) {
     loaderService.apply {
       busyIndicator = showMaskPane
       this.path = path
       onSucceeded = EventHandler {
-        setResult.accept(value)
+        setResult.accept(value as ObservableList<T>)
         showMaskPane.accept(false)
       }
       onFailed = EventHandler {

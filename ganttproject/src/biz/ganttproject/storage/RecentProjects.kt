@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
+import org.apache.poi.ss.formula.functions.T
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -118,7 +119,7 @@ class RecentProjects(
   }
 
   private fun createBrowserPane(): Pane {
-    val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { path, success, loading ->
+    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { path, success, loading ->
       loadRecentDocs(success)
     }
 
@@ -162,8 +163,8 @@ class RecentProjects(
 
   }
 
-  private fun loadRecentDocs(consumer: Consumer<ObservableList<FolderItem>>) {
-    val result = FXCollections.observableArrayList<FolderItem>()
+  private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
+    val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
     result.add(RecentDocAsFolderItem(Paths.get(myCurrentDocument.path)))
     for (doc in myDocumentManager.recentDocuments) {
       result.add(RecentDocAsFolderItem(Paths.get(doc)))

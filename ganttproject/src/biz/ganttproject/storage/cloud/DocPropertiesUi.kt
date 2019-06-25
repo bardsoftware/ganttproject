@@ -177,7 +177,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   private fun createHistoryPane(): HistoryPaneData {
     val folderView = FolderView(
         exceptionUi = {},
-        cellFactory = this@DocPropertiesUi::createHistoryCell
+        maybeCellFactory = this@DocPropertiesUi::createHistoryCell
     )
     val vboxBuilder = VBoxBuilder("tab-contents", "history-pane").apply {
       addTitle("cloud.historyPane.title")

@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.storage.DocumentUri
-import biz.ganttproject.storage.FolderItem
 import biz.ganttproject.storage.Path
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -84,12 +83,12 @@ class GPCloudException(val status: Int) : Exception()
  */
 
 // Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
-class LoaderService() : Service<ObservableList<FolderItem>>() {
+class LoaderService<T: CloudJsonAsFolderItem> : Service<ObservableList<T>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
   var path: Path = DocumentUri(listOf(), true, "GanttProject Cloud")
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
 
-  override fun createTask(): Task<ObservableList<FolderItem>> {
+  override fun createTask(): Task<ObservableList<T>> {
     if (jsonResult.value == null) {
       return LoaderTask(busyIndicator, this.path, this.jsonResult)
     } else {
@@ -123,22 +122,23 @@ fun filterProjects(teams: List<JsonNode>, filter: Predicate<JsonNode>): List<Jso
 }
 
 // Processes cached response from GP Cloud
-class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
-  override fun call(): ObservableList<FolderItem> {
-    return FXCollections.observableArrayList(
-        when (path.getNameCount()) {
-          0 -> filterTeams(jsonNode.value, Predicate { true }).map(::TeamJsonAsFolderItem)
-          1 -> {
-            filterProjects(
-                filterTeams(jsonNode.value, Predicate { it["name"].asText() == path.getName(0).toString() }),
-                Predicate { true }
-            ).map(::ProjectJsonAsFolderItem)
-          }
-          else -> emptyList()
-        })
+class CachedTask<T: CloudJsonAsFolderItem>(val path: Path, private val jsonNode: Property<JsonNode>) : Task<ObservableList<T>>() {
+  override fun call(): ObservableList<T> {
+    val list: List<CloudJsonAsFolderItem> = when (path.getNameCount()) {
+      0 -> filterTeams(jsonNode.value, Predicate { true }).map(::TeamJsonAsFolderItem)
+      1 -> {
+        filterProjects(
+            filterTeams(jsonNode.value, Predicate { it["name"].asText() == path.getName(0).toString() }),
+            Predicate { true }
+        ).map(::ProjectJsonAsFolderItem)
+      }
+      else -> emptyList()
+    }
+    return FXCollections.observableArrayList(list as List<T>)
+
   }
 
-  fun callPublic(): ObservableList<FolderItem> {
+  fun callPublic(): ObservableList<T> {
     return this.call()
   }
 }
@@ -146,10 +146,11 @@ class CachedTask(val path: Path, private val jsonNode: Property<JsonNode>) : Tas
 class OfflineException(cause: Exception) : RuntimeException(cause)
 
 // Sends HTTP request to GP Cloud and returns a list of teams.
-class LoaderTask(private val busyIndicator: Consumer<Boolean>,
-                 val path: Path,
-                 private val resultStorage: Property<JsonNode>) : Task<ObservableList<FolderItem>>() {
-  override fun call(): ObservableList<FolderItem>? {
+class LoaderTask<T: CloudJsonAsFolderItem>(
+    private val busyIndicator: Consumer<Boolean>,
+    val path: Path,
+    private val resultStorage: Property<JsonNode>) : Task<ObservableList<T>>() {
+  override fun call(): ObservableList<T>? {
     busyIndicator.accept(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClientApache()
@@ -171,7 +172,7 @@ class LoaderTask(private val busyIndicator: Consumer<Boolean>,
       }
       val jsonNode = OBJECT_MAPPER.readTree(jsonBody)
       resultStorage.value = jsonNode
-      CachedTask(this.path, this.resultStorage).callPublic()
+      CachedTask<T>(this.path, this.resultStorage).callPublic()
     } catch (ex: IOException) {
       log.log(Level.SEVERE, "Failed to contact ${http.host}", ex)
       throw GPCloudException(HttpStatus.SC_SERVICE_UNAVAILABLE)

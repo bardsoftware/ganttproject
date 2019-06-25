@@ -57,18 +57,18 @@ import java.util.stream.Stream
  *
  * This function is supposed to run asynchronously in a background task.
  */
-typealias Loader = (path: Path, success: Consumer<ObservableList<FolderItem>>, loading: Consumer<Boolean>) -> Unit
+typealias Loader<T> = (path: Path, success: Consumer<ObservableList<T>>, loading: Consumer<Boolean>) -> Unit
 
 /**
  * This function is called when some action happens on some element, e.g. "select",
  * "delete", "open" or "launch".
  */
-typealias OnItemAction = Consumer<FolderItem>
+typealias OnItemAction<T> = Consumer<T>
 
-typealias ItemActionFactory = Function<FolderItem, Map<String, OnItemAction>>
+typealias ItemActionFactory<T> = Function<FolderItem, Map<String, OnItemAction<T>>>
 
-data class BrowserPaneElements(val breadcrumbView: BreadcrumbView?,
-                               val listView: FolderView<FolderItem>,
+data class BrowserPaneElements<T: FolderItem>(val breadcrumbView: BreadcrumbView?,
+                               val listView: FolderView<T>,
                                val filenameInput: CustomTextField,
                                val browserPane: Pane,
                                val busyIndicator: Consumer<Boolean>,
@@ -81,13 +81,13 @@ data class BrowserPaneElements(val breadcrumbView: BreadcrumbView?,
  *
  * @author dbarashev@bardsoftware.com
  */
-class BrowserPaneBuilder(
+class BrowserPaneBuilder<T: FolderItem>(
     private val mode: StorageDialogBuilder.Mode,
     private val exceptionUi: ExceptionUi,
-    private val loader: Loader) {
+    private val loader: Loader<T>) {
   private val rootPane = VBoxBuilder("pane-service-contents")
 
-  private lateinit var listView: FolderView<FolderItem>
+  private lateinit var listView: FolderView<T>
   private val busyIndicator = StatusBar().apply {
     text = ""
     HBox.setHgrow(this, Priority.ALWAYS)
@@ -103,15 +103,15 @@ class BrowserPaneBuilder(
 
   private var breadcrumbView: BreadcrumbView? = null
   private lateinit var saveBox: HBox
-  private lateinit var onOpenItem: OnItemAction
-  private lateinit var onLaunch: OnItemAction
+  private lateinit var onOpenItem: OnItemAction<T>
+  private lateinit var onLaunch: OnItemAction<T>
   private var validationSupport: ValidationSupport = ValidationSupport()
   private lateinit var i18n: Localizer
 
   val busyIndicatorToggler: Consumer<Boolean>
     get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
 
-  val resultConsumer: Consumer<ObservableList<FolderItem>>
+  val resultConsumer: Consumer<ObservableList<T>>
     get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
 
 
@@ -120,25 +120,26 @@ class BrowserPaneBuilder(
   }
 
   fun withListView(
-      onOpenItem: OnItemAction = Consumer {},
-      onLaunch: OnItemAction = Consumer {},
-      onDelete: OnItemAction = Consumer {},
-      onLock: OnItemAction = Consumer {},
+      onOpenItem: OnItemAction<T> = Consumer {},
+      onLaunch: OnItemAction<T> = Consumer {},
+      onDelete: OnItemAction<T> = Consumer {},
+      onLock: OnItemAction<T> = Consumer {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
-      itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() }) {
+      itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },
+      cellFactory: CellFactory<T>? = null) {
     this.listView = FolderView(
         this.exceptionUi,
         onDelete,
         onLock,
-        canLock, canDelete, itemActionFactory)
+        canLock, canDelete, itemActionFactory, cellFactory)
     this.onOpenItem = onOpenItem
     this.onLaunch = onLaunch
   }
 
   fun withBreadcrumbs(rootPath: Path) {
     val onSelectCrumb = Consumer { path: Path ->
-      loader(path,
+      this.loader(path,
           resultConsumer,
           busyIndicatorToggler
       )
@@ -201,7 +202,7 @@ class BrowserPaneBuilder(
   }
 
   private fun installEventHandlers() {
-    fun selectItem(item: FolderItem, withEnter: Boolean, withControl: Boolean) {
+    fun selectItem(item: T, withEnter: Boolean, withControl: Boolean) {
       when {
         withEnter && item.isDirectory -> {
           breadcrumbView?.append(item.name)
@@ -248,7 +249,7 @@ class BrowserPaneBuilder(
     connect(filename, listView, breadcrumbView, ::selectItem, ::onFilenameEnter)
   }
 
-  fun build(): BrowserPaneElements {
+  fun build(): BrowserPaneElements<T> {
     installEventHandlers()
     rootPane.apply {
       vbox.prefWidth = 400.0

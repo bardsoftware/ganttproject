@@ -71,16 +71,16 @@ class LocalStorage(
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private val i18n = GanttLanguage.getInstance()
   private val myUtil = StorageUtil(myMode)
-  private lateinit var paneElements: BrowserPaneElements
+  private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
   private lateinit var state: LocalStorageState
 
 
   override val name = "This Computer"
   override val category = "desktop"
 
-  private fun loadFiles(path: Path, success: Consumer<ObservableList<FolderItem>>, state: LocalStorageState) {
+  private fun loadFiles(path: Path, success: Consumer<ObservableList<FileAsFolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.toFile(path)
-    val result = FXCollections.observableArrayList<FolderItem>()
+    val result = FXCollections.observableArrayList<FileAsFolderItem>()
     dir.listFiles().filter { !it.name.startsWith(".") }.map { f -> FileAsFolderItem(f) }.sorted().forEach { result.add(it) }
     success.accept(result)
     state.currentDir.set(dir)
@@ -110,7 +110,7 @@ class LocalStorage(
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.state = LocalStorageState(currentDocument, myMode)
 
-    val builder = BrowserPaneBuilder(this.mode, myDialogUi::error) { path, success, loading ->
+    val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, loading ->
       loadFiles(path, success, state)
     }
     val actionButtonHandler = object {

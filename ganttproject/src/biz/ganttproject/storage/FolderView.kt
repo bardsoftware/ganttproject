@@ -51,8 +51,9 @@ interface FolderItem {
 
 private val unsupported = SimpleBooleanProperty(false)
 
-private typealias CellFactory<T> = () -> ListCell<ListViewItem<T>>
+typealias CellFactory<R> = () -> ListCell<ListViewItem<R>>
 typealias ExceptionUi = (Exception) -> Unit
+
 /**
  * Encapsulates a list view showing the contents of a single folder.
  */
@@ -62,11 +63,12 @@ class FolderView<T : FolderItem>(
     onToggleLockResource: Consumer<T> = Consumer {  },
     isLockingSupported: BooleanProperty = unsupported,
     isDeleteSupported: ReadOnlyBooleanProperty = unsupported,
-    private val itemActionFactory: ItemActionFactory = Function { Collections.emptyMap() },
-    private val cellFactory: CellFactory<T> = {
-      createListCell(exceptionUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, itemActionFactory)
-    }) {
+    private val itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },
+    maybeCellFactory: CellFactory<T>? = null) {
 
+  private val cellFactory: CellFactory<T> = maybeCellFactory ?: {
+    createListCell(exceptionUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, itemActionFactory)
+  }
   var document: OnlineDocument? = null
   var myContents: ObservableList<T> = FXCollections.observableArrayList()
   val listView: ListView<ListViewItem<T>> = ListView()
@@ -164,7 +166,7 @@ fun <T : FolderItem> createListCell(
     onToggleLockResource: Consumer<T>,
     isLockingSupported: BooleanProperty,
     isDeleteSupported: ReadOnlyBooleanProperty,
-    itemActionFactory: ItemActionFactory): ListCell<ListViewItem<T>> {
+    itemActionFactory: ItemActionFactory<T>): ListCell<ListViewItem<T>> {
   return object : ListCell<ListViewItem<T>>() {
     override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
       try {
