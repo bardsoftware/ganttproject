@@ -21,6 +21,7 @@
         <import plugin="biz.ganttproject.core"/>
         <import plugin="biz.ganttproject.app.libs"/>
     </requires>
+    <extension-point id="l10n" name="LocalizationBundle"/>
     <extension-point id="exporter" name="Exporter"/>
     <extension-point id="importer" name="Importer"/>
     <extension-point id="chart" name="Chart"/>
@@ -31,6 +32,9 @@
         <application>
             <run class="net.sourceforge.ganttproject.application.MainApplication"/>
         </application>
+    </extension>
+    <extension point="net.sourceforge.ganttproject.l10n">
+        <bundle path="language/i18n"/>
     </extension>
     <extension point="net.sourceforge.ganttproject.exporter">
         <exporter class="net.sourceforge.ganttproject.export.ExporterToImage"/>

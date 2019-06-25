@@ -19,7 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.language;
 
-import java.awt.ComponentOrientation;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.time.CalendarFactory;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.util.PropertiesUtil;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
+
+import javax.swing.*;
+import java.awt.*;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.MessageFormat;
@@ -41,13 +50,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
-
-import javax.swing.UIManager;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.util.PropertiesUtil;
-import biz.ganttproject.core.option.GPAbstractOption;
-import biz.ganttproject.core.time.CalendarFactory;
 
 /**
  * Class for the language
@@ -194,8 +196,22 @@ public class GanttLanguage {
   }
 
   private static ResourceBundle getResourceBundle(Locale locale) {
-    String resourceBase = System.getProperty("org.ganttproject.resourcebase", "language/i18n");
-    return ResourceBundle.getBundle(resourceBase, locale);
+    IConfigurationElement[] l10nExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor("net.sourceforge.ganttproject.l10n");
+    List<ResourceBundle> bundles = new ArrayList<>();
+    for (IConfigurationElement l10nConfig : l10nExtensions) {
+      String path = l10nConfig.getAttribute("path");
+      Bundle pluginBundle = Platform.getBundle(l10nConfig.getDeclaringExtension().getNamespaceIdentifier());
+      assert (pluginBundle != null) : "Can't find plugin bundle for extension=" + l10nConfig.getName();
+      try {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.getBundleClassLoader());
+        bundles.add(resourceBundle);
+      } catch (MissingResourceException ex) {
+        ex.printStackTrace();
+        GPLogger.logToLogger(String.format("Can't find bundle: path=%s locale=%s plugin bundle=%s", path, locale, pluginBundle));
+      }
+    }
+    assert bundles.isEmpty() == false : "Can't find any resource bundles";
+    return bundles.get(0);
   }
 
   private Locale getDateFormatLocale(Locale baseLocale) {
