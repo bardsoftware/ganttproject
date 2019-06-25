@@ -47,7 +47,7 @@ class RecentProjects(
     private val myCurrentDocument: Document,
     private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
 
-  override val name = "Recent Projects"
+  override val name = i18n.formatText("listLabel")
   override val category = "desktop"
   override val id = "recent"
 
@@ -81,7 +81,7 @@ class RecentProjects(
     }
 
     val paneElements = builder.apply {
-      withI18N(DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER))
+      withI18N(i18n)
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
@@ -158,3 +158,4 @@ class RecentDocAsFolderItem(val docPath: Path) : FolderItem, Comparable<RecentDo
   override val isDirectory: Boolean = false
 }
 
+private val i18n = DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER)
