@@ -19,36 +19,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.language;
 
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 
 import javax.swing.*;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.FieldPosition;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -68,14 +59,6 @@ public class GanttLanguage {
   public interface Listener extends EventListener {
     public void languageChanged(Event event);
   }
-
-  public static Comparator<Locale> LEXICOGRAPHICAL_LOCALE_COMPARATOR = new Comparator<Locale>() {
-    @Override
-    public int compare(Locale o1, Locale o2) {
-      return (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(o2.getDisplayLanguage(Locale.US)
-          + o2.getDisplayCountry(Locale.US));
-    }
-  };
 
   private static class CalendarFactoryImpl extends CalendarFactory implements CalendarFactory.LocaleApi {
     static void setLocaleImpl() {
@@ -102,8 +85,6 @@ public class GanttLanguage {
   private Locale currentLocale = null;
 
   private final CharSetMap myCharSetMap;
-
-  private ResourceBundle i18n = null;
 
   private SimpleDateFormat currentDateFormat = null;
 
@@ -191,34 +172,8 @@ public class GanttLanguage {
     TimeZone.setDefault(utc);
 
     applyDateFormatLocale(getDateFormatLocale(locale));
-    i18n = getResourceBundle(locale, true);
-    System.err.println("Setting locale="+locale);
-    System.err.println("Bundle="+i18n);
+    InternationalizationKt.setLocale(locale);
     fireLanguageChanged();
-  }
-
-  private static ResourceBundle getResourceBundle(Locale locale, boolean withFallback) {
-    IConfigurationElement[] l10nExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor("net.sourceforge.ganttproject.l10n");
-    List<ResourceBundle> bundles = new ArrayList<>();
-    for (IConfigurationElement l10nConfig : l10nExtensions) {
-      String path = l10nConfig.getAttribute("path");
-      Bundle pluginBundle = Platform.getBundle(l10nConfig.getDeclaringExtension().getNamespaceIdentifier());
-      assert (pluginBundle != null) : "Can't find plugin bundle for extension=" + l10nConfig.getName();
-      try {
-        ResourceBundle.Control control = withFallback
-            ? ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)
-            : ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES);
-        ResourceBundle resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.getBundleClassLoader(), control);
-        if (withFallback || resourceBundle.getLocale().equals(locale)) {
-          bundles.add(resourceBundle);
-        } else {
-          System.err.println("found bundle with locale="+resourceBundle.getLocale());
-        }
-      } catch (MissingResourceException ex) {
-        GPLogger.logToLogger(String.format("Can't find bundle: path=%s locale=%s plugin bundle=%s", path, locale, pluginBundle));
-      }
-    }
-    return bundles.isEmpty() ? null : bundles.get(0);
   }
 
   private Locale getDateFormatLocale(Locale baseLocale) {
@@ -230,52 +185,7 @@ public class GanttLanguage {
   }
 
   public List<Locale> getAvailableLocales() {
-    Set<Locale> removeLangOnly = new HashSet<>();
-    Set<Locale> result = new HashSet<>();
-    for (Locale l : Locale.getAvailableLocales()) {
-      //System.err.println("Locale " + l);
-      if (l.getLanguage().isEmpty()) {
-        continue;
-      }
-      if (getResourceBundle(l, false) != null) {
-        if (!l.getCountry().isEmpty()) {
-          removeLangOnly.add(new Locale(l.getLanguage()));
-        }
-        result.add(new Locale(l.getLanguage(), l.getCountry()));
-        //System.err.println("We have resource bundle for (lang,country). Adding locale="+l);
-      } else {
-        Locale langOnly = new Locale(l.getLanguage());
-        //System.err.println("We have no resource bundle for locale="+l);
-        //System.err.println("Lets try locale="+langOnly);
-        if (getResourceBundle(langOnly, false) != null) {
-          //System.err.println("Yes, we have locale=" + langOnly);
-          result.add(langOnly);
-        } else {
-          //System.err.println("Locale=" + langOnly + "not found either");
-        }
-      }
-    }
-
-    String[] locales = myExtraLocales.getProperty("_").split(",");
-    for (String l : locales) {
-      if (!myExtraLocales.containsKey(l + ".lang")) {
-        continue;
-      }
-      String langCode = myExtraLocales.getProperty(l + ".lang");
-      String countryCode = myExtraLocales.getProperty(l + ".country", "");
-      String regionCode = myExtraLocales.getProperty(l + ".region", "");
-      Locale locale = new Locale(langCode, countryCode, regionCode);
-      result.add(locale);
-    }
-
-    result.removeAll(removeLangOnly);
-    result.add(Locale.ENGLISH);
-
-    List<Locale> result1 = new ArrayList<Locale>(result);
-    Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR);
-
-    System.err.println("\n\n\nAvailable locales:\n" + result1);
-    return result1;
+    return InternationalizationKt.getAvailableTranslations();
   }
 
   public String formatLanguageAndCountry(Locale locale) {
@@ -359,17 +269,9 @@ public class GanttLanguage {
     return null;
   }
 
-  public String getMonth(int m) {
-    GregorianCalendar month = new GregorianCalendar(2000, m, 1);
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM", myDateFormatLocale);
-    StringBuffer result = new StringBuffer();
-    result = dateFormat.format(month.getTime(), result, new FieldPosition(DateFormat.MONTH_FIELD));
-    return result.toString();
-  }
-
   private static List<String> getShortDayNames(Locale locale) {
     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE", locale);
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
     for (int i = 0; i < 7; i++) {
       GregorianCalendar day = new GregorianCalendar(2000, 1, 1);
       while (day.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
@@ -386,19 +288,7 @@ public class GanttLanguage {
 
   /** @return the text in the current language for the given key */
   public String getText(String key) {
-    try {
-      return i18n == null ? key : i18n.getString(key);
-    } catch (MissingResourceException e) {
-      return null;
-    }
-  }
-
-  public String getText(String key, Locale locale) {
-    try {
-      return getResourceBundle(locale, true).getString(key);
-    } catch (MissingResourceException e) {
-      return getText(key);
-    }
+    return InternationalizationKt.getRootLocalizer().formatTextOrNull(key);
   }
 
   /**
@@ -416,10 +306,6 @@ public class GanttLanguage {
 
   public void addListener(Listener listener) {
     myListeners.add(listener);
-  }
-
-  public void removeListener(Listener listener) {
-    myListeners.remove(listener);
   }
 
   private void fireLanguageChanged() {
@@ -448,7 +334,6 @@ public class GanttLanguage {
   }
 
   public String formatText(String key, Object... values) {
-    String message = getText(key);
-    return message == null ? key : MessageFormat.format(message, values);
+    return InternationalizationKt.getRootLocalizer().formatText(key, values);
   }
 }

@@ -20,8 +20,11 @@ package biz.ganttproject.app
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
-import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.util.PropertiesUtil
+import org.eclipse.core.runtime.Platform
 import java.text.MessageFormat
+import java.util.*
 
 class LocalizedString(
     private val key: String,
@@ -44,6 +47,7 @@ class LocalizedString(
 interface Localizer {
   fun create(key: String): LocalizedString
   fun formatText(key: String, vararg args: Any): String
+  fun formatTextOrNull(key: String, vararg args: Any): String?
 }
 
 object DummyLocalizer : Localizer {
@@ -55,6 +59,10 @@ object DummyLocalizer : Localizer {
     return key
   }
 
+  override fun formatTextOrNull(key: String, vararg args: Any): String? {
+    return null
+  }
+
 }
 
 /**
@@ -64,19 +72,104 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   override fun create(key: String): LocalizedString = LocalizedString(key, this)
 
   override fun formatText(key: String, vararg args: Any): String {
-    val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
-    return if (hasKey(key1)) {
-      val message = GanttLanguage.getInstance().getText(key1)
-      return if (message == null) key1 else MessageFormat.format(message, *args)
+    return formatTextOrNull(key, args) ?: key
+  }
 
-    } else {
-      this.fallbackLocalizer.formatText(key, args)
+  override fun formatTextOrNull(key: String, vararg args: Any): String? {
+    val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
+    return try {
+      currentTranslation?.getString(key1)?.let { MessageFormat.format(it, *args) }
+          ?: this.fallbackLocalizer.formatText(key, args)
+    } catch (ex: MissingResourceException) {
+      null
     }
   }
 
   fun hasKey(key: String): Boolean {
-    return GanttLanguage.getInstance().getText(key) != null
+    return currentTranslation?.getString(key) != null
   }
 }
 
 val RootLocalizer = DefaultLocalizer()
+
+private var currentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
+fun setLocale(locale: Locale) {
+  currentTranslation = getResourceBundle(locale, true)
+  println("Current translation =${currentTranslation?.locale}")
+}
+
+private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {
+  return Platform.getExtensionRegistry().getConfigurationElementsFor("net.sourceforge.ganttproject.l10n")
+      .mapNotNull { l10nConfig ->
+        val path = l10nConfig.getAttribute("path")
+        val pluginBundle = Platform.getBundle(l10nConfig.declaringExtension.namespaceIdentifier)
+            ?: error("Can't find plugin bundle for extension=" + l10nConfig.name)
+        try {
+          val control = if (withFallback)
+            ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)
+          else
+            ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES)
+          val resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.bundleClassLoader, control)
+          if (withFallback || resourceBundle.locale == locale) {
+            resourceBundle
+          } else {
+            null
+          }
+        } catch (ex: MissingResourceException) {
+          GPLogger.logToLogger(String.format("Can't find bundle: path=%s locale=%s plugin bundle=%s", path, locale, pluginBundle))
+          null
+        }
+      }
+      .firstOrNull()
+}
+
+private val extraLocales = Properties().also {
+  PropertiesUtil.loadProperties(it, "/language/extra.properties")
+}
+
+private val LEXICOGRAPHICAL_LOCALE_COMPARATOR: Comparator<Locale> = Comparator { o1, o2 ->
+  (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
+      o2.getDisplayLanguage(Locale.US) + o2.getDisplayCountry(Locale.US)
+  )
+}
+
+fun getAvailableTranslations(): List<Locale> {
+  val removeLangOnly = HashSet<Locale>()
+  val result = HashSet<Locale>()
+  for (l in Locale.getAvailableLocales()) {
+    if (l.language.isEmpty()) {
+      continue
+    }
+    if (getResourceBundle(l, false) != null) {
+      if (l.country.isNotEmpty()) {
+        removeLangOnly.add(Locale(l.language))
+      }
+      result.add(Locale(l.language, l.country))
+    } else {
+      val langOnly = Locale(l.language)
+      if (getResourceBundle(langOnly, false) != null) {
+        result.add(langOnly)
+      }
+    }
+  }
+
+  val locales = extraLocales.getProperty("_").split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+  for (l in locales) {
+    if (!extraLocales.containsKey("$l.lang")) {
+      continue
+    }
+    val langCode = extraLocales.getProperty("$l.lang")
+    val countryCode = extraLocales.getProperty("$l.country", "")
+    val regionCode = extraLocales.getProperty("$l.region", "")
+    val locale = Locale(langCode, countryCode, regionCode)
+    result.add(locale)
+  }
+
+  result.removeAll(removeLangOnly)
+  result.add(Locale.ENGLISH)
+
+  val result1 = ArrayList(result)
+  Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR)
+  return result1
+}
+
