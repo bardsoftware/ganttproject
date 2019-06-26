@@ -1,2 +1,2 @@
 rootProject.name = 'GanttProject'
-include 'biz.ganttproject.app.libs', 'ganttproject','biz.ganttproject.core','biz.ganttproject.impex.ical','biz.ganttproject.impex.msproject2','org.ganttproject.impex.htmlpdf','org.ganttproject.chart.pert','ganttproject-tester','ganttproject-builder'
+include 'biz.ganttproject.app.libs', 'biz.ganttproject.app.localization', 'ganttproject','biz.ganttproject.core','biz.ganttproject.impex.ical','biz.ganttproject.impex.msproject2','org.ganttproject.impex.htmlpdf','org.ganttproject.chart.pert','ganttproject-tester','ganttproject-builder'

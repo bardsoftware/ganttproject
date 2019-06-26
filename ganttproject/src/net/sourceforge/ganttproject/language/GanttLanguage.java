@@ -191,11 +191,13 @@ public class GanttLanguage {
     TimeZone.setDefault(utc);
 
     applyDateFormatLocale(getDateFormatLocale(locale));
-    i18n = getResourceBundle(locale);
+    i18n = getResourceBundle(locale, true);
+    System.err.println("Setting locale="+locale);
+    System.err.println("Bundle="+i18n);
     fireLanguageChanged();
   }
 
-  private static ResourceBundle getResourceBundle(Locale locale) {
+  private static ResourceBundle getResourceBundle(Locale locale, boolean withFallback) {
     IConfigurationElement[] l10nExtensions = Platform.getExtensionRegistry().getConfigurationElementsFor("net.sourceforge.ganttproject.l10n");
     List<ResourceBundle> bundles = new ArrayList<>();
     for (IConfigurationElement l10nConfig : l10nExtensions) {
@@ -203,15 +205,20 @@ public class GanttLanguage {
       Bundle pluginBundle = Platform.getBundle(l10nConfig.getDeclaringExtension().getNamespaceIdentifier());
       assert (pluginBundle != null) : "Can't find plugin bundle for extension=" + l10nConfig.getName();
       try {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.getBundleClassLoader());
-        bundles.add(resourceBundle);
+        ResourceBundle.Control control = withFallback
+            ? ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)
+            : ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES);
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.getBundleClassLoader(), control);
+        if (withFallback || resourceBundle.getLocale().equals(locale)) {
+          bundles.add(resourceBundle);
+        } else {
+          System.err.println("found bundle with locale="+resourceBundle.getLocale());
+        }
       } catch (MissingResourceException ex) {
-        ex.printStackTrace();
         GPLogger.logToLogger(String.format("Can't find bundle: path=%s locale=%s plugin bundle=%s", path, locale, pluginBundle));
       }
     }
-    assert bundles.isEmpty() == false : "Can't find any resource bundles";
-    return bundles.get(0);
+    return bundles.isEmpty() ? null : bundles.get(0);
   }
 
   private Locale getDateFormatLocale(Locale baseLocale) {
@@ -223,14 +230,29 @@ public class GanttLanguage {
   }
 
   public List<Locale> getAvailableLocales() {
-    Set<Locale> removeLangOnly = new HashSet<Locale>();
-    Set<Locale> result = new HashSet<Locale>();
+    Set<Locale> removeLangOnly = new HashSet<>();
+    Set<Locale> result = new HashSet<>();
     for (Locale l : Locale.getAvailableLocales()) {
-      if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + "_" + l.getCountry() + ".properties") != null) {
-        removeLangOnly.add(new Locale(l.getLanguage()));
+      //System.err.println("Locale " + l);
+      if (l.getLanguage().isEmpty()) {
+        continue;
+      }
+      if (getResourceBundle(l, false) != null) {
+        if (!l.getCountry().isEmpty()) {
+          removeLangOnly.add(new Locale(l.getLanguage()));
+        }
         result.add(new Locale(l.getLanguage(), l.getCountry()));
-      } else if (GanttLanguage.class.getResource("/language/i18n_" + l.getLanguage() + ".properties") != null) {
-        result.add(new Locale(l.getLanguage()));
+        //System.err.println("We have resource bundle for (lang,country). Adding locale="+l);
+      } else {
+        Locale langOnly = new Locale(l.getLanguage());
+        //System.err.println("We have no resource bundle for locale="+l);
+        //System.err.println("Lets try locale="+langOnly);
+        if (getResourceBundle(langOnly, false) != null) {
+          //System.err.println("Yes, we have locale=" + langOnly);
+          result.add(langOnly);
+        } else {
+          //System.err.println("Locale=" + langOnly + "not found either");
+        }
       }
     }
 
@@ -251,6 +273,8 @@ public class GanttLanguage {
 
     List<Locale> result1 = new ArrayList<Locale>(result);
     Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR);
+
+    System.err.println("\n\n\nAvailable locales:\n" + result1);
     return result1;
   }
 
@@ -363,7 +387,7 @@ public class GanttLanguage {
   /** @return the text in the current language for the given key */
   public String getText(String key) {
     try {
-      return i18n.getString(key);
+      return i18n == null ? key : i18n.getString(key);
     } catch (MissingResourceException e) {
       return null;
     }
@@ -371,7 +395,7 @@ public class GanttLanguage {
 
   public String getText(String key, Locale locale) {
     try {
-      return getResourceBundle(locale).getString(key);
+      return getResourceBundle(locale, true).getString(key);
     } catch (MissingResourceException e) {
       return getText(key);
     }
@@ -380,8 +404,6 @@ public class GanttLanguage {
   /**
    * @return the text suitable for labels in the current language for the given
    *         key (all $ characters are removed from the original text)
-   * @see #GanttLagetText()
-   * @see #correctLabel()
    */
   public String getCorrectedLabel(String key) {
     String label = getText(key);
