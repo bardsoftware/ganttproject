@@ -19,13 +19,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.platform
 
 import biz.ganttproject.app.*
+import biz.ganttproject.core.option.DefaultStringOption
+import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
+import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.ButtonBar
+import javafx.scene.control.ButtonType
+import javafx.scene.control.Label
+import javafx.scene.control.ScrollPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -38,9 +45,14 @@ import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 
-fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade) {
-  val dlg = UpdateDialog(updates, uiFacade)
-  dialog(dlg::addContent)
+fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
+  val latestShownUpdateMetadata = UpdateMetadata(UpdateOptions.latestShownVersion.value, null, null, null, 0)
+  val filteredUpdates = updates
+      .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
+  if (filteredUpdates.isNotEmpty()) {
+    val dlg = UpdateDialog(filteredUpdates, uiFacade)
+    dialog(dlg::addContent)
+  }
 }
 
 /**
@@ -52,16 +64,17 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
 
   fun createPane(): Node {
     val bodyBuilder = VBoxBuilder()
-    this.updates.map {
-      UpdateComponentUi(it).also { ui ->
-        version2ui[it.version] = ui
-      }
-    }.forEach {
-      bodyBuilder.add(it.title)
-      bodyBuilder.add(it.subtitle)
-      bodyBuilder.add(it.text)
-      bodyBuilder.add(it.progress)
-    }
+    this.updates
+        .map {
+          UpdateComponentUi(it).also { ui ->
+            version2ui[it.version] = ui
+          }
+        }.forEach {
+          bodyBuilder.add(it.title)
+          bodyBuilder.add(it.subtitle)
+          bodyBuilder.add(it.text)
+          bodyBuilder.add(it.progress)
+        }
     return ScrollPane(bodyBuilder.vbox).also {
       it.styleClass.add("body")
       it.isFitToWidth = true
@@ -85,6 +98,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
       this.styleClass.add("help")
     })
 
+    val downloadCompleted = SimpleBooleanProperty(false)
     dialogApi.setHeader(vboxBuilder.vbox)
     dialogApi.setupButton(ButtonType.APPLY) { btn ->
       ButtonBar.setButtonUniformSize(btn, false)
@@ -96,12 +110,29 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
           onRestart()
         } else {
           event.consume()
-          onDownload(btn)
+          btn.disableProperty().set(true)
+          onDownload(downloadCompleted)
+        }
+      }
+      downloadCompleted.addListener { _, _, newValue ->
+        if (newValue) {
+          btn.disableProperty().set(false)
+          btn.text = i18n.formatText("restart")
+          btn.properties["restart"] = true
         }
       }
     }
     dialogApi.setupButton(ButtonType.CLOSE) { btn ->
       btn.styleClass.add("btn")
+      btn.text = i18n.formatText("button.close_skip")
+      btn.addEventFilter(ActionEvent.ACTION) {
+        UpdateOptions.latestShownVersion.value = this.updates.first().version
+      }
+      downloadCompleted.addListener { _, _, newValue ->
+        if (newValue) {
+          btn.text = i18n.formatText("close")
+        }
+      }
     }
     dialogApi.setContent(this.createPane())
   }
@@ -112,8 +143,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
     }
   }
 
-  private fun onDownload(btn: Button) {
-    btn.disableProperty().set(true)
+  private fun onDownload(completed: SimpleBooleanProperty) {
     var installFuture: CompletableFuture<File>? = null
     for (update in updates.reversed()) {
       val progressMonitor: (Int) -> Unit = { percents: Int ->
@@ -125,9 +155,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
     }
     installFuture?.thenAccept {
       GlobalScope.launch(Dispatchers.Main) {
-        btn.disableProperty().set(false)
-        btn.text = i18n.formatText("platform.update.restart")
-        btn.properties["restart"] = true
+        completed.value = true
       }
     }?.exceptionally { ex ->
       GPLogger.logToLogger(ex)
@@ -193,3 +221,9 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
 }
 
 private val i18n = DefaultLocalizer("platform.update", RootLocalizer)
+
+object UpdateOptions {
+  val latestShownVersion = DefaultStringOption("latestShownVersion")
+  val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", UpdateOptions.latestShownVersion)
+
+}

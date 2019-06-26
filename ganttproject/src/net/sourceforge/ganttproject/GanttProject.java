@@ -30,6 +30,7 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.JCommander;
@@ -284,6 +285,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(GPCloudOptions.INSTANCE.getOptionGroup());
     options.addOptions(getRssFeedChecker().getOptions());
+    options.addOptions(UpdateOptions.INSTANCE.getOptionGroup());
 
     System.err.println("2. loading options");
     initOptions();
