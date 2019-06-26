@@ -72,7 +72,7 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   override fun create(key: String): LocalizedString = LocalizedString(key, this)
 
   override fun formatText(key: String, vararg args: Any): String {
-    return formatTextOrNull(key, args) ?: key
+    return formatTextOrNull(key, *args) ?: key
   }
 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
