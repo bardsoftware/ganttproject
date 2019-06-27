@@ -10,11 +10,8 @@ pool:
   vmImage: 'vs2017-win2016'
 
 steps:
-  - task: BatchScript@1
-    inputs:
-      filename: git
-      workingFolder: ''
-      arguments: submodule update --init
+  - checkout: self
+    submodules: true
 
   - task: Gradle@2
     inputs:
