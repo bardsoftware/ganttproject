@@ -41,6 +41,7 @@ task build(dependsOn: installJavafxJmods) {
         } else if (project.ext.currentOs.isWindows()) {
             exec {
                 workingDir '.'
+                environment("PWD", System.getProperty("user.dir"))
                 commandLine 'build-bin\\package-win.bat', 'build', 'ganttproject-builder\\dist-bin', '2.99.0', 'build\\javafx-jmods-11.0.2'
             }
         } else if (project.ext.currentOs.isMacOsX()) {

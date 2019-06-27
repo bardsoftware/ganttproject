@@ -7,10 +7,13 @@ INPUT=${2}
 VERSION=${3}
 JAVAFX_MODS_PATH=${4}
 
-JLINK=jlink
 MODULE_PATH=${JAVAFX_MODS_PATH}
+JLINK=jlink
 
-
+if [[ -z "$JAVA_HOME" ]]; then
+  REAL_JAVA=$(python -c "import os; print(os.path.realpath('/usr/bin/java'))")
+  JLINK="$(dirname $REAL_JAVA)/jlink"
+fi
 rm -rf "${OUTPUT}/runtime"
 
 echo "Building Java Runtime"

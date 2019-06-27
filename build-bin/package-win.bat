@@ -11,14 +11,14 @@ set JAVAFX_MODS_PATH=%4
   --strip-debug ^
   --compress=2
 
-dir "C:\Program Files\Java"
-dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64"
-dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin"
+C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java --list-modules
+dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods"
 
-"build\runtime\bin\java" -version
-"build\runtime\bin\java" --list-modules
+build\runtime\bin\java -version
+build\runtime\bin\java --list-modules
 
-SET JAVA_HOME="build\runtime"
+SET JAVA_HOME="%PWD%\build\runtime"
+echo %JAVA_HOME%
 cp build-bin\win\jpackager.exe build\runtime\bin
 
 "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java.exe" --module-path "build-bin\win" ^
