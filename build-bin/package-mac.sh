@@ -5,10 +5,9 @@ set -e
 OUTPUT=${1}
 INPUT=${2}
 VERSION=${3}
-JAVAFX_MODS_PATH=${4}
 
 JLINK=${JAVA_HOME}/bin/jlink
-MODULE_PATH=${JAVA_HOME}/jmods:${JAVAFX_MODS_PATH}
+MODULE_PATH=${JAVA_HOME}/jmods
 
 rm -rf "${OUTPUT}/runtime"
 
@@ -28,12 +27,11 @@ ${OUTPUT}/runtime/bin/java --list-modules
 # We remove JavaFX jars from the binary distro because they will be in the runtime
 find "${INPUT}" -name 'javafx*.jar' -delete
 
-# Now we build DEB and RPM packages
 echo "Building packages"
-java --module-path build-bin/lin \
+java --module-path build-bin/mac/ \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
   -m jdk.packager/jdk.packager.Main \
-  create-installer  \
+  create-image  \
   --verbose \
   --echo-mode \
   --input "${INPUT}" \
@@ -42,15 +40,11 @@ java --module-path build-bin/lin \
   --main-jar eclipsito.jar \
   --class com.bardsoftware.eclipsito.Launch \
   --version ${VERSION} \
-  --file-associations build-cfg/file-associations.properties \
-  --icon build-cfg/ganttproject.png \
+  --jvm-args "-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xmx512m -ea -Dfile.encoding=UTF-8" \
   --arguments "--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject" \
-  --identifier biz.ganttproject \
-  --description "Free desktop project scheduling and project management application" \
+  --identifier com.bardsoftware.ganttproject \
+  --icon build-cfg/ganttproject.icns \
   --category "Office" \
   --copyright "Copyright 2019 BarD Software s.r.o" \
-  --vendor "BarD Software s.r.o" \
-  --license-file LICENSE \
-  --linux-deb-maintainer "Dmitry Barashev, BarD Software s.r.o" \
-  --linux-bundle-name "ganttproject" \
-  --runtime-image "${OUTPUT}/runtime"
+  --runtime-image "${OUTPUT}/runtime" \
+  --mac-bundle-identifier com.bardsoftware.ganttproject
