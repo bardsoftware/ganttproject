@@ -5,12 +5,11 @@ set -e
 OUTPUT=${1}
 INPUT=${2}
 VERSION=${3}
+JAVAFX_MODS_PATH=${4}
 
-if [[ -z "$JAVA_HOME" ]]; then
-  JAVA_HOME="$(dirname $(dirname $(which java)))"
-fi
-JLINK=${JAVA_HOME}/bin/jlink
-MODULE_PATH=${JAVA_HOME}/jmods
+JLINK=jlink
+MODULE_PATH=${JAVAFX_MODS_PATH}
+
 
 rm -rf "${OUTPUT}/runtime"
 

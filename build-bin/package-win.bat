@@ -21,7 +21,7 @@ dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin"
 SET JAVA_HOME="build\runtime"
 cp build-bin\win\jpackager.exe build\runtime\bin
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin" --module-path "build-bin\win" ^
+"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java.exe" --module-path "build-bin\win" ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
   create-installer ^
