@@ -12,7 +12,7 @@ JLINK=jlink
 
 if [[ -z "$JAVA_HOME" ]]; then
   REAL_JAVA=$(python -c "import os; print(os.path.realpath('/usr/bin/java'))")
-  ls -l  /System/Library/Frameworks/JavaVM.framework/Versions/A/Commands/
+  ls -l "$(dirname $REAL_JAVA)"
   JLINK="$(dirname $REAL_JAVA)/jlink"
 fi
 rm -rf "${OUTPUT}/runtime"
