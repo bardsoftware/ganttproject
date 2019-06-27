@@ -15,10 +15,13 @@ dir "C:\Program Files\Java"
 dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64"
 dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin"
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" -version
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" --list-modules
+"build\runtime\bin\java" -version
+"build\runtime\bin\java" --list-modules
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" --module-path build-bin\win ^
+SET JAVA_HOME="build\runtime"
+cp build-bin\win\jpackager.exe build\runtime\bin
+
+"build\runtime\bin\java" --module-path build-bin\win ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
   create-installer ^
