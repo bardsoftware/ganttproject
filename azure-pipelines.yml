@@ -29,7 +29,8 @@ steps:
     inputs:
       workingDirectory: ''
       gradleWrapperFile: 'gradlew.bat'
-      gradleOptions: '-Xmx3072m -b package.gradle'
+      gradleOptions: '-Xmx3072m'
+      options: '-b package.gradle'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.11'
       jdkArchitectureOption: 'x64'
