@@ -11,7 +11,7 @@ set JAVAFX_MODS_PATH=%4
   --strip-debug ^
   --compress=2
 
-C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java --list-modules
+"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" --list-modules
 dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods"
 
 build\runtime\bin\java -version
@@ -21,7 +21,8 @@ SET JAVA_HOME="%PWD%\build\runtime"
 echo %JAVA_HOME%
 cp build-bin\win\jpackager.exe build\runtime\bin
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java.exe" --module-path "build-bin\win" ^
+"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java.exe" --module-path "build-bin\win;C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods\" ^
+  --add-modules jdk.jlink ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
   create-installer ^
