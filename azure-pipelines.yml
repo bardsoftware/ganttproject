@@ -10,10 +10,16 @@ pool:
   vmImage: 'vs2017-win2016'
 
 steps:
+  - task: BatchScript@1
+    inputs:
+      filename: git
+      workingFolder: ''
+      arguments: submodule update --init
+
   - task: Gradle@2
     inputs:
       workingDirectory: ''
-      gradleWrapperFile: 'gradlew'
+      gradleWrapperFile: 'gradlew.bat'
       gradleOptions: '-Xmx3072m'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.11'
@@ -22,9 +28,14 @@ steps:
       testResultsFiles: '**/TEST-*.xml'
       tasks: 'distbin'
 
-  - task: BatchScript@1
+  - task: Gradle@2
     inputs:
-      filename: build-bin/package-win.bat
-      workingFolder: ''
-      arguments: build ganttproject-builder\dist-bin 2.99.0
+      workingDirectory: ''
+      gradleWrapperFile: 'gradlew.bat'
+      gradleOptions: '-Xmx3072m -b package.gradle'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.11'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: false
+      tasks: 'build'
 

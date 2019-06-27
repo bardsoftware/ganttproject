@@ -3,106 +3,47 @@
  */
 
 import org.gradle.internal.os.OperatingSystem
-import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id "de.undercouch.download" version "3.4.3"
+}
 
 ext {
-    operatingSystem = OperatingSystem.current()
-
-    javaPackagerPath = ""
-    publishedVersion = "3.0.0"
-    bundlerScript = file('build-bin/build-package.sh')
-    extraBundlerArguments = []
-    if (operatingSystem.isMacOsX()) {
-//        packageType = 'pkg'
-//        appIcon = file('icons/mac/Santulator.icns')
-//        sessionIcon = file('icons/mac/SantulatorSession.icns')
-//        extraBundlerArguments = ['--mac-sign']
-    } else if (operatingSystem.isLinux()) {
-        packageType = 'deb'
-        appIcon = file('build-cfg/ganttproject.png')
-        fileAssociations = file("build-cfg/file-associations.properties")
-    } else if (operatingSystem.isWindows()) {
-//        appIcon = file('icons/windows/Santulator.ico')
-//        sessionIcon = file('icons/windows/SantulatorSession.ico')
-//        bundlerScript = file('bin/package-win.bat')
-//        generatedInnoSetupFile = file("${buildDir}/resources/main/application.iss")
-//        windowsExecutable = file("${bundlePath}/Santulator/Santulator.exe")
-//        bundleContent = file("${bundlePath}/Santulator/*")
-//        // Locations for the DLL workaround (see https://github.com/Santulator/Santulator/issues/5)
-//        windowsDllDirectory = file('C:\\Windows\\System32')
-//        windowsDllMSVCP140 = file("${windowsDllDirectory}/MSVCP140.dll")
-//        windowsDllVCRUNTIME140 = file("${windowsDllDirectory}/VCRUNTIME140.dll")
-    }
+    currentOs = OperatingSystem.current()
 }
 
-task checkBundlingEnvironment {
-    description 'Check the environment for building the installable bundle'
+task downloadZipFile(type: Download) {
+    def srcFile = ""
+    if (project.ext.currentOs.isWindows()) {
+        srcFile = 'https://gluonhq.com/download/javafx-11-0-2-jmods-windows/'
+    } else if (currentOs.isLinux()) {
+        srcFile = 'https://gluonhq.com/download/javafx-11-0-2-jmods-linux/'
+    } else if (currentOs.isMacOsX()) {
+        srcFile = 'https://gluonhq.com/download/javafx-11-0-2-jmods-mac/'
+    }
+    println("Downloading JavaFX mods for $currentOs from $srcFile")
+    src srcFile
+    dest new File(buildDir, 'javafx-jmods-11.zip')
+}
+
+task installJavafxJmods(dependsOn: downloadZipFile, type: Copy) {
+    from zipTree(downloadZipFile.dest)
+    into buildDir
+}
+
+task build {
     doLast {
-        def javaHome = System.env.JAVA_HOME
-
-        if (operatingSystem.isWindows()) {
-            if (javaHome) {
-                def javaExecutable = file("${javaHome}/bin/java.exe")
-                def packagerFile = file("${javaHome}/bin/jpackager.exe")
-                def jmodFile = file("${javaHome}/jmods/jdk.packager.jar")
-
-                if (!javaExecutable.exists()) {
-                    throw new GradleException("Unable to find Java executable '${javaExecutable}'")
-                }
-                if (!packagerFile.exists()) {
-                    throw new GradleException("Unable to find Java packager executable at '${packagerFile}'")
-                }
-                if (!jmodFile.exists()) {
-                    throw new GradleException("Unable to find Java packager module at '${jmodFile}'")
-                }
-                // Check existence of files for DLL workaround (see https://github.com/Santulator/Santulator/issues/5)
-                if (!windowsDllMSVCP140.exists() || !windowsDllVCRUNTIME140.exists()) {
-                    throw new GradleException("Unable to find '${windowsDllMSVCP140}' and '${windowsDllVCRUNTIME140}' (see https://github.com/Santulator/Santulator/issues/5)")
-                }
-            } else {
-                throw new GradleException("JAVA_HOME must be set")
+        if (project.ext.currentOs.isLinux()) {
+            exec {
+                workingDir '.'
+                commandLine 'build-bin/package-lin.sh', 'build', 'ganttproject-builder/dist-bin', '2.99.0', 'build/javafx-jmods-11.0.2'
             }
-        } else {
-            def packagerFile = null
-            if (javaHome) {
-                packagerFile = file("${javaHome}/bin/jpackager")
-            } else {
-                if (project.hasProperty('javaPackagerPath')) {
-                    packagerFile = file("${javaPackagerPath}/jpackager")
-                } else {
-                    throw new GradleException("Use -PjavaPackagerPath=... to specify the directory containing the Java Packager")
-                }
-            }
-            if (!packagerFile.exists() || !packagerFile.isFile()) {
-                throw new GradleException("The Java Packager '$packagerFile' is missing")
-            }
-            javaPackagerPath = packagerFile.absolutePath
-
+        } else if (project.ext.currentOs.isWindows()) {
+            exec {
+                workingDir '.'
+                commandLine 'build-bin\\package-win.bat', 'build', 'ganttproject-builder\\dist-bin', '2.99.0', 'build\\javafx-jmods-11.0.2'
+            }            
         }
     }
-}
-
-task createBundle(type: Exec, dependsOn: [checkBundlingEnvironment]) {
-    description 'Build the installable bundle'
-    if (operatingSystem.isWindows()) {
-        commandLine 'cmd', '/c',
-                bundlerScript,
-                "${javafxModulePath}",
-                applicationLibraryPath,
-                "build/pkg",
-                publishedVersion,
-                appIcon
-    } else {
-    commandLine = ['sh',
-                   bundlerScript,
-                   "${-> file("${javaPackagerPath}")}",
-                   packageType,
-                   "ganttproject-builder/dist-bin",
-                   "build/pkg",
-                   publishedVersion,
-                   fileAssociations,
-                   appIcon,
-                   *extraBundlerArguments]
-//}
 }
 
