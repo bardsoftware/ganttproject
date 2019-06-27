@@ -2,9 +2,10 @@
 set INPUT=%2
 set OUTPUT=%1
 set VERSION=%3
-
+set JAVAFX_MODS_PATH=%4
 "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\jlink" ^
-  --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported ^
+  --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web ^
+  --module-path "%JAVAFX_MODS_PATH%" ^
   --no-header-files --no-man-pages ^
   --output "%OUTPUT%\runtime" ^
   --strip-debug ^
@@ -14,9 +15,13 @@ dir "C:\Program Files\Java"
 dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64"
 dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin"
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\binjava" -version
+"build\runtime\bin\java" -version
+"build\runtime\bin\java" --list-modules
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" --module-path build-bin\win ^
+SET JAVA_HOME="build\runtime"
+cp build-bin\win\jpackager.exe build\runtime\bin
+
+"build\runtime\bin\java" --module-path build-bin\win;C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
   create-installer ^
