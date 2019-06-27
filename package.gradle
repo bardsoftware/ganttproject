@@ -31,7 +31,7 @@ task installJavafxJmods(dependsOn: downloadZipFile, type: Copy) {
     into buildDir
 }
 
-task build {
+task build(dependsOn: installJavafxJmods) {
     doLast {
         if (project.ext.currentOs.isLinux()) {
             exec {
@@ -42,7 +42,7 @@ task build {
             exec {
                 workingDir '.'
                 commandLine 'build-bin\\package-win.bat', 'build', 'ganttproject-builder\\dist-bin', '2.99.0', 'build\\javafx-jmods-11.0.2'
-            }            
+            }
         }
     }
 }
