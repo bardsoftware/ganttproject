@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=GanttProject
+Icon=/opt/GanttProject/GanttProject.png
+Exec=/opt/GanttProject/GanttProject %U
+MimeType=application/x-ganttproject;
+Categories=Office;
+OnlyShowIn=GNOME;KDE;Unity;LXDE;
+GenericName=GanttProject
