@@ -50,15 +50,20 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkip
   val filteredUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
   if (filteredUpdates.isNotEmpty()) {
-    val dlg = UpdateDialog(filteredUpdates, uiFacade)
+    val dlg = UpdateDialog(filteredUpdates) {
+      SwingUtilities.invokeLater {
+        uiFacade.mainFrame.dispatchEvent(WindowEvent(uiFacade.mainFrame, WindowEvent.WINDOW_CLOSING))
+      }
+    }
     dialog(dlg::addContent)
   }
 }
 
+typealias AppRestarter = () -> Unit
 /**
  * @author dbarashev@bardsoftware.com
  */
-private class UpdateDialog(private val updates: List<UpdateMetadata>, private val uiFacade: UIFacade) {
+internal class UpdateDialog(private val updates: List<UpdateMetadata>, private val restarter: AppRestarter) {
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
 
@@ -138,9 +143,7 @@ private class UpdateDialog(private val updates: List<UpdateMetadata>, private va
   }
 
   private fun onRestart() {
-    SwingUtilities.invokeLater {
-      uiFacade.mainFrame.dispatchEvent(WindowEvent(uiFacade.mainFrame, WindowEvent.WINDOW_CLOSING))
-    }
+    this.restarter()
   }
 
   private fun onDownload(completed: SimpleBooleanProperty) {
