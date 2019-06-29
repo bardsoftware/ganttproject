@@ -44,6 +44,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-text-fill: derive(-gp-dark-gray, -10%);
 }
 
+
 .dlg .layers {
     -fx-padding: 0;
 }
@@ -137,3 +138,4 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-background-insets: 0 0 4 0;
     -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
 }
+

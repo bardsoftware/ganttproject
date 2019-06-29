@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.DialogControllerDialogPane
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
@@ -54,7 +54,7 @@ class StorageDialogBuilder(
     projectUi: ProjectUIFacade,
     documentManager: DocumentManager,
     cloudStorageOptions: GPCloudStorageOptions,
-    private val dialogBuildApi: DialogController) {
+    private val dialogBuildApi: DialogControllerDialogPane) {
   private val myCloudStorageOptions: GPCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions)
   private val myDocumentReceiver: Consumer<Document>
   private val myDocumentUpdater: Consumer<Document>
@@ -156,7 +156,7 @@ class StorageDialogBuilder(
     OPEN, SAVE
   }
 
-  class DialogUi(private val dialogController: DialogController,
+  class DialogUi(private val dialogController: DialogControllerDialogPane,
                  private val notificationPane: () -> NotificationPane) {
     fun close() {
       dialogController.hide()

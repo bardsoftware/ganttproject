@@ -53,11 +53,11 @@ import javafx.util.Duration
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialog(contentBuilder: (DialogController) -> Unit) {
+fun dialog(contentBuilder: (DialogControllerDialogPane) -> Unit) {
   Platform.runLater {
     Dialog<Unit>().also {
       it.isResizable = true
-      val dialogBuildApi = DialogController(it.dialogPane)
+      val dialogBuildApi = DialogControllerDialogPane(it.dialogPane)
       it.dialogPane.apply {
         styleClass.addAll("dlg-information", "dlg")
         stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
@@ -78,17 +78,32 @@ fun dialog(contentBuilder: (DialogController) -> Unit) {
   }
 }
 
-class DialogController(private val dialogPane: DialogPane) {
+//interface DialogControllerDialogPane {
+//
+//}
+
+interface DialogController {
+  fun setContent(content: Node)
+  fun setupButton(type: ButtonType, code: (Button) -> Unit = {})
+  fun showAlert(title: LocalizedString, content: Node)
+  fun addStyleClass(styleClass: String)
+  fun addStyleSheet(vararg stylesheets: String)
+  fun setHeader(header: Node)
+  fun hide()
+  fun removeButtonBar()
+}
+
+class DialogControllerDialogPane(private val dialogPane: DialogPane) : DialogController {
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
-  fun setContent(content: Node) {
+  override fun setContent(content: Node) {
     this.content = content
     this.stackPane.children.add(content)
     this.dialogPane.content = stackPane
   }
 
-  fun setupButton(type: ButtonType, code: (Button) -> Unit = {}) {
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
     this.dialogPane.buttonTypes.add(type)
     val btn = this.dialogPane.lookupButton(type)
     if (btn is Button) {
@@ -96,30 +111,30 @@ class DialogController(private val dialogPane: DialogPane) {
     }
   }
 
-  fun showAlert(title: LocalizedString, content: Node) {
+  override fun showAlert(title: LocalizedString, content: Node) {
     Platform.runLater {
       createAlertPane(this.content, this.stackPane, title, content)
     }
   }
 
-  fun addStyleClass(styleClass: String) {
+  override fun addStyleClass(styleClass: String) {
     this.dialogPane.styleClass.add(styleClass)
   }
 
-  fun addStyleSheet(vararg stylesheets: String) {
+  override fun addStyleSheet(vararg stylesheets: String) {
     this.dialogPane.stylesheets.addAll(stylesheets)
   }
 
-  fun setHeader(header: Node) {
+  override fun setHeader(header: Node) {
     header.styleClass.add("header")
     this.dialogPane.header = header
   }
 
-  fun hide() {
+  override fun hide() {
     this.dialogPane.scene.window.hide()
   }
 
-  fun removeButtonBar() {
+  override fun removeButtonBar() {
     this.dialogPane.children.remove(this.dialogPane.children.first { it.styleClass.contains("button-bar") })
   }
 
