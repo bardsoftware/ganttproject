@@ -35,11 +35,9 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
     Eclipsito.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
-      if (updateMetadata.isNotEmpty()) {
         Platform.runLater {
           jfxPanel.scene = createScene(updateMetadata)
         }
-      }
     }.exceptionally { ex ->
       GPLogger.log(ex)
       null
@@ -52,13 +50,9 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
   private fun createScene(updateMetadata: List<UpdateMetadata>): Scene {
     val group = BorderPane().also {
-      it.styleClass.addAll("dlg-information", "dlg")
+      it.styleClass.addAll("dlg-information", "dlg", "dialog-pane", "border-etched")
       it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
     }
-//    val dialogPane = DialogPane().also {
-//      it.styleClass.addAll("dlg-information", "dlg")
-//      it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
-//    }
     val dialogBuildApi = DialogControllerImpl(group)
     val updateUi = UpdateDialog(updateMetadata) {}
     updateUi.addContent(dialogBuildApi)
@@ -74,8 +68,6 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   private val stackPane = StackPane().also {
     it.styleClass.add("layers")
     root.center = it
-//    it.prefWidthProperty().bind(root.widthProperty())
-//    it.prefHeightProperty().bind(root.heightProperty())
     root.bottom = buttonBar
   }
 
@@ -84,9 +76,11 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
-    val btn = createButton(type)
-    this.buttonBar.buttons.add(createButton(type))
-    code(btn)
+    if (type == ButtonType.APPLY) {
+      val btn = createButton(type)
+      code(btn)
+      this.buttonBar.buttons.add(btn)
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {

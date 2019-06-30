@@ -25,14 +25,18 @@ import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
+import javafx.scene.layout.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -69,22 +73,33 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
 
   fun createPane(): Node {
     val bodyBuilder = VBoxBuilder()
-    this.updates
-        .map {
-          UpdateComponentUi(it).also { ui ->
-            version2ui[it.version] = ui
+    if (this.updates.isNotEmpty()) {
+      this.updates
+          .map {
+            UpdateComponentUi(it).also { ui ->
+              version2ui[it.version] = ui
+            }
+          }.forEach {
+            bodyBuilder.add(it.title)
+            bodyBuilder.add(it.subtitle)
+            bodyBuilder.add(it.text)
+            bodyBuilder.add(it.progress)
           }
-        }.forEach {
-          bodyBuilder.add(it.title)
-          bodyBuilder.add(it.subtitle)
-          bodyBuilder.add(it.text)
-          bodyBuilder.add(it.progress)
-        }
-    return ScrollPane(bodyBuilder.vbox).also {
-      it.styleClass.add("body")
-      it.isFitToWidth = true
-      it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
-      it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
+
+      return ScrollPane(bodyBuilder.vbox).also {
+        it.styleClass.add("body")
+        it.isFitToWidth = true
+        it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+        it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
+      }
+    } else {
+      bodyBuilder.add(Label(
+          "GanttProject is up to date",
+          FontAwesomeIconView(FontAwesomeIcon.CHECK_CIRCLE)).also {
+            it.styleClass.add("no-updates")
+          }, Pos.CENTER, Priority.ALWAYS
+      )
+      return bodyBuilder.vbox
     }
   }
 
@@ -99,8 +114,10 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
     val vboxBuilder = VBoxBuilder()
     vboxBuilder.addTitle(i18n.formatText("title"))
     vboxBuilder.add(Label().apply {
-      this.text = i18n.formatText("titleHelp", this@UpdateDialog.updates.first().version)
-      this.styleClass.add("help")
+      if (this@UpdateDialog.updates.isNotEmpty()) {
+        this.text = i18n.formatText("titleHelp", this@UpdateDialog.updates.first().version)
+        this.styleClass.add("help")
+      }
     })
 
     val downloadCompleted = SimpleBooleanProperty(false)

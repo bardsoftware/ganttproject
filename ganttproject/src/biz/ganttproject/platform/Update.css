@@ -46,4 +46,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-padding: 0 0 2ex 0;
 }
 
+.dlg-platform-update Label.no-updates {
+    -fx-font-size: 200%;
+}
 
