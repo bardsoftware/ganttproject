@@ -54,3 +54,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -glyph-size: 40px;
 }
 
+.dlg-platform-update .header {
+    -fx-background-color: -gp-orange;
+}

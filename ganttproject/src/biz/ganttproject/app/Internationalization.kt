@@ -82,7 +82,7 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
         if (tr.containsKey(key1)) {
           MessageFormat.format(tr.getString(key1), *args)
         } else {
-          this.fallbackLocalizer.formatText(key, args)
+          this.fallbackLocalizer.formatTextOrNull(key, args)
         }
       }
     } catch (ex: MissingResourceException) {
