@@ -144,7 +144,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-fill-width: true;
     -fx-spacing: 5;
     -fx-padding: 15;
-    -fx-background-color: #eee;
+    -fx-background-color: derive(-gp-orange, 10%);
     -fx-background-insets: 0 0 4 0;
     -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
 }

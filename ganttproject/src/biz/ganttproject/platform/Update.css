@@ -50,3 +50,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-font-size: 200%;
 }
 
+.dlg-platform-update Label.no-updates .glyph-icon {
+    -glyph-size: 40px;
+}
+

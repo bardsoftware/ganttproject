@@ -70,10 +70,11 @@ typealias AppRestarter = () -> Unit
 internal class UpdateDialog(private val updates: List<UpdateMetadata>, private val restarter: AppRestarter) {
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
+  private val hasUpdates: Boolean get() = this.updates.isNotEmpty()
 
   fun createPane(): Node {
     val bodyBuilder = VBoxBuilder()
-    if (this.updates.isNotEmpty()) {
+    if (this.hasUpdates) {
       this.updates
           .map {
             UpdateComponentUi(it).also { ui ->
@@ -94,7 +95,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       }
     } else {
       bodyBuilder.add(Label(
-          "GanttProject is up to date",
+          i18n.formatText("noUpdates.titleHelp", Eclipsito.getUpdater().installedUpdateVersions.max()!!),
           FontAwesomeIconView(FontAwesomeIcon.CHECK_CIRCLE)).also {
             it.styleClass.add("no-updates")
           }, Pos.CENTER, Priority.ALWAYS
@@ -112,35 +113,40 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css")
 
     val vboxBuilder = VBoxBuilder()
-    vboxBuilder.addTitle(i18n.formatText("title"))
+    vboxBuilder.addTitle(i18n.formatText(if (this.hasUpdates) "hasUpdates.title" else "noUpdates.title"))
     vboxBuilder.add(Label().apply {
-      if (this@UpdateDialog.updates.isNotEmpty()) {
-        this.text = i18n.formatText("titleHelp", this@UpdateDialog.updates.first().version)
-        this.styleClass.add("help")
+      this.styleClass.add("help")
+      if (this@UpdateDialog.hasUpdates) {
+        this.text = i18n.formatText("hasUpdates.titleHelp",
+            Eclipsito.getUpdater().installedUpdateVersions.max()!!,
+            this@UpdateDialog.updates.first().version
+        )
       }
     })
 
     val downloadCompleted = SimpleBooleanProperty(false)
     dialogApi.setHeader(vboxBuilder.vbox)
-    dialogApi.setupButton(ButtonType.APPLY) { btn ->
-      ButtonBar.setButtonUniformSize(btn, false)
-      btn.styleClass.add("btn-attention")
-      btn.text = i18n.formatText("button.ok")
-      btn.maxWidth = Double.MAX_VALUE
-      btn.addEventFilter(ActionEvent.ACTION) { event ->
-        if (btn.properties["restart"] == true) {
-          onRestart()
-        } else {
-          event.consume()
-          btn.disableProperty().set(true)
-          onDownload(downloadCompleted)
+    if (this.hasUpdates) {
+      dialogApi.setupButton(ButtonType.APPLY) { btn ->
+        ButtonBar.setButtonUniformSize(btn, false)
+        btn.styleClass.add("btn-attention")
+        btn.text = i18n.formatText("button.ok")
+        btn.maxWidth = Double.MAX_VALUE
+        btn.addEventFilter(ActionEvent.ACTION) { event ->
+          if (btn.properties["restart"] == true) {
+            onRestart()
+          } else {
+            event.consume()
+            btn.disableProperty().set(true)
+            onDownload(downloadCompleted)
+          }
         }
-      }
-      downloadCompleted.addListener { _, _, newValue ->
-        if (newValue) {
-          btn.disableProperty().set(false)
-          btn.text = i18n.formatText("restart")
-          btn.properties["restart"] = true
+        downloadCompleted.addListener { _, _, newValue ->
+          if (newValue) {
+            btn.disableProperty().set(false)
+            btn.text = i18n.formatText("restart")
+            btn.properties["restart"] = true
+          }
         }
       }
     }
