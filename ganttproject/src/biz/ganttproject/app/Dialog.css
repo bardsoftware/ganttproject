@@ -63,7 +63,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-background-color: transparent;
 }
 
-.dlg .body > * {
+.dlg .content-pane > * {
     -fx-background-color: transparent;
 }
 

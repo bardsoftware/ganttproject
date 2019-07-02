@@ -25,23 +25,19 @@ import biz.ganttproject.lib.fx.VBoxBuilder
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
+import javafx.geometry.Insets
 import javafx.scene.Node
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.ButtonType
-import javafx.scene.control.Label
-import javafx.scene.control.ScrollPane
-import javafx.scene.layout.Priority
+import javafx.scene.control.*
+import javafx.scene.layout.GridPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
+import org.controlsfx.control.ToggleSwitch
 import java.awt.event.WindowEvent
 import java.io.File
 import java.util.concurrent.CompletableFuture
@@ -64,6 +60,7 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkip
 }
 
 typealias AppRestarter = () -> Unit
+data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -72,39 +69,69 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.updates.isNotEmpty()
 
-  fun createPane(): Node {
-    val bodyBuilder = VBoxBuilder()
+  fun createPane(bean: PlatformBean): Node {
+    val bodyBuilder = VBoxBuilder("content-pane")
+//    HBox().also {
+//      it.styleClass.add("row-auto-check-updates")
+//      it.children.add(Label("Automatically check for updates"))
+//      val values = ComboBox<String>(FXCollections.observableArrayList("Daily", "Never"))
+//      it.children.add(values)
+//      HBox.setHgrow(values, Priority.ALWAYS)
+//      bodyBuilder.add(it, Pos.CENTER_LEFT, Priority.NEVER)
+//    }
+
+    val props = GridPane().also { it.styleClass.add("props") }
+    props.add(Label("Check for updates").also { GridPane.setMargin(it, Insets(5.0, 5.0, 3.0, 0.0)) }, 0, 0)
+    props.add(ToggleSwitch().also {
+      it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+      GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+    }, 1, 0)
+    props.add(Label("Installed version").also { GridPane.setMargin(it, Insets(5.0, 5.0, 3.0, 0.0)) }, 0, 1)
+    props.add(Label(bean.version).also { GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0)) }, 1, 1)
+    props.add(Label("Available updates").also { GridPane.setMargin(it, Insets(20.0, 0.0, 5.0, 0.0)) }, 0, 2)
+//    val props = PropertySheet(FXCollections.observableArrayList(
+//        BeanProperty(bean, PropertyDescriptor("checkUpdates", PlatformBean::class.java)),
+//        BeanProperty(bean, PropertyDescriptor("version", PlatformBean::class.java, "getVersion", null))
+//    )).also {
+//      it.styleClass.addAll("property-sheet")
+//      it.isModeSwitcherVisible = false
+//      it.isSearchBoxVisible = false
+//    }
+    bodyBuilder.add(props)
     if (this.hasUpdates) {
+      val updateBox = VBoxBuilder()
       this.updates
           .map {
             UpdateComponentUi(it).also { ui ->
               version2ui[it.version] = ui
             }
           }.forEach {
-            bodyBuilder.add(it.title)
-            bodyBuilder.add(it.subtitle)
-            bodyBuilder.add(it.text)
-            bodyBuilder.add(it.progress)
+            updateBox.add(it.title)
+            updateBox.add(it.subtitle)
+            updateBox.add(it.text)
+            updateBox.add(it.progress)
           }
 
-      return ScrollPane(bodyBuilder.vbox).also {
+      bodyBuilder.add(ScrollPane(updateBox.vbox).also {
         it.styleClass.add("body")
         it.isFitToWidth = true
         it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
         it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
-      }
+      })
     } else {
-      bodyBuilder.add(Label(
-          i18n.formatText("noUpdates.titleHelp", Eclipsito.getUpdater().installedUpdateVersions.max()!!),
-          FontAwesomeIconView(FontAwesomeIcon.CHECK_CIRCLE)).also {
-            it.styleClass.add("no-updates")
-          }, Pos.CENTER, Priority.ALWAYS
-      )
-      return bodyBuilder.vbox
+//      bodyBuilder.add(Label(
+//          i18n.formatText("noUpdates.titleHelp", bean.version),
+//          FontAwesomeIconView(FontAwesomeIcon.CHECK_CIRCLE)).also {
+//            it.styleClass.add("no-updates")
+//          }, Pos.CENTER, Priority.ALWAYS
+//      )
     }
+    return bodyBuilder.vbox
   }
 
   fun addContent(dialogApi: DialogController) {
+    val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.max()!!
+    val bean = PlatformBean(true, installedVersion)
     this.dialogApi = dialogApi
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
@@ -118,7 +145,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       this.styleClass.add("help")
       if (this@UpdateDialog.hasUpdates) {
         this.text = i18n.formatText("hasUpdates.titleHelp",
-            Eclipsito.getUpdater().installedUpdateVersions.max()!!,
+            installedVersion,
             this@UpdateDialog.updates.first().version
         )
       }
@@ -162,7 +189,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
         }
       }
     }
-    dialogApi.setContent(this.createPane())
+    dialogApi.setContent(this.createPane(bean))
   }
 
   private fun onRestart() {

@@ -95,6 +95,7 @@ class DialogControllerDialogPane(private val dialogPane: DialogPane) : DialogCon
 
   override fun setContent(content: Node) {
     this.content = content
+    content.styleClass.add("content-pane")
     this.stackPane.children.add(content)
     this.dialogPane.content = stackPane
   }
