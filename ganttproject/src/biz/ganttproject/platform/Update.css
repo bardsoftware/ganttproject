@@ -19,7 +19,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 /* A single item in the list of available updates */
 .body {
-    -fx-padding: 0 1em;
+    -fx-background-color: transparent;
+}
+
+ScrollPane {
+    -fx-padding: 10px 1em;
+    -fx-border-color: transparent;
+}
+
+ScrollPane:hover {
+    -fx-border-color: -gp-light-gray;
+}
+
+.body * {
     -fx-background-color: transparent;
 }
 
@@ -69,7 +81,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-font-size: 120%;
 }
 
-.dlg-platform-update .props .toggle-switch .thumb-area {
-    -fx-border-color: red;
+.dlg-platform-update .props .toggle-switch {
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 0;
 }
 
