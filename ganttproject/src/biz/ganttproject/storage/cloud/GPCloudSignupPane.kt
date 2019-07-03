@@ -26,6 +26,8 @@ import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.HPos
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.Node
@@ -34,8 +36,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
@@ -89,33 +90,62 @@ class GPCloudSignupPane(
     signupBtn.addEventHandler(ActionEvent.ACTION) {
       openInBrowser(GPCLOUD_SIGNUP_URL)
     }
-
-    vboxBuilder.add(signupBtn, Pos.CENTER, null).also { it.styleClass.add("smallskip") }
-    vboxBuilder.add(Label(i18n.formatText("alreadyRegistered")), Pos.CENTER, Priority.NEVER).also {
-      it.styleClass.add("medskip")
-    }
     val btnSignIn = Button(i18n.formatText("generic.signIn")).also {
-      it.styleClass.add("btn-secondary")
       it.addEventFilter(ActionEvent.ACTION) {
         this@GPCloudSignupPane.pageSwitcher(createSigninPane())
       }
     }
-    vboxBuilder.add(btnSignIn, Pos.CENTER, Priority.NEVER).also {
-      it.styleClass.add("smallskip")
+
+    val grid = GridPane()
+    repeat(2) {
+      ColumnConstraints().also { it.percentWidth = 50.0; grid.columnConstraints.add(it); }
+    }
+    grid.add(Label("Start using now!").also {
+      GridPane.setMargin(it, Insets(0.0, 10.0, 5.0, 0.0))
+      GridPane.setHalignment(it, HPos.RIGHT)
+      it.styleClass.add("helpline")
+    }, 0, 0)
+
+    grid.add(signupBtn.also {
+      GridPane.setMargin(it, Insets(0.0, 10.0, 5.0, 0.0))
+      GridPane.setHalignment(it, HPos.RIGHT)
+    }, 0, 1)
+
+    grid.add(Label("Already registered?").also {
+      GridPane.setMargin(it, Insets(0.0, 0.0, 5.0, 10.0))
+      GridPane.setHalignment(it, HPos.LEFT)
+      it.styleClass.add("helpline")
+    }, 1, 0)
+    grid.add(btnSignIn.also {
+      GridPane.setMargin(it, Insets(0.0, 0.0, 5.0, 10.0))
+      GridPane.setHalignment(it, HPos.LEFT)
+    }, 1, 1)
+
+    HBox().also {
+      it.children.add(grid)
+      HBox.setHgrow(grid, Priority.ALWAYS)
+      vboxBuilder.add(it, Pos.CENTER, Priority.SOMETIMES)
+
     }
 
-    return DialogPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.addAll(
-          "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-          "/biz/ganttproject/storage/StorageDialog.css"
-      )
-      it.graphic = ImageView(Image(
-          this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
-          64.0, 64.0, false, true))
-      it.content = vboxBuilder.vbox
+      //vboxBuilder.add(signupBtn, Pos.CENTER, null).also { it.styleClass.add("smallskip") }
+//    vboxBuilder.add(btnSignIn, Pos.CENTER, Priority.NEVER).also {
+//      it.styleClass.add("smallskip")
+//    }
+
+      return DialogPane().also {
+        it.styleClass.addAll("dlg-lock", "signup-pane")
+        it.stylesheets.addAll(
+            "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+            "/biz/ganttproject/storage/StorageDialog.css"
+        )
+        it.graphic = ImageView(Image(
+            this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
+            64.0, 64.0, false, true))
+        it.content = vboxBuilder.vbox
+      }
     }
-  }
+
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
     if (Strings.isNullOrEmpty(GPCloudOptions.authToken.value)) {
