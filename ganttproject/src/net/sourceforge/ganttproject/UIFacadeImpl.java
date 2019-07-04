@@ -39,6 +39,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -305,9 +306,17 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
     JPopupMenu menu = new JPopupMenu();
+
+    // TODO: refactor code so that submenus could be added in more generic way
+    String assignTo = GanttLanguage.getInstance().getText("assignments");
+    JMenu resourcesMenu = new JMenu(assignTo);
+
     for (Action action : actions) {
       if (action == null) {
         menu.addSeparator();
+      } else if (AssignmentToggleAction.class.equals(action.getClass())){
+        resourcesMenu.add(new JCheckBoxMenuItem(action));
+        continue;
       } else {
         Boolean isSelected = (Boolean) action.getValue(Action.SELECTED_KEY);
         if (isSelected == null) {
@@ -317,6 +326,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         }
       }
     }
+
+    if (resourcesMenu.getItemCount() > 0) {
+      menu.add(resourcesMenu);
+    }
+
     menu.applyComponentOrientation(getLanguage().getComponentOrientation());
     menu.show(invoker, x, y);
   }
