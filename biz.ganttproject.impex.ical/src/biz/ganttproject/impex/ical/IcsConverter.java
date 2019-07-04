@@ -18,20 +18,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.ical;
 
-import java.io.FileReader;
-import java.util.List;
-
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.UnfoldingReader;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import java.io.FileReader;
+import java.util.List;
 
 /**
  * Converts ics file to GanttProject calendar format.
- * 
+ *
  * @author Dmitry Barashev
  */
 public class IcsConverter {
