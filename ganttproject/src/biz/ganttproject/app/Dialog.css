@@ -26,11 +26,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-padding: 0.75ex 2em;
     -fx-cursor: hand;
 }
+.btn-attention.secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -gp-orange;
+}
 
 .btn-attention:hover {
     -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
     -fx-background-color: derive(-gp-orange, 10%);
     -fx-text-fill: derive(-gp-dark-gray, -10%);
+}
+
+.btn-attention.secondary:hover {
+    -fx-background-color: derive(-gp-orange, 10%);
 }
 
 .btn-attention:disabled {

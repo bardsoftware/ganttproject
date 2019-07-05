@@ -19,8 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 .dlg-lock {
     -fx-font-size: 120%;
     -fx-background-color: transparent;
-    -fx-fill-width: 1;
-    -fx-fill-height: 1;
+    -fx-fill-width: true;
+    -fx-fill-height: true;
     -fx-pref-width: 400;
     -fx-pref-height: 400;
 }
@@ -155,10 +155,25 @@ Label.h2 {
     -fx-padding: 2ex 1em;
 }
 
+.signup-pane .row-copy-link TextField {
+    -fx-fill: -gp-medium-gray;
+    -fx-font-size: 80%;
+    -fx-border-color: -gp-light-gray;
+    -fx-border-radius: 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-background-insets: none;
+    -fx-effect: none;
+}
+
+.signup-pane .row-copy-link TextField:hover {
+    -fx-border-color: -gp-medium-gray;
+}
+
 .progress-indicator {
     -fx-pref-width: 100%;
     -fx-pref-height: 100%;
-    -fx-fill-height: 1;
-    -fx-fill-width: 1;
+    -fx-fill-height: true;
+    -fx-fill-width: true;
     -fx-padding: 20px;
 }
