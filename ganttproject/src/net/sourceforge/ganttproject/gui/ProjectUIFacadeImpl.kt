@@ -265,8 +265,6 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject) {
 
-    beforeClose()
-    project.close()
 
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
@@ -280,6 +278,8 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
             // If document is obtained, we need to run further steps.
             // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
             SwingUtilities.invokeLater {
+              beforeClose()
+              project.close()
               strategy.openFileAsIs(doc)
                   .checkLegacyMilestones()
                   .checkEarliestStartConstraints()
@@ -299,7 +299,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
                 }
               }
               else -> {
-                throw DocumentException("Can't open document $document", ex )
+                GPLogger.log(DocumentException("Can't open document $document", ex ))
               }
             }
           }

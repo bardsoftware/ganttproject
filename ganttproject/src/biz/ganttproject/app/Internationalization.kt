@@ -91,7 +91,7 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   }
 
   fun hasKey(key: String): Boolean {
-    return currentTranslation?.getString(key) != null
+    return currentTranslation?.containsKey(key) ?: false
   }
 }
 
