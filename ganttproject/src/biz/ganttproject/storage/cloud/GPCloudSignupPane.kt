@@ -37,10 +37,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
@@ -100,23 +97,23 @@ class GPCloudSignupPane(
       it.styleClass.addAll("btn-attention", "secondary")
     }
 
-    ButtonBar().also {
+    val buttonBar = ButtonBar().also {
       it.buttons.addAll(btnSignUp, btnSignIn)
-      vboxBuilder.add(it, Pos.CENTER, Priority.NEVER)
     }
+
+    GridPane().also { grid ->
+      grid.add(Pane(), 0, 0)
+      grid.add(buttonBar, 0, 1)
+      grid.columnConstraints.add(ColumnConstraints().apply {
+        hgrow = Priority.ALWAYS
+        isFillWidth = true
+      })
+      grid.styleClass.addAll("fill-parent")
+      vboxBuilder.add(grid, Pos.CENTER_RIGHT, Priority.NEVER)
+    }
+
 
     return paneAndImage(vboxBuilder.vbox)
-  }
-
-  private fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
-    return BorderPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      it.left = ImageView(Image(
-          this.javaClass.getResourceAsStream(imagePath),
-          64.0, 64.0, false, true))
-      it.center = centerNode.also { node -> node.styleClass.add("signup-body") }
-    }
   }
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
@@ -246,4 +243,14 @@ class GPCloudSignupPane(
     return paneAndImage(vboxBuilder.vbox)
   }
 
+  private fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
+    return BorderPane().also {
+      it.styleClass.addAll("dlg-lock", "signup-pane")
+      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      it.left = ImageView(Image(
+          this.javaClass.getResourceAsStream(imagePath),
+          64.0, 64.0, false, true))
+      it.center = centerNode.also { node -> node.styleClass.add("signup-body") }
+    }
+  }
 }
