@@ -21,8 +21,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-background-color: transparent;
     -fx-fill-width: true;
     -fx-fill-height: true;
-    -fx-pref-width: 400;
-    -fx-pref-height: 400;
 }
 
 .dlg-lock .btn-option {
@@ -30,7 +28,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg-lock .content-pane {
-    -fx-padding: 20px;
 }
 
 .dlg-lock .img {
@@ -81,7 +78,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg-lock .tab-contents {
-    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-padding: 3ex 2em 1ex 2em;
 }
 
 
@@ -103,7 +100,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg-lock .tab-contents .section {
-    -fx-padding: 2ex 0 0 0;
+    -fx-padding: 0 0 2ex 0;
 }
 
 .tab-pane {
@@ -126,6 +123,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-pref-height: 100%;
     -fx-pref-width: 100%;
     -fx-fill-width: true;
+    -fx-fill-height: true;
     -fx-max-width: infinity;
 }
 

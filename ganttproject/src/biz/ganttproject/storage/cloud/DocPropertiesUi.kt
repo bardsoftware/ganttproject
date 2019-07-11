@@ -180,7 +180,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         exceptionUi = {},
         maybeCellFactory = this@DocPropertiesUi::createHistoryCell
     )
-    val vboxBuilder = VBoxBuilder("tab-contents", "history-pane").apply {
+    val vboxBuilder = VBoxBuilder("tab-contents", "section", "history-pane").apply {
       addTitle("cloud.historyPane.title")
       add(Label().also {
         it.textProperty().bind(this.i18n.create("cloud.historyPane.titleHelp"))

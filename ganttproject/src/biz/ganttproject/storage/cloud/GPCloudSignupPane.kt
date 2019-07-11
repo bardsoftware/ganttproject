@@ -31,11 +31,13 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
@@ -61,15 +63,14 @@ class GPCloudSignupPane(
   private val httpd: HttpServerImpl by lazy {
     HttpServerImpl().apply { this.start() }
   }
+  private val tokenVerificationUi: Pane by lazy { createTokenVerificationProgressUi() }
 
   init {
     this.httpd.onTokenReceived = this.onTokenCallback
   }
 
-  val tokenVerificationUi: Pane by lazy { createTokenVerificationProgressUi() }
 
   fun createPane(msgIntro: String? = null): Pane {
-
     val vboxBuilder = VBoxBuilder("dlg-lock")
     vboxBuilder.addTitle(i18n.formatText("title"))
     vboxBuilder.add(Label().apply {
@@ -82,7 +83,7 @@ class GPCloudSignupPane(
       })
     }
     val mdfx = MDFXNode(i18n.create("body").value).also {
-      it.styleClass.add("signup-body")
+      it.styleClass.add("medskip")
     }
     vboxBuilder.add(mdfx, Pos.CENTER, Priority.ALWAYS)
 
@@ -104,19 +105,19 @@ class GPCloudSignupPane(
       vboxBuilder.add(it, Pos.CENTER, Priority.NEVER)
     }
 
-    return DialogPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.addAll(
-          "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-          "/biz/ganttproject/storage/StorageDialog.css"
-      )
-      it.graphic = ImageView(Image(
-          this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
-          64.0, 64.0, false, true))
-      it.content = vboxBuilder.vbox
-    }
+    return paneAndImage(vboxBuilder.vbox)
   }
 
+  private fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
+    return BorderPane().also {
+      it.styleClass.addAll("dlg-lock", "signup-pane")
+      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      it.left = ImageView(Image(
+          this.javaClass.getResourceAsStream(imagePath),
+          64.0, 64.0, false, true))
+      it.center = centerNode.also { node -> node.styleClass.add("signup-body") }
+    }
+  }
 
   fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
     if (Strings.isNullOrEmpty(GPCloudOptions.authToken.value)) {
@@ -204,22 +205,17 @@ class GPCloudSignupPane(
       vboxBuilder.add(it, Pos.CENTER_LEFT, Priority.NEVER)
     }
 
-    return DialogPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/com/sandec/mdfx/mdfx.css")
-      it.graphic = ImageView(Image(
-          this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
-          64.0, 64.0, false, true))
-      it.content = vboxBuilder.vbox
+    return paneAndImage(vboxBuilder.vbox).also {
+      it.stylesheets.addAll("/com/sandec/mdfx/mdfx.css")
       Platform.runLater {
         openInBrowser(uri.trim())
       }
     }
   }
 
-  fun createTokenVerificationProgressUi(): Pane {
+  private fun createTokenVerificationProgressUi(): Pane {
     val i18nSignin = DefaultLocalizer("cloud.authPane", i18n)
-    val vboxBuilder = VBoxBuilder("dlg-lock")
+    val vboxBuilder = VBoxBuilder("fill-parent")
     vboxBuilder.addTitle(i18nSignin.formatText("title"))
 
     val expirationValue = {
@@ -247,34 +243,7 @@ class GPCloudSignupPane(
       it.styleClass.add("medskip")
     }
 
-    return DialogPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      it.graphic = ImageView(Image(
-          this.javaClass.getResourceAsStream("/icons/ganttproject-logo-512.png"),
-          64.0, 64.0, false, true))
-      it.content = vboxBuilder.vbox
-    }
+    return paneAndImage(vboxBuilder.vbox)
   }
 
-//  val progressIndicator: Pane by lazy {
-//    val paneBuilder = VBoxBuilder("pane-service-contents")
-//    paneBuilder.addTitle("Signing into GanttProject Cloud")
-//    if (GPCloudOptions.authToken.value != "") {
-//      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
-//      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
-//      if (!remainingDuration.isNegative) {
-//        val hours = remainingDuration.toHours()
-//        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
-//        val expirationLabel = if (hours > 0) {
-//          "${hours}h ${minutes}m"
-//        } else {
-//          "${minutes}m"
-//        }
-//        paneBuilder.add(Label("Your access token expires in $expirationLabel"), Pos.BASELINE_LEFT, Priority.NEVER)
-//      }
-//    }
-//    paneBuilder.add(ProgressIndicator(-1.0), null, Priority.ALWAYS)
-//    paneBuilder.vbox
-//  }
 }
