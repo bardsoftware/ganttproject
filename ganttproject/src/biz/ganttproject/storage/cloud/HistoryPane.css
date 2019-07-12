@@ -1,3 +1,9 @@
+.dlg-lock .tab-contents .btn-small-attention {
+    -fx-background-color: -gp-orange;
+    -fx-text-fill: -gp-dark-gray;
+    -fx-padding: 0.5ex 1em 0.5ex 1em;
+    -fx-cursor: hand;
+}
 
 .history-pane .list-cell .timestamp {
     -fx-font-weight: bold;

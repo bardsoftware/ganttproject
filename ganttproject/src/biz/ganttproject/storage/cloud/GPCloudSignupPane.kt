@@ -68,7 +68,7 @@ class GPCloudSignupPane(
 
 
   fun createPane(msgIntro: String? = null): Pane {
-    val vboxBuilder = VBoxBuilder("dlg-lock")
+    val vboxBuilder = VBoxBuilder()
     vboxBuilder.addTitle(i18n.formatText("title"))
     vboxBuilder.add(Label().apply {
       this.textProperty().bind(i18n.create("titleHelp"))
@@ -90,25 +90,24 @@ class GPCloudSignupPane(
     btnSignUp.addEventHandler(ActionEvent.ACTION) {
       openInBrowser(GPCLOUD_SIGNUP_URL)
     }
-    val btnSignIn = Button("Sign In").also {
+    val btnSignIn = Button(i18n.formatText("generic.signIn")).also {
       it.addEventFilter(ActionEvent.ACTION) {
         this@GPCloudSignupPane.pageSwitcher(createSigninPane())
       }
       it.styleClass.addAll("btn-attention", "secondary")
     }
 
-    val buttonBar = ButtonBar().also {
-      it.buttons.addAll(btnSignUp, btnSignIn)
-    }
 
     GridPane().also { grid ->
       grid.add(Pane(), 0, 0)
-      grid.add(buttonBar, 0, 1)
+      grid.add(btnSignUp, 1, 0)
+      grid.add(btnSignIn, 2, 0)
+      GridPane.setMargin(btnSignUp, Insets(0.0, 5.0, 0.0, 0.0))
       grid.columnConstraints.add(ColumnConstraints().apply {
         hgrow = Priority.ALWAYS
         isFillWidth = true
       })
-      grid.styleClass.addAll("fill-parent")
+      grid.styleClass.addAll("fill-parent", "btnbar")
       vboxBuilder.add(grid, Pos.CENTER_RIGHT, Priority.NEVER)
     }
 
@@ -161,7 +160,7 @@ class GPCloudSignupPane(
 
   fun createSigninPane(): Pane {
     val i18nSignin = DefaultLocalizer("cloud.signin", i18n)
-    val vboxBuilder = VBoxBuilder("dlg-lock")
+    val vboxBuilder = VBoxBuilder()
     vboxBuilder.addTitle(i18nSignin.formatText("title"))
     vboxBuilder.add(Label().apply {
       this.textProperty().bind(i18nSignin.create("titleHelp"))
@@ -245,8 +244,13 @@ class GPCloudSignupPane(
 
   private fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
     return BorderPane().also {
-      it.styleClass.addAll("dlg-lock", "signup-pane")
-      it.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      it.styleClass.addAll("dlg", "signup-pane")
+      it.stylesheets.addAll(
+          "/biz/ganttproject/app/Dialog.css",
+          "/biz/ganttproject/app/Util.css",
+          "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+          "/biz/ganttproject/storage/cloud/GPCloudSignupPane.css"
+      )
       it.left = ImageView(Image(
           this.javaClass.getResourceAsStream(imagePath),
           64.0, 64.0, false, true))

@@ -104,7 +104,9 @@ class OptionPaneBuilder<T> {
       }
       it.customContent?.let { vbox.add(it) }
     }
-    return vbox.vbox
+    return vbox.vbox.also {
+      it.stylesheets.add("/biz/ganttproject/app/OptionPane.css")
+    }
   }
 
   fun buildDialogPane(optionHandler: (T) -> Unit): DialogPane {

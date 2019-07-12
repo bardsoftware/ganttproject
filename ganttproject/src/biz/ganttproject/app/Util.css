@@ -1,0 +1,17 @@
+.fill-parent {
+    -fx-pref-height: 100%;
+    -fx-pref-width: 100%;
+    -fx-fill-width: true;
+    -fx-fill-height: true;
+    -fx-max-width: infinity;
+}
+
+.medskip {
+    -fx-padding: 2ex 0 0 0;
+}
+
+.smallskip {
+    -fx-padding: 0.5ex 0 0 0;
+}
+
+

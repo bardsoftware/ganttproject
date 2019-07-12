@@ -309,7 +309,11 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       val paneElements = buildPane(document, {})
       dialogController.addStyleClass("dlg-lock")
       dialogController.addStyleClass("dlg-cloud-file-options")
-      dialogController.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+      dialogController.addStyleSheet(
+          "/biz/ganttproject/app/TabPane.css",
+          "/biz/ganttproject/storage/cloud/DocPropertiesUi.css",
+          "/biz/ganttproject/storage/StorageDialog.css"
+      )
       dialogController.setContent(paneElements.pane)
       dialogController.setupButton(ButtonType.APPLY) {btn ->
         btn.textProperty().bind(RootLocalizer.create("cloud.offlineMirrorOptionPane.btnApply"))
