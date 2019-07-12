@@ -90,7 +90,9 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     urlOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().setRootUrl(urlOption.getValue());
+        if (serverList.getSelectedObject() != null) {
+          serverList.getSelectedObject().setRootUrl(urlOption.getValue());
+        }
       }
     });
 
@@ -98,7 +100,9 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     usernameOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().username = usernameOption.getValue();
+        if (serverList.getSelectedObject() != null) {
+          serverList.getSelectedObject().username = usernameOption.getValue();
+        }
       }
     });
 
@@ -106,7 +110,9 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     passwordOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().password = passwordOption.getValue();
+        if (serverList.getSelectedObject() != null) {
+          serverList.getSelectedObject().password = passwordOption.getValue();
+        }
       }
     });
     passwordOption.setScreened(true);
@@ -115,7 +121,9 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     savePasswordOption.addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        serverList.getSelectedObject().savePassword = savePasswordOption.getValue();
+        if (serverList.getSelectedObject() != null) {
+          serverList.getSelectedObject().savePassword = savePasswordOption.getValue();
+        }
       }
     });
 
