@@ -54,16 +54,16 @@ public abstract class AbstractTableAndActionsComponent<T> {
   public static final String PROPERTY_IS_ENABLED_FUNCTION = AbstractTableAndActionsComponent.class.getName() + ".isEnabledFunction";
 
   private Function<List<T>, Boolean> createIsEnabledFunction(final int flags) {
-    return new Function<List<T>, Boolean>() {
-      @Override
-      public Boolean apply(List<T> input) {
-        if (input.isEmpty()) {
-          return (0 != (flags & AbstractTableAndActionsComponent.ENABLED_WITH_EMPTY_SELECTION));
-        } else if (input.size() > 1) {
-          return (0 == (flags & AbstractTableAndActionsComponent.DISABLED_WITH_MULTI_SELECTION));
-        } else {
-          return true;
-        }
+    return input -> {
+      if (!myTable.isEnabled()) {
+        return false;
+      }
+      if (input.isEmpty()) {
+        return (0 != (flags & AbstractTableAndActionsComponent.ENABLED_WITH_EMPTY_SELECTION));
+      } else if (input.size() > 1) {
+        return (0 == (flags & AbstractTableAndActionsComponent.DISABLED_WITH_MULTI_SELECTION));
+      } else {
+        return true;
       }
     };
   }
@@ -189,6 +189,12 @@ public abstract class AbstractTableAndActionsComponent<T> {
     }
     onSelectionChanged();
     return buttonBox;
+  }
+
+  public void setEnabled(boolean enabled) {
+    myTable.setEnabled(enabled);
+    getAddResourceAction().setEnabled(enabled);
+    getDeleteItemAction().setEnabled(enabled);
   }
 
   public interface SelectionListener<T> {

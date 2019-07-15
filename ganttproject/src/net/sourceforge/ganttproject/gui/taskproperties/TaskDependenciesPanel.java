@@ -62,7 +62,11 @@ public class TaskDependenciesPanel {
     myModel = new DependencyTableModel(myTask);
     myTable = new JTable(myModel);
     UIUtil.setupTableUI(myTable);
-    setUpPredecessorComboColumn(DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()), getTable());
+    Task[] predecessorCandidates = getTaskManager().getAlgorithmCollection()
+        .getFindPossibleDependeesAlgorithm().run(getTask());
+    setUpPredecessorComboColumn(
+        predecessorCandidates, DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()), getTable());
+
     CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()),
         CONSTRAINTS);
     CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()), HARDNESS);
@@ -88,6 +92,7 @@ public class TaskDependenciesPanel {
       }
     };
 
+    tableAndActions.setEnabled(predecessorCandidates.length > 0);
     return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
   }
 
@@ -106,16 +111,13 @@ public class TaskDependenciesPanel {
     return myTask;
   }
 
-  private void setUpPredecessorComboColumn(TableColumn predecessorColumn, final JTable predecessorTable) {
+  private void setUpPredecessorComboColumn(Task[] predecessorCandidates, TableColumn predecessorColumn, final JTable predecessorTable) {
     final JComboBox<DependencyTableModel.TaskComboItem> comboBox = new JComboBox<>();
 
-    Task[] possiblePredecessors = getTaskManager().getAlgorithmCollection().getFindPossibleDependeesAlgorithm().run(
-        getTask());
-
     int maxDigits = 0;
-    for (Task next : possiblePredecessors) {
-      comboBox.addItem(new DependencyTableModel.TaskComboItem(next));
-      maxDigits = Math.max(maxDigits, (int) Math.log10(next.getTaskID()));
+    for (Task task : predecessorCandidates) {
+      comboBox.addItem(new DependencyTableModel.TaskComboItem(task));
+      maxDigits = Math.max(maxDigits, (int) Math.log10(task.getTaskID()));
     }
     final int maxWidth = (maxDigits + 1) * 10;
 
