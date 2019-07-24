@@ -335,7 +335,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     @Override
     public void importData(ColumnList source) {
       for (ColumnImpl column : myColumns) {
-        column.getStub().setVisible(false);
+        Boolean visible = myTableHeaderFacade.findColumnByID(column.getID()).isVisible();
+        column.getStub().setVisible(visible);
       }
       if (!importColumnList(source)) {
         importColumnList(ColumnList.Immutable.fromList(myDefaultColumnStubs));
