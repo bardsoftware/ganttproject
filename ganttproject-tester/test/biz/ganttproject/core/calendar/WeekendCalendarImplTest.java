@@ -23,20 +23,24 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.CalendarFactory;
 
+import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
+
+import static biz.ganttproject.core.calendar.GPCalendar.DayType.WEEKEND;
+import static java.util.Calendar.*;
 
 /**
- * Tests for {@link WeekendsCalendarImpl} class.
+ * Tests for {@link WeekendCalendarImpl} class.
  *
  * @author dbarashev (Dmitry Barashev)
  */
@@ -129,5 +133,30 @@ public class WeekendCalendarImplTest extends TestCase {
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 4).getTime()) & DayMask.WORKING);
     assertEquals(0, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 11).getTime()) & DayMask.WORKING);
     assertEquals(DayMask.WEEKEND, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 11).getTime()) & DayMask.WEEKEND);
+  }
+
+  /**
+   * @see <a href="https://github.com/bardsoftware/ganttproject/issues/1609>
+   *   Issue 1609: Weird failures if all days are weekend days
+   *   </a>
+   */
+  public void test_When_AllDaysAreWeekend_then_aUnsupportedOperationExceptionPreventsStackOverflow() {
+    WeekendCalendarImpl calendar = new WeekendCalendarImpl();
+    calendar.setWeekDayType(MONDAY, WEEKEND);
+    calendar.setWeekDayType(TUESDAY, WEEKEND);
+    calendar.setWeekDayType(WEDNESDAY, WEEKEND);
+    calendar.setWeekDayType(THURSDAY, WEEKEND);
+    calendar.setWeekDayType(FRIDAY, WEEKEND);
+    calendar.setWeekDayType(SATURDAY, WEEKEND);
+    calendar.setWeekDayType(SUNDAY, WEEKEND);
+    calendar.setPublicHolidays(TEST_EVENTS);
+
+    GanttCalendar helper = CalendarFactory.createGanttCalendar(2014, JANUARY, 0);
+    try {
+      calendar.findClosestWorkingTime(helper.getTime());
+      Assert.fail("Expected to get an UnsupportedOperationException");
+    } catch (UnsupportedOperationException exception) {
+      assertNotNull(exception.getMessage());
+    }
   }
 }

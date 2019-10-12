@@ -104,7 +104,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     boolean isWeekendState = (getDayMask(curDayStart) & DayMask.WORKING) == 0;
     while (curDayStart.before(endDate)) {
       Date changeStateDayStart = doFindClosest(curDayStart, myFramer, MoveDirection.FORWARD,
-          isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate);
+          isWeekendState ? DayType.WORKING : DayType.NON_WORKING, endDate, MAX_WEEKEND_DAYS);
       if (changeStateDayStart == null) {
         changeStateDayStart = endDate;
       }
@@ -214,7 +214,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     if ((dayMask & DayMask.WORKING) == DayMask.WORKING) {
       return time;
     }
-    return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null);
+    return doFindClosest(time, myFramer, MoveDirection.FORWARD, DayType.WORKING, null, MAX_WEEKEND_DAYS);
   }
 
   private boolean isPublicHoliDay(Date curDayStart) {
