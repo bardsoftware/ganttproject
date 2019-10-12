@@ -1,0 +1,6 @@
+build
+build-deb
+dist-bin
+.idea
+.eclipse
+.gradle
