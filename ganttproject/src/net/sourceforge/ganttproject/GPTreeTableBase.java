@@ -72,6 +72,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,7 +100,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   };
 
   class DecimalRenderer extends DefaultTableCellRenderer {
-    private final DecimalFormat myFormatter = new DecimalFormat("#0.00");
+    // private final DecimalFormat myFormatter = new DecimalFormat("#0.00");
+    private final DecimalFormat myFormatter = new DecimalFormat(NumberFormat.getCurrencyInstance(getDefaultLocale().toString()));
 
     public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       value = myFormatter.format((Number)value);
@@ -916,12 +918,20 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   protected TableColumnExt newTableColumnExt(int modelIndex) {
     TableColumnExt result = new TableColumnExt(modelIndex);
     Class<?> columnClass = getTreeTableModel().getColumnClass(modelIndex);
-    TableCellRenderer renderer = createCellRenderer(columnClass);
+    String columnName = getTreeTableModel().getColumnName(modelIndex).toLowerCase();
+    TableCellRenderer renderer;
+    Boolean costColumn = false;
+    if (Double.class.equals(columnClass) && columnName.equals("cost")) {
+      renderer = new DecimalRenderer();
+      costColumn = true;
+    } else {
+      renderer = createCellRenderer(columnClass);
+    }
     if (renderer != null) {
       result.setCellRenderer(renderer);
     }
     TableCellEditor editor = createCellEditor(columnClass);
-    if (editor != null) {
+    if (editor != null && !costColumn) {
       result.setCellEditor(editor);
     } else {
       System.err.println("no editor for column=" + modelIndex + " class=" + columnClass);
@@ -936,12 +946,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     // {
     // renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
     //
-    // }
-    if (Double.class.equals(columnClass)){
-      return new DecimalRenderer();
-    } else {
-      return getTreeTable().getDefaultRenderer(columnClass);
-    }
+    //}
+    return getTreeTable().getDefaultRenderer(columnClass);
   }
 
   private TableCellEditor createCellEditor(Class<?> columnClass) {
