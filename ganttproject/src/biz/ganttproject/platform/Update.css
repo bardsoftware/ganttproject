@@ -16,30 +16,49 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-.dlg-platform-update .body {
-    -fx-padding: 0 1em;
+
+/* A single item in the list of available updates */
+.body {
+    -fx-background-color: transparent;
 }
 
-.dlg-platform-update .body .title {
+ScrollPane {
+    -fx-padding: 10px 1em;
+    -fx-border-color: transparent;
+}
+
+ScrollPane:hover {
+    -fx-border-color: -gp-light-gray;
+}
+
+.body * {
+    -fx-background-color: transparent;
+}
+
+.body .title {
     -fx-fill: -gp-dark-gray;
     -fx-font-size: 110%;
 }
 
-.dlg-platform-update .body .subtitle {
+.body .subtitle {
     -fx-fill: -gp-medium-gray;
     -fx-font-size: 80%;
     -fx-font-weight: normal;
 }
 
-.dlg-platform-update .body .par {
+.body .par {
     -fx-fill: -gp-medium-gray;
     -fx-padding: 0.5ex 0 0.5ex 0;
 }
 
-.dlg-platform-update .body .progress {
+.body .progress {
     -fx-font-size: 80%;
     -fx-fill: -gp-medium-gray;
     -fx-padding: 0 0 2ex 0;
+}
+
+.dlg-platform-update .content-pane {
+    -fx-padding: 20 20 20 20;
 }
 
 .dlg-platform-update .content-pane .help {
@@ -52,5 +71,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .dlg-platform-update Label.no-updates .glyph-icon {
     -glyph-size: 40px;
+}
+
+.dlg-platform-update .header {
+    -fx-background-color: -gp-orange;
+}
+
+.dlg-platform-update .props {
+    -fx-font-size: 120%;
+}
+
+.dlg-platform-update .props .toggle-switch {
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 0;
 }
 

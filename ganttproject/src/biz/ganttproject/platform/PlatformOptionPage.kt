@@ -94,6 +94,7 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
 
   override fun setContent(content: Node) {
     this.contentNode = content
+    content.styleClass.add("content-pane")
     this.stackPane.children.add(content)
   }
 

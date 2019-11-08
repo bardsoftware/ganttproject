@@ -1,0 +1,11 @@
+.btn-option {
+    -fx-padding: 1ex 0 0 0;
+}
+
+.option-help {
+    -fx-padding: 0 0 0 2em;
+    -fx-font-size: 80%;
+    -fx-wrap-text: true;
+}
+
+

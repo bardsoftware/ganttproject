@@ -59,7 +59,7 @@ fun dialog(contentBuilder: (DialogControllerDialogPane) -> Unit) {
       it.isResizable = true
       val dialogBuildApi = DialogControllerDialogPane(it.dialogPane)
       it.dialogPane.apply {
-        styleClass.addAll("dlg-information", "dlg")
+        styleClass.addAll("dlg")
         stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
 
         contentBuilder(dialogBuildApi)
@@ -78,10 +78,6 @@ fun dialog(contentBuilder: (DialogControllerDialogPane) -> Unit) {
   }
 }
 
-//interface DialogControllerDialogPane {
-//
-//}
-
 interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {})
@@ -99,6 +95,7 @@ class DialogControllerDialogPane(private val dialogPane: DialogPane) : DialogCon
 
   override fun setContent(content: Node) {
     this.content = content
+    content.styleClass.add("content-pane")
     this.stackPane.children.add(content)
     this.dialogPane.content = stackPane
   }

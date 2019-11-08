@@ -85,38 +85,6 @@ webdav-list-cell-button-pane.alert-warning {
 
 
 
-.btn-secondary {
-    -fx-min-height: 26px;
-    -fx-alignment: center;
-    -fx-background-color: -gp-light-gray;
-    -fx-padding: 0.5ex 1em;
-}
-
-.btn-secondary .glyph-icon {
-    -fx-alignment: center;
-    -fx-fill: -gp-medium-gray;
-    -glyph-size: 20px;
-}
-
-.btn-secondary:hover {
-    -fx-fill: white;
-    -fx-text-fill: white;
-    -fx-cursor: hand;
-    -fx-background-color: -gp-medium-gray;
-}
-
-.btn-secondary:hover .glyph-icon {
-    -fx-fill: white;
-    -fx-text-fill: white;
-}
-
-
-.btn-secondary:pressed, .btn-secondary:hover:pressed {
-    -fx-background-color: -gp-dark-gray;
-    -fx-fill: white;
-    -fx-text-fill: white;
-}
-
 .button-pane {
     -fx-padding: 5px 0px 0px 0px;
 }

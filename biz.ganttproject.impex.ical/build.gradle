@@ -3,9 +3,7 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile 'backport-util-concurrent:backport-util-concurrent:3.1'
-    compile 'org.mnode.ical4j:ical4j:1.0.3'
-
+    compile 'org.mnode.ical4j:ical4j:1.+'
     compile configurations.providedCompile
 }
 
@@ -15,6 +13,7 @@ sourceSets {
             srcDir 'src'
         }
         resources {
+            srcDir 'resources'
         }
     }
 }

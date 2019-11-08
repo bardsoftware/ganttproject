@@ -40,7 +40,7 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  * This is a helper class which builds a UI widget consisting of a few mutually exclusive options where user is supposed
  * to choose one.
  *
- * The widget can be used inside other widgets or shown in a dialog. It thus becomes slightly more adavnced alternative
+ * The widget can be used inside other widgets or shown in a dialog. It thus becomes slightly more advanced alternative
  * to JOptionPane class.
  */
 class OptionPaneBuilder<T> {
@@ -104,7 +104,9 @@ class OptionPaneBuilder<T> {
       }
       it.customContent?.let { vbox.add(it) }
     }
-    return vbox.vbox
+    return vbox.vbox.also {
+      it.stylesheets.add("/biz/ganttproject/app/OptionPane.css")
+    }
   }
 
   fun buildDialogPane(optionHandler: (T) -> Unit): DialogPane {

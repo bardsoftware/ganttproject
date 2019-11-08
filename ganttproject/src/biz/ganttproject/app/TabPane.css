@@ -1,0 +1,57 @@
+.tab {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 3 0;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-padding: 1ex 1em;
+}
+
+.tab:hover, .dlg-lock .tab:focused {
+    -fx-border-color: -gp-medium-gray;
+    -fx-cursor: hand;
+}
+
+.tab-pane .focus-indicator {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+}
+
+.tab .tab-label {
+    -fx-text-fill: -gp-medium-gray;
+}
+
+.tab:selected {
+    -fx-border-color: -gp-orange;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: -gp-dark-gray;
+
+}
+
+.tab-contents {
+    -fx-padding: 3ex 2em 1ex 2em;
+}
+
+
+.tab-contents .pane-buttons {
+    -fx-padding: 1ex 0;
+
+}
+
+.tab-pane {
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 1ex 0 0 0;
+    -fx-background-color: #eee;
+    -fx-pref-width: 100%;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+

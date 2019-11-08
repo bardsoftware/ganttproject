@@ -22,15 +22,23 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border-radius: 0;
     -fx-text-fill: -gp-dark-gray;
     /*    -fx-font-size: 110%;*/
-    -fx-font-weight: 130%;
+    -fx-font-weight: bold;
     -fx-padding: 0.75ex 2em;
     -fx-cursor: hand;
+}
+.btn-attention.secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -gp-orange;
 }
 
 .btn-attention:hover {
     -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
     -fx-background-color: derive(-gp-orange, 10%);
     -fx-text-fill: derive(-gp-dark-gray, -10%);
+}
+
+.btn-attention.secondary:hover {
+    -fx-background-color: derive(-gp-orange, 10%);
 }
 
 .btn-attention:disabled {
@@ -59,15 +67,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-padding: 0;
 }
 
-.dlg-information {
+.dlg {
     -fx-background-color: transparent;
 }
 
-.dlg-information .body > * {
+.dlg .content-pane > * {
     -fx-background-color: transparent;
 }
 
-.dlg-information Button {
+.dlg Button {
     -fx-text-fill: -gp-dark-gray;
     -fx-cursor: hand;
     -fx-padding: 0.75ex 2em;
@@ -75,52 +83,52 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-background-insets: 0;
 }
 
-.dlg-information Button:hover {
+.dlg Button:hover {
     -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
 }
 
-.dlg-information Button:pressed {
+.dlg Button:pressed {
     -fx-effect: none;
 }
 
-.dlg-information Button:focused {
+.dlg Button:focused {
     -fx-border-color: #26C7E0;
 }
 
-.dlg-information .btn {
+.dlg .btn {
     -fx-background-color: white;
     -fx-border-color: -gp-light-gray;
 }
 
-.dlg-information .alert-glasspane {
+.dlg .alert-glasspane {
     -fx-padding: 40px 20px;
     -fx-effect: dropshadow(gaussian, -gp-dark-gray, 8, 0.5, 0, 0);
 
 }
-.dlg-information .alert-box {
+.dlg .alert-box {
     -fx-background-color: #ff7777;
     -fx-padding: 2ex 2em;
     -fx-background-radius: 5px;
 }
 
-.dlg-information .alert-box > * {
+.dlg .alert-box > * {
     -fx-padding: 3px;
     -fx-background-color: #ff7777;
 }
 
-.dlg-information .alert-box ScrollPane {
+.dlg .alert-box ScrollPane {
     -fx-background-color: #ff7777;
 }
 
-.dlg-information .alert-box ScrollPane MDFXNode {
+.dlg .alert-box ScrollPane MDFXNode {
     -fx-background-color: #ff7777;
 }
 
-.dlg-information .alert-box Button {
+.dlg .alert-box Button {
     -fx-background-color: transparent;
 }
 
-.dlg-information .alert-dismiss {
+.dlg .alert-dismiss {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-pref-width: 2em;
@@ -134,18 +142,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border: none;
 }
 
-.dlg-information .alert-dismiss:hover {
+.dlg .alert-dismiss:hover {
     -fx-background-color: -gp-light-gray;
     -fx-background-radius: 50%;
     -fx-effect: none;
 }
 
-.dlg-information .header {
+.dlg .header {
     -fx-fill-width: true;
     -fx-spacing: 5;
     -fx-padding: 15;
-    -fx-background-color: derive(-gp-orange, 10%);
+    -fx-background-color: -gp-light-gray;
     -fx-background-insets: 0 0 4 0;
     -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
+}
+
+.dlg .helpline {
+    -fx-fill: -gp-medium-gray;
+    -fx-font-size: 80%;
+    -fx-font-weight: normal;
 }
 

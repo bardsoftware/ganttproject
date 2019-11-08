@@ -19,35 +19,37 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.platform
 
 import biz.ganttproject.app.*
+import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.lib.fx.ToggleSwitchSkin
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.openInBrowser
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
+import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.scene.Node
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.ButtonType
-import javafx.scene.control.Label
-import javafx.scene.control.ScrollPane
-import javafx.scene.layout.Priority
+import javafx.scene.control.*
+import javafx.scene.layout.GridPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
+import org.controlsfx.control.HyperlinkLabel
+import org.controlsfx.control.ToggleSwitch
 import java.awt.event.WindowEvent
 import java.io.File
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
+const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
 
 fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
   val latestShownUpdateMetadata = UpdateMetadata(UpdateOptions.latestShownVersion.value, null, null, null, 0)
@@ -64,6 +66,7 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkip
 }
 
 typealias AppRestarter = () -> Unit
+data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -72,39 +75,64 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.updates.isNotEmpty()
 
-  fun createPane(): Node {
-    val bodyBuilder = VBoxBuilder()
+  fun createPane(bean: PlatformBean): Node {
+    val bodyBuilder = VBoxBuilder("content-pane")
+
+    val props = GridPane().also { it.styleClass.add("props") }
+    props.add(Label(i18n.formatText("installedVersion")).also {
+      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+    },0, 0)
+    props.add(Label(bean.version).also {
+      GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+    }, 1, 0)
+    props.add(Label(i18n.formatText("checkUpdates")).also {
+      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+    }, 0, 1)
+    val toggleSwitch = object : ToggleSwitch() {
+      override fun createDefaultSkin(): Skin<*> {
+        return ToggleSwitchSkin(this)
+      }
+    }.also {
+      it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
+      it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+    }
+    props.add(toggleSwitch, 1, 1)
+    props.add(HyperlinkLabel(i18n.formatText("checkUpdates.helpline")).also {
+      it.styleClass.add("helpline")
+      it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
+    }, 1, 2)
+    props.add(Label(i18n.formatText("availableUpdates")).also { GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0)) },
+        0, 3)
+    bodyBuilder.add(props)
+
     if (this.hasUpdates) {
+      val updateBox = VBoxBuilder()
       this.updates
           .map {
             UpdateComponentUi(it).also { ui ->
               version2ui[it.version] = ui
             }
           }.forEach {
-            bodyBuilder.add(it.title)
-            bodyBuilder.add(it.subtitle)
-            bodyBuilder.add(it.text)
-            bodyBuilder.add(it.progress)
+            updateBox.add(it.title)
+            updateBox.add(it.subtitle)
+            updateBox.add(it.text)
+            updateBox.add(it.progress)
           }
 
-      return ScrollPane(bodyBuilder.vbox).also {
+      bodyBuilder.add(ScrollPane(updateBox.vbox.also {
         it.styleClass.add("body")
+      }).also {
         it.isFitToWidth = true
         it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
         it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
-      }
-    } else {
-      bodyBuilder.add(Label(
-          i18n.formatText("noUpdates.titleHelp", Eclipsito.getUpdater().installedUpdateVersions.max()!!),
-          FontAwesomeIconView(FontAwesomeIcon.CHECK_CIRCLE)).also {
-            it.styleClass.add("no-updates")
-          }, Pos.CENTER, Priority.ALWAYS
-      )
-      return bodyBuilder.vbox
+      })
     }
+    return bodyBuilder.vbox
   }
 
   fun addContent(dialogApi: DialogController) {
+    val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.max()!!
+    val bean = PlatformBean(true, installedVersion)
     this.dialogApi = dialogApi
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
@@ -118,7 +146,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       this.styleClass.add("help")
       if (this@UpdateDialog.hasUpdates) {
         this.text = i18n.formatText("hasUpdates.titleHelp",
-            Eclipsito.getUpdater().installedUpdateVersions.max()!!,
+            installedVersion,
             this@UpdateDialog.updates.first().version
         )
       }
@@ -162,7 +190,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
         }
       }
     }
-    dialogApi.setContent(this.createPane())
+    dialogApi.setContent(this.createPane(bean))
   }
 
   private fun onRestart() {
@@ -249,7 +277,8 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
 private val i18n = DefaultLocalizer("platform.update", RootLocalizer)
 
 object UpdateOptions {
+  val isCheckEnabled = DefaultBooleanOption("checkEnabled")
   val latestShownVersion = DefaultStringOption("latestShownVersion")
-  val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", UpdateOptions.latestShownVersion)
+  val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion)
 
 }

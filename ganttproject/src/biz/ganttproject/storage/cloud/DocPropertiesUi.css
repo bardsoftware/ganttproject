@@ -1,0 +1,9 @@
+.dlg-cloud-file-options .tab-contents .btn-small-attention:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+.dlg-cloud-file-options .tab-contents .section {
+    -fx-padding: 0 0 2ex 0;
+}
+

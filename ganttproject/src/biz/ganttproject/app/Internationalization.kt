@@ -78,15 +78,20 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
     val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
     return try {
-      currentTranslation?.getString(key1)?.let { MessageFormat.format(it, *args) }
-          ?: this.fallbackLocalizer.formatText(key, args)
+      currentTranslation?.let { tr ->
+        if (tr.containsKey(key1)) {
+          MessageFormat.format(tr.getString(key1), *args)
+        } else {
+          this.fallbackLocalizer.formatTextOrNull(key, args)
+        }
+      }
     } catch (ex: MissingResourceException) {
       null
     }
   }
 
   fun hasKey(key: String): Boolean {
-    return currentTranslation?.getString(key) != null
+    return currentTranslation?.containsKey(key) ?: false
   }
 }
 
