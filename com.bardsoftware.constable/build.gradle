@@ -14,6 +14,9 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    compile group: 'com.h2database', name: 'h2', version: '1.4.200'
+
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
     testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
 }
