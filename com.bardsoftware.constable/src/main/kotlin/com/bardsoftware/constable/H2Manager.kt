@@ -7,11 +7,9 @@ import java.sql.SQLException
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class H2Manager {
-    companion object {
-        private val logger = Logger.getLogger(H2Manager::class.java.name)
-    }
+private val logger = Logger.getLogger(H2Manager::class.java.name)
 
+class H2Manager {
     private val connection = DriverManager.getConnection("jdbc:h2:mem:")
 
     fun execute(path : String) {
