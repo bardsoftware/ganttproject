@@ -40,6 +40,8 @@ public class ResourceActionSet {
 
   private final ResourceSendMailAction myResourceSendMailAction;
 
+  private final ResourceCallNumberAction myResourceCallNumberAction;
+
   private final AssignmentDeleteAction myAssignmentDelete;
 
   private AbstractAction[] myActions;
@@ -53,6 +55,7 @@ public class ResourceActionSet {
     myResourceMoveUpAction = new ResourceMoveUpAction(table);
     myResourceMoveDownAction = new ResourceMoveDownAction(table);
     myResourceSendMailAction = new ResourceSendMailAction(table);
+    myResourceCallNumberAction = new ResourceCallNumberAction(table);
     myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
   }
 
@@ -61,6 +64,7 @@ public class ResourceActionSet {
       myResourceNewAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);
       myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);
+      myResourceCallNumberAction.putValue(Action.SHORT_DESCRIPTION, null);
       myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
     }
     return myActions;
@@ -88,6 +92,10 @@ public class ResourceActionSet {
 
   public ResourceSendMailAction getResourceSendMailAction() {
     return myResourceSendMailAction;
+  }
+
+  public ResourceCallNumberAction getResourceCallNumberAction() {
+    return myResourceCallNumberAction;
   }
 
   public AssignmentDeleteAction getAssignmentDelete() {

@@ -203,6 +203,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         menu.add(resourceActions[i]);
       }
       menu.add(myResourceActionSet.getResourceSendMailAction());
+      menu.add(myResourceActionSet.getResourceCallNumberAction());
       menu.addSeparator();
       menu.add(myResourceActionSet.getResourceMoveUpAction());
       menu.add(myResourceActionSet.getResourceMoveDownAction());
