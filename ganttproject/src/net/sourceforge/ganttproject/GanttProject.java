@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.app.SplashKt;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -57,7 +56,6 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
@@ -101,24 +99,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
  * Main frame of the project
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
-  private static final ExecutorService ourExecutor = Executors.newSingleThreadExecutor();
 
   /**
    * The JTree part.
@@ -664,7 +656,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return builder.build();
   }
 
-  private void doShow() {
+  void doShow() {
     setVisible(true);
     GPLogger.log(String.format("Bounds after setVisible: %s", getBounds()));
     try {
@@ -930,16 +922,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * The main
    */
   public static boolean main(String[] arg) throws InvocationTargetException, InterruptedException {
-    URL logConfig = GanttProject.class.getResource("/logging.properties");
-    if (logConfig != null) {
-      try {
-        GPLogger.readConfiguration(logConfig);
-      } catch (IOException e) {
-        System.err.println("Failed to setup logging: " + e.getMessage());
-        e.printStackTrace();
-      }
-    }
-
+    GPLogger.init();
     CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
     final Args mainArgs = new Args();
     try {
@@ -978,53 +961,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return false;
     }
 
-    Runnable autosaveCleanup = DocumentCreator.createAutosaveCleanup();
-
-    final CompletableFuture<Runnable> splashCloser = SplashKt.showAsync();
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e1) {
-      GPLogger.log(e1);
-    }
-
-
-    AtomicReference<GanttProject> mainWindow = new AtomicReference<>(null);
-    SwingUtilities.invokeLater(() -> {
-      try {
-        GanttProject ganttFrame = new GanttProject(false);
-        System.err.println("Main frame created");
-        mainWindow.set(ganttFrame);
-        ganttFrame.addWindowListener(new WindowAdapter() {
-          @Override
-          public void windowOpened(WindowEvent e) {
-            try {
-              splashCloser.get().run();
-            } catch (Exception ex) {
-              ex.printStackTrace();
-            }
-          }
-        });
-      } catch (Throwable e) {
-        e.printStackTrace();
-      } finally {
-        Thread.currentThread().setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-          @Override
-          public void uncaughtException(Thread t, Throwable e) {
-            GPLogger.log(e);
-          }
-        });
-      }
-    });
-
-    SwingUtilities.invokeLater(() -> mainWindow.get().doShow());
-    SwingUtilities.invokeLater(() -> mainWindow.get().doOpenStartupDocument(mainArgs));
-    if (autosaveCleanup != null) {
-      ourExecutor.submit(autosaveCleanup);
-    }
+    AppKt.startUiApp(mainArgs);
     return true;
   }
 
-  private void doOpenStartupDocument(Args args) {
+  void doOpenStartupDocument(Args args) {
     fireProjectCreated();
     if (args.file != null && !args.file.isEmpty()) {
       openStartupDocument(args.file.get(0));
