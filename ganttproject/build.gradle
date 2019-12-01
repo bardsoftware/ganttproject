@@ -11,6 +11,7 @@ buildscript {
     }
 }
 
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
@@ -27,6 +28,7 @@ configurations {
 dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.app.localization', configuration: 'exported')
 
     exportedLibs files("lib/core/eclipsito.jar")
     exportedLibs 'commons-codec:commons-codec:1.10'
@@ -113,3 +115,5 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
         println "Copying $project.name to $rootProject.pluginsDir"
     }
 }
+
+mainClassName="net.sourceforge.ganttproject.AppKt"
