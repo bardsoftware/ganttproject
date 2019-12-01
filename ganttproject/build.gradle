@@ -34,8 +34,8 @@ dependencies {
     exportedLibs 'commons-codec:commons-codec:1.10'
     exportedLibs 'org.apache.poi:poi:3.17'
 
-    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+'
-    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.3.2'
 
 
     compile configurations.direct

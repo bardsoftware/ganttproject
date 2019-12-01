@@ -72,6 +72,9 @@ class FileChooserPage extends AbstractFileChooserPage {
       return;
     }
     myImporter.setFile(file);
+    if (file != null) {
+      getPreferences().put(AbstractFileChooserPage.PREF_SELECTED_FILE, file.getAbsolutePath());
+    }
     WizardPage importerPage = myImporter.getCustomPage();
     if (importerPage != null) {
       getWizard().setNextPage(importerPage);
