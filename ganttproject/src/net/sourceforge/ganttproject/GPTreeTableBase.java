@@ -73,15 +73,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EventObject;
-import java.util.GregorianCalendar;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +94,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   class DecimalRenderer extends DefaultTableCellRenderer {
     // private final DecimalFormat myFormatter = new DecimalFormat("#0.00");
-    private final DecimalFormat myFormatter = new DecimalFormat(NumberFormat.getCurrencyInstance(getDefaultLocale().toString()));
+    private final DecimalFormat myFormatter = new DecimalFormat(NumberFormat.getNumberInstance(GanttLanguage.getInstance().getLocale()).toString());
 
     public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       value = myFormatter.format((Number)value);
