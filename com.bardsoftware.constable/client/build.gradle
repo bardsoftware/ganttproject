@@ -24,7 +24,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.bardsoftware.constable.MainKt'
+    mainClassName = 'com.bardsoftware.constable.client.ConstableClientKt'
 }
 
 compileKotlin {
