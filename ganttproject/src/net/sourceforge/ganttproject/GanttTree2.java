@@ -170,8 +170,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
     myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
     myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
-    getTreeTable().setupActionMaps(myMoveUpAction, myMoveDownAction, myIndentAction, myUnindentAction, newAction,
-        myProject.getCutAction(), myProject.getCopyAction(), myProject.getPasteAction(), propertiesAction, deleteAction);
+    getTreeTable().setupActionMaps(myLinkTasksAction, myUnlinkTasksAction, myMoveUpAction, myMoveDownAction,
+            myIndentAction, myUnindentAction, newAction, myProject.getCutAction(), myProject.getCopyAction(),
+            myProject.getPasteAction(), propertiesAction, deleteAction);
   }
 
   @Override
