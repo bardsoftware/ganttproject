@@ -68,7 +68,7 @@ object DummyLocalizer : Localizer {
 /**
  * @author dbarashev@bardsoftware.com
  */
-class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: Localizer = DummyLocalizer) : Localizer {
+open class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: Localizer = DummyLocalizer) : Localizer {
   override fun create(key: String): LocalizedString = LocalizedString(key, this)
 
   override fun formatText(key: String, vararg args: Any): String {
@@ -78,7 +78,7 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
     val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
     return try {
-      currentTranslation?.let { tr ->
+      getCurrentTranslation()?.let { tr ->
         if (tr.containsKey(key1)) {
           MessageFormat.format(tr.getString(key1), *args)
         } else {
@@ -93,9 +93,19 @@ class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: 
   fun hasKey(key: String): Boolean {
     return currentTranslation?.containsKey(key) ?: false
   }
+
+  open protected fun getCurrentTranslation(): ResourceBundle? {
+    return currentTranslation
+  }
 }
 
-val RootLocalizer = DefaultLocalizer()
+class SingleTranslationLocalizer(private val bundle: ResourceBundle) : DefaultLocalizer() {
+  override fun getCurrentTranslation(): ResourceBundle? {
+    return this.bundle
+  }
+}
+
+var RootLocalizer : Localizer = DefaultLocalizer()
 
 private var currentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
 fun setLocale(locale: Locale) {
@@ -104,8 +114,8 @@ fun setLocale(locale: Locale) {
 }
 
 private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {
-  return Platform.getExtensionRegistry().getConfigurationElementsFor("net.sourceforge.ganttproject.l10n")
-      .mapNotNull { l10nConfig ->
+  return Platform.getExtensionRegistry()?.getConfigurationElementsFor("net.sourceforge.ganttproject.l10n")
+      ?.mapNotNull { l10nConfig ->
         val path = l10nConfig.getAttribute("path")
         val pluginBundle = Platform.getBundle(l10nConfig.declaringExtension.namespaceIdentifier)
             ?: error("Can't find plugin bundle for extension=" + l10nConfig.name)
@@ -125,7 +135,7 @@ private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBu
           null
         }
       }
-      .firstOrNull()
+      ?.firstOrNull()
 }
 
 private val extraLocales = Properties().also {
