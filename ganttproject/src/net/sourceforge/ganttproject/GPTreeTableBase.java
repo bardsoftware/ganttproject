@@ -579,6 +579,12 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         putClientProperty("GPTreeTableBase.clearText", false);
       }
     }
+    if (e.getKeyChar() == '>' && ((ks.getModifiers() | KeyEvent.CTRL_DOWN_MASK) > 0)) {
+      return super.processKeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_GREATER, ks.getModifiers()), e, condition, pressed);
+    }
+    if (e.getKeyChar() == '<' && ((ks.getModifiers() | KeyEvent.CTRL_DOWN_MASK) > 0)) {
+      return super.processKeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, ks.getModifiers()), e, condition, pressed);
+    }
     // See also overridden method editCellAt.
     return super.processKeyBinding(ks, e, condition, pressed);
   }
