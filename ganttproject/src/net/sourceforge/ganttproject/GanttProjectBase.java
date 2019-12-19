@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import com.bardsoftware.eclipsito.update.Updater;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
@@ -95,6 +96,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   private final RssFeedChecker myRssChecker;
   private final ContentPaneBuilder myContentPaneBuilder;
+  private Updater myUpdater;
 
   protected GanttProjectBase() {
     super("GanttProject");
@@ -395,6 +397,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public CustomPropertyManager getResourceCustomPropertyManager() {
     return myResourceCustomPropertyManager;
   }
+
+  protected void setUpdater(Updater updater) {
+    myUpdater = updater;
+  }
+
+  protected Updater getUpdater() {
+    return myUpdater;
+  }
+
 
   protected RssFeedChecker getRssFeedChecker() {
     return myRssChecker;

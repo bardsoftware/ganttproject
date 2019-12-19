@@ -43,6 +43,9 @@ dependencies {
     compile configurations.exportedLibs
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile files('data/resources')
+
+//    compile "de.jensd:fontawesomefx-materialicons:2.2.+"
+
 }
 
 compileKotlin {
