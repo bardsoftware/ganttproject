@@ -29,6 +29,7 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
@@ -40,12 +41,17 @@ fun main(args: Array<String>) {
   RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
   PluginManager.setCharts(listOf())
   GanttLanguage.getInstance()
-  startUiApp(mainArgs)
+  startUiApp(mainArgs) {
+    it.setUpdater {
+      CompletableFuture.completedFuture(listOf())
+    }
+  }
 }
 /**
  * @author dbarashev@bardsoftware.com
  */
-fun startUiApp(args: GanttProject.Args) {
+@JvmOverloads
+fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
   val autosaveCleanup = DocumentCreator.createAutosaveCleanup()
 
   val splashCloser = showAsync()
@@ -60,6 +66,7 @@ fun startUiApp(args: GanttProject.Args) {
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)
+      configure(ganttFrame)
       System.err.println("Main frame created")
       mainWindow.set(ganttFrame)
       ganttFrame.addWindowListener(object : WindowAdapter() {

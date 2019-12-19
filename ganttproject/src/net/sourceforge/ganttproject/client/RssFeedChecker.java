@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.platform.UpdateKt;
+import com.bardsoftware.eclipsito.update.Updater;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
@@ -39,7 +40,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.eclipse.core.runtime.Platform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,10 +55,13 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class RssFeedChecker {
+
+
   private static enum CheckOption {
-    YES, NO, UNDEFINED
+    YES, NO, UNDEFINED;
   }
 
+  private Updater myUpdater;
   private final UIFacade myUiFacade;
   private final DefaultEnumerationOption<CheckOption> myCheckRssOption = new DefaultEnumerationOption<CheckOption>(
       "check", CheckOption.values()) {
@@ -130,7 +133,7 @@ public class RssFeedChecker {
   }
 
   public void run() {
-    Platform.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
+    myUpdater.getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
       if (!updateMetadata.isEmpty()) {
         UpdateKt.showUpdateDialog(updateMetadata, myUiFacade, false);
       }
@@ -268,4 +271,13 @@ public class RssFeedChecker {
   public void setOptionsVersion(String version) {
     myOptionsVersion = version;
   }
+
+  public void setUpdater(Updater updater) {
+    myUpdater = updater;
+  }
+
+  public Updater getUpdater() {
+    return myUpdater;
+  }
+
 }

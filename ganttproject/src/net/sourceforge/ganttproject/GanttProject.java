@@ -671,6 +671,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
+    getRssFeedChecker().setUpdater(getUpdater());
     getRssFeedChecker().run();
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
