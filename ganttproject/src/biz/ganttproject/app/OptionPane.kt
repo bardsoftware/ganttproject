@@ -44,7 +44,7 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  * to JOptionPane class.
  */
 class OptionPaneBuilder<T> {
-  val i18n = DefaultLocalizer()
+  var i18n = DefaultLocalizer()
   val titleString = i18n.create("title")
   var titleHelpString: LocalizedString? = null
   get() { if (field == null) { field = i18n.create("titleHelp") }; return field }

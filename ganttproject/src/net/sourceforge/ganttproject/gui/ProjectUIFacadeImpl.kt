@@ -20,8 +20,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.StorageDialogAction
@@ -121,7 +123,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
     } catch (e: VersionMismatchException) {
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18n.rootKey = "cloud.versionMismatch"
+          it.i18n = DefaultLocalizer(rootKey = "cloud.versionMismatch", proxiedLocalizer = RootLocalizer)
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")

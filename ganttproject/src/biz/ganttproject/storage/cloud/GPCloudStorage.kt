@@ -19,8 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.ProxyLocalizer
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageDialogBuilder
 import javafx.application.Platform
 import javafx.scene.Node
@@ -158,4 +159,4 @@ fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
   }
 }
 
-private val i18n = ProxyLocalizer("storageService.cloud", RootLocalizer)
+private val i18n = DefaultLocalizer("storageService.cloud", BROWSE_PANE_LOCALIZER, RootLocalizer)

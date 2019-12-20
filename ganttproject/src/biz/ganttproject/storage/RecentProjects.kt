@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 //import biz.ganttproject.storage.local.setupErrorLabel
-import biz.ganttproject.app.ProxyLocalizer
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -159,4 +159,4 @@ class RecentDocAsFolderItem(val docPath: Path) : FolderItem, Comparable<RecentDo
   override val isDirectory: Boolean = false
 }
 
-private val i18n = ProxyLocalizer("storageService.recent", RootLocalizer)
+private val i18n = DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER, RootLocalizer)
