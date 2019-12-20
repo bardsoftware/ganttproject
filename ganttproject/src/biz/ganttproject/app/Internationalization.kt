@@ -107,6 +107,12 @@ class SingleTranslationLocalizer(private val bundle: ResourceBundle) : DefaultLo
 
 var RootLocalizer : Localizer = DefaultLocalizer()
 
+class ProxyLocalizer(private val rootKey: String, private val delegate: Localizer) : Localizer {
+  override fun create(key: String) = delegate.create("$rootKey.$key")
+  override fun formatText(key: String, vararg args: Any) = delegate.formatText("$rootKey.$key", args)
+  override fun formatTextOrNull(key: String, vararg args: Any) = delegate.formatTextOrNull("$rootKey.$key", args)
+}
+
 private var currentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
 fun setLocale(locale: Locale) {
   currentTranslation = getResourceBundle(locale, true)
