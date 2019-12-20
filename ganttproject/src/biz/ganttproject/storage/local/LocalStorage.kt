@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.ProxyLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
@@ -210,4 +210,4 @@ class LocalStorage(
   }
 }
 
-private val i18n = DefaultLocalizer("storageService.local", BROWSE_PANE_LOCALIZER)
+private val i18n = ProxyLocalizer("storageService.local", RootLocalizer)
