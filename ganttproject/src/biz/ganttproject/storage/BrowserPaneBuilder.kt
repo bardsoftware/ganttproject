@@ -18,8 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.DummyLocalizer
 import biz.ganttproject.app.Localizer
-import biz.ganttproject.app.ProxyLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -279,4 +280,4 @@ private fun formatError(validation: ValidationResult): String {
       .collect(Collectors.joining("\n"))
 }
 
-val BROWSE_PANE_LOCALIZER = ProxyLocalizer("storageService._default", RootLocalizer)
+val BROWSE_PANE_LOCALIZER = DefaultLocalizer("storageService._default", DummyLocalizer, RootLocalizer)

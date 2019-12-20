@@ -48,6 +48,7 @@ interface Localizer {
   fun create(key: String): LocalizedString
   fun formatText(key: String, vararg args: Any): String
   fun formatTextOrNull(key: String, vararg args: Any): String?
+  val currentTranslation: ResourceBundle?
 }
 
 object DummyLocalizer : Localizer {
@@ -63,13 +64,21 @@ object DummyLocalizer : Localizer {
     return null
   }
 
+  override val currentTranslation: ResourceBundle?
+    get() = null
 }
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-open class DefaultLocalizer(var rootKey: String = "", private val fallbackLocalizer: Localizer = DummyLocalizer) : Localizer {
-  override fun create(key: String): LocalizedString = LocalizedString(key, this)
+open class DefaultLocalizer(
+    private val rootKey: String = "",
+    private val fallbackLocalizer: Localizer = DummyLocalizer,
+    private val proxiedLocalizer: Localizer? = null) : Localizer {
+  override fun create(key: String): LocalizedString {
+    //val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
+    return LocalizedString(key, this)
+  }
 
   override fun formatText(key: String, vararg args: Any): String {
     return formatTextOrNull(key, *args) ?: key
@@ -77,8 +86,11 @@ open class DefaultLocalizer(var rootKey: String = "", private val fallbackLocali
 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
     val key1 = if (this.rootKey != "") "${this.rootKey}.$key" else key
+    this.proxiedLocalizer?.formatTextOrNull(key1, args)?.let {
+      return it
+    }
     return try {
-      getCurrentTranslation()?.let { tr ->
+      this.currentTranslation?.let { tr ->
         if (tr.containsKey(key1)) {
           MessageFormat.format(tr.getString(key1), *args)
         } else {
@@ -94,29 +106,22 @@ open class DefaultLocalizer(var rootKey: String = "", private val fallbackLocali
     return currentTranslation?.containsKey(key) ?: false
   }
 
-  open protected fun getCurrentTranslation(): ResourceBundle? {
-    return currentTranslation
-  }
+  override val currentTranslation: ResourceBundle?
+    get() =
+      this.proxiedLocalizer?.currentTranslation ?: ourCurrentTranslation
+
 }
 
 class SingleTranslationLocalizer(private val bundle: ResourceBundle) : DefaultLocalizer() {
-  override fun getCurrentTranslation(): ResourceBundle? {
-    return this.bundle
-  }
+  override val currentTranslation: ResourceBundle? = this.bundle
 }
 
 var RootLocalizer : Localizer = DefaultLocalizer()
 
-class ProxyLocalizer(private val rootKey: String, private val delegate: Localizer) : Localizer {
-  override fun create(key: String) = delegate.create("$rootKey.$key")
-  override fun formatText(key: String, vararg args: Any) = delegate.formatText("$rootKey.$key", args)
-  override fun formatTextOrNull(key: String, vararg args: Any) = delegate.formatTextOrNull("$rootKey.$key", args)
-}
-
-private var currentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
+private var ourCurrentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
 fun setLocale(locale: Locale) {
-  currentTranslation = getResourceBundle(locale, true)
-  println("Current translation =${currentTranslation?.locale}")
+  ourCurrentTranslation = getResourceBundle(locale, true)
+  println("Current translation =${ourCurrentTranslation?.locale}")
 }
 
 private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {
