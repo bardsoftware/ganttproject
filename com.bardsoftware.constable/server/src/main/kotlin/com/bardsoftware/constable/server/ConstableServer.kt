@@ -12,16 +12,16 @@ import java.sql.SQLException
 private val logger = KotlinLogging.logger {}
 
 class ConstableServer : CliktCommand() {
-    private val url by option(help = "url").default("127.0.0.1")
-    private val port by option(help = "port").int().default(5432).validate { require(it in 1024..65535) }
-    private val name by option(help = "data base name").default("postgres")
-    private val user by option(help = "user").default("postgres")
-    private val password by option(help = "password").default("")
+    private val `pg-host` by option().default("127.0.0.1")
+    private val `pg-port` by option().int().default(5432).validate { require(it in 1024..65535) }
+    private val `pg-database` by option().default("postgres")
+    private val `pg-user` by option().default("postgres")
+    private val `pg-password` by option().default("")
 
     override fun run() {
-        val connectionUrl = "jdbc:postgresql://$url:$port/$name"
+        val connectionUrl = "jdbc:postgresql://$`pg-host`:$`pg-port`/$`pg-database`"
         try {
-            DriverManager.getConnection(connectionUrl, user, password).use { connection ->
+            DriverManager.getConnection(connectionUrl, `pg-user`, `pg-password`).use { connection ->
                 connection.createStatement().use { statement ->
                     statement.executeQuery("SELECT VERSION()").use { resultSet ->
                         if (resultSet.next()) {
@@ -32,8 +32,7 @@ class ConstableServer : CliktCommand() {
             }
         } catch (e: SQLException) {
             logger.error(e) { "Something went wrong. ${e.message}" }
-            println("Something went wrong. ${e.message}"
-            )
+            println("Something went wrong. ${e.message}")
         }
     }
 }
