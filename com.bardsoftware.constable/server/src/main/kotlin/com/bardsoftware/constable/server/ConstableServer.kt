@@ -5,12 +5,11 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
+import mu.KotlinLogging
 import java.sql.DriverManager
 import java.sql.SQLException
-import java.util.logging.Level
-import java.util.logging.Logger
 
-private val logger: Logger = Logger.getLogger(ConstableServer::class.java.name)
+private val logger = KotlinLogging.logger {}
 
 class ConstableServer : CliktCommand() {
     private val url by option(help = "url").default("127.0.0.1")
@@ -32,8 +31,9 @@ class ConstableServer : CliktCommand() {
                 }
             }
         } catch (e: SQLException) {
-            logger.log(Level.SEVERE, e.message, e)
-            println("Something went wrong. " + e.message)
+            logger.error(e) { "Something went wrong. ${e.message}" }
+            println("Something went wrong. ${e.message}"
+            )
         }
     }
 }
