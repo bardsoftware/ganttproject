@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.BrowserPaneBuilder
@@ -123,7 +123,7 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, private val dialog
     }
 
     val paneElements = builder.apply {
-      withI18N(DefaultLocalizer("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
+      withI18N(RootLocalizer.createWithRootKey("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
       withActionButton(EventHandler { })
       withListView(

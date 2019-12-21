@@ -55,11 +55,6 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   val autosaveCleanup = DocumentCreator.createAutosaveCleanup()
 
   val splashCloser = showAsync()
-  try {
-    Thread.sleep(1000)
-  } catch (e1: InterruptedException) {
-    GPLogger.log(e1)
-  }
 
 
   val mainWindow = AtomicReference<GanttProject?>(null)

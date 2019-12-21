@@ -123,7 +123,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
     } catch (e: VersionMismatchException) {
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18n = DefaultLocalizer(rootKey = "cloud.versionMismatch", proxiedLocalizer = RootLocalizer)
+          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch")
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")

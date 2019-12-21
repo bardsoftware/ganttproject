@@ -280,4 +280,4 @@ private fun formatError(validation: ValidationResult): String {
       .collect(Collectors.joining("\n"))
 }
 
-val BROWSE_PANE_LOCALIZER = DefaultLocalizer("storageService._default", DummyLocalizer, RootLocalizer)
+val BROWSE_PANE_LOCALIZER = RootLocalizer.createWithRootKey("storageService._default")

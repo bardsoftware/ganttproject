@@ -2,7 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
@@ -135,7 +135,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       System.err.println("is locking supported=" + newValue!!)
     }
     builder.apply {
-      withI18N(DefaultLocalizer("storageService.webdav", BROWSE_PANE_LOCALIZER))
+      withI18N(RootLocalizer.createWithRootKey("storageService.webdav", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
       withListView(
           onOpenItem = Consumer { item ->

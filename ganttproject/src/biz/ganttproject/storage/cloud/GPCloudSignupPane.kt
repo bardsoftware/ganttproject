@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
@@ -55,7 +54,7 @@ import java.util.logging.Level
 class GPCloudSignupPane(
     val onTokenCallback: AuthTokenCallback,
     val pageSwitcher: SceneChanger) {
-  private val i18n = DefaultLocalizer("cloud.signup", RootLocalizer)
+  private val i18n = RootLocalizer.createWithRootKey("cloud.signup", RootLocalizer)
 
   private val httpd: HttpServerImpl by lazy {
     HttpServerImpl().apply { this.start() }
@@ -159,7 +158,7 @@ class GPCloudSignupPane(
   }
 
   fun createSigninPane(): Pane {
-    val i18nSignin = DefaultLocalizer("cloud.signin", i18n)
+    val i18nSignin = RootLocalizer.createWithRootKey("cloud.signin", i18n)
     val vboxBuilder = VBoxBuilder()
     vboxBuilder.addTitle(i18nSignin.formatText("title"))
     vboxBuilder.add(Label().apply {
@@ -210,7 +209,7 @@ class GPCloudSignupPane(
   }
 
   private fun createTokenVerificationProgressUi(): Pane {
-    val i18nSignin = DefaultLocalizer("cloud.authPane", i18n)
+    val i18nSignin = RootLocalizer.createWithRootKey("cloud.authPane", i18n)
     val vboxBuilder = VBoxBuilder("fill-parent")
     vboxBuilder.addTitle(i18nSignin.formatText("title"))
 
