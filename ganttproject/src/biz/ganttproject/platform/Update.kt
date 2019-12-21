@@ -274,7 +274,7 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   }
 }
 
-private val i18n = DefaultLocalizer("platform.update", RootLocalizer)
+private val i18n = RootLocalizer.createWithRootKey("platform.update")
 
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled")

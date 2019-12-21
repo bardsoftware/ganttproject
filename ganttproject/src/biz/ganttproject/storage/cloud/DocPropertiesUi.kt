@@ -18,7 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.*
+import biz.ganttproject.app.OptionElementData
+import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
@@ -66,7 +69,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
 
     val vboxBuilder = VBoxBuilder().also {
-      it.i18n = DefaultLocalizer("cloud.lockOptionPane", proxiedLocalizer = RootLocalizer)
+      it.i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
       it.addTitle("title")
       it.add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
         this.styleClass.add("help")
@@ -93,7 +96,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 //
   private fun lockPaneBuilder(lockStatus: LockStatus): OptionPaneBuilder<Duration> {
     return OptionPaneBuilder<Duration>().apply {
-      i18n = DefaultLocalizer("cloud.lockOptionPane", proxiedLocalizer = RootLocalizer)
+      i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
       if (lockStatus.lockExpiration >= 0) {
         titleHelpString = i18n.create("titleHelp.locked").update(
             GanttLanguage.getInstance().formatDateTime(Date(lockStatus.lockExpiration)))
@@ -144,7 +147,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   // Sync stuff
   private fun mirrorPaneBuilder(document: OnlineDocument): OptionPaneBuilder<OnlineDocumentMode> {
     return OptionPaneBuilder<OnlineDocumentMode>().apply {
-      i18n = DefaultLocalizer("cloud.offlineMirrorOptionPane", proxiedLocalizer = RootLocalizer)
+      i18n = RootLocalizer.createWithRootKey("cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
       elements = listOf(
           OptionElementData(OnlineDocumentMode.MIRROR.name.toLowerCase(), OnlineDocumentMode.MIRROR,
               isSelected = document.mode.value == OnlineDocumentMode.MIRROR),

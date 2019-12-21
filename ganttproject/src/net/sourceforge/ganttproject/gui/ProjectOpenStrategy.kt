@@ -153,7 +153,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
 
   private fun showOfflineIsAheadDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
     OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = DefaultLocalizer(rootKey = "cloud.openWhenOfflineIsAhead", proxiedLocalizer = RootLocalizer)
+      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenOfflineIsAhead")
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
@@ -183,7 +183,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
 
   private fun showForkDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
     OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = DefaultLocalizer(rootKey = "cloud.openWhenDiverged", proxiedLocalizer = RootLocalizer)
+      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenDiverged")
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
