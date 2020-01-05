@@ -2,11 +2,10 @@ package com.bardsoftware.constable.client
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import mu.KotlinLogging
 import java.sql.SQLException
-import java.util.logging.Level
-import java.util.logging.Logger
 
-private val logger = Logger.getLogger(H2Manager::class.java.name)
+private val logger = KotlinLogging.logger {}
 
 class ConstableClient : CliktCommand() {
     private val path by argument(help = "Path to database file")
@@ -15,7 +14,7 @@ class ConstableClient : CliktCommand() {
         try {
             H2Manager(path).use { it.execute() }
         } catch (e: SQLException) {
-            logger.log(Level.SEVERE, e.stackTrace.toString())
+            logger.error(e) { "Something went wrong. ${e.message}" }
             println("Something went wrong. " + e.message)
         }
     }
