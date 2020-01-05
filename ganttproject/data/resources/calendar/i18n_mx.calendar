@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="mx" name="Mexico Statutory Holidays 2016-2019" type="country">
+<calendar id="mx" name="Mexico Statutory Holidays 2016-2020" type="country">
 <!-- http://www.holiday-times.com/public-holidays-mexico/ -->
 <!-- http://www.officeholidays.com/countries/mexico/index.php -->
 <!-- http://www.timeanddate.com/holidays/mexico/ -->
@@ -37,6 +37,12 @@
 	<date year="2019" month="3" date="18"><![CDATA[Benito Juárez's Birthday]]></date>
 	<date year="2019" month="4" date="18"><![CDATA[Maundy Thursday]]></date>
 	<date year="2019" month="4" date="19"><![CDATA[Good Friday]]></date>
-	<date year="2018" month="11" date="18"><![CDATA[Revolution Day]]></date>
+	<date year="2019" month="11" date="18"><![CDATA[Revolution Day]]></date>
+
+	<date year="2020" month="2" date="3"><![CDATA[Constitution Day]]></date>
+	<date year="2020" month="3" date="16"><![CDATA[Benito Juárez's Birthday]]></date>
+	<date year="2020" month="4" date="9"><![CDATA[Maundy Thursday]]></date>
+	<date year="2020" month="4" date="10"><![CDATA[Good Friday]]></date>
+	<date year="2020" month="11" date="16"><![CDATA[Revolution Day]]></date>
 
 </calendar >
