@@ -28,7 +28,7 @@ class H2Manager(path: String) : Closeable {
     private fun printResultSet(resultSet: ResultSet, printStream: PrintStream) {
         val columnsCount = resultSet.metaData.columnCount
         for (i in 1..columnsCount) {
-            printStream.println(resultSet.metaData.getColumnName(i) + " ")
+            printStream.print(resultSet.metaData.getColumnName(i) + " ")
         }
         printStream.println()
         while (resultSet.next()) {
