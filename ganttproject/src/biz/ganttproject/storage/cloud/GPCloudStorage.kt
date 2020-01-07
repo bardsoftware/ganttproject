@@ -52,7 +52,7 @@ typealias SceneChanger = (Node) -> Unit
  */
 class GPCloudStorage(
     private val mode: StorageDialogBuilder.Mode,
-    private val openDocument: Consumer<Document>,
+    private val openDocument: (Document) -> Unit,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentManager: DocumentManager) : StorageDialogBuilder.Ui {
   private val myPane: BorderPane = BorderPane()

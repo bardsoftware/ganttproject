@@ -131,7 +131,7 @@ val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: Consumer<Document>,
+    private val documentConsumer: (Document) -> Unit,
     private val documentManager: DocumentManager) {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
@@ -195,7 +195,7 @@ class GPCloudBrowserPane(
     if (selectedTeam == null) {
       return
     }
-    this.documentConsumer.accept(GPCloudDocument(selectedTeam, text).also {
+    this.documentConsumer(GPCloudDocument(selectedTeam, text).also {
       it.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       it.proxyDocumentFactory = this.documentManager::getProxyDocument
     })
@@ -220,7 +220,7 @@ class GPCloudBrowserPane(
 //          this.sceneChanger(this.createLockWarningPage(document))
 //        }
 //      }
-      this.documentConsumer.accept(document)
+      this.documentConsumer(document)
       document.listenLockChange(webSocket)
     }
   }
@@ -232,7 +232,7 @@ class GPCloudBrowserPane(
     if (jsonLock != null) {
       document.lock = jsonLock
     }
-    this@GPCloudBrowserPane.documentConsumer.accept(document)
+    this@GPCloudBrowserPane.documentConsumer(document)
   }
 
   private fun <T: CloudJsonAsFolderItem> loadTeams(path: Path, setResult: Consumer<ObservableList<T>>, showMaskPane: Consumer<Boolean>) {
