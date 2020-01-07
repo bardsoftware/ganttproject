@@ -45,7 +45,7 @@ class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
     private val myDocumentManager: DocumentManager,
     private val myCurrentDocument: Document,
-    private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+    private val myDocumentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
 
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
@@ -74,7 +74,7 @@ class RecentProjects(
         selectedItem?.let {
           val file = it.docPath.toFile()
           if (file.exists()) {
-            myDocumentReceiver.accept(FileDocument(file))
+            myDocumentReceiver(FileDocument(file))
           }
         }
       }

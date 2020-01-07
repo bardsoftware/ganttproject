@@ -57,7 +57,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
 class WebdavStorage(
     private var myServer: WebDavServerDescriptor,
     private val myMode: StorageDialogBuilder.Mode,
-    private val myOpenDocument: Consumer<Document>,
+    private val myOpenDocument: (Document) -> Unit,
     private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val myOptions: GPCloudStorageOptions) : StorageDialogBuilder.Ui {
 
@@ -112,7 +112,7 @@ data class State(val server: WebDavServerDescriptor,
 
 class WebdavServerUi(private val myServer: WebDavServerDescriptor,
                      private val myMode: StorageDialogBuilder.Mode,
-                     private val myOpenDocument: Consumer<Document>,
+                     private val myOpenDocument: (Document) -> Unit,
                      private val myDialogUi: StorageDialogBuilder.DialogUi) {
   private val myLoadService: WebdavLoadService = WebdavLoadService(myServer)
   private val myState = State(server = myServer, resource = null, filename = null, folder = null)
@@ -150,7 +150,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
             }
           },
           onLaunch = Consumer {
-            myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+            myOpenDocument(createDocument(myState.server, createResource(myState)))
           },
           onDelete = Consumer { item ->
             if (item is WebDavResourceAsFolderItem) {
@@ -168,7 +168,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
 
 
       withActionButton(EventHandler {
-        myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+        myOpenDocument(createDocument(myState.server, createResource(myState)))
       })
     }
     val browserPaneElements = builder.build()
