@@ -8,16 +8,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      shell: bash
-      run: |
-        git submodule sync --recursive
-        git submodule update --init --force --recursive --depth=1
-    - name: Setup JDK
-    - uses: actions/setup-java@v1
-      with:
-        java-version: 11.0.5
-        java-package: jdk+fx
-    - name: Build with Gradle
-      run: ./gradlew build
+      - name: Checkout repo
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+      - name: Setup JDK
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.5
+          java-package: jdk+fx
+      - name: Build with Gradle
+        run: ./gradlew build
