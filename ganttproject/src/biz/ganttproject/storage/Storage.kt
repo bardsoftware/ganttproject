@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.cloud.GPCloudStorage
@@ -43,7 +44,6 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
-import net.sourceforge.ganttproject.language.GanttLanguage
 import java.io.File
 import java.util.function.Consumer
 
@@ -86,6 +86,8 @@ sealed class StorageMode(val name: String) {
 }
 
 /**
+ * This is the main entrance point. This class create a UI consisting of a storage list in the left pane
+ * and storage UI in the right pane. Storage UI changes along with the selection in the storage list.
  *
  * @author dbarashev@bardsoftware.com
  */
@@ -97,11 +99,15 @@ class StoragePane internal constructor(
     private val documentUpdater: Consumer<Document>,
     private val dialogUi: StorageDialogBuilder.DialogUi) {
 
-  private var activeStorageLabel: Node? = null
   private val storageUiMap = mutableMapOf<String, Supplier<Pane>>()
   private val storageUiList = mutableListOf<StorageDialogBuilder.Ui>()
   private val storageUiPane = BorderPane()
 
+  private var activeStorageLabel: Node? = null
+
+  /**
+   * Builds a pane with the whole storage dialog UI: lit on the left and
+   */
   fun buildStoragePane(mode: StorageDialogBuilder.Mode): BorderPane {
     val borderPane = BorderPane()
 
@@ -121,9 +127,9 @@ class StoragePane internal constructor(
     storageUiPane.setPrefSize(400.0, 400.0)
 
     borderPane.center = storageUiPane
-    reloadStorageLabels(storageButtons, mode)
+    reloadStorages(storageButtons, mode)
     cloudStorageOptions.list.addListener(ListChangeListener {
-      reloadStorageLabels(storageButtons, mode, activeStorageLabel?.id)
+      reloadStorages(storageButtons, mode, activeStorageLabel?.id)
     })
 
     if (storageUiList.size > 1) {
@@ -134,11 +140,11 @@ class StoragePane internal constructor(
     return borderPane
   }
 
-  private fun reloadStorageLabels(storageButtons: VBox, mode: StorageDialogBuilder.Mode, selectedId: String? = null) {
+  private fun reloadStorages(storageButtons: VBox, mode: StorageDialogBuilder.Mode, selectedId: String? = null) {
     storageButtons.children.clear()
     storageUiList.clear()
     storageUiMap.clear()
-    val i18n = GanttLanguage.getInstance()
+    val i18n = RootLocalizer
 
     val openDocument = { document: Document ->
       try {
@@ -160,37 +166,42 @@ class StoragePane internal constructor(
     }
 
     val initialStorageId = selectedId ?: if (mode == StorageDialogBuilder.Mode.OPEN) recentProjects.id else localStorage.id
+
+    // Iterate the list of available storages and create for each storage:
+    // - a list item with optional settings button if settings are available
+    // - a supplier of the storage UI
     storageUiList.forEach { storageUi ->
       storageUiMap[storageUi.id] = Suppliers.memoize { storageUi.createUi() }
 
       val itemLabel = i18n.formatText("storageView.service.${storageUi.category}.label", storageUi.name)
-      val itemIcon = i18n.getText("storageView.service.${storageUi.category}.icon")
+      val itemIcon = i18n.formatText("storageView.service.${storageUi.category}.icon")
 
       val listItemContent = buildFontAwesomeButton(
           itemIcon,
           itemLabel,
           { onStorageChange(storageUiPane, storageUi.id) },
           "storage-name")
-      val builder = ListItemBuilder(listItemContent)
-      builder.onSelectionChange = { pane: Parent -> this.setSelected(pane) }
+      ListItemBuilder(listItemContent).let { builder ->
+        builder.onSelectionChange = { pane: Parent -> this.setSelected(pane) }
 
-      storageUi.createSettingsUi().ifPresent { settingsPane ->
-        val listItemOnHover = buildFontAwesomeButton(FontAwesomeIcon.COG.name, null,
-            {
-              FXUtil.transitionCenterPane(storageUiPane, settingsPane) { dialogUi.resize() }
-              Unit
-            },
-            "settings"
-        )
-        builder.hoverNode = listItemOnHover
-      }
-      val btnPane = builder.build()
-      btnPane.styleClass.add("btn-service")
-      btnPane.id = storageUi.id
-      storageButtons.children.addAll(btnPane)
-
-      if (initialStorageId == storageUi.id) {
-        setSelected(btnPane)
+        storageUi.createSettingsUi().ifPresent { settingsPane ->
+          builder.hoverNode = buildFontAwesomeButton(FontAwesomeIcon.COG.name, null,
+              {
+                FXUtil.transitionCenterPane(storageUiPane, settingsPane) { dialogUi.resize() }
+                Unit
+              },
+              "settings"
+          )
+        }
+        builder.build().apply {
+          styleClass.add("btn-service")
+          id = storageUi.id
+        }.also {
+          storageButtons.children.add(it)
+          if (initialStorageId == storageUi.id) {
+            setSelected(it)
+          }
+        }
       }
     }
     onStorageChange(storageUiPane, initialStorageId)
@@ -198,9 +209,7 @@ class StoragePane internal constructor(
 
   private fun setSelected(pane: Parent) {
     pane.styleClass.add("active")
-    if (activeStorageLabel != null) {
-      activeStorageLabel!!.styleClass.remove("active")
-    }
+    activeStorageLabel?.apply { styleClass.remove("active") }
     activeStorageLabel = pane
   }
 
