@@ -7,7 +7,14 @@ INPUT=${2}
 VERSION=${3}
 JAVAFX_MODS_PATH=${4}
 
+echo "JAVA_HOME=$JAVA_HOME"
+echo "Listing java binaries:"
+ls "${JAVA_HOME}"/bin/
+
 JLINK=${JAVA_HOME}/bin/jlink
+
+echo "Listing java mods:"
+ls "${JAVA_HOME}"/jmods/
 MODULE_PATH=${JAVA_HOME}/jmods:${JAVAFX_MODS_PATH}
 
 rm -rf "${OUTPUT}/runtime"
@@ -48,7 +55,7 @@ java --module-path build-bin/lin \
   --identifier biz.ganttproject \
   --description "Free desktop project scheduling and project management application" \
   --category "Office" \
-  --copyright "Copyright 2019 BarD Software s.r.o" \
+  --copyright "Copyright 2020 BarD Software s.r.o" \
   --vendor "BarD Software s.r.o" \
   --license-file LICENSE \
   --linux-deb-maintainer "Dmitry Barashev, BarD Software s.r.o" \
