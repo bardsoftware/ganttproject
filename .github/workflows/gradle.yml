@@ -32,7 +32,7 @@ jobs:
         run: |
           cd build/dist
           ls -l
-          for f in * do; curl -X POST https://content.dropboxapi.com/2/files/upload \
+          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
               --header "Authorization: Bearer ${ACCESS_TOKEN}" \
               --header "Dropbox-API-Arg: {\"path\": \"/$f\"}" \
               --header "Content-Type: application/octet-stream" \
