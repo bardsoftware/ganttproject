@@ -147,7 +147,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   // Sync stuff
   private fun mirrorPaneBuilder(document: OnlineDocument): OptionPaneBuilder<OnlineDocumentMode> {
     return OptionPaneBuilder<OnlineDocumentMode>().apply {
-      i18n = RootLocalizer.createWithRootKey("cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
+      i18n = OFFLINE_MIRROR_LOCALIZER
       elements = listOf(
           OptionElementData(OnlineDocumentMode.MIRROR.name.toLowerCase(), OnlineDocumentMode.MIRROR,
               isSelected = document.mode.value == OnlineDocumentMode.MIRROR),
@@ -266,6 +266,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     val mirrorToggleGroup = ToggleGroup()
 
     val vboxBuilder = VBoxBuilder("tab-contents").apply {
+      i18n = OFFLINE_MIRROR_LOCALIZER
       add(node = mirrorPaneBuilder(document).let {
         it.toggleGroup = mirrorToggleGroup
         it.styleClass = "section"
@@ -365,3 +366,5 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     return Scene(signupPane.createPane())
   }
 }
+
+private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
