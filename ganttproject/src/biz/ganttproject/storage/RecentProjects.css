@@ -5,3 +5,11 @@
 .list-cell Label.list-item-filename {
     -fx-font-size: 110%;
 }
+.list-cell HBox.list-item-tags {
+    -fx-alignment: bottom-right;
+    -fx-padding: 3 0 0 0;
+}
+.list-cell HBox.list-item-tags Label {
+    -fx-text-fill: derive(-gp-medium-gray, 20%);
+    -fx-font-size: 90%;
+}

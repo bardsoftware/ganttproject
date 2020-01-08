@@ -47,6 +47,8 @@ interface FolderItem {
   val isDirectory: Boolean
   // Is it possible to change lock state: unlock if locked or lock if unlocked
   val canChangeLock: Boolean
+  // Item tags, indicating whether item is local, is read-only, etc
+  val tags: List<String>
 }
 
 private val unsupported = SimpleBooleanProperty(false)

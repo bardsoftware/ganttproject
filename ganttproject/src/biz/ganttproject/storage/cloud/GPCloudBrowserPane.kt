@@ -36,7 +36,9 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.logging.Level
 
-abstract class CloudJsonAsFolderItem : FolderItem
+abstract class CloudJsonAsFolderItem : FolderItem {
+  override val tags = listOf<String>()
+}
 /**
  * Wraps JSON node matching a team to FolderItem
  */
@@ -109,6 +111,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
     get() = node["author"].toString().removeSurrounding("\"")
   override val isDirectory = false
   override val canChangeLock = false
+  override val tags = listOf<String>()
 
   val generation: Long
     get() = node["number"].asLong(-1)
