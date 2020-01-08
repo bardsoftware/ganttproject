@@ -26,6 +26,7 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
@@ -125,14 +126,31 @@ class RecentProjects(
         val pane = StackPane()
         pane.minWidth = 0.0
         pane.prefWidth = 1.0
-        val pathLabel = Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "")
-        pathLabel.styleClass.add("list-item-path")
-        val nameLabel = Label(item.resource.get().docPath.fileName.toString())
-        nameLabel.styleClass.add("list-item-filename")
-        val labelBox = VBox()
-        labelBox.children.addAll(pathLabel, nameLabel)
-        StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
-        pane.children.add(labelBox)
+
+        pane.children.add(VBox().also { vbox ->
+          vbox.isFillWidth = true
+          vbox.children.add(
+              Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "").apply {
+                styleClass.add("list-item-path")
+              }
+          )
+          vbox.children.add(
+              Label(item.resource.get().docPath.fileName.toString()).apply {
+                styleClass.add("list-item-filename")
+              }
+          )
+          item.resource.value.tags.let {
+            if (it.isNotEmpty()) {
+              vbox.children.add(
+                  HBox(Label(it.joinToString(", "))).apply {
+                    styleClass.add("list-item-tags")
+                  }
+              )
+            }
+          }
+          StackPane.setAlignment(vbox, Pos.BOTTOM_LEFT)
+        })
+
         graphic = pane
       }
     }
@@ -145,7 +163,10 @@ class RecentProjects(
         GlobalScope.async {
           documentManager.newDocument(path)?.let {doc ->
             when {
-              doc.isLocal && doc.canRead() -> RecentDocAsFolderItem(Paths.get(path), i18n.formatText("local")).also { println("that's ok") }
+              doc.isLocal && doc.canWrite().isOK -> RecentDocAsFolderItem(Paths.get(path), listOf(i18n.formatText("tag.local")))
+              doc.isLocal && doc.canRead() -> RecentDocAsFolderItem(Paths.get(path), listOf(
+                  i18n.formatText("tag.local"), i18n.formatText("tag.readonly")
+              ))
               else -> null
             }
           }
@@ -156,7 +177,7 @@ class RecentProjects(
   }
 }
 
-class RecentDocAsFolderItem(val docPath: Path, vararg labels: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(val docPath: Path, override val tags: List<String>) : FolderItem, Comparable<RecentDocAsFolderItem> {
   override fun compareTo(other: RecentDocAsFolderItem): Int {
     val result = this.isDirectory.compareTo(other.isDirectory)
     return if (result != 0) {

@@ -140,8 +140,8 @@ class StoragePane internal constructor(
     return borderPane
   }
 
-  private fun reloadStorages(storageButtons: VBox, mode: StorageDialogBuilder.Mode, selectedId: String? = null) {
-    storageButtons.children.clear()
+  private fun reloadStorages(labelListPane: VBox, mode: StorageDialogBuilder.Mode, selectedId: String? = null) {
+    labelListPane.children.clear()
     storageUiList.clear()
     storageUiMap.clear()
     val i18n = RootLocalizer
@@ -197,7 +197,7 @@ class StoragePane internal constructor(
           styleClass.add("btn-service")
           id = storageUi.id
         }.also {
-          storageButtons.children.add(it)
+          labelListPane.children.add(it)
           if (initialStorageId == storageUi.id) {
             setSelected(it)
           }

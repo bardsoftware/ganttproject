@@ -49,6 +49,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
       }
 
     }
+  override val tags = listOf<String>()
 }
 
 /**
