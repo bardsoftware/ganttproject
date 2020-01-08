@@ -30,10 +30,10 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
         run: |
-          cd ganttproject-builder/dist-bin
+          cd build/dist
           ls -l
-          curl -X POST https://content.dropboxapi.com/2/files/upload \
+          for f in * do; curl -X POST https://content.dropboxapi.com/2/files/upload \
               --header "Authorization: Bearer ${ACCESS_TOKEN}" \
-              --header "Dropbox-API-Arg: {\"path\": \"/ganttproject-2.99.0.deb\"}" \
+              --header "Dropbox-API-Arg: {\"path\": \"/$f\"}" \
               --header "Content-Type: application/octet-stream" \
-              --data-binary @ganttproject-2.99.0deb
+              --data-binary "@$f"; done
