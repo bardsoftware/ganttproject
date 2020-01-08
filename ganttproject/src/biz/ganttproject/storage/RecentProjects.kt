@@ -29,6 +29,10 @@ import javafx.scene.control.ListCell
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -39,13 +43,15 @@ import java.util.*
 import java.util.function.Consumer
 
 /**
+ * This is a storage provider which shows a list of recently opened projects.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
-    private val myDocumentManager: DocumentManager,
-    private val myCurrentDocument: Document,
-    private val myDocumentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
+    private val documentManager: DocumentManager,
+    private val currentDocument: Document,
+    private val documentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
 
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
@@ -74,7 +80,7 @@ class RecentProjects(
         selectedItem?.let {
           val file = it.docPath.toFile()
           if (file.exists()) {
-            myDocumentReceiver(FileDocument(file))
+            documentReceiver(FileDocument(file))
           }
         }
       }
@@ -133,15 +139,24 @@ class RecentProjects(
   }
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
-    result.add(RecentDocAsFolderItem(Paths.get(myCurrentDocument.path)))
-    for (doc in myDocumentManager.recentDocuments) {
-      result.add(RecentDocAsFolderItem(Paths.get(doc)))
+
+    runBlocking {
+      result.addAll(documentManager.recentDocuments.map { path ->
+        GlobalScope.async {
+          documentManager.newDocument(path)?.let {doc ->
+            when {
+              doc.isLocal && doc.canRead() -> RecentDocAsFolderItem(Paths.get(path), i18n.formatText("local")).also { println("that's ok") }
+              else -> null
+            }
+          }
+        }
+      }.awaitAll().filterNotNull())
     }
     consumer.accept(result)
   }
 }
 
-class RecentDocAsFolderItem(val docPath: Path) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(val docPath: Path, vararg labels: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
   override fun compareTo(other: RecentDocAsFolderItem): Int {
     val result = this.isDirectory.compareTo(other.isDirectory)
     return if (result != 0) {
