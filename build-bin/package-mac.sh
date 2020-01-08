@@ -7,14 +7,16 @@ INPUT=${2}
 VERSION=${3}
 JAVAFX_MODS_PATH=${4}
 
-MODULE_PATH=${JAVAFX_MODS_PATH}
-JLINK=jlink
+echo "JAVA_HOME=$JAVA_HOME"
+echo "Listing java binaries:"
+ls "${JAVA_HOME}"/bin/
 
-if [[ -z "$JAVA_HOME" ]]; then
-  REAL_JAVA=$(python -c "import os; print(os.path.realpath('/usr/bin/java'))")
-  ls -l "$(dirname $REAL_JAVA)"
-  JLINK="$(dirname $REAL_JAVA)/jlink"
-fi
+JLINK=${JAVA_HOME}/bin/jlink
+
+echo "Listing java mods:"
+ls "${JAVA_HOME}"/jmods/
+MODULE_PATH=${JAVA_HOME}/jmods:${JAVAFX_MODS_PATH}
+
 rm -rf "${OUTPUT}/runtime"
 
 echo "Building Java Runtime"
@@ -51,6 +53,6 @@ java --module-path build-bin/mac/ \
   --identifier com.bardsoftware.ganttproject \
   --icon build-cfg/ganttproject.icns \
   --category "Office" \
-  --copyright "Copyright 2019 BarD Software s.r.o" \
+  --copyright "Copyright 2020 BarD Software s.r.o" \
   --runtime-image "${OUTPUT}/runtime" \
   --mac-bundle-identifier com.bardsoftware.ganttproject
