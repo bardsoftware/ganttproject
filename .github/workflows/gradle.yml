@@ -62,7 +62,6 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
         run: |
           cd build/dist
-          ls -l
           for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
               --header "Authorization: Bearer ${ACCESS_TOKEN}" \
               --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \

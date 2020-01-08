@@ -56,3 +56,6 @@ java --module-path build-bin/mac/ \
   --copyright "Copyright 2020 BarD Software s.r.o" \
   --runtime-image "${OUTPUT}/runtime" \
   --mac-bundle-identifier com.bardsoftware.ganttproject
+cd "${OUTPUT}/dist"
+zip -r ganttproject-${VERSION}.zip GanttProject.app
+rm -r GanttProject.app
