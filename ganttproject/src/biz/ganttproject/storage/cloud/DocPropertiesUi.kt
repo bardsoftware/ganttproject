@@ -68,15 +68,14 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       it.isSelected = true
     }
 
-    val vboxBuilder = VBoxBuilder().also {
-      it.i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
-      it.addTitle("title")
-      it.add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
-        this.styleClass.add("help")
+    return VBoxBuilder().apply {
+      i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
+      addTitle("title")
+      add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
+        styleClass.add("help")
       })
-      it.add(notify)
-    }
-    return vboxBuilder.vbox
+      add(notify)
+    }.vbox
   }
 
 
