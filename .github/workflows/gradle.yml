@@ -20,3 +20,14 @@ jobs:
           java-package: jdk+fx
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          cd ganttproject-builder/build/distributions
+          curl -X POST https://content.dropboxapi.com/2/files/upload \
+              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --header "Dropbox-API-Arg: {\"path\": \"/GanttProject Builds/ganttproject-snapshot.zip\"}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary @ganttproject-3.0.0-3000.zip
