@@ -66,6 +66,21 @@ class InternationalizationTest {
     }
     assertEquals("Hello, World!", i18n.formatText("hello", i18n.formatText("world")))
   }
+
+  @Test
+  fun `prefix and fallback`() {
+    val rootLocalizer = DefaultLocalizer {
+      newResourceBundle(mapOf(
+          "foo.hello" to "Hello, {0}",
+          "world" to "World!",
+          "foo.ganttproject" to "GanttProject!",
+          "ganttproject" to "You are not expected to see this"
+      ))
+    }
+    val i18n = rootLocalizer.createWithRootKey("foo", baseLocalizer = rootLocalizer)
+    assertEquals("Hello, World!", i18n.formatText("hello", i18n.formatText("world")))
+    assertEquals("Hello, GanttProject!", i18n.formatText("hello", i18n.formatText("ganttproject")))
+  }
 }
 
 private fun newResourceBundle(kv: Map<Any, Any>) : ResourceBundle {
