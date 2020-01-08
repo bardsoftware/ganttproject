@@ -78,6 +78,7 @@ class RecentProjects(
 
 
       fun onAction() {
+        // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
         selectedItem?.let {
           val file = it.docPath.toFile()
           if (file.exists()) {
@@ -99,11 +100,12 @@ class RecentProjects(
           cellFactory = { createListCell() }
       )
     }.build()
-    paneElements.browserPane.stylesheets.addAll(
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/RecentProjects.css")
 
     return paneElements.browserPane.also {
+      it.stylesheets.addAll(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/RecentProjects.css"
+      )
       loadRecentDocs(builder.resultConsumer)
     }
 
@@ -161,6 +163,7 @@ class RecentProjects(
     runBlocking {
       result.addAll(documentManager.recentDocuments.map { path ->
         GlobalScope.async {
+          // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
           documentManager.newDocument(path)?.let {doc ->
             when {
               doc.isLocal && doc.canWrite().isOK -> RecentDocAsFolderItem(Paths.get(path), listOf(i18n.formatText("tag.local")))

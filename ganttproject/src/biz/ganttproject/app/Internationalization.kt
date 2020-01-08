@@ -122,7 +122,7 @@ open class DefaultLocalizer(
 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
     val prefixedKey = if (this.rootKey != "") "${this.rootKey}.$key" else key
-    this.prefixedLocalizer?.formatTextOrNull(prefixedKey, args)?.let {
+    this.prefixedLocalizer?.formatTextOrNull(prefixedKey, *args)?.let {
       return it
     }
     return try {
@@ -130,7 +130,7 @@ open class DefaultLocalizer(
         if (tr.containsKey(prefixedKey)) {
           MessageFormat.format(tr.getString(prefixedKey), *args)
         } else {
-          this.baseLocalizer.formatTextOrNull(key, args)
+          this.baseLocalizer.formatTextOrNull(key, *args)
         }
       }
     } catch (ex: MissingResourceException) {

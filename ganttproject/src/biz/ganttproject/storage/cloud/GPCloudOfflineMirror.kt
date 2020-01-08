@@ -54,7 +54,9 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
 /**
  * Builds offline notification pane and offline browser pane.
  */
-class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode, private val dialogUi: StorageDialogBuilder.DialogUi) {
+class GPCloudOfflinePane(
+    val mode: StorageDialogBuilder.Mode,
+    private val dialogUi: StorageDialogBuilder.DialogUi) {
   var controller: GPCloudStorage.Controller? = null
 
   fun createPane(): Pane {
