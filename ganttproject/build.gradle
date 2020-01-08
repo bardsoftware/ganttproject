@@ -44,6 +44,9 @@ dependencies {
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile files('data/resources')
 
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
+
 //    compile "de.jensd:fontawesomefx-materialicons:2.2.+"
 
 }
@@ -66,6 +69,7 @@ sourceSets {
     }
 
     main.kotlin.srcDirs += 'src'
+    test.kotlin.srcDirs += 'test'
 }
 
 
@@ -120,3 +124,11 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
 }
 
 mainClassName="net.sourceforge.ganttproject.AppKt"
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
