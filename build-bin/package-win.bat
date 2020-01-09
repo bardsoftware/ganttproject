@@ -16,7 +16,6 @@ SET JAVA_HOME="%PWD%\build\runtime"
 cp build-bin\win\jpackager.exe build\runtime\bin
 
 build\runtime\bin\java --module-path "build-bin\win" ^
-  --add-modules jdk.jlink ^java --module-path "build-bin\win" ^
   --add-modules jdk.jlink ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
