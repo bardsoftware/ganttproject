@@ -57,16 +57,6 @@ java --module-path build-bin/mac/ \
   --runtime-image "${OUTPUT}/runtime" \
   --mac-bundle-identifier com.bardsoftware.ganttproject
 
-java --module-path build-bin/mac/ \
-  --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
-  -m jdk.packager/jdk.packager.Main \
-  create-installer \
-  --verbose \
-  --echo-mode \
-  --output "${OUTPUT}/dist" \
-  --app-image "${OUTPUT}/dist/GanttProject.app" \
-  --installer-type dmg \
-  --name "GanttProject"
 
 cd "${OUTPUT}/dist"
 zip -r ganttproject-${VERSION}.zip GanttProject.app
