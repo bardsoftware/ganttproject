@@ -39,7 +39,8 @@ echo "Building packages"
 java --module-path build-bin/mac/ \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
   -m jdk.packager/jdk.packager.Main \
-  create-image  \
+  create-installer  \
+  --installer-type dmg \
   --verbose \
   --echo-mode \
   --input "${INPUT}" \
@@ -56,6 +57,8 @@ java --module-path build-bin/mac/ \
   --copyright "Copyright 2020 BarD Software s.r.o" \
   --runtime-image "${OUTPUT}/runtime" \
   --mac-bundle-identifier com.bardsoftware.ganttproject
-cd "${OUTPUT}/dist"
-zip -r ganttproject-${VERSION}.zip GanttProject.app
+
+
+#cd "${OUTPUT}/dist"
+#zip -r ganttproject-${VERSION}.zip GanttProject.app
 rm -r GanttProject.app

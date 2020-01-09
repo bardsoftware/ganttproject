@@ -3,31 +3,17 @@ set INPUT=%2
 set OUTPUT=%1
 set VERSION=%3
 set JAVAFX_MODS_PATH=%4
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\jlink" ^
+jlink ^
   --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web ^
-  --module-path "%JAVAFX_MODS_PATH%" ^
   --no-header-files --no-man-pages ^
   --output "%OUTPUT%\runtime" ^
   --strip-debug ^
   --compress=2
 
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\java" --list-modules
-dir "C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods"
-build\runtime\bin\java --module-path "build-bin\win;C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\jmods" --list-modules
+build\runtime\bin\java -version
+build\runtime\bin\java --list-modules
 
-
-"C:\Program Files\Java\zulu-11-azure-jdk_11.31.11-11.0.3-win_x64\bin\jlink" ^
-  --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web,jdk.jlink ^
-  --module-path "%JAVAFX_MODS_PATH%" ^
-  --no-header-files --no-man-pages ^
-  --output "%OUTPUT%\runtime2" ^
-  --strip-debug ^
-  --compress=2
-
-SET JAVA_HOME="%PWD%\build\runtime2"
-cp build-bin\win\jpackager.exe build\runtime2\bin
-
-build\runtime2\bin\java --module-path "build-bin\win" ^
+java --module-path "build-bin\win" ^
   --add-modules jdk.jlink ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
   -m jdk.packager/jdk.packager.Main ^
