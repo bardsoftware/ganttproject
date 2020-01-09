@@ -25,6 +25,7 @@ jobs:
       - name: Build self-contained package for Linux
         run: |
           gradle distbin
+          gradle distbin
           build-bin/package-lin.sh build ganttproject-builder/dist-bin 2.99.0 ''
 
       - name: Upload to Dropbox
@@ -56,6 +57,7 @@ jobs:
       - name: Build self-contained package for macOS
         run: |
           gradle distbin
+          gradle distbin
           build-bin/package-mac.sh build ganttproject-builder/dist-bin 2.99.0 ''
 
       - name: Upload to Dropbox
@@ -68,3 +70,28 @@ jobs:
               --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
               --header "Content-Type: application/octet-stream" \
               --data-binary "@$f"; done
+
+  packageWin:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.5
+          java-package: jdk+fx
+      - name: Build self-contained package for Windows
+        run: |
+          gradle distbin
+          gradle distbin
+          build-bin/package-win.bat build ganttproject-builder/dist-bin 2.99.0 ''
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          dir build\dist
+
