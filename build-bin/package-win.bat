@@ -10,8 +10,9 @@ jlink ^
   --strip-debug ^
   --compress=2
 
-dir "%OUTPUT%\runtime"
-set PATH="%PATH%;build-bin\win"
+dir "%OUTPUT%\runtime\bin"
+
+set PATH=%PATH%;build-bin\win
 java --module-path "build-bin\win" ^
   --add-modules jdk.jlink ^
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
