@@ -11,7 +11,6 @@ jlink ^
   --compress=2
 
 build\runtime\bin\java -version
-build\runtime\bin\java --list-modules
 
 java --module-path "build-bin\win" ^
   --add-modules jdk.jlink ^
