@@ -12,10 +12,10 @@ jlink ^
 
 dir "%OUTPUT%\runtime\bin"
 
-dir jdk-14\bin
-jdk-14\bin\jpackage -h
+Get-ChildItem -Path jdk-14/bin | Format-Table
+jdk-14/bin/jpackage -h
 
-jdk-14\bin\jpackage ^
+jdk-14/bin/jpackage ^
     --input "%INPUT%" ^
     -d "%OUTPUT%"\dist ^
     --runtime-image "%OUTPUT%"\runtime ^
