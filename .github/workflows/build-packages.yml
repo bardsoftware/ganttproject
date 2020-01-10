@@ -87,33 +87,12 @@ jobs:
       - name: Download jpackage
         run: |
           curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
-          Expand-Archive -LiteralPath jdk14.zip -DestinationPath jdk14
-          ls jdk14
-      - name: Download jpackage
-        # We need to download jpackage from https://jdk.java.net/jpackage/
+          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
+      - name: Build self-contained package for Windows
         run: |
-          import tarfile
-          import zipfile
-          import sys
-          if sys.version_info[0] >= 3:
-            from urllib.request import urlretrieve
-          else:
-            from urllib import urlretrieve
-          url = "${{ matrix.jpackageDownload }}"
-          tmpfile, headers = urlretrieve(url)
-          if (url.endswith("tar.gz")):
-            tar = tarfile.open(tmpfile)
-            tar.extractall()
-            tar.close()
-          elif (url.endswith("zip")):
-            zip = zipfile.ZipFile(tmpfile)
-            zip.extractall()
-            zip.close()
-#      - name: Build self-contained package for Windows
-#        run: |
-#          gradle distbin
-#          gradle distbin
-#          build-bin/package-win.bat build ganttproject-builder/dist-bin 2.99.0 ''
+          gradle distbin
+          gradle distbin
+          build-bin/package-win.bat build ganttproject-builder/dist-bin 2.99.0 ''
 #      - name: Upload to Dropbox
 #        env:
 #          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
