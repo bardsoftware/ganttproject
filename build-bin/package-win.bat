@@ -13,6 +13,7 @@ jlink ^
 dir "%OUTPUT%\runtime\bin"
 
 dir jdk-14\bin
+jdk-14\bin\jpackage -h
 
 jdk-14\bin\jpackage ^
     --input "%INPUT%" ^
