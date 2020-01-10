@@ -7,134 +7,70 @@ on:
       - v3*
 
 jobs:
-  #  packageLinux:
-  #    runs-on: ubuntu-latest
-  #
-  #    steps:
-  #      - uses: actions/checkout@v1
-  #      - name: Checkout submodules
-  #        shell: bash
-  #        run: |
-  #          git submodule sync --recursive
-  #          git submodule update --init --force --recursive --depth=1
-  #      - uses: actions/setup-java@v1
-  #        with:
-  #          java-version: 11.0.5
-  #          java-package: jdk+fx
-  #
-  #      - name: Build self-contained package for Linux
-  #        run: |
-  #          gradle distbin
-  #          gradle distbin
-  #          build-bin/package-lin.sh build ganttproject-builder/dist-bin 2.99.0 ''
-  #
-  #      - name: Upload to Dropbox
-  #        env:
-  #          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
-  #        run: |
-  #          cd build/dist
-  #          ls -l
-  #          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
-  #              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
-  #              --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
-  #              --header "Content-Type: application/octet-stream" \
-  #              --data-binary "@$f"; done
-  #
-  #  packageMacOs:
-  #    runs-on: macos-latest
-  #    steps:
-  #      - uses: actions/checkout@v1
-  #      - name: Checkout submodules
-  #        shell: bash
-  #        run: |
-  #          git submodule sync --recursive
-  #          git submodule update --init --force --recursive --depth=1
-  #      - uses: actions/setup-java@v1
-  #        with:
-  #          java-version: 11.0.5
-  #          java-package: jdk+fx
-  #
-  #      - name: Build self-contained package for macOS
-  #        run: |
-  #          gradle distbin
-  #          gradle distbin
-  #          build-bin/package-mac.sh build ganttproject-builder/dist-bin 2.99.0 ''
-  #
-  #      - name: Upload to Dropbox
-  #        env:
-  #          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
-  #        run: |
-  #          cd build/dist
-  #          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
-  #              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
-  #              --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
-  #              --header "Content-Type: application/octet-stream" \
-  #              --data-binary "@$f"; done
+  packageLinux:
+    runs-on: ubuntu-latest
 
-  packageWin:
-    runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v1
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
       - uses: actions/setup-java@v1
         with:
           java-version: 11.0.5
           java-package: jdk+fx
-      - name: Build self-contained package for Windows
+
+      - name: Build self-contained package for Linux
         run: |
-          echo "Downloading GanttProject"
-          curl -o ganttproject.zip -L https://www.dropbox.com/s/w57gcgdwtyckaiy/ganttproject.zip?dl=1
-          Expand-Archive -LiteralPath ganttproject.zip -DestinationPath .
-          rm ganttproject.zip
-          du .
+          gradle distbin
+          gradle distbin
+          build-bin/package-lin.sh build ganttproject-builder/dist-bin 2.99.0 ''
 
-          echo "Downloading jpackage"
-          curl -o jdk14.zip -L --retry 5 https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
-          du .
+      - name: Build ZIP archive
+        run: |
+          gradle distzip
 
-          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
-          du .
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          cd build/dist
+          ls -l
+          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
+              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@$f"; done
 
-          rm jdk14.zip
-          ls jdk-14\\bin
-          echo "Is jpackage here?"
-          jdk-14\\bin\\jpackage -h
+    packageMacOs:
+      runs-on: macos-latest
+      steps:
+        - uses: actions/checkout@v1
+        - name: Checkout submodules
+          shell: bash
+          run: |
+            git submodule sync --recursive
+            git submodule update --init --force --recursive --depth=1
+        - uses: actions/setup-java@v1
+          with:
+            java-version: 11.0.5
+            java-package: jdk+fx
 
-          echo "Building Java runtime"
-          mkdir runtime
-          jlink `
-            --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web `
-            --no-header-files --no-man-pages `
-            --output runtime `
-            --strip-debug `
-            --compress=2
-          du .
+        - name: Build self-contained package for macOS
+          run: |
+            gradle distbin
+            gradle distbin
+            build-bin/package-mac.sh build ganttproject-builder/dist-bin 2.99.0 ''
 
-          echo "Running jpackage"
-          jdk-14\\bin\\jpackage `
-            --input ganttproject `
-            --runtime-image runtime `
-            --main-jar eclipsito.jar `
-            --main-class com.bardsoftware.eclipsito.Launch `
-            --arguments "--verbosity 4 --version-dirs app/plugins --app net.sourceforge.ganttproject.GanttProject"  `
-            --name GanttProject `
-            --app-version 2.99.0 `
-            --type msi `
-            --description "Free desktop project scheduling and project management application" `
-            --copyright "Copyright 2020 BarD Software s.r.o" `
-            --vendor "BarD Software s.r.o" `
-            --verbose `
-            --win-dir-chooser --win-menu
-
-#      - name: Upload to Dropbox
-#        env:
-#          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
-#        run: |
-#          cd build/dist
-#          dir
-#          curl -X POST https://content.dropboxapi.com/2/files/upload \
-#                          --header "Authorization: Bearer ${ACCESS_TOKEN}" \
-#                          --header "Dropbox-API-Arg: {\"path\": \"/ganttproject-2.99.0.msi\", \"mode\" : \"overwrite\"}" \
-#                          --header "Content-Type: application/octet-stream" \
-#                          --data-binary "@GanttProject-2.99.0.msi"
-
-
-
+        - name: Upload to Dropbox
+          env:
+            ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+          run: |
+            cd build/dist
+            for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
+                --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+                --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
+                --header "Content-Type: application/octet-stream" \
+                --data-binary "@$f"; done
