@@ -73,8 +73,6 @@ jobs:
 
   packageWin:
     runs-on: windows-latest
-    jpackageDownload:
-    jdk14Path: /jdk-14
     steps:
       - uses: actions/checkout@v1
       - name: Checkout submodules
