@@ -12,7 +12,6 @@ jlink ^
 
 dir "%OUTPUT%\runtime\bin"
 
-Get-ChildItem -Path jdk-14/bin | Format-Table
 jdk-14/bin/jpackage -h
 
 jdk-14/bin/jpackage ^
