@@ -6,10 +6,7 @@
         provider-name="">
 
     <runtime>
-        <library name="ganttproject.jar">
-            <export name="*"/>
-        </library>
-        <library name="lib/core/*">
+        <library name="lib/*">
             <export name="*"/>
         </library>
         <library name="data/resources/">
