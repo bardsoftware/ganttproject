@@ -88,7 +88,6 @@ task copyPluginFiles(dependsOn: jar) {
         println ">>> Installing $project.name"
         copy {
             into(new File(rootProject.pluginsDir, project.name))
-            from(jar.outputs.getFiles().getFiles().flatten())
             from(fileTree(".")) {
                 include "plugin.xml"
                 include "data/resources/**.ttf"
@@ -101,10 +100,12 @@ task copyPluginFiles(dependsOn: jar) {
             }
         }
         copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(jar.outputs.getFiles().getFiles().flatten())
             from(configurations.compileClasspath.minus(configurations.providedCompile)) {
                 include "*.jar"
             }
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }

@@ -6,9 +6,6 @@
         provider-name="">
 
     <runtime>
-        <library name="biz.ganttproject.impex.ical.jar">
-            <export name="*"/>
-        </library>
         <library name="lib/*">
             <export name="*"/>
         </library>
