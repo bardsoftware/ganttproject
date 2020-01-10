@@ -10,30 +10,25 @@ jlink ^
   --strip-debug ^
   --compress=2
 
-build\runtime\bin\java -version
-build\runtime\bin\java --list-modules
+dir "%OUTPUT%\runtime\bin"
 
-java --module-path "build-bin\win" ^
-  --add-modules jdk.jlink ^
-  --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager ^
-  -m jdk.packager/jdk.packager.Main ^
-  create-installer ^
-    --verbose ^
-    --echo-mode ^
-    --name GanttProject ^
-    --output "%OUTPUT%\dist" ^
+dir jdk-14\bin
+
+jdk-14\bin\jpackage ^
     --input "%INPUT%" ^
+    -d "%OUTPUT%"\dist ^
+    --runtime-image "%OUTPUT%"\runtime ^
     --main-jar eclipsito.jar ^
-    --class com.bardsoftware.eclipsito.Launch ^
-    --version %VERSION% ^
-    --arguments "--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject"  ^
-    --runtime-image "%OUTPUT%\runtime" ^
-    --identifier biz.ganttproject ^
+    --main-class com.bardsoftware.eclipsito.Launch ^
+    --arguments "--verbosity 4 --version-dirs app/plugins --app net.sourceforge.ganttproject.GanttProject"  ^
+    --name GanttProject ^
+    --app-version %VERSION% ^
+    --type msi ^
     --description "Free desktop project scheduling and project management application" ^
-    --category "Office" ^
-    --copyright "Copyright 2019 BarD Software s.r.o" ^
+    --copyright "Copyright 2020 BarD Software s.r.o" ^
     --vendor "BarD Software s.r.o" ^
     --license-file LICENSE ^
     --file-associations build-cfg\file-associations.properties ^
     --icon build-cfg\ganttproject.ico ^
+    --verbose ^
     --win-dir-chooser --win-menu
