@@ -94,9 +94,17 @@ jobs:
           gradle distbin
           gradle distbin
           build-bin/package-win.bat build ganttproject-builder/dist-bin 2.99.0 ''
-#      - name: Upload to Dropbox
-#        env:
-#          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
-#        run: |
-#          dir build\dist
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          cd build/dist
+          dir
+          curl -X POST https://content.dropboxapi.com/2/files/upload \
+                          --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+                          --header "Dropbox-API-Arg: {\"path\": \"/ganttproject-2.99.0.msi\", \"mode\" : \"overwrite\"}" \
+                          --header "Content-Type: application/octet-stream" \
+                          --data-binary "@GanttProject-2.99.0.msi"
+
+
 
