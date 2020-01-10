@@ -89,6 +89,18 @@ jobs:
           gradle distbin
           gradle distbin
 
+          echo "Downloading jpackage"
+          curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
+          du .
+
+          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
+          du .
+
+          rm jdk14.zip
+          ls jdk-14\\bin
+          echo "Is jpackage here?"
+          jdk-14\\bin\\jpackage -h
+
           echo "Building Java runtime"
           jlink `
             --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web `
@@ -96,12 +108,7 @@ jobs:
             --output build\\runtime `
             --strip-debug `
             --compress=2
-
-          curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
-          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
-          ls jdk-14\\bin
-          echo "Is jpackage here?"
-          jdk-14\\bin\\jpackage -h
+          du .
 
           echo "Running jpackage"
           jdk-14\\bin\\jpackage `
