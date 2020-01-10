@@ -91,9 +91,34 @@ jobs:
           ls .
       - name: Build self-contained package for Windows
         run: |
-          gradle distbin
-          gradle distbin
-          build-bin/package-win.bat build ganttproject-builder/dist-bin 2.99.0 ''
+          gradle :ganttproject-builder:distbin
+          gradle :ganttproject-builder:distbin
+          jlink \
+            --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web \
+            --no-header-files --no-man-pages \
+            --output build/runtime/ \
+            --strip-debug \
+            --compress=2
+          jdk-14/bin/jpackage -h
+          jdk-14/bin/jpackage \
+            --input ganttproject-builder/dist-bin \
+            -d build/dist \
+            --runtime-image build/runtime \
+            --main-jar eclipsito.jar \
+            --main-class com.bardsoftware.eclipsito.Launch \
+            --arguments "--verbosity 4 --version-dirs app/plugins --app net.sourceforge.ganttproject.GanttProject"  \
+            --name GanttProject \
+            --app-version 2.99.0 \
+            --type msi \
+            --description "Free desktop project scheduling and project management application" \
+            --copyright "Copyright 2020 BarD Software s.r.o" \
+            --vendor "BarD Software s.r.o" \
+            --license-file LICENSE \
+            --file-associations build-cfg/file-associations.properties \
+            --icon build-cfg/ganttproject.ico \
+            --verbose \
+            --win-dir-chooser --win-menu
+
       - name: Upload to Dropbox
         env:
           ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
