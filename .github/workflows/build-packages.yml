@@ -88,19 +88,25 @@ jobs:
         run: |
           curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
           Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
-          ls .
+          ls jdk-14
+          ls jdk-14\\bin
       - name: Build self-contained package for Windows
         run: |
           gradle distbin
           gradle distbin
+
+          echo "Building Java runtime"
           jlink `
             --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web `
             --no-header-files --no-man-pages `
             --output build\\runtime `
             --strip-debug `
             --compress=2
-          jdk-14/bin/jpackage -h
-          jdk-14/bin/jpackage `
+          echo "Is jpackage here?"
+          jdk-14\\bin\\jpackage -h
+
+          echo "Running jpackage"
+          jdk-14\\bin\\jpackage `
             --input ganttproject-builder\\dist-bin `
             -d build\\dist `
             --runtime-image build\\runtime `
