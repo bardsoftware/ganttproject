@@ -84,12 +84,6 @@ jobs:
         with:
           java-version: 11.0.5
           java-package: jdk+fx
-      - name: Download jpackage
-        run: |
-          curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
-          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
-          ls jdk-14
-          ls jdk-14\\bin
       - name: Build self-contained package for Windows
         run: |
           gradle distbin
@@ -102,6 +96,10 @@ jobs:
             --output build\\runtime `
             --strip-debug `
             --compress=2
+
+          curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
+          Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
+          ls jdk-14\\bin
           echo "Is jpackage here?"
           jdk-14\\bin\\jpackage -h
 
