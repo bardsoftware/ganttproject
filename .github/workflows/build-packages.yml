@@ -83,12 +83,11 @@ jobs:
           echo "Downloading GanttProject"
           curl -o ganttproject.zip -L https://www.dropbox.com/s/w57gcgdwtyckaiy/ganttproject.zip?dl=1
           Expand-Archive -LiteralPath ganttproject.zip -DestinationPath .
-          du .
           rm ganttproject.zip
-          ls ganttproject
+          du .
 
           echo "Downloading jpackage"
-          curl -o jdk14.zip -L https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
+          curl -o jdk14.zip -L --retry 5 https://download.java.net/java/early_access/jdk14/30/GPL/openjdk-14-ea+30_windows-x64_bin.zip
           du .
 
           Expand-Archive -LiteralPath jdk14.zip -DestinationPath .
