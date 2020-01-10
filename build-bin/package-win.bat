@@ -12,7 +12,7 @@ jlink ^
 
 dir "%OUTPUT%\runtime\bin"
 
-SET JAVA_HOME="%GITHUB_WORKSPACE%\ganttproject\build\runtime"
+SET JAVA_HOME="%GITHUB_WORKSPACE%\build\runtime"
 cp build-bin\win\jpackager.exe build\runtime\bin
 
 build\runtime\bin\java --module-path "build-bin\win" ^
