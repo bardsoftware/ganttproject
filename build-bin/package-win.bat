@@ -12,9 +12,10 @@ jlink ^
 
 dir "%OUTPUT%\runtime\bin"
 
-jdk-14/bin/jpackage -h
+dir jdk-14\bin
+jdk-14\bin\jpackage -h
 
-jdk-14/bin/jpackage ^
+jdk-14\bin\jpackage ^
   create-installer ^
     --verbose ^
     --echo-mode ^
