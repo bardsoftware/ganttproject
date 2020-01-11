@@ -74,6 +74,7 @@ task copyPluginFiles(dependsOn: jar) {
             from(configurations.exported) {
                 include "*.jar"
             }
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }

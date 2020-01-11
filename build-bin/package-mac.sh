@@ -33,14 +33,13 @@ ${OUTPUT}/runtime/bin/java -version
 ${OUTPUT}/runtime/bin/java --list-modules
 
 # We remove JavaFX jars from the binary distro because they will be in the runtime
-find "${INPUT}" -name 'javafx*.jar' -delete
+find "${INPUT}" -name 'javafx*.jar.lib' -delete
 
 echo "Building packages"
 java --module-path build-bin/mac/ \
   --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
   -m jdk.packager/jdk.packager.Main \
-  create-installer  \
-  --installer-type dmg \
+  create-image  \
   --verbose \
   --echo-mode \
   --input "${INPUT}" \
@@ -59,6 +58,6 @@ java --module-path build-bin/mac/ \
   --mac-bundle-identifier com.bardsoftware.ganttproject
 
 
-#cd "${OUTPUT}/dist"
-#zip -r ganttproject-${VERSION}.zip GanttProject.app
+cd "${OUTPUT}/dist"
+zip -r ganttproject-${VERSION}.zip GanttProject.app
 rm -r GanttProject.app
