@@ -38,6 +38,8 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -962,7 +964,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return false;
     }
 
-    AppKt.startUiApp(mainArgs);
+
+    AppKt.startUiApp(mainArgs, ganttProject -> {
+      ganttProject.setUpdater(org.eclipse.core.runtime.Platform.getUpdater());
+      return null;
+    });
     return true;
   }
 
