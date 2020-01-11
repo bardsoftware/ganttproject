@@ -33,7 +33,7 @@ ${OUTPUT}/runtime/bin/java -version
 ${OUTPUT}/runtime/bin/java --list-modules
 
 # We remove JavaFX jars from the binary distro because they will be in the runtime
-find "${INPUT}" -name 'javafx*.jar' -delete
+find "${INPUT}" -name 'javafx*.jar.lib' -delete
 
 # Now we build DEB and RPM packages
 echo "Building packages"
