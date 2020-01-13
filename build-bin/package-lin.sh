@@ -37,5 +37,6 @@ find "${INPUT}" -name 'javafx*.jar.lib' -delete
 
 # Now we build DEB and RPM packages
 echo "Building package for Debian"
+mkdir $OUTPUT/dist
 cd $GITHUB_WORKSPACE/build-bin
 ant -f build-deb.xml dist-deb-full
