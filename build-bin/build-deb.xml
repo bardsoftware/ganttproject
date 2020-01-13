@@ -1,0 +1,71 @@
+<project name="GanttProject DEB builder">
+    <property file="build-deb.properties"/>
+    <path id="class.path">
+        <pathelement location="build-deb"/>
+        <fileset dir="${build.libDir}" includes="*.jar"/>
+    </path>
+
+    <taskdef name="desktopEntry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="class.path"/>
+    <taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="class.path"/>
+
+    <target name="dist-deb-full">
+        <description>Builds DEB package with Java Runtime and GanttProject.</description>
+        <mkdir dir="${build.targetDir}"/>
+
+        <desktopEntry
+                toFile="${build.targetDir}/usr/share/applications/ganttproject.desktop"
+                name="GanttProject"
+                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
+                exec="${os.installDir}/ganttproject %U"
+                mimetype="application/x-ganttproject;"
+                categories="Office;"
+                onlyshowin="GNOME;KDE;Unity;LXDE;MATE;Cinnamon;">
+            <genericname value="GanttProject"/>
+        </desktopEntry>
+        <copy file="${build.resourceDir}/ganttproject.svg" tofile="${build.targetDir}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+        </copy>
+        <!-- Some docs go into /usr/share/doc/ganttproject -->
+        <mkdir dir="${build.targetDir}/usr/share/doc/${package.name}"/>
+        <copy todir="${build.targetDir}/usr/share/doc/${package.name}">
+            <fileset dir="${build.docDir}">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="AUTHORS"/>
+            </fileset>
+        </copy>
+        <deb todir="${build.distDir}"
+             package="${package.name}"
+             version="${version}"
+             homepage="https://www.ganttproject.biz/"
+             section="editors"
+             priority="optional"
+             postrm="${build.binDir}/postrm"
+             postinst="${build.binDir}/postinst">
+            <version upstream="${version}"/>
+            <maintainer name="GanttProject Team" email="contact@ganttproject.biz"/>
+            <description synopsis="${package.synopsis}">
+                ${package.description}
+            </description>
+
+            <tarfileset dir="${build.inputDir}" prefix="${os.installDir}" filemode="755">
+                <include name="ganttproject"/>
+            </tarfileset>
+            <tarfileset dir="${build.inputDir}" prefix="${os.installDir}/app">
+                <include name="plugins/**/"/>
+                <include name="lib/**/"/>
+                <include name="*.jar"/>
+                <include name="*.gan"/>
+                <include name="logging.properties"/>
+                <exclude name="plugins/**/javafx*.lib"/>
+            </tarfileset>
+
+            <!-- Icons, mime types, docs and other stuff -->
+            <tarfileset dir="${build.targetDir}/usr" prefix="usr"/>
+
+            <tarfileset dir="${build.runtimeDir}" prefix="${os.installDir}/runtime"/>
+        </deb>
+        <move file="${build.distDir}/${package.name}_${version}-1_all.deb"
+              tofile="${build.distDir}/${package.name}_${version_build}-1_all.deb"/>
+    </target>
+
+</project>

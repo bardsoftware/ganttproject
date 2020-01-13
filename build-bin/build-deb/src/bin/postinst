@@ -2,8 +2,10 @@
 set -e
 
 if [ "$1" = "configure" ]; then
-  if [ -e /usr/bin/ganttproject ]; then rm -f /usr/bin/ganttproject; fi
-  ln -s /usr/share/ganttproject/ganttproject /usr/bin/ganttproject
+  if [ -f /usr/bin/ganttproject ] || [ -h /usr/bin/ganttproject ]; then rm -f /usr/bin/ganttproject; fi
+  chmod 755 /opt/ganttproject/ganttproject
+  chmod 755 /opt/ganttproject/runtime/bin/*
+  ln -s /opt/ganttproject/ganttproject /usr/bin/ganttproject
 
   if [ -x "$(which update-menus 2>/dev/null)" ]; then update-menus; fi
   if [ -x "$(which update-mime 2>/dev/null)" ]; then update-mime; fi
