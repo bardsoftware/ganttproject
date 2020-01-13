@@ -36,28 +36,6 @@ ${OUTPUT}/runtime/bin/java --list-modules
 find "${INPUT}" -name 'javafx*.jar.lib' -delete
 
 # Now we build DEB and RPM packages
-echo "Building packages"
-java --module-path build-bin/lin \
-  --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager \
-  -m jdk.packager/jdk.packager.Main \
-  create-installer  \
-  --verbose \
-  --echo-mode \
-  --input "${INPUT}" \
-  --output "${OUTPUT}/dist" \
-  --name GanttProject \
-  --main-jar eclipsito.jar \
-  --class com.bardsoftware.eclipsito.Launch \
-  --version ${VERSION} \
-  --file-associations build-cfg/file-associations.properties \
-  --icon build-cfg/ganttproject.png \
-  --arguments "--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject" \
-  --identifier biz.ganttproject \
-  --description "Free desktop project scheduling and project management application" \
-  --category "Office" \
-  --copyright "Copyright 2020 BarD Software s.r.o" \
-  --vendor "BarD Software s.r.o" \
-  --license-file LICENSE \
-  --linux-deb-maintainer "Dmitry Barashev, BarD Software s.r.o" \
-  --linux-bundle-name "ganttproject" \
-  --runtime-image "${OUTPUT}/runtime"
+echo "Building package for Debian"
+cd $GITHUB_WORKSPACE/build-bin
+ant -f build-deb.xml dist-deb-full
