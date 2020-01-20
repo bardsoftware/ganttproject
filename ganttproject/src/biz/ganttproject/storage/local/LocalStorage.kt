@@ -140,9 +140,10 @@ class LocalStorage(
       }
 
       fun onAction() {
-        selectedProject?.let {
-          myDocumentReceiver(FileDocument(it.file))
-        }
+        val doc = selectedProject?.let { FileDocument(it.file) }
+            ?: state.currentDir.get()?.resolve(paneElements.filenameInput.text)?.let { FileDocument(it) }
+            ?: return
+        myDocumentReceiver.invoke(doc)
       }
     }
 
