@@ -44,7 +44,7 @@ const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
 const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
 const val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
-
+const val GPCLOUD_WEBSOCKET_URL = "wss://ws.$GPCLOUD_HOST"
 typealias SceneChanger = (Node) -> Unit
 
 /**
