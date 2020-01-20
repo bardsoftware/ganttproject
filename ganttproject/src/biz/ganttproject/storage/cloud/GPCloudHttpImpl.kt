@@ -372,7 +372,7 @@ class WebSocketClient {
     if (isStarted) {
       return
     }
-    val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
+    val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
     this.wsListener.onAuthCompleted = {
       this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
     }
