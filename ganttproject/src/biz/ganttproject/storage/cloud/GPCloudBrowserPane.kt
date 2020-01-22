@@ -224,7 +224,7 @@ class GPCloudBrowserPane(
 //        }
 //      }
       this.documentConsumer(document)
-      document.listenLockChange(webSocket)
+      document.listenEvents(webSocket)
     }
   }
 

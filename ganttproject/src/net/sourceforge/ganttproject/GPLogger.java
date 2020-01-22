@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.LoggerApi;
+import biz.ganttproject.LoggerImpl;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
@@ -113,6 +115,7 @@ public class GPLogger {
     return logger;
   }
 
+  public static LoggerApi create(String name) { return new LoggerImpl(name); }
   public static Logger getLogger(Class<?> clazz) {
     return getLogger(clazz.getName());
   }

@@ -183,11 +183,14 @@ data class FetchResult(val onlineDocument: OnlineDocument,
   var useMirror: Boolean = false
 }
 
+data class LatestVersion(val version: Long, val author: String)
+
 interface OnlineDocument {
   var offlineMirror: Document?
   val isMirrored: ObservableBooleanValue
   val mode: ObjectProperty<OnlineDocumentMode>
   val fetchResultProperty: ObservableObjectValue<FetchResult?>
+  val latestVersionProperty: ObservableObjectValue<LatestVersion>
 
   fun setMirrored(mirrored: Boolean)
   suspend fun fetch(): FetchResult
