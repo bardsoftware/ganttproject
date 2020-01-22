@@ -296,6 +296,8 @@ class WebSocketListenerImpl : WebSocketListener() {
   private var webSocket: WebSocket? = null
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+
   internal val token: String?
     get() = GPCloudOptions.websocketAuthToken
   lateinit var onAuthCompleted: () -> Unit
@@ -318,11 +320,11 @@ class WebSocketListenerImpl : WebSocketListener() {
   override fun onMessage(webSocket: WebSocket?, text: String?) {
     val payload = OBJECT_MAPPER.readTree(text)
     if (payload is ObjectNode) {
-      println("WebSocket message:\n$payload")
+      LOG.debug("WebSocket message:\n{}", payload)
       payload.get("type")?.textValue()?.let {
-        println("type=$it")
         when (it) {
           "ProjectLockStatusChange" -> onLockStatusChange(payload)
+          "ProjectChange", "ProjectRevert" -> onProjectContentsChange(payload)
           else -> onStructureChange(payload)
         }
       }
@@ -341,8 +343,13 @@ class WebSocketListenerImpl : WebSocketListener() {
     }
   }
 
+  private fun onProjectContentsChange(payload: ObjectNode) {
+    LOG.debug("ProjectChange: {}", payload)
+    this.contentChangeListeners.forEach { it(payload) }
+  }
+
   override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
-    println("WebSocket closed")
+    LOG.debug("WebSocket closed")
   }
 
   override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -359,6 +366,10 @@ class WebSocketListenerImpl : WebSocketListener() {
     this.lockStatusChangeListeners.add(listener)
   }
 
+  fun addOnContentChange(listener: (ObjectNode) -> Unit) {
+    this.contentChangeListeners.add(listener)
+  }
+
 }
 
 class WebSocketClient {
@@ -372,7 +383,7 @@ class WebSocketClient {
     if (isStarted) {
       return
     }
-    val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
+    val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
     this.wsListener.onAuthCompleted = {
       this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
     }
@@ -386,6 +397,10 @@ class WebSocketClient {
 
   fun onLockStatusChange(listener: (ObjectNode) -> Unit) {
     return this.wsListener.addOnLockStatusChange(listener)
+  }
+
+  fun onContentChange(listener: (ObjectNode) -> Unit) {
+    return this.wsListener.addOnContentChange(listener)
   }
 
   fun sendHeartbeat() {
@@ -509,3 +524,4 @@ fun isNetworkAvailable(): Boolean {
     false
   }
 }
+private val LOG = GPLogger.create("Cloud.Http")

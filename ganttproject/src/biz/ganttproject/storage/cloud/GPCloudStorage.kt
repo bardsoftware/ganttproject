@@ -76,11 +76,11 @@ class GPCloudStorage(
       browserPane.controller = this
     }
 
-    val storageUi: Pane by lazy { browserPane.createStorageUi() }
-    val signupUi: Pane by lazy { signupPane.createPane() }
-    val signinUi: Pane by lazy { signupPane.createSigninPane() }
-    val offlineUi: Pane by lazy { offlinePane.createPane() }
-    var startCount = 0
+    private val storageUi: Pane by lazy { browserPane.createStorageUi() }
+    private val signupUi: Pane by lazy { signupPane.createPane() }
+    private val signinUi: Pane by lazy { signupPane.createSigninPane() }
+    private val offlineUi: Pane by lazy { offlinePane.createPane() }
+    private var startCount = 0
 
     fun start() {
       if (startCount++ >= 5) {

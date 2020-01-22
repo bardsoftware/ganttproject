@@ -69,6 +69,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override val status = SimpleObjectProperty<LockStatus>()
   override val mode = SimpleObjectProperty<OnlineDocumentMode>(OnlineDocumentMode.ONLINE_ONLY)
   override val fetchResultProperty = SimpleObjectProperty<FetchResult>()
+  override val latestVersionProperty = SimpleObjectProperty<LatestVersion>()
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
@@ -420,16 +421,23 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isLocal(): Boolean = false
 
-  fun listenLockChange(webSocket: WebSocketClient) {
-    webSocket.onLockStatusChange { msg ->
-      println(msg)
-      if (!msg["locked"].booleanValue()) {
-        this.status.set(LockStatus(false))
-      } else {
-        this.status.set(LockStatus(locked = true,
-            lockOwnerName = msg.path("author")?.path("name")?.textValue(),
-            lockOwnerEmail = null,
-            lockOwnerId = msg.path("author")?.path("id")?.textValue()))
+  fun listenEvents(webSocket: WebSocketClient) {
+    webSocket.apply {
+      onLockStatusChange { msg ->
+        if (!msg["locked"].booleanValue()) {
+          status.set(LockStatus(false))
+        } else {
+          status.set(LockStatus(locked = true,
+              lockOwnerName = msg.path("author")?.path("name")?.textValue(),
+              lockOwnerEmail = null,
+              lockOwnerId = msg.path("author")?.path("id")?.textValue()))
+        }
+      }
+
+      onContentChange {msg ->
+        if (msg["projectRefid"].textValue() == this@GPCloudDocument.projectRefid) {
+          this@GPCloudDocument.latestVersionProperty.set(LatestVersion(0, "Foo"))
+        }
       }
     }
   }
