@@ -436,7 +436,9 @@ class GPCloudDocument(private val teamRefid: String?,
 
       onContentChange {msg ->
         if (msg["projectRefid"].textValue() == this@GPCloudDocument.projectRefid) {
-          this@GPCloudDocument.latestVersionProperty.set(LatestVersion(0, "Foo"))
+          val timestamp = msg["timestamp"]?.asLong() ?: return@onContentChange
+          val author = msg["author"]?.get("name")?.textValue() ?: return@onContentChange
+          this@GPCloudDocument.latestVersionProperty.set(LatestVersion(timestamp, author))
         }
       }
     }

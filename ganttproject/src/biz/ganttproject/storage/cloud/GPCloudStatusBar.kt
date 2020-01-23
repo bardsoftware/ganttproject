@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.OptionElementData
+import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -115,6 +118,8 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         newDoc.mode.addListener(this::onOnlineModeChange)
         this.btnOffline.isVisible = true
         this.updateOnlineMode(newDoc.mode.value)
+
+        newDoc.latestVersionProperty.addListener(this::onLatestVersionChange)
       } else {
         this.btnOffline.isVisible = false
       }
@@ -230,6 +235,30 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         }
         this.uiFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE, "Connection lost and we're now working offline. We'll try to reconnect automatically.", arrayOf(OkAction.createVoidAction("ok")))
         this.btnLock.isDisable = true
+      }
+    }
+  }
+
+  private fun onLatestVersionChange(observable: Any, oldValue: LatestVersion?, newValue: LatestVersion?) {
+    println("We have updates: $newValue")
+    OptionPaneBuilder<Boolean>().run {
+      i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
+      styleClass = "dlg-lock"
+      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+      graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)
+      elements = listOf(
+          OptionElementData("reload", true, true),
+          OptionElementData("ignore", false)
+      )
+
+      showDialog { choice ->
+        when (choice) {
+          true -> {
+
+          }
+          false -> {}
+        }
       }
     }
   }
