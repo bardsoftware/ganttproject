@@ -183,7 +183,7 @@ data class FetchResult(val onlineDocument: OnlineDocument,
   var useMirror: Boolean = false
 }
 
-data class LatestVersion(val version: Long, val author: String)
+data class LatestVersion(val timestamp: Long, val author: String)
 
 interface OnlineDocument {
   var offlineMirror: Document?
