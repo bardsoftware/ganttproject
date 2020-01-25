@@ -22,9 +22,17 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.SingleTranslationLocalizer
 import biz.ganttproject.app.showAsync
 import com.beust.jcommander.JCommander
+import javafx.application.Application
+import javafx.application.Platform
+import javafx.embed.swing.SwingNode
+import javafx.scene.Scene
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Pane
+import javafx.stage.Stage
 import net.sourceforge.ganttproject.document.DocumentCreator
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
+import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.lang.Thread.UncaughtExceptionHandler
@@ -32,7 +40,9 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
+import javax.swing.JComponent
 import javax.swing.SwingUtilities
+
 
 fun main(args: Array<String>) {
   val mainArgs = GanttProject.Args()
@@ -47,6 +57,14 @@ fun main(args: Array<String>) {
     }
   }
 }
+
+@JvmOverloads
+fun _startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
+  Application.launch(GanttProjectFX::class.java)
+}
+
+val mainWindow = AtomicReference<GanttProject?>(null)
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -57,7 +75,6 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   val splashCloser = showAsync()
 
 
-  val mainWindow = AtomicReference<GanttProject?>(null)
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)
@@ -89,3 +106,43 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
 }
 
 val ourExecutor = Executors.newSingleThreadExecutor()
+
+class GanttProjectFX : Application() {
+  private var height = 800
+  private var width = 600
+  private lateinit var rootPane: JComponent
+  private fun resize(pane: Pane) {
+//    SwingUtilities.invokeLater {
+//      Dimension(width, height).also {
+//        println("Size=$it")
+//        rootPane.minimumSize = it
+//      }
+//      Platform.runLater { pane.layout() }
+//    }
+  }
+
+  override fun start(stage: Stage) {
+    SwingUtilities.invokeLater {
+      val ganttFrame = GanttProject(false)
+      Platform.runLater {
+        val swingNode = SwingNode()
+        rootPane = ganttFrame.tabs
+        swingNode.content = rootPane
+        val pane = BorderPane(swingNode)
+        pane.top = SwingNode().also {
+          it.content = ganttFrame.jMenuBar
+        }
+        rootPane.minimumSize = Dimension(1000, 800)
+        pane.styleClass.add("app")
+        pane.stylesheets.add("/net/sourceforge/ganttproject/App.css")
+        stage.scene = Scene(pane, 1000.0, 800.0)
+        pane.heightProperty().addListener { _, old, new ->
+          height = new.toInt()
+          resize(pane)
+        }
+        stage.show()
+        resize(pane)
+      }
+    }
+  }
+}

@@ -24,3 +24,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -gp-dark-gray: #424242;
     -gp-control-background: white;
 }
+
+.debugborder_r {
+    -fx-border-color: red;
+    -fx-background-color: #fffb6f;
+}
+.debugborder_g {
+    -fx-border-color: green;
+}
