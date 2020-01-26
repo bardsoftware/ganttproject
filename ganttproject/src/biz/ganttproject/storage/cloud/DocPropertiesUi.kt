@@ -282,7 +282,6 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         }
       }
       add(node = lockNode)
-
     }
 
     val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
@@ -325,9 +324,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           val selectedDuration = paneElements.lockToggleGroup.selectedToggle.userData as Duration
           lockDurationHandler(selectedDuration)
         }
-
       }
-
     }
   }
 }
