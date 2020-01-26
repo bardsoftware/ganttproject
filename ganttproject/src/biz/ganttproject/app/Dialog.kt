@@ -37,7 +37,9 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.effect.BoxBlur
+import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.*
 import javafx.util.Duration
 import net.sourceforge.ganttproject.DialogBuilder
@@ -89,7 +91,7 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
   }
 }
 
-fun dialog(contentBuilder: (DialogController) -> Unit) {
+fun dialog(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
     val dialogBuildApi = DialogControllerSwing { swingDialogController.get()}
@@ -99,7 +101,7 @@ fun dialog(contentBuilder: (DialogController) -> Unit) {
     }
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
-      dialogBuilder.createDialog(jfxPanel, arrayOf(), "Foo", null).also {
+      dialogBuilder.createDialog(jfxPanel, arrayOf(), title?.value ?: "", null).also {
         swingDialogController.set(it)
         it.show()
       }
@@ -111,7 +113,7 @@ interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {})
   fun showAlert(title: LocalizedString, content: Node)
-  fun addStyleClass(styleClass: String)
+  fun addStyleClass(vararg styleClass: String)
   fun addStyleSheet(vararg stylesheets: String)
   fun setHeader(header: Node)
   fun hide()
@@ -152,13 +154,28 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     this.header?.let {
       this.paneBuilder.add(it)
     }
-    this.content?.let {
+    this.content.let {
       this.contentStack.children.add(it)
       this.paneBuilder.add(this.contentStack, alignment = null, growth = Priority.ALWAYS)
     }
     this.buttonBar?.let {
       updateButtons(it)
       this.paneBuilder.add(it)
+    }
+    val defaultButton = this.buttonBar?.buttons?.first {
+      if (it is Button) it.isDefaultButton else false
+    }
+    this.paneBuilder.vbox.addEventHandler(KeyEvent.KEY_PRESSED) {
+      if (it.isControlDown && it.code == KeyCode.ENTER) {
+        if (defaultButton is Button) {
+          defaultButton.fire()
+          it.consume()
+        }
+      }
+      if (it.code == KeyCode.ESCAPE) {
+        hide()
+        it.consume()
+      }
     }
     return this.paneBuilder.vbox
   }
@@ -183,8 +200,8 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     }
   }
 
-  override fun addStyleClass(styleClass: String) {
-    this.paneBuilder.vbox.styleClass.add(styleClass)
+  override fun addStyleClass(vararg styleClass: String) {
+    this.paneBuilder.vbox.styleClass.addAll(styleClass)
   }
 
   override fun addStyleSheet(vararg stylesheets: String) {
@@ -263,8 +280,8 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     }
   }
 
-  override fun addStyleClass(styleClass: String) {
-    this.dialogPane.styleClass.add(styleClass)
+  override fun addStyleClass(vararg styleClass: String) {
+    this.dialogPane.styleClass.addAll(styleClass)
   }
 
   override fun addStyleSheet(vararg stylesheets: String) {
