@@ -26,11 +26,14 @@ import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
 import javafx.application.Platform
+import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.effect.BoxBlur
@@ -40,6 +43,7 @@ import javafx.util.Duration
 import net.sourceforge.ganttproject.DialogBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
 
@@ -60,7 +64,7 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(contentBuilder: (DialogControllerImpl) -> Unit) {
+fun dialogFx(contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     Dialog<Unit>().also {
       it.isResizable = true
@@ -88,19 +92,10 @@ fun dialogFx(contentBuilder: (DialogControllerImpl) -> Unit) {
 fun dialog(contentBuilder: (DialogController) -> Unit) {
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
-    val dialogPane = StackPane()
-    val dialogBuildApi = DialogControllerSwing(dialogPane, { swingDialogController.get()})
-    dialogPane.apply {
-      styleClass.addAll("dlg")
-
-      contentBuilder(dialogBuildApi)
-    }
+    val dialogBuildApi = DialogControllerSwing { swingDialogController.get()}
+    contentBuilder(dialogBuildApi)
     val jfxPanel = JFXPanel().also { jfx ->
-      val borderPane = BorderPane(dialogPane).also {
-        it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
-        it.styleClass.add("debugborder_r")
-      }
-      jfx.scene = Scene(borderPane)
+      jfx.scene = Scene(dialogBuildApi.build())
     }
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
@@ -123,7 +118,115 @@ interface DialogController {
   fun removeButtonBar()
 }
 
-sealed class DialogControllerImpl(protected val dialogPane: Pane) : DialogController {
+class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) : DialogController {
+  private val paneBuilder = VBoxBuilder().also {
+    it.vbox.styleClass.add("dlg")
+    it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
+  }
+
+  private var content: Node? = null
+  private var buttonBar: ButtonBar? = null
+  private val buttons = FXCollections.observableArrayList<ButtonType>().also {
+    it.addListener(ListChangeListener { c ->
+      while (c.next()) {
+        if (c.wasRemoved()) {
+          c.removed.forEach { buttonType -> buttonNodes.remove(buttonType) }
+        }
+        if (c.wasAdded()) {
+          c.addedSubList.forEach { buttonType ->
+            buttonNodes.getOrPut(buttonType) {
+              createButton(buttonType)
+            }
+          }
+        }
+      }
+    })
+  }
+
+  private val buttonNodes = WeakHashMap<ButtonType, Button>()
+
+  private var header: Node? = null
+
+  internal fun build(): Parent {
+    this.header?.let {
+      this.paneBuilder.add(it)
+    }
+    this.content?.let {
+      this.paneBuilder.add(it, alignment = null, growth = Priority.ALWAYS)
+    }
+    this.buttonBar?.let {
+      updateButtons(it)
+      this.paneBuilder.add(it)
+    }
+    return this.paneBuilder.vbox
+  }
+
+  override fun setContent(content: Node) {
+    this.content = content
+  }
+
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
+    if (buttonBar == null) {
+      buttonBar = ButtonBar()
+    }
+    buttons.add(type)
+  }
+
+  override fun showAlert(title: LocalizedString, content: Node) {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun addStyleClass(styleClass: String) {
+    this.paneBuilder.vbox.styleClass.add(styleClass)
+  }
+
+  override fun addStyleSheet(vararg stylesheets: String) {
+    this.paneBuilder.vbox.stylesheets.addAll(stylesheets)
+  }
+
+  override fun setHeader(header: Node) {
+    this.header = header
+  }
+
+  override fun hide() {
+    SwingUtilities.invokeLater {
+      this.swingDialogApi()?.hide()
+    }
+  }
+
+  override fun removeButtonBar() {
+    this.buttons.clear()
+    this.buttonNodes.clear()
+    this.buttonBar = null
+  }
+
+  private fun updateButtons(buttonBar: ButtonBar) {
+    buttonBar.buttons.clear()
+    // show details button if expandable content is present
+    var hasDefault = false
+    for (cmd in buttons) {
+      val button = buttonNodes.computeIfAbsent(cmd, ::createButton)
+      // keep only first default button
+      val buttonType = cmd.buttonData
+      button.isDefaultButton = !hasDefault && buttonType != null && buttonType.isDefaultButton
+      button.isCancelButton = buttonType != null && buttonType.isCancelButton
+      hasDefault = hasDefault || buttonType != null && buttonType.isDefaultButton
+      buttonBar.buttons.add(button)
+    }
+  }
+
+  private fun createButton(buttonType: ButtonType): Button {
+    val button = Button(buttonType.text)
+    val buttonData = buttonType.buttonData
+    ButtonBar.setButtonData(button, buttonData)
+    button.isDefaultButton = buttonData.isDefaultButton
+    button.isCancelButton = buttonData.isCancelButton
+    return button
+  }
+
+}
+
+class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
@@ -131,16 +234,15 @@ sealed class DialogControllerImpl(protected val dialogPane: Pane) : DialogContro
     this.content = content
     content.styleClass.add("content-pane")
     this.stackPane.children.add(content)
-    //this.dialogPane.content = this.stackPane
-    this.dialogPane.children.add(this.stackPane)
+    this.dialogPane.content = this.stackPane
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
-//    this.dialogPane.buttonTypes.add(type)
-//    val btn = this.dialogPane.lookupButton(type)
-//    if (btn is Button) {
-//      code(btn)
-//    }
+    this.dialogPane.buttonTypes.add(type)
+    val btn = this.dialogPane.lookupButton(type)
+    if (btn is Button) {
+      code(btn)
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -158,28 +260,16 @@ sealed class DialogControllerImpl(protected val dialogPane: Pane) : DialogContro
   }
 
   override fun setHeader(header: Node) {
-//    header.styleClass.add("header")
-//    this.dialogPane.header = header
+    header.styleClass.add("header")
+    this.dialogPane.header = header
   }
 
   override fun removeButtonBar() {
-    //this.dialogPane.children.remove(this.dialogPane.children.first { it.styleClass.contains("button-bar") })
+    this.dialogPane.children.remove(this.dialogPane.children.first { it.styleClass.contains("button-bar") })
   }
-}
 
-class DialogControllerFx(dialogPane: DialogPane) : DialogControllerImpl(dialogPane) {
   override fun hide() {
     this.dialogPane.scene.window.hide()
-  }
-}
-
-class DialogControllerSwing(
-    dialogPane: Pane,
-    private val swingDialogApi: () -> UIFacade.Dialog?) : DialogControllerImpl(dialogPane) {
-  override fun hide() {
-    SwingUtilities.invokeLater {
-      swingDialogApi()?.hide()
-    }
   }
 }
 

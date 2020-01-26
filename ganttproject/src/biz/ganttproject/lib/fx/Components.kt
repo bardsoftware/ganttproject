@@ -87,7 +87,7 @@ fun test(): Pane {
 
 class VBoxBuilder(vararg classes: String) {
   var i18n = RootLocalizer
-  internal val vbox = VBox()
+  val vbox = VBox()
 
   init {
     vbox.styleClass.addAll(classes)
@@ -127,5 +127,4 @@ class VBoxBuilder(vararg classes: String) {
     growth?.let { VBox.setVgrow(child, it) }
     return child
   }
-
 }
