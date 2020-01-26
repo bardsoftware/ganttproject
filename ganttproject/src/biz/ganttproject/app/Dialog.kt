@@ -124,7 +124,8 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
   }
 
-  private var content: Node? = null
+  private val contentStack = StackPane()
+  private lateinit var content: Node
   private var buttonBar: ButtonBar? = null
   private val buttons = FXCollections.observableArrayList<ButtonType>().also {
     it.addListener(ListChangeListener { c ->
@@ -152,7 +153,8 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
       this.paneBuilder.add(it)
     }
     this.content?.let {
-      this.paneBuilder.add(it, alignment = null, growth = Priority.ALWAYS)
+      this.contentStack.children.add(it)
+      this.paneBuilder.add(this.contentStack, alignment = null, growth = Priority.ALWAYS)
     }
     this.buttonBar?.let {
       updateButtons(it)
@@ -170,10 +172,15 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
       buttonBar = ButtonBar()
     }
     buttons.add(type)
+    this.buttonNodes[type]?.let {
+      code(it)
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    Platform.runLater {
+      createAlertPane(this.content, this.contentStack, title, content)
+    }
   }
 
   override fun addStyleClass(styleClass: String) {
@@ -212,6 +219,11 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
       button.isCancelButton = buttonType != null && buttonType.isCancelButton
       hasDefault = hasDefault || buttonType != null && buttonType.isDefaultButton
       buttonBar.buttons.add(button)
+
+      button.addEventHandler(ActionEvent.ACTION) { ae: ActionEvent ->
+        if (ae.isConsumed) return@addEventHandler
+        hide()
+      }
     }
   }
 
