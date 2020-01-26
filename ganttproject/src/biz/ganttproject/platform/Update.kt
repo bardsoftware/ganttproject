@@ -18,7 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
-import biz.ganttproject.app.*
+import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.createAlertBody
+import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
@@ -61,7 +64,10 @@ fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkip
         uiFacade.mainFrame.dispatchEvent(WindowEvent(uiFacade.mainFrame, WindowEvent.WINDOW_CLOSING))
       }
     }
-    dialog(dlg::addContent)
+    dialog(
+        title = RootLocalizer.create("platform.update.hasUpdates.title"),
+        contentBuilder = dlg::addContent
+    )
   }
 }
 
