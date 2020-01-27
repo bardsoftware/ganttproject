@@ -30,9 +30,11 @@ import java.awt.event.WindowEvent
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
+
 
 fun main(args: Array<String>) {
   val mainArgs = GanttProject.Args()
@@ -47,6 +49,9 @@ fun main(args: Array<String>) {
     }
   }
 }
+
+val mainWindow = AtomicReference<GanttProject?>(null)
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -57,7 +62,6 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   val splashCloser = showAsync()
 
 
-  val mainWindow = AtomicReference<GanttProject?>(null)
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)
@@ -73,10 +77,12 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
           }
         }
       })
-    } catch (e: Throwable) {
-      e.printStackTrace()
+    } catch (e: Exception) {
+      APP_LOGGER.error("Failure when launching application", exception = e)
     } finally {
-      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler { t, e -> GPLogger.log(e) }
+      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
+        _, e -> GPLogger.log(e)
+      }
     }
   }
 
@@ -85,7 +91,8 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   if (autosaveCleanup != null) {
     ourExecutor.submit(autosaveCleanup)
   }
-
 }
 
-val ourExecutor = Executors.newSingleThreadExecutor()
+private val ourExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+val APP_LOGGER = GPLogger.create("App")
+

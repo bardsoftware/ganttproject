@@ -112,8 +112,8 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
     }
   }
 
-  override fun addStyleClass(styleClass: String) {
-    root.styleClass.add(styleClass)
+  override fun addStyleClass(vararg styleClass: String) {
+    root.styleClass.addAll(styleClass)
   }
 
   override fun addStyleSheet(vararg stylesheets: String) {

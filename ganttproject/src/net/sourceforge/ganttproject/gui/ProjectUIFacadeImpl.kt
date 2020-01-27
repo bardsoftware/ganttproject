@@ -19,11 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.StorageDialogAction
@@ -36,9 +35,6 @@ import biz.ganttproject.storage.cloud.onAuthToken
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
-import javafx.scene.control.Dialog
-import javafx.scene.control.DialogPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -164,18 +160,16 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
   }
 
   private fun signin(onAuth: ()->Unit) {
-    Platform.runLater {
-      val dlg = Dialog<Unit>()
+    dialog {
       val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
         GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-        Platform.runLater {
-          dlg.dialogPane.scene.window.hide()
-        }
+        it.hide()
         onAuth()
       }
+      it.addStyleClass("dlg-lock", "dlg-cloud-file-options")
+      it.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
       val pane = GPCloudSignupPane(onAuthToken, {})
-      dlg.dialogPane = pane.createSigninPane() as DialogPane?
-      FXUtil.showDialog(dlg)
+      it.setContent(pane.createSigninPane())
     }
   }
   private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
