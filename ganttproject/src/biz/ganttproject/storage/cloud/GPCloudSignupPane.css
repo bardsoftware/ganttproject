@@ -75,3 +75,7 @@
     -fx-fill-width: true;
     -fx-padding: 20px;
 }
+
+.signin-pane .indicator-pane {
+    -fx-padding: 30px;
+}

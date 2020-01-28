@@ -410,8 +410,13 @@ class WebSocketClient {
 
 val webSocket = WebSocketClient()
 
+// HTTP server for sign in into GP Cloud
+typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
+typealias AuthStartCallback = ()->Unit
+
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
   var onTokenReceived: AuthTokenCallback? = null
+  var onStart: AuthStartCallback? = null
 
   private fun getParam(session: IHTTPSession, key: String): String? {
     val values = session.parameters[key]
@@ -421,15 +426,32 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
   override fun serve(session: IHTTPSession): Response {
     val args = mutableMapOf<String, String>()
     session.parseBody(args)
-    val token = getParam(session, "token")
-    val userId = getParam(session, "userId")
-    val validity = getParam(session, "validity")
-    val websocketToken = getParam(session, "websocketToken")
+    return when (session.uri) {
+      "/auth" -> {
+        val token = getParam(session, "token")
+        val userId = getParam(session, "userId")
+        val validity = getParam(session, "validity")
+        val websocketToken = getParam(session, "websocketToken")
 
-    onTokenReceived?.invoke(token, validity, userId, websocketToken)
-    val resp = newFixedLengthResponse("")
-    resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
-    return resp
+        onTokenReceived?.invoke(token, validity, userId, websocketToken)
+        newFixedLengthResponse("").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+      "/start" -> {
+        println("/start")
+        onStart?.invoke()
+        newFixedLengthResponse("").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+      else -> {
+        println("Unknown URI: ${session.uri}")
+        newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+    }
   }
 }
 

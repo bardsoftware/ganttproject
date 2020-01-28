@@ -358,7 +358,9 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 
   private fun buildNotOnlineDocumentScene(): Scene {
-    val signupPane = GPCloudSignupPane(onTokenCallback = { _, _, _, _ -> }, pageSwitcher = {})
+    // TODO: this probably needs to be fixed?
+    val signinPane = SigninPane(onTokenCallback = { _, _, _, _ -> })
+    val signupPane = GPCloudSignupPane(signinPane, pageSwitcher = {})
     return Scene(signupPane.createPane())
   }
 }

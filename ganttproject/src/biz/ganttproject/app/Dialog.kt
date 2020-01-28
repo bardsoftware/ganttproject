@@ -92,13 +92,12 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
 }
 
 fun dialog(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
+  val jfxPanel = JFXPanel()
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
     val dialogBuildApi = DialogControllerSwing { swingDialogController.get()}
     contentBuilder(dialogBuildApi)
-    val jfxPanel = JFXPanel().also { jfx ->
-      jfx.scene = Scene(dialogBuildApi.build())
-    }
+    jfxPanel.scene = Scene(dialogBuildApi.build())
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
       dialogBuilder.createDialog(jfxPanel, arrayOf(), title?.value ?: "", null).also {
@@ -162,7 +161,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
       updateButtons(it)
       this.paneBuilder.add(it)
     }
-    val defaultButton = this.buttonBar?.buttons?.first {
+    val defaultButton = this.buttonBar?.buttons?.firstOrNull {
       if (it is Button) it.isDefaultButton else false
     }
     this.paneBuilder.vbox.addEventHandler(KeyEvent.KEY_PRESSED) {
