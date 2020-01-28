@@ -70,7 +70,12 @@ class GPCloudStorage(
     return doCreateUi()
   }
 
-  data class Controller(val signupPane: GPCloudSignupPane, val offlinePane: GPCloudOfflinePane, private val browserPane: GPCloudBrowserPane, val sceneChanger: SceneChanger) {
+  data class Controller(
+      val signupPane: GPCloudSignupPane,
+      private val signinPane: SigninPane,
+      val offlinePane: GPCloudOfflinePane,
+      private val browserPane: GPCloudBrowserPane,
+      val sceneChanger: SceneChanger) {
     init {
       offlinePane.controller = this
       browserPane.controller = this
@@ -78,7 +83,7 @@ class GPCloudStorage(
 
     private val storageUi: Pane by lazy { browserPane.createStorageUi() }
     private val signupUi: Pane by lazy { signupPane.createPane() }
-    private val signinUi: Pane by lazy { signupPane.createSigninPane() }
+    private val signinUi: Pane by lazy { signinPane.createSigninPane() }
     private val offlineUi: Pane by lazy { offlinePane.createPane() }
     private var startCount = 0
 
@@ -132,8 +137,9 @@ class GPCloudStorage(
     }
 
     val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi)
-    val signupPane = GPCloudSignupPane(onTokenCallback, ::nextPage)
-    Controller(signupPane, offlinePane, browserPane, this::nextPage).start()
+    val signinPane = SigninPane(onTokenCallback)
+    val signupPane = GPCloudSignupPane(signinPane, ::nextPage)
+    Controller(signupPane, signinPane, offlinePane, browserPane, this::nextPage).start()
     return myPane
   }
 

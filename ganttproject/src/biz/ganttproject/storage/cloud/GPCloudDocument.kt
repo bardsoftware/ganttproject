@@ -49,9 +49,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 
-// HTTP server for sign in into GP Cloud
-typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
-
 typealias OfflineDocumentFactory = (path: String) -> Document?
 typealias ProxyDocumentFactory = (document: Document) -> Document
 
@@ -452,14 +449,14 @@ class GPCloudDocument(private val teamRefid: String?,
     lockService.project = this.projectJson!!
     lockService.busyIndicator = Consumer {}
     lockService.requestLockToken = true
-    lockService.duration = if (duration != null) duration else Duration.ZERO
+    lockService.duration = duration ?: Duration.ZERO
     lockService.onSucceeded = EventHandler {
       val status = json2lockStatus(lockService.value)
       val projectNode = this.projectJson.node
       if (projectNode is ObjectNode) {
         projectNode.set("lock", lockService.value)
       }
-
+      this.lock = lockService.value
       result.complete(status)
     }
     lockService.onFailed = EventHandler { result.completeExceptionally(RuntimeException("Failed")) }

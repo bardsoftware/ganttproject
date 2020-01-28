@@ -30,7 +30,7 @@ import biz.ganttproject.storage.VersionMismatchException
 import biz.ganttproject.storage.asOnlineDocument
 import biz.ganttproject.storage.cloud.AuthTokenCallback
 import biz.ganttproject.storage.cloud.GPCloudOptions
-import biz.ganttproject.storage.cloud.GPCloudSignupPane
+import biz.ganttproject.storage.cloud.SigninPane
 import biz.ganttproject.storage.cloud.onAuthToken
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -168,7 +168,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
       }
       it.addStyleClass("dlg-lock", "dlg-cloud-file-options")
       it.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
-      val pane = GPCloudSignupPane(onAuthToken, {})
+      val pane = SigninPane(onAuthToken)
       it.setContent(pane.createSigninPane())
     }
   }
