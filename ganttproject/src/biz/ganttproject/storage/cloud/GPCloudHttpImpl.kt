@@ -439,7 +439,6 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
         }
       }
       "/start" -> {
-        println("/start")
         onStart?.invoke()
         newFixedLengthResponse("").apply {
           addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
