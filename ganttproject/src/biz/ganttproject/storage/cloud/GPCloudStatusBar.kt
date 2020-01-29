@@ -21,10 +21,12 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableObjectValue
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
@@ -33,12 +35,17 @@ import javafx.scene.control.Button
 import javafx.scene.control.Tooltip
 import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.decoration.Decorator
 import org.controlsfx.control.decoration.GraphicDecoration
+import java.util.*
 import javax.swing.JOptionPane
 
 private fun createWarningDecoration(): Node {
@@ -52,6 +59,7 @@ private fun createWarningDecoration(): Node {
  * @author dbarashev@bardsoftware.com
  */
 class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Document>, private val uiFacade: UIFacade) {
+  private var onLatestVersionChange: ChangeListener<LatestVersion>? = null
   private val btnLock = Button().also {
     it.isVisible = false
   }
@@ -104,6 +112,8 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }
       if (oldDoc is OnlineDocument) {
         oldDoc.mode.removeListener(this::onOnlineModeChange)
+        this.onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }
+        this.onLatestVersionChange = null
       }
 
       if (newDoc is LockableDocument) {
@@ -119,7 +129,10 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         this.btnOffline.isVisible = true
         this.updateOnlineMode(newDoc.mode.value)
 
-        newDoc.latestVersionProperty.addListener(this::onLatestVersionChange)
+        this.onLatestVersionChange = ChangeListener { _, _, newValue ->
+          handleLatestVersionChange(newDoc, newValue)
+        }
+        newDoc.latestVersionProperty.addListener(this.onLatestVersionChange)
       } else {
         this.btnOffline.isVisible = false
       }
@@ -239,8 +252,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
   }
 
-  private fun onLatestVersionChange(observable: Any, oldValue: LatestVersion?, newValue: LatestVersion?) {
-    println("We have updates: $newValue")
+  private fun handleLatestVersionChange(doc: OnlineDocument, newValue: LatestVersion) {
     OptionPaneBuilder<Boolean>().run {
       i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
       styleClass = "dlg-lock"
@@ -251,11 +263,16 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
           OptionElementData("reload", true, true),
           OptionElementData("ignore", false)
       )
+      titleHelpString?.update(newValue.author, GanttLanguage.getInstance().formatDate(GanttCalendar.getInstance().apply {
+        time = Date(newValue.timestamp)
+      }))
 
       showDialog { choice ->
         when (choice) {
           true -> {
-
+            GlobalScope.launch(Dispatchers.IO) {
+              doc.fetch().update()
+            }
           }
           false -> {}
         }

@@ -29,6 +29,9 @@ import com.google.common.io.ByteStreams
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
@@ -66,7 +69,7 @@ class GPCloudDocument(private val teamRefid: String?,
   override val status = SimpleObjectProperty<LockStatus>()
   override val mode = SimpleObjectProperty<OnlineDocumentMode>(OnlineDocumentMode.ONLINE_ONLY)
   override val fetchResultProperty = SimpleObjectProperty<FetchResult>()
-  override val latestVersionProperty = SimpleObjectProperty<LatestVersion>()
+  override val latestVersionProperty = SimpleObjectProperty<LatestVersion>(this, "")
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
@@ -264,7 +267,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun getInputStream(): InputStream {
-    var fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch() }
+    var fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch().also { it.update() }}
     if (fetchResult.useMirror) {
       val mirrorBytes = this.offlineMirror!!.inputStream.readBytes()
       saveOnline(mirrorBytes)
@@ -276,15 +279,11 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override suspend fun fetch(): FetchResult {
-    return callReadProject().also {
-      this.fetchResultProperty.set(it)
-    }
+    return callReadProject()
   }
 
   override suspend fun fetchVersion(version: Long): FetchResult {
-    return callReadProject(version).also {
-      this.fetchResultProperty.set(it)
-    }
+    return callReadProject(version)
   }
 
   @Throws(ForbiddenException::class)
@@ -304,7 +303,9 @@ class GPCloudDocument(private val teamRefid: String?,
             this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
             digestValue ?: "",
             etagValue?.toLong() ?: -1,
-            documentBody)
+            documentBody,
+            fetchResultProperty::setValue
+        )
       }
       403 -> {
         throw ForbiddenException()
@@ -369,10 +370,11 @@ class GPCloudDocument(private val teamRefid: String?,
               this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
               digestValue ?: "",
               etagValue?.toLong() ?: -1,
-              body)
+              body,
+              fetchResultProperty::setValue
+          )
           this.saveOfflineMirror(fetch)
-          this.fetchResultProperty.set(fetch)
-
+          fetch.update()
         }
         403 -> {
           throw ForbiddenException()
@@ -435,7 +437,13 @@ class GPCloudDocument(private val teamRefid: String?,
         if (msg["projectRefid"].textValue() == this@GPCloudDocument.projectRefid) {
           val timestamp = msg["timestamp"]?.asLong() ?: return@onContentChange
           val author = msg["author"]?.get("name")?.textValue() ?: return@onContentChange
-          this@GPCloudDocument.latestVersionProperty.set(LatestVersion(timestamp, author))
+          GlobalScope.launch(Dispatchers.IO) {
+            fetch().also {
+              if (it.actualVersion != fetchResultProperty.get().actualVersion) {
+                this@GPCloudDocument.latestVersionProperty.set(LatestVersion(timestamp, author))
+              }
+            }
+          }
         }
       }
     }

@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
@@ -110,7 +109,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         successChannel.send(document)
       } else {
         try {
-          val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
+          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
           if (processFetchResult(currentFetch)) {
             successChannel.send(document)
           }

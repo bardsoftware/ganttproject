@@ -88,7 +88,7 @@ class GPCloudDocumentTest : TestCase() {
   fun testBasicOnlineDocumentRead() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     assertEquals(100500, fetch.actualVersion)
     assertEquals(BODY_239.checksum(), fetch.actualChecksum)
     assertArrayEquals(BODY_239, fetch.body)
@@ -104,7 +104,7 @@ class GPCloudDocumentTest : TestCase() {
   fun testOnlineGoesMirrored() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     assertNotNull(doc.offlineMirror)
@@ -121,7 +121,7 @@ class GPCloudDocumentTest : TestCase() {
   fun testWriteMirrored() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     EasyMock.reset(mockHttpClient)
@@ -154,7 +154,7 @@ class GPCloudDocumentTest : TestCase() {
   fun testMirroredGoesOnline() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     assertNotNull(doc.offlineMirror)
@@ -183,7 +183,7 @@ class GPCloudDocumentTest : TestCase() {
     GPCloudOptions.cloudFiles.getFileOptions(doc.projectIdFingerprint).let {
       it.offlineMirror = mirrorFile.absolutePath
     }
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     ByteStreams.toByteArray(doc.inputStream)
     assertEquals(OnlineDocumentMode.MIRROR, doc.mode.value)
     assertTrue(mirrorFile.exists())
@@ -214,12 +214,12 @@ class GPCloudDocumentTest : TestCase() {
   fun testOnlineGoesOfflineOnWrite() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     assertGoesOffline(doc, fetch.actualVersion)
 
     val doc1 = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc1, BODY_239)
-    val fetch1 = runBlocking { doc1.fetch() }
+    val fetch1 = runBlocking { doc1.fetch().also { it.update() }}
     doc1.setMirrored(true)
     assertGoesOffline(doc1, fetch1.actualVersion)
     assertArrayEquals(BODY_566, ByteStreams.toByteArray(doc1.offlineMirror!!.inputStream))
@@ -231,7 +231,7 @@ class GPCloudDocumentTest : TestCase() {
   fun testWriteOffline() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     ByteStreams.toByteArray(doc.inputStream)
     doc.setMirrored(true)
 
