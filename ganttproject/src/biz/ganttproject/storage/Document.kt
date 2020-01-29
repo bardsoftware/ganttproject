@@ -179,8 +179,10 @@ data class FetchResult(val onlineDocument: OnlineDocument,
                        val syncVersion: Long,
                        val actualChecksum: String,
                        val actualVersion: Long,
-                       val body: ByteArray) {
+                       val body: ByteArray,
+                       val updateFxn: (FetchResult)->Unit = {}) {
   var useMirror: Boolean = false
+  fun update() = updateFxn(this)
 }
 
 data class LatestVersion(val timestamp: Long, val author: String)

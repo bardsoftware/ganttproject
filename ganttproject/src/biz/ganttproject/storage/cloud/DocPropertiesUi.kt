@@ -197,7 +197,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
         GlobalScope.launch {
-          folderView.document?.fetchVersion(selected.generation)
+          folderView.document?.fetchVersion(selected.generation)?.update()
         }
       }
       add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
