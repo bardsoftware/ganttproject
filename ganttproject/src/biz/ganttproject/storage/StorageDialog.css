@@ -319,7 +319,7 @@ HBox.title-integrated Label {
 .open-save-buttons {
     -fx-alignment: baseline-center;
     -fx-font-size: 110%;
-    -fx-padding: 1ex 0 1ex 0;
+    -fx-spacing: 1ex;
 }
 
 .open-save-buttons .button {
@@ -333,12 +333,14 @@ HBox.title-integrated Label {
 }
 
 .open-save-buttons .button:hover,.open-save-buttons .button:focused {
-    -fx-border-color: -gp-orange;
+    -fx-border-color: -gp-dark-gray;
+    -fx-border-width: 0 0 1 0;
 }
 .open-save-buttons .button.selected {
     -fx-border-color: transparent;
     -fx-font-weight: bold;
-    -fx-background-color: -gp-orange;
+    -fx-background-color: -gp-dark-gray;
+    -fx-text-fill: white;
 }
 
 .property-sheet {
