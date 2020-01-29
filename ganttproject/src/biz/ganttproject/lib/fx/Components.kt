@@ -128,3 +128,5 @@ class VBoxBuilder(vararg classes: String) {
     return child
   }
 }
+
+fun vbox(code: VBoxBuilder.() -> Unit) = VBoxBuilder().apply(code).vbox

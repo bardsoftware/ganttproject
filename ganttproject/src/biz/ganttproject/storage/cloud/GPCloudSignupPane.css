@@ -1,34 +1,34 @@
-.btn-secondary {
-    -fx-alignment: center;
-    -fx-background-color: -gp-light-gray;
-    -fx-padding: 0.5ex 1em;
-    -fx-font-size: 90%;
-}
+/*.btn-secondary {*/
+/*    -fx-alignment: center;*/
+/*    -fx-background-color: -gp-light-gray;*/
+/*    -fx-padding: 0.5ex 1em;*/
+/*    -fx-font-size: 90%;*/
+/*}*/
 
-.btn-secondary .glyph-icon {
-    -fx-alignment: center;
-    -fx-fill: -gp-medium-gray;
-    -glyph-size: 16px;
-}
+/*.btn-secondary .glyph-icon {*/
+/*    -fx-alignment: center;*/
+/*    -fx-fill: -gp-medium-gray;*/
+/*    -glyph-size: 16px;*/
+/*}*/
 
-.btn-secondary:hover {
-    -fx-fill: white;
-    -fx-text-fill: white;
-    -fx-cursor: hand;
-    -fx-background-color: -gp-medium-gray;
-}
+/*.btn-secondary:hover {*/
+/*    -fx-fill: white;*/
+/*    -fx-text-fill: white;*/
+/*    -fx-cursor: hand;*/
+/*    -fx-background-color: -gp-medium-gray;*/
+/*}*/
 
-.btn-secondary:hover .glyph-icon {
-    -fx-fill: white;
-    -fx-text-fill: white;
-}
+/*.btn-secondary:hover .glyph-icon {*/
+/*    -fx-fill: white;*/
+/*    -fx-text-fill: white;*/
+/*}*/
 
 
-.btn-secondary:pressed, .btn-secondary:hover:pressed {
-    -fx-background-color: -gp-dark-gray;
-    -fx-fill: white;
-    -fx-text-fill: white;
-}
+/*.btn-secondary:pressed, .btn-secondary:hover:pressed {*/
+/*    -fx-background-color: -gp-dark-gray;*/
+/*    -fx-fill: white;*/
+/*    -fx-text-fill: white;*/
+/*}*/
 
 
 .signup-pane {
@@ -53,7 +53,7 @@
     -fx-font-size: 120%;
 }
 
-.signup-pane .row-copy-link TextField {
+.signup-pane TextField {
     -fx-fill: -gp-medium-gray;
     -fx-font-size: 80%;
     -fx-border-color: -gp-light-gray;
@@ -64,16 +64,8 @@
     -fx-effect: none;
 }
 
-.signup-pane .row-copy-link TextField:hover {
+.signup-pane TextField:hover {
     -fx-border-color: -gp-medium-gray;
-}
-
-.progress-indicator {
-    -fx-pref-width: 100%;
-    -fx-pref-height: 100%;
-    -fx-fill-height: true;
-    -fx-fill-width: true;
-    -fx-padding: 20px;
 }
 
 .signin-pane .indicator-pane {
