@@ -45,18 +45,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
-import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationItem;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.ViewLogDialog;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
@@ -247,6 +236,20 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myOptions.setTitled(false);
 
     myLogoOption = new DefaultFileOption("ui.logo");
+    myLogoOption.addChangeValueListener(new ChangeValueListener(){
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+        // Update date sample
+        //if (dateFormatSwitchOption.isChecked()) {
+        // ... update default date format option
+//          String selected = myLogoOption.getValue();
+//          shortDateFormatOption.setSelectedLocale(selected);
+        Image newLogo =getLogo();
+        //setIconImage(newLogo);
+        //refresh;
+      }
+    });
+    
     myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
     addOptions(myOptions);
