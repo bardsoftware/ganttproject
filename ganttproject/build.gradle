@@ -44,7 +44,9 @@ dependencies {
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile files('data/resources')
 
+    testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
+
     testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
 
 //    compile "de.jensd:fontawesomefx-materialicons:2.2.+"

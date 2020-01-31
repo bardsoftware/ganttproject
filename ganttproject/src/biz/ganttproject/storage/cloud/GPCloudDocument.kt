@@ -59,7 +59,7 @@ private val ourExecutor = Executors.newSingleThreadExecutor()
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
-                      private val projectRefid: String?,
+                      internal val projectRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
@@ -433,17 +433,17 @@ class GPCloudDocument(private val teamRefid: String?,
         }
       }
 
-      onContentChange {msg ->
-        if (msg["projectRefid"].textValue() == this@GPCloudDocument.projectRefid) {
-          val timestamp = msg["timestamp"]?.asLong() ?: return@onContentChange
-          val author = msg["author"]?.get("name")?.textValue() ?: return@onContentChange
-          GlobalScope.launch(Dispatchers.IO) {
-            fetch().also {
-              if (it.actualVersion != fetchResultProperty.get().actualVersion) {
-                this@GPCloudDocument.latestVersionProperty.set(LatestVersion(timestamp, author))
-              }
-            }
-          }
+      onContentChange { msg -> GlobalScope.launch(Dispatchers.IO) { onWebSocketContentChange(msg) }}
+    }
+  }
+
+  internal suspend fun onWebSocketContentChange(msg: ObjectNode) {
+    if (msg["projectRefid"].textValue() == projectRefid) {
+      val timestamp = msg["timestamp"]?.asLong() ?: return
+      val author = msg["author"]?.get("name")?.textValue() ?: return
+      fetch().also {
+        if (it.actualVersion != fetchResultProperty.get().actualVersion) {
+          latestVersionProperty.set(LatestVersion(timestamp, author))
         }
       }
     }
@@ -498,3 +498,4 @@ class GPCloudDocument(private val teamRefid: String?,
     executor.execute(callable)
   }
 }
+
