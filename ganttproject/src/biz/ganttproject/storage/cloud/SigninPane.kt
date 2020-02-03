@@ -20,12 +20,12 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.Spinner
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.animation.*
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -35,14 +35,11 @@ import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
-import javafx.scene.image.Image
-import javafx.scene.image.ImageView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import javafx.util.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -70,13 +67,10 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
 
   private var status = Status.INIT
   private var statusText = SimpleStringProperty()
+  private val spinner = Spinner()
   private val indicatorPane = BorderPane().apply {
     styleClass.add("indicator-pane")
   }
-  private val iconView = ImageView(Image(
-      GPCloudStorage::class.java.getResourceAsStream("/icons/ganttproject-logo-512.png"),
-      128.0, 128.0, false, true))
-  private var animationStopper: (()->Unit) ? = null
 
   init {
     this.httpd.onTokenReceived = this.onTokenCallback
@@ -86,12 +80,9 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
   fun onStartCallback() {
     GlobalScope.launch(Dispatchers.JavaFx) {
       status = Status.WAITING_FOR_AUTH
-      animationStopper?.let {
-        it.invoke()
-      }
+      spinner.state = Spinner.State.ATTENTION
 
       statusText.value = ourLocalizer.formatText("text.browser_ready")
-      animationStopper = iconView.jump()
     }
   }
 
@@ -108,9 +99,9 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
       it.isWrapText = true
     }, Pos.CENTER_LEFT, Priority.NEVER)
 
+    indicatorPane.center = spinner.pane
     vboxBuilder.add(indicatorPane, Pos.CENTER, Priority.NEVER)
-    indicatorPane.center = iconView
-    animationStopper = iconView.rotate()
+    spinner.state = Spinner.State.WAITING
     statusText.value = ourLocalizer.formatText("text.browser_opening")
 
 
@@ -132,7 +123,7 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
   }
 
   private fun startBrowserTimeout(uri: String) {
-    Timer().schedule(10000) {
+    Timer().schedule(60000) {
       if (status == Status.WAITING_FOR_BROWSER) {
         GlobalScope.launch(Dispatchers.JavaFx) {
           FXUtil.transitionCenterPane(indicatorPane, createUrlPane(uri), {})
@@ -161,60 +152,9 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
         }
       }, Pos.CENTER, Priority.NEVER)
     }
-//    return HBox().apply {
-//      styleClass.addAll("smallskip", "row-copy-link")
-//      children.add(
-//          Button(i18n.formatText("copyLink"), FontAwesomeIconView(FontAwesomeIcon.COPY)).apply {
-//            contentDisplay = ContentDisplay.RIGHT
-//            styleClass.add("btn-secondary")
-//            addEventHandler(ActionEvent.ACTION) {
-//              Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
-//                putString(uri)
-//              })
-//            }
-//            HBox.setMargin(this, Insets(0.0, 0.0, 0.0, 5.0))
-//          }
-//      )
-//      children.add()
-//    }
   }
 }
 
-private fun (ImageView).rotate() : ()->Unit {
-  val rt = RotateTransition(Duration.millis(3000.0), this)
-  rt.fromAngle = 0.0
-  rt.toAngle = 360.0
-  rt.cycleCount = Animation.INDEFINITE
-  rt.interpolator = Interpolator.LINEAR
-  rt.play()
-
-  return {
-    rt.cycleCount = 1
-    rt.duration = Duration.millis(1000.0)
-    rt.playFromStart()
-  }
-}
-
-private fun (ImageView).jump() : ()->Unit {
-  val longJump = TranslateTransition(Duration.millis(200.0), this)
-  longJump.interpolatorProperty().set(Interpolator.SPLINE(.1, .1, .7, .7))
-  longJump.byY = -30.0
-  longJump.isAutoReverse = true
-  longJump.cycleCount = 2
-
-  val shortJump = TranslateTransition(Duration.millis(100.0), this)
-  shortJump.interpolatorProperty().set(Interpolator.SPLINE(.1, .1, .7, .7))
-  shortJump.byY = -15.0
-  shortJump.isAutoReverse = true
-  shortJump.cycleCount = 6
-
-  val pause = PauseTransition(Duration.seconds(2.0))
-  val seq = SequentialTransition(longJump, shortJump, pause)
-  seq.cycleCount = Animation.INDEFINITE
-  seq.interpolator = Interpolator.LINEAR
-  seq.play()
-  return seq::stop
-}
 
 private val ourLocalizer = RootLocalizer.createWithRootKey(
     rootKey = "cloud.signin",

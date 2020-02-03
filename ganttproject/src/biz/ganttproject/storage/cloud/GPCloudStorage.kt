@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.Spinner
 import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageDialogBuilder
 import javafx.application.Platform
@@ -28,6 +29,8 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -128,7 +131,15 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.openDocument, this.documentManager)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager) { doc ->
+      GlobalScope.async(Dispatchers.JavaFx) {
+        val spinner = Spinner().also { it.state = Spinner.State.WAITING }
+        nextPage(spinner.pane)
+      }
+      GlobalScope.launch {
+        openDocument(doc)
+      }
+    }
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {
