@@ -134,8 +134,8 @@ val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: (Document) -> Unit,
-    private val documentManager: DocumentManager) {
+    private val documentManager: DocumentManager,
+    private val documentConsumer: (Document) -> Unit) {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
   private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>

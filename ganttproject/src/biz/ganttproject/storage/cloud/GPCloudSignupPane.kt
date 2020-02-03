@@ -19,8 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.Spinner
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
+import biz.ganttproject.lib.fx.vbox
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
 import javafx.event.ActionEvent
@@ -29,7 +31,6 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
-import javafx.scene.control.ProgressIndicator
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
@@ -197,8 +198,6 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
 
   private fun createTokenVerificationProgressUi(): Pane {
     val i18nSignin = RootLocalizer.createWithRootKey("cloud.authPane", i18n)
-    val vboxBuilder = VBoxBuilder("fill-parent")
-    vboxBuilder.addTitle(i18nSignin.formatText("title"))
 
     val expirationValue = {
       val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
@@ -214,18 +213,21 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
       } else ""
     }()
 
-    vboxBuilder.add(Label(i18nSignin.formatText("expirationMsg", expirationValue)).apply {
-      this.styleClass.add("help")
+    return paneAndImage(vbox {
+      vbox.styleClass.add("fill-parent")
+      addTitle(i18nSignin.formatText("title"))
+      add(Label(i18nSignin.formatText("expirationMsg", expirationValue)).apply {
+        this.styleClass.add("help")
+      })
+      add(Spinner(Spinner.State.WAITING).pane.also {
+        it.maxWidth = Double.MAX_VALUE
+        it.maxHeight = Double.MAX_VALUE
+      }, Pos.CENTER, Priority.ALWAYS)
+      add(Label(i18nSignin.formatText("progressLabel")), Pos.CENTER, Priority.NEVER).also {
+        it.styleClass.add("medskip")
+      }
+      vbox
     })
-    vboxBuilder.add(ProgressIndicator(-1.0).also {
-      it.maxWidth = Double.MAX_VALUE
-      it.maxHeight = Double.MAX_VALUE
-    }, Pos.CENTER, Priority.ALWAYS)
-    vboxBuilder.add(Label(i18nSignin.formatText("progressLabel")), Pos.CENTER, Priority.NEVER).also {
-      it.styleClass.add("medskip")
-    }
-
-    return paneAndImage(vboxBuilder.vbox)
   }
 
 }
