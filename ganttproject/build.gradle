@@ -12,14 +12,15 @@ dependencies {
 //  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.1'
 //  mavenDeps group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.1'
 //  mavenDeps group: 'de.jensd', name: 'fontawesomefx-fontawesome', version: '4.6.3', transitive: true
-    mavenDeps group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.+'
-    mavenDeps group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.+'
-    mavenDeps group: 'org.jdom', name: 'jdom', version:'1.1.+'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.11'
+    mavenDeps group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.11'
+    mavenDeps group: 'org.jdom', name: 'jdom', version:'1.1.3'
     mavenDeps group: 'net.sf.json-lib', name: 'json-lib', version:'2.4', classifier:'jdk15'
     mavenDeps group: 'xml-apis', name: 'xml-apis', version:'2.0.2'
     mavenDeps group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version:'1.4.2'
-    mavenDeps group: 'org.slf4j', name: 'slf4j-api', version:'1.7.+'
-    mavenDeps group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.+'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-api', version:'1.7.30'
+    mavenDeps group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.30'
 }
 
 updateMavenDeps.doFirst {
