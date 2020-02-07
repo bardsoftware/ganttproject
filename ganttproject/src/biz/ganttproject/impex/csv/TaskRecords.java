@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
@@ -85,7 +86,9 @@ class TaskRecords extends RecordGroup {
   enum TaskFields {
     ID(TaskDefaultColumn.ID.getNameKey()),
     NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"),
-    NOTES("notes"), COMPLETION("tableColCompletion"), RESOURCES("resources"),
+    NOTES("notes"), COMPLETION("tableColCompletion"),
+    COORDINATOR("tableColCoordinator"),
+    RESOURCES("resources"),
     ASSIGNMENTS("Assignments") {
       @Override
       public String toString() {
@@ -162,7 +165,6 @@ class TaskRecords extends RecordGroup {
         ? record.get(TaskDefaultColumn.DURATION.getName()).trim()
         : "";
     if (!duration.isEmpty()) {
-      System.out.println("duration="+record.get(TaskDefaultColumn.DURATION.getName()));
       builder = builder.withDuration(taskManager.createLength(duration));
     }
     if (record.isSet(TaskFields.END_DATE.toString())) {
@@ -234,7 +236,7 @@ class TaskRecords extends RecordGroup {
     AssignmentSpec VOID = new AssignmentSpec() {
       @Override
       public void apply(Task task, HumanResourceManager resourceManager) {
-        // Dp nothing.
+        // Do nothing.
       }
     };
   }
@@ -242,10 +244,12 @@ class TaskRecords extends RecordGroup {
   private static class AssignmentColumnSpecImpl implements AssignmentSpec {
     private final String myValue;
     private final List<Pair<Level, String>> myErrors;
+    private final String myCoordinator;
 
-    AssignmentColumnSpecImpl(String value, List<Pair<Level, String>> errors) {
+    AssignmentColumnSpecImpl(String value, String coordinator, List<Pair<Level, String>> errors) {
       myValue = value;
       myErrors = errors;
+      myCoordinator = coordinator;
     }
 
     @Override
@@ -267,7 +271,11 @@ class TaskRecords extends RecordGroup {
             continue;
           }
           Float load = Float.parseFloat(idAndLoad[1]);
-          task.getAssignmentCollection().addAssignment(resource).setLoad(load);
+          ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(resource);
+          assignment.setLoad(load);
+          if (myCoordinator != null && myCoordinator.equals(resource.getName())) {
+            assignment.setCoordinator(true);
+          }
         } catch (NumberFormatException e) {
           RecordGroup.addError(myErrors, Level.SEVERE, String.format(
               "Failed to parse number from assignment cell=%s of task=%d %n%s",
@@ -279,6 +287,8 @@ class TaskRecords extends RecordGroup {
 
   private static class ResourceColumnSpecImpl implements AssignmentSpec {
     private static Map<String, HumanResource> resourceMap;
+    private final String myCoordinator;
+
     static Map<String, HumanResource> getIndexByName(HumanResourceManager resourceManager) {
       if (resourceMap == null) {
         resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
@@ -293,9 +303,10 @@ class TaskRecords extends RecordGroup {
     private final String myValue;
     private final List<Pair<Level, String>> myErrors;
 
-    ResourceColumnSpecImpl(String value, List<Pair<Level, String>> errors) {
+    ResourceColumnSpecImpl(String value, String coordinator, List<Pair<Level, String>> errors) {
       myValue = value;
       myErrors = errors;
+      myCoordinator = coordinator;
     }
 
     @Override
@@ -304,7 +315,10 @@ class TaskRecords extends RecordGroup {
       for (String name : names) {
         HumanResource resource = getIndexByName(resourceManager).get(name);
         if (resource != null) {
-          task.getAssignmentCollection().addAssignment(resource);
+          ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(resource);
+          if (myCoordinator != null && myCoordinator.equals(name)) {
+            assignment.setCoordinator(true);
+          }
         }
       }
     }
@@ -312,12 +326,14 @@ class TaskRecords extends RecordGroup {
   }
   private AssignmentSpec parseAssignmentSpec(CSVRecord record) {
     final String assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString());
+    final String coordinatorColumn = getOrNull(record, TaskFields.COORDINATOR.toString());
+
     if (!Strings.isNullOrEmpty(assignmentsColumn)) {
-      return new AssignmentColumnSpecImpl(assignmentsColumn, getErrorOutput());
+      return new AssignmentColumnSpecImpl(assignmentsColumn, coordinatorColumn, getErrorOutput());
     }
     String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
     if (!Strings.isNullOrEmpty(resourcesColumn)) {
-      return new ResourceColumnSpecImpl(resourcesColumn, getErrorOutput());
+      return new ResourceColumnSpecImpl(resourcesColumn, coordinatorColumn, getErrorOutput());
     }
     return AssignmentSpec.VOID;
   }

@@ -22,6 +22,8 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -43,6 +45,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,7 +54,7 @@ import java.util.Map;
  * @author dbarashev (Dmitry Barashev)
  */
 public class GPCsvImportTest extends TestCase {
-  private Supplier<Reader> createSupplier(final String data) {
+  private static Supplier<Reader> createSupplier(final String data) {
     return new Supplier<Reader>() {
       @Override
       public Reader get() {
@@ -161,6 +164,57 @@ public class GPCsvImportTest extends TestCase {
 
     assertEquals(100f, taskMap.get("t2").getAssignmentCollection().getAssignment(resourceMap.get("Jack")).getLoad());
     assertEquals(0, taskMap.get("t3").getAssignmentCollection().getAssignments().length);
+  }
+
+  private static class TestData {
+    final ImmutableMap<String, HumanResource> resourceMap;
+    final TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    final TaskManager taskManager = builder.build();
+    final HumanResourceManager resourceManager = builder.getResourceManager();
+    final RoleManager roleManager = new RoleManagerImpl();
+    final Map<String, Task> taskMap;
+
+    TestData(List<String> csvLines) throws IOException {
+      GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(csvLines)),
+          taskManager, resourceManager, roleManager, builder.getTimeUnitStack());
+      importer.load();
+
+      resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
+        @Override
+        public String apply(HumanResource input) {
+          return input.getName();
+        }
+      });
+      taskMap = buildTaskMap(taskManager);
+    }
+  }
+
+  public void testImportCoordinatorColumn() throws Exception {
+    String header1 = "Name,Begin date,End date,Assignments,Coordinator";
+    String data1 = "t1,23/07/12,25/07/12,1:100.00;2:50.00,John";
+    String data2 = "t2,23/07/12,25/07/12,3:100.00,NoName";
+
+    String header2 = "Name,ID,e-mail,Phone,Default role";
+    String resources = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
+
+    TestData td = new TestData(ImmutableList.of(header1, data1, data2, "", header2, resources));
+    Task t1 = td.taskMap.get("t1");
+    assertTrue(t1.getAssignmentCollection().getAssignment(td.resourceMap.get("John")).isCoordinator());
+    assertFalse(t1.getAssignmentCollection().getAssignment(td.resourceMap.get("Joe")).isCoordinator());
+    Task t2 = td.taskMap.get("t2");
+    assertFalse(t2.getAssignmentCollection().getAssignment(td.resourceMap.get("Jack")).isCoordinator());
+
+    header1 = "Name,Begin date,End date,Resources,Coordinator";
+    data1 = "t1,23/07/12,25/07/12,Joe;John,John";
+    data2 = "t2,23/07/12,25/07/12,Jack,NoName";
+
+    td = new TestData(ImmutableList.of(header1, data1, data2, "", header2, resources));
+    t1 = td.taskMap.get("t1");
+    assertTrue(t1.getAssignmentCollection().getAssignment(td.resourceMap.get("John")).isCoordinator());
+    assertFalse(t1.getAssignmentCollection().getAssignment(td.resourceMap.get("Joe")).isCoordinator());
+    t2 = td.taskMap.get("t2");
+    assertFalse(t2.getAssignmentCollection().getAssignment(td.resourceMap.get("Jack")).isCoordinator());
+
   }
 
   public void testImportResourceRole() throws Exception {
