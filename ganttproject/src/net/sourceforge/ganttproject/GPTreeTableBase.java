@@ -120,7 +120,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   private GPAction myNewRowAction;
   private GPAction myPropertiesAction;
   private TableCellEditor myHierarchicalEditor;
-  private final AtomicBoolean myDoubleClickExpectation = new AtomicBoolean(false);
+  // True value in this field indicates that we have scheduled a task which will start editing
+  // a currently selected edit cell.
+  // See comments in editCellAt method below.
+  private final AtomicBoolean isEditingStartExpected = new AtomicBoolean(false);
+  protected void setEditingStartExpected(boolean value) {
+    this.isEditingStartExpected.set(value);
+  }
   private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
   private final Integer myDoubleClickInterval = (Integer) Objects.firstNonNull(Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval"), 500);
 
@@ -136,7 +142,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
     if (e instanceof MouseEvent) {
-      // Here we have to distinguish between double-click and two consecutive single-clicks.
+      // Here we have to distinguish between double-click/drag start and two consecutive single-clicks.
       // The first single click on a cell should make the cell selected, while single click
       // on selected cell should start editing. The problem is that when user double-clicks
       // a selected cell, single-click event comes first. So in this case we postpone editing start,
@@ -144,7 +150,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       MouseEvent me = (MouseEvent) e;
       if (me.getClickCount() == 2 && me.getButton() == MouseEvent.BUTTON1) {
         // "Cancel" the task and show properties.
-        myDoubleClickExpectation.set(false);
+        setEditingStartExpected(false);
         if (getTable().getSelectedRow() != -1) {
           me.consume();
           myPropertiesAction.actionPerformed(null);
@@ -158,12 +164,13 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         if (me.isControlDown() || me.isMetaDown() || me.isShiftDown() || me.isAltDown()) {
           return false;
         }
-        // Otherwise wait for double-click a little bit and then start editing.
-        myDoubleClickExpectation.set(true);
+        // Otherwise wait for double-click a little bit and then start editing. Should we
+        // receive double-click or drag start events, we'll reset editing start expectation to false.
+        setEditingStartExpected(true);
         myEditCellExecutor.schedule(new Runnable() {
           @Override
           public void run() {
-            if (myDoubleClickExpectation.get()) {
+            if (isEditingStartExpected.get()) {
               SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
