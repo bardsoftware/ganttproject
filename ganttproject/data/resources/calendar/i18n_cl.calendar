@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="cl" name="Chile Holidays 2019" type="country">
+<calendar id="cl" name="Chile Holidays 2019-2020" type="country">
     <!-- Data sources
     https://www.officeholidays.com/countries/chile/2019.php
     https://www.timeanddate.com/holidays/chile/2019
@@ -16,6 +16,11 @@
     <date year="" month="11" date="1"><![CDATA[All Saints Day]]></date>
     <date year="" month="12" date="8"><![CDATA[Immaculate Conception]]></date>
     <date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+
+    <date year="2020" month="4" date="10"><![CDATA[Good Friday]]></date>
+    <date year="2020" month="4" date="11"><![CDATA[Holy Saturday]]></date>
+    <date year="2020" month="6" date="29"><![CDATA[Saint Peter and Saint Paul]]></date>
+    <date year="2020" month="10" date="12"><![CDATA[Columbus Day]]></date>
 
     <date year="2019" month="4" date="19"><![CDATA[Good Friday]]></date>
     <date year="2019" month="4" date="20"><![CDATA[Holy Saturday]]></date>
