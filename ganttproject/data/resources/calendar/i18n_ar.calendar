@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <calendar name="Argentina Holidays 2020" type="country">
 	<!-- Data Sources -->
-	<!-- http://www.officeholidays.com/countries/argnetina -->
+	<!-- http://www.officeholidays.com/countries/argentina -->
 	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
 	<date year="" month="03" date="24"><![CDATA[Truth and Justice Memorial Day]]></date>
 	<date year="" month="04" date="02"><![CDATA[Malvinas Day]]></date>
