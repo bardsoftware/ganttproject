@@ -296,6 +296,8 @@ class WebSocketListenerImpl : WebSocketListener() {
   private var webSocket: WebSocket? = null
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+
   internal val token: String?
     get() = GPCloudOptions.websocketAuthToken
   lateinit var onAuthCompleted: () -> Unit
@@ -318,11 +320,11 @@ class WebSocketListenerImpl : WebSocketListener() {
   override fun onMessage(webSocket: WebSocket?, text: String?) {
     val payload = OBJECT_MAPPER.readTree(text)
     if (payload is ObjectNode) {
-      println("WebSocket message:\n$payload")
+      LOG.debug("WebSocket message:\n{}", payload)
       payload.get("type")?.textValue()?.let {
-        println("type=$it")
         when (it) {
           "ProjectLockStatusChange" -> onLockStatusChange(payload)
+          "ProjectChange", "ProjectRevert" -> onProjectContentsChange(payload)
           else -> onStructureChange(payload)
         }
       }
@@ -341,8 +343,13 @@ class WebSocketListenerImpl : WebSocketListener() {
     }
   }
 
+  private fun onProjectContentsChange(payload: ObjectNode) {
+    LOG.debug("ProjectChange: {}", payload)
+    this.contentChangeListeners.forEach { it(payload) }
+  }
+
   override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
-    println("WebSocket closed")
+    LOG.debug("WebSocket closed")
   }
 
   override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -359,6 +366,10 @@ class WebSocketListenerImpl : WebSocketListener() {
     this.lockStatusChangeListeners.add(listener)
   }
 
+  fun addOnContentChange(listener: (ObjectNode) -> Unit) {
+    this.contentChangeListeners.add(listener)
+  }
+
 }
 
 class WebSocketClient {
@@ -372,7 +383,7 @@ class WebSocketClient {
     if (isStarted) {
       return
     }
-    val req = Request.Builder().url("wss://ws.ganttproject.biz").build()
+    val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
     this.wsListener.onAuthCompleted = {
       this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
     }
@@ -388,6 +399,10 @@ class WebSocketClient {
     return this.wsListener.addOnLockStatusChange(listener)
   }
 
+  fun onContentChange(listener: (ObjectNode) -> Unit) {
+    return this.wsListener.addOnContentChange(listener)
+  }
+
   fun sendHeartbeat() {
     this.websocket.send("HB")
   }
@@ -395,8 +410,13 @@ class WebSocketClient {
 
 val webSocket = WebSocketClient()
 
+// HTTP server for sign in into GP Cloud
+typealias AuthTokenCallback = (token: String?, validity: String?, userId: String?, websocketToken: String?) -> Unit
+typealias AuthStartCallback = ()->Unit
+
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
   var onTokenReceived: AuthTokenCallback? = null
+  var onStart: AuthStartCallback? = null
 
   private fun getParam(session: IHTTPSession, key: String): String? {
     val values = session.parameters[key]
@@ -406,15 +426,31 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
   override fun serve(session: IHTTPSession): Response {
     val args = mutableMapOf<String, String>()
     session.parseBody(args)
-    val token = getParam(session, "token")
-    val userId = getParam(session, "userId")
-    val validity = getParam(session, "validity")
-    val websocketToken = getParam(session, "websocketToken")
+    return when (session.uri) {
+      "/auth" -> {
+        val token = getParam(session, "token")
+        val userId = getParam(session, "userId")
+        val validity = getParam(session, "validity")
+        val websocketToken = getParam(session, "websocketToken")
 
-    onTokenReceived?.invoke(token, validity, userId, websocketToken)
-    val resp = newFixedLengthResponse("")
-    resp.addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
-    return resp
+        onTokenReceived?.invoke(token, validity, userId, websocketToken)
+        newFixedLengthResponse("").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+      "/start" -> {
+        onStart?.invoke()
+        newFixedLengthResponse("").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+      else -> {
+        println("Unknown URI: ${session.uri}")
+        newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "").apply {
+          addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
+        }
+      }
+    }
   }
 }
 
@@ -509,3 +545,4 @@ fun isNetworkAvailable(): Boolean {
     false
   }
 }
+private val LOG = GPLogger.create("Cloud.Http")

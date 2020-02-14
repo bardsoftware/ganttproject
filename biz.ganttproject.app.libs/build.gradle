@@ -53,7 +53,6 @@ dependencies {
     exported 'org.nanohttpd:nanohttpd:2.3.+'
     exported 'org.jdom:jdom:1.+'
     exported 'org.slf4j:slf4j-api:1.7.+'
-    exported 'org.slf4j:slf4j-simple:1.7.+'
     exported 'org.swinglabs:jxlayer:3.0.4'
 
     exported fileTree(dir: project.ext.libDir, include: ['*.jar'])
@@ -74,6 +73,7 @@ task copyPluginFiles(dependsOn: jar) {
             from(configurations.exported) {
                 include "*.jar"
             }
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }

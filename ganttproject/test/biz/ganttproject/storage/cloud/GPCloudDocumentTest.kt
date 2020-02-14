@@ -18,16 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.storage.LatestVersion
 import biz.ganttproject.storage.OnlineDocumentMode
 import biz.ganttproject.storage.checksum
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import com.google.common.util.concurrent.MoreExecutors
-import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.document.FileDocument
 import org.easymock.EasyMock
-import org.junit.Assert.assertArrayEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.UnknownHostException
 import java.util.*
@@ -48,35 +52,42 @@ data class TestResponse(override val body: ByteArray = byteArrayOf(),
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudDocumentTest : TestCase() {
+class GPCloudDocumentTest {
   private lateinit var testMirrorFolder: File
   private lateinit var mockHttpClient: GPCloudHttpClient
 
-  override fun setUp() {
-    super.setUp()
+  @BeforeEach
+  fun setUp() {
     testMirrorFolder = Files.createTempDir()
     mockHttpClient = EasyMock.createMock(GPCloudHttpClient::class.java)
   }
 
-  override fun tearDown() {
+  @AfterEach
+  fun tearDown() {
     testMirrorFolder.deleteRecursively()
   }
 
   private fun prepareReadCall(doc: GPCloudDocument, body: ByteArray) {
+    prepareReadCall(doc) {
+      val checksum = body.checksum()
+      TestResponse(body = body, headers = mapOf(
+          "ETag" to "100500",
+          "Digest" to "crc32c=$checksum"
+      ))
+    }
+  }
+
+  private fun prepareReadCall(doc: GPCloudDocument, responseBuilder: ()->TestResponse) {
     doc.httpClientFactory = { mockHttpClient }
     doc.offlineDocumentFactory = { path -> FileDocument(File(testMirrorFolder, path)) }
     doc.executor = MoreExecutors.newDirectExecutorService()
 
-
-    val checksum = body.checksum()
     EasyMock.reset(mockHttpClient)
     EasyMock.expect(mockHttpClient.sendGet("/p/read?projectRefid=prj1")).andReturn(
-        TestResponse(body = body, headers = mapOf(
-            "ETag" to "100500",
-            "Digest" to "crc32c=$checksum"
-        ))
+        responseBuilder()
     )
     EasyMock.replay(mockHttpClient)
+
   }
 
   val BODY_239 = byteArrayOf(2, 3, 9)
@@ -85,10 +96,11 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * The very simple test which checks that document is fetched and gets ONLINE mode.
    */
+  @Test
   fun testBasicOnlineDocumentRead() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     assertEquals(100500, fetch.actualVersion)
     assertEquals(BODY_239.checksum(), fetch.actualChecksum)
     assertArrayEquals(BODY_239, fetch.body)
@@ -101,10 +113,11 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * Test that once we call setMirrored(true), which happens in the UI on button click, we get mirror document on disk.
    */
+  @Test
   fun testOnlineGoesMirrored() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     assertNotNull(doc.offlineMirror)
@@ -118,10 +131,11 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * Test that write to document in MIRROR mode makes both HTTP call and local disk write.
    */
+  @Test
   fun testWriteMirrored() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     EasyMock.reset(mockHttpClient)
@@ -151,10 +165,11 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * Test that mirror document is deleted when mode is switched to ONLINE_ONLY
    */
+  @Test
   fun testMirroredGoesOnline() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     doc.setMirrored(true)
 
     assertNotNull(doc.offlineMirror)
@@ -174,6 +189,7 @@ class GPCloudDocumentTest : TestCase() {
    * Test that if we have records in the options which indicate mirror document location, we get MIRROR mode
    * automatically after opening online document.
    */
+  @Test
   fun testMirroredAutomaticallyWhenHasOptions() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
@@ -183,7 +199,7 @@ class GPCloudDocumentTest : TestCase() {
     GPCloudOptions.cloudFiles.getFileOptions(doc.projectIdFingerprint).let {
       it.offlineMirror = mirrorFile.absolutePath
     }
-    runBlocking { doc.fetch() }
+    runBlocking { doc.fetch().also { it.update() }}
     ByteStreams.toByteArray(doc.inputStream)
     assertEquals(OnlineDocumentMode.MIRROR, doc.mode.value)
     assertTrue(mirrorFile.exists())
@@ -211,15 +227,16 @@ class GPCloudDocumentTest : TestCase() {
    * Test that we go into OFFLINE_ONLY mode automatically once we receive an indicator of offline, such as
    * UnknownHostException
    */
+  @Test
   fun testOnlineGoesOfflineOnWrite() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     assertGoesOffline(doc, fetch.actualVersion)
 
     val doc1 = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc1, BODY_239)
-    val fetch1 = runBlocking { doc1.fetch() }
+    val fetch1 = runBlocking { doc1.fetch().also { it.update() }}
     doc1.setMirrored(true)
     assertGoesOffline(doc1, fetch1.actualVersion)
     assertArrayEquals(BODY_566, ByteStreams.toByteArray(doc1.offlineMirror!!.inputStream))
@@ -228,10 +245,11 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * Test that when writing in OFFLINE_ONLY mode we only touch disk
    */
+  @Test
   fun testWriteOffline() {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc, BODY_239)
-    val fetch = runBlocking { doc.fetch() }
+    val fetch = runBlocking { doc.fetch().also { it.update() }}
     ByteStreams.toByteArray(doc.inputStream)
     doc.setMirrored(true)
 
@@ -249,8 +267,9 @@ class GPCloudDocumentTest : TestCase() {
   /**
    * Test that we reconnect automatically in a while after going OFFLINE_ONLY
    */
+  @Test
   fun testOfflineGoesOnlineOnReconnect() {
-    var retryCounter = CountDownLatch(2)
+    val retryCounter = CountDownLatch(2)
     val executor = Executors.newSingleThreadExecutor()
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     doc.httpClientFactory = { mockHttpClient }
@@ -283,4 +302,83 @@ class GPCloudDocumentTest : TestCase() {
     Thread.sleep(1000)
     assertEquals(OnlineDocumentMode.MIRROR, doc.mode.value)
   }
+
+  @Test
+  fun `ProjectChange event triggers document fetch`() {
+    val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
+    prepareReadCall(doc) {
+      val checksum = BODY_239.checksum()
+      TestResponse(body = BODY_239, headers = mapOf(
+          "ETag" to "1",
+          "Digest" to "crc32c=$checksum"
+      ))
+    }
+    runBlocking { doc.fetch().also { it.update() }}
+
+    prepareReadCall(doc) {
+      val checksum = BODY_566.checksum()
+      TestResponse(body = BODY_566, headers = mapOf(
+          "ETag" to "2",
+          "Digest" to "crc32c=$checksum"
+      ))
+    }
+    runBlocking {
+      doc.onWebSocketContentChange(JACKSON.createObjectNode().apply {
+        put("teamRefid", "team1")
+        put("projectRefid", "prj1")
+        put("timestamp", 100500)
+        set("author", JACKSON.createObjectNode().apply {
+          put("id", "joedoe")
+          put("name", "Joe Doe")
+        })
+      })
+    }
+
+    assertEquals(LatestVersion(100500, "Joe Doe"), doc.latestVersionProperty.get()) {
+      "It is expected that latestVersion property is updated with the results of the last project fetch"
+    }
+    assertArrayEquals(BODY_239, ByteStreams.toByteArray(doc.inputStream)) {
+      "It is expected that the last fetch has not been applied, and document contents is still as it was"
+    }
+  }
+
+  @Test
+  fun `ProjectChange event won't trigger latest version change if version matches`() {
+    val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
+    prepareReadCall(doc) {
+      val checksum = BODY_239.checksum()
+      TestResponse(body = BODY_239, headers = mapOf(
+          "ETag" to "1",
+          "Digest" to "crc32c=$checksum"
+      ))
+    }
+    runBlocking { doc.fetch().also { it.update() }}
+    doc.latestVersionProperty.set(LatestVersion(0, "God"))
+
+    prepareReadCall(doc) {
+      val checksum = BODY_239.checksum()
+      TestResponse(body = BODY_239, headers = mapOf(
+          "ETag" to "1",
+          "Digest" to "crc32c=$checksum"
+      ))
+    }
+    runBlocking {
+      doc.onWebSocketContentChange(JACKSON.createObjectNode().apply {
+        put("teamRefid", "team1")
+        put("projectRefid", "prj1")
+        put("timestamp", 100500)
+        set("author", JACKSON.createObjectNode().apply {
+          put("id", "joedoe")
+          put("name", "Joe Doe")
+        })
+      })
+    }
+
+    assertEquals(LatestVersion(0, "God"), doc.latestVersionProperty.get()) {
+      "It is expected that latestVersion property remains as it ws if read returns the same ETag"
+    }
+  }
+
 }
+
+private val JACKSON = ObjectMapper()

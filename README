@@ -1,0 +1,14 @@
+GanttProject is a free and easy to use Gantt chart based project scheduling and management tool.
+It comes with:
+
+* Task hierarchy and dependencies, milestones, baselines.
+* Gantt chart with an option to generate PERT chart.
+* Resource load chart.
+* Task cost calculation.
+* Export to PDF, HTML, PNG.
+* Interoperability with MS Project, Excel and other spreadsheet apps.
+* Basic WebDAV based collaboration.
+
+Besides, a commercial collaboration service GanttProject Cloud is integrated into GanttProject.
+
+Visit http://ganttproject.biz to learn more.

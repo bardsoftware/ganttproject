@@ -1,0 +1,76 @@
+name: Build distribution packages
+
+on:
+  push:
+    tags:
+      - v2.99.*
+      - v3*
+
+jobs:
+  packageLinux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.5
+          java-package: jdk+fx
+
+      - name: Build self-contained package for Linux
+        run: |
+          gradle distbin
+          gradle distbin
+          build-bin/package-lin.sh build ganttproject-builder/dist-bin 2.99.0 ''
+
+      - name: Build ZIP archive
+        run: |
+          gradle distzip
+
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          cd build/dist
+          ls -l
+          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
+              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@$f"; done
+
+  packageMacOs:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.5
+          java-package: jdk+fx
+
+      - name: Build self-contained package for macOS
+        run: |
+          gradle distbin
+          gradle distbin
+          build-bin/package-mac.sh build ganttproject-builder/dist-bin 2.99.0 ''
+
+      - name: Upload to Dropbox
+        env:
+          ACCESS_TOKEN: ${{ secrets.GANTTPROJECT_BUILDS_ACCESS_TOKEN }}
+        run: |
+          cd build/dist
+          for f in *; do curl -X POST https://content.dropboxapi.com/2/files/upload \
+              --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --header "Dropbox-API-Arg: {\"path\": \"/$f\", \"mode\" : \"overwrite\"}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@$f"; done

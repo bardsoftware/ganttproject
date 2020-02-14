@@ -40,7 +40,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class DialogBuilder {
+public class DialogBuilder {
   private static class Commiter {
     private boolean isCommited;
 
@@ -90,7 +90,7 @@ class DialogBuilder {
   }
   private final JFrame myMainFrame;
 
-  DialogBuilder(JFrame mainFrame) {
+  public DialogBuilder(JFrame mainFrame) {
     myMainFrame = mainFrame;
   }
 
@@ -105,108 +105,114 @@ class DialogBuilder {
    * @param title dialog title
    * @return dialog object
    */
-  Dialog createDialog(Component content, Action[] buttonActions, String title, final NotificationManager notificationManager) {
+  public Dialog createDialog(Component content, Action[] buttonActions, String title, final NotificationManager notificationManager) {
     final JDialog dlg = new JDialog(myMainFrame, true);
     final DialogImpl result = new DialogImpl(dlg, myMainFrame, notificationManager);
     dlg.setTitle(title);
-    final Commiter commiter = new Commiter();
-    Action cancelAction = null;
-    JPanel buttonBox = new JPanel(new GridLayout(1, buttonActions.length, 5, 0));
-    for (final Action nextAction : buttonActions) {
-      JButton nextButton = null;
-      if (nextAction instanceof OkAction) {
-        final JButton _btn = new JButton();
-        final AbstractAction _delegate = (AbstractAction) nextAction;
-        OkAction proxy = new OkAction() {
-          // These two steps handel the case when focus is somewhere in text input
-          // and user hits Ctrl+Enter
-          // First we want to move focus to OK button to allow focus listeners, if any,
-          // to catch focusLost event
-          // Second, we want it to happen before original OkAction runs
-          // So we wrap original OkAction into proxy which moves focus and schedules "later" command
-          // which call the original action. Between them EDT sends out focusLost events.
-          final Runnable myStep2 = new Runnable() {
-            @Override
-            public void run() {
-              result.hide();
-              commiter.commit();
-              nextAction.actionPerformed(null);
-              _delegate.removePropertyChangeListener(myDelegateListener);
-            }
-          };
-          final Runnable myStep1 = new Runnable() {
-            @Override
-            public void run() {
-              _btn.requestFocus();
-              SwingUtilities.invokeLater(myStep2);
-            }
-          };
-          @Override
-          public void actionPerformed(final ActionEvent e) {
-            SwingUtilities.invokeLater(myStep1);
-          }
-          private void copyValues() {
-            for (Object key : _delegate.getKeys()) {
-              putValue(key.toString(), _delegate.getValue(key.toString()));
-            }
-            setEnabled(_delegate.isEnabled());
-          }
-          private PropertyChangeListener myDelegateListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-              copyValues();
-            }
-          };
-          {
-            _delegate.addPropertyChangeListener(myDelegateListener);
-            copyValues();
-          }
-        };
-        _btn.setAction(proxy);
-        nextButton = _btn;
-
-        if (((OkAction)nextAction).isDefault()) {
-          dlg.getRootPane().setDefaultButton(nextButton);
-        }
-
-      }
-      if (nextAction instanceof CancelAction) {
-        cancelAction = nextAction;
-        nextButton = new JButton(nextAction);
-        nextButton.addActionListener(new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            result.hide();
-            commiter.commit();
-          }
-        });
-        dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), nextAction.getValue(Action.NAME));
-        dlg.getRootPane().getActionMap().put(nextAction.getValue(Action.NAME), new AbstractAction() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            nextAction.actionPerformed(e);
-            result.hide();
-          }
-        });
-      }
-      if (nextButton == null) {
-        nextButton = new JButton(nextAction);
-      }
-      buttonBox.add(nextButton);
-      KeyStroke accelerator = (KeyStroke) nextAction.getValue(Action.ACCELERATOR_KEY);
-      if (accelerator != null) {
-        dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, nextAction);
-        dlg.getRootPane().getActionMap().put(nextAction, nextAction);
-      }
-    }
     dlg.getContentPane().setLayout(new BorderLayout());
     dlg.getContentPane().add(content, BorderLayout.CENTER);
 
-    JPanel buttonPanel = new JPanel(new BorderLayout());
-    buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
-    buttonPanel.add(buttonBox, BorderLayout.EAST);
-    dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+    final Commiter commiter = new Commiter();
+    Action cancelAction = null;
+    if (buttonActions.length > 0) {
+      JPanel buttonBox = new JPanel(new GridLayout(1, buttonActions.length, 5, 0));
+      for (final Action nextAction : buttonActions) {
+        JButton nextButton = null;
+        if (nextAction instanceof OkAction) {
+          final JButton _btn = new JButton();
+          final AbstractAction _delegate = (AbstractAction) nextAction;
+          OkAction proxy = new OkAction() {
+            // These two steps handel the case when focus is somewhere in text input
+            // and user hits Ctrl+Enter
+            // First we want to move focus to OK button to allow focus listeners, if any,
+            // to catch focusLost event
+            // Second, we want it to happen before original OkAction runs
+            // So we wrap original OkAction into proxy which moves focus and schedules "later" command
+            // which call the original action. Between them EDT sends out focusLost events.
+            final Runnable myStep2 = new Runnable() {
+              @Override
+              public void run() {
+                result.hide();
+                commiter.commit();
+                nextAction.actionPerformed(null);
+                _delegate.removePropertyChangeListener(myDelegateListener);
+              }
+            };
+            final Runnable myStep1 = new Runnable() {
+              @Override
+              public void run() {
+                _btn.requestFocus();
+                SwingUtilities.invokeLater(myStep2);
+              }
+            };
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+              SwingUtilities.invokeLater(myStep1);
+            }
+
+            private void copyValues() {
+              for (Object key : _delegate.getKeys()) {
+                putValue(key.toString(), _delegate.getValue(key.toString()));
+              }
+              setEnabled(_delegate.isEnabled());
+            }
+
+            private PropertyChangeListener myDelegateListener = new PropertyChangeListener() {
+              @Override
+              public void propertyChange(PropertyChangeEvent evt) {
+                copyValues();
+              }
+            };
+
+            {
+              _delegate.addPropertyChangeListener(myDelegateListener);
+              copyValues();
+            }
+          };
+          _btn.setAction(proxy);
+          nextButton = _btn;
+
+          if (((OkAction) nextAction).isDefault()) {
+            dlg.getRootPane().setDefaultButton(nextButton);
+          }
+
+        }
+        if (nextAction instanceof CancelAction) {
+          cancelAction = nextAction;
+          nextButton = new JButton(nextAction);
+          nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              result.hide();
+              commiter.commit();
+            }
+          });
+          dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+              KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), nextAction.getValue(Action.NAME));
+          dlg.getRootPane().getActionMap().put(nextAction.getValue(Action.NAME), new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              nextAction.actionPerformed(e);
+              result.hide();
+            }
+          });
+        }
+        if (nextButton == null) {
+          nextButton = new JButton(nextAction);
+        }
+        buttonBox.add(nextButton);
+        KeyStroke accelerator = (KeyStroke) nextAction.getValue(Action.ACCELERATOR_KEY);
+        if (accelerator != null) {
+          dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, nextAction);
+          dlg.getRootPane().getActionMap().put(nextAction, nextAction);
+        }
+      }
+      JPanel buttonPanel = new JPanel(new BorderLayout());
+      buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
+      buttonPanel.add(buttonBox, BorderLayout.EAST);
+      dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+    }
 
     dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     final Action localCancelAction = cancelAction;

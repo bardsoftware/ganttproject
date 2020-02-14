@@ -19,9 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.StorageDialogAction
@@ -29,14 +30,11 @@ import biz.ganttproject.storage.VersionMismatchException
 import biz.ganttproject.storage.asOnlineDocument
 import biz.ganttproject.storage.cloud.AuthTokenCallback
 import biz.ganttproject.storage.cloud.GPCloudOptions
-import biz.ganttproject.storage.cloud.GPCloudSignupPane
+import biz.ganttproject.storage.cloud.SigninPane
 import biz.ganttproject.storage.cloud.onAuthToken
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
-import javafx.scene.control.Dialog
-import javafx.scene.control.DialogPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -121,7 +119,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
     } catch (e: VersionMismatchException) {
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18n.rootKey = "cloud.versionMismatch"
+          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch")
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
@@ -162,18 +160,16 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
   }
 
   private fun signin(onAuth: ()->Unit) {
-    Platform.runLater {
-      val dlg = Dialog<Unit>()
+    dialog {
       val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
         GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-        Platform.runLater {
-          dlg.dialogPane.scene.window.hide()
-        }
+        it.hide()
         onAuth()
       }
-      val pane = GPCloudSignupPane(onAuthToken, {})
-      dlg.dialogPane = pane.createSigninPane() as DialogPane?
-      FXUtil.showDialog(dlg)
+      it.addStyleClass("dlg-lock", "dlg-cloud-file-options")
+      it.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+      val pane = SigninPane(onAuthToken)
+      it.setContent(pane.createSigninPane())
     }
   }
   private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {

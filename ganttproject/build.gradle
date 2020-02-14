@@ -11,6 +11,7 @@ buildscript {
     }
 }
 
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
@@ -27,6 +28,7 @@ configurations {
 dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.app.localization', configuration: 'exported')
 
     exportedLibs files("lib/core/eclipsito.jar")
     exportedLibs 'commons-codec:commons-codec:1.10'
@@ -41,6 +43,14 @@ dependencies {
     compile configurations.exportedLibs
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile files('data/resources')
+
+    testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
+
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
+
+//    compile "de.jensd:fontawesomefx-materialicons:2.2.+"
+
 }
 
 compileKotlin {
@@ -61,6 +71,7 @@ sourceSets {
     }
 
     main.kotlin.srcDirs += 'src'
+    test.kotlin.srcDirs += 'test'
 }
 
 
@@ -79,7 +90,6 @@ task copyPluginFiles(dependsOn: jar) {
         println ">>> Installing $project.name"
         copy {
             into(new File(rootProject.pluginsDir, project.name))
-            from(jar.outputs.getFiles().getFiles().flatten())
             from(fileTree(".")) {
                 include "plugin.xml"
                 include "data/resources/**.ttf"
@@ -92,10 +102,12 @@ task copyPluginFiles(dependsOn: jar) {
             }
         }
         copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/core"))
+            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(jar.outputs.getFiles().getFiles().flatten())
             from(configurations.compileClasspath.minus(configurations.providedCompile)) {
                 include "*.jar"
             }
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }
@@ -113,3 +125,13 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
         println "Copying $project.name to $rootProject.pluginsDir"
     }
 }
+
+mainClassName="net.sourceforge.ganttproject.AppKt"
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+

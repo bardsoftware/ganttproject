@@ -19,16 +19,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 //import biz.ganttproject.storage.local.setupErrorLabel
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.RootLocalizer
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -39,13 +44,15 @@ import java.util.*
 import java.util.function.Consumer
 
 /**
+ * This is a storage provider which shows a list of recently opened projects.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
-    private val myDocumentManager: DocumentManager,
-    private val myCurrentDocument: Document,
-    private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+    private val documentManager: DocumentManager,
+    private val currentDocument: Document,
+    private val documentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
 
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
@@ -71,10 +78,11 @@ class RecentProjects(
 
 
       fun onAction() {
+        // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
         selectedItem?.let {
           val file = it.docPath.toFile()
           if (file.exists()) {
-            myDocumentReceiver.accept(FileDocument(file))
+            documentReceiver(FileDocument(file))
           }
         }
       }
@@ -92,11 +100,12 @@ class RecentProjects(
           cellFactory = { createListCell() }
       )
     }.build()
-    paneElements.browserPane.stylesheets.addAll(
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/RecentProjects.css")
 
     return paneElements.browserPane.also {
+      it.stylesheets.addAll(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/RecentProjects.css"
+      )
       loadRecentDocs(builder.resultConsumer)
     }
 
@@ -119,29 +128,59 @@ class RecentProjects(
         val pane = StackPane()
         pane.minWidth = 0.0
         pane.prefWidth = 1.0
-        val pathLabel = Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "")
-        pathLabel.styleClass.add("list-item-path")
-        val nameLabel = Label(item.resource.get().docPath.fileName.toString())
-        nameLabel.styleClass.add("list-item-filename")
-        val labelBox = VBox()
-        labelBox.children.addAll(pathLabel, nameLabel)
-        StackPane.setAlignment(labelBox, Pos.BOTTOM_LEFT)
-        pane.children.add(labelBox)
+
+        pane.children.add(VBox().also { vbox ->
+          vbox.isFillWidth = true
+          vbox.children.add(
+              Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "").apply {
+                styleClass.add("list-item-path")
+              }
+          )
+          vbox.children.add(
+              Label(item.resource.get().docPath.fileName.toString()).apply {
+                styleClass.add("list-item-filename")
+              }
+          )
+          item.resource.value.tags.let {
+            if (it.isNotEmpty()) {
+              vbox.children.add(
+                  HBox(Label(it.joinToString(", "))).apply {
+                    styleClass.add("list-item-tags")
+                  }
+              )
+            }
+          }
+          StackPane.setAlignment(vbox, Pos.BOTTOM_LEFT)
+        })
+
         graphic = pane
       }
     }
   }
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
-    result.add(RecentDocAsFolderItem(Paths.get(myCurrentDocument.path)))
-    for (doc in myDocumentManager.recentDocuments) {
-      result.add(RecentDocAsFolderItem(Paths.get(doc)))
+
+    runBlocking {
+      result.addAll(documentManager.recentDocuments.map { path ->
+        GlobalScope.async {
+          // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
+          documentManager.newDocument(path)?.let {doc ->
+            when {
+              doc.isLocal && doc.canWrite().isOK -> RecentDocAsFolderItem(Paths.get(path), listOf(i18n.formatText("tag.local")))
+              doc.isLocal && doc.canRead() -> RecentDocAsFolderItem(Paths.get(path), listOf(
+                  i18n.formatText("tag.local"), i18n.formatText("tag.readonly")
+              ))
+              else -> null
+            }
+          }
+        }
+      }.awaitAll().filterNotNull())
     }
     consumer.accept(result)
   }
 }
 
-class RecentDocAsFolderItem(val docPath: Path) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(val docPath: Path, override val tags: List<String>) : FolderItem, Comparable<RecentDocAsFolderItem> {
   override fun compareTo(other: RecentDocAsFolderItem): Int {
     val result = this.isDirectory.compareTo(other.isDirectory)
     return if (result != 0) {
@@ -158,4 +197,4 @@ class RecentDocAsFolderItem(val docPath: Path) : FolderItem, Comparable<RecentDo
   override val isDirectory: Boolean = false
 }
 
-private val i18n = DefaultLocalizer("storageService.recent", BROWSE_PANE_LOCALIZER)
+private val i18n = RootLocalizer.createWithRootKey("storageService.recent", BROWSE_PANE_LOCALIZER)

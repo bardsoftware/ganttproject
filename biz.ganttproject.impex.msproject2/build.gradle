@@ -29,17 +29,17 @@ task copyPlugin(dependsOn: assemble) {
         println ">>> Installing $project.name"
         copy {
             into(new File(rootProject.pluginsDir, project.name))
-            from(jar.outputs.getFiles().getFiles().flatten())
             from(fileTree(".")) {
                 include "plugin.xml"
-                include "lib/**"
             }
         }
         copy {
             into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
+            from(jar.outputs.getFiles().getFiles().flatten())
             from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
                 include "*.jar"
             }
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }

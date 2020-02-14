@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,21 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.plugins;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.Exporter;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Very basic Plugin Manager
- * 
+ *
  * @author bbaranne
  */
 public class PluginManager {
@@ -69,6 +68,9 @@ public class PluginManager {
     return myCharts;
   }
 
+  public static void setCharts(List<Chart> charts) {
+    myCharts = charts;
+  }
   public static List<Exporter> getExporters() {
     if (myExporters == null) {
       myExporters = getExtensions(EXTENSION_POINT_ID_EXPORTER, Exporter.class);

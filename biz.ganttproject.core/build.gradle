@@ -14,9 +14,13 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 dependencies {
+    providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.+"
     compile "com.google.guava:guava:25.+"
+    compile "ch.qos.logback:logback-classic:1.2.+"
+
+    compile configurations.providedCompile
 }
 
 sourceSets {
@@ -37,7 +41,6 @@ task copyPlugin(dependsOn: assemble) {
         println "Installing $project.name"
         copy {
             into(new File(rootProject.pluginsDir, project.name))
-            from(jar.outputs.getFiles().getFiles().flatten())
             from(fileTree(".")) {
                 include "plugin.xml"
                 include "resources/**"
@@ -48,6 +51,8 @@ task copyPlugin(dependsOn: assemble) {
             from(configurations.compileClasspath) {
                 include "*.jar"
             }
+            from(jar.outputs.getFiles().getFiles().flatten())
+            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }

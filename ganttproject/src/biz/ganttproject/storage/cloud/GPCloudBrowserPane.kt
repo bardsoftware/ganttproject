@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
@@ -36,7 +36,9 @@ import java.time.Instant
 import java.util.function.Consumer
 import java.util.logging.Level
 
-abstract class CloudJsonAsFolderItem : FolderItem
+abstract class CloudJsonAsFolderItem : FolderItem {
+  override val tags = listOf<String>()
+}
 /**
  * Wraps JSON node matching a team to FolderItem
  */
@@ -109,6 +111,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
     get() = node["author"].toString().removeSurrounding("\"")
   override val isDirectory = false
   override val canChangeLock = false
+  override val tags = listOf<String>()
 
   val generation: Long
     get() = node["number"].asLong(-1)
@@ -131,8 +134,8 @@ val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: Consumer<Document>,
-    private val documentManager: DocumentManager) {
+    private val documentManager: DocumentManager,
+    private val documentConsumer: (Document) -> Unit) {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
   private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>
@@ -165,7 +168,7 @@ class GPCloudBrowserPane(
     }
 
     this.paneElements = builder.apply {
-      withI18N(DefaultLocalizer("storageService.cloud", BROWSE_PANE_LOCALIZER))
+      withI18N(RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(ROOT_URI)
       withActionButton(EventHandler { actionButtonHandler.onAction() })
       withListView(
@@ -195,7 +198,7 @@ class GPCloudBrowserPane(
     if (selectedTeam == null) {
       return
     }
-    this.documentConsumer.accept(GPCloudDocument(selectedTeam, text).also {
+    this.documentConsumer(GPCloudDocument(selectedTeam, text).also {
       it.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       it.proxyDocumentFactory = this.documentManager::getProxyDocument
     })
@@ -220,8 +223,8 @@ class GPCloudBrowserPane(
 //          this.sceneChanger(this.createLockWarningPage(document))
 //        }
 //      }
-      this.documentConsumer.accept(document)
-      document.listenLockChange(webSocket)
+      this.documentConsumer(document)
+      document.listenEvents(webSocket)
     }
   }
 
@@ -232,7 +235,7 @@ class GPCloudBrowserPane(
     if (jsonLock != null) {
       document.lock = jsonLock
     }
-    this@GPCloudBrowserPane.documentConsumer.accept(document)
+    this@GPCloudBrowserPane.documentConsumer(document)
   }
 
   private fun <T: CloudJsonAsFolderItem> loadTeams(path: Path, setResult: Consumer<ObservableList<T>>, showMaskPane: Consumer<Boolean>) {

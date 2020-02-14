@@ -18,8 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.LocalizedString
+import biz.ganttproject.app.RootLocalizer
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory
 import javafx.event.ActionEvent
@@ -86,8 +86,8 @@ fun test(): Pane {
 }
 
 class VBoxBuilder(vararg classes: String) {
-  val i18n = DefaultLocalizer()
-  internal val vbox = VBox()
+  var i18n = RootLocalizer
+  val vbox = VBox()
 
   init {
     vbox.styleClass.addAll(classes)
@@ -127,5 +127,6 @@ class VBoxBuilder(vararg classes: String) {
     growth?.let { VBox.setVgrow(child, it) }
     return child
   }
-
 }
+
+fun vbox(code: VBoxBuilder.() -> Unit) = VBoxBuilder().apply(code).vbox

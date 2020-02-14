@@ -51,7 +51,7 @@ public class FileDocument extends AbstractDocument {
 
   @Override
   public boolean canRead() {
-    return file.canRead();
+    return file.exists() && file.canRead();
   }
 
   @Override

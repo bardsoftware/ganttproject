@@ -18,6 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.LoggerApi;
+import biz.ganttproject.LoggerImpl;
+import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.gui.UIFacade;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,10 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import com.google.common.collect.Maps;
-
-import net.sourceforge.ganttproject.gui.UIFacade;
-
 public class GPLogger {
   private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
   private static Handler ourHandler;
@@ -50,6 +51,18 @@ public class GPLogger {
     ourLogger.addHandler(ourHandler);
     ourLogger.setLevel(Level.ALL);
     ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+  }
+
+  public static void init() {
+    URL logConfig = GanttProject.class.getResource("/logging.properties");
+    if (logConfig != null) {
+      try {
+        readConfiguration(logConfig);
+      } catch (IOException e) {
+        System.err.println("Failed to setup logging: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
   }
 
   public static boolean log(Throwable e) {
@@ -102,6 +115,7 @@ public class GPLogger {
     return logger;
   }
 
+  public static LoggerApi create(String name) { return new LoggerImpl(name); }
   public static Logger getLogger(Class<?> clazz) {
     return getLogger(clazz.getName());
   }

@@ -7,9 +7,6 @@
         provider-name="">
 
     <runtime>
-        <library name="biz.ganttproject.impex.msproject2.jar">
-            <export name="*"/>
-        </library>
         <library name="lib/*">
             <export name="*">
             </export>

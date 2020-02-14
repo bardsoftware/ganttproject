@@ -44,8 +44,10 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  * to JOptionPane class.
  */
 class OptionPaneBuilder<T> {
-  val i18n = DefaultLocalizer()
-  val titleString = i18n.create("title")
+  var i18n = RootLocalizer
+  private val titleString: LocalizedString
+      get() = i18n.create("title")
+
   var titleHelpString: LocalizedString? = null
   get() { if (field == null) { field = i18n.create("titleHelp") }; return field }
 
@@ -96,7 +98,7 @@ class OptionPaneBuilder<T> {
       }
       vbox.add(btn)
 
-      if (this.i18n.hasKey("${it.i18nKey}.help")) {
+      if (this.i18n.formatTextOrNull("${it.i18nKey}.help") != null) {
         vbox.add(Label().apply {
           this.textProperty().bind(i18n.create("${it.i18nKey}.help"))
           this.styleClass.add("option-help")

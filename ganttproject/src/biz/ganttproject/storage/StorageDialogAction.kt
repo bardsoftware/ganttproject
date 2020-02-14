@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import javafx.application.Platform
@@ -38,7 +39,7 @@ class StorageDialogAction(
 
   override fun actionPerformed(actionEvent: ActionEvent?) {
     Platform.runLater {
-      dialog { dialogBuildApi ->
+      dialog(RootLocalizer.create("myProjects.title")) { dialogBuildApi ->
         val dialogBuilder = StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions, dialogBuildApi)
         dialogBuilder.build()
       }

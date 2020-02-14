@@ -100,6 +100,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border-color: -gp-light-gray;
 }
 
+.dlg .button-bar {
+    -fx-padding: 0 0.833em 0.833em 0.833em;
+}
+
 .dlg .alert-glasspane {
     -fx-padding: 40px 20px;
     -fx-effect: dropshadow(gaussian, -gp-dark-gray, 8, 0.5, 0, 0);

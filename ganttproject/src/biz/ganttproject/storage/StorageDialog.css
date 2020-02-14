@@ -316,9 +316,31 @@ HBox.title-integrated Label {
     -fx-padding: 0;
 }
 
-.dlg-storage .header .open-save-buttons {
+.open-save-buttons {
     -fx-alignment: baseline-center;
-    -fx-font-size: 90%;
+    -fx-font-size: 110%;
+    -fx-spacing: 1ex;
+}
+
+.open-save-buttons .button {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-border-radius: 0;
+    -fx-text-fill: -gp-dark-gray;
+    /*    -fx-font-size: 110%;*/
+    -fx-padding: 0.75ex 2em;
+    -fx-cursor: hand;
+}
+
+.open-save-buttons .button:hover,.open-save-buttons .button:focused {
+    -fx-border-color: -gp-dark-gray;
+    -fx-border-width: 0 0 1 0;
+}
+.open-save-buttons .button.selected {
+    -fx-border-color: transparent;
+    -fx-font-weight: bold;
+    -fx-background-color: -gp-dark-gray;
+    -fx-text-fill: white;
 }
 
 .property-sheet {

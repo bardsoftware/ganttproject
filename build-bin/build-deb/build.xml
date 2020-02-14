@@ -1,0 +1,14 @@
+<project name="ANT task for building DEB packages">
+    <target name="build" description="Compile helper code">
+        <mkdir dir="classes"/>
+        <javac
+                srcdir="src/java"
+                target="1.4"
+                source="1.4"
+                debug="yes"
+                includeantruntime="true"
+        />
+        <jar basedir="src/java" jarfile="lib/ant-task-build-deb.jar" includes="**">
+        </jar>
+    </target>
+</project>

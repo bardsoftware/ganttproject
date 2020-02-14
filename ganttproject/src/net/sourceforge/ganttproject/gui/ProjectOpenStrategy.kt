@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.gui
 
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.FetchResult
@@ -108,7 +109,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         successChannel.send(document)
       } else {
         try {
-          val currentFetch = online.fetchResultProperty.get() ?: online.fetch()
+          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
           if (processFetchResult(currentFetch)) {
             successChannel.send(document)
           }
@@ -151,7 +152,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
 
   private fun showOfflineIsAheadDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
     OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n.rootKey = "cloud.openWhenOfflineIsAhead"
+      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenOfflineIsAhead")
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
@@ -181,7 +182,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
 
   private fun showForkDialog(continuation: Continuation<Boolean>, fetchResult: FetchResult) {
     OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n.rootKey = "cloud.openWhenDiverged"
+      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenDiverged")
       styleClass = "dlg-lock"
       styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
       styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")

@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
@@ -55,6 +54,7 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val canChangeLock: Boolean = false
   override val name: String = file.name
   override val isDirectory: Boolean = file.isDirectory
+  override val tags = listOf<String>()
 }
 
 fun absolutePrefix(path: Path, end: Int = path.getNameCount()): Path {
@@ -70,7 +70,7 @@ class LocalStorage(
     private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val mode: StorageDialogBuilder.Mode,
     private val currentDocument: Document,
-    private val myDocumentReceiver: Consumer<Document>) : StorageDialogBuilder.Ui {
+    private val myDocumentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
   private lateinit var state: LocalStorageState
@@ -140,9 +140,10 @@ class LocalStorage(
       }
 
       fun onAction() {
-        selectedProject?.let {
-          myDocumentReceiver.accept(FileDocument(it.file))
-        }
+        val doc = selectedProject?.let { FileDocument(it.file) }
+            ?: state.currentDir.get()?.resolve(paneElements.filenameInput.text)?.let { FileDocument(it) }
+            ?: return
+        myDocumentReceiver.invoke(doc)
       }
     }
 
@@ -158,7 +159,7 @@ class LocalStorage(
           onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
           onLaunch = Consumer {
             if (it is FileAsFolderItem) {
-              myDocumentReceiver.accept(FileDocument(it.file))
+              myDocumentReceiver(FileDocument(it.file))
             }
           }
       )
@@ -210,4 +211,4 @@ class LocalStorage(
   }
 }
 
-private val i18n = DefaultLocalizer("storageService.local", BROWSE_PANE_LOCALIZER)
+private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)

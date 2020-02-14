@@ -2,7 +2,7 @@
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DefaultLocalizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import com.google.common.base.Strings
@@ -49,6 +49,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
       }
 
     }
+  override val tags = listOf<String>()
 }
 
 /**
@@ -57,7 +58,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
 class WebdavStorage(
     private var myServer: WebDavServerDescriptor,
     private val myMode: StorageDialogBuilder.Mode,
-    private val myOpenDocument: Consumer<Document>,
+    private val myOpenDocument: (Document) -> Unit,
     private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val myOptions: GPCloudStorageOptions) : StorageDialogBuilder.Ui {
 
@@ -112,7 +113,7 @@ data class State(val server: WebDavServerDescriptor,
 
 class WebdavServerUi(private val myServer: WebDavServerDescriptor,
                      private val myMode: StorageDialogBuilder.Mode,
-                     private val myOpenDocument: Consumer<Document>,
+                     private val myOpenDocument: (Document) -> Unit,
                      private val myDialogUi: StorageDialogBuilder.DialogUi) {
   private val myLoadService: WebdavLoadService = WebdavLoadService(myServer)
   private val myState = State(server = myServer, resource = null, filename = null, folder = null)
@@ -135,7 +136,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       System.err.println("is locking supported=" + newValue!!)
     }
     builder.apply {
-      withI18N(DefaultLocalizer("storageService.webdav", BROWSE_PANE_LOCALIZER))
+      withI18N(RootLocalizer.createWithRootKey("storageService.webdav", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
       withListView(
           onOpenItem = Consumer { item ->
@@ -150,7 +151,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
             }
           },
           onLaunch = Consumer {
-            myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+            myOpenDocument(createDocument(myState.server, createResource(myState)))
           },
           onDelete = Consumer { item ->
             if (item is WebDavResourceAsFolderItem) {
@@ -168,7 +169,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
 
 
       withActionButton(EventHandler {
-        myOpenDocument.accept(createDocument(myState.server, createResource(myState)))
+        myOpenDocument(createDocument(myState.server, createResource(myState)))
       })
     }
     val browserPaneElements = builder.build()

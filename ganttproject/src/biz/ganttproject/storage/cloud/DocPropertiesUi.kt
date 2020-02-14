@@ -68,15 +68,14 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       it.isSelected = true
     }
 
-    val vboxBuilder = VBoxBuilder().also {
-      it.i18n.rootKey = "cloud.lockOptionPane"
-      it.addTitle("title")
-      it.add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
-        this.styleClass.add("help")
+    return VBoxBuilder().apply {
+      i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
+      addTitle("title")
+      add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
+        styleClass.add("help")
       })
-      it.add(notify)
-    }
-    return vboxBuilder.vbox
+      add(notify)
+    }.vbox
   }
 
 
@@ -96,7 +95,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 //
   private fun lockPaneBuilder(lockStatus: LockStatus): OptionPaneBuilder<Duration> {
     return OptionPaneBuilder<Duration>().apply {
-      i18n.rootKey = "cloud.lockOptionPane"
+      i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
       if (lockStatus.lockExpiration >= 0) {
         titleHelpString = i18n.create("titleHelp.locked").update(
             GanttLanguage.getInstance().formatDateTime(Date(lockStatus.lockExpiration)))
@@ -147,7 +146,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   // Sync stuff
   private fun mirrorPaneBuilder(document: OnlineDocument): OptionPaneBuilder<OnlineDocumentMode> {
     return OptionPaneBuilder<OnlineDocumentMode>().apply {
-      i18n.rootKey = "cloud.offlineMirrorOptionPane"
+      i18n = OFFLINE_MIRROR_LOCALIZER
       elements = listOf(
           OptionElementData(OnlineDocumentMode.MIRROR.name.toLowerCase(), OnlineDocumentMode.MIRROR,
               isSelected = document.mode.value == OnlineDocumentMode.MIRROR),
@@ -198,7 +197,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
         GlobalScope.launch {
-          folderView.document?.fetchVersion(selected.generation)
+          folderView.document?.fetchVersion(selected.generation)?.update()
         }
       }
       add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
@@ -266,6 +265,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     val mirrorToggleGroup = ToggleGroup()
 
     val vboxBuilder = VBoxBuilder("tab-contents").apply {
+      i18n = OFFLINE_MIRROR_LOCALIZER
       add(node = mirrorPaneBuilder(document).let {
         it.toggleGroup = mirrorToggleGroup
         it.styleClass = "section"
@@ -282,7 +282,6 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         }
       }
       add(node = lockNode)
-
     }
 
     val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
@@ -325,9 +324,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           val selectedDuration = paneElements.lockToggleGroup.selectedToggle.userData as Duration
           lockDurationHandler(selectedDuration)
         }
-
       }
-
     }
   }
 }
@@ -361,7 +358,11 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 
   private fun buildNotOnlineDocumentScene(): Scene {
-    val signupPane = GPCloudSignupPane(onTokenCallback = { _, _, _, _ -> }, pageSwitcher = {})
+    // TODO: this probably needs to be fixed?
+    val signinPane = SigninPane(onTokenCallback = { _, _, _, _ -> })
+    val signupPane = GPCloudSignupPane(signinPane, pageSwitcher = {})
     return Scene(signupPane.createPane())
   }
 }
+
+private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
