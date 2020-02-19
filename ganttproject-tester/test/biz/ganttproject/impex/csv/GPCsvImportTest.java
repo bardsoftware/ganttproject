@@ -18,7 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
@@ -29,6 +32,8 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.TestSetupHelper.TaskManagerBuilder;
+import net.sourceforge.ganttproject.export.ConsoleUIFacade;
+import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -361,6 +366,26 @@ public class GPCsvImportTest extends TestCase {
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+  }
+
+  public void testRespectProjectCalendar() throws IOException {
+    GanttLanguage.getInstance().setShortDateFormat(new SimpleDateFormat("dd/MM/yyyy"));
+    WeekendCalendarImpl noWeekendsCalendar = new WeekendCalendarImpl();
+    for (int i = 1; i <= 7; i++) {
+      noWeekendsCalendar.setWeekDayType(i, GPCalendar.DayType.WORKING);
+    }
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder().withCalendar(noWeekendsCalendar);
+    TaskManager taskManager = builder.build();
+
+    BufferProject bufferProject = new BufferProject(taskManager, new RoleManagerImpl(), noWeekendsCalendar, new ConsoleUIFacade(null));
+    String header1 = "ID,Name,Begin date,Duration";
+    String data1 = "1,t1,01/02/2020,3";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1)),
+        bufferProject.getTaskManager(), null, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(bufferProject.getTaskManager());
+    assertEquals(GanttCalendar.parseXMLDate("01/02/2020"), taskMap.get("t1").getStart());
   }
 
   private static void assertOrder(String first, String second) {

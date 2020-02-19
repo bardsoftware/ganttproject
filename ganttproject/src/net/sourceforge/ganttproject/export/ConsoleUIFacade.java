@@ -41,7 +41,7 @@ import java.util.Locale;
 public class ConsoleUIFacade implements UIFacade {
   private final UIFacade myRealFacade;
 
-  ConsoleUIFacade(UIFacade realFacade) {
+  public ConsoleUIFacade(UIFacade realFacade) {
     myRealFacade = realFacade;
   }
 

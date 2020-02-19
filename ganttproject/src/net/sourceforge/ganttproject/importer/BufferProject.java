@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.importer;
 
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttProjectImpl;
@@ -35,6 +37,7 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
+import net.sourceforge.ganttproject.task.TaskManager;
 
 /**
  * Buffer project is a target for importing functions, and when it is filled with
@@ -51,6 +54,10 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   private final HumanResourceManager myBufferResourceManager;
 
   public BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
+    this(targetProject.getTaskManager(), targetProject.getRoleManager(), targetProject.getActiveCalendar(), uiFacade);
+  }
+
+  public BufferProject(TaskManager targetTaskManager, RoleManager targetRoleManager, GPCalendarCalc targetCalendar, UIFacade uiFacade) {
     myDocumentManager = new DocumentCreator(this, uiFacade, this) {
       @Override
       protected ColumnList getVisibleFields() {
@@ -62,9 +69,10 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
       }
     };
     myUIfacade = uiFacade;
-    getTaskManager().getDependencyHardnessOption().setValue(targetProject.getTaskManager().getDependencyHardnessOption().getValue());
+    getTaskManager().getDependencyHardnessOption().setValue(targetTaskManager.getDependencyHardnessOption().getValue());
+    getTaskManager().getCalendar().importCalendar(targetCalendar, new ImportCalendarOption(ImportCalendarOption.Values.REPLACE));
     myBufferResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
-        new CustomColumnsManager(), targetProject.getRoleManager());
+        new CustomColumnsManager(), targetRoleManager);
   }
 
   public ColumnList getVisibleFields() {
