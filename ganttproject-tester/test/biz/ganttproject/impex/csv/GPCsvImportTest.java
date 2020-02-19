@@ -131,7 +131,8 @@ public class GPCsvImportTest extends TestCase {
         return input.getName();
       }
     });
-    assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
+    assertNotNull(Joiner.on("\n").join(t1.getAssignmentCollection().getAssignments()) + resourceMap.toString(),
+        t1.getAssignmentCollection().getAssignment(resourceMap.get("Joe")));
     assertNotNull(t1.getAssignmentCollection().getAssignment(resourceMap.get("John")));
   }
 
