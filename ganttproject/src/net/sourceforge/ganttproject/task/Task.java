@@ -99,6 +99,8 @@ public interface Task extends MutableTask {
     void setValue(BigDecimal value);
     boolean isCalculated();
     void setCalculated(boolean calculated);
+
+    int compareTo(Cost cost);
   }
 
   Cost getCost();

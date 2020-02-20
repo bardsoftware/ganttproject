@@ -133,7 +133,7 @@ public class GanttTreeTable extends GPTreeTableBase {
         getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
           @Override
           public void run() {
-            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE) {
+            if (taskColumn == TaskDefaultColumn.BEGIN_DATE || taskColumn == TaskDefaultColumn.END_DATE || taskColumn == TaskDefaultColumn.COST) {
               for (int i = 0; i < tableHeader.getSize(); i++) {
                 Column c = tableHeader.getField(i);
                 if (c != column) {

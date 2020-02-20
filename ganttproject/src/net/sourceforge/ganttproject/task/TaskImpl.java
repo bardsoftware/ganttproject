@@ -1276,6 +1276,11 @@ public class TaskImpl implements Task {
     public void setCalculated(boolean calculated) {
       isCalculated = calculated;
     }
+
+    @Override
+    public int compareTo(Cost cost) {
+      return this.myValue.compareTo(cost.getValue());
+    }
   }
 
   @Override

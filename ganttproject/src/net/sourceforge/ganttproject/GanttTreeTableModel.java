@@ -122,6 +122,7 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     TaskDefaultColumn.BEGIN_DATE.setSortComparator(new BeginDateComparator());
     TaskDefaultColumn.END_DATE.setIsEditablePredicate(Predicates.and(NOT_SUPERTASK, NOT_MILESTONE));
     TaskDefaultColumn.END_DATE.setSortComparator(new EndDateComparator());
+    TaskDefaultColumn.COST.setSortComparator(new CostComparator());
     TaskDefaultColumn.DURATION.setIsEditablePredicate(Predicates.and(NOT_SUPERTASK, NOT_MILESTONE));
     myUiFacade = uiFacade;
     myDirtyfier = dirtyfier;
@@ -140,6 +141,13 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
     @Override
     public int compare(Task t1, Task t2) {
       return t1.getEnd().compareTo(t2.getEnd());
+    }
+  }
+
+  private static class CostComparator implements Comparator<Task> {
+    @Override
+    public int compare(Task t1, Task t2) {
+      return t1.getCost().compareTo(t2.getCost());
     }
   }
 
