@@ -659,12 +659,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   void doShow() {
     setVisible(true);
     GPLogger.log(String.format("Bounds after setVisible: %s", getBounds()));
-    try {
-      Class.forName("java.awt.desktop.AboutHandler");
-      DesktopIntegration.setup(GanttProject.this);
-    } catch (ClassNotFoundException e) {
-      GPLogger.log(e);
-    }
+    DesktopIntegration.setup(GanttProject.this);
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().setUpdater(getUpdater());
