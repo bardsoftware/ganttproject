@@ -38,8 +38,6 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -661,16 +659,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   void doShow() {
     setVisible(true);
     GPLogger.log(String.format("Bounds after setVisible: %s", getBounds()));
-    try {
-      Class.forName("java.awt.desktop.AboutHandler");
-      DesktopIntegration.setup(GanttProject.this);
-    } catch (ClassNotFoundException e) {
-      if (DesktopIntegration.isMacOs()) {
-        OSXAdapter.registerMacOSXApplication(GanttProject.this);
-      }
-    } finally {
-      OSXAdapter.setupSystemProperties();
-    }
+    DesktopIntegration.setup(GanttProject.this);
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().setUpdater(getUpdater());
