@@ -100,7 +100,7 @@ class TestBottomUnitSceneBuilder: TestCase() {
 
     // Now iterate through all texts and check that those which were built for weekend offsets
     // are empty.
-    textGroups[0].getLine(0).forEachIndexed({index, text ->
+    textGroups[0].getLine(0).forEachIndexed { _, text ->
       val offset = findOffset(bottomUnitOffsets, text.leftX)
       assertNotNull(offset)
       val label = text.getLabels(textLengthCalculator)[0].text
@@ -109,7 +109,7 @@ class TestBottomUnitSceneBuilder: TestCase() {
       } else {
         assertTrue(label.isEmpty())
       }
-    })
+    }
   }
 
   private fun findOffset(offsets: OffsetList, leftX: Int): Offset? {
