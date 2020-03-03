@@ -62,6 +62,9 @@ abstract class ChartTabContentPanel {
       }
     });
   }
+  void replaceImagePanel(Image image){
+    myImagePanel.setIcon(new ImageIcon(image.getScaledInstance(-1, 50, Image.SCALE_DEFAULT)));
+  }
 
   JComponent createContentComponent() {
     JPanel tabContentPanel = new JPanel(new BorderLayout());

@@ -239,14 +239,17 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myLogoOption.addChangeValueListener(new ChangeValueListener(){
       @Override
       public void changeValue(ChangeValueEvent event) {
-        // Update date sample
-        //if (dateFormatSwitchOption.isChecked()) {
-        // ... update default date format option
-//          String selected = myLogoOption.getValue();
-//          shortDateFormatOption.setSelectedLocale(selected);
-        Image newLogo =getLogo();
-        //setIconImage(newLogo);
-        //refresh;
+
+        if (event.getOldValue()!=null && event.getOldValue().equals(event.getNewValue())){
+          Image newLogo =getLogo();
+
+
+          ((GanttTree2)myFallbackDelegate.getTaskTree()).
+                  getMyProject()
+                  .getGanttChartTabContent().
+                  replaceImagePanel(newLogo);
+        }
+
       }
     });
     
