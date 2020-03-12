@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar name="South Korea Holidays 2013-2019" type="country">
+<calendar name="South Korea Holidays 2013-2022" type="country">
 <!-- http://www.officeholidays.com/countries/south_korea/index.php -->
 <!-- https://publicholidays.co.kr/ko -->
 	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[새해]]></date>	<!-- New Year -->
@@ -75,4 +75,30 @@
 	<date year="2019" month="09" date="12" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
 	<date year="2019" month="09" date="13" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
 	<date year="2019" month="09" date="14" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+
+	<date year="2020" month="01" date="24" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2020" month="01" date="25" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2020" month="01" date="26" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2020" month="01" date="27" type="HOLIDAY"><![CDATA[대체휴일]]></date>	<!-- Substitute Holiday for Seollal -->
+	<date year="2020" month="04" date="15" type="HOLIDAY"><![CDATA[제21대 국회의원 선거일]]></date>	<!-- the 21th general election Day -->
+	<date year="2020" month="04" date="30" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2020" month="09" date="30" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2020" month="10" date="01" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2020" month="10" date="02" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+
+	<date year="2021" month="02" date="11" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+	<date year="2021" month="02" date="12" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+	<date year="2021" month="02" date="13" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+	<date year="2021" month="05" date="19" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+	<date year="2021" month="09" date="20" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+	<date year="2021" month="09" date="21" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+	<date year="2021" month="09" date="22" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
+
+    <date year="2022" month="02" date="01" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day before Seollal-->
+    <date year="2022" month="02" date="02" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year : Seollal -->
+    <date year="2022" month="02" date="03" type="HOLIDAY"><![CDATA[설날]]></date>	<!-- Korean New Year Holiday : Day after Seollal -->
+    <date year="2022" month="05" date="08" type="HOLIDAY"><![CDATA[부처님오신날]]></date>	<!-- Budda's Birthday -->
+    <date year="2022" month="09" date="09" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day before Chuseok -->
+    <date year="2022" month="09" date="10" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival : Chuseok -->
+    <date year="2022" month="09" date="11" type="HOLIDAY"><![CDATA[추석]]></date>	<!-- Harvest Festival Holiday : Day after Chuseok -->
 </calendar >
