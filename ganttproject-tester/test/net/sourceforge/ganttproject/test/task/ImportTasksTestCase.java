@@ -44,11 +44,11 @@ public class ImportTasksTestCase extends TaskTestCase {
             assertEquals(
                     "Unexpected count of the root's children AFTER importing. root="
                             + root, 2, nestedTasks.length);
-            List<Integer> expectedIDs = Arrays.asList(new Integer[] { new Integer(2),
-                    new Integer(3) });
+            List<Integer> expectedIDs = Arrays.asList(2,
+                    3);
             List<Integer> actualIds = new ArrayList<Integer>(2);
-            actualIds.add(new Integer(nestedTasks[0].getTaskID()));
-            actualIds.add(new Integer(nestedTasks[1].getTaskID()));
+            actualIds.add(nestedTasks[0].getTaskID());
+            actualIds.add(nestedTasks[1].getTaskID());
             assertEquals("Unexpected IDs of the imported tasks", new HashSet<Integer>(
                     expectedIDs), new HashSet<Integer>(actualIds));
         }
