@@ -98,7 +98,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
       }
     });
   }
-  private static GanttLanguage language = GanttLanguage.getInstance();
 
   private final CustomPropertyManager myCustomColumnsManager;
 
