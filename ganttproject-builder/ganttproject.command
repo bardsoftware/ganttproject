@@ -44,34 +44,90 @@ if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
   exit 1
 fi
 
-# Find usable java executable
-if [ -z "$JAVA_HOME" ]; then
-  JAVA_COMMAND=$(which java)
-  if [ "1" = "$?" ]; then
-    echo "No executable java found. Please set JAVA_HOME variable" >&2
-    exit 1
-  fi
-else
-  JAVA_COMMAND=$JAVA_HOME/bin/java
-fi
-if [ ! -e "$JAVA_COMMAND" ]; then
-  echo "$JAVA_COMMAND does not exist" >&2
-  exit 1
-fi
-if [ ! -x "$JAVA_COMMAND" ]; then
-  echo "$JAVA_COMMAND is not executable" >&2
-  exit 1
-fi
+LOG_TEXT=""
+echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"  
 
+log() {
+  if [ ! -z "$LOG_TEXT" ]; then
+    LOG_TEXT="$LOG_TEXT\n$1";
+  else
+    echo $1 >> /tmp/ganttproject-launcher.log
+  fi
+}
+
+check_java() {
+  JAVA_COMMAND=$1
+  log  "Searching for Java in $JAVA_COMMAND"
+
+  if [ ! -x "$JAVA_COMMAND" ]; then
+    log "...missing or not executable"
+    JAVA_COMMAND=""
+    return 1
+  fi
+
+  VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
+  log "...found $VERSION"
+  [[ "$VERSION" =~ "1.8" ]] && return 0;
+  [[ "$VERSION" =~ "9." ]] && return 0;
+  [[ "$VERSION" =~ "10." ]] && return 0;
+  [[ "$VERSION" =~ "11." ]] && return 0;
+  [[ "$VERSION" =~ "12." ]] && return 0;
+  [[ "$VERSION" =~ "13." ]] && return 0;
+  [[ "$VERSION" =~ "14." ]] && return 0;
+  log "... this seems to be an old Java Runtime";
+  JAVA_COMMAND=""
+  return 1 
+}
+
+find_java() {
+  if [ ! -z "$JAVA_HOME" ]; then
+    check_java "$JAVA_HOME/bin/java" && return 0;
+  fi
+  JAVA_COMMAND=$(which java)
+  if [ "0" = "$?" ]; then
+    check_java "$JAVA_COMMAND" && return 0;
+  fi
+  
+  if [ -x /usr/libexec/java_home ]; then
+    check_java "$(/usr/libexec/java_home)/bin/java" && return 0;
+  fi
+
+  if [ -x /usr/libexec/java_home ]; then
+    check_java "$(/usr/libexec/java_home -v 1.8+)/bin/java" && return 0;
+  fi
+
+  for f in $(ls /Library/Java/JavaVirtualMachines/); do
+    check_java "/Library/Java/JavaVirtualMachines/$f/Contents/Home/bin/java" && return 0;
+  done;
+ 
+  check_java "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java" && return 0;
+  check_java /Library/Java/Home/bin/java && return 0;
+
+  check_java /System/Library/Frameworks/JavaVM.framework/Home/bin/java && return 0;
+  report_java_not_found && exit 1;
+}
+
+report_java_not_found() {
+  if [ -z "$LOG_TEXT" ]; then
+    LOG_TEXT="$(cat /tmp/ganttproject-launcher.log)"
+  fi
+ 
+  LOG_TEXT=$(echo "$LOG_TEXT" | sed s/\"/\\\\\"/g) 
+  osascript -e 'tell app "System Events" to display alert "Java Runtime not found" message "GanttProject cannot find a suitable Java Runtime.\n\nWhat we have tried:\n'"$LOG_TEXT"'\n\nYou can find this log in /tmp/ganttproject-launcher.log file\nProceed to http://docs.ganttproject.biz/user/troubleshooting-installation to learn how to fix this."'
+}
+
+find_java
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
 CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 
-JAVA_ARGS="-Xmx256m $BOOT_CLASS $CONFIGURATION_FILE -log true -log_file $LOG_FILE"
+JAVA_ARGS="-Xmx256m -Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xmx512m -ea -Dfile.encoding=UTF-8 $BOOT_CLASS $CONFIGURATION_FILE -- -log true -log_file $LOG_FILE"
+
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else
+  echo $JAVA_COMMAND
   "$JAVA_COMMAND" $JAVA_ARGS "$@" &
 fi
 
