@@ -19,44 +19,29 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
-import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.*;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
-
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
+import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * This page provides UI for configuring project weekend days and public holidays
