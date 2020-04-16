@@ -119,10 +119,10 @@ report_java_not_found() {
 find_java
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
-CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
+ECLIPSITO_ARGS="-plugins-dir plugins -app net.sourceforge.ganttproject.GanttProject"
 
-JAVA_ARGS="-Xmx256m -Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xmx512m -ea -Dfile.encoding=UTF-8 $BOOT_CLASS $CONFIGURATION_FILE -- -log true -log_file $LOG_FILE"
+JAVA_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns -Xmx512m -ea -Dfile.encoding=UTF-8 $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
