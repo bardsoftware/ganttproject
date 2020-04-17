@@ -44,7 +44,7 @@ public class TestTaskHierarchy extends TaskTestCase {
         assertEquals("Unexpected supertask of task=" + task2, task1, task2
                 .getSupertask());
         assertEquals("Unexpected nested tasks of task=" + task1, Arrays
-                .asList(new Task[] { task2 }), Arrays.asList(task1
+                .asList(task2), Arrays.asList(task1
                 .getNestedTasks()));
     }
 

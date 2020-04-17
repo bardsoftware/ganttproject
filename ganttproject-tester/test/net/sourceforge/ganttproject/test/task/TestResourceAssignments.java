@@ -40,7 +40,7 @@ public class TestResourceAssignments extends TestCase {
         task.getAssignmentCollection().addAssignment(res2);
         Set<HumanResource> actualResources = extractResources(task);
         Set<HumanResource> expectedResources = new HashSet<HumanResource>(
-                Arrays.asList(new HumanResource[] { res1, res2 }));
+                Arrays.asList(res1, res2));
         assertEquals("Unexpected set of resources assigned to task=" + task,
                 expectedResources, actualResources);
     }

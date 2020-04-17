@@ -1,6 +1,5 @@
 package net.sourceforge.ganttproject.test.task.dependency;
 
-import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;

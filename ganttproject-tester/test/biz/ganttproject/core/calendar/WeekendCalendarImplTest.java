@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
 import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.time.CalendarFactory;
