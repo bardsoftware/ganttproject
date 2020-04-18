@@ -1,0 +1,276 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GPCalendarProvider</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.calendar</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GPCalendarProvider (net.sourceforge.ganttproject.calendar)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GPCalendarProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 39)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GPCalendarProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPCalendarProvider$CalendarTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 49)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2014 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.calendar;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.BufferedInputStream;
+<i>22</i>&nbsp;import java.io.File;
+<i>23</i>&nbsp;import java.io.FileInputStream;
+<i>24</i>&nbsp;import java.io.IOException;
+<i>25</i>&nbsp;import java.net.URISyntaxException;
+<i>26</i>&nbsp;import java.net.URL;
+<i>27</i>&nbsp;import java.util.Collections;
+<i>28</i>&nbsp;import java.util.Comparator;
+<i>29</i>&nbsp;import java.util.List;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import org.eclipse.core.runtime.Platform;
+<i>32</i>&nbsp;import org.xml.sax.Attributes;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;import com.beust.jcommander.internal.Lists;
+<i>35</i>&nbsp;import com.google.common.collect.ImmutableList;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.io.XmlParser;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.parser.AbstractTagHandler;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.parser.HolidayTagHandler;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.parser.ParsingListener;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.parser.TagHandler;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.util.FileUtil;
+<i>44</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar;
+<i>45</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>46</i>&nbsp;import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;/**
+<i>49</i>&nbsp; * Reads calendars in XML format from GanttProject&#39;s installation directory.
+<i>50</i>&nbsp; *
+<i>51</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>52</i>&nbsp; */
+<i>53</i>&nbsp;public class GPCalendarProvider {
+<i>54</i>&nbsp;  private static class CalendarTagHandler extends AbstractTagHandler {
+<i>55</i>&nbsp;    private final GPCalendarCalc myCalendar;
+<i>56</i>&nbsp;    private final HolidayTagHandler myHolidayHandler;
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;    CalendarTagHandler(GPCalendarCalc calendar, HolidayTagHandler holidayHandler) {
+<b class="nc"><i>59</i>&nbsp;      super(&quot;calendar&quot;);</b>
+<b class="nc"><i>60</i>&nbsp;      myCalendar = calendar;</b>
+<b class="nc"><i>61</i>&nbsp;      myHolidayHandler = holidayHandler;</b>
+<i>62</i>&nbsp;    }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;    @Override
+<i>65</i>&nbsp;    protected boolean onStartElement(Attributes attrs) {
+<b class="nc"><i>66</i>&nbsp;      myCalendar.setName(attrs.getValue(&quot;name&quot;));</b>
+<b class="nc"><i>67</i>&nbsp;      myCalendar.setID(attrs.getValue(&quot;id&quot;));</b>
+<b class="nc"><i>68</i>&nbsp;      myCalendar.setBaseCalendarID(attrs.getValue(&quot;base-id&quot;));</b>
+<b class="nc"><i>69</i>&nbsp;      return true;</b>
+<i>70</i>&nbsp;    }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;    @Override
+<i>73</i>&nbsp;    protected void onEndElement() {
+<b class="nc"><i>74</i>&nbsp;      myHolidayHandler.onCalendarLoaded();</b>
+<i>75</i>&nbsp;    }
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  private static GPCalendarProvider ourInstance;
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  private static GPCalendar readCalendar(File resource) {
+<b class="nc"><i>81</i>&nbsp;    WeekendCalendarImpl calendar = new WeekendCalendarImpl();</b>
+<i>82</i>&nbsp;
+<b class="nc"><i>83</i>&nbsp;    HolidayTagHandler holidayHandler = new HolidayTagHandler(calendar);</b>
+<b class="nc"><i>84</i>&nbsp;    CalendarTagHandler calendarHandler = new CalendarTagHandler(calendar, holidayHandler);</b>
+<b class="nc"><i>85</i>&nbsp;    XmlParser parser = new XmlParser(</b>
+<b class="nc"><i>86</i>&nbsp;        ImmutableList.&lt;TagHandler&gt;of(calendarHandler, holidayHandler),</b>
+<b class="nc"><i>87</i>&nbsp;        ImmutableList.&lt;ParsingListener&gt;of());</b>
+<i>88</i>&nbsp;    try {
+<b class="nc"><i>89</i>&nbsp;      parser.parse(new BufferedInputStream(new FileInputStream(resource)));</b>
+<b class="nc"><i>90</i>&nbsp;      return calendar;</b>
+<b class="nc"><i>91</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>92</i>&nbsp;      GPLogger.logToLogger(e);</b>
+<b class="nc"><i>93</i>&nbsp;      return null;</b>
+<i>94</i>&nbsp;    }
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  private static List&lt;GPCalendar&gt; readCalendars() {
+<i>98</i>&nbsp;    try {
+<b class="nc"><i>99</i>&nbsp;      URL resolved = Platform.resolve(GPCalendarProvider.class.getResource(&quot;/calendar&quot;));</b>
+<b class="nc"><i>100</i>&nbsp;      if (resolved == null) {</b>
+<b class="nc"><i>101</i>&nbsp;        return Collections.emptyList();</b>
+<i>102</i>&nbsp;      }
+<b class="nc"><i>103</i>&nbsp;      File dir = new File(resolved.getFile());</b>
+<b class="nc"><i>104</i>&nbsp;      if (dir.exists() &amp;&amp; dir.isDirectory() &amp;&amp; dir.canRead()) {</b>
+<b class="nc"><i>105</i>&nbsp;        List&lt;GPCalendar&gt; calendars = Lists.newArrayList();</b>
+<b class="nc"><i>106</i>&nbsp;        for (File f : dir.listFiles()) {</b>
+<b class="nc"><i>107</i>&nbsp;          if (&quot;calendar&quot;.equalsIgnoreCase(FileUtil.getExtension(f))) {</b>
+<i>108</i>&nbsp;            try {
+<b class="nc"><i>109</i>&nbsp;              GPCalendar calendar = readCalendar(f);</b>
+<b class="nc"><i>110</i>&nbsp;              if (calendar != null) {</b>
+<b class="nc"><i>111</i>&nbsp;                calendars.add(calendar);</b>
+<i>112</i>&nbsp;              }
+<b class="nc"><i>113</i>&nbsp;            } catch (Throwable e) {</b>
+<b class="nc"><i>114</i>&nbsp;              GPLogger.logToLogger(String.format(&quot;Failure when reading calendar file %s&quot;, f.getAbsolutePath()));</b>
+<b class="nc"><i>115</i>&nbsp;              GPLogger.logToLogger(e);</b>
+<b class="nc"><i>116</i>&nbsp;            }</b>
+<i>117</i>&nbsp;          }
+<i>118</i>&nbsp;        }
+<b class="nc"><i>119</i>&nbsp;        return calendars;</b>
+<i>120</i>&nbsp;      }
+<b class="nc"><i>121</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>122</i>&nbsp;      GPLogger.logToLogger(e);</b>
+<b class="nc"><i>123</i>&nbsp;    }</b>
+<b class="nc"><i>124</i>&nbsp;    return Collections.emptyList();</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  public static synchronized GPCalendarProvider getInstance() {
+<b class="nc"><i>128</i>&nbsp;    if (ourInstance == null) {</b>
+<b class="nc"><i>129</i>&nbsp;      List&lt;GPCalendar&gt; calendars = readCalendars();</b>
+<b class="nc"><i>130</i>&nbsp;      Collections.sort(calendars, new Comparator&lt;GPCalendar&gt;() {</b>
+<i>131</i>&nbsp;        public int compare(GPCalendar o1, GPCalendar o2) {
+<b class="nc"><i>132</i>&nbsp;          return o1.getName().compareTo(o2.getName());</b>
+<i>133</i>&nbsp;        }
+<i>134</i>&nbsp;      });
+<b class="nc"><i>135</i>&nbsp;      ourInstance = new GPCalendarProvider(calendars);</b>
+<i>136</i>&nbsp;    }
+<b class="nc"><i>137</i>&nbsp;    return ourInstance;</b>
+<i>138</i>&nbsp;  }
+<i>139</i>&nbsp;  private final List&lt;GPCalendar&gt; myCalendars;
+<i>140</i>&nbsp;
+<b class="nc"><i>141</i>&nbsp;  private GPCalendarProvider(List&lt;GPCalendar&gt; calendars) {</b>
+<b class="nc"><i>142</i>&nbsp;    myCalendars = calendars;</b>
+<i>143</i>&nbsp;  }
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  public List&lt;GPCalendar&gt; getCalendars() {
+<b class="nc"><i>146</i>&nbsp;    return myCalendars;</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

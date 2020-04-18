@@ -1,0 +1,630 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: SimpleRenderedImage</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: SimpleRenderedImage (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SimpleRenderedImage</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 35)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 102)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;/*
+<i>22</i>&nbsp;
+<i>23</i>&nbsp; Copyright 2001,2003  The Apache Software Foundation
+<i>24</i>&nbsp;
+<i>25</i>&nbsp; Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>26</i>&nbsp; you may not use this file except in compliance with the License.
+<i>27</i>&nbsp; You may obtain a copy of the License at
+<i>28</i>&nbsp;
+<i>29</i>&nbsp; http://www.apache.org/licenses/LICENSE-2.0
+<i>30</i>&nbsp;
+<i>31</i>&nbsp; Unless required by applicable law or agreed to in writing, software
+<i>32</i>&nbsp; distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>33</i>&nbsp; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>34</i>&nbsp; See the License for the specific language governing permissions and
+<i>35</i>&nbsp; limitations under the License.
+<i>36</i>&nbsp;
+<i>37</i>&nbsp; */
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;import java.awt.Point;
+<i>40</i>&nbsp;import java.awt.Rectangle;
+<i>41</i>&nbsp;import java.awt.image.ColorModel;
+<i>42</i>&nbsp;import java.awt.image.Raster;
+<i>43</i>&nbsp;import java.awt.image.RenderedImage;
+<i>44</i>&nbsp;import java.awt.image.SampleModel;
+<i>45</i>&nbsp;import java.awt.image.WritableRaster;
+<i>46</i>&nbsp;import java.util.Enumeration;
+<i>47</i>&nbsp;import java.util.Hashtable;
+<i>48</i>&nbsp;import java.util.Iterator;
+<i>49</i>&nbsp;import java.util.Vector;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;/**
+<i>52</i>&nbsp; * A simple class implemented the &lt;code&gt;RenderedImage&lt;/code&gt; interface. Only the
+<i>53</i>&nbsp; * &lt;code&gt;getTile()&lt;/code&gt; method needs to be implemented by subclasses. The
+<i>54</i>&nbsp; * instance variables must also be filled in properly.
+<i>55</i>&nbsp; * 
+<i>56</i>&nbsp; * &lt;p&gt;
+<i>57</i>&nbsp; * Normally in JAI &lt;code&gt;PlanarImage&lt;/code&gt; is used for this purpose, but in the
+<i>58</i>&nbsp; * interest of modularity the use of &lt;code&gt;PlanarImage&lt;/code&gt; has been avoided.
+<i>59</i>&nbsp; */
+<i>60</i>&nbsp;public abstract class SimpleRenderedImage implements RenderedImage {
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  /** The X coordinate of the image&#39;s upper-left pixel. */
+<i>63</i>&nbsp;  protected int minX;
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  /** The Y coordinate of the image&#39;s upper-left pixel. */
+<i>66</i>&nbsp;  protected int minY;
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  /** The image&#39;s width in pixels. */
+<i>69</i>&nbsp;  protected int width;
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  /** The image&#39;s height in pixels. */
+<i>72</i>&nbsp;  protected int height;
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  /** The width of a tile. */
+<i>75</i>&nbsp;  protected int tileWidth;
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  /** The height of a tile. */
+<i>78</i>&nbsp;  protected int tileHeight;
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  /** The X coordinate of the upper-left pixel of tile (0, 0). */
+<b class="nc"><i>81</i>&nbsp;  protected int tileGridXOffset = 0;</b>
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  /** The Y coordinate of the upper-left pixel of tile (0, 0). */
+<b class="nc"><i>84</i>&nbsp;  protected int tileGridYOffset = 0;</b>
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  /** The image&#39;s SampleModel. */
+<b class="nc"><i>87</i>&nbsp;  protected SampleModel sampleModel = null;</b>
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  /** The image&#39;s ColorModel. */
+<b class="nc"><i>90</i>&nbsp;  protected ColorModel colorModel = null;</b>
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  /** The image&#39;s sources, stored in a Vector. */
+<b class="nc"><i>93</i>&nbsp;  protected Vector&lt;RenderedImage&gt; sources = new Vector&lt;RenderedImage&gt;();</b>
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  /** A Hashtable containing the image properties. */
+<b class="nc"><i>96</i>&nbsp;  protected Hashtable&lt;String, Object&gt; properties = new Hashtable&lt;String, Object&gt;();</b>
+<i>97</i>&nbsp;
+<b class="nc"><i>98</i>&nbsp;  public SimpleRenderedImage() {</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  /** Returns the X coordinate of the leftmost column of the image. */
+<i>102</i>&nbsp;  @Override
+<i>103</i>&nbsp;  public int getMinX() {
+<b class="nc"><i>104</i>&nbsp;    return minX;</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  /**
+<i>108</i>&nbsp;   * Returns the X coordinate of the column immediately to the right of the
+<i>109</i>&nbsp;   * rightmost column of the image. getMaxX() is implemented in terms of
+<i>110</i>&nbsp;   * getMinX() and getWidth() and so does not need to be implemented by
+<i>111</i>&nbsp;   * subclasses.
+<i>112</i>&nbsp;   */
+<i>113</i>&nbsp;  public final int getMaxX() {
+<b class="nc"><i>114</i>&nbsp;    return getMinX() + getWidth();</b>
+<i>115</i>&nbsp;  }
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  /** Returns the X coordinate of the uppermost row of the image. */
+<i>118</i>&nbsp;  @Override
+<i>119</i>&nbsp;  public int getMinY() {
+<b class="nc"><i>120</i>&nbsp;    return minY;</b>
+<i>121</i>&nbsp;  }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;  /**
+<i>124</i>&nbsp;   * Returns the Y coordinate of the row immediately below the bottom row of the
+<i>125</i>&nbsp;   * image. getMaxY() is implemented in terms of getMinY() and getHeight() and
+<i>126</i>&nbsp;   * so does not need to be implemented by subclasses.
+<i>127</i>&nbsp;   */
+<i>128</i>&nbsp;  public final int getMaxY() {
+<b class="nc"><i>129</i>&nbsp;    return getMinY() + getHeight();</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  /** Returns the width of the image. */
+<i>133</i>&nbsp;  @Override
+<i>134</i>&nbsp;  public int getWidth() {
+<b class="nc"><i>135</i>&nbsp;    return width;</b>
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  /** Returns the height of the image. */
+<i>139</i>&nbsp;  @Override
+<i>140</i>&nbsp;  public int getHeight() {
+<b class="nc"><i>141</i>&nbsp;    return height;</b>
+<i>142</i>&nbsp;  }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  /** Returns a Rectangle indicating the image bounds. */
+<i>145</i>&nbsp;  public Rectangle getBounds() {
+<b class="nc"><i>146</i>&nbsp;    return new Rectangle(getMinX(), getMinY(), getWidth(), getHeight());</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  /** Returns the width of a tile. */
+<i>150</i>&nbsp;  @Override
+<i>151</i>&nbsp;  public int getTileWidth() {
+<b class="nc"><i>152</i>&nbsp;    return tileWidth;</b>
+<i>153</i>&nbsp;  }
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  /** Returns the height of a tile. */
+<i>156</i>&nbsp;  @Override
+<i>157</i>&nbsp;  public int getTileHeight() {
+<b class="nc"><i>158</i>&nbsp;    return tileHeight;</b>
+<i>159</i>&nbsp;  }
+<i>160</i>&nbsp;
+<i>161</i>&nbsp;  /**
+<i>162</i>&nbsp;   * Returns the X coordinate of the upper-left pixel of tile (0, 0).
+<i>163</i>&nbsp;   */
+<i>164</i>&nbsp;  @Override
+<i>165</i>&nbsp;  public int getTileGridXOffset() {
+<b class="nc"><i>166</i>&nbsp;    return tileGridXOffset;</b>
+<i>167</i>&nbsp;  }
+<i>168</i>&nbsp;
+<i>169</i>&nbsp;  /**
+<i>170</i>&nbsp;   * Returns the Y coordinate of the upper-left pixel of tile (0, 0).
+<i>171</i>&nbsp;   */
+<i>172</i>&nbsp;  @Override
+<i>173</i>&nbsp;  public int getTileGridYOffset() {
+<b class="nc"><i>174</i>&nbsp;    return tileGridYOffset;</b>
+<i>175</i>&nbsp;  }
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  /**
+<i>178</i>&nbsp;   * Returns the horizontal index of the leftmost column of tiles. getMinTileX()
+<i>179</i>&nbsp;   * is implemented in terms of getMinX() and so does not need to be implemented
+<i>180</i>&nbsp;   * by subclasses.
+<i>181</i>&nbsp;   */
+<i>182</i>&nbsp;  @Override
+<i>183</i>&nbsp;  public int getMinTileX() {
+<b class="nc"><i>184</i>&nbsp;    return XToTileX(getMinX());</b>
+<i>185</i>&nbsp;  }
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;  /**
+<i>188</i>&nbsp;   * Returns the horizontal index of the rightmost column of tiles.
+<i>189</i>&nbsp;   * getMaxTileX() is implemented in terms of getMaxX() and so does not need to
+<i>190</i>&nbsp;   * be implemented by subclasses.
+<i>191</i>&nbsp;   */
+<i>192</i>&nbsp;  public int getMaxTileX() {
+<b class="nc"><i>193</i>&nbsp;    return XToTileX(getMaxX() - 1);</b>
+<i>194</i>&nbsp;  }
+<i>195</i>&nbsp;
+<i>196</i>&nbsp;  /**
+<i>197</i>&nbsp;   * Returns the number of tiles along the tile grid in the horizontal
+<i>198</i>&nbsp;   * direction. getNumXTiles() is implemented in terms of getMinTileX() and
+<i>199</i>&nbsp;   * getMaxTileX() and so does not need to be implemented by subclasses.
+<i>200</i>&nbsp;   */
+<i>201</i>&nbsp;  @Override
+<i>202</i>&nbsp;  public int getNumXTiles() {
+<b class="nc"><i>203</i>&nbsp;    return getMaxTileX() - getMinTileX() + 1;</b>
+<i>204</i>&nbsp;  }
+<i>205</i>&nbsp;
+<i>206</i>&nbsp;  /**
+<i>207</i>&nbsp;   * Returns the vertical index of the uppermost row of tiles. getMinTileY() is
+<i>208</i>&nbsp;   * implemented in terms of getMinY() and so does not need to be implemented by
+<i>209</i>&nbsp;   * subclasses.
+<i>210</i>&nbsp;   */
+<i>211</i>&nbsp;  @Override
+<i>212</i>&nbsp;  public int getMinTileY() {
+<b class="nc"><i>213</i>&nbsp;    return YToTileY(getMinY());</b>
+<i>214</i>&nbsp;  }
+<i>215</i>&nbsp;
+<i>216</i>&nbsp;  /**
+<i>217</i>&nbsp;   * Returns the vertical index of the bottom row of tiles. getMaxTileY() is
+<i>218</i>&nbsp;   * implemented in terms of getMaxY() and so does not need to be implemented by
+<i>219</i>&nbsp;   * subclasses.
+<i>220</i>&nbsp;   */
+<i>221</i>&nbsp;  public int getMaxTileY() {
+<b class="nc"><i>222</i>&nbsp;    return YToTileY(getMaxY() - 1);</b>
+<i>223</i>&nbsp;  }
+<i>224</i>&nbsp;
+<i>225</i>&nbsp;  /**
+<i>226</i>&nbsp;   * Returns the number of tiles along the tile grid in the vertical direction.
+<i>227</i>&nbsp;   * getNumYTiles() is implemented in terms of getMinTileY() and getMaxTileY()
+<i>228</i>&nbsp;   * and so does not need to be implemented by subclasses.
+<i>229</i>&nbsp;   */
+<i>230</i>&nbsp;  @Override
+<i>231</i>&nbsp;  public int getNumYTiles() {
+<b class="nc"><i>232</i>&nbsp;    return getMaxTileY() - getMinTileY() + 1;</b>
+<i>233</i>&nbsp;  }
+<i>234</i>&nbsp;
+<i>235</i>&nbsp;  /** Returns the SampleModel of the image. */
+<i>236</i>&nbsp;  @Override
+<i>237</i>&nbsp;  public SampleModel getSampleModel() {
+<b class="nc"><i>238</i>&nbsp;    return sampleModel;</b>
+<i>239</i>&nbsp;  }
+<i>240</i>&nbsp;
+<i>241</i>&nbsp;  /** Returns the ColorModel of the image. */
+<i>242</i>&nbsp;  @Override
+<i>243</i>&nbsp;  public ColorModel getColorModel() {
+<b class="nc"><i>244</i>&nbsp;    return colorModel;</b>
+<i>245</i>&nbsp;  }
+<i>246</i>&nbsp;
+<i>247</i>&nbsp;  /**
+<i>248</i>&nbsp;   * Gets a property from the property set of this image. If the property name
+<i>249</i>&nbsp;   * is not recognized, &lt;code&gt;java.awt.Image.UndefinedProperty&lt;/code&gt; will be
+<i>250</i>&nbsp;   * returned.
+<i>251</i>&nbsp;   * 
+<i>252</i>&nbsp;   * @param name
+<i>253</i>&nbsp;   *          the name of the property to get, as a &lt;code&gt;String&lt;/code&gt;. @return
+<i>254</i>&nbsp;   *          a reference to the property &lt;code&gt;Object&lt;/code&gt;, or the value
+<i>255</i>&nbsp;   *          &lt;code&gt;java.awt.Image.UndefinedProperty.&lt;/code&gt;
+<i>256</i>&nbsp;   */
+<i>257</i>&nbsp;  @Override
+<i>258</i>&nbsp;  public Object getProperty(String name) {
+<b class="nc"><i>259</i>&nbsp;    name = name.toLowerCase();</b>
+<b class="nc"><i>260</i>&nbsp;    return properties.get(name);</b>
+<i>261</i>&nbsp;  }
+<i>262</i>&nbsp;
+<i>263</i>&nbsp;  /**
+<i>264</i>&nbsp;   * Returns a list of the properties recognized by this image. If no properties
+<i>265</i>&nbsp;   * are available, &lt;code&gt;null&lt;/code&gt; will be returned.
+<i>266</i>&nbsp;   * 
+<i>267</i>&nbsp;   * @return an array of &lt;code&gt;String&lt;/code&gt;s representing valid property names.
+<i>268</i>&nbsp;   */
+<i>269</i>&nbsp;  @Override
+<i>270</i>&nbsp;  public String[] getPropertyNames() {
+<b class="nc"><i>271</i>&nbsp;    String[] names = new String[properties.size()];</b>
+<b class="nc"><i>272</i>&nbsp;    int index = 0;</b>
+<i>273</i>&nbsp;
+<b class="nc"><i>274</i>&nbsp;    Enumeration&lt;String&gt; e = properties.keys();</b>
+<b class="nc"><i>275</i>&nbsp;    while (e.hasMoreElements()) {</b>
+<b class="nc"><i>276</i>&nbsp;      String name = e.nextElement();</b>
+<b class="nc"><i>277</i>&nbsp;      names[index++] = name;</b>
+<b class="nc"><i>278</i>&nbsp;    }</b>
+<b class="nc"><i>279</i>&nbsp;    return names;</b>
+<i>280</i>&nbsp;  }
+<i>281</i>&nbsp;
+<i>282</i>&nbsp;  /**
+<i>283</i>&nbsp;   * Returns an array of &lt;code&gt;String&lt;/code&gt;s recognized as names by this
+<i>284</i>&nbsp;   * property source that begin with the supplied prefix. If no property names
+<i>285</i>&nbsp;   * match, &lt;code&gt;null&lt;/code&gt; will be returned. The comparison is done in a
+<i>286</i>&nbsp;   * case-independent manner.
+<i>287</i>&nbsp;   * 
+<i>288</i>&nbsp;   * &lt;p&gt;
+<i>289</i>&nbsp;   * The default implementation calls &lt;code&gt;getPropertyNames()&lt;/code&gt; and
+<i>290</i>&nbsp;   * searches the list of names for matches.
+<i>291</i>&nbsp;   * 
+<i>292</i>&nbsp;   * @return an array of &lt;code&gt;String&lt;/code&gt;s giving the valid property names.
+<i>293</i>&nbsp;   */
+<i>294</i>&nbsp;  public String[] getPropertyNames(String prefix) {
+<b class="nc"><i>295</i>&nbsp;    String propertyNames[] = getPropertyNames();</b>
+<b class="nc"><i>296</i>&nbsp;    if (propertyNames == null) {</b>
+<b class="nc"><i>297</i>&nbsp;      return null;</b>
+<i>298</i>&nbsp;    }
+<i>299</i>&nbsp;
+<b class="nc"><i>300</i>&nbsp;    prefix = prefix.toLowerCase();</b>
+<i>301</i>&nbsp;
+<b class="nc"><i>302</i>&nbsp;    Vector&lt;String&gt; names = new Vector&lt;String&gt;();</b>
+<b class="nc"><i>303</i>&nbsp;    for (int i = 0; i &lt; propertyNames.length; i++) {</b>
+<b class="nc"><i>304</i>&nbsp;      if (propertyNames[i].startsWith(prefix)) {</b>
+<b class="nc"><i>305</i>&nbsp;        names.addElement(propertyNames[i]);</b>
+<i>306</i>&nbsp;      }
+<i>307</i>&nbsp;    }
+<i>308</i>&nbsp;
+<b class="nc"><i>309</i>&nbsp;    if (names.size() == 0) {</b>
+<b class="nc"><i>310</i>&nbsp;      return null;</b>
+<i>311</i>&nbsp;    }
+<i>312</i>&nbsp;
+<i>313</i>&nbsp;    // Copy the strings from the Vector over to a String array.
+<b class="nc"><i>314</i>&nbsp;    String prefixNames[] = new String[names.size()];</b>
+<b class="nc"><i>315</i>&nbsp;    int count = 0;</b>
+<b class="nc"><i>316</i>&nbsp;    for (Iterator&lt;String&gt; it = names.iterator(); it.hasNext();) {</b>
+<b class="nc"><i>317</i>&nbsp;      prefixNames[count++] = it.next();</b>
+<i>318</i>&nbsp;    }
+<i>319</i>&nbsp;
+<b class="nc"><i>320</i>&nbsp;    return prefixNames;</b>
+<i>321</i>&nbsp;  }
+<i>322</i>&nbsp;
+<i>323</i>&nbsp;  // Utility methods.
+<i>324</i>&nbsp;
+<i>325</i>&nbsp;  /**
+<i>326</i>&nbsp;   * Converts a pixel&#39;s X coordinate into a horizontal tile index relative to a
+<i>327</i>&nbsp;   * given tile grid layout specified by its X offset and tile width.
+<i>328</i>&nbsp;   */
+<i>329</i>&nbsp;  public static int XToTileX(int x, int tileGridXOffset, int tileWidth) {
+<b class="nc"><i>330</i>&nbsp;    x -= tileGridXOffset;</b>
+<b class="nc"><i>331</i>&nbsp;    if (x &lt; 0) {</b>
+<b class="nc"><i>332</i>&nbsp;      x += 1 - tileWidth; // Force round to -infinity</b>
+<i>333</i>&nbsp;    }
+<b class="nc"><i>334</i>&nbsp;    return x / tileWidth;</b>
+<i>335</i>&nbsp;  }
+<i>336</i>&nbsp;
+<i>337</i>&nbsp;  /**
+<i>338</i>&nbsp;   * Converts a pixel&#39;s Y coordinate into a vertical tile index relative to a
+<i>339</i>&nbsp;   * given tile grid layout specified by its Y offset and tile height.
+<i>340</i>&nbsp;   */
+<i>341</i>&nbsp;  public static int YToTileY(int y, int tileGridYOffset, int tileHeight) {
+<b class="nc"><i>342</i>&nbsp;    y -= tileGridYOffset;</b>
+<b class="nc"><i>343</i>&nbsp;    if (y &lt; 0) {</b>
+<b class="nc"><i>344</i>&nbsp;      y += 1 - tileHeight; // Force round to -infinity</b>
+<i>345</i>&nbsp;    }
+<b class="nc"><i>346</i>&nbsp;    return y / tileHeight;</b>
+<i>347</i>&nbsp;  }
+<i>348</i>&nbsp;
+<i>349</i>&nbsp;  /**
+<i>350</i>&nbsp;   * Converts a pixel&#39;s X coordinate into a horizontal tile index. This is a
+<i>351</i>&nbsp;   * convenience method. No attempt is made to detect out-of-range coordinates.
+<i>352</i>&nbsp;   * 
+<i>353</i>&nbsp;   * @param x
+<i>354</i>&nbsp;   *          the X coordinate of a pixel.
+<i>355</i>&nbsp;   * @return the X index of the tile containing the pixel.
+<i>356</i>&nbsp;   */
+<i>357</i>&nbsp;  public int XToTileX(int x) {
+<b class="nc"><i>358</i>&nbsp;    return XToTileX(x, getTileGridXOffset(), getTileWidth());</b>
+<i>359</i>&nbsp;  }
+<i>360</i>&nbsp;
+<i>361</i>&nbsp;  /**
+<i>362</i>&nbsp;   * Converts a pixel&#39;s Y coordinate into a vertical tile index. This is a
+<i>363</i>&nbsp;   * convenience method. No attempt is made to detect out-of-range coordinates.
+<i>364</i>&nbsp;   * 
+<i>365</i>&nbsp;   * @param y
+<i>366</i>&nbsp;   *          the Y coordinate of a pixel.
+<i>367</i>&nbsp;   * @return the Y index of the tile containing the pixel.
+<i>368</i>&nbsp;   */
+<i>369</i>&nbsp;  public int YToTileY(int y) {
+<b class="nc"><i>370</i>&nbsp;    return YToTileY(y, getTileGridYOffset(), getTileHeight());</b>
+<i>371</i>&nbsp;  }
+<i>372</i>&nbsp;
+<i>373</i>&nbsp;  /**
+<i>374</i>&nbsp;   * Converts a horizontal tile index into the X coordinate of its upper left
+<i>375</i>&nbsp;   * pixel relative to a given tile grid layout specified by its X offset and
+<i>376</i>&nbsp;   * tile width.
+<i>377</i>&nbsp;   */
+<i>378</i>&nbsp;  public static int tileXToX(int tx, int tileGridXOffset, int tileWidth) {
+<b class="nc"><i>379</i>&nbsp;    return tx * tileWidth + tileGridXOffset;</b>
+<i>380</i>&nbsp;  }
+<i>381</i>&nbsp;
+<i>382</i>&nbsp;  /**
+<i>383</i>&nbsp;   * Converts a vertical tile index into the Y coordinate of its upper left
+<i>384</i>&nbsp;   * pixel relative to a given tile grid layout specified by its Y offset and
+<i>385</i>&nbsp;   * tile height.
+<i>386</i>&nbsp;   */
+<i>387</i>&nbsp;  public static int tileYToY(int ty, int tileGridYOffset, int tileHeight) {
+<b class="nc"><i>388</i>&nbsp;    return ty * tileHeight + tileGridYOffset;</b>
+<i>389</i>&nbsp;  }
+<i>390</i>&nbsp;
+<i>391</i>&nbsp;  /**
+<i>392</i>&nbsp;   * Converts a horizontal tile index into the X coordinate of its upper left
+<i>393</i>&nbsp;   * pixel. This is a convenience method. No attempt is made to detect
+<i>394</i>&nbsp;   * out-of-range indices.
+<i>395</i>&nbsp;   * 
+<i>396</i>&nbsp;   * @param tx
+<i>397</i>&nbsp;   *          the horizontal index of a tile.
+<i>398</i>&nbsp;   * @return the X coordinate of the tile&#39;s upper left pixel.
+<i>399</i>&nbsp;   */
+<i>400</i>&nbsp;  public int tileXToX(int tx) {
+<b class="nc"><i>401</i>&nbsp;    return tx * tileWidth + tileGridXOffset;</b>
+<i>402</i>&nbsp;  }
+<i>403</i>&nbsp;
+<i>404</i>&nbsp;  /**
+<i>405</i>&nbsp;   * Converts a vertical tile index into the Y coordinate of its upper left
+<i>406</i>&nbsp;   * pixel. This is a convenience method. No attempt is made to detect
+<i>407</i>&nbsp;   * out-of-range indices.
+<i>408</i>&nbsp;   * 
+<i>409</i>&nbsp;   * @param ty
+<i>410</i>&nbsp;   *          the vertical index of a tile.
+<i>411</i>&nbsp;   * @return the Y coordinate of the tile&#39;s upper left pixel.
+<i>412</i>&nbsp;   */
+<i>413</i>&nbsp;  public int tileYToY(int ty) {
+<b class="nc"><i>414</i>&nbsp;    return ty * tileHeight + tileGridYOffset;</b>
+<i>415</i>&nbsp;  }
+<i>416</i>&nbsp;
+<i>417</i>&nbsp;  @Override
+<i>418</i>&nbsp;  public Vector&lt;RenderedImage&gt; getSources() {
+<b class="nc"><i>419</i>&nbsp;    return null;</b>
+<i>420</i>&nbsp;  }
+<i>421</i>&nbsp;
+<i>422</i>&nbsp;  /**
+<i>423</i>&nbsp;   * Returns the entire image in a single Raster. For images with multiple tiles
+<i>424</i>&nbsp;   * this will require making a copy.
+<i>425</i>&nbsp;   * 
+<i>426</i>&nbsp;   * &lt;p&gt;
+<i>427</i>&nbsp;   * The returned Raster is semantically a copy. This means that updates to the
+<i>428</i>&nbsp;   * source image will not be reflected in the returned Raster. For non-writable
+<i>429</i>&nbsp;   * (immutable) source images, the returned value may be a reference to the
+<i>430</i>&nbsp;   * image&#39;s internal data. The returned Raster should be considered
+<i>431</i>&nbsp;   * non-writable; any attempt to alter its pixel data (such as by casting it to
+<i>432</i>&nbsp;   * WritableRaster or obtaining and modifying its DataBuffer) may result in
+<i>433</i>&nbsp;   * undefined behavior. The copyData method should be used if the returned
+<i>434</i>&nbsp;   * Raster is to be modified.
+<i>435</i>&nbsp;   * 
+<i>436</i>&nbsp;   * @return a Raster containing a copy of this image&#39;s data.
+<i>437</i>&nbsp;   */
+<i>438</i>&nbsp;  @Override
+<i>439</i>&nbsp;  public Raster getData() {
+<b class="nc"><i>440</i>&nbsp;    Rectangle rect = new Rectangle(getMinX(), getMinY(), getWidth(), getHeight());</b>
+<b class="nc"><i>441</i>&nbsp;    return getData(rect);</b>
+<i>442</i>&nbsp;  }
+<i>443</i>&nbsp;
+<i>444</i>&nbsp;  /**
+<i>445</i>&nbsp;   * Returns an arbitrary rectangular region of the RenderedImage in a Raster.
+<i>446</i>&nbsp;   * The rectangle of interest will be clipped against the image bounds.
+<i>447</i>&nbsp;   * 
+<i>448</i>&nbsp;   * &lt;p&gt;
+<i>449</i>&nbsp;   * The returned Raster is semantically a copy. This means that updates to the
+<i>450</i>&nbsp;   * source image will not be reflected in the returned Raster. For non-writable
+<i>451</i>&nbsp;   * (immutable) source images, the returned value may be a reference to the
+<i>452</i>&nbsp;   * image&#39;s internal data. The returned Raster should be considered
+<i>453</i>&nbsp;   * non-writable; any attempt to alter its pixel data (such as by casting it to
+<i>454</i>&nbsp;   * WritableRaster or obtaining and modifying its DataBuffer) may result in
+<i>455</i>&nbsp;   * undefined behavior. The copyData method should be used if the returned
+<i>456</i>&nbsp;   * Raster is to be modified.
+<i>457</i>&nbsp;   * 
+<i>458</i>&nbsp;   * @param bounds
+<i>459</i>&nbsp;   *          the region of the RenderedImage to be returned.
+<i>460</i>&nbsp;   */
+<i>461</i>&nbsp;  @Override
+<i>462</i>&nbsp;  public Raster getData(Rectangle bounds) {
+<b class="nc"><i>463</i>&nbsp;    int startX = XToTileX(bounds.x);</b>
+<b class="nc"><i>464</i>&nbsp;    int startY = YToTileY(bounds.y);</b>
+<b class="nc"><i>465</i>&nbsp;    int endX = XToTileX(bounds.x + bounds.width - 1);</b>
+<b class="nc"><i>466</i>&nbsp;    int endY = YToTileY(bounds.y + bounds.height - 1);</b>
+<i>467</i>&nbsp;    Raster tile;
+<i>468</i>&nbsp;
+<b class="nc"><i>469</i>&nbsp;    if ((startX == endX) &amp;&amp; (startY == endY)) {</b>
+<b class="nc"><i>470</i>&nbsp;      tile = getTile(startX, startY);</b>
+<b class="nc"><i>471</i>&nbsp;      return tile.createChild(bounds.x, bounds.y, bounds.width, bounds.height, bounds.x, bounds.y, null);</b>
+<i>472</i>&nbsp;    } else {
+<i>473</i>&nbsp;      // Create a WritableRaster of the desired size
+<b class="nc"><i>474</i>&nbsp;      SampleModel sm = sampleModel.createCompatibleSampleModel(bounds.width, bounds.height);</b>
+<i>475</i>&nbsp;
+<i>476</i>&nbsp;      // Translate it
+<b class="nc"><i>477</i>&nbsp;      WritableRaster dest = Raster.createWritableRaster(sm, bounds.getLocation());</b>
+<i>478</i>&nbsp;
+<b class="nc"><i>479</i>&nbsp;      for (int j = startY; j &lt;= endY; j++) {</b>
+<b class="nc"><i>480</i>&nbsp;        for (int i = startX; i &lt;= endX; i++) {</b>
+<b class="nc"><i>481</i>&nbsp;          tile = getTile(i, j);</b>
+<b class="nc"><i>482</i>&nbsp;          Rectangle intersectRect = bounds.intersection(tile.getBounds());</b>
+<b class="nc"><i>483</i>&nbsp;          Raster liveRaster = tile.createChild(intersectRect.x, intersectRect.y, intersectRect.width,</b>
+<i>484</i>&nbsp;              intersectRect.height, intersectRect.x, intersectRect.y, null);
+<b class="nc"><i>485</i>&nbsp;          dest.setDataElements(0, 0, liveRaster);</b>
+<i>486</i>&nbsp;        }
+<i>487</i>&nbsp;      }
+<b class="nc"><i>488</i>&nbsp;      return dest;</b>
+<i>489</i>&nbsp;    }
+<i>490</i>&nbsp;  }
+<i>491</i>&nbsp;
+<i>492</i>&nbsp;  /**
+<i>493</i>&nbsp;   * Copies an arbitrary rectangular region of the RenderedImage into a
+<i>494</i>&nbsp;   * caller-supplied WritableRaster. The region to be computed is determined by
+<i>495</i>&nbsp;   * clipping the bounds of the supplied WritableRaster against the bounds of
+<i>496</i>&nbsp;   * the image. The supplied WritableRaster must have a SampleModel that is
+<i>497</i>&nbsp;   * compatible with that of the image.
+<i>498</i>&nbsp;   * 
+<i>499</i>&nbsp;   * &lt;p&gt;
+<i>500</i>&nbsp;   * If the raster argument is null, the entire image will be copied into a
+<i>501</i>&nbsp;   * newly-created WritableRaster with a SampleModel that is compatible with
+<i>502</i>&nbsp;   * that of the image.
+<i>503</i>&nbsp;   * 
+<i>504</i>&nbsp;   * @param dest
+<i>505</i>&nbsp;   *          a WritableRaster to hold the returned portion of the image.
+<i>506</i>&nbsp;   * @return a reference to the supplied WritableRaster, or to a new
+<i>507</i>&nbsp;   *         WritableRaster if the supplied one was null.
+<i>508</i>&nbsp;   */
+<i>509</i>&nbsp;  @Override
+<i>510</i>&nbsp;  public WritableRaster copyData(WritableRaster dest) {
+<i>511</i>&nbsp;    Rectangle bounds;
+<i>512</i>&nbsp;    Raster tile;
+<i>513</i>&nbsp;
+<b class="nc"><i>514</i>&nbsp;    if (dest == null) {</b>
+<b class="nc"><i>515</i>&nbsp;      bounds = getBounds();</b>
+<b class="nc"><i>516</i>&nbsp;      Point p = new Point(minX, minY);</b>
+<i>517</i>&nbsp;      /* A SampleModel to hold the entire image. */
+<b class="nc"><i>518</i>&nbsp;      SampleModel sm = sampleModel.createCompatibleSampleModel(width, height);</b>
+<b class="nc"><i>519</i>&nbsp;      dest = Raster.createWritableRaster(sm, p);</b>
+<b class="nc"><i>520</i>&nbsp;    } else {</b>
+<b class="nc"><i>521</i>&nbsp;      bounds = dest.getBounds();</b>
+<i>522</i>&nbsp;    }
+<i>523</i>&nbsp;
+<b class="nc"><i>524</i>&nbsp;    int startX = XToTileX(bounds.x);</b>
+<b class="nc"><i>525</i>&nbsp;    int startY = YToTileY(bounds.y);</b>
+<b class="nc"><i>526</i>&nbsp;    int endX = XToTileX(bounds.x + bounds.width - 1);</b>
+<b class="nc"><i>527</i>&nbsp;    int endY = YToTileY(bounds.y + bounds.height - 1);</b>
+<i>528</i>&nbsp;
+<b class="nc"><i>529</i>&nbsp;    for (int j = startY; j &lt;= endY; j++) {</b>
+<b class="nc"><i>530</i>&nbsp;      for (int i = startX; i &lt;= endX; i++) {</b>
+<b class="nc"><i>531</i>&nbsp;        tile = getTile(i, j);</b>
+<b class="nc"><i>532</i>&nbsp;        Rectangle intersectRect = bounds.intersection(tile.getBounds());</b>
+<b class="nc"><i>533</i>&nbsp;        Raster liveRaster = tile.createChild(intersectRect.x, intersectRect.y, intersectRect.width,</b>
+<i>534</i>&nbsp;            intersectRect.height, intersectRect.x, intersectRect.y, null);
+<i>535</i>&nbsp;
+<i>536</i>&nbsp;        /*
+<i>537</i>&nbsp;         * WritableRaster.setDataElements takes into account of inRaster&#39;s minX
+<i>538</i>&nbsp;         * and minY and add these to x and y. Since liveRaster has the origin at
+<i>539</i>&nbsp;         * the correct location, the following call should not again give these
+<i>540</i>&nbsp;         * coordinates in places of x and y.
+<i>541</i>&nbsp;         */
+<b class="nc"><i>542</i>&nbsp;        dest.setDataElements(0, 0, liveRaster);</b>
+<i>543</i>&nbsp;      }
+<i>544</i>&nbsp;    }
+<b class="nc"><i>545</i>&nbsp;    return dest;</b>
+<i>546</i>&nbsp;  }
+<i>547</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

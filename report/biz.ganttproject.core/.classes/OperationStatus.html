@@ -1,0 +1,245 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OperationStatus</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OperationStatus (biz.ganttproject.core)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OperationStatus</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 20)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OperationStatus$DefaultCode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 22)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;// Copyright (C) 2012 BarD Software
+<i>2</i>&nbsp;package biz.ganttproject.core;
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;import com.google.common.base.Preconditions;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import javax.annotation.Nonnull;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;/**
+<i>9</i>&nbsp; * Status object which contains status of the operation.
+<i>10</i>&nbsp; * If operation was successful it holds result returned by operation.
+<i>11</i>&nbsp; * Otherwise it contains message describing result of the operation.
+<i>12</i>&nbsp; *
+<i>13</i>&nbsp; * @param &lt;Code&gt; type of result code
+<i>14</i>&nbsp; * @param &lt;T&gt;    type of result returned by operation
+<i>15</i>&nbsp; * @author gkalabin@bardsoftware.com
+<i>16</i>&nbsp; */
+<i>17</i>&nbsp;public class OperationStatus&lt;T, Code extends Enum&gt; {
+<b class="nc"><i>18</i>&nbsp;  public enum DefaultCode {</b>
+<b class="nc"><i>19</i>&nbsp;    OK, FAIL</b>
+<i>20</i>&nbsp;  }
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;  private final Code myResultCode;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  /**
+<i>25</i>&nbsp;   * True if operation was successful
+<i>26</i>&nbsp;   */
+<i>27</i>&nbsp;  private final boolean myOk;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  /**
+<i>30</i>&nbsp;   * Result of the operation. Null if operation was not successful
+<i>31</i>&nbsp;   */
+<i>32</i>&nbsp;  private final T myOperationResult;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  /**
+<i>35</i>&nbsp;   * Message describing result of operation
+<i>36</i>&nbsp;   */
+<i>37</i>&nbsp;  private final String myMessage;
+<i>38</i>&nbsp;
+<b class="nc"><i>39</i>&nbsp;  private OperationStatus(boolean ok, T result, String message, @Nonnull Code resultCode) {</b>
+<b class="nc"><i>40</i>&nbsp;    myOperationResult = result;</b>
+<b class="nc"><i>41</i>&nbsp;    myMessage = message;</b>
+<b class="nc"><i>42</i>&nbsp;    myOk = ok;</b>
+<b class="nc"><i>43</i>&nbsp;    myResultCode = Preconditions.checkNotNull(resultCode);</b>
+<i>44</i>&nbsp;  }
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  /**
+<i>47</i>&nbsp;   * Constructs new object with OK status
+<i>48</i>&nbsp;   *
+<i>49</i>&nbsp;   * @param result result returned by the operation
+<i>50</i>&nbsp;   */
+<i>51</i>&nbsp;  public static &lt;T&gt; OperationStatus&lt;T, DefaultCode&gt; success(T result) {
+<b class="nc"><i>52</i>&nbsp;    return new OperationStatus&lt;&gt;(true, result, null, DefaultCode.OK);</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  /**
+<i>56</i>&nbsp;   * Constructs new object with &lt;b&gt;not&lt;/b&gt; OK status.
+<i>57</i>&nbsp;   *
+<i>58</i>&nbsp;   * @param message describing result of the operation
+<i>59</i>&nbsp;   */
+<i>60</i>&nbsp;  public static &lt;T&gt; OperationStatus&lt;T, DefaultCode&gt; failure(@Nonnull String message) {
+<b class="nc"><i>61</i>&nbsp;    return new OperationStatus&lt;&gt;(false, null, Preconditions.checkNotNull(message), DefaultCode.FAIL);</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  public static &lt;T&gt; OperationStatus&lt;T, DefaultCode&gt; failure(@Nonnull String message, Object... args) {
+<b class="nc"><i>65</i>&nbsp;    return new OperationStatus&lt;&gt;(false, null, String.format(Preconditions.checkNotNull(message), args), DefaultCode.FAIL);</b>
+<i>66</i>&nbsp;  }
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  /**
+<i>69</i>&nbsp;   * Constructs new object with OK status.
+<i>70</i>&nbsp;   *
+<i>71</i>&nbsp;   * @param result     result returned by the operation
+<i>72</i>&nbsp;   * @param statusCode code describing result of the operation
+<i>73</i>&nbsp;   */
+<i>74</i>&nbsp;  public static &lt;Code extends Enum, T&gt; OperationStatus&lt;T, Code&gt; success(T result, @Nonnull Code statusCode) {
+<b class="nc"><i>75</i>&nbsp;    return new OperationStatus&lt;&gt;(true, result, null, statusCode);</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  /**
+<i>79</i>&nbsp;   * Constructs new object with &lt;b&gt;not&lt;/b&gt; OK status.
+<i>80</i>&nbsp;   *
+<i>81</i>&nbsp;   * @param message   describing result of the operation
+<i>82</i>&nbsp;   * @param errorCode code describing result of the operation
+<i>83</i>&nbsp;   */
+<i>84</i>&nbsp;  public static &lt;Code extends Enum, T&gt; OperationStatus&lt;T, Code&gt; failure(@Nonnull String message, @Nonnull Code errorCode) {
+<b class="nc"><i>85</i>&nbsp;    return new OperationStatus&lt;&gt;(false, null, Preconditions.checkNotNull(message), errorCode);</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  /**
+<i>90</i>&nbsp;   * Constructs new object with the same fail details
+<i>91</i>&nbsp;   *
+<i>92</i>&nbsp;   * @param failStatus failed status which fail details should be copied
+<i>93</i>&nbsp;   */
+<i>94</i>&nbsp;  public static &lt;Code extends Enum, T&gt; OperationStatus&lt;T, Code&gt; failure(@Nonnull OperationStatus&lt;?, Code&gt; failStatus) {
+<b class="nc"><i>95</i>&nbsp;    Preconditions.checkNotNull(failStatus);</b>
+<b class="nc"><i>96</i>&nbsp;    Preconditions.checkArgument(!failStatus.isOk());</b>
+<b class="nc"><i>97</i>&nbsp;    return new OperationStatus&lt;&gt;(false, null, failStatus.getMessage(), failStatus.getResultCode());</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  /**
+<i>101</i>&nbsp;   * @return true if operation was successful
+<i>102</i>&nbsp;   */
+<i>103</i>&nbsp;  public boolean isOk() {
+<b class="nc"><i>104</i>&nbsp;    return myOk;</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  /**
+<i>108</i>&nbsp;   * @return result returned by the operation
+<i>109</i>&nbsp;   * @throws IllegalStateException if operation was not successful
+<i>110</i>&nbsp;   */
+<i>111</i>&nbsp;  public T get() {
+<b class="nc"><i>112</i>&nbsp;    Preconditions.checkState(myOk);</b>
+<b class="nc"><i>113</i>&nbsp;    return myOperationResult;</b>
+<i>114</i>&nbsp;  }
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;  /**
+<i>117</i>&nbsp;   * @return message describing result of the operation
+<i>118</i>&nbsp;   */
+<i>119</i>&nbsp;  @Nonnull
+<i>120</i>&nbsp;  public String getMessage() {
+<b class="nc"><i>121</i>&nbsp;    Preconditions.checkState(!myOk, &quot;Message available only for fail status&quot;);</b>
+<b class="nc"><i>122</i>&nbsp;    return myMessage;</b>
+<i>123</i>&nbsp;  }
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;  /**
+<i>126</i>&nbsp;   * @return code describing result of the operation (used for detecting what exactly went wrong)
+<i>127</i>&nbsp;   */
+<i>128</i>&nbsp;  public Code getResultCode() {
+<b class="nc"><i>129</i>&nbsp;    return myResultCode;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  @Override
+<i>133</i>&nbsp;  public String toString() {
+<b class="nc"><i>134</i>&nbsp;    return isOk() ? String.valueOf(getResultCode()) : String.format(&quot;%s: %s&quot;, getResultCode(), getMessage());</b>
+<i>135</i>&nbsp;  }
+<i>136</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

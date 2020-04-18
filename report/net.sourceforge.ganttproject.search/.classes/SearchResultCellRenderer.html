@@ -1,0 +1,140 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: SearchResultCellRenderer</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.search</a> ]
+</div>
+
+<h1>Coverage Summary for Class: SearchResultCellRenderer (net.sourceforge.ganttproject.search)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SearchResultCellRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o, Douglas Kelly
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>6</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>7</i>&nbsp;the Free Software Foundation, either version 3 of the License, or
+<i>8</i>&nbsp;(at your option) any later version.
+<i>9</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>10</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>11</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>12</i>&nbsp;GNU General Public License for more details.
+<i>13</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>14</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>15</i>&nbsp;*/
+<i>16</i>&nbsp;package net.sourceforge.ganttproject.search;
+<i>17</i>&nbsp;
+<i>18</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;import java.awt.Component;
+<i>21</i>&nbsp;import java.awt.Font;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import javax.swing.*;
+<i>24</i>&nbsp;
+<b class="nc"><i>25</i>&nbsp;public class SearchResultCellRenderer implements ListCellRenderer {</b>
+<i>26</i>&nbsp;
+<b class="nc"><i>27</i>&nbsp;  private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();</b>
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  @Override
+<i>30</i>&nbsp;  public Component getListCellRendererComponent(JList jList, Object searchResultObject, int index, boolean isSelected, boolean cellHasFocus) {
+<b class="nc"><i>31</i>&nbsp;    StringBuilder theText = new StringBuilder();</b>
+<b class="nc"><i>32</i>&nbsp;    theText.append(&quot;&lt;html&gt;&quot;);</b>
+<i>33</i>&nbsp;
+<b class="nc"><i>34</i>&nbsp;    JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(jList, searchResultObject, index,</b>
+<i>35</i>&nbsp;        isSelected, cellHasFocus);
+<i>36</i>&nbsp;
+<b class="nc"><i>37</i>&nbsp;    if (searchResultObject instanceof SearchResult) {</b>
+<b class="nc"><i>38</i>&nbsp;      SearchResult searchResult = (SearchResult) searchResultObject;</b>
+<b class="nc"><i>39</i>&nbsp;      String label = searchResult.getLabel();</b>
+<b class="nc"><i>40</i>&nbsp;      String searchTerm = searchResult.getQueryMatch();</b>
+<b class="nc"><i>41</i>&nbsp;      String boldedLabel = label.replaceAll(&quot;(?i)&quot; + searchTerm, &quot;&lt;b&gt;&lt;i&gt;$0&lt;/i&gt;&lt;/b&gt;&quot;);</b>
+<b class="nc"><i>42</i>&nbsp;      theText.append(GanttLanguage.getInstance().formatText(&quot;search.result.line1&quot;, searchResult.getTypeOfResult(), searchResult.getId(), boldedLabel));</b>
+<b class="nc"><i>43</i>&nbsp;      if (!searchResult.getSecondaryLabel().isEmpty()) {</b>
+<b class="nc"><i>44</i>&nbsp;        String secondaryText = searchResult.getSecondaryText();</b>
+<b class="nc"><i>45</i>&nbsp;        String boldedSecondaryText = secondaryText.replaceAll(&quot;(?i)&quot; + searchTerm, &quot;&lt;b&gt;&lt;i&gt;$0&lt;/i&gt;&lt;/b&gt;&quot;);</b>
+<b class="nc"><i>46</i>&nbsp;        theText.append(GanttLanguage.getInstance().formatText(&quot;search.result.line2&quot;, searchResult.getSecondaryLabel(), boldedSecondaryText));</b>
+<i>47</i>&nbsp;      }
+<b class="nc"><i>48</i>&nbsp;    } else {</b>
+<b class="nc"><i>49</i>&nbsp;      theText.append(searchResultObject.toString());</b>
+<i>50</i>&nbsp;    }
+<b class="nc"><i>51</i>&nbsp;    theText.append(&quot;&lt;/html&gt;&quot;);</b>
+<b class="nc"><i>52</i>&nbsp;    renderer.setText(theText.toString());</b>
+<b class="nc"><i>53</i>&nbsp;    renderer.setBorder(BorderFactory.createEmptyBorder(5, 3, 5, 3));</b>
+<b class="nc"><i>54</i>&nbsp;    renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));</b>
+<b class="nc"><i>55</i>&nbsp;    return renderer;</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

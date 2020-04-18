@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: IndentTargetFunctionFactory</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: IndentTargetFunctionFactory (net.sourceforge.ganttproject.action.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IndentTargetFunctionFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">IndentTargetFunctionFactory$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/ 10)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2012 GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Collection;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import com.google.common.base.Function;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * Creates functions resolving move target for indent operations. Function depends on the set of tasks being moved so
+<i>31</i>&nbsp; * it is different every time
+<i>32</i>&nbsp; *
+<i>33</i>&nbsp; * @author dbarashev
+<i>34</i>&nbsp; */
+<i>35</i>&nbsp;class IndentTargetFunctionFactory implements Function&lt;Collection&lt;Task&gt;, Function&lt;Task, Task&gt;&gt; {
+<i>36</i>&nbsp;  private final TaskManager myTaskManager;
+<b class="fc"><i>37</i>&nbsp;  IndentTargetFunctionFactory(TaskManager taskManager) {</b>
+<b class="fc"><i>38</i>&nbsp;    myTaskManager = taskManager;</b>
+<b class="fc"><i>39</i>&nbsp;  }</b>
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  @Override
+<i>42</i>&nbsp;  public Function&lt;Task, Task&gt; apply(final Collection&lt;Task&gt; indentRoots) {
+<b class="fc"><i>43</i>&nbsp;    return new Function&lt;Task, Task&gt;() {</b>
+<b class="fc"><i>44</i>&nbsp;      private final TaskContainmentHierarchyFacade myTaskHierarchy = myTaskManager.getTaskHierarchy();</b>
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;      @Override
+<i>47</i>&nbsp;      public Task apply(Task whatMove) {
+<b class="fc"><i>48</i>&nbsp;        Task moveTarget = whatMove;</b>
+<b class="fc"><i>49</i>&nbsp;        for (; moveTarget != null &amp;&amp; indentRoots.contains(moveTarget);</b>
+<b class="fc"><i>50</i>&nbsp;            moveTarget = myTaskHierarchy.getPreviousSibling(moveTarget));</b>
+<b class="fc"><i>51</i>&nbsp;        return moveTarget;</b>
+<i>52</i>&nbsp;      }
+<i>53</i>&nbsp;    };
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;};
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

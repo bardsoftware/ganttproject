@@ -1,0 +1,272 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: InterfaceOptionPageProvider</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.options</a> ]
+</div>
+
+<h1>Coverage Summary for Class: InterfaceOptionPageProvider (net.sourceforge.ganttproject.gui.options)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InterfaceOptionPageProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 57)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">InterfaceOptionPageProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 68)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.options;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.ChangeValueEvent;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.ChangeValueListener;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>24</i>&nbsp;import com.google.common.base.Joiner;
+<i>25</i>&nbsp;import com.google.common.base.Strings;
+<i>26</i>&nbsp;import com.google.common.collect.Lists;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.util.collect.Pair;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import javax.swing.*;
+<i>36</i>&nbsp;import java.awt.*;
+<i>37</i>&nbsp;import java.io.File;
+<i>38</i>&nbsp;import java.io.IOException;
+<i>39</i>&nbsp;import java.net.URISyntaxException;
+<i>40</i>&nbsp;import java.net.URL;
+<i>41</i>&nbsp;import java.nio.file.Files;
+<i>42</i>&nbsp;import java.text.DateFormat;
+<i>43</i>&nbsp;import java.util.Arrays;
+<i>44</i>&nbsp;import java.util.List;
+<i>45</i>&nbsp;import java.util.Locale;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;public class InterfaceOptionPageProvider extends OptionPageProviderBase {
+<i>48</i>&nbsp;  public static final String ID = &quot;ui.general&quot;;
+<i>49</i>&nbsp;  private JEditorPane myLabel;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public InterfaceOptionPageProvider() {
+<b class="nc"><i>52</i>&nbsp;    super(ID);</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  @Override
+<i>56</i>&nbsp;  public void init(IGanttProject project, final UIFacade uiFacade) {
+<b class="nc"><i>57</i>&nbsp;    super.init(project, uiFacade);</b>
+<b class="nc"><i>58</i>&nbsp;    uiFacade.getLanguageOption().addChangeValueListener(new ChangeValueListener() {</b>
+<i>59</i>&nbsp;      @Override
+<i>60</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>61</i>&nbsp;        Locale selectedLocale = uiFacade.getLanguageOption().getSelectedValue();</b>
+<b class="nc"><i>62</i>&nbsp;        if (selectedLocale != null &amp;&amp; &quot;gl&quot;.equals(selectedLocale.getLanguage().toLowerCase()) &amp;&amp; myLabel != null) {</b>
+<b class="nc"><i>63</i>&nbsp;          Pair&lt;Boolean, File&gt; localeTest = checkLocale(selectedLocale);</b>
+<b class="nc"><i>64</i>&nbsp;          if (!localeTest.first() &amp;&amp; localeTest.second() != null) {</b>
+<b class="nc"><i>65</i>&nbsp;            GanttLanguage i18n = GanttLanguage.getInstance();</b>
+<b class="nc"><i>66</i>&nbsp;            myLabel.setVisible(true);</b>
+<b class="nc"><i>67</i>&nbsp;            myLabel.setText(i18n.formatText(&quot;optionPage.ui.general.localeInstallText&quot;,</b>
+<b class="nc"><i>68</i>&nbsp;                i18n.getText(&quot;optionPage.ui.general.localeInstallUrl&quot;), localeTest.second().getAbsolutePath()));</b>
+<i>69</i>&nbsp;          }
+<b class="nc"><i>70</i>&nbsp;        } else if (myLabel != null &amp;&amp; myLabel.isVisible()) {</b>
+<b class="nc"><i>71</i>&nbsp;          myLabel.setVisible(false);</b>
+<i>72</i>&nbsp;        }
+<i>73</i>&nbsp;      }
+<i>74</i>&nbsp;    });
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  @Override
+<i>79</i>&nbsp;  public GPOptionGroup[] getOptionGroups() {
+<b class="nc"><i>80</i>&nbsp;    List&lt;GPOptionGroup&gt; groups = Lists.newArrayList();</b>
+<b class="nc"><i>81</i>&nbsp;    groups.addAll(Arrays.asList(getUiFacade().getOptions()));</b>
+<b class="nc"><i>82</i>&nbsp;    return groups.toArray(new GPOptionGroup[groups.size()]);</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  @Override
+<i>86</i>&nbsp;  public boolean hasCustomComponent() {
+<b class="nc"><i>87</i>&nbsp;    return true;</b>
+<i>88</i>&nbsp;  }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  @Override
+<i>91</i>&nbsp;  public Component buildPageComponent() {
+<b class="nc"><i>92</i>&nbsp;    OptionsPageBuilder builder = new OptionsPageBuilder();</b>
+<b class="nc"><i>93</i>&nbsp;    builder.setUiFacade(getUiFacade());</b>
+<b class="nc"><i>94</i>&nbsp;    Component component = builder.buildPage(getOptionGroups(), getPageID());</b>
+<b class="nc"><i>95</i>&nbsp;    myLabel = UIUtil.createHtmlPane(&quot;&quot;, NotificationManager.DEFAULT_HYPERLINK_LISTENER);</b>
+<b class="nc"><i>96</i>&nbsp;    myLabel.setBorder(BorderFactory.createEmptyBorder());</b>
+<b class="nc"><i>97</i>&nbsp;    myLabel.setVisible(false);</b>
+<i>98</i>&nbsp;
+<b class="nc"><i>99</i>&nbsp;    JPanel wrapper = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>100</i>&nbsp;    wrapper.add(component, BorderLayout.NORTH);</b>
+<b class="nc"><i>101</i>&nbsp;    wrapper.add(myLabel, BorderLayout.SOUTH);</b>
+<b class="nc"><i>102</i>&nbsp;    return wrapper;</b>
+<i>103</i>&nbsp;  }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  private static Pair&lt;Boolean, File&gt; checkLocale(Locale l) {
+<b class="nc"><i>106</i>&nbsp;    if (Arrays.asList(DateFormat.getAvailableLocales()).contains(l)) {</b>
+<b class="nc"><i>107</i>&nbsp;      return Pair.create(Boolean.TRUE, null);</b>
+<i>108</i>&nbsp;    }
+<b class="nc"><i>109</i>&nbsp;    File extDir = getExtDir();</b>
+<b class="nc"><i>110</i>&nbsp;    if (!extDir.exists()) {</b>
+<b class="nc"><i>111</i>&nbsp;      return Pair.create(Boolean.FALSE, null);</b>
+<i>112</i>&nbsp;    }
+<b class="nc"><i>113</i>&nbsp;    if (!extDir.isDirectory()) {</b>
+<b class="nc"><i>114</i>&nbsp;      return Pair.create(Boolean.FALSE, null);</b>
+<i>115</i>&nbsp;    }
+<b class="nc"><i>116</i>&nbsp;    if (extDir.canWrite()) {</b>
+<b class="nc"><i>117</i>&nbsp;      GPLogger.logToLogger(&quot;Java extensions directory &quot; + extDir + &quot; is writable&quot;);</b>
+<b class="nc"><i>118</i>&nbsp;      URL libUrl = InterfaceOptionPageProvider.class.getResource(&quot;lib&quot;);</b>
+<b class="nc"><i>119</i>&nbsp;      if (libUrl != null) {</b>
+<i>120</i>&nbsp;        try {
+<b class="nc"><i>121</i>&nbsp;          File galicianLocaleJar = new File(new File(libUrl.toURI()), &quot;javagalician.jar&quot;);</b>
+<b class="nc"><i>122</i>&nbsp;          File targetJar = new File(extDir, galicianLocaleJar.getName());</b>
+<b class="nc"><i>123</i>&nbsp;          GPLogger.logToLogger(&quot;Locale extension &quot; + galicianLocaleJar);</b>
+<b class="nc"><i>124</i>&nbsp;          if (galicianLocaleJar.exists() &amp;&amp; !targetJar.exists()) {</b>
+<b class="nc"><i>125</i>&nbsp;            GPLogger.logToLogger(&quot;Exists. Installing now&quot;);</b>
+<b class="nc"><i>126</i>&nbsp;            Files.copy(galicianLocaleJar.toPath(), extDir.toPath());</b>
+<b class="nc"><i>127</i>&nbsp;            return Pair.create(Boolean.TRUE, extDir);</b>
+<i>128</i>&nbsp;          }
+<b class="nc"><i>129</i>&nbsp;        } catch (IOException e) {</b>
+<b class="nc"><i>130</i>&nbsp;          GPLogger.log(e);</b>
+<b class="nc"><i>131</i>&nbsp;        } catch (URISyntaxException e) {</b>
+<b class="nc"><i>132</i>&nbsp;          GPLogger.log(e);</b>
+<b class="nc"><i>133</i>&nbsp;        }</b>
+<i>134</i>&nbsp;      }
+<b class="nc"><i>135</i>&nbsp;      return Pair.create(Boolean.FALSE, extDir);</b>
+<i>136</i>&nbsp;    } else {
+<b class="nc"><i>137</i>&nbsp;      GPLogger.logToLogger(&quot;Java extensions directory &quot; + extDir + &quot; is not writable&quot;);</b>
+<i>138</i>&nbsp;    }
+<b class="nc"><i>139</i>&nbsp;    return Pair.create(Boolean.FALSE, extDir);</b>
+<i>140</i>&nbsp;  }
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  private static File getExtDir() {
+<b class="nc"><i>143</i>&nbsp;    File fallback = new File(System.getProperty(&quot;java.home&quot;), Joiner.on(File.separatorChar).join(&quot;lib&quot;, &quot;ext&quot;));</b>
+<b class="nc"><i>144</i>&nbsp;    String extDirsProperty = System.getProperty(&quot;java.ext.dirs&quot;);</b>
+<b class="nc"><i>145</i>&nbsp;    if (Strings.isNullOrEmpty(extDirsProperty)) {</b>
+<b class="nc"><i>146</i>&nbsp;      return fallback;</b>
+<i>147</i>&nbsp;    }
+<b class="nc"><i>148</i>&nbsp;    for (String s : extDirsProperty.split(File.pathSeparator)) {</b>
+<b class="nc"><i>149</i>&nbsp;      File file = new File(s);</b>
+<b class="nc"><i>150</i>&nbsp;      if (!file.exists()) {</b>
+<b class="nc"><i>151</i>&nbsp;        continue;</b>
+<i>152</i>&nbsp;      }
+<b class="nc"><i>153</i>&nbsp;      if (!file.isDirectory()) {</b>
+<b class="nc"><i>154</i>&nbsp;        continue;</b>
+<i>155</i>&nbsp;      }
+<b class="nc"><i>156</i>&nbsp;      if (file.canWrite()) {</b>
+<b class="nc"><i>157</i>&nbsp;        return file;</b>
+<i>158</i>&nbsp;      }
+<b class="nc"><i>159</i>&nbsp;      fallback = file;</b>
+<i>160</i>&nbsp;    }
+<b class="nc"><i>161</i>&nbsp;    return fallback;</b>
+<i>162</i>&nbsp;  }
+<i>163</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

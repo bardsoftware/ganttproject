@@ -1,0 +1,142 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: NotificationItem</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: NotificationItem (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NotificationItem</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import javax.swing.event.HyperlinkListener;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;public class NotificationItem {
+<i>24</i>&nbsp;  final String myTitle;
+<i>25</i>&nbsp;  final String myBody;
+<i>26</i>&nbsp;  final HyperlinkListener myHyperlinkListener;
+<i>27</i>&nbsp;  boolean isRead;
+<i>28</i>&nbsp;
+<b class="nc"><i>29</i>&nbsp;  public NotificationItem(String title, String body, HyperlinkListener hyperlinkListener) {</b>
+<b class="nc"><i>30</i>&nbsp;    myTitle = title == null ? &quot;&quot; : title;</b>
+<b class="nc"><i>31</i>&nbsp;    myBody = body == null ? &quot;&quot; : body;</b>
+<b class="nc"><i>32</i>&nbsp;    myHyperlinkListener = hyperlinkListener;</b>
+<i>33</i>&nbsp;  }
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  public boolean isRead() {
+<b class="nc"><i>36</i>&nbsp;    return isRead;</b>
+<i>37</i>&nbsp;  }
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  void setRead(boolean b) {
+<b class="nc"><i>40</i>&nbsp;    isRead = b;</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  @Override
+<i>44</i>&nbsp;  public boolean equals(Object obj) {
+<b class="nc"><i>45</i>&nbsp;    if (obj == this) {</b>
+<b class="nc"><i>46</i>&nbsp;      return true;</b>
+<i>47</i>&nbsp;    }
+<b class="nc"><i>48</i>&nbsp;    if (obj instanceof NotificationItem) {</b>
+<b class="nc"><i>49</i>&nbsp;      NotificationItem that = (NotificationItem) obj;</b>
+<b class="nc"><i>50</i>&nbsp;      return myTitle.equals(that.myTitle) &amp;&amp; myBody.equals(that.myBody);</b>
+<i>51</i>&nbsp;    }
+<b class="nc"><i>52</i>&nbsp;    return false;</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  @Override
+<i>56</i>&nbsp;  public int hashCode() {
+<b class="nc"><i>57</i>&nbsp;    return myBody.hashCode();</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

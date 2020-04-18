@@ -1,0 +1,132 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ImportCalendarOption</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.calendar</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ImportCalendarOption (biz.ganttproject.core.calendar)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ImportCalendarOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ImportCalendarOption$Values</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package biz.ganttproject.core.calendar;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;public class ImportCalendarOption extends DefaultEnumerationOption&lt;ImportCalendarOption.Values&gt; {
+<b class="nc"><i>6</i>&nbsp;  public static enum Values {</b>
+<b class="nc"><i>7</i>&nbsp;    NO, REPLACE, MERGE;</b>
+<i>8</i>&nbsp;
+<i>9</i>&nbsp;    @Override
+<i>10</i>&nbsp;    public String toString() {
+<b class="nc"><i>11</i>&nbsp;      return &quot;importCalendar_&quot; + name().toLowerCase();</b>
+<i>12</i>&nbsp;    }
+<i>13</i>&nbsp;  }
+<i>14</i>&nbsp;  
+<i>15</i>&nbsp;  public ImportCalendarOption() {
+<b class="nc"><i>16</i>&nbsp;    super(&quot;impex.importCalendar&quot;, Values.values());</b>
+<i>17</i>&nbsp;  }
+<i>18</i>&nbsp;  
+<i>19</i>&nbsp;  public ImportCalendarOption(Values initialValue) {
+<b class="nc"><i>20</i>&nbsp;    super(&quot;impex.importCalendar&quot;, Values.values());</b>
+<b class="nc"><i>21</i>&nbsp;    setSelectedValue(initialValue);</b>
+<i>22</i>&nbsp;  }
+<i>23</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

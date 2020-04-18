@@ -1,0 +1,318 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: SpringUtilities</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.options</a> ]
+</div>
+
+<h1>Coverage Summary for Class: SpringUtilities (net.sourceforge.ganttproject.gui.options)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpringUtilities</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 70)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SpringUtilities$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 72)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.options;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Component;
+<i>22</i>&nbsp;import java.awt.Container;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import javax.swing.Spring;
+<i>25</i>&nbsp;import javax.swing.SpringLayout;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import com.google.common.base.Function;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * A 1.4 file that provides utility methods for creating form- or grid-style
+<i>31</i>&nbsp; * layouts with SpringLayout. These utilities are used by several programs, such
+<i>32</i>&nbsp; * as SpringBox and SpringCompactGrid.
+<i>33</i>&nbsp; */
+<b class="nc"><i>34</i>&nbsp;public class SpringUtilities {</b>
+<i>35</i>&nbsp;  /**
+<i>36</i>&nbsp;   * A debugging utility that prints to stdout the component&#39;s minimum,
+<i>37</i>&nbsp;   * preferred, and maximum sizes.
+<i>38</i>&nbsp;   */
+<i>39</i>&nbsp;  public static void printSizes(Component c) {
+<b class="nc"><i>40</i>&nbsp;    System.out.println(&quot;minimumSize = &quot; + c.getMinimumSize());</b>
+<b class="nc"><i>41</i>&nbsp;    System.out.println(&quot;preferredSize = &quot; + c.getPreferredSize());</b>
+<b class="nc"><i>42</i>&nbsp;    System.out.println(&quot;maximumSize = &quot; + c.getMaximumSize());</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  /**
+<i>46</i>&nbsp;   * Aligns the first &lt;code&gt;rows&lt;/code&gt; * &lt;code&gt;cols&lt;/code&gt; components of
+<i>47</i>&nbsp;   * &lt;code&gt;parent&lt;/code&gt; in a grid. Each component is as big as the maximum
+<i>48</i>&nbsp;   * preferred width and height of the components. The parent is made just big
+<i>49</i>&nbsp;   * enough to fit them all.
+<i>50</i>&nbsp;   *
+<i>51</i>&nbsp;   * @param rows
+<i>52</i>&nbsp;   *          number of rows
+<i>53</i>&nbsp;   * @param cols
+<i>54</i>&nbsp;   *          number of columns
+<i>55</i>&nbsp;   * @param initialX
+<i>56</i>&nbsp;   *          x location to start the grid at
+<i>57</i>&nbsp;   * @param initialY
+<i>58</i>&nbsp;   *          y location to start the grid at
+<i>59</i>&nbsp;   * @param xPad
+<i>60</i>&nbsp;   *          x padding between cells
+<i>61</i>&nbsp;   * @param yPad
+<i>62</i>&nbsp;   *          y padding between cells
+<i>63</i>&nbsp;   */
+<i>64</i>&nbsp;  public static void makeGrid(Container parent, int rows, int cols, int initialX, int initialY, int xPad, int yPad) {
+<i>65</i>&nbsp;    SpringLayout layout;
+<i>66</i>&nbsp;    try {
+<b class="nc"><i>67</i>&nbsp;      layout = (SpringLayout) parent.getLayout();</b>
+<b class="nc"><i>68</i>&nbsp;    } catch (ClassCastException exc) {</b>
+<b class="nc"><i>69</i>&nbsp;      System.err.println(&quot;The first argument to makeGrid must use SpringLayout.&quot;);</b>
+<i>70</i>&nbsp;      return;
+<b class="nc"><i>71</i>&nbsp;    }</b>
+<i>72</i>&nbsp;
+<b class="nc"><i>73</i>&nbsp;    Spring xPadSpring = Spring.constant(xPad);</b>
+<b class="nc"><i>74</i>&nbsp;    Spring yPadSpring = Spring.constant(yPad);</b>
+<b class="nc"><i>75</i>&nbsp;    Spring initialXSpring = Spring.constant(initialX);</b>
+<b class="nc"><i>76</i>&nbsp;    Spring initialYSpring = Spring.constant(initialY);</b>
+<b class="nc"><i>77</i>&nbsp;    int max = rows * cols;</b>
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;    // Calculate Springs that are the max of the width/height so that all
+<i>80</i>&nbsp;    // cells have the same size.
+<b class="nc"><i>81</i>&nbsp;    Spring maxWidthSpring = layout.getConstraints(parent.getComponent(0)).getWidth();</b>
+<b class="nc"><i>82</i>&nbsp;    Spring maxHeightSpring = layout.getConstraints(parent.getComponent(0)).getWidth();</b>
+<b class="nc"><i>83</i>&nbsp;    for (int i = 1; i &lt; max; i++) {</b>
+<b class="nc"><i>84</i>&nbsp;      SpringLayout.Constraints cons = layout.getConstraints(parent.getComponent(i));</b>
+<i>85</i>&nbsp;
+<b class="nc"><i>86</i>&nbsp;      maxWidthSpring = Spring.max(maxWidthSpring, cons.getWidth());</b>
+<b class="nc"><i>87</i>&nbsp;      maxHeightSpring = Spring.max(maxHeightSpring, cons.getHeight());</b>
+<i>88</i>&nbsp;    }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;    // Apply the new width/height Spring. This forces all the
+<i>91</i>&nbsp;    // components to have the same size.
+<b class="nc"><i>92</i>&nbsp;    for (int i = 0; i &lt; max; i++) {</b>
+<b class="nc"><i>93</i>&nbsp;      SpringLayout.Constraints cons = layout.getConstraints(parent.getComponent(i));</b>
+<i>94</i>&nbsp;
+<b class="nc"><i>95</i>&nbsp;      cons.setWidth(maxWidthSpring);</b>
+<b class="nc"><i>96</i>&nbsp;      cons.setHeight(maxHeightSpring);</b>
+<i>97</i>&nbsp;    }
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;    // Then adjust the x/y constraints of all the cells so that they
+<i>100</i>&nbsp;    // are aligned in a grid.
+<b class="nc"><i>101</i>&nbsp;    SpringLayout.Constraints lastCons = null;</b>
+<b class="nc"><i>102</i>&nbsp;    SpringLayout.Constraints lastRowCons = null;</b>
+<b class="nc"><i>103</i>&nbsp;    for (int i = 0; i &lt; max; i++) {</b>
+<b class="nc"><i>104</i>&nbsp;      SpringLayout.Constraints cons = layout.getConstraints(parent.getComponent(i));</b>
+<b class="nc"><i>105</i>&nbsp;      if (i % cols == 0) { // start of new row</b>
+<b class="nc"><i>106</i>&nbsp;        lastRowCons = lastCons;</b>
+<b class="nc"><i>107</i>&nbsp;        cons.setX(initialXSpring);</b>
+<i>108</i>&nbsp;      } else { // x position depends on previous component
+<b class="nc"><i>109</i>&nbsp;        cons.setX(Spring.sum(lastCons.getConstraint(SpringLayout.EAST), xPadSpring));</b>
+<i>110</i>&nbsp;      }
+<i>111</i>&nbsp;
+<b class="nc"><i>112</i>&nbsp;      if (i / cols == 0) { // first row</b>
+<b class="nc"><i>113</i>&nbsp;        cons.setY(initialYSpring);</b>
+<i>114</i>&nbsp;      } else { // y position depends on previous row
+<b class="nc"><i>115</i>&nbsp;        cons.setY(Spring.sum(lastRowCons.getConstraint(SpringLayout.SOUTH), yPadSpring));</b>
+<i>116</i>&nbsp;      }
+<b class="nc"><i>117</i>&nbsp;      lastCons = cons;</b>
+<i>118</i>&nbsp;    }
+<i>119</i>&nbsp;
+<i>120</i>&nbsp;    // Set the parent&#39;s size.
+<b class="nc"><i>121</i>&nbsp;    SpringLayout.Constraints pCons = layout.getConstraints(parent);</b>
+<b class="nc"><i>122</i>&nbsp;    pCons.setConstraint(SpringLayout.SOUTH,</b>
+<b class="nc"><i>123</i>&nbsp;        Spring.sum(Spring.constant(yPad), lastCons.getConstraint(SpringLayout.SOUTH)));</b>
+<b class="nc"><i>124</i>&nbsp;    pCons.setConstraint(SpringLayout.EAST, Spring.sum(Spring.constant(xPad), lastCons.getConstraint(SpringLayout.EAST)));</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  /* Used by makeCompactGrid. */
+<i>128</i>&nbsp;  private static SpringLayout.Constraints getConstraintsForCell(int row, int col, Container parent, int cols) {
+<b class="nc"><i>129</i>&nbsp;    SpringLayout layout = (SpringLayout) parent.getLayout();</b>
+<b class="nc"><i>130</i>&nbsp;    Component c = parent.getComponent(row * cols + col);</b>
+<b class="nc"><i>131</i>&nbsp;    return layout.getConstraints(c);</b>
+<i>132</i>&nbsp;  }
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  /**
+<i>135</i>&nbsp;   * Aligns the first &lt;code&gt;rows&lt;/code&gt; * &lt;code&gt;cols&lt;/code&gt; components of
+<i>136</i>&nbsp;   * &lt;code&gt;parent&lt;/code&gt; in a grid. Each component in a column is as wide as the
+<i>137</i>&nbsp;   * maximum preferred width of the components in that column; height is
+<i>138</i>&nbsp;   * similarly determined for each row. The parent is made just big enough to
+<i>139</i>&nbsp;   * fit them all.
+<i>140</i>&nbsp;   *
+<i>141</i>&nbsp;   * @param rows
+<i>142</i>&nbsp;   *          number of rows
+<i>143</i>&nbsp;   * @param cols
+<i>144</i>&nbsp;   *          number of columns
+<i>145</i>&nbsp;   * @param initialX
+<i>146</i>&nbsp;   *          x location to start the grid at
+<i>147</i>&nbsp;   * @param initialY
+<i>148</i>&nbsp;   *          y location to start the grid at
+<i>149</i>&nbsp;   * @param xPad
+<i>150</i>&nbsp;   *          x padding between cells
+<i>151</i>&nbsp;   * @param yPad
+<i>152</i>&nbsp;   *          y padding between cells
+<i>153</i>&nbsp;   */
+<i>154</i>&nbsp;  public static void makeCompactGrid(Container parent, int rows, int cols, int initialX, int initialY, int xPad,
+<i>155</i>&nbsp;      final int yPad) {
+<b class="nc"><i>156</i>&nbsp;    makeCompactGrid(parent, rows, cols, initialX, initialY, xPad, new Function&lt;Integer, Integer&gt;() {</b>
+<i>157</i>&nbsp;      @Override
+<i>158</i>&nbsp;      public Integer apply(Integer input) {
+<b class="nc"><i>159</i>&nbsp;        return yPad;</b>
+<i>160</i>&nbsp;      }
+<i>161</i>&nbsp;    });
+<i>162</i>&nbsp;  }
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;  public static void makeCompactGrid(Container parent, int rows, int cols, int initialX, int initialY, int xPad,
+<i>165</i>&nbsp;      Function&lt;Integer, Integer&gt; getYpad) {
+<i>166</i>&nbsp;    SpringLayout layout;
+<i>167</i>&nbsp;    try {
+<b class="nc"><i>168</i>&nbsp;      layout = (SpringLayout) parent.getLayout();</b>
+<b class="nc"><i>169</i>&nbsp;    } catch (ClassCastException exc) {</b>
+<b class="nc"><i>170</i>&nbsp;      System.err.println(&quot;The first argument to makeCompactGrid must use SpringLayout.&quot;);</b>
+<i>171</i>&nbsp;      return;
+<b class="nc"><i>172</i>&nbsp;    }</b>
+<i>173</i>&nbsp;
+<i>174</i>&nbsp;    // Align all cells in each column and make them the same width.
+<b class="nc"><i>175</i>&nbsp;    Spring x = Spring.constant(initialX);</b>
+<b class="nc"><i>176</i>&nbsp;    for (int c = 0; c &lt; cols; c++) {</b>
+<b class="nc"><i>177</i>&nbsp;      Spring width = Spring.constant(0);</b>
+<b class="nc"><i>178</i>&nbsp;      for (int r = 0; r &lt; rows; r++) {</b>
+<b class="nc"><i>179</i>&nbsp;        width = Spring.max(width, getConstraintsForCell(r, c, parent, cols).getWidth());</b>
+<i>180</i>&nbsp;      }
+<b class="nc"><i>181</i>&nbsp;      for (int r = 0; r &lt; rows; r++) {</b>
+<b class="nc"><i>182</i>&nbsp;        SpringLayout.Constraints constraints = getConstraintsForCell(r, c, parent, cols);</b>
+<b class="nc"><i>183</i>&nbsp;        constraints.setX(x);</b>
+<b class="nc"><i>184</i>&nbsp;        constraints.setWidth(width);</b>
+<i>185</i>&nbsp;      }
+<b class="nc"><i>186</i>&nbsp;      x = Spring.sum(x, Spring.sum(width, Spring.constant(xPad)));</b>
+<i>187</i>&nbsp;    }
+<i>188</i>&nbsp;
+<i>189</i>&nbsp;    // Align all cells in each row and make them the same height.
+<b class="nc"><i>190</i>&nbsp;    Spring y = Spring.constant(initialY);</b>
+<b class="nc"><i>191</i>&nbsp;    for (int r = 0; r &lt; rows; r++) {</b>
+<b class="nc"><i>192</i>&nbsp;      Spring height = Spring.constant(0);</b>
+<b class="nc"><i>193</i>&nbsp;      for (int c = 0; c &lt; cols; c++) {</b>
+<b class="nc"><i>194</i>&nbsp;        height = Spring.max(height, getConstraintsForCell(r, c, parent, cols).getHeight());</b>
+<i>195</i>&nbsp;      }
+<b class="nc"><i>196</i>&nbsp;      for (int c = 0; c &lt; cols; c++) {</b>
+<b class="nc"><i>197</i>&nbsp;        SpringLayout.Constraints constraints = getConstraintsForCell(r, c, parent, cols);</b>
+<b class="nc"><i>198</i>&nbsp;        constraints.setY(y);</b>
+<b class="nc"><i>199</i>&nbsp;        constraints.setHeight(height);</b>
+<i>200</i>&nbsp;      }
+<b class="nc"><i>201</i>&nbsp;      y = Spring.sum(y, Spring.sum(height, Spring.constant(getYpad.apply(r))));</b>
+<i>202</i>&nbsp;    }
+<i>203</i>&nbsp;
+<i>204</i>&nbsp;    // Set the parent&#39;s size.
+<b class="nc"><i>205</i>&nbsp;    SpringLayout.Constraints pCons = layout.getConstraints(parent);</b>
+<b class="nc"><i>206</i>&nbsp;    pCons.setConstraint(SpringLayout.SOUTH, y);</b>
+<b class="nc"><i>207</i>&nbsp;    pCons.setConstraint(SpringLayout.EAST, x);</b>
+<i>208</i>&nbsp;  }
+<i>209</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

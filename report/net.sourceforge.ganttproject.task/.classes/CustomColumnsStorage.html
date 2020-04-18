@@ -1,0 +1,235 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CustomColumnsStorage</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CustomColumnsStorage (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomColumnsStorage</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.9%
+  </span>
+  <span class="absValue">
+    (9/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65.6%
+  </span>
+  <span class="absValue">
+    (40/ 61)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 Benoit Baranne, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Objects;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyListener;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import java.util.ArrayList;
+<i>28</i>&nbsp;import java.util.Collection;
+<i>29</i>&nbsp;import java.util.HashMap;
+<i>30</i>&nbsp;import java.util.Iterator;
+<i>31</i>&nbsp;import java.util.LinkedHashMap;
+<i>32</i>&nbsp;import java.util.List;
+<i>33</i>&nbsp;import java.util.Map;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * TODO Remove the map Name-&gt;customColum to keep only the map Id -&gt; CustomColumn
+<i>37</i>&nbsp; * This class stores the CustomColumns.
+<i>38</i>&nbsp; *
+<i>39</i>&nbsp; * @author bbaranne (Benoit Baranne) Mar 2, 2005
+<i>40</i>&nbsp; */
+<b class="fc"><i>41</i>&nbsp;public class CustomColumnsStorage {</b>
+<b class="fc"><i>42</i>&nbsp;  public static GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  private static int nextId;
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  private final static String ID_PREFIX = &quot;tpc&quot;;
+<b class="fc"><i>47</i>&nbsp;  private final List&lt;CustomPropertyListener&gt; myListeners = new ArrayList&lt;CustomPropertyListener&gt;();</b>
+<b class="fc"><i>48</i>&nbsp;  private final Map&lt;String, CustomColumn&gt; mapIdCustomColum = new LinkedHashMap&lt;String, CustomColumn&gt;();</b>
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  private final CustomColumnsManager myManager;
+<i>51</i>&nbsp;
+<b class="fc"><i>52</i>&nbsp;  CustomColumnsStorage(CustomColumnsManager manager) {</b>
+<b class="fc"><i>53</i>&nbsp;    myManager = manager;</b>
+<b class="fc"><i>54</i>&nbsp;  }</b>
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  String createId() {
+<i>57</i>&nbsp;    while (true) {
+<b class="fc"><i>58</i>&nbsp;      String id = ID_PREFIX + nextId++;</b>
+<b class="fc"><i>59</i>&nbsp;      if (!mapIdCustomColum.containsKey(id)) {</b>
+<b class="fc"><i>60</i>&nbsp;        return id;</b>
+<i>61</i>&nbsp;      }
+<b class="nc"><i>62</i>&nbsp;    }</b>
+<i>63</i>&nbsp;  }
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  public void reset() {
+<b class="nc"><i>66</i>&nbsp;    mapIdCustomColum.clear();</b>
+<b class="nc"><i>67</i>&nbsp;    nextId = 0;</b>
+<b class="nc"><i>68</i>&nbsp;  }</b>
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  public static void changeLanguage(GanttLanguage lang) {
+<b class="nc"><i>71</i>&nbsp;    language = lang;</b>
+<b class="nc"><i>72</i>&nbsp;  }</b>
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  public void addCustomColumn(CustomColumn col) {
+<b class="fc"><i>75</i>&nbsp;    assert !mapIdCustomColum.containsKey(col.getID()) : &quot;column with id =&quot; + col.getID()</b>
+<b class="nc"><i>76</i>&nbsp;        + &quot; already exists. All existing columns:\n&quot; + getCustomColums();</b>
+<b class="fc"><i>77</i>&nbsp;    mapIdCustomColum.put(col.getID(), col);</b>
+<b class="fc"><i>78</i>&nbsp;    CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, col);</b>
+<b class="fc"><i>79</i>&nbsp;    fireCustomColumnsChange(event);</b>
+<b class="fc"><i>80</i>&nbsp;  }</b>
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  public void removeCustomColumn(CustomPropertyDefinition column) {
+<b class="nc"><i>83</i>&nbsp;    CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);</b>
+<b class="nc"><i>84</i>&nbsp;    fireCustomColumnsChange(event);</b>
+<b class="nc"><i>85</i>&nbsp;    mapIdCustomColum.remove(column.getID());</b>
+<b class="nc"><i>86</i>&nbsp;  }</b>
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  public int getCustomColumnCount() {
+<b class="nc"><i>89</i>&nbsp;    return mapIdCustomColum.size();</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  public Collection&lt;CustomColumn&gt; getCustomColums() {
+<b class="fc"><i>93</i>&nbsp;    return mapIdCustomColum.values();</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  public CustomColumn getCustomColumnByID(String id) {
+<b class="nc"><i>97</i>&nbsp;    return mapIdCustomColum.get(id);</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  @Override
+<i>101</i>&nbsp;  public String toString() {
+<b class="nc"><i>102</i>&nbsp;    return mapIdCustomColum.toString();</b>
+<i>103</i>&nbsp;  }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  public Map&lt;CustomPropertyDefinition, CustomPropertyDefinition&gt; importData(CustomColumnsStorage source) {
+<b class="fc"><i>106</i>&nbsp;    Map&lt;CustomPropertyDefinition, CustomPropertyDefinition&gt; result = new HashMap&lt;CustomPropertyDefinition, CustomPropertyDefinition&gt;();</b>
+<b class="fc"><i>107</i>&nbsp;    for (CustomColumn thatColumn : source.getCustomColums()) {</b>
+<b class="fc"><i>108</i>&nbsp;      CustomColumn thisColumn = findByName(thatColumn.getName());</b>
+<b class="fc"><i>109</i>&nbsp;      if (thisColumn == null || !thisColumn.getPropertyClass().equals(thatColumn.getPropertyClass())) {</b>
+<b class="fc"><i>110</i>&nbsp;        thisColumn = new CustomColumn(myManager, thatColumn.getName(), thatColumn.getPropertyClass(), thatColumn.getDefaultValue());</b>
+<b class="fc"><i>111</i>&nbsp;        thisColumn.setId(createId());</b>
+<b class="fc"><i>112</i>&nbsp;        thisColumn.getAttributes().putAll(thatColumn.getAttributes());</b>
+<b class="fc"><i>113</i>&nbsp;        addCustomColumn(thisColumn);</b>
+<i>114</i>&nbsp;      }
+<b class="fc"><i>115</i>&nbsp;      result.put(thatColumn, thisColumn);</b>
+<b class="fc"><i>116</i>&nbsp;    }</b>
+<b class="fc"><i>117</i>&nbsp;    return result;</b>
+<i>118</i>&nbsp;  }
+<i>119</i>&nbsp;
+<i>120</i>&nbsp;  private CustomColumn findByName(String name) {
+<b class="fc"><i>121</i>&nbsp;    for (CustomColumn cc : mapIdCustomColum.values()) {</b>
+<b class="fc"><i>122</i>&nbsp;      if (Objects.equal(cc.getName(), name)) {</b>
+<b class="fc"><i>123</i>&nbsp;        return cc;</b>
+<i>124</i>&nbsp;      }
+<b class="fc"><i>125</i>&nbsp;    }</b>
+<b class="fc"><i>126</i>&nbsp;    return null;</b>
+<i>127</i>&nbsp;  }
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;  public void addCustomColumnsListener(CustomPropertyListener listener) {
+<b class="fc"><i>130</i>&nbsp;    myListeners.add(listener);</b>
+<b class="fc"><i>131</i>&nbsp;  }</b>
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  private void fireCustomColumnsChange(CustomPropertyEvent event) {
+<b class="fc"><i>134</i>&nbsp;    Iterator&lt;CustomPropertyListener&gt; it = myListeners.iterator();</b>
+<b class="fc"><i>135</i>&nbsp;    while (it.hasNext()) {</b>
+<b class="fc"><i>136</i>&nbsp;      CustomPropertyListener listener = it.next();</b>
+<b class="fc"><i>137</i>&nbsp;      listener.customPropertyChange(event);</b>
+<b class="fc"><i>138</i>&nbsp;    }</b>
+<b class="fc"><i>139</i>&nbsp;  }</b>
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;  void fireDefinitionChanged(int event, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
+<b class="nc"><i>142</i>&nbsp;    CustomPropertyEvent e = new CustomPropertyEvent(event, def, oldDef);</b>
+<b class="nc"><i>143</i>&nbsp;    fireCustomColumnsChange(e);</b>
+<b class="nc"><i>144</i>&nbsp;  }</b>
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
+<b class="nc"><i>147</i>&nbsp;    CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);</b>
+<b class="nc"><i>148</i>&nbsp;    CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);</b>
+<b class="nc"><i>149</i>&nbsp;    fireCustomColumnsChange(e);</b>
+<b class="nc"><i>150</i>&nbsp;  }</b>
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

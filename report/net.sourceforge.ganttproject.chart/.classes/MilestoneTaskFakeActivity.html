@@ -1,0 +1,178 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: MilestoneTaskFakeActivity</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: MilestoneTaskFakeActivity (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MilestoneTaskFakeActivity</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (5/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.6%
+  </span>
+  <span class="absValue">
+    (10/ 19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.TaskActivity;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;public class MilestoneTaskFakeActivity implements TaskActivity {
+<i>28</i>&nbsp;  private final Task myTask;
+<i>29</i>&nbsp;  private final Date myStartTime;
+<i>30</i>&nbsp;  private final Date myEndTime;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  public MilestoneTaskFakeActivity(Task task) {
+<b class="fc"><i>33</i>&nbsp;    this(task, task.getStart().getTime(), task.getEnd().getTime());</b>
+<b class="fc"><i>34</i>&nbsp;  }</b>
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;  public MilestoneTaskFakeActivity(Task task, Date startTime, Date endTime) {</b>
+<b class="fc"><i>37</i>&nbsp;    myTask = task;</b>
+<b class="fc"><i>38</i>&nbsp;    myStartTime = startTime;</b>
+<b class="fc"><i>39</i>&nbsp;    myEndTime = endTime;</b>
+<b class="fc"><i>40</i>&nbsp;  }</b>
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  @Override
+<i>43</i>&nbsp;  public TimeDuration getDuration() {
+<b class="nc"><i>44</i>&nbsp;    return myTask.getManager().createLength(1);</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public Date getEnd() {
+<b class="fc"><i>49</i>&nbsp;    return myEndTime;</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  @Override
+<i>53</i>&nbsp;  public float getIntensity() {
+<b class="fc"><i>54</i>&nbsp;    return 1;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  @Override
+<i>58</i>&nbsp;  public Date getStart() {
+<b class="fc"><i>59</i>&nbsp;    return myStartTime;</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  @Override
+<i>63</i>&nbsp;  public Task getOwner() {
+<b class="nc"><i>64</i>&nbsp;    return myTask;</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public boolean isFirst() {
+<b class="nc"><i>69</i>&nbsp;    return true;</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  public boolean isLast() {
+<b class="nc"><i>74</i>&nbsp;    return true;</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  @Override
+<i>78</i>&nbsp;  public String toString() {
+<b class="nc"><i>79</i>&nbsp;    return &quot;Milestone activity [&quot; + getStart() + &quot;-&quot; + getEnd() + &quot;]&quot;;</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  @Override
+<i>83</i>&nbsp;  public boolean equals(Object obj) {
+<b class="nc"><i>84</i>&nbsp;    if (obj instanceof MilestoneTaskFakeActivity) {</b>
+<b class="nc"><i>85</i>&nbsp;      return ((MilestoneTaskFakeActivity) obj).myTask.equals(myTask);</b>
+<i>86</i>&nbsp;    }
+<b class="nc"><i>87</i>&nbsp;    return false;</b>
+<i>88</i>&nbsp;  }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  @Override
+<i>91</i>&nbsp;  public int hashCode() {
+<b class="nc"><i>92</i>&nbsp;    return myTask.hashCode();</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

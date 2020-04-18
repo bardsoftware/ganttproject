@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DependencyInteractionRenderer</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DependencyInteractionRenderer (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DependencyInteractionRenderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;import java.awt.Graphics;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/** Draw arrow between two points */
+<i>25</i>&nbsp;public class DependencyInteractionRenderer {
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;  private int x1, x2, y1, y2;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  private boolean draw;
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;  public DependencyInteractionRenderer() {</b>
+<b class="nc"><i>32</i>&nbsp;    x1 = x2 = y1 = y2 = 0;</b>
+<b class="nc"><i>33</i>&nbsp;    draw = false;</b>
+<i>34</i>&nbsp;  }
+<i>35</i>&nbsp;
+<b class="nc"><i>36</i>&nbsp;  public DependencyInteractionRenderer(int x1, int y1, int x2, int y2) {</b>
+<b class="nc"><i>37</i>&nbsp;    this.x1 = x1;</b>
+<b class="nc"><i>38</i>&nbsp;    this.x2 = x2;</b>
+<b class="nc"><i>39</i>&nbsp;    this.y1 = y1;</b>
+<b class="nc"><i>40</i>&nbsp;    this.y2 = y2;</b>
+<b class="nc"><i>41</i>&nbsp;    this.draw = true;</b>
+<i>42</i>&nbsp;  }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  public void setDraw(boolean d) {
+<b class="nc"><i>45</i>&nbsp;    draw = d;</b>
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  public boolean getDraw() {
+<b class="nc"><i>49</i>&nbsp;    return draw;</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  public void changePoint2(int x2, int y2) {
+<b class="nc"><i>53</i>&nbsp;    this.x2 = x2;</b>
+<b class="nc"><i>54</i>&nbsp;    this.y2 = y2;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  public void paint(Graphics g) {
+<b class="nc"><i>58</i>&nbsp;    if (draw) {</b>
+<i>59</i>&nbsp;      // draw the line
+<b class="nc"><i>60</i>&nbsp;      g.setColor(Color.black);</b>
+<b class="nc"><i>61</i>&nbsp;      g.drawLine(x1, y1, x2, y2);</b>
+<i>62</i>&nbsp;      // Draw the triangle
+<b class="nc"><i>63</i>&nbsp;      int xPoints[] = new int[3];</b>
+<b class="nc"><i>64</i>&nbsp;      int yPoints[] = new int[3];</b>
+<b class="nc"><i>65</i>&nbsp;      int vx = x2 - x1;</b>
+<b class="nc"><i>66</i>&nbsp;      int vy = y2 - y1;</b>
+<b class="nc"><i>67</i>&nbsp;      int px = (int) (0.08f * vx);</b>
+<b class="nc"><i>68</i>&nbsp;      int py = (int) (0.08f * vy);</b>
+<b class="nc"><i>69</i>&nbsp;      int total = ((px &lt; 0) ? -px : px) + ((py &lt; 0) ? -py : py);</b>
+<b class="nc"><i>70</i>&nbsp;      px = (int) (px * 10.f / total);</b>
+<b class="nc"><i>71</i>&nbsp;      py = (int) (py * 10.f / total);</b>
+<b class="nc"><i>72</i>&nbsp;      xPoints[0] = x2;</b>
+<b class="nc"><i>73</i>&nbsp;      yPoints[0] = y2;</b>
+<b class="nc"><i>74</i>&nbsp;      xPoints[1] = x2 - px + py / 2;</b>
+<b class="nc"><i>75</i>&nbsp;      yPoints[1] = y2 - py - px / 2;</b>
+<b class="nc"><i>76</i>&nbsp;      xPoints[2] = x2 - px - py / 2;</b>
+<b class="nc"><i>77</i>&nbsp;      yPoints[2] = y2 - py + px / 2;</b>
+<b class="nc"><i>78</i>&nbsp;      g.fillPolygon(xPoints, yPoints, 3);</b>
+<i>79</i>&nbsp;    }
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

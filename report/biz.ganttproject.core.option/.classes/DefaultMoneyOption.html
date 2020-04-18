@@ -1,0 +1,130 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DefaultMoneyOption</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.option</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DefaultMoneyOption (biz.ganttproject.core.option)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultMoneyOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2014 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.core.option;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.math.BigDecimal;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;/**
+<i>24</i>&nbsp; * Default implementation of MoneyOption
+<i>25</i>&nbsp; *  
+<i>26</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>27</i>&nbsp; */
+<i>28</i>&nbsp;public class DefaultMoneyOption extends GPAbstractOption&lt;BigDecimal&gt; implements MoneyOption {
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  public DefaultMoneyOption(String id) {
+<b class="nc"><i>31</i>&nbsp;    super(id);</b>
+<i>32</i>&nbsp;  }
+<i>33</i>&nbsp;  
+<i>34</i>&nbsp;  public DefaultMoneyOption(String id, BigDecimal initialValue) {
+<b class="nc"><i>35</i>&nbsp;    super(id, initialValue);</b>
+<i>36</i>&nbsp;  }
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  @Override
+<i>39</i>&nbsp;  public String getPersistentValue() {
+<b class="nc"><i>40</i>&nbsp;    return getValue().toPlainString();</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  @Override
+<i>44</i>&nbsp;  public void loadPersistentValue(String value) {
+<b class="nc"><i>45</i>&nbsp;    resetValue(new BigDecimal(value), true);</b>
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

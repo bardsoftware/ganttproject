@@ -1,0 +1,170 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskModelModificationListener</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskModelModificationListener (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskModelModificationListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;public class TaskModelModificationListener extends TaskListenerAdapter {
+<i>29</i>&nbsp;  private IGanttProject myGanttProject;
+<i>30</i>&nbsp;  private UIFacade myUiFacade;
+<i>31</i>&nbsp;
+<b class="nc"><i>32</i>&nbsp;  TaskModelModificationListener(IGanttProject ganttProject, UIFacade uiFacade) {</b>
+<b class="nc"><i>33</i>&nbsp;    myGanttProject = ganttProject;</b>
+<b class="nc"><i>34</i>&nbsp;    myUiFacade = uiFacade;</b>
+<i>35</i>&nbsp;  }
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  @Override
+<i>38</i>&nbsp;  public void taskScheduleChanged(TaskScheduleEvent e) {
+<b class="nc"><i>39</i>&nbsp;    myGanttProject.setModified();</b>
+<b class="nc"><i>40</i>&nbsp;    myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  @Override
+<i>44</i>&nbsp;  public void dependencyAdded(TaskDependencyEvent e) {
+<b class="nc"><i>45</i>&nbsp;    myGanttProject.setModified();</b>
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  @Override
+<i>49</i>&nbsp;  public void dependencyRemoved(TaskDependencyEvent e) {
+<b class="nc"><i>50</i>&nbsp;    myGanttProject.setModified();</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  @Override
+<i>54</i>&nbsp;  public void dependencyChanged(TaskDependencyEvent e) {
+<b class="nc"><i>55</i>&nbsp;    myGanttProject.setModified();</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  @Override
+<i>59</i>&nbsp;  public void taskAdded(TaskHierarchyEvent e) {
+<b class="nc"><i>60</i>&nbsp;    myGanttProject.setModified();</b>
+<b class="nc"><i>61</i>&nbsp;    myUiFacade.setViewIndex(UIFacade.GANTT_INDEX);</b>
+<b class="nc"><i>62</i>&nbsp;    myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();</b>
+<b class="nc"><i>63</i>&nbsp;    myUiFacade.refresh();</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  @Override
+<i>67</i>&nbsp;  public void taskRemoved(TaskHierarchyEvent e) {
+<b class="nc"><i>68</i>&nbsp;    myGanttProject.setModified();</b>
+<b class="nc"><i>69</i>&nbsp;    myGanttProject.getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  public void taskMoved(TaskHierarchyEvent e) {
+<b class="nc"><i>74</i>&nbsp;    myGanttProject.setModified();</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  @Override
+<i>78</i>&nbsp;  public void taskPropertiesChanged(TaskPropertyEvent e) {
+<b class="nc"><i>79</i>&nbsp;    myGanttProject.setModified();</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  @Override
+<i>83</i>&nbsp;  public void taskProgressChanged(TaskPropertyEvent e) {
+<b class="nc"><i>84</i>&nbsp;    myGanttProject.setModified();</b>
+<b class="nc"><i>85</i>&nbsp;    e.getTask().getManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

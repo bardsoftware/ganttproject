@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ExporterToMsProjectFile</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.msproject2</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ExporterToMsProjectFile (biz.ganttproject.impex.msproject2)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExporterToMsProjectFile</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 42)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ExporterToMsProjectFile$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExporterToMsProjectFile$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 57)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010-2012 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.impex.msproject2;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Component;
+<i>22</i>&nbsp;import java.io.File;
+<i>23</i>&nbsp;import java.io.IOException;
+<i>24</i>&nbsp;import java.util.Arrays;
+<i>25</i>&nbsp;import java.util.Collections;
+<i>26</i>&nbsp;import java.util.List;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>29</i>&nbsp;import org.eclipse.core.runtime.Status;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>32</i>&nbsp;import biz.ganttproject.core.option.EnumerationOption;
+<i>33</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>34</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;import net.sf.mpxj.MPXJException;
+<i>37</i>&nbsp;import net.sf.mpxj.ProjectFile;
+<i>38</i>&nbsp;import net.sf.mpxj.mpx.MPXWriter;
+<i>39</i>&nbsp;import net.sf.mpxj.mspdi.MSPDIWriter;
+<i>40</i>&nbsp;import net.sf.mpxj.writer.ProjectWriter;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.export.ExporterBase;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;/**
+<i>44</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>45</i>&nbsp; */
+<b class="nc"><i>46</i>&nbsp;public class ExporterToMsProjectFile extends ExporterBase {</b>
+<i>47</i>&nbsp;
+<b class="nc"><i>48</i>&nbsp;  private static final String[] FILE_FORMAT_IDS = new String[] { &quot;impex.msproject.fileformat.mpx&quot;,</b>
+<i>49</i>&nbsp;      &quot;impex.msproject.fileformat.mspdi&quot; };
+<i>50</i>&nbsp;
+<b class="nc"><i>51</i>&nbsp;  private static final String[] FILE_EXTENSIONS = new String[] { &quot;mpx&quot;, &quot;xml&quot; };</b>
+<i>52</i>&nbsp;
+<b class="nc"><i>53</i>&nbsp;  private String myFileFormat = FILE_FORMAT_IDS[0];</b>
+<i>54</i>&nbsp;
+<b class="nc"><i>55</i>&nbsp;  private EnumerationOption myFileFormatOption = new DefaultEnumerationOption&lt;Object&gt;(&quot;impex.msproject.fileformat&quot;,</b>
+<b class="nc"><i>56</i>&nbsp;      FILE_FORMAT_IDS) {</b>
+<i>57</i>&nbsp;    @Override
+<i>58</i>&nbsp;    public void commit() {
+<b class="nc"><i>59</i>&nbsp;      super.commit();</b>
+<b class="nc"><i>60</i>&nbsp;      ExporterToMsProjectFile.this.myFileFormat = getValue();</b>
+<i>61</i>&nbsp;    }
+<i>62</i>&nbsp;  };
+<i>63</i>&nbsp;
+<b class="nc"><i>64</i>&nbsp;  private LocaleOption myLanguageOption = new LocaleOption();</b>
+<i>65</i>&nbsp;
+<b class="nc"><i>66</i>&nbsp;  private GPOptionGroup myOptions = new GPOptionGroup(&quot;exporter.msproject&quot;, new GPOption[] { myFileFormatOption });</b>
+<i>67</i>&nbsp;
+<b class="nc"><i>68</i>&nbsp;  private GPOptionGroup myMPXOptions = new GPOptionGroup(&quot;exporter.msproject.mpx&quot;, new GPOption[] { myLanguageOption });</b>
+<i>69</i>&nbsp;
+<b class="nc"><i>70</i>&nbsp;  public ExporterToMsProjectFile() {</b>
+<b class="nc"><i>71</i>&nbsp;    myOptions.setTitled(false);</b>
+<b class="nc"><i>72</i>&nbsp;    myMPXOptions.setTitled(false);</b>
+<b class="nc"><i>73</i>&nbsp;    myFileFormatOption.lock();</b>
+<b class="nc"><i>74</i>&nbsp;    myFileFormatOption.setValue(FILE_FORMAT_IDS[0]);</b>
+<b class="nc"><i>75</i>&nbsp;    myFileFormatOption.commit();</b>
+<b class="nc"><i>76</i>&nbsp;    myLanguageOption.setSelectedLocale(language.getLocale());</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  @Override
+<i>80</i>&nbsp;  public String getFileTypeDescription() {
+<b class="nc"><i>81</i>&nbsp;    return language.getText(&quot;impex.msproject.description&quot;);</b>
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  @Override
+<i>85</i>&nbsp;  public GPOptionGroup getOptions() {
+<b class="nc"><i>86</i>&nbsp;    return myOptions;</b>
+<i>87</i>&nbsp;  }
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  @Override
+<i>90</i>&nbsp;  public List&lt;GPOptionGroup&gt; getSecondaryOptions() {
+<b class="nc"><i>91</i>&nbsp;    return FILE_FORMAT_IDS[0].equals(myFileFormat) ? Collections.singletonList(myMPXOptions)</b>
+<b class="nc"><i>92</i>&nbsp;        : Collections.&lt;GPOptionGroup&gt; emptyList();</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  @Override
+<i>96</i>&nbsp;  public Component getCustomOptionsUI() {
+<b class="nc"><i>97</i>&nbsp;    return null;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  @Override
+<i>101</i>&nbsp;  public String getFileNamePattern() {
+<b class="nc"><i>102</i>&nbsp;    return myFileFormat;</b>
+<i>103</i>&nbsp;  }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  @Override
+<i>106</i>&nbsp;  protected ExporterJob[] createJobs(final File outputFile, List&lt;File&gt; resultFiles) {
+<b class="nc"><i>107</i>&nbsp;    ExporterJob job = createExportJob(outputFile);</b>
+<b class="nc"><i>108</i>&nbsp;    resultFiles.add(outputFile);</b>
+<b class="nc"><i>109</i>&nbsp;    return new ExporterJob[] { job };</b>
+<i>110</i>&nbsp;  }
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  private ExporterJob createExportJob(final File outputFile) {
+<b class="nc"><i>113</i>&nbsp;    ExporterJob result = new ExporterJob(&quot;Export project&quot;) {</b>
+<i>114</i>&nbsp;      @Override
+<i>115</i>&nbsp;      protected IStatus run() {
+<i>116</i>&nbsp;        ProjectFile outProject;
+<i>117</i>&nbsp;        try {
+<b class="nc"><i>118</i>&nbsp;          outProject = new ProjectFileExporter(getProject()).run();</b>
+<b class="nc"><i>119</i>&nbsp;          ProjectWriter writer = createProjectWriter();</b>
+<b class="nc"><i>120</i>&nbsp;          writer.write(outProject, outputFile);</b>
+<b class="nc"><i>121</i>&nbsp;        } catch (MPXJException e) {</b>
+<b class="nc"><i>122</i>&nbsp;          getUIFacade().showErrorDialog(e);</b>
+<b class="nc"><i>123</i>&nbsp;          return Status.CANCEL_STATUS;</b>
+<b class="nc"><i>124</i>&nbsp;        } catch (IOException e) {</b>
+<b class="nc"><i>125</i>&nbsp;          getUIFacade().showErrorDialog(e);</b>
+<b class="nc"><i>126</i>&nbsp;          return Status.CANCEL_STATUS;</b>
+<b class="nc"><i>127</i>&nbsp;        }</b>
+<b class="nc"><i>128</i>&nbsp;        return Status.OK_STATUS;</b>
+<i>129</i>&nbsp;      }
+<i>130</i>&nbsp;    };
+<b class="nc"><i>131</i>&nbsp;    return result;</b>
+<i>132</i>&nbsp;  }
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  private ProjectWriter createProjectWriter() {
+<b class="nc"><i>135</i>&nbsp;    if (FILE_FORMAT_IDS[0].equals(myFileFormat)) {</b>
+<b class="nc"><i>136</i>&nbsp;      MPXWriter result = new MPXWriter();</b>
+<b class="nc"><i>137</i>&nbsp;      if (myLanguageOption.getSelectedLocale() != null) {</b>
+<b class="nc"><i>138</i>&nbsp;        result.setLocale(myLanguageOption.getSelectedLocale());</b>
+<i>139</i>&nbsp;      }
+<b class="nc"><i>140</i>&nbsp;      return result;</b>
+<i>141</i>&nbsp;    }
+<b class="nc"><i>142</i>&nbsp;    if (FILE_FORMAT_IDS[1].equals(myFileFormat)) {</b>
+<b class="nc"><i>143</i>&nbsp;      return new MSPDIWriter();</b>
+<i>144</i>&nbsp;    }
+<b class="nc"><i>145</i>&nbsp;    assert false : &quot;Should not be here&quot;;</b>
+<b class="nc"><i>146</i>&nbsp;    return null;</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  @Override
+<i>150</i>&nbsp;  public String proposeFileExtension() {
+<b class="nc"><i>151</i>&nbsp;    return getSelectedFormatExtension();</b>
+<i>152</i>&nbsp;  }
+<i>153</i>&nbsp;
+<i>154</i>&nbsp;  private String getSelectedFormatExtension() {
+<b class="nc"><i>155</i>&nbsp;    for (int i = 0; i &lt; FILE_FORMAT_IDS.length; i++) {</b>
+<b class="nc"><i>156</i>&nbsp;      if (myFileFormat.equals(FILE_FORMAT_IDS[i])) {</b>
+<b class="nc"><i>157</i>&nbsp;        return FILE_EXTENSIONS[i];</b>
+<i>158</i>&nbsp;      }
+<i>159</i>&nbsp;    }
+<b class="nc"><i>160</i>&nbsp;    throw new IllegalStateException(&quot;Selected format=&quot; + myFileFormat + &quot; has not been found in known formats:&quot;</b>
+<b class="nc"><i>161</i>&nbsp;        + Arrays.asList(FILE_FORMAT_IDS));</b>
+<i>162</i>&nbsp;  }
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;  @Override
+<i>165</i>&nbsp;  public String[] getFileExtensions() {
+<b class="nc"><i>166</i>&nbsp;    return FILE_EXTENSIONS;</b>
+<i>167</i>&nbsp;  }
+<i>168</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,538 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TTFontCache</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.ganttproject.impex.htmlpdf.fonts</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TTFontCache (org.ganttproject.impex.htmlpdf.fonts)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TTFontCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 76)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TTFontCache$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TTFontCache$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 26)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TTFontCache$AwtFontSupplier</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 20)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TTFontCache$BaseFontPublicMorozov</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TTFontCache$FontKey</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 34)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 168)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2009 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package org.ganttproject.impex.htmlpdf.fonts;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Function;
+<i>22</i>&nbsp;import com.google.common.base.Supplier;
+<i>23</i>&nbsp;import com.google.common.collect.Lists;
+<i>24</i>&nbsp;import com.itextpdf.awt.FontMapper;
+<i>25</i>&nbsp;import com.itextpdf.text.DocumentException;
+<i>26</i>&nbsp;import com.itextpdf.text.pdf.BaseFont;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>29</i>&nbsp;import org.eclipse.core.runtime.Platform;
+<i>30</i>&nbsp;import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel;
+<i>31</i>&nbsp;import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;import java.awt.*;
+<i>34</i>&nbsp;import java.io.File;
+<i>35</i>&nbsp;import java.io.FileInputStream;
+<i>36</i>&nbsp;import java.io.IOException;
+<i>37</i>&nbsp;import java.util.ArrayList;
+<i>38</i>&nbsp;import java.util.HashMap;
+<i>39</i>&nbsp;import java.util.List;
+<i>40</i>&nbsp;import java.util.Map;
+<i>41</i>&nbsp;import java.util.Properties;
+<i>42</i>&nbsp;import java.util.TreeMap;
+<i>43</i>&nbsp;import java.util.logging.Level;
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;/**
+<i>46</i>&nbsp; * This class collects True Type fonts from .ttf files in the registered
+<i>47</i>&nbsp; * directories and provides mappings of font family names to plain AWT fonts and
+<i>48</i>&nbsp; * iText fonts.
+<i>49</i>&nbsp; *
+<i>50</i>&nbsp; * @author dbarashev
+<i>51</i>&nbsp; */
+<b class="nc"><i>52</i>&nbsp;public class TTFontCache {</b>
+<b class="nc"><i>53</i>&nbsp;  private static String FALLBACK_FONT_PATH = &quot;/fonts/LiberationSans-Regular.ttf&quot;;</b>
+<b class="nc"><i>54</i>&nbsp;  private Map&lt;String, AwtFontSupplier&gt; myMap_Family_RegularFont = new TreeMap&lt;String, AwtFontSupplier&gt;();</b>
+<b class="nc"><i>55</i>&nbsp;  private final Map&lt;FontKey, com.itextpdf.text.Font&gt; myFontCache = new HashMap&lt;FontKey, com.itextpdf.text.Font&gt;();</b>
+<b class="nc"><i>56</i>&nbsp;  private Map&lt;String, Function&lt;String, BaseFont&gt;&gt; myMap_Family_ItextFont = new HashMap&lt;String, Function&lt;String, BaseFont&gt;&gt;();</b>
+<i>57</i>&nbsp;  private Properties myProperties;
+<i>58</i>&nbsp;  private BaseFont myFallbackFont;
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  public void registerDirectory(String path) {
+<b class="nc"><i>61</i>&nbsp;    GPLogger.getLogger(getClass()).info(&quot;scanning directory=&quot; + path);</b>
+<b class="nc"><i>62</i>&nbsp;    File dir = new File(path);</b>
+<b class="nc"><i>63</i>&nbsp;    if (dir.exists() &amp;&amp; dir.isDirectory()) {</b>
+<b class="nc"><i>64</i>&nbsp;      registerFonts(dir);</b>
+<i>65</i>&nbsp;    } else {
+<b class="nc"><i>66</i>&nbsp;      GPLogger.getLogger(getClass()).info(&quot;directory &quot; + path + &quot; is not readable&quot;);</b>
+<i>67</i>&nbsp;    }
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  public List&lt;String&gt; getRegisteredFamilies() {
+<b class="nc"><i>71</i>&nbsp;    return new ArrayList&lt;String&gt;(myMap_Family_RegularFont.keySet());</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  public Font getAwtFont(String family) {
+<b class="nc"><i>75</i>&nbsp;    Supplier&lt;Font&gt; supplier = myMap_Family_RegularFont.get(family);</b>
+<b class="nc"><i>76</i>&nbsp;    return supplier == null ? null : supplier.get();</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  private void registerFonts(File dir) {
+<b class="nc"><i>80</i>&nbsp;    final File[] files = dir.listFiles();</b>
+<b class="nc"><i>81</i>&nbsp;    for (File f : files) {</b>
+<b class="nc"><i>82</i>&nbsp;      if (!f.canRead()) {</b>
+<b class="nc"><i>83</i>&nbsp;        continue;</b>
+<i>84</i>&nbsp;      }
+<b class="nc"><i>85</i>&nbsp;      if (f.isDirectory()) {</b>
+<b class="nc"><i>86</i>&nbsp;        registerFonts(f);</b>
+<b class="nc"><i>87</i>&nbsp;        continue;</b>
+<i>88</i>&nbsp;      }
+<b class="nc"><i>89</i>&nbsp;      String filename = f.getName().toLowerCase().trim();</b>
+<b class="nc"><i>90</i>&nbsp;      if (!filename.endsWith(&quot;.ttf&quot;) &amp;&amp; !filename.endsWith(&quot;.ttc&quot;)) {</b>
+<b class="nc"><i>91</i>&nbsp;        continue;</b>
+<i>92</i>&nbsp;      }
+<i>93</i>&nbsp;      try {
+<b class="nc"><i>94</i>&nbsp;        registerFontFile(f);</b>
+<b class="nc"><i>95</i>&nbsp;      } catch (Throwable e) {</b>
+<b class="nc"><i>96</i>&nbsp;        GPLogger.getLogger(TTFontCache.class).log(Level.FINE, &quot;Failed to register font from &quot; + f.getAbsolutePath(), e);</b>
+<b class="nc"><i>97</i>&nbsp;      }</b>
+<i>98</i>&nbsp;    }
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  private static Font createAwtFont(File fontFile) throws IOException, FontFormatException {
+<b class="nc"><i>102</i>&nbsp;    try (FileInputStream istream = new FileInputStream(fontFile)) {</b>
+<b class="nc"><i>103</i>&nbsp;      return Font.createFont(Font.TRUETYPE_FONT, istream);</b>
+<b class="nc"><i>104</i>&nbsp;    }</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<b class="nc"><i>107</i>&nbsp;  private static class AwtFontSupplier implements Supplier&lt;Font&gt; {</b>
+<b class="nc"><i>108</i>&nbsp;    private final List&lt;File&gt; myFiles = Lists.newArrayList();</b>
+<i>109</i>&nbsp;    private Font myFont;
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;    void addFile(File f) {
+<b class="nc"><i>112</i>&nbsp;      myFiles.add(f);</b>
+<i>113</i>&nbsp;    }
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;    @Override
+<i>116</i>&nbsp;    public Font get() {
+<b class="nc"><i>117</i>&nbsp;      if (myFont == null) {</b>
+<b class="nc"><i>118</i>&nbsp;        myFont = createFont();</b>
+<i>119</i>&nbsp;      }
+<b class="nc"><i>120</i>&nbsp;      return myFont;</b>
+<i>121</i>&nbsp;    }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;    private Font createFont() {
+<b class="nc"><i>124</i>&nbsp;      Font result = null;</b>
+<b class="nc"><i>125</i>&nbsp;      for (File f : myFiles) {</b>
+<b class="nc"><i>126</i>&nbsp;        Font font = createFont(f);</b>
+<b class="nc"><i>127</i>&nbsp;        if (result == null || result.getStyle() &gt; font.getStyle()) {</b>
+<b class="nc"><i>128</i>&nbsp;          result = font;</b>
+<i>129</i>&nbsp;        }
+<b class="nc"><i>130</i>&nbsp;      }</b>
+<b class="nc"><i>131</i>&nbsp;      return result;</b>
+<i>132</i>&nbsp;    }
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;    private Font createFont(File fontFile) {
+<i>135</i>&nbsp;      try {
+<b class="nc"><i>136</i>&nbsp;        return createAwtFont(fontFile);</b>
+<b class="nc"><i>137</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>138</i>&nbsp;        GPLogger.log(e);</b>
+<b class="nc"><i>139</i>&nbsp;      } catch (FontFormatException e) {</b>
+<b class="nc"><i>140</i>&nbsp;        GPLogger.log(e);</b>
+<b class="nc"><i>141</i>&nbsp;      }</b>
+<b class="nc"><i>142</i>&nbsp;      return null;</b>
+<i>143</i>&nbsp;    }
+<i>144</i>&nbsp;  }
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  private void registerFontFile(final File fontFile) throws FontFormatException,
+<i>147</i>&nbsp;      IOException {
+<i>148</i>&nbsp;    // FontFactory.register(fontFile.getAbsolutePath());
+<b class="nc"><i>149</i>&nbsp;    Font awtFont = createAwtFont(fontFile);</b>
+<b class="nc"><i>150</i>&nbsp;    GPLogger.getLogger(getClass()).fine(&quot;Trying font file: &quot; + fontFile.getAbsolutePath());</b>
+<i>151</i>&nbsp;
+<b class="nc"><i>152</i>&nbsp;    final String family = awtFont.getFontName().toLowerCase();</b>
+<b class="nc"><i>153</i>&nbsp;    AwtFontSupplier awtSupplier = myMap_Family_RegularFont.get(family);</b>
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;    try {
+<b class="nc"><i>156</i>&nbsp;      myMap_Family_ItextFont.put(family, createFontSupplier(fontFile, BaseFont.EMBEDDED));</b>
+<b class="nc"><i>157</i>&nbsp;    } catch (DocumentException e) {</b>
+<b class="nc"><i>158</i>&nbsp;      if (e.getMessage().indexOf(&quot;cannot be embedded&quot;) &lt; 0) {</b>
+<b class="nc"><i>159</i>&nbsp;        GPLogger.logToLogger(e);</b>
+<i>160</i>&nbsp;        return;
+<i>161</i>&nbsp;      }
+<b class="nc"><i>162</i>&nbsp;    }</b>
+<i>163</i>&nbsp;    try {
+<b class="nc"><i>164</i>&nbsp;      myMap_Family_ItextFont.put(family, createFontSupplier(fontFile, BaseFont.NOT_EMBEDDED));</b>
+<b class="nc"><i>165</i>&nbsp;    } catch (DocumentException e) {</b>
+<b class="nc"><i>166</i>&nbsp;      GPLogger.logToLogger(e);</b>
+<i>167</i>&nbsp;      return;
+<b class="nc"><i>168</i>&nbsp;    }</b>
+<b class="nc"><i>169</i>&nbsp;    GPLogger.getLogger(getClass()).fine(&quot;registering font: &quot; + family);</b>
+<b class="nc"><i>170</i>&nbsp;    if (awtSupplier == null) {</b>
+<b class="nc"><i>171</i>&nbsp;      awtSupplier = new AwtFontSupplier();</b>
+<b class="nc"><i>172</i>&nbsp;      myMap_Family_RegularFont.put(family, awtSupplier);</b>
+<i>173</i>&nbsp;    }
+<b class="nc"><i>174</i>&nbsp;    awtSupplier.addFile(fontFile);</b>
+<i>175</i>&nbsp;  }
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  private Function&lt;String, BaseFont&gt; createFontSupplier(final File fontFile, final boolean isEmbedded)
+<i>178</i>&nbsp;      throws DocumentException, IOException {
+<i>179</i>&nbsp;    try {
+<b class="nc"><i>180</i>&nbsp;      BaseFont.createFont(fontFile.getAbsolutePath(), GanttLanguage.getInstance().getCharSet(), isEmbedded);</b>
+<b class="nc"><i>181</i>&nbsp;    } catch (DocumentException e) {</b>
+<b class="nc"><i>182</i>&nbsp;      if (!e.getMessage().contains(&quot;is not recognized&quot;)</b>
+<b class="nc"><i>183</i>&nbsp;          || !e.getMessage().contains(GanttLanguage.getInstance().getCharSet())) {</b>
+<b class="nc"><i>184</i>&nbsp;        throw e;</b>
+<i>185</i>&nbsp;      }
+<i>186</i>&nbsp;    } finally {
+<b class="nc"><i>187</i>&nbsp;      BaseFontPublicMorozov.clearCache();</b>
+<b class="nc"><i>188</i>&nbsp;    }</b>
+<b class="nc"><i>189</i>&nbsp;    return new Function&lt;String, BaseFont&gt;() {</b>
+<i>190</i>&nbsp;      @Override
+<i>191</i>&nbsp;      public BaseFont apply(String charset) {
+<i>192</i>&nbsp;        try {
+<b class="nc"><i>193</i>&nbsp;          if (fontFile.getName().toLowerCase().endsWith(&quot;.ttc&quot;)) {</b>
+<b class="nc"><i>194</i>&nbsp;            return BaseFont.createFont(fontFile.getAbsolutePath() + &quot;,0&quot;, charset, isEmbedded);</b>
+<i>195</i>&nbsp;          } else {
+<b class="nc"><i>196</i>&nbsp;            return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);</b>
+<i>197</i>&nbsp;          }
+<b class="nc"><i>198</i>&nbsp;        } catch (DocumentException e) {</b>
+<b class="nc"><i>199</i>&nbsp;          GPLogger.log(e);</b>
+<b class="nc"><i>200</i>&nbsp;        } catch (IOException e) {</b>
+<b class="nc"><i>201</i>&nbsp;          GPLogger.log(e);</b>
+<b class="nc"><i>202</i>&nbsp;        }</b>
+<b class="nc"><i>203</i>&nbsp;        return null;</b>
+<i>204</i>&nbsp;      }
+<i>205</i>&nbsp;    };
+<i>206</i>&nbsp;  }
+<i>207</i>&nbsp;
+<i>208</i>&nbsp;  private static class FontKey {
+<i>209</i>&nbsp;    private String family;
+<i>210</i>&nbsp;    private int style;
+<i>211</i>&nbsp;    private float size;
+<i>212</i>&nbsp;    private String charset;
+<i>213</i>&nbsp;
+<b class="nc"><i>214</i>&nbsp;    FontKey(String family, String charset, int style, float size) {</b>
+<b class="nc"><i>215</i>&nbsp;      this.family = family;</b>
+<b class="nc"><i>216</i>&nbsp;      this.charset = charset;</b>
+<b class="nc"><i>217</i>&nbsp;      this.style = style;</b>
+<b class="nc"><i>218</i>&nbsp;      this.size = size;</b>
+<i>219</i>&nbsp;    }
+<i>220</i>&nbsp;
+<i>221</i>&nbsp;    @Override
+<i>222</i>&nbsp;    public int hashCode() {
+<b class="nc"><i>223</i>&nbsp;      final int prime = 31;</b>
+<b class="nc"><i>224</i>&nbsp;      int result = 1;</b>
+<b class="nc"><i>225</i>&nbsp;      result = prime * result + ((charset == null) ? 0 : charset.hashCode());</b>
+<b class="nc"><i>226</i>&nbsp;      result = prime * result + ((family == null) ? 0 : family.hashCode());</b>
+<b class="nc"><i>227</i>&nbsp;      result = prime * result + Float.floatToIntBits(size);</b>
+<b class="nc"><i>228</i>&nbsp;      result = prime * result + style;</b>
+<b class="nc"><i>229</i>&nbsp;      return result;</b>
+<i>230</i>&nbsp;    }
+<i>231</i>&nbsp;
+<i>232</i>&nbsp;    @Override
+<i>233</i>&nbsp;    public boolean equals(Object obj) {
+<b class="nc"><i>234</i>&nbsp;      if (this == obj)</b>
+<b class="nc"><i>235</i>&nbsp;        return true;</b>
+<b class="nc"><i>236</i>&nbsp;      if (obj == null)</b>
+<b class="nc"><i>237</i>&nbsp;        return false;</b>
+<b class="nc"><i>238</i>&nbsp;      if (getClass() != obj.getClass())</b>
+<b class="nc"><i>239</i>&nbsp;        return false;</b>
+<b class="nc"><i>240</i>&nbsp;      FontKey other = (FontKey) obj;</b>
+<b class="nc"><i>241</i>&nbsp;      if (charset == null) {</b>
+<b class="nc"><i>242</i>&nbsp;        if (other.charset != null)</b>
+<b class="nc"><i>243</i>&nbsp;          return false;</b>
+<b class="nc"><i>244</i>&nbsp;      } else if (!charset.equals(other.charset))</b>
+<b class="nc"><i>245</i>&nbsp;        return false;</b>
+<b class="nc"><i>246</i>&nbsp;      if (family == null) {</b>
+<b class="nc"><i>247</i>&nbsp;        if (other.family != null)</b>
+<b class="nc"><i>248</i>&nbsp;          return false;</b>
+<b class="nc"><i>249</i>&nbsp;      } else if (!family.equals(other.family))</b>
+<b class="nc"><i>250</i>&nbsp;        return false;</b>
+<b class="nc"><i>251</i>&nbsp;      if (Float.floatToIntBits(size) != Float.floatToIntBits(other.size))</b>
+<b class="nc"><i>252</i>&nbsp;        return false;</b>
+<b class="nc"><i>253</i>&nbsp;      if (style != other.style)</b>
+<b class="nc"><i>254</i>&nbsp;        return false;</b>
+<b class="nc"><i>255</i>&nbsp;      return true;</b>
+<i>256</i>&nbsp;    }
+<i>257</i>&nbsp;  }
+<i>258</i>&nbsp;
+<i>259</i>&nbsp;  public com.itextpdf.text.Font getFont(String family, String charset, int style, float size) {
+<b class="nc"><i>260</i>&nbsp;    FontKey key = new FontKey(family, charset, style, size);</b>
+<b class="nc"><i>261</i>&nbsp;    com.itextpdf.text.Font result = myFontCache.get(key);</b>
+<b class="nc"><i>262</i>&nbsp;    if (result == null) {</b>
+<b class="nc"><i>263</i>&nbsp;      Function&lt;String, BaseFont&gt; f = myMap_Family_ItextFont.get(family);</b>
+<b class="nc"><i>264</i>&nbsp;      BaseFont bf = f == null ? getFallbackFont(charset) : f.apply(charset);</b>
+<b class="nc"><i>265</i>&nbsp;      if (bf != null) {</b>
+<b class="nc"><i>266</i>&nbsp;        result = new com.itextpdf.text.Font(bf, size, style);</b>
+<b class="nc"><i>267</i>&nbsp;        myFontCache.put(key, result);</b>
+<i>268</i>&nbsp;      } else {
+<b class="nc"><i>269</i>&nbsp;        GPLogger.log(new RuntimeException(&quot;Font with family=&quot; + family + &quot; not found. Also tried fallback font&quot;));</b>
+<i>270</i>&nbsp;      }
+<i>271</i>&nbsp;    }
+<b class="nc"><i>272</i>&nbsp;    return result;</b>
+<i>273</i>&nbsp;
+<i>274</i>&nbsp;  }
+<i>275</i>&nbsp;
+<i>276</i>&nbsp;  public FontMapper getFontMapper(final FontSubstitutionModel substitutions, final String charset) {
+<b class="nc"><i>277</i>&nbsp;    return new FontMapper() {</b>
+<b class="nc"><i>278</i>&nbsp;      private Map&lt;Font, BaseFont&gt; myFontCache = new HashMap&lt;Font, BaseFont&gt;();</b>
+<i>279</i>&nbsp;
+<i>280</i>&nbsp;      @Override
+<i>281</i>&nbsp;      public BaseFont awtToPdf(Font awtFont) {
+<b class="nc"><i>282</i>&nbsp;        if (myFontCache.containsKey(awtFont)) {</b>
+<b class="nc"><i>283</i>&nbsp;          return myFontCache.get(awtFont);</b>
+<i>284</i>&nbsp;        }
+<i>285</i>&nbsp;
+<b class="nc"><i>286</i>&nbsp;        String family = awtFont.getFamily().toLowerCase();</b>
+<b class="nc"><i>287</i>&nbsp;        Function&lt;String, BaseFont&gt; f = myMap_Family_ItextFont.get(family);</b>
+<b class="nc"><i>288</i>&nbsp;        if (f != null) {</b>
+<b class="nc"><i>289</i>&nbsp;          BaseFont result = f.apply(charset);</b>
+<b class="nc"><i>290</i>&nbsp;          myFontCache.put(awtFont, result);</b>
+<b class="nc"><i>291</i>&nbsp;          return result;</b>
+<i>292</i>&nbsp;        }
+<i>293</i>&nbsp;
+<b class="nc"><i>294</i>&nbsp;        family = family.replace(&#39; &#39;, &#39;_&#39;);</b>
+<b class="nc"><i>295</i>&nbsp;        if (myProperties.containsKey(&quot;font.&quot; + family)) {</b>
+<b class="nc"><i>296</i>&nbsp;          family = String.valueOf(myProperties.get(&quot;font.&quot; + family));</b>
+<i>297</i>&nbsp;        }
+<b class="nc"><i>298</i>&nbsp;        FontSubstitution substitution = substitutions.getSubstitution(family);</b>
+<b class="nc"><i>299</i>&nbsp;        if (substitution != null) {</b>
+<b class="nc"><i>300</i>&nbsp;          family = substitution.getSubstitutionFamily();</b>
+<i>301</i>&nbsp;        }
+<b class="nc"><i>302</i>&nbsp;        f = myMap_Family_ItextFont.get(family);</b>
+<b class="nc"><i>303</i>&nbsp;        if (f != null) {</b>
+<b class="nc"><i>304</i>&nbsp;          BaseFont result = f.apply(charset);</b>
+<b class="nc"><i>305</i>&nbsp;          myFontCache.put(awtFont, result);</b>
+<b class="nc"><i>306</i>&nbsp;          return result;</b>
+<i>307</i>&nbsp;        }
+<b class="nc"><i>308</i>&nbsp;        BaseFont result = getFallbackFont(charset);</b>
+<b class="nc"><i>309</i>&nbsp;        if (result == null) {</b>
+<b class="nc"><i>310</i>&nbsp;          GPLogger.log(new RuntimeException(&quot;Font with family=&quot; + awtFont.getFamily()</b>
+<i>311</i>&nbsp;              + &quot; not found. Also tried family=&quot; + family + &quot; and fallback font&quot;));
+<i>312</i>&nbsp;        }
+<b class="nc"><i>313</i>&nbsp;        return result;</b>
+<i>314</i>&nbsp;      }
+<i>315</i>&nbsp;
+<i>316</i>&nbsp;      @Override
+<i>317</i>&nbsp;      public Font pdfToAwt(BaseFont itextFont, int size) {
+<b class="nc"><i>318</i>&nbsp;        return null;</b>
+<i>319</i>&nbsp;      }
+<i>320</i>&nbsp;
+<i>321</i>&nbsp;    };
+<i>322</i>&nbsp;  }
+<i>323</i>&nbsp;
+<i>324</i>&nbsp;  protected BaseFont getFallbackFont(String charset) {
+<b class="nc"><i>325</i>&nbsp;    if (myFallbackFont == null) {</b>
+<i>326</i>&nbsp;      try {
+<b class="nc"><i>327</i>&nbsp;        myFallbackFont = BaseFont.createFont(Platform.resolve(getClass().getResource(FALLBACK_FONT_PATH)).getPath(),</b>
+<i>328</i>&nbsp;            charset, BaseFont.EMBEDDED);
+<b class="nc"><i>329</i>&nbsp;      } catch (DocumentException e) {</b>
+<b class="nc"><i>330</i>&nbsp;        GPLogger.logToLogger(e);</b>
+<b class="nc"><i>331</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>332</i>&nbsp;        GPLogger.logToLogger(e);</b>
+<b class="nc"><i>333</i>&nbsp;      }</b>
+<i>334</i>&nbsp;    }
+<b class="nc"><i>335</i>&nbsp;    return myFallbackFont;</b>
+<i>336</i>&nbsp;  }
+<i>337</i>&nbsp;
+<i>338</i>&nbsp;  public void setProperties(Properties properties) {
+<b class="nc"><i>339</i>&nbsp;    myProperties = properties;</b>
+<i>340</i>&nbsp;  }
+<i>341</i>&nbsp;
+<i>342</i>&nbsp;  // BaseFont.fontCache is a static map which caches font objects. Since we scan all
+<i>343</i>&nbsp;  // fonts in this code, we may cache a few hundreds of objects, and retained size of each object
+<i>344</i>&nbsp;  // can be up to a few megabytes. Here we use so-called &quot;Public Morozov&quot; anti-pattern
+<i>345</i>&nbsp;  // which discloses protected fields of its parent class
+<i>346</i>&nbsp;  // See description of this pattern in English here:
+<i>347</i>&nbsp;  // http://jamesdolan.blogspot.com/2011/05/pavlik-morozov-anti-pattern.html
+<b class="nc"><i>348</i>&nbsp;  private static abstract class BaseFontPublicMorozov extends BaseFont {</b>
+<i>349</i>&nbsp;    static void clearCache() {
+<b class="nc"><i>350</i>&nbsp;      BaseFont.fontCache.clear();</b>
+<i>351</i>&nbsp;    }
+<i>352</i>&nbsp;  }
+<i>353</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

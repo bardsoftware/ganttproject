@@ -1,0 +1,139 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ZoomOutAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.zoom</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ZoomOutAction (net.sourceforge.ganttproject.action.zoom)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ZoomOutAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.zoom;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.event.ActionEvent;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomEvent;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * @author bard
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public class ZoomOutAction extends GPAction implements ZoomListener {
+<i>32</i>&nbsp;  private final ZoomManager myZoomManager;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  public ZoomOutAction(ZoomManager zoomManager) {
+<b class="nc"><i>35</i>&nbsp;    super(&quot;zoom.out&quot;);</b>
+<b class="nc"><i>36</i>&nbsp;    myZoomManager = zoomManager;</b>
+<b class="nc"><i>37</i>&nbsp;    myZoomManager.addZoomListener(this);</b>
+<i>38</i>&nbsp;  }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public void actionPerformed(ActionEvent arg0) {
+<b class="nc"><i>42</i>&nbsp;    if (myZoomManager.canZoomOut()) {</b>
+<b class="nc"><i>43</i>&nbsp;      myZoomManager.zoomOut();</b>
+<i>44</i>&nbsp;    }
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public void zoomChanged(ZoomEvent e) {
+<b class="nc"><i>49</i>&nbsp;    setEnabled(myZoomManager.canZoomOut());</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  @Override
+<i>53</i>&nbsp;  protected String getIconFilePrefix() {
+<b class="nc"><i>54</i>&nbsp;    return &quot;zoomm_&quot;;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

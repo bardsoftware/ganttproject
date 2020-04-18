@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttXMLSaver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttXMLSaver (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttXMLSaver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 73)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.GPVersion;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.GanttGraphicArea;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.GanttPreviousState;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.GanttResourcePanel;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleSet;
+<i>34</i>&nbsp;import org.xml.sax.SAXException;
+<i>35</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;import javax.xml.parsers.ParserConfigurationException;
+<i>38</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>39</i>&nbsp;import javax.xml.transform.stream.StreamResult;
+<i>40</i>&nbsp;import java.io.IOException;
+<i>41</i>&nbsp;import java.io.OutputStream;
+<i>42</i>&nbsp;import java.util.List;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;public class GanttXMLSaver extends SaverBase implements GPSaver {
+<i>45</i>&nbsp;
+<b class="nc"><i>46</i>&nbsp;  private static final String VERSION = GPVersion.getCurrentVersionNumber();</b>
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  private final IGanttProject myProject;
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  private final UIFacade myUIFacade;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  private GanttGraphicArea area;
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  public GanttXMLSaver(IGanttProject project) {
+<b class="nc"><i>55</i>&nbsp;    this(project, null, null, null, null);</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
+<b class="nc"><i>59</i>&nbsp;                       UIFacade uiFacade) {</b>
+<b class="nc"><i>60</i>&nbsp;    this.area = area;</b>
+<b class="nc"><i>61</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>62</i>&nbsp;    myUIFacade = uiFacade;</b>
+<i>63</i>&nbsp;  }
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  @Override
+<i>66</i>&nbsp;  public void save(OutputStream stream) throws IOException {
+<i>67</i>&nbsp;    try {
+<b class="nc"><i>68</i>&nbsp;      AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>69</i>&nbsp;      StreamResult result = new StreamResult(stream);</b>
+<b class="nc"><i>70</i>&nbsp;      TransformerHandler handler = createHandler(result);</b>
+<b class="nc"><i>71</i>&nbsp;      handler.startDocument();</b>
+<b class="nc"><i>72</i>&nbsp;      addAttribute(&quot;name&quot;, getProject().getProjectName(), attrs);</b>
+<b class="nc"><i>73</i>&nbsp;      addAttribute(&quot;company&quot;, getProject().getOrganization(), attrs);</b>
+<b class="nc"><i>74</i>&nbsp;      addAttribute(&quot;webLink&quot;, getProject().getWebLink(), attrs);</b>
+<b class="nc"><i>75</i>&nbsp;      if (area != null) {</b>
+<b class="nc"><i>76</i>&nbsp;        addAttribute(&quot;view-date&quot;, CalendarFactory.createGanttCalendar(area.getStartDate()).toXMLString(), attrs);</b>
+<i>77</i>&nbsp;      }
+<b class="nc"><i>78</i>&nbsp;      if (myUIFacade != null) {</b>
+<b class="nc"><i>79</i>&nbsp;        addAttribute(&quot;view-index&quot;, &quot;&quot; + myUIFacade.getViewIndex(), attrs);</b>
+<i>80</i>&nbsp;        // TODO for GP 2.0: move view configurations into &lt;view&gt; tag (see
+<i>81</i>&nbsp;        // ViewSaver)
+<b class="nc"><i>82</i>&nbsp;        addAttribute(&quot;gantt-divider-location&quot;, &quot;&quot; + myUIFacade.getGanttDividerLocation(), attrs);</b>
+<b class="nc"><i>83</i>&nbsp;        addAttribute(&quot;resource-divider-location&quot;, &quot;&quot; + myUIFacade.getResourceDividerLocation(), attrs);</b>
+<i>84</i>&nbsp;      }
+<b class="nc"><i>85</i>&nbsp;      addAttribute(&quot;version&quot;, VERSION, attrs);</b>
+<b class="nc"><i>86</i>&nbsp;      addAttribute(&quot;locale&quot;, GanttLanguage.getInstance().getLocale().toString(), attrs);</b>
+<b class="nc"><i>87</i>&nbsp;      startElement(&quot;project&quot;, attrs, handler);</b>
+<i>88</i>&nbsp;      //
+<i>89</i>&nbsp;      // See https://bugs.openjdk.java.net/browse/JDK-8133452
+<b class="nc"><i>90</i>&nbsp;      if (getProject().getDescription() != null) {</b>
+<b class="nc"><i>91</i>&nbsp;        String projectDescription = getProject().getDescription().replace(&quot;\\r\\n&quot;, &quot;\\n&quot;);</b>
+<b class="nc"><i>92</i>&nbsp;        cdataElement(&quot;description&quot;, projectDescription, attrs, handler);</b>
+<i>93</i>&nbsp;      }
+<i>94</i>&nbsp;
+<b class="nc"><i>95</i>&nbsp;      saveViews(handler);</b>
+<b class="nc"><i>96</i>&nbsp;      emptyComment(handler);</b>
+<b class="nc"><i>97</i>&nbsp;      saveCalendar(handler);</b>
+<b class="nc"><i>98</i>&nbsp;      saveTasks(handler);</b>
+<b class="nc"><i>99</i>&nbsp;      saveResources(handler);</b>
+<b class="nc"><i>100</i>&nbsp;      saveAssignments(handler);</b>
+<b class="nc"><i>101</i>&nbsp;      saveVacations(handler);</b>
+<b class="nc"><i>102</i>&nbsp;      saveHistory(handler);</b>
+<b class="nc"><i>103</i>&nbsp;      saveRoles(handler);</b>
+<b class="nc"><i>104</i>&nbsp;      endElement(&quot;project&quot;, handler);</b>
+<b class="nc"><i>105</i>&nbsp;      handler.endDocument();</b>
+<i>106</i>&nbsp;
+<b class="nc"><i>107</i>&nbsp;      stream.close();</b>
+<b class="nc"><i>108</i>&nbsp;    } catch (Throwable e) {</b>
+<b class="nc"><i>109</i>&nbsp;      if (!GPLogger.log(e)) {</b>
+<b class="nc"><i>110</i>&nbsp;        e.printStackTrace(System.err);</b>
+<i>111</i>&nbsp;      }
+<b class="nc"><i>112</i>&nbsp;      IOException propagatedException = new IOException(&quot;Failed to save the project file&quot;);</b>
+<b class="nc"><i>113</i>&nbsp;      propagatedException.initCause(e);</b>
+<b class="nc"><i>114</i>&nbsp;      throw propagatedException;</b>
+<b class="nc"><i>115</i>&nbsp;    }</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  private void saveHistory(TransformerHandler handler) throws SAXException, ParserConfigurationException, IOException {
+<b class="nc"><i>119</i>&nbsp;    List&lt;GanttPreviousState&gt; history = myProject.getBaselines();</b>
+<b class="nc"><i>120</i>&nbsp;    new HistorySaver().save(history, handler);</b>
+<i>121</i>&nbsp;  }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;  private void saveVacations(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>124</i>&nbsp;    new VacationSaver().save(getProject(), handler);</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  private void saveResources(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>128</i>&nbsp;    new ResourceSaver().save(getProject(), handler);</b>
+<i>129</i>&nbsp;  }
+<i>130</i>&nbsp;
+<i>131</i>&nbsp;  private void saveViews(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>132</i>&nbsp;    if (getUIFacade() != null) {</b>
+<b class="nc"><i>133</i>&nbsp;      new ViewSaver().save(getUIFacade(), handler);</b>
+<i>134</i>&nbsp;    }
+<i>135</i>&nbsp;  }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;  private void saveCalendar(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>138</i>&nbsp;    new CalendarSaver().save(getProject(), handler);</b>
+<i>139</i>&nbsp;  }
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;  private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
+<b class="nc"><i>142</i>&nbsp;    new TaskSaver().save(getProject(), handler);</b>
+<i>143</i>&nbsp;  }
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  private void saveAssignments(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>146</i>&nbsp;    new AssignmentSaver().save(getProject(), handler);</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  private void saveRoles(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>150</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>151</i>&nbsp;    RoleManager roleManager = getProject().getRoleManager();</b>
+<b class="nc"><i>152</i>&nbsp;    RoleSet[] roleSets = roleManager.getRoleSets();</b>
+<b class="nc"><i>153</i>&nbsp;    for (int i = 0; i &lt; roleSets.length; i++) {</b>
+<b class="nc"><i>154</i>&nbsp;      RoleSet next = roleSets[i];</b>
+<b class="nc"><i>155</i>&nbsp;      if (next.isEnabled()) {</b>
+<b class="nc"><i>156</i>&nbsp;        addAttribute(&quot;roleset-name&quot;, next.getName(), attrs);</b>
+<b class="nc"><i>157</i>&nbsp;        emptyElement(&quot;roles&quot;, attrs, handler);</b>
+<i>158</i>&nbsp;      }
+<i>159</i>&nbsp;    }
+<i>160</i>&nbsp;    //
+<b class="nc"><i>161</i>&nbsp;    RoleSet projectRoleSet = roleManager.getProjectRoleSet();</b>
+<b class="nc"><i>162</i>&nbsp;    if (!projectRoleSet.isEmpty()) {</b>
+<b class="nc"><i>163</i>&nbsp;      startElement(&quot;roles&quot;, attrs, handler);</b>
+<b class="nc"><i>164</i>&nbsp;      Role[] projectRoles = projectRoleSet.getRoles();</b>
+<b class="nc"><i>165</i>&nbsp;      for (int i = 0; i &lt; projectRoles.length; i++) {</b>
+<b class="nc"><i>166</i>&nbsp;        Role next = projectRoles[i];</b>
+<b class="nc"><i>167</i>&nbsp;        addAttribute(&quot;id&quot;, next.getPersistentID(), attrs);</b>
+<b class="nc"><i>168</i>&nbsp;        addAttribute(&quot;name&quot;, next.getName(), attrs);</b>
+<b class="nc"><i>169</i>&nbsp;        emptyElement(&quot;role&quot;, attrs, handler);</b>
+<i>170</i>&nbsp;      }
+<b class="nc"><i>171</i>&nbsp;      endElement(&quot;roles&quot;, handler);</b>
+<i>172</i>&nbsp;    }
+<i>173</i>&nbsp;  }
+<i>174</i>&nbsp;
+<i>175</i>&nbsp;  IGanttProject getProject() {
+<b class="nc"><i>176</i>&nbsp;    return myProject;</b>
+<i>177</i>&nbsp;  }
+<i>178</i>&nbsp;
+<i>179</i>&nbsp;  UIFacade getUIFacade() {
+<b class="nc"><i>180</i>&nbsp;    return myUIFacade;</b>
+<i>181</i>&nbsp;  }
+<i>182</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

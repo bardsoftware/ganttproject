@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OffsetLookup</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.grid</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OffsetLookup (biz.ganttproject.core.chart.grid)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OffsetLookup</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65.2%
+  </span>
+  <span class="absValue">
+    (30/ 46)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OffsetLookup$ComparatorBy</td>
+  </tr>
+  <tr>
+    <td class="name">OffsetLookup$ComparatorByEndDate</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">OffsetLookup$ComparatorByPixels</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">OffsetLookup$ComparatorByStartDate</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (8/ 14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (33/ 60)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.chart.grid;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * Finds the bounds of the given date range in the given list of offsets.
+<i>26</i>&nbsp; *
+<i>27</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>28</i>&nbsp; */
+<b class="fc"><i>29</i>&nbsp;public class OffsetLookup {</b>
+<i>30</i>&nbsp;  public static interface ComparatorBy&lt;T&gt; {
+<i>31</i>&nbsp;    int compare(T point, int offsetIdx, List&lt;Offset&gt; offsets);
+<i>32</i>&nbsp;  }
+<i>33</i>&nbsp;
+<b class="fc"><i>34</i>&nbsp;  static class ComparatorByStartDate implements ComparatorBy&lt;Date&gt; {</b>
+<i>35</i>&nbsp;    @Override
+<i>36</i>&nbsp;    public int compare(Date point, int offsetIdx, List&lt;Offset&gt; offsets) {
+<b class="nc"><i>37</i>&nbsp;      return point.compareTo(offsets.get(offsetIdx).getOffsetStart());</b>
+<i>38</i>&nbsp;    }
+<i>39</i>&nbsp;  }
+<i>40</i>&nbsp;
+<b class="fc"><i>41</i>&nbsp;  static class ComparatorByEndDate implements ComparatorBy&lt;Date&gt; {</b>
+<i>42</i>&nbsp;    @Override
+<i>43</i>&nbsp;    public int compare(Date point, int offsetIdx, List&lt;Offset&gt; offsets) {
+<b class="fc"><i>44</i>&nbsp;      return point.compareTo(offsets.get(offsetIdx).getOffsetEnd());</b>
+<i>45</i>&nbsp;    }
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<b class="fc"><i>48</i>&nbsp;  public static final ComparatorBy&lt;Date&gt; BY_START_DATE = new ComparatorByStartDate();</b>
+<b class="fc"><i>49</i>&nbsp;  public static final ComparatorBy&lt;Date&gt; BY_END_DATE = new ComparatorByEndDate();</b>
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  private &lt;Type&gt; int findOffset(Type point, ComparatorBy&lt;Type&gt; comparator, int start, int end, List&lt;Offset&gt; offsets) {
+<b class="fc"><i>52</i>&nbsp;    if (comparator.compare(point, end, offsets) &gt; 0) {</b>
+<b class="fc"><i>53</i>&nbsp;      return -end - 2;</b>
+<i>54</i>&nbsp;    }
+<b class="fc"><i>55</i>&nbsp;    if (comparator.compare(point, start, offsets) &lt; 0) {</b>
+<b class="nc"><i>56</i>&nbsp;      return start;</b>
+<i>57</i>&nbsp;    }
+<i>58</i>&nbsp;
+<b class="fc"><i>59</i>&nbsp;    for (int compare = comparator.compare(point, start, offsets); compare != 0; compare = comparator.compare(point,</b>
+<i>60</i>&nbsp;        start, offsets)) {
+<b class="fc"><i>61</i>&nbsp;      if (end == start) {</b>
+<b class="nc"><i>62</i>&nbsp;        start = -start - 1;</b>
+<b class="nc"><i>63</i>&nbsp;        break;</b>
+<i>64</i>&nbsp;      }
+<b class="fc"><i>65</i>&nbsp;      if (end &lt; start) {</b>
+<b class="nc"><i>66</i>&nbsp;        throw new IllegalStateException(&quot;end=&quot; + end + &quot; start=&quot; + start + &quot; date=&quot; + point + &quot; offset=&quot;</b>
+<b class="nc"><i>67</i>&nbsp;            + offsets.get(start));</b>
+<i>68</i>&nbsp;      }
+<b class="fc"><i>69</i>&nbsp;      int diff = end - start;</b>
+<b class="fc"><i>70</i>&nbsp;      if (compare == 1) {</b>
+<b class="fc"><i>71</i>&nbsp;        start += diff == 1 ? 1 : diff / 2;</b>
+<i>72</i>&nbsp;      } else {
+<b class="fc"><i>73</i>&nbsp;        end = start;</b>
+<b class="fc"><i>74</i>&nbsp;        start -= diff == 1 ? 1 : diff / 2;</b>
+<i>75</i>&nbsp;      }
+<i>76</i>&nbsp;    }
+<b class="fc"><i>77</i>&nbsp;    return start;</b>
+<i>78</i>&nbsp;  }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  public int[] getBounds(Date startDate, Date endDate, List&lt;Offset&gt; offsets) {
+<b class="fc"><i>81</i>&nbsp;    int end = offsets.size() - 1;</b>
+<b class="fc"><i>82</i>&nbsp;    int start = 0;</b>
+<i>83</i>&nbsp;
+<b class="fc"><i>84</i>&nbsp;    ComparatorByEndDate comparator = new ComparatorByEndDate();</b>
+<i>85</i>&nbsp;
+<b class="fc"><i>86</i>&nbsp;    if (startDate.compareTo(offsets.get(start).getOffsetEnd()) &gt; 0) {</b>
+<b class="nc"><i>87</i>&nbsp;      start = findOffset(startDate, comparator, start, end, offsets);</b>
+<i>88</i>&nbsp;    }
+<b class="fc"><i>89</i>&nbsp;    if (start &lt; 0) {</b>
+<b class="nc"><i>90</i>&nbsp;      start = -start - 1;</b>
+<i>91</i>&nbsp;    }
+<b class="fc"><i>92</i>&nbsp;    int leftX = start == offsets.size() ? offsets.get(start - 1).getOffsetPixels()</b>
+<b class="fc"><i>93</i>&nbsp;        : offsets.get(start).getOffsetPixels();</b>
+<i>94</i>&nbsp;
+<b class="fc"><i>95</i>&nbsp;    end = offsets.size() - 1;</b>
+<b class="fc"><i>96</i>&nbsp;    if (endDate.compareTo(offsets.get(end).getOffsetEnd()) &lt; 0) {</b>
+<b class="fc"><i>97</i>&nbsp;      end = findOffset(endDate, comparator, 0, end, offsets);</b>
+<i>98</i>&nbsp;    }
+<b class="fc"><i>99</i>&nbsp;    if (end &lt; 0) {</b>
+<b class="nc"><i>100</i>&nbsp;      end = -end - 1;</b>
+<i>101</i>&nbsp;    }
+<b class="fc"><i>102</i>&nbsp;    int rightX = end == offsets.size() ? offsets.get(end - 1).getOffsetPixels() : offsets.get(end).getOffsetPixels();</b>
+<b class="fc"><i>103</i>&nbsp;    return new int[] { leftX, rightX };</b>
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  public int lookupOffsetBy(Date date, List&lt;Offset&gt; offsets, ComparatorBy&lt;Date&gt; comparator) {
+<b class="nc"><i>107</i>&nbsp;    return findOffset(date, comparator, 0, offsets.size() - 1, offsets);</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;  public int lookupOffsetByStartDate(Date startDate, List&lt;Offset&gt; offsets) {
+<b class="nc"><i>111</i>&nbsp;    ComparatorByStartDate comparator = new ComparatorByStartDate();</b>
+<b class="nc"><i>112</i>&nbsp;    return findOffset(startDate, comparator, 0, offsets.size() - 1, offsets);</b>
+<i>113</i>&nbsp;  }
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;  public int lookupOffsetByEndDate(Date endDate, List&lt;Offset&gt; offsets) {
+<b class="fc"><i>116</i>&nbsp;    ComparatorByEndDate comparator = new ComparatorByEndDate();</b>
+<b class="fc"><i>117</i>&nbsp;    return findOffset(endDate, comparator, 0, offsets.size() - 1, offsets);</b>
+<i>118</i>&nbsp;  }
+<i>119</i>&nbsp;
+<b class="nc"><i>120</i>&nbsp;  static class ComparatorByPixels implements ComparatorBy&lt;Integer&gt; {</b>
+<i>121</i>&nbsp;    @Override
+<i>122</i>&nbsp;    public int compare(Integer point, int offsetIdx, List&lt;Offset&gt; offsets) {
+<b class="nc"><i>123</i>&nbsp;      Offset offset = offsets.get(offsetIdx);</b>
+<b class="nc"><i>124</i>&nbsp;      if (offset.getOffsetPixels() &gt; point) {</b>
+<b class="nc"><i>125</i>&nbsp;        return 1;</b>
+<i>126</i>&nbsp;      }
+<b class="nc"><i>127</i>&nbsp;      if (offsetIdx == offsets.size() - 1) {</b>
+<b class="nc"><i>128</i>&nbsp;        return 0;</b>
+<i>129</i>&nbsp;      }
+<b class="nc"><i>130</i>&nbsp;      Offset rightOffset = offsets.get(offsetIdx + 1);</b>
+<b class="nc"><i>131</i>&nbsp;      if (rightOffset.getOffsetPixels() &gt; point) {</b>
+<b class="nc"><i>132</i>&nbsp;        return 0;</b>
+<i>133</i>&nbsp;      }
+<b class="nc"><i>134</i>&nbsp;      return -1;</b>
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  Date lookupDateByPixels(int pixels, List&lt;Offset&gt; offsets) {
+<b class="nc"><i>139</i>&nbsp;    int offsetIdx = findOffset(pixels, new ComparatorByPixels(), 0, offsets.size() - 1, offsets);</b>
+<b class="nc"><i>140</i>&nbsp;    if (offsetIdx &lt; 0) {</b>
+<b class="nc"><i>141</i>&nbsp;      offsetIdx = -offsetIdx - 1;</b>
+<i>142</i>&nbsp;    }
+<b class="nc"><i>143</i>&nbsp;    Offset offset = offsets.get(offsetIdx);</b>
+<b class="nc"><i>144</i>&nbsp;    return offset.getOffsetStart();</b>
+<i>145</i>&nbsp;  }
+<i>146</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DependencySceneBuilder</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.scene.gantt</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DependencySceneBuilder (biz.ganttproject.core.chart.scene.gantt)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DependencySceneBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.5%
+  </span>
+  <span class="absValue">
+    (23/ 98)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DependencySceneBuilder$ChartApi</td>
+  </tr>
+  <tr>
+    <td class="name">DependencySceneBuilder$TaskApi</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.5%
+  </span>
+  <span class="absValue">
+    (23/ 98)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.core.chart.scene.gantt;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas;
+<i>22</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas.Line;
+<i>23</i>&nbsp;import biz.ganttproject.core.chart.scene.BarChartActivity;
+<i>24</i>&nbsp;import biz.ganttproject.core.chart.scene.BarChartConnector;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import java.awt.*;
+<i>27</i>&nbsp;import java.util.ArrayList;
+<i>28</i>&nbsp;import java.util.Collection;
+<i>29</i>&nbsp;import java.util.List;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;/**
+<i>32</i>&nbsp; * Renders dependency lines between tasks.
+<i>33</i>&nbsp; *
+<i>34</i>&nbsp; * @author Dmitry Barashev
+<i>35</i>&nbsp; */
+<i>36</i>&nbsp;public class DependencySceneBuilder&lt;T, D extends BarChartConnector&lt;T, D&gt;&gt; {
+<i>37</i>&nbsp;  private final Canvas myTaskCanvas;
+<i>38</i>&nbsp;  private final Canvas myOutputCanvas;
+<i>39</i>&nbsp;  private final ChartApi myChartApi;
+<i>40</i>&nbsp;  private final TaskApi&lt;T, D&gt; myTaskApi;
+<i>41</i>&nbsp;  private int myBarHeight;
+<i>42</i>&nbsp;  private Canvas.Arrow myFinishArrow;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  public interface TaskApi&lt;T, D&gt; {
+<i>45</i>&nbsp;    boolean isMilestone(T task);
+<i>46</i>&nbsp;    Dimension getUnitVector(BarChartActivity&lt;T&gt; activity, D dependency);
+<i>47</i>&nbsp;    String getStyle(D dependency);
+<i>48</i>&nbsp;    Iterable&lt;D&gt; getConnectors(T task);
+<i>49</i>&nbsp;    List&lt;T&gt; getTasks();
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  public interface ChartApi {
+<i>53</i>&nbsp;    int getBarHeight();
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<b class="fc"><i>56</i>&nbsp;  public DependencySceneBuilder(Canvas taskCanvas, Canvas outputCanvas, TaskApi&lt;T, D&gt; taskApi, ChartApi chartApi) {</b>
+<b class="fc"><i>57</i>&nbsp;    myTaskApi = taskApi;</b>
+<b class="fc"><i>58</i>&nbsp;    myChartApi = chartApi;</b>
+<i>59</i>&nbsp;    //myVisibleTasks = visibleTasks;
+<b class="fc"><i>60</i>&nbsp;    myTaskCanvas = taskCanvas;</b>
+<b class="fc"><i>61</i>&nbsp;    myOutputCanvas = outputCanvas;</b>
+<b class="fc"><i>62</i>&nbsp;    myFinishArrow = Canvas.Arrow.FINISH;</b>
+<b class="fc"><i>63</i>&nbsp;    myBarHeight = -1;</b>
+<b class="fc"><i>64</i>&nbsp;  }</b>
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  public void build() {
+<b class="fc"><i>67</i>&nbsp;    List&lt;Connector&gt; dependencyDrawData = prepareDependencyDrawData();</b>
+<b class="fc"><i>68</i>&nbsp;    drawDependencies(dependencyDrawData);</b>
+<b class="fc"><i>69</i>&nbsp;  }</b>
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  public void drawDependencies(Collection&lt;Connector&gt; connectors) {
+<b class="fc"><i>73</i>&nbsp;    if (myChartApi.getBarHeight() != myBarHeight) {</b>
+<b class="fc"><i>74</i>&nbsp;      myFinishArrow = new Canvas.Arrow((int)(0.7f * myChartApi.getBarHeight()), (int)(0.3f*myChartApi.getBarHeight()));</b>
+<b class="fc"><i>75</i>&nbsp;      myBarHeight = myChartApi.getBarHeight();</b>
+<i>76</i>&nbsp;    }
+<b class="fc"><i>77</i>&nbsp;    Canvas primitiveContainer = myOutputCanvas;</b>
+<b class="fc"><i>78</i>&nbsp;    for (Connector connector : connectors) {</b>
+<b class="nc"><i>79</i>&nbsp;      Connector.Vector dependantVector = connector.getEnd();</b>
+<b class="nc"><i>80</i>&nbsp;      Connector.Vector dependeeVector = connector.getStart();</b>
+<i>81</i>&nbsp;      // Determine the line style (depending on type of dependency)
+<b class="nc"><i>82</i>&nbsp;      String lineStyle = connector.getStyleName();</b>
+<i>83</i>&nbsp;
+<b class="nc"><i>84</i>&nbsp;      if (dependeeVector.getHProjection().reaches(dependantVector.getHProjection().getPoint())) {</b>
+<i>85</i>&nbsp;        // when dependee.end &lt;= dependant.start &amp;&amp; dependency.type is
+<i>86</i>&nbsp;        // any
+<i>87</i>&nbsp;        // or dependee.end &lt;= dependant.end &amp;&amp; dependency.type==FF
+<i>88</i>&nbsp;        // or dependee.start &gt;= dependant.end &amp;&amp; dependency.type==SF
+<b class="nc"><i>89</i>&nbsp;        Point first = new Point(dependeeVector.getPoint().x, dependeeVector.getPoint().y);</b>
+<i>90</i>&nbsp;
+<b class="nc"><i>91</i>&nbsp;        int xEntry = dependantVector.getPoint().x;</b>
+<b class="nc"><i>92</i>&nbsp;        int yEntry = dependantVector.getPoint().y;</b>
+<b class="nc"><i>93</i>&nbsp;        Point second = new Point(xEntry, dependeeVector.getPoint().y);</b>
+<b class="nc"><i>94</i>&nbsp;        Point third = new Point(xEntry, yEntry);</b>
+<i>95</i>&nbsp;
+<b class="nc"><i>96</i>&nbsp;        primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);</b>
+<b class="nc"><i>97</i>&nbsp;        Line secondLine = primitiveContainer.createLine(second.x, second.y, third.x, third.y);</b>
+<b class="nc"><i>98</i>&nbsp;        secondLine.setStyle(lineStyle);</b>
+<b class="nc"><i>99</i>&nbsp;        secondLine.setArrow(myFinishArrow);</b>
+<b class="nc"><i>100</i>&nbsp;      } else if (dependantVector.getHProjection().reaches(dependeeVector.getHProjection().getPoint(3))) {</b>
+<b class="nc"><i>101</i>&nbsp;        Point first = dependeeVector.getPoint(3);</b>
+<b class="nc"><i>102</i>&nbsp;        Point second = new Point(first.x, dependantVector.getPoint().y);</b>
+<b class="nc"><i>103</i>&nbsp;        primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,</b>
+<b class="nc"><i>104</i>&nbsp;            first.y).setStyle(lineStyle);</b>
+<b class="nc"><i>105</i>&nbsp;        primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);</b>
+<b class="nc"><i>106</i>&nbsp;        Line line = primitiveContainer.createLine(second.x, second.y, dependantVector.getPoint().x,</b>
+<b class="nc"><i>107</i>&nbsp;            dependantVector.getPoint().y);</b>
+<b class="nc"><i>108</i>&nbsp;        line.setStyle(lineStyle);</b>
+<b class="nc"><i>109</i>&nbsp;        line.setArrow(myFinishArrow);</b>
+<b class="nc"><i>110</i>&nbsp;      } else {</b>
+<b class="nc"><i>111</i>&nbsp;        Point first = dependeeVector.getPoint(3);</b>
+<b class="nc"><i>112</i>&nbsp;        Point forth = dependantVector.getPoint(3);</b>
+<b class="nc"><i>113</i>&nbsp;        Point second = new Point(first.x, (first.y + forth.y) / 2);</b>
+<b class="nc"><i>114</i>&nbsp;        Point third = new Point(forth.x, (first.y + forth.y) / 2);</b>
+<b class="nc"><i>115</i>&nbsp;        primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,</b>
+<b class="nc"><i>116</i>&nbsp;            first.y).setStyle(lineStyle);</b>
+<b class="nc"><i>117</i>&nbsp;        primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);</b>
+<b class="nc"><i>118</i>&nbsp;        primitiveContainer.createLine(second.x, second.y, third.x, third.y).setStyle(lineStyle);</b>
+<b class="nc"><i>119</i>&nbsp;        primitiveContainer.createLine(third.x, third.y, forth.x, forth.y).setStyle(lineStyle);</b>
+<b class="nc"><i>120</i>&nbsp;        primitiveContainer.createLine(forth.x, forth.y, dependantVector.getPoint().x,</b>
+<b class="nc"><i>121</i>&nbsp;            dependantVector.getPoint().y).setStyle(lineStyle);</b>
+<i>122</i>&nbsp;      }
+<b class="nc"><i>123</i>&nbsp;    }</b>
+<b class="fc"><i>124</i>&nbsp;  }</b>
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  private List&lt;Connector&gt; prepareDependencyDrawData() {
+<b class="fc"><i>127</i>&nbsp;    List&lt;Connector&gt; result = new ArrayList&lt;Connector&gt;();</b>
+<b class="fc"><i>128</i>&nbsp;    for (T t : myTaskApi.getTasks()) {</b>
+<b class="fc"><i>129</i>&nbsp;      if (t != null) {</b>
+<b class="fc"><i>130</i>&nbsp;        for (D td : myTaskApi.getConnectors(t)) {</b>
+<b class="nc"><i>131</i>&nbsp;          prepareDependencyDrawData(td, result);</b>
+<b class="nc"><i>132</i>&nbsp;        }</b>
+<i>133</i>&nbsp;      }
+<b class="fc"><i>134</i>&nbsp;    }</b>
+<b class="fc"><i>135</i>&nbsp;    return result;</b>
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  private void prepareDependencyDrawData(D connector, List&lt;Connector&gt; result) {
+<b class="nc"><i>139</i>&nbsp;    BarChartActivity&lt;T&gt; dependant = connector.getEnd();</b>
+<b class="nc"><i>140</i>&nbsp;    BarChartActivity&lt;T&gt; dependee = connector.getStart();</b>
+<i>141</i>&nbsp;
+<b class="nc"><i>142</i>&nbsp;    Canvas graphicPrimitiveContainer = myTaskCanvas;</b>
+<b class="nc"><i>143</i>&nbsp;    Canvas.Polygon dependantRectangle = (Canvas.Polygon) graphicPrimitiveContainer.getPrimitive(dependant);</b>
+<b class="nc"><i>144</i>&nbsp;    if (dependantRectangle == null) {</b>
+<b class="nc"><i>145</i>&nbsp;      return;</b>
+<i>146</i>&nbsp;    }
+<b class="nc"><i>147</i>&nbsp;    Canvas.Polygon dependeeRectangle = (Canvas.Polygon) graphicPrimitiveContainer.getPrimitive(dependee);</b>
+<b class="nc"><i>148</i>&nbsp;    if (dependeeRectangle == null) {</b>
+<b class="nc"><i>149</i>&nbsp;      return;</b>
+<i>150</i>&nbsp;    }
+<b class="nc"><i>151</i>&nbsp;    if (!dependantRectangle.isVisible() &amp;&amp; !dependeeRectangle.isVisible()) {</b>
+<b class="nc"><i>152</i>&nbsp;      return;</b>
+<i>153</i>&nbsp;    }
+<b class="nc"><i>154</i>&nbsp;    if (!dependeeRectangle.isVisible() &amp;&amp; dependantRectangle.getWidth() == 0) {</b>
+<b class="nc"><i>155</i>&nbsp;      return;</b>
+<i>156</i>&nbsp;    }
+<i>157</i>&nbsp;
+<b class="nc"><i>158</i>&nbsp;    final int ysign = Integer.signum(dependeeRectangle.getMiddleY() - dependantRectangle.getMiddleY());</b>
+<i>159</i>&nbsp;
+<b class="nc"><i>160</i>&nbsp;    final Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector);</b>
+<b class="nc"><i>161</i>&nbsp;    final int yDantEntry = ysign &gt; 0 ? dependantRectangle.getBottomY() : dependantRectangle.getTopY();</b>
+<i>162</i>&nbsp;    int xDantEntry;
+<b class="nc"><i>163</i>&nbsp;    if (myTaskApi.isMilestone(dependant.getOwner())) {</b>
+<b class="nc"><i>164</i>&nbsp;      xDantEntry = dependantRectangle.getMiddleX();</b>
+<b class="nc"><i>165</i>&nbsp;    } else if (dependantDirection == Connector.Vector.WEST) {</b>
+<b class="nc"><i>166</i>&nbsp;      xDantEntry = dependantRectangle.getLeftX() + 3;</b>
+<b class="nc"><i>167</i>&nbsp;    } else if (dependantDirection == Connector.Vector.EAST) {</b>
+<b class="nc"><i>168</i>&nbsp;      xDantEntry = dependantRectangle.getRightX() - 3;</b>
+<i>169</i>&nbsp;    } else {
+<b class="nc"><i>170</i>&nbsp;      xDantEntry = dependantRectangle.getMiddleX();</b>
+<i>171</i>&nbsp;    }
+<b class="nc"><i>172</i>&nbsp;    Connector.Vector dependantVector = new Connector.Vector(new Point(xDantEntry, yDantEntry), dependantDirection);</b>
+<b class="nc"><i>173</i>&nbsp;    Dimension dependeeDirection = myTaskApi.getUnitVector(dependee, connector);</b>
+<i>174</i>&nbsp;    int xDeeExit;
+<i>175</i>&nbsp;    int yDeeExit;
+<b class="nc"><i>176</i>&nbsp;    if (myTaskApi.isMilestone(dependee.getOwner()) &amp;&amp; xDantEntry == dependeeRectangle.getMiddleX()) {</b>
+<b class="nc"><i>177</i>&nbsp;      xDeeExit = xDantEntry;</b>
+<b class="nc"><i>178</i>&nbsp;      yDeeExit = ysign &gt; 0 ? dependeeRectangle.getTopY() : dependeeRectangle.getBottomY();</b>
+<i>179</i>&nbsp;    } else {
+<b class="nc"><i>180</i>&nbsp;      yDeeExit = dependeeRectangle.getMiddleY();</b>
+<b class="nc"><i>181</i>&nbsp;      if (dependeeDirection == Connector.Vector.WEST) {</b>
+<b class="nc"><i>182</i>&nbsp;        xDeeExit = dependeeRectangle.getLeftX();</b>
+<b class="nc"><i>183</i>&nbsp;      } else if (dependeeDirection == Connector.Vector.EAST) {</b>
+<b class="nc"><i>184</i>&nbsp;        xDeeExit = dependeeRectangle.getRightX();</b>
+<i>185</i>&nbsp;      } else {
+<b class="nc"><i>186</i>&nbsp;        xDeeExit = dependeeRectangle.getMiddleX();</b>
+<i>187</i>&nbsp;      }
+<i>188</i>&nbsp;    }
+<b class="nc"><i>189</i>&nbsp;    Connector.Vector dependeeVector = new Connector.Vector(new Point(xDeeExit, yDeeExit), dependeeDirection);</b>
+<i>190</i>&nbsp;
+<b class="nc"><i>191</i>&nbsp;    result.add(new Connector(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));</b>
+<b class="nc"><i>192</i>&nbsp;  }</b>
+<i>193</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

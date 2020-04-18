@@ -1,0 +1,135 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CachingTextFormatter</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.text</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CachingTextFormatter (biz.ganttproject.core.chart.text)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CachingTextFormatter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (15/ 15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 06.03.2005
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package biz.ganttproject.core.chart.text;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import biz.ganttproject.core.chart.grid.Offset;
+<i>7</i>&nbsp;import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
+<i>8</i>&nbsp;import biz.ganttproject.core.time.DateFrameable;
+<i>9</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;import java.util.Date;
+<i>12</i>&nbsp;import java.util.HashMap;
+<i>13</i>&nbsp;
+<i>14</i>&nbsp;/**
+<i>15</i>&nbsp; * @author bard
+<i>16</i>&nbsp; */
+<i>17</i>&nbsp;public abstract class CachingTextFormatter {
+<b class="fc"><i>18</i>&nbsp;  private final HashMap&lt;Date, TimeUnitText[]&gt; myTextCache = new HashMap&lt;Date, TimeUnitText[]&gt;();</b>
+<i>19</i>&nbsp;
+<b class="fc"><i>20</i>&nbsp;  protected CachingTextFormatter() {</b>
+<b class="fc"><i>21</i>&nbsp;  }</b>
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;  public TimeUnitText[] format(Offset curOffset) {
+<b class="fc"><i>24</i>&nbsp;    return format(curOffset.getOffsetUnit(), curOffset.getOffsetStart());</b>
+<i>25</i>&nbsp;  }
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;  public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
+<b class="fc"><i>28</i>&nbsp;    TimeUnitText[] result = null;</b>
+<b class="fc"><i>29</i>&nbsp;    Date adjustedLeft = ((DateFrameable) timeUnit).adjustLeft(baseDate);</b>
+<b class="fc"><i>30</i>&nbsp;    result = getCachedText(adjustedLeft);</b>
+<b class="fc"><i>31</i>&nbsp;    if (result == null) {</b>
+<b class="fc"><i>32</i>&nbsp;      result = createTimeUnitText(adjustedLeft);</b>
+<b class="fc"><i>33</i>&nbsp;      myTextCache.put(adjustedLeft, result);</b>
+<i>34</i>&nbsp;    }
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;    return result;</b>
+<i>37</i>&nbsp;  }
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  protected TimeUnitText[] getCachedText(Date startDate) {
+<b class="fc"><i>40</i>&nbsp;    return myTextCache.get(startDate);</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  public void setLocale(LocaleApi locale) {
+<b class="fc"><i>44</i>&nbsp;    myTextCache.clear();</b>
+<b class="fc"><i>45</i>&nbsp;  }</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public int getTextCount() {
+<b class="fc"><i>48</i>&nbsp;    return 1;</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;  protected abstract TimeUnitText[] createTimeUnitText(Date adjustedLeft);
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

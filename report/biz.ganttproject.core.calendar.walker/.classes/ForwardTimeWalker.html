@@ -1,0 +1,154 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ForwardTimeWalker</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.calendar.walker</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ForwardTimeWalker (biz.ganttproject.core.calendar.walker)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ForwardTimeWalker</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/ 20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.calendar.walker;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>24</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * Abstract iterator-like class for walking forward over the calendar timeline
+<i>30</i>&nbsp; * doing steps of the specified size. It takes into account calendar working and
+<i>31</i>&nbsp; * non-working time.
+<i>32</i>&nbsp; * 
+<i>33</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>34</i>&nbsp; */
+<b class="fc"><i>35</i>&nbsp;public abstract class ForwardTimeWalker {</b>
+<i>36</i>&nbsp;  private final GPCalendarCalc myCalendar;
+<i>37</i>&nbsp;  private final TimeUnit myTimeUnit;
+<i>38</i>&nbsp;
+<b class="fc"><i>39</i>&nbsp;  protected ForwardTimeWalker(GPCalendarCalc calendar, TimeUnit timeUnit) {</b>
+<b class="fc"><i>40</i>&nbsp;    myCalendar = calendar;</b>
+<b class="fc"><i>41</i>&nbsp;    myTimeUnit = timeUnit;</b>
+<b class="fc"><i>42</i>&nbsp;  }</b>
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  protected TimeUnit getTimeUnit() {
+<b class="fc"><i>45</i>&nbsp;    return myTimeUnit;</b>
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  abstract protected boolean isMoving();
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  public void walk(Date startDate) {
+<b class="fc"><i>51</i>&nbsp;    Date unitStart = myTimeUnit.adjustLeft(startDate);</b>
+<b class="fc"><i>52</i>&nbsp;    while (isMoving()) {</b>
+<b class="fc"><i>53</i>&nbsp;      boolean isWeekendState = (myCalendar.getDayMask(unitStart) &amp; DayMask.WORKING) == 0;</b>
+<b class="fc"><i>54</i>&nbsp;      if (isWeekendState) {</b>
+<b class="fc"><i>55</i>&nbsp;        Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);</b>
+<b class="fc"><i>56</i>&nbsp;        assert workingUnitStart.after(unitStart);</b>
+<b class="fc"><i>57</i>&nbsp;        processNonWorkingTime(unitStart, workingUnitStart);</b>
+<b class="fc"><i>58</i>&nbsp;        unitStart = workingUnitStart;</b>
+<b class="fc"><i>59</i>&nbsp;        continue;</b>
+<i>60</i>&nbsp;      } else {
+<b class="fc"><i>61</i>&nbsp;        Date nextUnitStart = myTimeUnit.adjustRight(unitStart);</b>
+<b class="fc"><i>62</i>&nbsp;        processWorkingTime(unitStart, nextUnitStart);</b>
+<b class="fc"><i>63</i>&nbsp;        unitStart = nextUnitStart;</b>
+<i>64</i>&nbsp;      }
+<b class="fc"><i>65</i>&nbsp;    }</b>
+<b class="fc"><i>66</i>&nbsp;  }</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  protected abstract void processWorkingTime(Date intervalStart, Date nextIntervalStart);
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  protected abstract void processNonWorkingTime(Date intervalStart, Date workingIntervalStart);
+<i>71</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

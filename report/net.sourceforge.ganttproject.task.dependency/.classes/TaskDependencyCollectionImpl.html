@@ -1,0 +1,467 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskDependencyCollectionImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.dependency</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskDependencyCollectionImpl (net.sourceforge.ganttproject.task.dependency)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskDependencyCollectionImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.2%
+  </span>
+  <span class="absValue">
+    (15/ 22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.6%
+  </span>
+  <span class="absValue">
+    (56/ 94)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskDependencyCollectionImpl$MutationInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/ 6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDependencyCollectionImpl$MutatorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.6%
+  </span>
+  <span class="absValue">
+    (20/ 33)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    67.7%
+  </span>
+  <span class="absValue">
+    (21/ 31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.9%
+  </span>
+  <span class="absValue">
+    (81/ 133)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.dependency;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;import java.util.Collections;
+<i>23</i>&nbsp;import java.util.HashSet;
+<i>24</i>&nbsp;import java.util.Iterator;
+<i>25</i>&nbsp;import java.util.LinkedHashMap;
+<i>26</i>&nbsp;import java.util.List;
+<i>27</i>&nbsp;import java.util.Map;
+<i>28</i>&nbsp;import java.util.Set;
+<i>29</i>&nbsp;import java.util.SortedMap;
+<i>30</i>&nbsp;import java.util.TreeMap;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;/**
+<i>40</i>&nbsp; * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 16:02:48 To
+<i>41</i>&nbsp; * change this template use File | Settings | File Templates.
+<i>42</i>&nbsp; */
+<i>43</i>&nbsp;public class TaskDependencyCollectionImpl implements TaskDependencyCollection {
+<b class="fc"><i>44</i>&nbsp;  private Set&lt;TaskDependency&gt; myDependencies = new HashSet&lt;TaskDependency&gt;();</b>
+<i>45</i>&nbsp;
+<b class="fc"><i>46</i>&nbsp;  private SortedMap&lt;SearchKey, TaskDependency&gt; mySearchKey2dependency = new TreeMap&lt;SearchKey, TaskDependency&gt;();</b>
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  private final EventDispatcher myEventDispatcher;
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  private final TaskContainmentHierarchyFacade.Factory myTaskHierarchyFactory;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  public TaskDependencyCollectionImpl(TaskContainmentHierarchyFacade.Factory taskHierarchyFactory,
+<b class="fc"><i>53</i>&nbsp;      EventDispatcher myEventDispatcher) {</b>
+<b class="fc"><i>54</i>&nbsp;    this.myEventDispatcher = myEventDispatcher;</b>
+<b class="fc"><i>55</i>&nbsp;    myTaskHierarchyFactory = taskHierarchyFactory;</b>
+<b class="fc"><i>56</i>&nbsp;  }</b>
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  @Override
+<i>59</i>&nbsp;  public TaskDependency[] getDependencies() {
+<b class="fc"><i>60</i>&nbsp;    return myDependencies.toArray(new TaskDependency[0]);</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  @Override
+<i>64</i>&nbsp;  public TaskDependency[] getDependencies(Task task) {
+<b class="fc"><i>65</i>&nbsp;    SearchKey fromKey = new RangeSearchFromKey(task);</b>
+<b class="fc"><i>66</i>&nbsp;    SearchKey toKey = new RangeSearchToKey(task);</b>
+<b class="fc"><i>67</i>&nbsp;    SortedMap&lt;SearchKey, TaskDependency&gt; submap = mySearchKey2dependency.subMap(fromKey, toKey);</b>
+<b class="fc"><i>68</i>&nbsp;    return submap.values().toArray(new TaskDependency[0]);</b>
+<i>69</i>&nbsp;  }
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  @Override
+<i>72</i>&nbsp;  public TaskDependency[] getDependenciesAsDependant(Task dependant) {
+<b class="fc"><i>73</i>&nbsp;    SearchKey fromKey = new SearchKey(SearchKey.DEPENDANT, dependant.getTaskID(), -1);</b>
+<b class="fc"><i>74</i>&nbsp;    SearchKey toKey = new SearchKey(SearchKey.DEPENDEE, dependant.getTaskID(), -1);</b>
+<b class="fc"><i>75</i>&nbsp;    SortedMap&lt;SearchKey, TaskDependency&gt; submap = mySearchKey2dependency.subMap(fromKey, toKey);</b>
+<b class="fc"><i>76</i>&nbsp;    return submap.values().toArray(new TaskDependency[0]);</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  @Override
+<i>80</i>&nbsp;  public TaskDependency[] getDependenciesAsDependee(Task dependee) {
+<b class="fc"><i>81</i>&nbsp;    SearchKey fromKey = new SearchKey(SearchKey.DEPENDEE, dependee.getTaskID(), -1);</b>
+<b class="fc"><i>82</i>&nbsp;    SearchKey toKey = new SearchKey(Integer.MAX_VALUE, dependee.getTaskID(), -1);</b>
+<b class="fc"><i>83</i>&nbsp;    SortedMap&lt;SearchKey, TaskDependency&gt; submap = mySearchKey2dependency.subMap(fromKey, toKey);</b>
+<b class="fc"><i>84</i>&nbsp;    return submap.values().toArray(new TaskDependency[0]);</b>
+<i>85</i>&nbsp;  }
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  @Override
+<i>88</i>&nbsp;  public TaskDependency createDependency(Task dependant, Task dependee) throws TaskDependencyException {
+<b class="fc"><i>89</i>&nbsp;    return createDependency(dependant, dependee, new FinishStartConstraintImpl());</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  @Override
+<i>93</i>&nbsp;  public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
+<i>94</i>&nbsp;      throws TaskDependencyException {
+<b class="fc"><i>95</i>&nbsp;    return createDependency(dependant, dependee, constraint, getDefaultHardness());</b>
+<i>96</i>&nbsp;  }
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;  protected TaskDependency.Hardness getDefaultHardness() {
+<b class="nc"><i>99</i>&nbsp;    return TaskDependency.Hardness.STRONG;</b>
+<i>100</i>&nbsp;  }
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint,
+<i>103</i>&nbsp;      Hardness hardness) throws TaskDependencyException {
+<b class="fc"><i>104</i>&nbsp;    TaskDependency result = auxCreateDependency(dependant, dependee, constraint, hardness);</b>
+<b class="fc"><i>105</i>&nbsp;    addDependency(result);</b>
+<b class="fc"><i>106</i>&nbsp;    return result;</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public boolean canCreateDependency(Task dependant, Task dependee) {
+<b class="fc"><i>111</i>&nbsp;    if (dependant == dependee) {</b>
+<b class="nc"><i>112</i>&nbsp;      return false;</b>
+<i>113</i>&nbsp;    }
+<b class="fc"><i>114</i>&nbsp;    if (false == getTaskHierarchy().areUnrelated(dependant, dependee)) {</b>
+<b class="fc"><i>115</i>&nbsp;      return false;</b>
+<i>116</i>&nbsp;    }
+<b class="fc"><i>117</i>&nbsp;    SearchKey key = new SearchKey(SearchKey.DEPENDANT, dependant.getTaskID(), dependee.getTaskID());</b>
+<b class="fc"><i>118</i>&nbsp;    if (mySearchKey2dependency.containsKey(key)) {</b>
+<b class="nc"><i>119</i>&nbsp;      return false;</b>
+<i>120</i>&nbsp;    }
+<b class="fc"><i>121</i>&nbsp;    TaskDependency testDep = new TaskDependencyImpl(dependant, dependee, this);</b>
+<b class="fc"><i>122</i>&nbsp;    if (isLooping(testDep)) {</b>
+<b class="nc"><i>123</i>&nbsp;      return false;</b>
+<i>124</i>&nbsp;    }
+<b class="fc"><i>125</i>&nbsp;    return true;</b>
+<i>126</i>&nbsp;  }
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  @Override
+<i>129</i>&nbsp;  public void deleteDependency(TaskDependency dependency) {
+<b class="nc"><i>130</i>&nbsp;    delete(dependency);</b>
+<b class="nc"><i>131</i>&nbsp;  }</b>
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  void fireChanged(TaskDependency dependency) {
+<b class="fc"><i>134</i>&nbsp;    myEventDispatcher.fireDependencyChanged(dependency);</b>
+<b class="fc"><i>135</i>&nbsp;  }</b>
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;  @Override
+<i>138</i>&nbsp;  public void clear() {
+<b class="nc"><i>139</i>&nbsp;    doClear();</b>
+<b class="nc"><i>140</i>&nbsp;  }</b>
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  @Override
+<i>143</i>&nbsp;  public TaskDependencyCollectionMutator createMutator() {
+<b class="fc"><i>144</i>&nbsp;    return new MutatorImpl();</b>
+<i>145</i>&nbsp;  }
+<i>146</i>&nbsp;
+<b class="fc"><i>147</i>&nbsp;  private class MutatorImpl implements TaskDependencyCollectionMutator {</b>
+<b class="fc"><i>148</i>&nbsp;    private Map&lt;TaskDependency, MutationInfo&gt; myQueue = new LinkedHashMap&lt;TaskDependency, MutationInfo&gt;();</b>
+<i>149</i>&nbsp;
+<i>150</i>&nbsp;    private MutationInfo myCleanupMutation;
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;    @Override
+<i>153</i>&nbsp;    public void commit() {
+<b class="fc"><i>154</i>&nbsp;      List&lt;MutationInfo&gt; mutations = new ArrayList&lt;MutationInfo&gt;(myQueue.values());</b>
+<b class="fc"><i>155</i>&nbsp;      if (myCleanupMutation != null) {</b>
+<b class="nc"><i>156</i>&nbsp;        mutations.add(myCleanupMutation);</b>
+<i>157</i>&nbsp;      }
+<b class="fc"><i>158</i>&nbsp;      Collections.sort(mutations);</b>
+<b class="fc"><i>159</i>&nbsp;      for (int i = 0; i &lt; mutations.size(); i++) {</b>
+<b class="fc"><i>160</i>&nbsp;        MutationInfo next = mutations.get(i);</b>
+<b class="fc"><i>161</i>&nbsp;        switch (next.myOperation) {</b>
+<i>162</i>&nbsp;        case MutationInfo.ADD: {
+<i>163</i>&nbsp;          try {
+<b class="fc"><i>164</i>&nbsp;            addDependency(next.myDependency);</b>
+<b class="nc"><i>165</i>&nbsp;          } catch (TaskDependencyException e) {</b>
+<b class="nc"><i>166</i>&nbsp;            if (!GPLogger.log(e)) {</b>
+<b class="nc"><i>167</i>&nbsp;              e.printStackTrace(System.err);</b>
+<i>168</i>&nbsp;            }
+<b class="fc"><i>169</i>&nbsp;          }</b>
+<b class="nc"><i>170</i>&nbsp;          break;</b>
+<i>171</i>&nbsp;        }
+<i>172</i>&nbsp;        case MutationInfo.DELETE: {
+<b class="nc"><i>173</i>&nbsp;          delete(next.myDependency);</b>
+<b class="nc"><i>174</i>&nbsp;          break;</b>
+<i>175</i>&nbsp;        }
+<i>176</i>&nbsp;        case MutationInfo.CLEAR: {
+<b class="nc"><i>177</i>&nbsp;          doClear();</b>
+<i>178</i>&nbsp;          break;
+<i>179</i>&nbsp;        }
+<i>180</i>&nbsp;        }
+<i>181</i>&nbsp;      }
+<b class="fc"><i>182</i>&nbsp;    }</b>
+<i>183</i>&nbsp;
+<i>184</i>&nbsp;    @Override
+<i>185</i>&nbsp;    public void clear() {
+<b class="nc"><i>186</i>&nbsp;      myQueue.clear();</b>
+<b class="nc"><i>187</i>&nbsp;      myCleanupMutation = new MutationInfo(null, MutationInfo.CLEAR);</b>
+<b class="nc"><i>188</i>&nbsp;    }</b>
+<i>189</i>&nbsp;
+<i>190</i>&nbsp;    @Override
+<i>191</i>&nbsp;    public TaskDependency createDependency(Task dependant, Task dependee) throws TaskDependencyException {
+<b class="nc"><i>192</i>&nbsp;      return createDependency(dependant, dependee, new FinishFinishConstraintImpl());</b>
+<i>193</i>&nbsp;    }
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;    @Override
+<i>196</i>&nbsp;    public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint)
+<i>197</i>&nbsp;        throws TaskDependencyException {
+<b class="fc"><i>198</i>&nbsp;      return createDependency(dependant, dependee, constraint, TaskDependency.Hardness.STRONG);</b>
+<i>199</i>&nbsp;    }
+<i>200</i>&nbsp;
+<i>201</i>&nbsp;    @Override
+<i>202</i>&nbsp;    public TaskDependency createDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint,
+<i>203</i>&nbsp;        Hardness hardness) throws TaskDependencyException {
+<b class="fc"><i>204</i>&nbsp;      TaskDependency result = auxCreateDependency(dependant, dependee, constraint, hardness);</b>
+<b class="fc"><i>205</i>&nbsp;      myQueue.put(result, new MutationInfo(result, MutationInfo.ADD));</b>
+<b class="fc"><i>206</i>&nbsp;      return result;</b>
+<i>207</i>&nbsp;    }
+<i>208</i>&nbsp;
+<i>209</i>&nbsp;
+<i>210</i>&nbsp;    @Override
+<i>211</i>&nbsp;    public void deleteDependency(TaskDependency dependency) {
+<b class="fc"><i>212</i>&nbsp;      MutationInfo info = myQueue.get(dependency);</b>
+<b class="fc"><i>213</i>&nbsp;      if (info == null) {</b>
+<b class="nc"><i>214</i>&nbsp;        myQueue.put(dependency, new MutationInfo(dependency, MutationInfo.DELETE));</b>
+<b class="fc"><i>215</i>&nbsp;      } else if (info.myOperation == MutationInfo.ADD) {</b>
+<b class="fc"><i>216</i>&nbsp;        myQueue.remove(dependency);</b>
+<i>217</i>&nbsp;      }
+<b class="fc"><i>218</i>&nbsp;    }</b>
+<i>219</i>&nbsp;  }
+<i>220</i>&nbsp;
+<i>221</i>&nbsp;  private static class MutationInfo implements Comparable&lt;MutationInfo&gt; {
+<i>222</i>&nbsp;    static final int ADD = 0;
+<i>223</i>&nbsp;
+<i>224</i>&nbsp;    static final int DELETE = 1;
+<i>225</i>&nbsp;
+<i>226</i>&nbsp;    static final int CLEAR = 2;
+<i>227</i>&nbsp;
+<i>228</i>&nbsp;    final TaskDependency myDependency;
+<i>229</i>&nbsp;
+<i>230</i>&nbsp;    final int myOperation;
+<i>231</i>&nbsp;
+<b class="fc"><i>232</i>&nbsp;    final int myOrder = ourOrder++;</b>
+<i>233</i>&nbsp;
+<i>234</i>&nbsp;    static int ourOrder;
+<i>235</i>&nbsp;
+<b class="fc"><i>236</i>&nbsp;    public MutationInfo(TaskDependency myDependency, int myOperation) {</b>
+<b class="fc"><i>237</i>&nbsp;      this.myDependency = myDependency;</b>
+<b class="fc"><i>238</i>&nbsp;      this.myOperation = myOperation;</b>
+<b class="fc"><i>239</i>&nbsp;    }</b>
+<i>240</i>&nbsp;
+<i>241</i>&nbsp;    @Override
+<i>242</i>&nbsp;    public int compareTo(MutationInfo rvalue) {
+<b class="nc"><i>243</i>&nbsp;      return myOrder - rvalue.myOrder;</b>
+<i>244</i>&nbsp;    }
+<i>245</i>&nbsp;  }
+<i>246</i>&nbsp;
+<i>247</i>&nbsp;  private TaskDependency auxCreateDependency(Task dependant, Task dependee, TaskDependencyConstraint constraint, Hardness hardness) {
+<b class="fc"><i>248</i>&nbsp;    TaskDependency result = new TaskDependencyImpl(dependant, dependee, this, constraint, hardness, 0);</b>
+<b class="fc"><i>249</i>&nbsp;    return result;</b>
+<i>250</i>&nbsp;  }
+<i>251</i>&nbsp;
+<i>252</i>&nbsp;  void addDependency(TaskDependency dep) throws TaskDependencyException {
+<b class="fc"><i>253</i>&nbsp;    if (myDependencies.contains(dep)) {</b>
+<b class="fc"><i>254</i>&nbsp;      throw new TaskDependencyException(&quot;Dependency=&quot; + dep + &quot; already exists&quot;);</b>
+<i>255</i>&nbsp;    }
+<b class="fc"><i>256</i>&nbsp;    if (this.isLooping(dep)) {</b>
+<b class="fc"><i>257</i>&nbsp;      throw new TaskDependencyException(&quot;Dependency=&quot; + dep + &quot; is looping&quot;);</b>
+<i>258</i>&nbsp;    }
+<b class="fc"><i>259</i>&nbsp;    if (false == getTaskHierarchy().areUnrelated(dep.getDependant(), dep.getDependee())) {</b>
+<b class="nc"><i>260</i>&nbsp;      throw new TaskDependencyException(&quot;In dependency=&quot; + dep + &quot; one of participants is a supertask of another&quot;);</b>
+<i>261</i>&nbsp;    }
+<b class="fc"><i>262</i>&nbsp;    myDependencies.add(dep);</b>
+<i>263</i>&nbsp;    //
+<b class="fc"><i>264</i>&nbsp;    mySearchKey2dependency.put(new SearchKey(SearchKey.DEPENDANT, (TaskDependencyImpl) dep), dep);</b>
+<b class="fc"><i>265</i>&nbsp;    mySearchKey2dependency.put(new SearchKey(SearchKey.DEPENDEE, (TaskDependencyImpl) dep), dep);</b>
+<b class="fc"><i>266</i>&nbsp;    myEventDispatcher.fireDependencyAdded(dep);</b>
+<b class="fc"><i>267</i>&nbsp;  }</b>
+<i>268</i>&nbsp;
+<i>269</i>&nbsp;  boolean isLooping(TaskDependency dep) {
+<b class="fc"><i>270</i>&nbsp;    LoopDetector detector = new LoopDetector(dep.getDependant().getManager());</b>
+<b class="fc"><i>271</i>&nbsp;    return detector.isLooping(dep);</b>
+<i>272</i>&nbsp;  }
+<i>273</i>&nbsp;
+<i>274</i>&nbsp;  boolean _isLooping(TaskDependency dep) {
+<b class="nc"><i>275</i>&nbsp;    Set&lt;Task&gt; tasksInvolved = new HashSet&lt;Task&gt;();</b>
+<b class="nc"><i>276</i>&nbsp;    tasksInvolved.add(dep.getDependee());</b>
+<b class="nc"><i>277</i>&nbsp;    return _isLooping(dep, tasksInvolved);</b>
+<i>278</i>&nbsp;  }
+<i>279</i>&nbsp;
+<i>280</i>&nbsp;  private boolean _isLooping(TaskDependency dep, Set&lt;Task&gt; tasksInvolved) {
+<b class="nc"><i>281</i>&nbsp;    Task dependant = dep.getDependant();</b>
+<b class="nc"><i>282</i>&nbsp;    if (tasksInvolved.contains(dependant)) {</b>
+<b class="nc"><i>283</i>&nbsp;      return true;</b>
+<i>284</i>&nbsp;    }
+<b class="nc"><i>285</i>&nbsp;    for (Iterator&lt;Task&gt; tasks = tasksInvolved.iterator(); tasks.hasNext();) {</b>
+<b class="nc"><i>286</i>&nbsp;      Task nextInvolved = tasks.next();</b>
+<b class="nc"><i>287</i>&nbsp;      if (false == getTaskHierarchy().areUnrelated(nextInvolved, dependant)) {</b>
+<b class="nc"><i>288</i>&nbsp;        return true;</b>
+<i>289</i>&nbsp;      }
+<b class="nc"><i>290</i>&nbsp;    }</b>
+<b class="nc"><i>291</i>&nbsp;    tasksInvolved.add(dependant);</b>
+<i>292</i>&nbsp;    {
+<b class="nc"><i>293</i>&nbsp;      TaskDependency[] nextDeps = dependant.getDependenciesAsDependee().toArray();</b>
+<b class="nc"><i>294</i>&nbsp;      for (int i = 0; i &lt; nextDeps.length; i++) {</b>
+<b class="nc"><i>295</i>&nbsp;        if (_isLooping(nextDeps[i], tasksInvolved)) {</b>
+<b class="nc"><i>296</i>&nbsp;          return true;</b>
+<i>297</i>&nbsp;        }
+<i>298</i>&nbsp;      }
+<i>299</i>&nbsp;    }
+<b class="nc"><i>300</i>&nbsp;    Task[] nestedTasks = getTaskHierarchy().getNestedTasks(dependant);</b>
+<b class="nc"><i>301</i>&nbsp;    for (int i = 0; i &lt; nestedTasks.length; i++) {</b>
+<b class="nc"><i>302</i>&nbsp;      tasksInvolved.add(nestedTasks[i]);</b>
+<b class="nc"><i>303</i>&nbsp;      TaskDependency[] nextDeps = nestedTasks[i].getDependenciesAsDependee().toArray();</b>
+<b class="nc"><i>304</i>&nbsp;      for (int j = 0; j &lt; nextDeps.length; j++) {</b>
+<b class="nc"><i>305</i>&nbsp;        if (_isLooping(nextDeps[j], tasksInvolved)) {</b>
+<b class="nc"><i>306</i>&nbsp;          return true;</b>
+<i>307</i>&nbsp;        }
+<i>308</i>&nbsp;      }
+<i>309</i>&nbsp;
+<i>310</i>&nbsp;    }
+<b class="nc"><i>311</i>&nbsp;    tasksInvolved.remove(dependant);</b>
+<b class="nc"><i>312</i>&nbsp;    return false;</b>
+<i>313</i>&nbsp;  }
+<i>314</i>&nbsp;
+<i>315</i>&nbsp;  void delete(TaskDependency dep) {
+<b class="fc"><i>316</i>&nbsp;    myDependencies.remove(dep);</b>
+<b class="fc"><i>317</i>&nbsp;    SearchKey key1 = new SearchKey(SearchKey.DEPENDANT, dep.getDependant().getTaskID(), dep.getDependee().getTaskID());</b>
+<b class="fc"><i>318</i>&nbsp;    SearchKey key2 = new SearchKey(SearchKey.DEPENDEE, dep.getDependee().getTaskID(), dep.getDependant().getTaskID());</b>
+<b class="fc"><i>319</i>&nbsp;    mySearchKey2dependency.remove(key1);</b>
+<b class="fc"><i>320</i>&nbsp;    mySearchKey2dependency.remove(key2);</b>
+<b class="fc"><i>321</i>&nbsp;    myEventDispatcher.fireDependencyRemoved(dep);</b>
+<i>322</i>&nbsp;    // SearchKey fromKey = new RangeSearchFromKey(dep.getDependant());
+<i>323</i>&nbsp;    // SearchKey toKey = new RangeSearchToKey(dep.getDependant());
+<i>324</i>&nbsp;    // mySearchKey2dependency.subMap(fromKey, toKey).clear();
+<i>325</i>&nbsp;    // fromKey = new RangeSearchFromKey(dep.getDependee());
+<i>326</i>&nbsp;    // toKey = new RangeSearchToKey(dep.getDependee());
+<i>327</i>&nbsp;    // mySearchKey2dependency.subMap(fromKey, toKey).clear();
+<b class="fc"><i>328</i>&nbsp;  }</b>
+<i>329</i>&nbsp;
+<i>330</i>&nbsp;  public void doClear() {
+<b class="nc"><i>331</i>&nbsp;    myDependencies.clear();</b>
+<b class="nc"><i>332</i>&nbsp;    mySearchKey2dependency.clear();</b>
+<b class="nc"><i>333</i>&nbsp;  }</b>
+<i>334</i>&nbsp;
+<i>335</i>&nbsp;  protected TaskContainmentHierarchyFacade getTaskHierarchy() {
+<b class="nc"><i>336</i>&nbsp;    return myTaskHierarchyFactory.createFacade();</b>
+<i>337</i>&nbsp;  }
+<i>338</i>&nbsp;
+<i>339</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

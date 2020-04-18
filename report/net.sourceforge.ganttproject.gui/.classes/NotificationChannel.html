@@ -1,0 +1,236 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: NotificationChannel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: NotificationChannel (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NotificationChannel</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;import java.util.ArrayList;
+<i>23</i>&nbsp;import java.util.Collection;
+<i>24</i>&nbsp;import java.util.List;
+<i>25</i>&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import javax.swing.JComponent;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import com.google.common.base.Preconditions;
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;public enum NotificationChannel {</b>
+<b class="nc"><i>32</i>&nbsp;  RSS(Color.GREEN.brighter()), ERROR(UIUtil.ERROR_BACKGROUND), WARNING(Color.YELLOW);</b>
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  public interface Listener {
+<i>35</i>&nbsp;    void notificationAdded();
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;    void notificationRead(NotificationItem item);
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;    void channelCleared();
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  private final Color myColor;
+<i>43</i>&nbsp;  private boolean isVisible;
+<b class="nc"><i>44</i>&nbsp;  private final List&lt;NotificationItem&gt; myItems = new ArrayList&lt;NotificationItem&gt;();</b>
+<i>45</i>&nbsp;  private JComponent myButton;
+<i>46</i>&nbsp;  private boolean isPulsing;
+<i>47</i>&nbsp;  private Color myNormalColor;
+<i>48</i>&nbsp;  private NotificationItem myDefaultNotification;
+<b class="nc"><i>49</i>&nbsp;  private final List&lt;Listener&gt; myListeners = new CopyOnWriteArrayList&lt;Listener&gt;();</b>
+<i>50</i>&nbsp;
+<b class="nc"><i>51</i>&nbsp;  NotificationChannel(Color color) {</b>
+<b class="nc"><i>52</i>&nbsp;    myColor = color;</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  Color getColor() {
+<b class="nc"><i>56</i>&nbsp;    return myColor;</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  boolean isVisible() {
+<b class="nc"><i>60</i>&nbsp;    return isVisible;</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  void setVisible(boolean b) {
+<b class="nc"><i>64</i>&nbsp;    isVisible = b;</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  void addNotifications(Collection&lt;NotificationItem&gt; items) {
+<b class="nc"><i>68</i>&nbsp;    for (NotificationItem item : items) {</b>
+<b class="nc"><i>69</i>&nbsp;      Preconditions.checkNotNull(item);</b>
+<b class="nc"><i>70</i>&nbsp;    }</b>
+<b class="nc"><i>71</i>&nbsp;    myItems.addAll(items);</b>
+<b class="nc"><i>72</i>&nbsp;    for (Listener l : myListeners) {</b>
+<b class="nc"><i>73</i>&nbsp;      l.notificationAdded();</b>
+<b class="nc"><i>74</i>&nbsp;    }</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  List&lt;NotificationItem&gt; getItems() {
+<b class="nc"><i>78</i>&nbsp;    return myItems;</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  void setButton(JComponent button) {
+<b class="nc"><i>82</i>&nbsp;    myButton = button;</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  JComponent getButton() {
+<b class="nc"><i>86</i>&nbsp;    return myButton;</b>
+<i>87</i>&nbsp;  }
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  void setPulsing(boolean b) {
+<b class="nc"><i>90</i>&nbsp;    isPulsing = b;</b>
+<i>91</i>&nbsp;  }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  boolean isPulsing() {
+<b class="nc"><i>94</i>&nbsp;    return isPulsing;</b>
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  void saveNormalColor() {
+<b class="nc"><i>98</i>&nbsp;    if (myNormalColor == null) {</b>
+<b class="nc"><i>99</i>&nbsp;      myNormalColor = myButton.getBackground();</b>
+<i>100</i>&nbsp;    }
+<i>101</i>&nbsp;  }
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  Color getNormalColor() {
+<b class="nc"><i>104</i>&nbsp;    return myNormalColor;</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  public void setDefaultNotification(NotificationItem defaultNotification) {
+<b class="nc"><i>108</i>&nbsp;    myDefaultNotification = defaultNotification;</b>
+<b class="nc"><i>109</i>&nbsp;    for (Listener l : myListeners) {</b>
+<b class="nc"><i>110</i>&nbsp;      l.notificationAdded();</b>
+<b class="nc"><i>111</i>&nbsp;    }</b>
+<i>112</i>&nbsp;  }
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  public NotificationItem getDefaultNotification() {
+<b class="nc"><i>115</i>&nbsp;    return myDefaultNotification;</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  public void addListener(Listener listener) {
+<b class="nc"><i>119</i>&nbsp;    myListeners.add(listener);</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  public int getUnreadCount() {
+<b class="nc"><i>123</i>&nbsp;    int result = 0;</b>
+<b class="nc"><i>124</i>&nbsp;    for (NotificationItem item : myItems) {</b>
+<b class="nc"><i>125</i>&nbsp;      if (item != null &amp;&amp; !item.isRead()) {</b>
+<b class="nc"><i>126</i>&nbsp;        result++;</b>
+<i>127</i>&nbsp;      }
+<b class="nc"><i>128</i>&nbsp;    }</b>
+<b class="nc"><i>129</i>&nbsp;    return result;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  public void setRead(int position) {
+<b class="nc"><i>133</i>&nbsp;    assert position &gt;= 0 &amp;&amp; position &lt; myItems.size() : &quot;Attempt to mark read item#&quot; + position + &quot;. I have &quot;</b>
+<b class="nc"><i>134</i>&nbsp;        + myItems.size() + &quot; items&quot;;</b>
+<b class="nc"><i>135</i>&nbsp;    NotificationItem item = myItems.get(position);</b>
+<b class="nc"><i>136</i>&nbsp;    item.setRead(true);</b>
+<b class="nc"><i>137</i>&nbsp;    for (Listener l : myListeners) {</b>
+<b class="nc"><i>138</i>&nbsp;      l.notificationRead(item);</b>
+<b class="nc"><i>139</i>&nbsp;    }</b>
+<i>140</i>&nbsp;  }
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  public void clear() {
+<b class="nc"><i>143</i>&nbsp;    myItems.clear();</b>
+<b class="nc"><i>144</i>&nbsp;    for (Listener l : myListeners) {</b>
+<b class="nc"><i>145</i>&nbsp;      l.channelCleared();</b>
+<b class="nc"><i>146</i>&nbsp;    }</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  /** @return true if no more items are available in the channel */
+<i>150</i>&nbsp;  public boolean isEmpty() {
+<b class="nc"><i>151</i>&nbsp;    return getItems().isEmpty();</b>
+<i>152</i>&nbsp;  }
+<i>153</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

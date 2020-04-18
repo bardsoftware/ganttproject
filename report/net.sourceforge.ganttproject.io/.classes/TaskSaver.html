@@ -1,0 +1,287 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskSaver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskSaver (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskSaver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 107)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>22</i>&nbsp;import com.google.common.base.Charsets;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.GanttTask;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.CustomColumnsValues;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.util.ColorConvertion;
+<i>31</i>&nbsp;import org.w3c.util.DateParser;
+<i>32</i>&nbsp;import org.xml.sax.SAXException;
+<i>33</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>36</i>&nbsp;import java.io.IOException;
+<i>37</i>&nbsp;import java.math.BigDecimal;
+<i>38</i>&nbsp;import java.net.URLEncoder;
+<i>39</i>&nbsp;import java.util.Collections;
+<i>40</i>&nbsp;import java.util.Date;
+<i>41</i>&nbsp;import java.util.GregorianCalendar;
+<i>42</i>&nbsp;import java.util.Map;
+<i>43</i>&nbsp;
+<b class="nc"><i>44</i>&nbsp;class TaskSaver extends SaverBase {</b>
+<i>45</i>&nbsp;  void save(IGanttProject project, TransformerHandler handler) throws SAXException, IOException {
+<b class="nc"><i>46</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>47</i>&nbsp;    if (project.getTaskManager().isZeroMilestones() != null) {</b>
+<b class="nc"><i>48</i>&nbsp;      addAttribute(&quot;empty-milestones&quot;, project.getTaskManager().isZeroMilestones(), attrs);</b>
+<i>49</i>&nbsp;    }
+<b class="nc"><i>50</i>&nbsp;    startElement(&quot;tasks&quot;, attrs, handler);</b>
+<i>51</i>&nbsp;
+<b class="nc"><i>52</i>&nbsp;    startElement(&quot;taskproperties&quot;, handler);</b>
+<b class="nc"><i>53</i>&nbsp;    writeTaskProperties(handler, project.getTaskCustomColumnManager());</b>
+<b class="nc"><i>54</i>&nbsp;    endElement(&quot;taskproperties&quot;, handler);</b>
+<b class="nc"><i>55</i>&nbsp;    Task rootTask = project.getTaskManager().getTaskHierarchy().getRootTask();</b>
+<b class="nc"><i>56</i>&nbsp;    Task[] tasks = project.getTaskManager().getTaskHierarchy().getNestedTasks(rootTask);</b>
+<b class="nc"><i>57</i>&nbsp;    for (Task task : tasks) {</b>
+<b class="nc"><i>58</i>&nbsp;      writeTask(handler, (GanttTask) task, project.getTaskCustomColumnManager());</b>
+<i>59</i>&nbsp;    }
+<b class="nc"><i>60</i>&nbsp;    endElement(&quot;tasks&quot;, handler);</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  private void writeTask(TransformerHandler handler, GanttTask task, CustomPropertyManager customPropertyManager)
+<i>64</i>&nbsp;      throws SAXException, IOException {
+<b class="nc"><i>65</i>&nbsp;    if (task.getTaskID() == -1) {</b>
+<b class="nc"><i>66</i>&nbsp;      throw new IllegalArgumentException(&quot;Is it a fake root task? Task=&quot; + task);</b>
+<i>67</i>&nbsp;    }
+<b class="nc"><i>68</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>69</i>&nbsp;    addAttribute(&quot;id&quot;, String.valueOf(task.getTaskID()), attrs);</b>
+<b class="nc"><i>70</i>&nbsp;    addAttribute(&quot;name&quot;, task.getName(), attrs);</b>
+<b class="nc"><i>71</i>&nbsp;    if (task.colorDefined()) {</b>
+<b class="nc"><i>72</i>&nbsp;      addAttribute(&quot;color&quot;, ColorConvertion.getColor(task.getColor()), attrs);</b>
+<i>73</i>&nbsp;    }
+<b class="nc"><i>74</i>&nbsp;    if (task.shapeDefined()) {</b>
+<b class="nc"><i>75</i>&nbsp;      addAttribute(&quot;shape&quot;, task.getShape().getArray(), attrs);</b>
+<i>76</i>&nbsp;    }
+<b class="nc"><i>77</i>&nbsp;    addAttribute(&quot;meeting&quot;, Boolean.valueOf(task.isLegacyMilestone()).toString(), attrs);</b>
+<b class="nc"><i>78</i>&nbsp;    if (task.isProjectTask()) {</b>
+<b class="nc"><i>79</i>&nbsp;      addAttribute(&quot;project&quot;, Boolean.TRUE.toString(), attrs);</b>
+<i>80</i>&nbsp;    }
+<b class="nc"><i>81</i>&nbsp;    addAttribute(&quot;start&quot;, task.getStart().toXMLString(), attrs);</b>
+<b class="nc"><i>82</i>&nbsp;    addAttribute(&quot;duration&quot;, String.valueOf(task.getLength()), attrs);</b>
+<b class="nc"><i>83</i>&nbsp;    addAttribute(&quot;complete&quot;, String.valueOf(task.getCompletionPercentage()), attrs);</b>
+<b class="nc"><i>84</i>&nbsp;    if (task.getThird() != null) {</b>
+<b class="nc"><i>85</i>&nbsp;      addAttribute(&quot;thirdDate&quot;, task.getThird().toXMLString(), attrs);</b>
+<b class="nc"><i>86</i>&nbsp;      addAttribute(&quot;thirdDate-constraint&quot;, String.valueOf(task.getThirdDateConstraint()), attrs);</b>
+<i>87</i>&nbsp;    }
+<b class="nc"><i>88</i>&nbsp;    if (task.getPriority() != Task.DEFAULT_PRIORITY) {</b>
+<b class="nc"><i>89</i>&nbsp;      addAttribute(&quot;priority&quot;, task.getPriority().getPersistentValue(), attrs);</b>
+<i>90</i>&nbsp;    }
+<b class="nc"><i>91</i>&nbsp;    final String sWebLink = task.getWebLink();</b>
+<b class="nc"><i>92</i>&nbsp;    if (sWebLink != null &amp;&amp; !sWebLink.equals(&quot;&quot;) &amp;&amp; !sWebLink.equals(&quot;http://&quot;)) {</b>
+<b class="nc"><i>93</i>&nbsp;      addAttribute(&quot;webLink&quot;, URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs);</b>
+<i>94</i>&nbsp;    }
+<b class="nc"><i>95</i>&nbsp;    addAttribute(&quot;expand&quot;, String.valueOf(task.getExpand()), attrs);</b>
+<i>96</i>&nbsp;
+<b class="nc"><i>97</i>&nbsp;    if (!(task.getCost().isCalculated() &amp;&amp; task.getCost().getManualValue().equals(BigDecimal.ZERO))) {</b>
+<b class="nc"><i>98</i>&nbsp;      addAttribute(&quot;cost-manual-value&quot;, task.getCost().getManualValue().toPlainString(), attrs);</b>
+<b class="nc"><i>99</i>&nbsp;      addAttribute(&quot;cost-calculated&quot;, task.getCost().isCalculated(), attrs);</b>
+<i>100</i>&nbsp;    }
+<b class="nc"><i>101</i>&nbsp;    startElement(&quot;task&quot;, attrs, handler);</b>
+<i>102</i>&nbsp;
+<b class="nc"><i>103</i>&nbsp;    if (task.getNotes() != null &amp;&amp; task.getNotes().length() &gt; 0) {</b>
+<i>104</i>&nbsp;      // See https://bugs.openjdk.java.net/browse/JDK-8133452
+<b class="nc"><i>105</i>&nbsp;      String taskNotes = task.getNotes().replace(&quot;\\r\\n&quot;, &quot;\\n&quot;);</b>
+<b class="nc"><i>106</i>&nbsp;      cdataElement(&quot;notes&quot;, taskNotes, attrs, handler);</b>
+<i>107</i>&nbsp;    }
+<i>108</i>&nbsp;    // use successors to write depends information
+<b class="nc"><i>109</i>&nbsp;    final TaskDependency[] depsAsDependee = task.getDependenciesAsDependee().toArray();</b>
+<b class="nc"><i>110</i>&nbsp;    for (TaskDependency next : depsAsDependee) {</b>
+<b class="nc"><i>111</i>&nbsp;      addAttribute(&quot;id&quot;, String.valueOf(next.getDependant().getTaskID()), attrs);</b>
+<b class="nc"><i>112</i>&nbsp;      addAttribute(&quot;type&quot;, next.getConstraint().getType().getPersistentValue(), attrs);</b>
+<b class="nc"><i>113</i>&nbsp;      addAttribute(&quot;difference&quot;, String.valueOf(next.getDifference()), attrs);</b>
+<b class="nc"><i>114</i>&nbsp;      addAttribute(&quot;hardness&quot;, next.getHardness().getIdentifier(), attrs);</b>
+<b class="nc"><i>115</i>&nbsp;      emptyElement(&quot;depend&quot;, attrs, handler);</b>
+<i>116</i>&nbsp;    }
+<i>117</i>&nbsp;
+<b class="nc"><i>118</i>&nbsp;    CustomColumnsValues ccv = task.getCustomValues();</b>
+<b class="nc"><i>119</i>&nbsp;    for (CustomPropertyDefinition def : customPropertyManager.getDefinitions()) {</b>
+<b class="nc"><i>120</i>&nbsp;      final String idc = def.getID();</b>
+<b class="nc"><i>121</i>&nbsp;      if (ccv.hasOwnValue(def)) {</b>
+<b class="nc"><i>122</i>&nbsp;        Object value = ccv.getValue(def);</b>
+<b class="nc"><i>123</i>&nbsp;        if (GregorianCalendar.class.isAssignableFrom(def.getType()) &amp;&amp; value != null) {</b>
+<b class="nc"><i>124</i>&nbsp;          value = DateParser.getIsoDate(((GanttCalendar) value).getTime());</b>
+<i>125</i>&nbsp;        }
+<b class="nc"><i>126</i>&nbsp;        addAttribute(&quot;taskproperty-id&quot;, idc, attrs);</b>
+<b class="nc"><i>127</i>&nbsp;        addAttribute(&quot;value&quot;, value == null ? null : String.valueOf(value), attrs);</b>
+<b class="nc"><i>128</i>&nbsp;        emptyElement(&quot;customproperty&quot;, attrs, handler);</b>
+<i>129</i>&nbsp;      }
+<b class="nc"><i>130</i>&nbsp;    }</b>
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;    // Write the child of the task
+<b class="nc"><i>133</i>&nbsp;    if (task.getManager().getTaskHierarchy().hasNestedTasks(task)) {</b>
+<b class="nc"><i>134</i>&nbsp;      Task[] nestedTasks = task.getManager().getTaskHierarchy().getNestedTasks(task);</b>
+<b class="nc"><i>135</i>&nbsp;      for (Task nestedTask : nestedTasks) {</b>
+<b class="nc"><i>136</i>&nbsp;        writeTask(handler, (GanttTask) nestedTask, customPropertyManager);</b>
+<i>137</i>&nbsp;      }
+<i>138</i>&nbsp;    }
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;    // end of task section
+<b class="nc"><i>141</i>&nbsp;    endElement(&quot;task&quot;, handler);</b>
+<i>142</i>&nbsp;  }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType)
+<i>145</i>&nbsp;      throws SAXException {
+<b class="nc"><i>146</i>&nbsp;    writeTaskProperty(handler, id, name, type, valueType, null, Collections.&lt;String,String&gt;emptyMap());</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  private void writeTaskProperty(TransformerHandler handler, String id, String name, String type, String valueType,
+<i>150</i>&nbsp;                                 String defaultValue, Map&lt;String, String&gt; attributes) throws SAXException {
+<b class="nc"><i>151</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>152</i>&nbsp;    addAttribute(&quot;id&quot;, id, attrs);</b>
+<b class="nc"><i>153</i>&nbsp;    addAttribute(&quot;name&quot;, name, attrs);</b>
+<b class="nc"><i>154</i>&nbsp;    addAttribute(&quot;type&quot;, type, attrs);</b>
+<b class="nc"><i>155</i>&nbsp;    addAttribute(&quot;valuetype&quot;, valueType, attrs);</b>
+<b class="nc"><i>156</i>&nbsp;    if (defaultValue != null) {</b>
+<b class="nc"><i>157</i>&nbsp;      addAttribute(&quot;defaultvalue&quot;, defaultValue, attrs);</b>
+<i>158</i>&nbsp;    }
+<b class="nc"><i>159</i>&nbsp;    for (Map.Entry&lt;String,String&gt; kv : attributes.entrySet()) {</b>
+<b class="nc"><i>160</i>&nbsp;      addAttribute(kv.getKey(), kv.getValue(), attrs);</b>
+<b class="nc"><i>161</i>&nbsp;    }</b>
+<b class="nc"><i>162</i>&nbsp;    emptyElement(&quot;taskproperty&quot;, attrs, handler);</b>
+<i>163</i>&nbsp;  }
+<i>164</i>&nbsp;
+<i>165</i>&nbsp;  private void writeTaskProperties(TransformerHandler handler, CustomPropertyManager customPropertyManager)
+<i>166</i>&nbsp;      throws SAXException {
+<b class="nc"><i>167</i>&nbsp;    writeTaskProperty(handler, &quot;tpd0&quot;, &quot;type&quot;, &quot;default&quot;, &quot;icon&quot;);</b>
+<b class="nc"><i>168</i>&nbsp;    writeTaskProperty(handler, &quot;tpd1&quot;, &quot;priority&quot;, &quot;default&quot;, &quot;icon&quot;);</b>
+<b class="nc"><i>169</i>&nbsp;    writeTaskProperty(handler, &quot;tpd2&quot;, &quot;info&quot;, &quot;default&quot;, &quot;icon&quot;);</b>
+<b class="nc"><i>170</i>&nbsp;    writeTaskProperty(handler, &quot;tpd3&quot;, &quot;name&quot;, &quot;default&quot;, &quot;text&quot;);</b>
+<b class="nc"><i>171</i>&nbsp;    writeTaskProperty(handler, &quot;tpd4&quot;, &quot;begindate&quot;, &quot;default&quot;, &quot;date&quot;);</b>
+<b class="nc"><i>172</i>&nbsp;    writeTaskProperty(handler, &quot;tpd5&quot;, &quot;enddate&quot;, &quot;default&quot;, &quot;date&quot;);</b>
+<b class="nc"><i>173</i>&nbsp;    writeTaskProperty(handler, &quot;tpd6&quot;, &quot;duration&quot;, &quot;default&quot;, &quot;int&quot;);</b>
+<b class="nc"><i>174</i>&nbsp;    writeTaskProperty(handler, &quot;tpd7&quot;, &quot;completion&quot;, &quot;default&quot;, &quot;int&quot;);</b>
+<b class="nc"><i>175</i>&nbsp;    writeTaskProperty(handler, &quot;tpd8&quot;, &quot;coordinator&quot;, &quot;default&quot;, &quot;text&quot;);</b>
+<b class="nc"><i>176</i>&nbsp;    writeTaskProperty(handler, &quot;tpd9&quot;, &quot;predecessorsr&quot;, &quot;default&quot;, &quot;text&quot;);</b>
+<b class="nc"><i>177</i>&nbsp;    for (CustomPropertyDefinition cc : customPropertyManager.getDefinitions()) {</b>
+<b class="nc"><i>178</i>&nbsp;      Object defVal = cc.getDefaultValue();</b>
+<b class="nc"><i>179</i>&nbsp;      final Class&lt;?&gt; cla = cc.getType();</b>
+<b class="nc"><i>180</i>&nbsp;      final String valueType = encodeFieldType(cla);</b>
+<b class="nc"><i>181</i>&nbsp;      if (valueType == null) {</b>
+<b class="nc"><i>182</i>&nbsp;        continue;</b>
+<i>183</i>&nbsp;      }
+<b class="nc"><i>184</i>&nbsp;      if (&quot;date&quot;.equals(valueType) &amp;&amp; defVal != null) {</b>
+<b class="nc"><i>185</i>&nbsp;        if (defVal instanceof GanttCalendar) {</b>
+<b class="nc"><i>186</i>&nbsp;          defVal = DateParser.getIsoDate(((GanttCalendar) defVal).getTime());</b>
+<b class="nc"><i>187</i>&nbsp;        } else if (defVal instanceof Date) {</b>
+<b class="nc"><i>188</i>&nbsp;          defVal = DateParser.getIsoDate((Date) defVal);</b>
+<i>189</i>&nbsp;        } else {
+<b class="nc"><i>190</i>&nbsp;          assert false : &quot;Default value is expected to be either GanttCalendar or Date instance, while it is &quot;</b>
+<b class="nc"><i>191</i>&nbsp;              + defVal.getClass();</b>
+<i>192</i>&nbsp;        }
+<i>193</i>&nbsp;      }
+<b class="nc"><i>194</i>&nbsp;      String idcStr = cc.getID();</b>
+<b class="nc"><i>195</i>&nbsp;      writeTaskProperty(handler, idcStr, cc.getName(), &quot;custom&quot;, valueType,</b>
+<b class="nc"><i>196</i>&nbsp;          defVal == null ? null : String.valueOf(defVal), cc.getAttributes());</b>
+<b class="nc"><i>197</i>&nbsp;    }</b>
+<i>198</i>&nbsp;  }
+<i>199</i>&nbsp;
+<i>200</i>&nbsp;  private static String encodeFieldType(Class&lt;?&gt; fieldType) {
+<b class="nc"><i>201</i>&nbsp;    return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);</b>
+<i>202</i>&nbsp;  }
+<i>203</i>&nbsp;
+<i>204</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

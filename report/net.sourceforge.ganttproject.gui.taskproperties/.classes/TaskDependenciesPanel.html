@@ -1,0 +1,324 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskDependenciesPanel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.taskproperties</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskDependenciesPanel (net.sourceforge.ganttproject.gui.taskproperties)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskDependenciesPanel</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 33)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskDependenciesPanel$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDependenciesPanel$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 24)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDependenciesPanel$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 70)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.taskproperties;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
+<i>31</i>&nbsp;import org.jdesktop.swingx.JXLabel;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;import javax.swing.*;
+<i>34</i>&nbsp;import javax.swing.table.TableColumn;
+<i>35</i>&nbsp;import java.awt.*;
+<i>36</i>&nbsp;import java.awt.event.ActionEvent;
+<i>37</i>&nbsp;import java.awt.event.ActionListener;
+<i>38</i>&nbsp;import java.util.List;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;/**
+<i>41</i>&nbsp; * UI component in a task properties dialog: a table with task predecessors
+<i>42</i>&nbsp; *
+<i>43</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>44</i>&nbsp; */
+<b class="nc"><i>45</i>&nbsp;public class TaskDependenciesPanel {</b>
+<b class="nc"><i>46</i>&nbsp;  private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[]{</b>
+<i>47</i>&nbsp;      new FinishStartConstraintImpl(), new FinishFinishConstraintImpl(), new StartFinishConstraintImpl(),
+<i>48</i>&nbsp;      new StartStartConstraintImpl()};
+<i>49</i>&nbsp;
+<b class="nc"><i>50</i>&nbsp;  private static TaskDependency.Hardness[] HARDNESS = new TaskDependency.Hardness[]{TaskDependency.Hardness.STRONG,</b>
+<i>51</i>&nbsp;      TaskDependency.Hardness.RUBBER};
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private Task myTask;
+<i>54</i>&nbsp;  private DependencyTableModel myModel;
+<i>55</i>&nbsp;  private JTable myTable;
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  private JTable getTable() {
+<b class="nc"><i>58</i>&nbsp;    return myTable;</b>
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  public JPanel getComponent() {
+<b class="nc"><i>62</i>&nbsp;    myModel = new DependencyTableModel(myTask);</b>
+<b class="nc"><i>63</i>&nbsp;    myTable = new JTable(myModel);</b>
+<b class="nc"><i>64</i>&nbsp;    UIUtil.setupTableUI(myTable);</b>
+<b class="nc"><i>65</i>&nbsp;    Task[] predecessorCandidates = getTaskManager().getAlgorithmCollection()</b>
+<b class="nc"><i>66</i>&nbsp;        .getFindPossibleDependeesAlgorithm().run(getTask());</b>
+<b class="nc"><i>67</i>&nbsp;    setUpPredecessorComboColumn(</b>
+<b class="nc"><i>68</i>&nbsp;        predecessorCandidates, DependencyTableModel.MyColumn.TASK_NAME.getTableColumn(getTable()), getTable());</b>
+<i>69</i>&nbsp;
+<b class="nc"><i>70</i>&nbsp;    CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.CONSTRAINT_TYPE.getTableColumn(getTable()),</b>
+<i>71</i>&nbsp;        CONSTRAINTS);
+<b class="nc"><i>72</i>&nbsp;    CommonPanel.setupComboBoxEditor(DependencyTableModel.MyColumn.HARDNESS.getTableColumn(getTable()), HARDNESS);</b>
+<b class="nc"><i>73</i>&nbsp;    AbstractTableAndActionsComponent&lt;TaskDependency&gt; tableAndActions = new AbstractTableAndActionsComponent&lt;TaskDependency&gt;(</b>
+<b class="nc"><i>74</i>&nbsp;        getTable()) {</b>
+<i>75</i>&nbsp;      @Override
+<i>76</i>&nbsp;      protected void onAddEvent() {
+<b class="nc"><i>77</i>&nbsp;        getTable().editCellAt(myModel.getRowCount() - 1, DependencyTableModel.MyColumn.TASK_NAME.ordinal());</b>
+<i>78</i>&nbsp;      }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;      @Override
+<i>81</i>&nbsp;      protected void onDeleteEvent() {
+<b class="nc"><i>82</i>&nbsp;        if (myTable.isEditing()) {</b>
+<b class="nc"><i>83</i>&nbsp;          myTable.getCellEditor().stopCellEditing();</b>
+<i>84</i>&nbsp;        }
+<b class="nc"><i>85</i>&nbsp;        myModel.delete(getTable().getSelectedRows());</b>
+<i>86</i>&nbsp;      }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;      @Override
+<i>89</i>&nbsp;      protected TaskDependency getValue(int row) {
+<b class="nc"><i>90</i>&nbsp;        List&lt;TaskDependency&gt; dependencies = myModel.getDependencies();</b>
+<b class="nc"><i>91</i>&nbsp;        return (row &gt;= 0 &amp;&amp; row &lt; dependencies.size()) ? dependencies.get(row) : null;</b>
+<i>92</i>&nbsp;      }
+<i>93</i>&nbsp;    };
+<i>94</i>&nbsp;
+<b class="nc"><i>95</i>&nbsp;    tableAndActions.setEnabled(predecessorCandidates.length &gt; 0);</b>
+<b class="nc"><i>96</i>&nbsp;    return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());</b>
+<i>97</i>&nbsp;  }
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  public void init(Task task) {
+<b class="nc"><i>100</i>&nbsp;    myTask = task;</b>
+<i>101</i>&nbsp;  }
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  public void commit() {
+<b class="nc"><i>104</i>&nbsp;    if (myTable.isEditing()) {</b>
+<b class="nc"><i>105</i>&nbsp;      myTable.getCellEditor().stopCellEditing();</b>
+<i>106</i>&nbsp;    }
+<b class="nc"><i>107</i>&nbsp;    myModel.commit();</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;  private Task getTask() {
+<b class="nc"><i>111</i>&nbsp;    return myTask;</b>
+<i>112</i>&nbsp;  }
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  private void setUpPredecessorComboColumn(Task[] predecessorCandidates, TableColumn predecessorColumn, final JTable predecessorTable) {
+<b class="nc"><i>115</i>&nbsp;    final JComboBox&lt;DependencyTableModel.TaskComboItem&gt; comboBox = new JComboBox&lt;&gt;();</b>
+<i>116</i>&nbsp;
+<b class="nc"><i>117</i>&nbsp;    int maxDigits = 0;</b>
+<b class="nc"><i>118</i>&nbsp;    for (Task task : predecessorCandidates) {</b>
+<b class="nc"><i>119</i>&nbsp;      comboBox.addItem(new DependencyTableModel.TaskComboItem(task));</b>
+<b class="nc"><i>120</i>&nbsp;      maxDigits = Math.max(maxDigits, (int) Math.log10(task.getTaskID()));</b>
+<i>121</i>&nbsp;    }
+<b class="nc"><i>122</i>&nbsp;    final int maxWidth = (maxDigits + 1) * 10;</b>
+<i>123</i>&nbsp;
+<b class="nc"><i>124</i>&nbsp;    comboBox.setRenderer(new DefaultListCellRenderer() {</b>
+<b class="nc"><i>125</i>&nbsp;      private JLabel myId = new JLabel();</b>
+<b class="nc"><i>126</i>&nbsp;      private JXLabel myLabel = new JXLabel();</b>
+<b class="nc"><i>127</i>&nbsp;      private JPanel myBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));</b>
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;      {
+<b class="nc"><i>130</i>&nbsp;        myId.setEnabled(false);</b>
+<b class="nc"><i>131</i>&nbsp;        myId.setHorizontalAlignment(SwingConstants.RIGHT);</b>
+<b class="nc"><i>132</i>&nbsp;        myBox.add(myId);</b>
+<b class="nc"><i>133</i>&nbsp;        myBox.add(myLabel);</b>
+<b class="nc"><i>134</i>&nbsp;        myBox.setOpaque(true);</b>
+<i>135</i>&nbsp;      }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;      @Override
+<i>138</i>&nbsp;      public Component getListCellRendererComponent(JList&lt;?&gt; list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+<b class="nc"><i>139</i>&nbsp;        DependencyTableModel.TaskComboItem item = (DependencyTableModel.TaskComboItem) value;</b>
+<b class="nc"><i>140</i>&nbsp;        TaskManager taskManager = item.myTask.getManager();</b>
+<b class="nc"><i>141</i>&nbsp;        JComponent superResult = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);</b>
+<b class="nc"><i>142</i>&nbsp;        if (index == -1) {</b>
+<b class="nc"><i>143</i>&nbsp;          return superResult;</b>
+<i>144</i>&nbsp;        }
+<b class="nc"><i>145</i>&nbsp;        myId.setPreferredSize(new Dimension(maxWidth, 10));</b>
+<b class="nc"><i>146</i>&nbsp;        myId.setFont(superResult.getFont().deriveFont(superResult.getFont().getSize() * 0.85f));</b>
+<b class="nc"><i>147</i>&nbsp;        myId.setText(String.valueOf(item.myTask.getTaskID()));</b>
+<b class="nc"><i>148</i>&nbsp;        myLabel.setText(item.myTask.getName());</b>
+<b class="nc"><i>149</i>&nbsp;        myLabel.setBorder(BorderFactory.createEmptyBorder(0,</b>
+<b class="nc"><i>150</i>&nbsp;            10 * (taskManager.getTaskHierarchy().getDepth(item.myTask) - 1),</b>
+<i>151</i>&nbsp;            0, 0));
+<b class="nc"><i>152</i>&nbsp;        myBox.setBorder(superResult.getBorder());</b>
+<b class="nc"><i>153</i>&nbsp;        myBox.setBackground(superResult.getBackground());</b>
+<b class="nc"><i>154</i>&nbsp;        myBox.setForeground(superResult.getForeground());</b>
+<b class="nc"><i>155</i>&nbsp;        return myBox;</b>
+<i>156</i>&nbsp;      }
+<i>157</i>&nbsp;    });
+<b class="nc"><i>158</i>&nbsp;    comboBox.addActionListener(new ActionListener() {</b>
+<i>159</i>&nbsp;      @Override
+<i>160</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>161</i>&nbsp;        if (predecessorTable.getEditingRow() != -1) {</b>
+<b class="nc"><i>162</i>&nbsp;          DependencyTableModel.TaskComboItem selectedItem = (DependencyTableModel.TaskComboItem) comboBox.getSelectedItem();</b>
+<b class="nc"><i>163</i>&nbsp;          if (selectedItem != null) {</b>
+<b class="nc"><i>164</i>&nbsp;            predecessorTable.setValueAt(selectedItem, predecessorTable.getEditingRow(), 0);</b>
+<b class="nc"><i>165</i>&nbsp;            predecessorTable.setValueAt(TaskDependenciesPanel.CONSTRAINTS[0], predecessorTable.getEditingRow(), 2);</b>
+<i>166</i>&nbsp;          }
+<i>167</i>&nbsp;        }
+<i>168</i>&nbsp;      }
+<i>169</i>&nbsp;    });
+<b class="nc"><i>170</i>&nbsp;    comboBox.setEditable(false);</b>
+<b class="nc"><i>171</i>&nbsp;    predecessorColumn.setCellEditor(new DefaultCellEditor(comboBox));</b>
+<i>172</i>&nbsp;  }
+<i>173</i>&nbsp;
+<i>174</i>&nbsp;  private TaskManager getTaskManager() {
+<b class="nc"><i>175</i>&nbsp;    return getTask().getManager();</b>
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

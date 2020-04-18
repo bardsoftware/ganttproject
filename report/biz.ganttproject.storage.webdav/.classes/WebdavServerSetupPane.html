@@ -1,0 +1,300 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: WebdavServerSetupPane</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.storage.webdav</a> ]
+</div>
+
+<h1>Coverage Summary for Class: WebdavServerSetupPane (biz.ganttproject.storage.webdav)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WebdavServerSetupPane</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 47)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">WebdavServerSetupPane$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebdavServerSetupPane$PasswordPropertyEditor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebdavServerSetupPane$WebDavPropertyDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 54)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;// Copyright (C) 2016 BarD Software
+<i>2</i>&nbsp;package biz.ganttproject.storage.webdav;
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;import biz.ganttproject.FXUtil;
+<i>5</i>&nbsp;import biz.ganttproject.storage.StorageDialogBuilder;
+<i>6</i>&nbsp;import javafx.beans.property.StringProperty;
+<i>7</i>&nbsp;import javafx.event.ActionEvent;
+<i>8</i>&nbsp;import javafx.scene.control.Button;
+<i>9</i>&nbsp;import javafx.scene.control.Label;
+<i>10</i>&nbsp;import javafx.scene.control.PasswordField;
+<i>11</i>&nbsp;import javafx.scene.layout.BorderPane;
+<i>12</i>&nbsp;import javafx.scene.layout.HBox;
+<i>13</i>&nbsp;import javafx.scene.layout.Pane;
+<i>14</i>&nbsp;import javafx.scene.layout.Priority;
+<i>15</i>&nbsp;import javafx.scene.layout.VBox;
+<i>16</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
+<i>17</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>18</i>&nbsp;import org.controlsfx.control.PropertySheet;
+<i>19</i>&nbsp;import org.controlsfx.property.BeanProperty;
+<i>20</i>&nbsp;import org.controlsfx.property.editor.AbstractPropertyEditor;
+<i>21</i>&nbsp;import org.controlsfx.property.editor.PropertyEditor;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import java.beans.IntrospectionException;
+<i>24</i>&nbsp;import java.beans.PropertyDescriptor;
+<i>25</i>&nbsp;import java.util.Optional;
+<i>26</i>&nbsp;import java.util.function.Consumer;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
+<i>32</i>&nbsp;  private final WebDavServerDescriptor myWebdavServer;
+<i>33</i>&nbsp;  private final Consumer&lt;WebDavServerDescriptor&gt; myValueConsumer;
+<i>34</i>&nbsp;  private final boolean myHasDelete;
+<i>35</i>&nbsp;
+<b class="nc"><i>36</i>&nbsp;  public WebdavServerSetupPane(WebDavServerDescriptor webdavServer, Consumer&lt;WebDavServerDescriptor&gt; valueConsumer, boolean hasDelete) {</b>
+<b class="nc"><i>37</i>&nbsp;    myWebdavServer = webdavServer.clone();</b>
+<b class="nc"><i>38</i>&nbsp;    myValueConsumer = valueConsumer;</b>
+<b class="nc"><i>39</i>&nbsp;    myHasDelete = hasDelete;</b>
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  @Override
+<i>43</i>&nbsp;  public String getId() {
+<b class="nc"><i>44</i>&nbsp;    return &quot;webdav-setup&quot;;</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public String getName() {
+<b class="nc"><i>49</i>&nbsp;    return null;</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  @Override
+<i>53</i>&nbsp;  public String getCategory() {
+<b class="nc"><i>54</i>&nbsp;    return null;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  @Override
+<i>58</i>&nbsp;  public Pane createUi() {
+<i>59</i>&nbsp;    try {
+<b class="nc"><i>60</i>&nbsp;      return doCreateUi();</b>
+<b class="nc"><i>61</i>&nbsp;    } catch (IntrospectionException e) {</b>
+<b class="nc"><i>62</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>63</i>&nbsp;      return new Pane();</b>
+<i>64</i>&nbsp;    }
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  private Pane doCreateUi() throws IntrospectionException {
+<b class="nc"><i>68</i>&nbsp;    VBox centerBox = new VBox();</b>
+<b class="nc"><i>69</i>&nbsp;    PropertySheet propertySheet = new PropertySheet();</b>
+<b class="nc"><i>70</i>&nbsp;    propertySheet.getStyleClass().addAll(&quot;property-sheet&quot;);</b>
+<b class="nc"><i>71</i>&nbsp;    propertySheet.setModeSwitcherVisible(false);</b>
+<b class="nc"><i>72</i>&nbsp;    propertySheet.setSearchBoxVisible(false);</b>
+<b class="nc"><i>73</i>&nbsp;    propertySheet.getItems().add(new BeanProperty(</b>
+<i>74</i>&nbsp;        myWebdavServer, new WebDavPropertyDescriptor(&quot;name&quot;, &quot;webdav.serverName&quot;)));
+<b class="nc"><i>75</i>&nbsp;    propertySheet.getItems().add(new BeanProperty(</b>
+<i>76</i>&nbsp;        myWebdavServer, new WebDavPropertyDescriptor(&quot;rootUrl&quot;, &quot;option.webdav.server.url.label&quot;)));
+<b class="nc"><i>77</i>&nbsp;    propertySheet.getItems().add(new BeanProperty(</b>
+<i>78</i>&nbsp;        myWebdavServer, new WebDavPropertyDescriptor(&quot;username&quot;, &quot;option.webdav.server.username.label&quot;)));
+<b class="nc"><i>79</i>&nbsp;    propertySheet.getItems().add(new BeanProperty(</b>
+<b class="nc"><i>80</i>&nbsp;        myWebdavServer, new WebDavPropertyDescriptor(&quot;password&quot;, &quot;option.webdav.server.password.label&quot;)) {</b>
+<i>81</i>&nbsp;      @Override
+<i>82</i>&nbsp;      public Optional&lt;Class&lt;? extends PropertyEditor&lt;?&gt;&gt;&gt; getPropertyEditorClass() {
+<b class="nc"><i>83</i>&nbsp;        return Optional.of(PasswordPropertyEditor.class);</b>
+<i>84</i>&nbsp;      }
+<i>85</i>&nbsp;    });
+<b class="nc"><i>86</i>&nbsp;    propertySheet.getItems().add(new BeanProperty(</b>
+<i>87</i>&nbsp;        myWebdavServer, new WebDavPropertyDescriptor(&quot;savePassword&quot;, &quot;option.webdav.server.savePassword.label.trailing&quot;)));
+<b class="nc"><i>88</i>&nbsp;    Button btnDone = new Button(&quot;Done&quot;);</b>
+<b class="nc"><i>89</i>&nbsp;    btnDone.getStyleClass().add(&quot;btn-done&quot;);</b>
+<b class="nc"><i>90</i>&nbsp;    FXUtil.INSTANCE.createBreathingButton(btnDone);</b>
+<b class="nc"><i>91</i>&nbsp;    btnDone.addEventHandler(ActionEvent.ACTION, event -&gt; onDone());</b>
+<b class="nc"><i>92</i>&nbsp;    HBox bottomBox = new HBox();</b>
+<b class="nc"><i>93</i>&nbsp;    bottomBox.getStyleClass().add(&quot;button-bar&quot;);</b>
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;
+<b class="nc"><i>96</i>&nbsp;    Pane spacerPane = new Pane();</b>
+<b class="nc"><i>97</i>&nbsp;    HBox.setHgrow(spacerPane, Priority.ALWAYS);</b>
+<b class="nc"><i>98</i>&nbsp;    bottomBox.getChildren().addAll(btnDone, spacerPane);</b>
+<b class="nc"><i>99</i>&nbsp;    if (myHasDelete) {</b>
+<b class="nc"><i>100</i>&nbsp;      Button btnDelete = new Button(&quot;Delete&quot;);</b>
+<b class="nc"><i>101</i>&nbsp;      btnDelete.addEventHandler(ActionEvent.ACTION, event -&gt; myValueConsumer.accept(null));</b>
+<b class="nc"><i>102</i>&nbsp;      bottomBox.getChildren().add(btnDelete);</b>
+<i>103</i>&nbsp;    }
+<b class="nc"><i>104</i>&nbsp;    VBox.setVgrow(propertySheet, Priority.SOMETIMES);</b>
+<i>105</i>&nbsp;
+<b class="nc"><i>106</i>&nbsp;    centerBox.getChildren().addAll(propertySheet, bottomBox);</b>
+<i>107</i>&nbsp;
+<b class="nc"><i>108</i>&nbsp;    BorderPane result = new BorderPane();</b>
+<b class="nc"><i>109</i>&nbsp;    result.getStyleClass().addAll(&quot;pane-service-contents&quot;, &quot;webdav-server-setup&quot;);</b>
+<i>110</i>&nbsp;
+<b class="nc"><i>111</i>&nbsp;    HBox titleBox = new HBox();</b>
+<b class="nc"><i>112</i>&nbsp;    titleBox.getStyleClass().add(&quot;title&quot;);</b>
+<b class="nc"><i>113</i>&nbsp;    Label title = myHasDelete ? new Label(&quot;Edit WebDAV Server&quot;) : new Label(&quot;New WebDAV Server&quot;);</b>
+<b class="nc"><i>114</i>&nbsp;    titleBox.getChildren().add(title);</b>
+<b class="nc"><i>115</i>&nbsp;    result.setTop(titleBox);</b>
+<b class="nc"><i>116</i>&nbsp;    result.setCenter(centerBox);</b>
+<i>117</i>&nbsp;
+<b class="nc"><i>118</i>&nbsp;    return result;</b>
+<i>119</i>&nbsp;  }
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  @Override
+<i>122</i>&nbsp;  public Optional&lt;Pane&gt; createSettingsUi() {
+<b class="nc"><i>123</i>&nbsp;    return Optional.empty();</b>
+<i>124</i>&nbsp;  }
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  private void onDone() {
+<b class="nc"><i>127</i>&nbsp;    myValueConsumer.accept(myWebdavServer);</b>
+<i>128</i>&nbsp;  }
+<i>129</i>&nbsp;
+<i>130</i>&nbsp;  private static class WebDavPropertyDescriptor extends PropertyDescriptor {
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;    public WebDavPropertyDescriptor(String propertyName, String i18nKey) throws IntrospectionException {
+<b class="nc"><i>133</i>&nbsp;      super(propertyName, WebDavServerDescriptor.class);</b>
+<b class="nc"><i>134</i>&nbsp;      setDisplayName(GanttLanguage.getInstance().getText(i18nKey));</b>
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  public static class PasswordPropertyEditor extends AbstractPropertyEditor&lt;String, PasswordField&gt; {
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;    public PasswordPropertyEditor(PropertySheet.Item property) {
+<b class="nc"><i>141</i>&nbsp;      super(property, new PasswordField());</b>
+<i>142</i>&nbsp;    }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;    protected StringProperty getObservableValue() {
+<b class="nc"><i>145</i>&nbsp;      return this.getEditor().textProperty();</b>
+<i>146</i>&nbsp;    }
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;    public void setValue(String value) {
+<b class="nc"><i>149</i>&nbsp;      this.getEditor().setText(value);</b>
+<i>150</i>&nbsp;    }
+<i>151</i>&nbsp;  }
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

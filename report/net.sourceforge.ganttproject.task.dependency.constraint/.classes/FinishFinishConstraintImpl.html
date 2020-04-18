@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: FinishFinishConstraintImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.dependency.constraint</a> ]
+</div>
+
+<h1>Coverage Summary for Class: FinishFinishConstraintImpl (net.sourceforge.ganttproject.task.dependency.constraint)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FinishFinishConstraintImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.6%
+  </span>
+  <span class="absValue">
+    (20/ 33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.dependency.constraint;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.TaskActivity;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+<i>31</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>32</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;/**
+<i>35</i>&nbsp; * Dependent task finishes not earlier than dependee finishes
+<i>36</i>&nbsp; *
+<i>37</i>&nbsp; * @author bard
+<i>38</i>&nbsp; */
+<i>39</i>&nbsp;public class FinishFinishConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
+<i>40</i>&nbsp;  public FinishFinishConstraintImpl() {
+<b class="fc"><i>41</i>&nbsp;    super(TaskDependencyConstraint.Type.finishfinish, GanttLanguage.getInstance().getText(&quot;finishfinish&quot;));</b>
+<b class="fc"><i>42</i>&nbsp;  }</b>
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  @Override
+<i>45</i>&nbsp;  public TaskDependencyConstraint.Collision getCollision() {
+<b class="fc"><i>46</i>&nbsp;    Task dependee = getDependency().getDependee();</b>
+<b class="fc"><i>47</i>&nbsp;    Task dependant = getDependency().getDependant();</b>
+<b class="fc"><i>48</i>&nbsp;    final GanttCalendar dependeeEnd = dependee.getEnd();</b>
+<b class="fc"><i>49</i>&nbsp;    final GanttCalendar dependantEnd = dependant.getEnd();</b>
+<i>50</i>&nbsp;
+<b class="fc"><i>51</i>&nbsp;    GanttCalendar acceptableEnd = CalendarFactory.createGanttCalendar(dependant.getManager().getCalendar().shiftDate(</b>
+<b class="fc"><i>52</i>&nbsp;        dependeeEnd.getTime(), dependant.getManager().createLength(getDependency().getDifference())));</b>
+<i>53</i>&nbsp;
+<b class="fc"><i>54</i>&nbsp;    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependantEnd.compareTo(acceptableEnd) &lt; 0</b>
+<b class="fc"><i>55</i>&nbsp;        : dependantEnd.compareTo(acceptableEnd) != 0;</b>
+<i>56</i>&nbsp;
+<b class="fc"><i>57</i>&nbsp;    GanttCalendar acceptableStart = isActive ? CalendarFactory.createGanttCalendar(</b>
+<b class="fc"><i>58</i>&nbsp;          dependant.getManager().getCalendar().shiftDate(acceptableEnd.getTime(), dependant.getDuration().reverse())) : dependant.getStart();</b>
+<b class="fc"><i>59</i>&nbsp;    return new TaskDependencyConstraint.DefaultCollision(acceptableStart, TaskDependencyConstraint.Collision.START_LATER_VARIATION, isActive);</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  @Override
+<i>63</i>&nbsp;  public Collision getBackwardCollision(Date dependantStart) {
+<b class="fc"><i>64</i>&nbsp;    Task dependee = getDependency().getDependee();</b>
+<b class="fc"><i>65</i>&nbsp;    GanttCalendar dependeeEnd = dependee.getEnd().clone();</b>
+<i>66</i>&nbsp;
+<b class="fc"><i>67</i>&nbsp;    Date barrier = shift(dependantStart, getDependency().getDependant().getDuration().getLength()</b>
+<b class="fc"><i>68</i>&nbsp;        - getDependency().getDifference());</b>
+<b class="fc"><i>69</i>&nbsp;    boolean isActive = getDependency().getHardness() == TaskDependency.Hardness.RUBBER ? dependeeEnd.getTime().compareTo(</b>
+<b class="nc"><i>70</i>&nbsp;        barrier) &gt; 0</b>
+<b class="fc"><i>71</i>&nbsp;        : dependeeEnd.getTime().compareTo(barrier) != 0;</b>
+<i>72</i>&nbsp;
+<b class="fc"><i>73</i>&nbsp;    return new TaskDependencyConstraint.DefaultCollision(CalendarFactory.createGanttCalendar(barrier),</b>
+<i>74</i>&nbsp;        TaskDependencyConstraint.Collision.START_EARLIER_VARIATION, isActive);
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  @Override
+<i>78</i>&nbsp;  public ActivityBinding getActivityBinding() {
+<b class="nc"><i>79</i>&nbsp;    List&lt;TaskActivity&gt; dependantActivities = getDependency().getDependant().getActivities();</b>
+<b class="nc"><i>80</i>&nbsp;    List&lt;TaskActivity&gt; dependeeActivities = getDependency().getDependee().getActivities();</b>
+<b class="nc"><i>81</i>&nbsp;    if (dependantActivities.isEmpty()) {</b>
+<b class="nc"><i>82</i>&nbsp;      GPLogger.logToLogger(&quot;Task &quot; + getDependency().getDependant() + &quot; has no activities&quot;);</b>
+<b class="nc"><i>83</i>&nbsp;      return null;</b>
+<i>84</i>&nbsp;    }
+<b class="nc"><i>85</i>&nbsp;    if (dependeeActivities.isEmpty()) {</b>
+<b class="nc"><i>86</i>&nbsp;      GPLogger.logToLogger(&quot;Task &quot; + getDependency().getDependee() + &quot; has no activities&quot;);</b>
+<b class="nc"><i>87</i>&nbsp;      return null;</b>
+<i>88</i>&nbsp;    }
+<b class="nc"><i>89</i>&nbsp;    TaskActivity theDependant = dependantActivities.get(dependantActivities.size() - 1);</b>
+<b class="nc"><i>90</i>&nbsp;    TaskActivity theDependee = dependeeActivities.get(dependeeActivities.size() - 1);</b>
+<b class="nc"><i>91</i>&nbsp;    return new DependencyActivityBindingImpl(theDependant, theDependee, new Date[] { theDependant.getEnd(),</b>
+<b class="nc"><i>92</i>&nbsp;        theDependee.getEnd() });</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

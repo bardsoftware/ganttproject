@@ -1,0 +1,509 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GPAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GPAction (net.sourceforge.ganttproject.action)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GPAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.3%
+  </span>
+  <span class="absValue">
+    (1/ 30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.8%
+  </span>
+  <span class="absValue">
+    (1/ 126)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GPAction$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPAction$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPAction$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPAction$IconSize</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    2.5%
+  </span>
+  <span class="absValue">
+    (1/ 40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.7%
+  </span>
+  <span class="absValue">
+    (1/ 139)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Strings;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.DesktopIntegration;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.util.PropertiesUtil;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import javax.swing.*;
+<i>28</i>&nbsp;import java.awt.*;
+<i>29</i>&nbsp;import java.awt.event.ActionEvent;
+<i>30</i>&nbsp;import java.awt.event.KeyEvent;
+<i>31</i>&nbsp;import java.beans.PropertyChangeEvent;
+<i>32</i>&nbsp;import java.beans.PropertyChangeListener;
+<i>33</i>&nbsp;import java.net.URL;
+<i>34</i>&nbsp;import java.text.MessageFormat;
+<i>35</i>&nbsp;import java.util.ArrayList;
+<i>36</i>&nbsp;import java.util.Collections;
+<i>37</i>&nbsp;import java.util.List;
+<i>38</i>&nbsp;import java.util.Properties;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;/**
+<i>41</i>&nbsp; * @author bard
+<i>42</i>&nbsp; */
+<b class="nc"><i>43</i>&nbsp;public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {</b>
+<i>44</i>&nbsp;  private final String myIconSize;
+<i>45</i>&nbsp;  private String myFontAwesomeLabel;
+<i>46</i>&nbsp;
+<b class="nc"><i>47</i>&nbsp;  public enum IconSize {</b>
+<b class="nc"><i>48</i>&nbsp;    NO_ICON(null), SMALL(&quot;8&quot;), MENU(&quot;16&quot;), TOOLBAR_SMALL(&quot;24&quot;), TOOLBAR_BIG(&quot;24&quot;);</b>
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;    private final String mySize;
+<i>51</i>&nbsp;
+<b class="nc"><i>52</i>&nbsp;    IconSize(String size) {</b>
+<b class="nc"><i>53</i>&nbsp;      mySize = size;</b>
+<i>54</i>&nbsp;    }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;    public String asString() {
+<b class="nc"><i>57</i>&nbsp;      return mySize;</b>
+<i>58</i>&nbsp;    }
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  /**
+<i>62</i>&nbsp;   * Location of the icon files
+<i>63</i>&nbsp;   */
+<i>64</i>&nbsp;  private static final String ICON_FILE_DIRECTORY = &quot;/icons&quot;;
+<i>65</i>&nbsp;
+<b class="nc"><i>66</i>&nbsp;  private boolean iconVisible = true;</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  private final String myName;
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  private KeyStroke myKeyStroke;
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  private static Properties ourKeyboardProperties;
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  private static Properties ourIconProperties;
+<i>75</i>&nbsp;
+<b class="fc"><i>76</i>&nbsp;  private static GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  protected GPAction() {
+<b class="nc"><i>79</i>&nbsp;    this(null);</b>
+<b class="nc"><i>80</i>&nbsp;  }</b>
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  public GPAction(String name) {
+<i>83</i>&nbsp;    // TODO use icon size given in options as default size
+<b class="nc"><i>84</i>&nbsp;    this(name, &quot;16&quot;);</b>
+<b class="nc"><i>85</i>&nbsp;  }</b>
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  protected GPAction(String name, String iconSize) {
+<b class="nc"><i>88</i>&nbsp;    super(name);</b>
+<b class="nc"><i>89</i>&nbsp;    myName = name;</b>
+<b class="nc"><i>90</i>&nbsp;    myIconSize = iconSize;</b>
+<b class="nc"><i>91</i>&nbsp;    if (iconSize != null) {</b>
+<b class="nc"><i>92</i>&nbsp;      updateIcon(iconSize);</b>
+<i>93</i>&nbsp;    }
+<b class="nc"><i>94</i>&nbsp;    updateName();</b>
+<b class="nc"><i>95</i>&nbsp;    updateTooltip();</b>
+<b class="nc"><i>96</i>&nbsp;    language.addListener(this);</b>
+<b class="nc"><i>97</i>&nbsp;    if (name != null) {</b>
+<b class="nc"><i>98</i>&nbsp;      myKeyStroke = getKeyStroke(name);</b>
+<b class="nc"><i>99</i>&nbsp;      putValue(Action.ACCELERATOR_KEY, myKeyStroke);</b>
+<i>100</i>&nbsp;    }
+<b class="nc"><i>101</i>&nbsp;  }</b>
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  protected GPAction(String name, IconSize size) {
+<b class="nc"><i>104</i>&nbsp;    this(name, size.asString());</b>
+<b class="nc"><i>105</i>&nbsp;  }</b>
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  public GPAction withIcon(IconSize size) {
+<b class="nc"><i>108</i>&nbsp;    final GPAction result = new GPAction(myName, size) {</b>
+<i>109</i>&nbsp;      @Override
+<i>110</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>111</i>&nbsp;        GPAction.this.actionPerformed(e);</b>
+<b class="nc"><i>112</i>&nbsp;      }</b>
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;      @Override
+<i>115</i>&nbsp;      public boolean isEnabled() {
+<b class="nc"><i>116</i>&nbsp;        return GPAction.this.isEnabled();</b>
+<i>117</i>&nbsp;      }
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;    };
+<b class="nc"><i>120</i>&nbsp;    addPropertyChangeListener(new PropertyChangeListener() {</b>
+<i>121</i>&nbsp;      @Override
+<i>122</i>&nbsp;      public void propertyChange(PropertyChangeEvent evt) {
+<b class="nc"><i>123</i>&nbsp;        result.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());</b>
+<i>124</i>&nbsp;      }
+<i>125</i>&nbsp;    });
+<b class="nc"><i>126</i>&nbsp;    return result;</b>
+<i>127</i>&nbsp;  }
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;  public KeyStroke getKeyStroke() {
+<b class="nc"><i>130</i>&nbsp;    return myKeyStroke;</b>
+<i>131</i>&nbsp;  }
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  private void updateIcon(String iconSize) {
+<b class="nc"><i>134</i>&nbsp;    Icon icon = createIcon(iconSize);</b>
+<b class="nc"><i>135</i>&nbsp;    if (icon != null) {</b>
+<b class="nc"><i>136</i>&nbsp;      putValue(Action.SMALL_ICON, icon);</b>
+<i>137</i>&nbsp;    }
+<b class="nc"><i>138</i>&nbsp;  }</b>
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;  private final Icon createIcon(String iconSize) {
+<b class="nc"><i>141</i>&nbsp;    if (iconSize == null || false == iconVisible) {</b>
+<b class="nc"><i>142</i>&nbsp;      return null;</b>
+<i>143</i>&nbsp;    }
+<b class="nc"><i>144</i>&nbsp;    String customIcon = getCustomIconPath();</b>
+<i>145</i>&nbsp;    String resourcePath;
+<b class="nc"><i>146</i>&nbsp;    if (customIcon == null) {</b>
+<b class="nc"><i>147</i>&nbsp;      resourcePath = MessageFormat.format(&quot;{0}/{1}{2}.gif&quot;, ICON_FILE_DIRECTORY, getIconFilePrefix(), iconSize);</b>
+<i>148</i>&nbsp;    } else {
+<b class="nc"><i>149</i>&nbsp;      resourcePath = MessageFormat.format(&quot;{0}/{1}x{1}/{2}&quot;, ICON_FILE_DIRECTORY, iconSize, customIcon);</b>
+<i>150</i>&nbsp;    }
+<b class="nc"><i>151</i>&nbsp;    URL resource = getClass().getResource(resourcePath);</b>
+<b class="nc"><i>152</i>&nbsp;    return resource == null ? null : new ImageIcon(resource);</b>
+<i>153</i>&nbsp;  }
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  public static Icon getIcon(String iconSize, String iconFileName) {
+<b class="nc"><i>156</i>&nbsp;    URL resource = GPAction.class.getResource(MessageFormat.format(&quot;{0}/{1}x{1}/{2}&quot;, ICON_FILE_DIRECTORY, iconSize, iconFileName));</b>
+<b class="nc"><i>157</i>&nbsp;    return resource == null ? null : new ImageIcon(resource);</b>
+<i>158</i>&nbsp;
+<i>159</i>&nbsp;  }
+<i>160</i>&nbsp;
+<i>161</i>&nbsp;  /**
+<i>162</i>&nbsp;   * @return translation of &quot;ID.description&quot; if available, otherwise translation
+<i>163</i>&nbsp;   * of &quot;ID&quot;
+<i>164</i>&nbsp;   */
+<i>165</i>&nbsp;  protected String getLocalizedDescription() {
+<b class="nc"><i>166</i>&nbsp;    if (getID() == null) {</b>
+<b class="nc"><i>167</i>&nbsp;      return null;</b>
+<i>168</i>&nbsp;    }
+<b class="nc"><i>169</i>&nbsp;    String description = getI18n(getID() + &quot;.description&quot;);</b>
+<b class="nc"><i>170</i>&nbsp;    if (description == null) {</b>
+<b class="nc"><i>171</i>&nbsp;      description = language.correctLabel(getLocalizedName());</b>
+<i>172</i>&nbsp;    }
+<b class="nc"><i>173</i>&nbsp;    return description == null ? &quot;&quot; : description;</b>
+<i>174</i>&nbsp;  }
+<i>175</i>&nbsp;
+<i>176</i>&nbsp;  /**
+<i>177</i>&nbsp;   * @return translation of ID
+<i>178</i>&nbsp;   */
+<i>179</i>&nbsp;  protected String getLocalizedName() {
+<b class="nc"><i>180</i>&nbsp;    return getID() == null ? null : getI18n(getID());</b>
+<i>181</i>&nbsp;  }
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  public String getID() {
+<b class="nc"><i>184</i>&nbsp;    return myName;</b>
+<i>185</i>&nbsp;  }
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;  protected static String getI18n(String key) {
+<b class="nc"><i>188</i>&nbsp;    return language.getText(key);</b>
+<i>189</i>&nbsp;  }
+<i>190</i>&nbsp;
+<i>191</i>&nbsp;  protected String getIconFilePrefix() {
+<b class="nc"><i>192</i>&nbsp;    return null;</b>
+<i>193</i>&nbsp;  }
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;  protected final void updateName() {
+<b class="nc"><i>196</i>&nbsp;    if (getFontawesomeLabel() != null) {</b>
+<b class="nc"><i>197</i>&nbsp;      putValue(Action.NAME, getFontawesomeLabel());</b>
+<b class="nc"><i>198</i>&nbsp;      return;</b>
+<i>199</i>&nbsp;    }
+<b class="nc"><i>200</i>&nbsp;    String localizedName = getLocalizedName();</b>
+<b class="nc"><i>201</i>&nbsp;    if (localizedName == null) {</b>
+<b class="nc"><i>202</i>&nbsp;      localizedName = String.valueOf(getValue(Action.NAME));</b>
+<i>203</i>&nbsp;    }
+<b class="nc"><i>204</i>&nbsp;    if (localizedName != null) {</b>
+<b class="nc"><i>205</i>&nbsp;      int bucksPos = localizedName.indexOf(&#39;$&#39;);</b>
+<b class="nc"><i>206</i>&nbsp;      if (bucksPos &gt;= 0) {</b>
+<i>207</i>&nbsp;        // Get name without the $ in it
+<b class="nc"><i>208</i>&nbsp;        localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();</b>
+<i>209</i>&nbsp;      }
+<b class="nc"><i>210</i>&nbsp;      putValue(Action.NAME, localizedName);</b>
+<b class="nc"><i>211</i>&nbsp;      if (bucksPos &gt;= 0) {</b>
+<i>212</i>&nbsp;        // Activate mnemonic key
+<b class="nc"><i>213</i>&nbsp;        putValue(Action.MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(localizedName.charAt(bucksPos))));</b>
+<i>214</i>&nbsp;      }
+<i>215</i>&nbsp;    }
+<b class="nc"><i>216</i>&nbsp;  }</b>
+<i>217</i>&nbsp;
+<i>218</i>&nbsp;  /**
+<i>219</i>&nbsp;   * Updates the action. Can be called when external influences resulted in
+<i>220</i>&nbsp;   * changed action name and/or description
+<i>221</i>&nbsp;   */
+<i>222</i>&nbsp;  public void updateAction() {
+<b class="nc"><i>223</i>&nbsp;    if (IconSize.TOOLBAR_SMALL.asString().equals(myIconSize) &amp;&amp; getFontawesomeLabel() != null) {</b>
+<b class="nc"><i>224</i>&nbsp;      putValue(Action.SMALL_ICON, null);</b>
+<b class="nc"><i>225</i>&nbsp;      putValue(Action.NAME, getFontawesomeLabel());</b>
+<i>226</i>&nbsp;    } else {
+<b class="nc"><i>227</i>&nbsp;      updateName();</b>
+<i>228</i>&nbsp;    }
+<b class="nc"><i>229</i>&nbsp;    updateTooltip();</b>
+<b class="nc"><i>230</i>&nbsp;  }</b>
+<i>231</i>&nbsp;
+<i>232</i>&nbsp;  protected boolean calledFromAppleScreenMenu(ActionEvent e) {
+<b class="nc"><i>233</i>&nbsp;    if (e == null) {</b>
+<b class="nc"><i>234</i>&nbsp;      return false;</b>
+<i>235</i>&nbsp;    }
+<b class="nc"><i>236</i>&nbsp;    if (String.valueOf(e.getSource()).indexOf(&quot;JMenu&quot;) == -1) {</b>
+<b class="nc"><i>237</i>&nbsp;      return false;</b>
+<i>238</i>&nbsp;    }
+<b class="nc"><i>239</i>&nbsp;    if (e.getModifiers() == 0) {</b>
+<b class="nc"><i>240</i>&nbsp;      return false;</b>
+<i>241</i>&nbsp;    }
+<b class="nc"><i>242</i>&nbsp;    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();</b>
+<b class="nc"><i>243</i>&nbsp;    for (int i = 0; i &lt; Math.min(10, stackTrace.length); i++) {</b>
+<b class="nc"><i>244</i>&nbsp;      if (stackTrace[i].getClassName().indexOf(&quot;ScreenMenuItem&quot;) &gt; 0) {</b>
+<b class="nc"><i>245</i>&nbsp;        return true;</b>
+<i>246</i>&nbsp;      }
+<i>247</i>&nbsp;    }
+<b class="nc"><i>248</i>&nbsp;    return false;</b>
+<i>249</i>&nbsp;  }
+<i>250</i>&nbsp;
+<i>251</i>&nbsp;  protected void updateTooltip() {
+<b class="nc"><i>252</i>&nbsp;    String description = getLocalizedDescription();</b>
+<b class="nc"><i>253</i>&nbsp;    putValue(Action.SHORT_DESCRIPTION, Strings.isNullOrEmpty(description) ? null : description);</b>
+<b class="nc"><i>254</i>&nbsp;  }</b>
+<i>255</i>&nbsp;
+<i>256</i>&nbsp;  @Override
+<i>257</i>&nbsp;  public void languageChanged(Event event) {
+<b class="nc"><i>258</i>&nbsp;    updateAction();</b>
+<b class="nc"><i>259</i>&nbsp;  }</b>
+<i>260</i>&nbsp;
+<i>261</i>&nbsp;  private String getCustomIconPath() {
+<b class="nc"><i>262</i>&nbsp;    if (getID() == null) {</b>
+<b class="nc"><i>263</i>&nbsp;      return null;</b>
+<i>264</i>&nbsp;    }
+<b class="nc"><i>265</i>&nbsp;    if (ourIconProperties == null) {</b>
+<b class="nc"><i>266</i>&nbsp;      ourIconProperties = new Properties();</b>
+<b class="nc"><i>267</i>&nbsp;      PropertiesUtil.loadProperties(ourIconProperties, &quot;/icons.properties&quot;);</b>
+<i>268</i>&nbsp;    }
+<b class="nc"><i>269</i>&nbsp;    return (String) ourIconProperties.get(getID());</b>
+<i>270</i>&nbsp;  }
+<i>271</i>&nbsp;
+<i>272</i>&nbsp;  public String getFontawesomeLabel() {
+<b class="nc"><i>273</i>&nbsp;    return myFontAwesomeLabel;</b>
+<i>274</i>&nbsp;  }
+<i>275</i>&nbsp;
+<i>276</i>&nbsp;  protected void setFontAwesomeLabel(String label) {
+<b class="nc"><i>277</i>&nbsp;    myFontAwesomeLabel = label;</b>
+<b class="nc"><i>278</i>&nbsp;    updateAction();</b>
+<b class="nc"><i>279</i>&nbsp;  }</b>
+<i>280</i>&nbsp;
+<i>281</i>&nbsp;  public GPAction asToolbarAction() {
+<b class="nc"><i>282</i>&nbsp;    return this;</b>
+<i>283</i>&nbsp;  }
+<i>284</i>&nbsp;
+<i>285</i>&nbsp;  public static List&lt;KeyStroke&gt; getAllKeyStrokes(String keystrokeID) {
+<b class="nc"><i>286</i>&nbsp;    String text = getKeyStrokeText(keystrokeID);</b>
+<b class="nc"><i>287</i>&nbsp;    if (text == null) {</b>
+<b class="nc"><i>288</i>&nbsp;      return Collections.emptyList();</b>
+<i>289</i>&nbsp;    }
+<b class="nc"><i>290</i>&nbsp;    List&lt;KeyStroke&gt; result = new ArrayList&lt;KeyStroke&gt;();</b>
+<b class="nc"><i>291</i>&nbsp;    for (String ksText : text.split(&quot;,&quot;)) {</b>
+<b class="nc"><i>292</i>&nbsp;      KeyStroke ks = parseKeyStroke(ksText);</b>
+<b class="nc"><i>293</i>&nbsp;      if (ks != null) {</b>
+<b class="nc"><i>294</i>&nbsp;        result.add(ks);</b>
+<i>295</i>&nbsp;      }
+<i>296</i>&nbsp;    }
+<b class="nc"><i>297</i>&nbsp;    return result;</b>
+<i>298</i>&nbsp;  }
+<i>299</i>&nbsp;
+<i>300</i>&nbsp;  private static KeyStroke getKeyStroke(String keystrokeID) {
+<b class="nc"><i>301</i>&nbsp;    String keystrokeText = getKeyStrokeText(keystrokeID);</b>
+<b class="nc"><i>302</i>&nbsp;    if (keystrokeText == null) {</b>
+<b class="nc"><i>303</i>&nbsp;      return null;</b>
+<i>304</i>&nbsp;    }
+<b class="nc"><i>305</i>&nbsp;    return parseKeyStroke(keystrokeText);</b>
+<i>306</i>&nbsp;  }
+<i>307</i>&nbsp;
+<i>308</i>&nbsp;  private static KeyStroke parseKeyStroke(String keystrokeText) {
+<b class="nc"><i>309</i>&nbsp;    KeyStroke keyStroke = KeyStroke.getKeyStroke(keystrokeText);</b>
+<b class="nc"><i>310</i>&nbsp;    if (keyStroke == null) {</b>
+<b class="nc"><i>311</i>&nbsp;      return null;</b>
+<i>312</i>&nbsp;    }
+<b class="nc"><i>313</i>&nbsp;    if ((keyStroke.getModifiers() &amp; KeyEvent.CTRL_MASK) == KeyEvent.CTRL_MASK</b>
+<b class="nc"><i>314</i>&nbsp;        || (keyStroke.getModifiers() &amp; KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK) {</b>
+<b class="nc"><i>315</i>&nbsp;      int modifiers = keyStroke.getModifiers() &amp; (0xffffffff ^ KeyEvent.CTRL_MASK) &amp; (0xffffffff ^ KeyEvent.CTRL_DOWN_MASK) | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();</b>
+<b class="nc"><i>316</i>&nbsp;      keyStroke = KeyStroke.getKeyStroke(keyStroke.getKeyCode(), modifiers, keyStroke.isOnKeyRelease());</b>
+<i>317</i>&nbsp;    }
+<b class="nc"><i>318</i>&nbsp;    return keyStroke;</b>
+<i>319</i>&nbsp;  }
+<i>320</i>&nbsp;
+<i>321</i>&nbsp;  public static String getKeyStrokeText(String keystrokeID) {
+<b class="nc"><i>322</i>&nbsp;    if (ourKeyboardProperties == null) {</b>
+<b class="nc"><i>323</i>&nbsp;      ourKeyboardProperties = new Properties();</b>
+<b class="nc"><i>324</i>&nbsp;      PropertiesUtil.loadProperties(ourKeyboardProperties, &quot;/keyboard.properties&quot;);</b>
+<b class="nc"><i>325</i>&nbsp;      if (DesktopIntegration.isMacOs()) {</b>
+<b class="nc"><i>326</i>&nbsp;        PropertiesUtil.loadProperties(ourKeyboardProperties, &quot;/mouse.macos.properties&quot;);</b>
+<b class="nc"><i>327</i>&nbsp;        PropertiesUtil.loadProperties(ourKeyboardProperties, &quot;/keyboard.macos.properties&quot;);</b>
+<i>328</i>&nbsp;      } else {
+<b class="nc"><i>329</i>&nbsp;        PropertiesUtil.loadProperties(ourKeyboardProperties, &quot;/mouse.properties&quot;);</b>
+<i>330</i>&nbsp;      }
+<i>331</i>&nbsp;    }
+<b class="nc"><i>332</i>&nbsp;    return (String) ourKeyboardProperties.get(keystrokeID);</b>
+<i>333</i>&nbsp;  }
+<i>334</i>&nbsp;
+<i>335</i>&nbsp;  public static GPAction createVoidAction(String key) {
+<b class="nc"><i>336</i>&nbsp;    return new GPAction(key) {</b>
+<i>337</i>&nbsp;      @Override
+<i>338</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<i>339</i>&nbsp;        // No action
+<b class="nc"><i>340</i>&nbsp;      }</b>
+<i>341</i>&nbsp;    };
+<i>342</i>&nbsp;  }
+<i>343</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,714 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProxyDocument</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProxyDocument (net.sourceforge.ganttproject.document)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProxyDocument</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 63)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProxyDocument$FailureState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$OnlyShowWeekendsTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$ParsingState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 63)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$ParsingState$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$PortfolioImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$PortfolioTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProxyDocument$SuccessState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 157)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.ListOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>24</i>&nbsp;import com.google.common.base.Preconditions;
+<i>25</i>&nbsp;import com.google.common.collect.ImmutableSet;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.gui.GPColorChooser;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.io.GPSaver;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.parser.AbstractTagHandler;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.parser.AllocationTagHandler;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.parser.DependencyTagHandler;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.parser.FileFormatException;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.parser.GPParser;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.parser.HolidayTagHandler;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.parser.OptionTagHandler;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.parser.ParserFactory;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.parser.ParsingListener;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.parser.ResourceTagHandler;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.parser.RoleTagHandler;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.parser.TaskPropertiesTagHandler;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.parser.TaskTagHandler;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.parser.VacationTagHandler;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.parser.ViewTagHandler;
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManagerImpl;
+<i>54</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>55</i>&nbsp;import org.xml.sax.Attributes;
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;import java.awt.*;
+<i>58</i>&nbsp;import java.io.ByteArrayOutputStream;
+<i>59</i>&nbsp;import java.io.IOException;
+<i>60</i>&nbsp;import java.io.InputStream;
+<i>61</i>&nbsp;import java.io.OutputStream;
+<i>62</i>&nbsp;import java.net.URI;
+<i>63</i>&nbsp;import java.util.Set;
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;/**
+<i>66</i>&nbsp; * @author bard
+<i>67</i>&nbsp; */
+<i>68</i>&nbsp;public class ProxyDocument implements Document {
+<i>69</i>&nbsp;  private Document myPhysicalDocument;
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  private IGanttProject myProject;
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  private UIFacade myUIFacade;
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  private final ParserFactory myParserFactory;
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  private final DocumentCreator myCreator;
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  private PortfolioImpl myPortfolio;
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  private final ColumnList myTaskVisibleFields;
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  private final ColumnList myResourceVisibleFields;
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  ProxyDocument(DocumentCreator creator, Document physicalDocument, IGanttProject project, UIFacade uiFacade,
+<b class="nc"><i>86</i>&nbsp;      ColumnList taskVisibleFields, ColumnList resourceVisibleFields, ParserFactory parserFactory) {</b>
+<b class="nc"><i>87</i>&nbsp;    myPhysicalDocument = physicalDocument;</b>
+<b class="nc"><i>88</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>89</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="nc"><i>90</i>&nbsp;    myParserFactory = parserFactory;</b>
+<b class="nc"><i>91</i>&nbsp;    myCreator = creator;</b>
+<b class="nc"><i>92</i>&nbsp;    myTaskVisibleFields = taskVisibleFields;</b>
+<b class="nc"><i>93</i>&nbsp;    myResourceVisibleFields = resourceVisibleFields;</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  public Document getRealDocument() {
+<b class="nc"><i>97</i>&nbsp;    return myPhysicalDocument;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;  @Override
+<i>100</i>&nbsp;  public void setMirror(Document mirrorDocument) {
+<b class="nc"><i>101</i>&nbsp;    myPhysicalDocument = Preconditions.checkNotNull(mirrorDocument);</b>
+<i>102</i>&nbsp;  }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  @Override
+<i>105</i>&nbsp;  public String getFileName() {
+<b class="nc"><i>106</i>&nbsp;    return myPhysicalDocument.getFileName();</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public boolean canRead() {
+<b class="nc"><i>111</i>&nbsp;    return myPhysicalDocument.canRead();</b>
+<i>112</i>&nbsp;  }
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  @Override
+<i>115</i>&nbsp;  public IStatus canWrite() {
+<b class="nc"><i>116</i>&nbsp;    return myPhysicalDocument.canWrite();</b>
+<i>117</i>&nbsp;  }
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  @Override
+<i>120</i>&nbsp;  public boolean isValidForMRU() {
+<b class="nc"><i>121</i>&nbsp;    return myPhysicalDocument.isValidForMRU();</b>
+<i>122</i>&nbsp;  }
+<i>123</i>&nbsp;
+<i>124</i>&nbsp;  @Override
+<i>125</i>&nbsp;  public boolean acquireLock() {
+<b class="nc"><i>126</i>&nbsp;    return myPhysicalDocument.acquireLock();</b>
+<i>127</i>&nbsp;  }
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;  @Override
+<i>130</i>&nbsp;  public void releaseLock() {
+<b class="nc"><i>131</i>&nbsp;    myPhysicalDocument.releaseLock();</b>
+<i>132</i>&nbsp;  }
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  @Override
+<i>135</i>&nbsp;  public InputStream getInputStream() throws IOException {
+<b class="nc"><i>136</i>&nbsp;    return myPhysicalDocument.getInputStream();</b>
+<i>137</i>&nbsp;  }
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;  @Override
+<i>140</i>&nbsp;  public OutputStream getOutputStream() throws IOException {
+<b class="nc"><i>141</i>&nbsp;    return myPhysicalDocument.getOutputStream();</b>
+<i>142</i>&nbsp;  }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  @Override
+<i>145</i>&nbsp;  public String getPath() {
+<b class="nc"><i>146</i>&nbsp;    return myPhysicalDocument.getPath();</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  @Override
+<i>150</i>&nbsp;  public String getFilePath() {
+<b class="nc"><i>151</i>&nbsp;    String result = myPhysicalDocument.getFilePath();</b>
+<b class="nc"><i>152</i>&nbsp;    if (result == null) {</b>
+<i>153</i>&nbsp;      try {
+<b class="nc"><i>154</i>&nbsp;        result = myCreator.createTemporaryFile();</b>
+<b class="nc"><i>155</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>156</i>&nbsp;        myUIFacade.showErrorDialog(e);</b>
+<b class="nc"><i>157</i>&nbsp;      }</b>
+<i>158</i>&nbsp;    }
+<b class="nc"><i>159</i>&nbsp;    return result;</b>
+<i>160</i>&nbsp;  }
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  @Override
+<i>163</i>&nbsp;  public String getUsername() {
+<b class="nc"><i>164</i>&nbsp;    return myPhysicalDocument.getUsername();</b>
+<i>165</i>&nbsp;  }
+<i>166</i>&nbsp;
+<i>167</i>&nbsp;  @Override
+<i>168</i>&nbsp;  public String getPassword() {
+<b class="nc"><i>169</i>&nbsp;    return myPhysicalDocument.getPassword();</b>
+<i>170</i>&nbsp;  }
+<i>171</i>&nbsp;
+<i>172</i>&nbsp;  @Override
+<i>173</i>&nbsp;  public String getLastError() {
+<b class="nc"><i>174</i>&nbsp;    return myPhysicalDocument.getLastError();</b>
+<i>175</i>&nbsp;  }
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  @Override
+<i>178</i>&nbsp;  public void read() throws IOException, DocumentException {
+<b class="nc"><i>179</i>&nbsp;    FailureState failure = new FailureState();</b>
+<b class="nc"><i>180</i>&nbsp;    SuccessState success = new SuccessState();</b>
+<b class="nc"><i>181</i>&nbsp;    ParsingState parsing = new ParsingState(success, failure);</b>
+<i>182</i>&nbsp;    // OpenCopyConfirmationState confirmation = new OpenCopyConfirmationState(
+<i>183</i>&nbsp;    // parsing, failure);
+<i>184</i>&nbsp;    // AcquireLockState lock = new AcquireLockState(parsing, confirmation);
+<i>185</i>&nbsp;    try {
+<b class="nc"><i>186</i>&nbsp;      getTaskManager().setEventsEnabled(false);</b>
+<b class="nc"><i>187</i>&nbsp;      parsing.enter();</b>
+<i>188</i>&nbsp;    } finally {
+<b class="nc"><i>189</i>&nbsp;      getTaskManager().setEventsEnabled(true);</b>
+<b class="nc"><i>190</i>&nbsp;    }</b>
+<i>191</i>&nbsp;    // lock.enter();
+<i>192</i>&nbsp;  }
+<i>193</i>&nbsp;
+<i>194</i>&nbsp;  @Override
+<i>195</i>&nbsp;  public void write() throws IOException {
+<b class="nc"><i>196</i>&nbsp;    GPSaver saver = myParserFactory.newSaver();</b>
+<i>197</i>&nbsp;    byte[] buffer;
+<i>198</i>&nbsp;    try {
+<b class="nc"><i>199</i>&nbsp;      ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();</b>
+<b class="nc"><i>200</i>&nbsp;      saver.save(bufferStream);</b>
+<b class="nc"><i>201</i>&nbsp;      bufferStream.flush();</b>
+<b class="nc"><i>202</i>&nbsp;      buffer = bufferStream.toByteArray();</b>
+<b class="nc"><i>203</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>204</i>&nbsp;      getUIFacade().showErrorDialog(e);</b>
+<i>205</i>&nbsp;      return;
+<b class="nc"><i>206</i>&nbsp;    }</b>
+<b class="nc"><i>207</i>&nbsp;    OutputStream output = getOutputStream();</b>
+<i>208</i>&nbsp;    try {
+<b class="nc"><i>209</i>&nbsp;      output.write(buffer);</b>
+<b class="nc"><i>210</i>&nbsp;      output.flush();</b>
+<i>211</i>&nbsp;    } finally {
+<b class="nc"><i>212</i>&nbsp;      output.close();</b>
+<b class="nc"><i>213</i>&nbsp;    }</b>
+<i>214</i>&nbsp;  }
+<i>215</i>&nbsp;
+<i>216</i>&nbsp;  private TaskManagerImpl getTaskManager() {
+<b class="nc"><i>217</i>&nbsp;    return (TaskManagerImpl) myProject.getTaskManager();</b>
+<i>218</i>&nbsp;  }
+<i>219</i>&nbsp;
+<i>220</i>&nbsp;  private RoleManager getRoleManager() {
+<b class="nc"><i>221</i>&nbsp;    return myProject.getRoleManager();</b>
+<i>222</i>&nbsp;  }
+<i>223</i>&nbsp;
+<i>224</i>&nbsp;  private HumanResourceManager getHumanResourceManager() {
+<b class="nc"><i>225</i>&nbsp;    return myProject.getHumanResourceManager();</b>
+<i>226</i>&nbsp;  }
+<i>227</i>&nbsp;
+<i>228</i>&nbsp;  private GPCalendarCalc getActiveCalendar() {
+<b class="nc"><i>229</i>&nbsp;    return myProject.getActiveCalendar();</b>
+<i>230</i>&nbsp;  }
+<i>231</i>&nbsp;
+<i>232</i>&nbsp;  private UIFacade getUIFacade() {
+<b class="nc"><i>233</i>&nbsp;    return myUIFacade;</b>
+<i>234</i>&nbsp;  }
+<i>235</i>&nbsp;
+<i>236</i>&nbsp;  // class AcquireLockState {
+<i>237</i>&nbsp;  // OpenCopyConfirmationState myConfirmationState;
+<i>238</i>&nbsp;  //
+<i>239</i>&nbsp;  // ParsingState myParsingState;
+<i>240</i>&nbsp;  //
+<i>241</i>&nbsp;  // public AcquireLockState(ParsingState parsing,
+<i>242</i>&nbsp;  // OpenCopyConfirmationState confirmation) {
+<i>243</i>&nbsp;  // myParsingState = parsing;
+<i>244</i>&nbsp;  // myConfirmationState = confirmation;
+<i>245</i>&nbsp;  // }
+<i>246</i>&nbsp;  //
+<i>247</i>&nbsp;  // void enter() throws IOException, DocumentException {
+<i>248</i>&nbsp;  // boolean locked = acquireLock();
+<i>249</i>&nbsp;  // if (!locked) {
+<i>250</i>&nbsp;  // myConfirmationState.enter();
+<i>251</i>&nbsp;  // } else {
+<i>252</i>&nbsp;  // myParsingState.enter();
+<i>253</i>&nbsp;  // }
+<i>254</i>&nbsp;  // }
+<i>255</i>&nbsp;  // }
+<i>256</i>&nbsp;  //
+<i>257</i>&nbsp;  // class OpenCopyConfirmationState {
+<i>258</i>&nbsp;  // private final ParsingState myParsingState;
+<i>259</i>&nbsp;  //
+<i>260</i>&nbsp;  // private final FailureState myExitState;
+<i>261</i>&nbsp;  //
+<i>262</i>&nbsp;  // public OpenCopyConfirmationState(ParsingState parsing,
+<i>263</i>&nbsp;  // FailureState failure) {
+<i>264</i>&nbsp;  // myParsingState = parsing;
+<i>265</i>&nbsp;  // myExitState = failure;
+<i>266</i>&nbsp;  // }
+<i>267</i>&nbsp;  //
+<i>268</i>&nbsp;  // void enter() throws IOException, DocumentException {
+<i>269</i>&nbsp;  // String message = GanttLanguage.getInstance().getText(&quot;msg13&quot;);
+<i>270</i>&nbsp;  // String title = GanttLanguage.getInstance().getText(&quot;warning&quot;);
+<i>271</i>&nbsp;  // if (UIFacade.Choice.YES==getUIFacade().showConfirmationDialog(message,
+<i>272</i>&nbsp;  // title)) {
+<i>273</i>&nbsp;  // myParsingState.enter();
+<i>274</i>&nbsp;  // } else {
+<i>275</i>&nbsp;  // myExitState.enter();
+<i>276</i>&nbsp;  // }
+<i>277</i>&nbsp;  // }
+<i>278</i>&nbsp;  // }
+<i>279</i>&nbsp;
+<i>280</i>&nbsp;  class ParsingState {
+<i>281</i>&nbsp;    private final FailureState myFailureState;
+<i>282</i>&nbsp;
+<i>283</i>&nbsp;    private final SuccessState mySuccessState;
+<i>284</i>&nbsp;
+<b class="nc"><i>285</i>&nbsp;    public ParsingState(SuccessState success, FailureState failure) {</b>
+<b class="nc"><i>286</i>&nbsp;      mySuccessState = success;</b>
+<b class="nc"><i>287</i>&nbsp;      myFailureState = failure;</b>
+<i>288</i>&nbsp;    }
+<i>289</i>&nbsp;
+<i>290</i>&nbsp;    void enter() throws IOException, DocumentException {
+<b class="nc"><i>291</i>&nbsp;      GPParser opener = myParserFactory.newParser();</b>
+<b class="nc"><i>292</i>&nbsp;      HumanResourceManager hrManager = getHumanResourceManager();</b>
+<b class="nc"><i>293</i>&nbsp;      RoleManager roleManager = getRoleManager();</b>
+<b class="nc"><i>294</i>&nbsp;      TaskManager taskManager = getTaskManager();</b>
+<b class="nc"><i>295</i>&nbsp;      ResourceTagHandler resourceHandler = new ResourceTagHandler(hrManager, roleManager,</b>
+<b class="nc"><i>296</i>&nbsp;          myProject.getResourceCustomPropertyManager());</b>
+<b class="nc"><i>297</i>&nbsp;      DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());</b>
+<b class="nc"><i>298</i>&nbsp;      AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());</b>
+<b class="nc"><i>299</i>&nbsp;      VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);</b>
+<b class="nc"><i>300</i>&nbsp;      PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());</b>
+<b class="nc"><i>301</i>&nbsp;      RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);</b>
+<b class="nc"><i>302</i>&nbsp;      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext(), myUIFacade.getTaskTree());</b>
+<b class="nc"><i>303</i>&nbsp;      DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());</b>
+<b class="nc"><i>304</i>&nbsp;      OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());</b>
+<i>305</i>&nbsp;
+<b class="nc"><i>306</i>&nbsp;      TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());</b>
+<b class="nc"><i>307</i>&nbsp;      opener.addTagHandler(taskPropHandler);</b>
+<b class="nc"><i>308</i>&nbsp;      CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),</b>
+<b class="nc"><i>309</i>&nbsp;          getTaskManager());</b>
+<b class="nc"><i>310</i>&nbsp;      opener.addTagHandler(customPropHandler);</b>
+<i>311</i>&nbsp;
+<i>312</i>&nbsp;
+<b class="nc"><i>313</i>&nbsp;      TaskDisplayColumnsTagHandler pilsenTaskDisplayHandler = TaskDisplayColumnsTagHandler.createPilsenHandler();</b>
+<b class="nc"><i>314</i>&nbsp;      TaskDisplayColumnsTagHandler legacyTaskDisplayHandler = TaskDisplayColumnsTagHandler.createLegacyHandler();</b>
+<i>315</i>&nbsp;
+<b class="nc"><i>316</i>&nbsp;      opener.addTagHandler(pilsenTaskDisplayHandler);</b>
+<b class="nc"><i>317</i>&nbsp;      opener.addTagHandler(legacyTaskDisplayHandler);</b>
+<b class="nc"><i>318</i>&nbsp;      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));</b>
+<b class="nc"><i>319</i>&nbsp;      opener.addTagHandler(new ViewTagHandler(&quot;gantt-chart&quot;, getUIFacade(), pilsenTaskDisplayHandler));</b>
+<i>320</i>&nbsp;
+<i>321</i>&nbsp;
+<b class="nc"><i>322</i>&nbsp;      TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(</b>
+<i>323</i>&nbsp;          &quot;field&quot;, &quot;id&quot;, &quot;order&quot;, &quot;width&quot;, &quot;visible&quot;);
+<b class="nc"><i>324</i>&nbsp;      opener.addTagHandler(resourceFieldsHandler);</b>
+<b class="nc"><i>325</i>&nbsp;      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));</b>
+<b class="nc"><i>326</i>&nbsp;      opener.addTagHandler(new ViewTagHandler(&quot;resource-table&quot;, getUIFacade(), resourceFieldsHandler));</b>
+<i>327</i>&nbsp;
+<b class="nc"><i>328</i>&nbsp;      opener.addTagHandler(taskHandler);</b>
+<b class="nc"><i>329</i>&nbsp;      opener.addParsingListener(taskHandler);</b>
+<i>330</i>&nbsp;
+<b class="nc"><i>331</i>&nbsp;      opener.addParsingListener(customPropHandler);</b>
+<i>332</i>&nbsp;
+<b class="nc"><i>333</i>&nbsp;      opener.addTagHandler(opener.getDefaultTagHandler());</b>
+<b class="nc"><i>334</i>&nbsp;      opener.addTagHandler(opener.getTimelineTagHandler());</b>
+<b class="nc"><i>335</i>&nbsp;      opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());</b>
+<b class="nc"><i>336</i>&nbsp;      opener.addTagHandler(resourceHandler);</b>
+<b class="nc"><i>337</i>&nbsp;      opener.addTagHandler(dependencyHandler);</b>
+<b class="nc"><i>338</i>&nbsp;      opener.addTagHandler(allocationHandler);</b>
+<b class="nc"><i>339</i>&nbsp;      opener.addParsingListener(allocationHandler);</b>
+<b class="nc"><i>340</i>&nbsp;      opener.addTagHandler(vacationHandler);</b>
+<b class="nc"><i>341</i>&nbsp;      opener.addTagHandler(previousStateHandler);</b>
+<b class="nc"><i>342</i>&nbsp;      opener.addTagHandler(rolesHandler);</b>
+<b class="nc"><i>343</i>&nbsp;      opener.addTagHandler(weekHandler);</b>
+<b class="nc"><i>344</i>&nbsp;      opener.addTagHandler(onlyShowWeekendsHandler);</b>
+<b class="nc"><i>345</i>&nbsp;      opener.addTagHandler(new OptionTagHandler&lt;ListOption&lt;Color&gt;&gt;(GPColorChooser.getRecentColorsOption()));</b>
+<b class="nc"><i>346</i>&nbsp;      opener.addParsingListener(dependencyHandler);</b>
+<b class="nc"><i>347</i>&nbsp;      opener.addParsingListener(resourceHandler);</b>
+<i>348</i>&nbsp;
+<i>349</i>&nbsp;
+<b class="nc"><i>350</i>&nbsp;      HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());</b>
+<b class="nc"><i>351</i>&nbsp;      opener.addTagHandler(new AbstractTagHandler(&quot;calendars&quot;) {</b>
+<i>352</i>&nbsp;        @Override
+<i>353</i>&nbsp;        protected boolean onStartElement(Attributes attrs) {
+<b class="nc"><i>354</i>&nbsp;          myProject.getActiveCalendar().setBaseCalendarID(attrs.getValue(&quot;base-id&quot;));</b>
+<b class="nc"><i>355</i>&nbsp;          return true;</b>
+<i>356</i>&nbsp;        }
+<i>357</i>&nbsp;      });
+<b class="nc"><i>358</i>&nbsp;      opener.addTagHandler(holidayHandler);</b>
+<i>359</i>&nbsp;
+<b class="nc"><i>360</i>&nbsp;      PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();</b>
+<b class="nc"><i>361</i>&nbsp;      opener.addTagHandler(portfolioHandler);</b>
+<i>362</i>&nbsp;      InputStream is;
+<i>363</i>&nbsp;      try {
+<b class="nc"><i>364</i>&nbsp;        is = getInputStream();</b>
+<b class="nc"><i>365</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>366</i>&nbsp;        myFailureState.enter();</b>
+<b class="nc"><i>367</i>&nbsp;        throw new DocumentException(GanttLanguage.getInstance().getText(&quot;msg8&quot;) + &quot;: &quot; + e.getLocalizedMessage(), e);</b>
+<b class="nc"><i>368</i>&nbsp;      }</b>
+<b class="nc"><i>369</i>&nbsp;      if (opener.load(is)) {</b>
+<b class="nc"><i>370</i>&nbsp;        mySuccessState.enter();</b>
+<i>371</i>&nbsp;      } else {
+<b class="nc"><i>372</i>&nbsp;        myFailureState.enter();</b>
+<i>373</i>&nbsp;      }
+<i>374</i>&nbsp;    }
+<i>375</i>&nbsp;  }
+<i>376</i>&nbsp;
+<b class="nc"><i>377</i>&nbsp;  class SuccessState {</b>
+<i>378</i>&nbsp;    void enter() {
+<i>379</i>&nbsp;    }
+<i>380</i>&nbsp;  }
+<i>381</i>&nbsp;
+<b class="nc"><i>382</i>&nbsp;  class FailureState {</b>
+<i>383</i>&nbsp;    void enter() {
+<i>384</i>&nbsp;    }
+<i>385</i>&nbsp;  }
+<i>386</i>&nbsp;
+<i>387</i>&nbsp;  @Override
+<i>388</i>&nbsp;  public URI getURI() {
+<b class="nc"><i>389</i>&nbsp;    return myPhysicalDocument.getURI();</b>
+<i>390</i>&nbsp;  }
+<i>391</i>&nbsp;
+<i>392</i>&nbsp;  @Override
+<i>393</i>&nbsp;  public boolean isLocal() {
+<b class="nc"><i>394</i>&nbsp;    return myPhysicalDocument.isLocal();</b>
+<i>395</i>&nbsp;  }
+<i>396</i>&nbsp;
+<i>397</i>&nbsp;  @Override
+<i>398</i>&nbsp;  public boolean equals(Object doc) {
+<b class="nc"><i>399</i>&nbsp;    if (false == doc instanceof ProxyDocument) {</b>
+<b class="nc"><i>400</i>&nbsp;      return false;</b>
+<i>401</i>&nbsp;    }
+<b class="nc"><i>402</i>&nbsp;    return getPath().equals(((Document) doc).getPath());</b>
+<i>403</i>&nbsp;  }
+<i>404</i>&nbsp;
+<i>405</i>&nbsp;  @Override
+<i>406</i>&nbsp;  public Portfolio getPortfolio() {
+<b class="nc"><i>407</i>&nbsp;    return myPortfolio;</b>
+<i>408</i>&nbsp;  }
+<i>409</i>&nbsp;
+<i>410</i>&nbsp;  private PortfolioImpl getPortfolioImpl() {
+<b class="nc"><i>411</i>&nbsp;    if (myPortfolio == null) {</b>
+<b class="nc"><i>412</i>&nbsp;      myPortfolio = new PortfolioImpl();</b>
+<i>413</i>&nbsp;    }
+<b class="nc"><i>414</i>&nbsp;    return myPortfolio;</b>
+<i>415</i>&nbsp;  }
+<i>416</i>&nbsp;
+<b class="nc"><i>417</i>&nbsp;  private class PortfolioImpl implements Portfolio {</b>
+<i>418</i>&nbsp;    private Document myDefaultDocument;
+<i>419</i>&nbsp;
+<i>420</i>&nbsp;    @Override
+<i>421</i>&nbsp;    public Document getDefaultDocument() {
+<b class="nc"><i>422</i>&nbsp;      return myDefaultDocument;</b>
+<i>423</i>&nbsp;    }
+<i>424</i>&nbsp;
+<i>425</i>&nbsp;    void setDefaultDocument(Document document) {
+<b class="nc"><i>426</i>&nbsp;      if (myDefaultDocument != null) {</b>
+<b class="nc"><i>427</i>&nbsp;        throw new IllegalStateException(&quot;Don&#39;t set default document twice&quot;);</b>
+<i>428</i>&nbsp;      }
+<b class="nc"><i>429</i>&nbsp;      myDefaultDocument = document;</b>
+<i>430</i>&nbsp;    }
+<i>431</i>&nbsp;  }
+<i>432</i>&nbsp;
+<i>433</i>&nbsp;  private class PortfolioTagHandler extends AbstractTagHandler {
+<i>434</i>&nbsp;    private static final String PORTFOLIO_TAG = &quot;portfolio&quot;;
+<i>435</i>&nbsp;    private static final String PROJECT_TAG = &quot;project&quot;;
+<b class="nc"><i>436</i>&nbsp;    private final Set&lt;String&gt; TAGS = ImmutableSet.of(PORTFOLIO_TAG, PROJECT_TAG);</b>
+<i>437</i>&nbsp;    private static final String LOCATION_ATTR = &quot;location&quot;;
+<b class="nc"><i>438</i>&nbsp;    private boolean isReadingPortfolio = false;</b>
+<i>439</i>&nbsp;
+<b class="nc"><i>440</i>&nbsp;    public PortfolioTagHandler() {</b>
+<b class="nc"><i>441</i>&nbsp;      super(null, false);</b>
+<i>442</i>&nbsp;    }
+<i>443</i>&nbsp;    @Override
+<i>444</i>&nbsp;    public void startElement(String namespaceURI, String sName, String qName, Attributes attrs)
+<i>445</i>&nbsp;        throws FileFormatException {
+<b class="nc"><i>446</i>&nbsp;      if (!TAGS.contains(qName)) {</b>
+<i>447</i>&nbsp;        return;
+<i>448</i>&nbsp;      }
+<b class="nc"><i>449</i>&nbsp;      setTagStarted(true);</b>
+<b class="nc"><i>450</i>&nbsp;      if (PORTFOLIO_TAG.equals(qName)) {</b>
+<b class="nc"><i>451</i>&nbsp;        isReadingPortfolio = true;</b>
+<i>452</i>&nbsp;        return;
+<i>453</i>&nbsp;      }
+<b class="nc"><i>454</i>&nbsp;      if (PROJECT_TAG.equals(qName) &amp;&amp; isReadingPortfolio) {</b>
+<b class="nc"><i>455</i>&nbsp;        String locationAsString = attrs.getValue(LOCATION_ATTR);</b>
+<b class="nc"><i>456</i>&nbsp;        if (locationAsString != null) {</b>
+<b class="nc"><i>457</i>&nbsp;          Document document = myCreator.getDocument(locationAsString);</b>
+<b class="nc"><i>458</i>&nbsp;          getPortfolioImpl().setDefaultDocument(document);</b>
+<i>459</i>&nbsp;        }
+<i>460</i>&nbsp;
+<i>461</i>&nbsp;      }
+<i>462</i>&nbsp;    }
+<i>463</i>&nbsp;
+<i>464</i>&nbsp;    @Override
+<i>465</i>&nbsp;    public void endElement(String namespaceURI, String sName, String qName) {
+<b class="nc"><i>466</i>&nbsp;      if (!TAGS.contains(qName)) {</b>
+<i>467</i>&nbsp;        return;
+<i>468</i>&nbsp;      }
+<b class="nc"><i>469</i>&nbsp;      if (PORTFOLIO_TAG.equals(qName)) {</b>
+<b class="nc"><i>470</i>&nbsp;        isReadingPortfolio = false;</b>
+<i>471</i>&nbsp;      }
+<b class="nc"><i>472</i>&nbsp;      setTagStarted(false);</b>
+<i>473</i>&nbsp;    }
+<i>474</i>&nbsp;  }
+<i>475</i>&nbsp;
+<i>476</i>&nbsp;  private static class OnlyShowWeekendsTagHandler extends AbstractTagHandler {
+<i>477</i>&nbsp;
+<i>478</i>&nbsp;    private final GPCalendarCalc calendar;
+<i>479</i>&nbsp;
+<i>480</i>&nbsp;    public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
+<b class="nc"><i>481</i>&nbsp;      super(&quot;only-show-weekends&quot;);</b>
+<b class="nc"><i>482</i>&nbsp;      this.calendar = calendar;</b>
+<i>483</i>&nbsp;    }
+<i>484</i>&nbsp;
+<i>485</i>&nbsp;    @Override
+<i>486</i>&nbsp;    protected boolean onStartElement(Attributes attrs) {
+<b class="nc"><i>487</i>&nbsp;      calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue(&quot;value&quot;)));</b>
+<b class="nc"><i>488</i>&nbsp;      return true;</b>
+<i>489</i>&nbsp;    }
+<i>490</i>&nbsp;  }
+<i>491</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

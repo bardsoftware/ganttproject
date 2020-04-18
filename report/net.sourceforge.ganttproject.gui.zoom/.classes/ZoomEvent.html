@@ -1,0 +1,107 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ZoomEvent</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.zoom</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ZoomEvent (net.sourceforge.ganttproject.gui.zoom)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ZoomEvent</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 03.11.2004
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package net.sourceforge.ganttproject.gui.zoom;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import java.util.EventObject;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;/**
+<i>11</i>&nbsp; * @author bard
+<i>12</i>&nbsp; */
+<i>13</i>&nbsp;public class ZoomEvent extends EventObject {
+<i>14</i>&nbsp;  private ZoomState myNewZoomState;
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;  ZoomEvent(ZoomManager manager, ZoomState newZoomState) {
+<b class="nc"><i>17</i>&nbsp;    super(manager);</b>
+<b class="nc"><i>18</i>&nbsp;    myNewZoomState = newZoomState;</b>
+<i>19</i>&nbsp;  }
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;  public ZoomState getNewZoomState() {
+<b class="nc"><i>22</i>&nbsp;    return myNewZoomState;</b>
+<i>23</i>&nbsp;  }
+<i>24</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

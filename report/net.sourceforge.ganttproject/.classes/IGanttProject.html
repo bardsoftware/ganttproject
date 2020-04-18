@@ -1,0 +1,147 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: IGanttProject</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: IGanttProject (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">IGanttProject</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2002-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.IOException;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.document.Document;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.document.DocumentManager;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.document.Document.DocumentException;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.UIConfiguration;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * This interface represents a project as a logical business entity, without any
+<i>37</i>&nbsp; * UI (except some configuration options :)
+<i>38</i>&nbsp; *
+<i>39</i>&nbsp; * @author bard
+<i>40</i>&nbsp; */
+<i>41</i>&nbsp;public interface IGanttProject {
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  String getProjectName();
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  void setProjectName(String projectName);
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  String getDescription();
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  void setDescription(String description);
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  String getOrganization();
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  void setOrganization(String organization);
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  String getWebLink();
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  void setWebLink(String webLink);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  UIConfiguration getUIConfiguration();
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  HumanResourceManager getHumanResourceManager();
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  RoleManager getRoleManager();
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  TaskManager getTaskManager();
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  TaskContainmentHierarchyFacade getTaskContainment();
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  GPCalendarCalc getActiveCalendar();
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  TimeUnitStack getTimeUnitStack();
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  void setModified();
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  void setModified(boolean modified);
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  void close();
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  Document getDocument();
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  void setDocument(Document document);
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  DocumentManager getDocumentManager();
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  void addProjectEventListener(ProjectEventListener listener);
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  void removeProjectEventListener(ProjectEventListener listener);
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  boolean isModified();
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  void open(Document document) throws IOException, DocumentException;
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  CustomPropertyManager getResourceCustomPropertyManager();
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  CustomPropertyManager getTaskCustomColumnManager();
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  // CustomColumnsStorage getCustomColumnsStorage();
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  List&lt;GanttPreviousState&gt; getBaselines();
+<i>100</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,362 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ChartModelResource</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ChartModelResource (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ChartModelResource</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 30)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ChartModelResource$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ChartModelResource$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ChartModelResource$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ChartModelResource$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ChartModelResource$ResourceLoadOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 48)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.ColorOption;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.DefaultColorOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.UIConfiguration;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;import java.awt.*;
+<i>34</i>&nbsp;import java.util.ArrayList;
+<i>35</i>&nbsp;import java.util.List;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;public class ChartModelResource extends ChartModelBase {
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  private final HumanResourceManager myManager;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  private final GPOptionGroup myColorOptions;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  private final ColorOption myResourceNormalLoadOption;
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  private final ColorOption myResourceOverloadOption;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  private final ColorOption myResourceUnderloadOption;
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  private final ColorOption myDayOffOption;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  private final ResourceChart myResourceChart;
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private static class ResourceLoadOption extends DefaultColorOption implements GP1XOptionConverter {
+<i>54</i>&nbsp;    private final String myTagName;
+<i>55</i>&nbsp;    private final String myAttributeName;
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;    ResourceLoadOption(String id, String tagName, String attributeName) {
+<b class="nc"><i>58</i>&nbsp;      super(id);</b>
+<b class="nc"><i>59</i>&nbsp;      myTagName = tagName;</b>
+<b class="nc"><i>60</i>&nbsp;      myAttributeName = attributeName;</b>
+<i>61</i>&nbsp;    }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;    @Override
+<i>64</i>&nbsp;    public String getTagName() {
+<b class="nc"><i>65</i>&nbsp;      return myTagName;</b>
+<i>66</i>&nbsp;    }
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;    @Override
+<i>69</i>&nbsp;    public String getAttributeName() {
+<b class="nc"><i>70</i>&nbsp;      return myAttributeName;</b>
+<i>71</i>&nbsp;    }
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;    @Override
+<i>74</i>&nbsp;    public void loadValue(String legacyValue) {
+<b class="nc"><i>75</i>&nbsp;      loadPersistentValue(legacyValue);</b>
+<i>76</i>&nbsp;    }
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  public ChartModelResource(TaskManager taskManager, HumanResourceManager resourceManager, TimeUnitStack timeUnitStack,
+<i>80</i>&nbsp;      final UIConfiguration projectConfig, ResourceChart resourceChart) {
+<b class="nc"><i>81</i>&nbsp;    super(taskManager, timeUnitStack, projectConfig);</b>
+<b class="nc"><i>82</i>&nbsp;    myResourceChart = resourceChart;</b>
+<b class="nc"><i>83</i>&nbsp;    ResourceLoadRenderer resourceLoadRenderer = new ResourceLoadRenderer(this, resourceChart);</b>
+<b class="nc"><i>84</i>&nbsp;    addRenderer(resourceLoadRenderer);</b>
+<b class="nc"><i>85</i>&nbsp;    myManager = resourceManager;</b>
+<i>86</i>&nbsp;    {
+<b class="nc"><i>87</i>&nbsp;      myResourceNormalLoadOption = new ResourceLoadOption(&quot;resourceChartColors.normalLoad&quot;, &quot;colors&quot;, &quot;resources&quot;) {</b>
+<i>88</i>&nbsp;        @Override
+<i>89</i>&nbsp;        public void commit() {
+<b class="nc"><i>90</i>&nbsp;          super.commit();</b>
+<b class="nc"><i>91</i>&nbsp;          projectConfig.setResourceColor(getValue());</b>
+<i>92</i>&nbsp;        }
+<i>93</i>&nbsp;      };
+<b class="nc"><i>94</i>&nbsp;      myResourceNormalLoadOption.lock();</b>
+<b class="nc"><i>95</i>&nbsp;      myResourceNormalLoadOption.setValue(new Color(140, 182, 206));</b>
+<b class="nc"><i>96</i>&nbsp;      myResourceNormalLoadOption.commit();</b>
+<i>97</i>&nbsp;    }
+<i>98</i>&nbsp;    {
+<b class="nc"><i>99</i>&nbsp;      myResourceOverloadOption = new ResourceLoadOption(&quot;resourceChartColors.overLoad&quot;, &quot;colors&quot;, &quot;resourceOverload&quot;) {</b>
+<i>100</i>&nbsp;        @Override
+<i>101</i>&nbsp;        public void commit() {
+<b class="nc"><i>102</i>&nbsp;          super.commit();</b>
+<b class="nc"><i>103</i>&nbsp;          projectConfig.setResourceOverloadColor(getValue());</b>
+<i>104</i>&nbsp;        }
+<i>105</i>&nbsp;      };
+<b class="nc"><i>106</i>&nbsp;      myResourceOverloadOption.lock();</b>
+<b class="nc"><i>107</i>&nbsp;      myResourceOverloadOption.setValue(new Color(229, 50, 50));</b>
+<b class="nc"><i>108</i>&nbsp;      myResourceOverloadOption.commit();</b>
+<i>109</i>&nbsp;    }
+<i>110</i>&nbsp;    {
+<b class="nc"><i>111</i>&nbsp;      myResourceUnderloadOption = new DefaultColorOption(&quot;resourceChartColors.underLoad&quot;) {</b>
+<i>112</i>&nbsp;        @Override
+<i>113</i>&nbsp;        public void commit() {
+<b class="nc"><i>114</i>&nbsp;          super.commit();</b>
+<b class="nc"><i>115</i>&nbsp;          projectConfig.setResourceUnderloadColor(getValue());</b>
+<i>116</i>&nbsp;        }
+<i>117</i>&nbsp;      };
+<b class="nc"><i>118</i>&nbsp;      myResourceUnderloadOption.lock();</b>
+<b class="nc"><i>119</i>&nbsp;      myResourceUnderloadOption.setValue(new Color(50, 229, 50));</b>
+<b class="nc"><i>120</i>&nbsp;      myResourceUnderloadOption.commit();</b>
+<i>121</i>&nbsp;    }
+<i>122</i>&nbsp;    {
+<b class="nc"><i>123</i>&nbsp;      myDayOffOption = new DefaultColorOption(&quot;resourceChartColors.dayOff&quot;) {</b>
+<i>124</i>&nbsp;        @Override
+<i>125</i>&nbsp;        public void commit() {
+<b class="nc"><i>126</i>&nbsp;          super.commit();</b>
+<b class="nc"><i>127</i>&nbsp;          projectConfig.setDayOffColor(getValue());</b>
+<i>128</i>&nbsp;        }
+<i>129</i>&nbsp;      };
+<b class="nc"><i>130</i>&nbsp;      myDayOffOption.lock();</b>
+<b class="nc"><i>131</i>&nbsp;      myDayOffOption.setValue(new Color(0.9f, 1f, 0.17f));</b>
+<b class="nc"><i>132</i>&nbsp;      myDayOffOption.commit();</b>
+<i>133</i>&nbsp;    }
+<b class="nc"><i>134</i>&nbsp;    myColorOptions = new GPOptionGroup(&quot;resourceChartColors&quot;, new GPOption[] { myResourceNormalLoadOption,</b>
+<i>135</i>&nbsp;        myResourceOverloadOption, myResourceUnderloadOption, myDayOffOption });
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  // public void paint(Graphics g) {
+<i>139</i>&nbsp;  // super.paint(g);
+<i>140</i>&nbsp;  // myResourceLoadRenderer.render();
+<i>141</i>&nbsp;  // myResourceLoadRenderer.getPrimitiveContainer().paint(getPainter(), g);
+<i>142</i>&nbsp;  // }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  public HumanResource[] getVisibleResources() {
+<b class="nc"><i>145</i>&nbsp;    return myManager.getResources().toArray(new HumanResource[0]);</b>
+<i>146</i>&nbsp;  }
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;  @Override
+<i>149</i>&nbsp;  public GPOptionGroup[] getChartOptionGroups() {
+<b class="nc"><i>150</i>&nbsp;    List&lt;GPOptionGroup&gt; result = new ArrayList&lt;GPOptionGroup&gt;();</b>
+<b class="nc"><i>151</i>&nbsp;    result.add(myColorOptions);</b>
+<b class="nc"><i>152</i>&nbsp;    return result.toArray(new GPOptionGroup[result.size()]);</b>
+<i>153</i>&nbsp;  }
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  // @Override
+<i>156</i>&nbsp;  // protected int getRowCount() {
+<i>157</i>&nbsp;  // return getVisibleResources().length;
+<i>158</i>&nbsp;  // }
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  @Override
+<i>161</i>&nbsp;  public ChartModelBase createCopy() {
+<b class="nc"><i>162</i>&nbsp;    ChartModelBase result = new ChartModelResource(myTaskManager, myManager, myTimeUnitStack, getProjectConfig(),</b>
+<i>163</i>&nbsp;        myResourceChart);
+<b class="nc"><i>164</i>&nbsp;    super.setupCopy(result);</b>
+<b class="nc"><i>165</i>&nbsp;    return result;</b>
+<i>166</i>&nbsp;  }
+<i>167</i>&nbsp;
+<i>168</i>&nbsp;  @Override
+<i>169</i>&nbsp;  public void setVisibleTasks(List&lt;Task&gt; visibleTasks) {
+<i>170</i>&nbsp;    // TODO Auto-generated method stub
+<i>171</i>&nbsp;  }
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;  @Override
+<i>174</i>&nbsp;  public int calculateRowHeight() {
+<b class="nc"><i>175</i>&nbsp;    return Math.max(getChartUIConfiguration().getRowHeight(), getProjectConfig().getAppFontSize().get());</b>
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

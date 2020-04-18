@@ -1,0 +1,135 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: LoopDetector</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.dependency</a> ]
+</div>
+
+<h1>Coverage Summary for Class: LoopDetector (net.sourceforge.ganttproject.task.dependency)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoopDetector</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (13/ 14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.dependency;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * Loop detector answers whether a dependency will create a loop in the
+<i>26</i>&nbsp; * dependency graph
+<i>27</i>&nbsp; *
+<i>28</i>&nbsp; * @author dbarashev
+<i>29</i>&nbsp; */
+<i>30</i>&nbsp;public class LoopDetector {
+<i>31</i>&nbsp;  private final TaskManager myTaskManager;
+<i>32</i>&nbsp;
+<b class="fc"><i>33</i>&nbsp;  public LoopDetector(TaskManager taskManager) {</b>
+<b class="fc"><i>34</i>&nbsp;    myTaskManager = taskManager;</b>
+<b class="fc"><i>35</i>&nbsp;  }</b>
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  public boolean isLooping(TaskDependency dep) {
+<b class="fc"><i>38</i>&nbsp;    DependencyGraph graph = myTaskManager.getDependencyGraph();</b>
+<b class="fc"><i>39</i>&nbsp;    DependencyGraph.Logger oldLogger = graph.getLogger();</b>
+<b class="fc"><i>40</i>&nbsp;    graph.startTransaction();</b>
+<i>41</i>&nbsp;    try {
+<b class="fc"><i>42</i>&nbsp;      graph.setLogger(DependencyGraph.THROWING_LOGGER);</b>
+<b class="fc"><i>43</i>&nbsp;      graph.addDependency(dep);</b>
+<b class="fc"><i>44</i>&nbsp;      return false;</b>
+<b class="fc"><i>45</i>&nbsp;    } catch (TaskDependencyException e) {</b>
+<b class="fc"><i>46</i>&nbsp;      return true;</b>
+<i>47</i>&nbsp;    } finally {
+<b class="fc"><i>48</i>&nbsp;      graph.rollbackTransaction();</b>
+<b class="fc"><i>49</i>&nbsp;      graph.setLogger(oldLogger);</b>
+<b class="nc"><i>50</i>&nbsp;    }</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

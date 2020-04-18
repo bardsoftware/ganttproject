@@ -1,0 +1,260 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: AllocationTagHandler</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.parser</a> ]
+</div>
+
+<h1>Coverage Summary for Class: AllocationTagHandler (net.sourceforge.ganttproject.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AllocationTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 70)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.parser;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.HashMap;
+<i>22</i>&nbsp;import java.util.Iterator;
+<i>23</i>&nbsp;import java.util.Map;
+<i>24</i>&nbsp;import java.util.Map.Entry;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.roles.RolePersistentID;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleSet;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.task.ResourceAssignment;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;import org.xml.sax.Attributes;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;/**
+<i>40</i>&nbsp; * @author bard
+<i>41</i>&nbsp; */
+<i>42</i>&nbsp;public class AllocationTagHandler extends AbstractTagHandler implements  ParsingListener {
+<i>43</i>&nbsp;  private HumanResourceManager myResourceManager;
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  private TaskManager myTaskManager;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  private RoleManager myRoleManager;
+<i>48</i>&nbsp;
+<b class="nc"><i>49</i>&nbsp;  private final HashMap&lt;ResourceAssignment, String&gt; myLateAssigmnent2roleBinding = new HashMap&lt;ResourceAssignment, String&gt;();</b>
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public AllocationTagHandler(HumanResourceManager resourceMgr, TaskManager taskMgr, RoleManager roleMgr) {
+<b class="nc"><i>52</i>&nbsp;    super(&quot;allocation&quot;);</b>
+<b class="nc"><i>53</i>&nbsp;    myResourceManager = resourceMgr;</b>
+<b class="nc"><i>54</i>&nbsp;    myTaskManager = taskMgr;</b>
+<b class="nc"><i>55</i>&nbsp;    myRoleManager = roleMgr;</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  @Override
+<i>60</i>&nbsp;  protected boolean onStartElement(Attributes attrs) {
+<i>61</i>&nbsp;    try {
+<b class="nc"><i>62</i>&nbsp;      loadAllocation(attrs);</b>
+<b class="nc"><i>63</i>&nbsp;      return true;</b>
+<b class="nc"><i>64</i>&nbsp;    } catch (FileFormatException e) {</b>
+<b class="nc"><i>65</i>&nbsp;      GPLogger.log(e);</b>
+<b class="nc"><i>66</i>&nbsp;      return false;</b>
+<i>67</i>&nbsp;    }
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  private void loadAllocation(Attributes attrs) throws FileFormatException {
+<b class="nc"><i>71</i>&nbsp;    int taskId = 0;</b>
+<b class="nc"><i>72</i>&nbsp;    int resourceId = 0;</b>
+<b class="nc"><i>73</i>&nbsp;    float load = 100;</b>
+<b class="nc"><i>74</i>&nbsp;    boolean coordinator = false;</b>
+<i>75</i>&nbsp;
+<b class="nc"><i>76</i>&nbsp;    String taskIdAsString = attrs.getValue(&quot;task-id&quot;);</b>
+<b class="nc"><i>77</i>&nbsp;    String resourceIdAsString = attrs.getValue(&quot;resource-id&quot;);</b>
+<b class="nc"><i>78</i>&nbsp;    String loadAsString = attrs.getValue(&quot;load&quot;);</b>
+<b class="nc"><i>79</i>&nbsp;    String coordinatorAsString = attrs.getValue(&quot;responsible&quot;);</b>
+<b class="nc"><i>80</i>&nbsp;    String rolePersistendIDString = attrs.getValue(&quot;function&quot;);</b>
+<i>81</i>&nbsp;
+<b class="nc"><i>82</i>&nbsp;    if (taskIdAsString == null || resourceIdAsString == null) {</b>
+<b class="nc"><i>83</i>&nbsp;      throw new FileFormatException(&quot;Failed to load &lt;allocation&gt; tag: task or resource identifier is missing&quot;);</b>
+<i>84</i>&nbsp;    }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;    try {
+<b class="nc"><i>87</i>&nbsp;      taskId = Integer.parseInt(taskIdAsString);</b>
+<b class="nc"><i>88</i>&nbsp;      resourceId = Integer.parseInt(resourceIdAsString);</b>
+<i>89</i>&nbsp;
+<b class="nc"><i>90</i>&nbsp;      if (loadAsString != null) {</b>
+<b class="nc"><i>91</i>&nbsp;        load = Float.parseFloat(loadAsString);</b>
+<i>92</i>&nbsp;      }
+<b class="nc"><i>93</i>&nbsp;      if (coordinatorAsString != null) {</b>
+<b class="nc"><i>94</i>&nbsp;        coordinator = Boolean.valueOf(coordinatorAsString).booleanValue();</b>
+<i>95</i>&nbsp;      }
+<i>96</i>&nbsp;
+<b class="nc"><i>97</i>&nbsp;    } catch (NumberFormatException e) {</b>
+<b class="nc"><i>98</i>&nbsp;      throw new FileFormatException(&quot;Failed to load &lt;allocation&gt; tag: one of attribute values is invalid&quot;, e);</b>
+<b class="nc"><i>99</i>&nbsp;    }</b>
+<i>100</i>&nbsp;
+<b class="nc"><i>101</i>&nbsp;    HumanResource human = getResourceManager().getById(resourceId);</b>
+<b class="nc"><i>102</i>&nbsp;    if (human == null) {</b>
+<b class="nc"><i>103</i>&nbsp;      throw new FileFormatException(&quot;Human resource with id=&quot; + resourceId + &quot; not found&quot;);</b>
+<i>104</i>&nbsp;    }
+<i>105</i>&nbsp;
+<b class="nc"><i>106</i>&nbsp;    Task task = getTaskManager().getTask(taskId);</b>
+<b class="nc"><i>107</i>&nbsp;    if (task == null) {</b>
+<b class="nc"><i>108</i>&nbsp;      throw new FileFormatException(&quot;Task with id=&quot; + taskId + &quot; not found&quot;);</b>
+<i>109</i>&nbsp;    }
+<i>110</i>&nbsp;    // TaskMutator mutator = task.createMutator();
+<i>111</i>&nbsp;    // ResourceAssignment assignment = mutator.addResource(human);
+<i>112</i>&nbsp;    // assignment.setLoad(load);
+<i>113</i>&nbsp;    // mutator.commit();
+<i>114</i>&nbsp;
+<b class="nc"><i>115</i>&nbsp;    ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(human);</b>
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;    try {
+<b class="nc"><i>118</i>&nbsp;      if (rolePersistendIDString != null)</b>
+<b class="nc"><i>119</i>&nbsp;        myLateAssigmnent2roleBinding.put(assignment, rolePersistendIDString);</b>
+<b class="nc"><i>120</i>&nbsp;    } catch (NumberFormatException e) {</b>
+<b class="nc"><i>121</i>&nbsp;      System.out.println(&quot;ERROR in parsing XML File function id is not numeric: &quot; + e.toString());</b>
+<b class="nc"><i>122</i>&nbsp;    }</b>
+<i>123</i>&nbsp;
+<b class="nc"><i>124</i>&nbsp;    assignment.setLoad(load);</b>
+<b class="nc"><i>125</i>&nbsp;    assignment.setCoordinator(coordinator);</b>
+<i>126</i>&nbsp;  }
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  private HumanResourceManager getResourceManager() {
+<b class="nc"><i>129</i>&nbsp;    return myResourceManager;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  private TaskManager getTaskManager() {
+<b class="nc"><i>133</i>&nbsp;    return myTaskManager;</b>
+<i>134</i>&nbsp;  }
+<i>135</i>&nbsp;
+<i>136</i>&nbsp;  private Role findRole(String persistentIDasString) {
+<b class="nc"><i>137</i>&nbsp;    RolePersistentID persistentID = new RolePersistentID(persistentIDasString);</b>
+<b class="nc"><i>138</i>&nbsp;    String rolesetName = persistentID.getRoleSetID();</b>
+<b class="nc"><i>139</i>&nbsp;    int roleID = persistentID.getRoleID();</b>
+<i>140</i>&nbsp;    RoleSet roleSet;
+<b class="nc"><i>141</i>&nbsp;    if (rolesetName == null) {</b>
+<b class="nc"><i>142</i>&nbsp;      roleSet = myRoleManager.getProjectRoleSet();</b>
+<b class="nc"><i>143</i>&nbsp;      if (roleSet.findRole(roleID) == null) {</b>
+<b class="nc"><i>144</i>&nbsp;        if (roleID &lt;= 10 &amp;&amp; roleID &gt; 2) {</b>
+<b class="nc"><i>145</i>&nbsp;          roleSet = myRoleManager.getRoleSet(RoleSet.SOFTWARE_DEVELOPMENT);</b>
+<b class="nc"><i>146</i>&nbsp;          roleSet.setEnabled(true);</b>
+<b class="nc"><i>147</i>&nbsp;        } else if (roleID &lt;= 2) {</b>
+<b class="nc"><i>148</i>&nbsp;          roleSet = myRoleManager.getRoleSet(RoleSet.DEFAULT);</b>
+<i>149</i>&nbsp;        }
+<i>150</i>&nbsp;      }
+<i>151</i>&nbsp;    } else {
+<b class="nc"><i>152</i>&nbsp;      roleSet = myRoleManager.getRoleSet(rolesetName);</b>
+<i>153</i>&nbsp;    }
+<b class="nc"><i>154</i>&nbsp;    Role result = roleSet.findRole(roleID);</b>
+<b class="nc"><i>155</i>&nbsp;    return result;</b>
+<i>156</i>&nbsp;  }
+<i>157</i>&nbsp;
+<i>158</i>&nbsp;  @Override
+<i>159</i>&nbsp;  public void parsingStarted() {
+<i>160</i>&nbsp;  }
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  @Override
+<i>163</i>&nbsp;  public void parsingFinished() {
+<b class="nc"><i>164</i>&nbsp;    for (Iterator&lt;Entry&lt;ResourceAssignment, String&gt;&gt; lateBindingEntries = myLateAssigmnent2roleBinding.entrySet().iterator(); lateBindingEntries.hasNext();) {</b>
+<b class="nc"><i>165</i>&nbsp;      Map.Entry&lt;ResourceAssignment, String&gt; nextEntry = lateBindingEntries.next();</b>
+<b class="nc"><i>166</i>&nbsp;      String persistentID = nextEntry.getValue();</b>
+<b class="nc"><i>167</i>&nbsp;      Role nextRole = findRole(persistentID);</b>
+<b class="nc"><i>168</i>&nbsp;      if (nextRole != null) {</b>
+<b class="nc"><i>169</i>&nbsp;        lateBindingEntries.remove();</b>
+<b class="nc"><i>170</i>&nbsp;        nextEntry.getKey().setRoleForAssignment(nextRole);</b>
+<i>171</i>&nbsp;      }
+<b class="nc"><i>172</i>&nbsp;    }</b>
+<b class="nc"><i>173</i>&nbsp;    if (!myLateAssigmnent2roleBinding.isEmpty()) {</b>
+<b class="nc"><i>174</i>&nbsp;      System.err.println(&quot;[ResourceTagHandler] parsingFinished(): not found roles:\n&quot; + myLateAssigmnent2roleBinding);</b>
+<i>175</i>&nbsp;    }
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

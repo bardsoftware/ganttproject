@@ -1,0 +1,154 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TimeUnitStack</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.time</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TimeUnitStack (biz.ganttproject.core.time)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">TimeUnitStack$Util</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (14/ 16)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (14/ 16)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 09.11.2004
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package biz.ganttproject.core.time;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;import java.text.DateFormat;
+<i>8</i>&nbsp;import java.text.ParseException;
+<i>9</i>&nbsp;import java.util.ArrayList;
+<i>10</i>&nbsp;import java.util.Date;
+<i>11</i>&nbsp;import java.util.Iterator;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;/**
+<i>14</i>&nbsp; * @author bard
+<i>15</i>&nbsp; */
+<i>16</i>&nbsp;public interface TimeUnitStack {
+<i>17</i>&nbsp;  TimeUnit getDefaultTimeUnit();
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;  TimeUnitPair[] getTimeUnitPairs();
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;  String getName();
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;  DateFormat[] getDateFormats();
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;  DateFormat getTimeFormat();
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;  TimeUnit findTimeUnit(String code);
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  String encode(TimeUnit timeUnit);
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  TimeDuration createDuration(TimeUnit timeUnit, int count);
+<i>32</i>&nbsp;  TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate);
+<i>33</i>&nbsp;  
+<i>34</i>&nbsp;  TimeDuration parseDuration(String duration) throws ParseException;
+<b class="nc"><i>35</i>&nbsp;  class Util {</b>
+<i>36</i>&nbsp;    /**
+<i>37</i>&nbsp;     * @return a common TimeUnit for the given units or null if none if found
+<i>38</i>&nbsp;     *         (should not happen since all should be derived from atom)
+<i>39</i>&nbsp;     */
+<i>40</i>&nbsp;    public static TimeUnit findCommonUnit(TimeUnit unit1, TimeUnit unit2) {
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;      // Create (cache) list with TimeUnits which can be derived from unit1
+<b class="fc"><i>43</i>&nbsp;      ArrayList&lt;TimeUnit&gt; units1 = new ArrayList&lt;TimeUnit&gt;();</b>
+<b class="fc"><i>44</i>&nbsp;      TimeUnit current = unit1;</b>
+<i>45</i>&nbsp;      do {
+<b class="fc"><i>46</i>&nbsp;        units1.add(current);</b>
+<b class="fc"><i>47</i>&nbsp;      } while ((current = current.getDirectAtomUnit()) != null);</b>
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;      // Now compare lists to find a common unit
+<b class="fc"><i>50</i>&nbsp;      current = unit2;</b>
+<b class="fc"><i>51</i>&nbsp;      while (current != null) {</b>
+<b class="fc"><i>52</i>&nbsp;        Iterator&lt;TimeUnit&gt; u1Iterator = units1.iterator();</b>
+<b class="fc"><i>53</i>&nbsp;        while (u1Iterator.hasNext()) {</b>
+<b class="fc"><i>54</i>&nbsp;          TimeUnit nextU1 = u1Iterator.next();</b>
+<b class="fc"><i>55</i>&nbsp;          if (current.equals(nextU1)) {</b>
+<b class="fc"><i>56</i>&nbsp;            return current;</b>
+<i>57</i>&nbsp;          }
+<b class="fc"><i>58</i>&nbsp;        }</b>
+<b class="fc"><i>59</i>&nbsp;        current = current.getDirectAtomUnit();</b>
+<b class="fc"><i>60</i>&nbsp;      }</b>
+<b class="nc"><i>61</i>&nbsp;      return null;</b>
+<i>62</i>&nbsp;    }
+<i>63</i>&nbsp;  }
+<i>64</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

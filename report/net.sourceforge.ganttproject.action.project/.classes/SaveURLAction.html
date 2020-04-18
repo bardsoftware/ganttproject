@@ -1,0 +1,143 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: SaveURLAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.project</a> ]
+</div>
+
+<h1>Coverage Summary for Class: SaveURLAction (net.sourceforge.ganttproject.action.project)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaveURLAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.project;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.document.Document;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import java.awt.event.ActionEvent;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;class SaveURLAction extends CloudProjectActionBase {
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  private ProjectUIFacade myProjectUiFacade;
+<i>32</i>&nbsp;  private IGanttProject myProject;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  SaveURLAction(IGanttProject project, UIFacade uiFacade, ProjectUIFacade projectUiFacade) {
+<b class="nc"><i>35</i>&nbsp;    super(&quot;project.save.url&quot;, uiFacade, project.getDocumentManager());</b>
+<b class="nc"><i>36</i>&nbsp;    myProjectUiFacade = projectUiFacade;</b>
+<b class="nc"><i>37</i>&nbsp;    myProject = project;</b>
+<i>38</i>&nbsp;  }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>42</i>&nbsp;    if (calledFromAppleScreenMenu(e)) {</b>
+<i>43</i>&nbsp;      return;
+<i>44</i>&nbsp;    }
+<i>45</i>&nbsp;    try {
+<b class="nc"><i>46</i>&nbsp;      saveProjectRemotely(myProject);</b>
+<b class="nc"><i>47</i>&nbsp;    } catch (Exception ex) {</b>
+<b class="nc"><i>48</i>&nbsp;      GPLogger.log(ex);</b>
+<b class="nc"><i>49</i>&nbsp;    }</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  private void saveProjectRemotely(IGanttProject project) {
+<b class="nc"><i>53</i>&nbsp;    Document document = showURLDialog(project, false);</b>
+<b class="nc"><i>54</i>&nbsp;    if (document != null) {</b>
+<b class="nc"><i>55</i>&nbsp;      project.setDocument(document);</b>
+<b class="nc"><i>56</i>&nbsp;      myProjectUiFacade.saveProject(project);</b>
+<i>57</i>&nbsp;    }
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

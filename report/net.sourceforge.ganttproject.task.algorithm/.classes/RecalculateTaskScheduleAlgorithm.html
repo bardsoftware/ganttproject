@@ -1,0 +1,338 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RecalculateTaskScheduleAlgorithm</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.algorithm</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RecalculateTaskScheduleAlgorithm (net.sourceforge.ganttproject.task.algorithm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RecalculateTaskScheduleAlgorithm</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (4/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.4%
+  </span>
+  <span class="absValue">
+    (10/ 135)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.algorithm;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;import java.util.Arrays;
+<i>23</i>&nbsp;import java.util.Collection;
+<i>24</i>&nbsp;import java.util.Collections;
+<i>25</i>&nbsp;import java.util.HashSet;
+<i>26</i>&nbsp;import java.util.Iterator;
+<i>27</i>&nbsp;import java.util.List;
+<i>28</i>&nbsp;import java.util.Map;
+<i>29</i>&nbsp;import java.util.Set;
+<i>30</i>&nbsp;import java.util.SortedMap;
+<i>31</i>&nbsp;import java.util.TreeMap;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+<i>34</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>35</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.task.TaskMutator;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;/**
+<i>45</i>&nbsp; * @author bard
+<i>46</i>&nbsp; */
+<i>47</i>&nbsp;public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
+<i>48</i>&nbsp;
+<b class="fc"><i>49</i>&nbsp;  private SortedMap&lt;Integer, List&lt;TaskDependency&gt;&gt; myDistance2dependencyList = new TreeMap&lt;Integer, List&lt;TaskDependency&gt;&gt;();</b>
+<i>50</i>&nbsp;
+<b class="fc"><i>51</i>&nbsp;  private Set&lt;Task&gt; myModifiedTasks = new HashSet&lt;Task&gt;();</b>
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private final AdjustTaskBoundsAlgorithm myAdjuster;
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  private int myEntranceCounter;
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  private boolean isRunning;
+<i>58</i>&nbsp;
+<b class="fc"><i>59</i>&nbsp;  public RecalculateTaskScheduleAlgorithm(AdjustTaskBoundsAlgorithm adjuster) {</b>
+<b class="fc"><i>60</i>&nbsp;    myAdjuster = adjuster;</b>
+<b class="fc"><i>61</i>&nbsp;  }</b>
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  @Override
+<i>65</i>&nbsp;  protected boolean isEnabled() {
+<b class="fc"><i>66</i>&nbsp;    return false;</b>
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  public void run(Task changedTask) throws TaskDependencyException {
+<b class="fc"><i>71</i>&nbsp;    if (!isEnabled()) {</b>
+<b class="fc"><i>72</i>&nbsp;      return;</b>
+<i>73</i>&nbsp;    }
+<b class="nc"><i>74</i>&nbsp;    isRunning = true;</b>
+<b class="nc"><i>75</i>&nbsp;    myEntranceCounter++;</b>
+<b class="nc"><i>76</i>&nbsp;    buildDistanceGraph(changedTask);</b>
+<b class="nc"><i>77</i>&nbsp;    fulfilDependencies();</b>
+<b class="nc"><i>78</i>&nbsp;    myDistance2dependencyList.clear();</b>
+<b class="nc"><i>79</i>&nbsp;    myModifiedTasks.add(changedTask);</b>
+<b class="nc"><i>80</i>&nbsp;    myAdjuster.run(myModifiedTasks.toArray(new Task[0]));</b>
+<b class="nc"><i>81</i>&nbsp;    myDistance2dependencyList.clear();</b>
+<b class="nc"><i>82</i>&nbsp;    myModifiedTasks.clear();</b>
+<b class="nc"><i>83</i>&nbsp;    myEntranceCounter--;</b>
+<i>84</i>&nbsp;
+<b class="nc"><i>85</i>&nbsp;    isRunning = false;</b>
+<b class="nc"><i>86</i>&nbsp;  }</b>
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  public void run(Collection&lt;Task&gt; taskSet) throws TaskDependencyException {
+<b class="nc"><i>89</i>&nbsp;    if (!isEnabled()) {</b>
+<b class="nc"><i>90</i>&nbsp;      return;</b>
+<i>91</i>&nbsp;    }
+<b class="nc"><i>92</i>&nbsp;    isRunning = true;</b>
+<b class="nc"><i>93</i>&nbsp;    myEntranceCounter++;</b>
+<b class="nc"><i>94</i>&nbsp;    for (Iterator&lt;Task&gt; tasks = taskSet.iterator(); tasks.hasNext();) {</b>
+<b class="nc"><i>95</i>&nbsp;      Task nextTask = tasks.next();</b>
+<b class="nc"><i>96</i>&nbsp;      buildDistanceGraph(nextTask);</b>
+<b class="nc"><i>97</i>&nbsp;      fulfilDependencies();</b>
+<b class="nc"><i>98</i>&nbsp;      myDistance2dependencyList.clear();</b>
+<b class="nc"><i>99</i>&nbsp;      myModifiedTasks.add(nextTask);</b>
+<b class="nc"><i>100</i>&nbsp;    }</b>
+<b class="nc"><i>101</i>&nbsp;    myAdjuster.run(myModifiedTasks.toArray(new Task[0]));</b>
+<b class="nc"><i>102</i>&nbsp;    myDistance2dependencyList.clear();</b>
+<b class="nc"><i>103</i>&nbsp;    myModifiedTasks.clear();</b>
+<b class="nc"><i>104</i>&nbsp;    myEntranceCounter--;</b>
+<i>105</i>&nbsp;
+<b class="nc"><i>106</i>&nbsp;    isRunning = false;</b>
+<b class="nc"><i>107</i>&nbsp;  }</b>
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public void run() throws TaskDependencyException {
+<b class="fc"><i>111</i>&nbsp;    if (!isEnabled()) {</b>
+<b class="fc"><i>112</i>&nbsp;      return;</b>
+<i>113</i>&nbsp;    }
+<b class="nc"><i>114</i>&nbsp;    myDistance2dependencyList.clear();</b>
+<b class="nc"><i>115</i>&nbsp;    isRunning = true;</b>
+<b class="nc"><i>116</i>&nbsp;    TaskContainmentHierarchyFacade facade = createContainmentFacade();</b>
+<b class="nc"><i>117</i>&nbsp;    Set&lt;Task&gt; independentTasks = new HashSet&lt;Task&gt;();</b>
+<b class="nc"><i>118</i>&nbsp;    traverse(facade, facade.getRootTask(), independentTasks);</b>
+<b class="nc"><i>119</i>&nbsp;    for (Iterator&lt;Task&gt; it = independentTasks.iterator(); it.hasNext();) {</b>
+<b class="nc"><i>120</i>&nbsp;      Task next = it.next();</b>
+<b class="nc"><i>121</i>&nbsp;      buildDistanceGraph(next);</b>
+<b class="nc"><i>122</i>&nbsp;    }</b>
+<b class="nc"><i>123</i>&nbsp;    fulfilDependencies();</b>
+<b class="nc"><i>124</i>&nbsp;    myDistance2dependencyList.clear();</b>
+<b class="nc"><i>125</i>&nbsp;    isRunning = false;</b>
+<b class="nc"><i>126</i>&nbsp;  }</b>
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  public boolean isRunning() {
+<b class="nc"><i>129</i>&nbsp;    return isRunning;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  private void traverse(TaskContainmentHierarchyFacade facade, Task root, Set&lt;Task&gt; independentTasks) {
+<b class="nc"><i>133</i>&nbsp;    TaskDependency[] asDependant = root.getDependenciesAsDependant().toArray();</b>
+<b class="nc"><i>134</i>&nbsp;    if (asDependant.length == 0) {</b>
+<b class="nc"><i>135</i>&nbsp;      independentTasks.add(root);</b>
+<i>136</i>&nbsp;    }
+<b class="nc"><i>137</i>&nbsp;    for (Task nestedTask : facade.getNestedTasks(root)) {</b>
+<b class="nc"><i>138</i>&nbsp;      traverse(facade, nestedTask, independentTasks);</b>
+<i>139</i>&nbsp;    }
+<b class="nc"><i>140</i>&nbsp;  }</b>
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  private void fulfilDependencies() throws TaskDependencyException {
+<b class="nc"><i>143</i>&nbsp;    for (Map.Entry&lt;Integer, List&lt;TaskDependency&gt;&gt; distance : myDistance2dependencyList.entrySet()) {</b>
+<b class="nc"><i>144</i>&nbsp;      List&lt;TaskDependency&gt; dependenciesList = distance.getValue();</b>
+<b class="nc"><i>145</i>&nbsp;      for (TaskDependency dependency : dependenciesList) {</b>
+<b class="nc"><i>146</i>&nbsp;        TaskDependencyConstraint constraint = dependency.getConstraint();</b>
+<b class="nc"><i>147</i>&nbsp;        TaskDependencyConstraint.Collision collision = constraint.getCollision();</b>
+<b class="nc"><i>148</i>&nbsp;        if (collision.isActive()) {</b>
+<b class="nc"><i>149</i>&nbsp;          fulfilConstraints(dependency);</b>
+<b class="nc"><i>150</i>&nbsp;          dependency.getDependant().applyThirdDateConstraint();</b>
+<i>151</i>&nbsp;        }
+<b class="nc"><i>152</i>&nbsp;      }</b>
+<b class="nc"><i>153</i>&nbsp;    }</b>
+<b class="nc"><i>154</i>&nbsp;  }</b>
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  private void fulfilConstraints(TaskDependency dependency) throws TaskDependencyException {
+<b class="nc"><i>157</i>&nbsp;    Task dependant = dependency.getDependant();</b>
+<b class="nc"><i>158</i>&nbsp;    TaskDependency[] depsAsDependant = dependant.getDependenciesAsDependant().toArray();</b>
+<b class="nc"><i>159</i>&nbsp;    if (depsAsDependant.length &gt; 0) {</b>
+<b class="nc"><i>160</i>&nbsp;      ArrayList&lt;GanttCalendar&gt; startLaterVariations = new ArrayList&lt;GanttCalendar&gt;();</b>
+<b class="nc"><i>161</i>&nbsp;      ArrayList&lt;GanttCalendar&gt; startEarlierVariations = new ArrayList&lt;GanttCalendar&gt;();</b>
+<b class="nc"><i>162</i>&nbsp;      ArrayList&lt;GanttCalendar&gt; noVariations = new ArrayList&lt;GanttCalendar&gt;();</b>
+<i>163</i>&nbsp;
+<b class="nc"><i>164</i>&nbsp;      for (TaskDependency depAsDependant : depsAsDependant) {</b>
+<b class="nc"><i>165</i>&nbsp;        TaskDependencyConstraint.Collision nextCollision = depAsDependant.getConstraint().getCollision();</b>
+<b class="nc"><i>166</i>&nbsp;        GanttCalendar acceptableStart = nextCollision.getAcceptableStart();</b>
+<b class="nc"><i>167</i>&nbsp;        switch (nextCollision.getVariation()) {</b>
+<i>168</i>&nbsp;        case TaskDependencyConstraint.Collision.START_EARLIER_VARIATION:
+<b class="nc"><i>169</i>&nbsp;          startEarlierVariations.add(acceptableStart);</b>
+<b class="nc"><i>170</i>&nbsp;          break;</b>
+<i>171</i>&nbsp;        case TaskDependencyConstraint.Collision.START_LATER_VARIATION:
+<b class="nc"><i>172</i>&nbsp;          startLaterVariations.add(acceptableStart);</b>
+<b class="nc"><i>173</i>&nbsp;          break;</b>
+<i>174</i>&nbsp;        case TaskDependencyConstraint.Collision.NO_VARIATION:
+<b class="nc"><i>175</i>&nbsp;          noVariations.add(acceptableStart);</b>
+<i>176</i>&nbsp;          break;
+<i>177</i>&nbsp;        }
+<i>178</i>&nbsp;      }
+<b class="nc"><i>179</i>&nbsp;      if (noVariations.size() &gt; 1) {</b>
+<b class="nc"><i>180</i>&nbsp;        throw new TaskDependencyException(&quot;Failed to fulfill constraints of task=&quot; + dependant + &quot;. There are &quot;</b>
+<b class="nc"><i>181</i>&nbsp;            + noVariations.size() + &quot; constraints which don&#39;t allow for task start variation&quot;);</b>
+<i>182</i>&nbsp;      }
+<i>183</i>&nbsp;
+<b class="nc"><i>184</i>&nbsp;      Collections.sort(startEarlierVariations, GanttCalendar.COMPARATOR);</b>
+<b class="nc"><i>185</i>&nbsp;      Collections.sort(startLaterVariations, GanttCalendar.COMPARATOR);</b>
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;      GanttCalendar solution;
+<b class="nc"><i>188</i>&nbsp;      GanttCalendar earliestStart = startEarlierVariations.size() == 0 ? null : startEarlierVariations.get(0);</b>
+<b class="nc"><i>189</i>&nbsp;      GanttCalendar latestStart = startLaterVariations.size() &gt;= 0 ? startLaterVariations.get(startLaterVariations.size() - 1)</b>
+<b class="nc"><i>190</i>&nbsp;          : null;</b>
+<b class="nc"><i>191</i>&nbsp;      if (earliestStart == null &amp;&amp; latestStart == null) {</b>
+<b class="nc"><i>192</i>&nbsp;        solution = dependant.getStart();</b>
+<i>193</i>&nbsp;      } else {
+<b class="nc"><i>194</i>&nbsp;        if (earliestStart == null &amp;&amp; latestStart != null) {</b>
+<b class="nc"><i>195</i>&nbsp;          earliestStart = latestStart;</b>
+<b class="nc"><i>196</i>&nbsp;        } else if (earliestStart != null &amp;&amp; latestStart == null) {</b>
+<b class="nc"><i>197</i>&nbsp;          latestStart = earliestStart;</b>
+<i>198</i>&nbsp;        }
+<b class="nc"><i>199</i>&nbsp;        if (earliestStart.compareTo(latestStart) &lt; 0) {</b>
+<b class="nc"><i>200</i>&nbsp;          throw new TaskDependencyException(&quot;Failed to fulfill constraints of task=&quot; + dependant);</b>
+<i>201</i>&nbsp;        }
+<i>202</i>&nbsp;      }
+<b class="nc"><i>203</i>&nbsp;      if (noVariations.size() &gt; 0) {</b>
+<b class="nc"><i>204</i>&nbsp;        GanttCalendar notVariableStart = noVariations.get(0);</b>
+<b class="nc"><i>205</i>&nbsp;        if (notVariableStart.compareTo(earliestStart) &lt; 0 || notVariableStart.compareTo(latestStart) &gt; 0) {</b>
+<b class="nc"><i>206</i>&nbsp;          throw new TaskDependencyException(&quot;Failed to fulfill constraints of task=&quot; + dependant);</b>
+<i>207</i>&nbsp;        }
+<b class="nc"><i>208</i>&nbsp;        solution = notVariableStart;</b>
+<b class="nc"><i>209</i>&nbsp;      } else {</b>
+<b class="nc"><i>210</i>&nbsp;        solution = latestStart;</b>
+<i>211</i>&nbsp;      }
+<i>212</i>&nbsp;
+<b class="nc"><i>213</i>&nbsp;      modifyTaskStart(dependant, solution);</b>
+<i>214</i>&nbsp;    }
+<b class="nc"><i>215</i>&nbsp;  }</b>
+<i>216</i>&nbsp;
+<i>217</i>&nbsp;  private void modifyTaskStart(Task task, GanttCalendar newStart) {
+<b class="nc"><i>218</i>&nbsp;    TaskMutator mutator = task.createMutator();</b>
+<b class="nc"><i>219</i>&nbsp;    WorkingUnitCounter counter = new WorkingUnitCounter(task.getManager().getCalendar(), task.getDuration().getTimeUnit());</b>
+<i>220</i>&nbsp;    TimeDuration shift;
+<b class="nc"><i>221</i>&nbsp;    if (task.getStart().getTime().before(newStart.getTime())) {</b>
+<b class="nc"><i>222</i>&nbsp;      shift = counter.run(task.getStart().getTime(), newStart.getTime());</b>
+<i>223</i>&nbsp;    } else {
+<b class="nc"><i>224</i>&nbsp;      shift = counter.run(newStart.getTime(), task.getStart().getTime()).reverse();</b>
+<i>225</i>&nbsp;    }
+<b class="nc"><i>226</i>&nbsp;    mutator.shift(shift);</b>
+<b class="nc"><i>227</i>&nbsp;    mutator.commit();</b>
+<b class="nc"><i>228</i>&nbsp;    myModifiedTasks.add(task);</b>
+<b class="nc"><i>229</i>&nbsp;  }</b>
+<i>230</i>&nbsp;
+<i>231</i>&nbsp;  private void buildDistanceGraph(Task changedTask) {
+<b class="nc"><i>232</i>&nbsp;    TaskDependency[] depsAsDependee = changedTask.getDependenciesAsDependee().toArray();</b>
+<b class="nc"><i>233</i>&nbsp;    buildDistanceGraph(depsAsDependee, 1);</b>
+<b class="nc"><i>234</i>&nbsp;  }</b>
+<i>235</i>&nbsp;
+<i>236</i>&nbsp;  private void buildDistanceGraph(TaskDependency[] deps, int distance) {
+<b class="nc"><i>237</i>&nbsp;    if (deps.length == 0) {</b>
+<b class="nc"><i>238</i>&nbsp;      return;</b>
+<i>239</i>&nbsp;    }
+<b class="nc"><i>240</i>&nbsp;    Integer key = new Integer(distance);</b>
+<b class="nc"><i>241</i>&nbsp;    List&lt;TaskDependency&gt; depsList = myDistance2dependencyList.get(key);</b>
+<b class="nc"><i>242</i>&nbsp;    if (depsList == null) {</b>
+<b class="nc"><i>243</i>&nbsp;      depsList = new ArrayList&lt;TaskDependency&gt;();</b>
+<b class="nc"><i>244</i>&nbsp;      myDistance2dependencyList.put(key, depsList);</b>
+<i>245</i>&nbsp;    }
+<b class="nc"><i>246</i>&nbsp;    depsList.addAll(Arrays.asList(deps));</b>
+<b class="nc"><i>247</i>&nbsp;    for (TaskDependency dep : deps) {</b>
+<b class="nc"><i>248</i>&nbsp;      Task dependant = dep.getDependant();</b>
+<b class="nc"><i>249</i>&nbsp;      TaskDependency[] nextStepDeps = dependant.getDependenciesAsDependee().toArray();</b>
+<b class="nc"><i>250</i>&nbsp;      buildDistanceGraph(nextStepDeps, ++distance);</b>
+<i>251</i>&nbsp;    }
+<b class="nc"><i>252</i>&nbsp;  }</b>
+<i>253</i>&nbsp;
+<i>254</i>&nbsp;  protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
+<i>255</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

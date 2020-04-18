@@ -1,0 +1,275 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ZoomManager</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.zoom</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ZoomManager (net.sourceforge.ganttproject.gui.zoom)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ZoomManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 36)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ZoomManager$ZoomState</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 45)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.zoom;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.time.TimeUnitPair;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * @author bard
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public class ZoomManager {
+<i>32</i>&nbsp;  public static class ZoomState {
+<i>33</i>&nbsp;    private final TimeUnitPair myTimeUnitPair;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;    private final int myBottomUnitWidth;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;    private final int myStateNumber;
+<i>38</i>&nbsp;
+<b class="nc"><i>39</i>&nbsp;    ZoomState(TimeUnitPair timeUnitPair, int bottomUnitWidth, int stateNumber) {</b>
+<b class="nc"><i>40</i>&nbsp;      myTimeUnitPair = timeUnitPair;</b>
+<b class="nc"><i>41</i>&nbsp;      myBottomUnitWidth = bottomUnitWidth;</b>
+<b class="nc"><i>42</i>&nbsp;      myStateNumber = stateNumber;</b>
+<i>43</i>&nbsp;    }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;    public ZoomState(TimeUnitPair timeUnitPair, int stateNumber) {
+<b class="nc"><i>46</i>&nbsp;      this(timeUnitPair, timeUnitPair.getDefaultUnitWidth(), stateNumber);</b>
+<i>47</i>&nbsp;    }
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;    public String getPersistentName() {
+<b class="nc"><i>50</i>&nbsp;      return myTimeUnitPair.getTimeUnitStack().getName() + &quot;:&quot; + myStateNumber;</b>
+<i>51</i>&nbsp;    }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;    public TimeUnitPair getTimeUnitPair() {
+<b class="nc"><i>54</i>&nbsp;      return myTimeUnitPair;</b>
+<i>55</i>&nbsp;    }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;    public int getBottomUnitWidth() {
+<b class="nc"><i>58</i>&nbsp;      return myBottomUnitWidth;</b>
+<i>59</i>&nbsp;    }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;    public int getValue() {
+<b class="nc"><i>62</i>&nbsp;      return myStateNumber;</b>
+<i>63</i>&nbsp;    }
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  /** Number representing the selected ZoomState */
+<b class="nc"><i>67</i>&nbsp;  private int myZooming = 2;</b>
+<i>68</i>&nbsp;
+<b class="nc"><i>69</i>&nbsp;  private List&lt;ZoomListener&gt; myListeners = new ArrayList&lt;ZoomListener&gt;();</b>
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  /**
+<i>72</i>&nbsp;   * List with available ZoomStates, is expanded when even more ZoomStates are
+<i>73</i>&nbsp;   * required
+<i>74</i>&nbsp;   */
+<i>75</i>&nbsp;  private ArrayList&lt;ZoomState&gt; myZoomStates;
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  /** Zoom step for next ZoomState which need to be calculated/extrapolated */
+<b class="nc"><i>78</i>&nbsp;  private final float myZoomStep = 0.75f;</b>
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  /** If this value is false the maximum ZoomState is not reached */
+<b class="nc"><i>81</i>&nbsp;  private boolean myMaximumZoomStateReached = false;</b>
+<i>82</i>&nbsp;
+<b class="nc"><i>83</i>&nbsp;  public ZoomManager(TimeUnitStack timeUnitStack) {</b>
+<b class="nc"><i>84</i>&nbsp;    TimeUnitPair[] unitPairs = timeUnitStack.getTimeUnitPairs();</b>
+<b class="nc"><i>85</i>&nbsp;    myZoomStates = new ArrayList&lt;ZoomState&gt;(unitPairs.length);</b>
+<b class="nc"><i>86</i>&nbsp;    for (int i = 0; i &lt; unitPairs.length; i++) {</b>
+<b class="nc"><i>87</i>&nbsp;      myZoomStates.add(new ZoomManager.ZoomState(unitPairs[i], i));</b>
+<i>88</i>&nbsp;    }
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  public boolean canZoomIn() {
+<b class="nc"><i>92</i>&nbsp;    return myZooming &gt; 0;</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  public boolean canZoomOut() {
+<b class="nc"><i>96</i>&nbsp;    return myZooming &lt; myZoomStates.size() - 1 || myMaximumZoomStateReached == false;</b>
+<i>97</i>&nbsp;  }
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  public void zoomIn() {
+<b class="nc"><i>100</i>&nbsp;    int oldValue = myZooming--;</b>
+<b class="nc"><i>101</i>&nbsp;    fireZoomingChanged(oldValue, myZooming);</b>
+<i>102</i>&nbsp;  }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  public void zoomOut() {
+<b class="nc"><i>105</i>&nbsp;    int oldValue = myZooming++;</b>
+<b class="nc"><i>106</i>&nbsp;    fireZoomingChanged(oldValue, myZooming);</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  public void addZoomListener(ZoomListener listener) {
+<b class="nc"><i>110</i>&nbsp;    myListeners.add(listener);</b>
+<b class="nc"><i>111</i>&nbsp;    listener.zoomChanged(new ZoomEvent(this, getZoomState()));</b>
+<i>112</i>&nbsp;  }
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  public void removeZoomListener(ZoomListener listener) {
+<b class="nc"><i>115</i>&nbsp;    myListeners.remove(listener);</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  private void fireZoomingChanged(int oldZoomValue, int newZoomValue) {
+<b class="nc"><i>119</i>&nbsp;    ZoomEvent e = new ZoomEvent(this, getZoomState());</b>
+<b class="nc"><i>120</i>&nbsp;    for (int i = 0; i &lt; myListeners.size(); i++) {</b>
+<b class="nc"><i>121</i>&nbsp;      ZoomListener nextListener = myListeners.get(i);</b>
+<b class="nc"><i>122</i>&nbsp;      nextListener.zoomChanged(e);</b>
+<i>123</i>&nbsp;    }
+<i>124</i>&nbsp;  }
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  /**
+<i>127</i>&nbsp;   * Find persistentName in the available ZoomStates or add new States until it
+<i>128</i>&nbsp;   * is found. Or the maximum allowed ZoomState is reached, in this case the
+<i>129</i>&nbsp;   * ZoomState is not changed.
+<i>130</i>&nbsp;   * 
+<i>131</i>&nbsp;   * @param persistentName
+<i>132</i>&nbsp;   *          is the ZoomState name to find
+<i>133</i>&nbsp;   */
+<i>134</i>&nbsp;  public void setZoomState(String persistentName) {
+<b class="nc"><i>135</i>&nbsp;    for (int i = 0; i &lt; myZoomStates.size() || myMaximumZoomStateReached == false; i++) {</b>
+<b class="nc"><i>136</i>&nbsp;      if (getZoomState(i).getPersistentName().equals(persistentName)) {</b>
+<b class="nc"><i>137</i>&nbsp;        myZooming = i;</b>
+<b class="nc"><i>138</i>&nbsp;        fireZoomingChanged(0, myZooming);</b>
+<b class="nc"><i>139</i>&nbsp;        break;</b>
+<i>140</i>&nbsp;      }
+<i>141</i>&nbsp;    }
+<i>142</i>&nbsp;  }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  /** @return the selected ZoomState */
+<i>145</i>&nbsp;  public ZoomState getZoomState() {
+<b class="nc"><i>146</i>&nbsp;    return getZoomState(myZooming);</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  public ZoomState getZoomState(int zoom) {
+<b class="nc"><i>150</i>&nbsp;    while (zoom &gt;= myZoomStates.size()) {</b>
+<i>151</i>&nbsp;      // Zoom out even further by calculating the required ZoomState
+<i>152</i>&nbsp;      // The list of ZoomState is filled step by step until the desired
+<i>153</i>&nbsp;      // ZoomState is added (normally just the next step needs to be calculated)
+<b class="nc"><i>154</i>&nbsp;      ZoomState lastZoomState = myZoomStates.get(myZoomStates.size() - 1);</b>
+<b class="nc"><i>155</i>&nbsp;      int bottomUnitWidth = (int) (lastZoomState.getBottomUnitWidth() * myZoomStep);</b>
+<b class="nc"><i>156</i>&nbsp;      if (bottomUnitWidth &lt; 2) {</b>
+<i>157</i>&nbsp;        // A bottomUnitWidth of 1 is the maximum allowed zoom,
+<i>158</i>&nbsp;        // since a width of 0 is not possible (and breaking stuff).
+<b class="nc"><i>159</i>&nbsp;        myMaximumZoomStateReached = true;</b>
+<i>160</i>&nbsp;      }
+<b class="nc"><i>161</i>&nbsp;      myZoomStates.add(new ZoomState(lastZoomState.getTimeUnitPair(), bottomUnitWidth, zoom));</b>
+<b class="nc"><i>162</i>&nbsp;    }</b>
+<i>163</i>&nbsp;
+<b class="nc"><i>164</i>&nbsp;    return myZoomStates.get(zoom);</b>
+<i>165</i>&nbsp;  }
+<i>166</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

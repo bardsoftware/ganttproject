@@ -1,0 +1,194 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TimeDurationImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.time</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TimeDurationImpl (biz.ganttproject.core.time)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TimeDurationImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.1%
+  </span>
+  <span class="absValue">
+    (18/ 31)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.time;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Objects;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * @author bard
+<i>26</i>&nbsp; */
+<i>27</i>&nbsp;public class TimeDurationImpl implements TimeDuration {
+<i>28</i>&nbsp;  private final TimeUnit myUnit;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  private float myCount;
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;  public TimeDurationImpl(TimeUnit unit, long count) {</b>
+<b class="fc"><i>33</i>&nbsp;    myUnit = unit;</b>
+<b class="fc"><i>34</i>&nbsp;    myCount = count;</b>
+<b class="fc"><i>35</i>&nbsp;  }</b>
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  /**
+<i>38</i>&nbsp;   * @param unit
+<i>39</i>&nbsp;   * @param length
+<i>40</i>&nbsp;   */
+<b class="fc"><i>41</i>&nbsp;  public TimeDurationImpl(TimeUnit unit, float length) {</b>
+<b class="fc"><i>42</i>&nbsp;    myUnit = unit;</b>
+<b class="fc"><i>43</i>&nbsp;    myCount = length;</b>
+<b class="fc"><i>44</i>&nbsp;  }</b>
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  @Override
+<i>47</i>&nbsp;  public float getValue() {
+<b class="fc"><i>48</i>&nbsp;    return myCount;</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  @Override
+<i>52</i>&nbsp;  public int getLength() {
+<b class="fc"><i>53</i>&nbsp;    return (int) myCount;</b>
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  @Override
+<i>57</i>&nbsp;  public TimeUnit getTimeUnit() {
+<b class="fc"><i>58</i>&nbsp;    return myUnit;</b>
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  public void setLength(TimeUnit unit, long length) {
+<b class="nc"><i>62</i>&nbsp;    if (!unit.equals(myUnit)) {</b>
+<b class="nc"><i>63</i>&nbsp;      throw new IllegalArgumentException(&quot;Can&#39;t convert unit=&quot; + unit + &quot; to my unit=&quot; + myUnit);</b>
+<i>64</i>&nbsp;    }
+<b class="nc"><i>65</i>&nbsp;    myCount = length;</b>
+<b class="nc"><i>66</i>&nbsp;  }</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  @Override
+<i>69</i>&nbsp;  public float getLength(TimeUnit unit) {
+<b class="fc"><i>70</i>&nbsp;    if (myUnit.isConstructedFrom(unit)) {</b>
+<b class="fc"><i>71</i>&nbsp;      return (float) myCount * myUnit.getAtomCount(unit);</b>
+<b class="nc"><i>72</i>&nbsp;    } else if (unit.isConstructedFrom(myUnit)) {</b>
+<b class="nc"><i>73</i>&nbsp;      return (float) myCount / unit.getAtomCount(myUnit);</b>
+<b class="nc"><i>74</i>&nbsp;    } else if (!unit.equals(myUnit)) {</b>
+<b class="nc"><i>75</i>&nbsp;      throw new IllegalArgumentException(&quot;Can&#39;t convert unit=&quot; + unit + &quot; to my unit=&quot; + myUnit);</b>
+<i>76</i>&nbsp;    }
+<b class="nc"><i>77</i>&nbsp;    return myCount;</b>
+<i>78</i>&nbsp;  }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  @Override
+<i>81</i>&nbsp;  public TimeDuration reverse() {
+<b class="fc"><i>82</i>&nbsp;    return new TimeDurationImpl(getTimeUnit(), -getLength());</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  @Override
+<i>86</i>&nbsp;  public TimeDuration translate(TimeUnit toUnit) {
+<b class="nc"><i>87</i>&nbsp;    float translatedLength = getLength(toUnit);</b>
+<b class="nc"><i>88</i>&nbsp;    return new TimeDurationImpl(toUnit, translatedLength);</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  @Override
+<i>92</i>&nbsp;  public String toString() {
+<b class="nc"><i>93</i>&nbsp;    return &quot;&quot; + myCount + &quot; &quot; + myUnit.getName();</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  @Override
+<i>97</i>&nbsp;  public int hashCode() {
+<b class="fc"><i>98</i>&nbsp;    return Objects.hashCode(myCount, myUnit);</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public boolean equals(Object obj) {
+<b class="fc"><i>103</i>&nbsp;    if (obj instanceof TimeDurationImpl == false) {</b>
+<b class="nc"><i>104</i>&nbsp;      return false;</b>
+<i>105</i>&nbsp;    }
+<b class="fc"><i>106</i>&nbsp;    TimeDurationImpl that = (TimeDurationImpl) obj;</b>
+<b class="fc"><i>107</i>&nbsp;    return myCount == that.myCount &amp;&amp; myUnit.equals(that.myUnit);</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;  
+<i>110</i>&nbsp;  
+<i>111</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

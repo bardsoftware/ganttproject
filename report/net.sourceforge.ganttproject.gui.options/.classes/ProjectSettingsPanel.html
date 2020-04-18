@@ -1,0 +1,281 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectSettingsPanel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.options</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectSettingsPanel (net.sourceforge.ganttproject.gui.options)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectSettingsPanel</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 56)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProjectSettingsPanel$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 61)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 Alexandre Thomas, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.options;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.BorderLayout;
+<i>22</i>&nbsp;import java.awt.event.ActionEvent;
+<i>23</i>&nbsp;import java.awt.event.ActionListener;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.Box;
+<i>26</i>&nbsp;import javax.swing.ImageIcon;
+<i>27</i>&nbsp;import javax.swing.JButton;
+<i>28</i>&nbsp;import javax.swing.JComponent;
+<i>29</i>&nbsp;import javax.swing.JLabel;
+<i>30</i>&nbsp;import javax.swing.JPanel;
+<i>31</i>&nbsp;import javax.swing.JScrollPane;
+<i>32</i>&nbsp;import javax.swing.JTextArea;
+<i>33</i>&nbsp;import javax.swing.JTextField;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.GanttProject;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.gui.GanttDialogInfo;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.gui.TestGanttRolloverButton;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.util.BrowserControl;
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;/**
+<i>43</i>&nbsp; * Panel to edit the project properties
+<i>44</i>&nbsp; *
+<i>45</i>&nbsp; * @author athomas
+<i>46</i>&nbsp; */
+<i>47</i>&nbsp;public class ProjectSettingsPanel {
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  private final JTextField tfName;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  private final JTextField tfOrganization;
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private final JTextField tfWebLink;
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  private final JTextArea taDescr;
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  private final IGanttProject myProject;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  private JPanel myComponent;
+<i>60</i>&nbsp;
+<b class="nc"><i>61</i>&nbsp;  private static final GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>62</i>&nbsp;
+<b class="nc"><i>63</i>&nbsp;  public ProjectSettingsPanel(IGanttProject project) {</b>
+<b class="nc"><i>64</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>65</i>&nbsp;    Box vbproject = Box.createVerticalBox();</b>
+<i>66</i>&nbsp;
+<b class="nc"><i>67</i>&nbsp;    JPanel namePanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>68</i>&nbsp;    namePanel.add(new JLabel(language.getText(&quot;name&quot;)), BorderLayout.WEST);</b>
+<b class="nc"><i>69</i>&nbsp;    vbproject.add(namePanel);</b>
+<b class="nc"><i>70</i>&nbsp;    vbproject.add(tfName = new JTextField());</b>
+<b class="nc"><i>71</i>&nbsp;    vbproject.add(new JPanel());</b>
+<i>72</i>&nbsp;
+<b class="nc"><i>73</i>&nbsp;    JPanel orgaPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>74</i>&nbsp;    orgaPanel.add(new JLabel(language.getText(&quot;organization&quot;)), BorderLayout.WEST);</b>
+<b class="nc"><i>75</i>&nbsp;    vbproject.add(orgaPanel);</b>
+<b class="nc"><i>76</i>&nbsp;    vbproject.add(tfOrganization = new JTextField());</b>
+<b class="nc"><i>77</i>&nbsp;    vbproject.add(new JPanel());</b>
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;    tfWebLink = new JTextField();</b>
+<b class="nc"><i>80</i>&nbsp;    JButton bWeb = new TestGanttRolloverButton(new ImageIcon(getClass().getResource(&quot;/icons/web_16.gif&quot;)));</b>
+<b class="nc"><i>81</i>&nbsp;    bWeb.setToolTipText(GanttProject.getToolTip(language.getText(&quot;openWebLink&quot;)));</b>
+<b class="nc"><i>82</i>&nbsp;    bWeb.addActionListener(new ActionListener() {</b>
+<i>83</i>&nbsp;      @Override
+<i>84</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<i>85</i>&nbsp;        // link to open the web link
+<b class="nc"><i>86</i>&nbsp;        if (!BrowserControl.displayURL(tfWebLink.getText())) {</b>
+<b class="nc"><i>87</i>&nbsp;          GanttDialogInfo gdi = new GanttDialogInfo(null, GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION,</b>
+<b class="nc"><i>88</i>&nbsp;              language.getText(&quot;msg4&quot;), language.getText(&quot;error&quot;));</b>
+<b class="nc"><i>89</i>&nbsp;          gdi.setVisible(true);</b>
+<i>90</i>&nbsp;        }
+<i>91</i>&nbsp;      }
+<i>92</i>&nbsp;    });
+<i>93</i>&nbsp;
+<b class="nc"><i>94</i>&nbsp;    JPanel webPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>95</i>&nbsp;    webPanel.add(new JLabel(language.getText(&quot;webLink&quot;)), BorderLayout.WEST);</b>
+<b class="nc"><i>96</i>&nbsp;    webPanel.add(bWeb, BorderLayout.EAST);</b>
+<b class="nc"><i>97</i>&nbsp;    vbproject.add(webPanel);</b>
+<b class="nc"><i>98</i>&nbsp;    vbproject.add(tfWebLink);</b>
+<b class="nc"><i>99</i>&nbsp;    vbproject.add(new JPanel());</b>
+<i>100</i>&nbsp;
+<b class="nc"><i>101</i>&nbsp;    JPanel descrPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>102</i>&nbsp;    descrPanel.add(new JLabel(language.getText(&quot;shortDescription&quot;)), BorderLayout.WEST);</b>
+<b class="nc"><i>103</i>&nbsp;    vbproject.add(descrPanel);</b>
+<b class="nc"><i>104</i>&nbsp;    taDescr = new JTextArea(12, 25);</b>
+<b class="nc"><i>105</i>&nbsp;    taDescr.setLineWrap(true);</b>
+<b class="nc"><i>106</i>&nbsp;    taDescr.setWrapStyleWord(true);</b>
+<b class="nc"><i>107</i>&nbsp;    JScrollPane scpArea = new JScrollPane(taDescr);</b>
+<b class="nc"><i>108</i>&nbsp;    vbproject.add(scpArea);</b>
+<i>109</i>&nbsp;
+<b class="nc"><i>110</i>&nbsp;    JPanel projectPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>111</i>&nbsp;    projectPanel.add(vbproject, BorderLayout.NORTH);</b>
+<i>112</i>&nbsp;
+<b class="nc"><i>113</i>&nbsp;    myComponent = projectPanel;</b>
+<i>114</i>&nbsp;  }
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;  public boolean applyChanges(boolean askForApply) {
+<i>117</i>&nbsp;    boolean hasChange;
+<b class="nc"><i>118</i>&nbsp;    if (myProject.getProjectName().equals(tfName.getText())</b>
+<b class="nc"><i>119</i>&nbsp;        &amp;&amp; myProject.getOrganization().equals(tfOrganization.getText())</b>
+<b class="nc"><i>120</i>&nbsp;        &amp;&amp; myProject.getWebLink().equals(tfWebLink.getText()) &amp;&amp; myProject.getDescription().equals(taDescr.getText())) {</b>
+<b class="nc"><i>121</i>&nbsp;      hasChange = false;</b>
+<i>122</i>&nbsp;    } else {
+<b class="nc"><i>123</i>&nbsp;      hasChange = true;</b>
+<i>124</i>&nbsp;      // apply changes if user clicked apply (or warn about pending changes and
+<i>125</i>&nbsp;      // ask whether to apply or not)
+<b class="nc"><i>126</i>&nbsp;      myProject.setProjectName(getProjectName());</b>
+<b class="nc"><i>127</i>&nbsp;      myProject.setDescription(getProjectDescription());</b>
+<b class="nc"><i>128</i>&nbsp;      myProject.setOrganization(getProjectOrganization());</b>
+<b class="nc"><i>129</i>&nbsp;      myProject.setWebLink(getWebLink());</b>
+<i>130</i>&nbsp;    }
+<b class="nc"><i>131</i>&nbsp;    return hasChange;</b>
+<i>132</i>&nbsp;  }
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  public void initialize() {
+<b class="nc"><i>135</i>&nbsp;    tfName.setText(myProject.getProjectName());</b>
+<b class="nc"><i>136</i>&nbsp;    tfOrganization.setText(myProject.getOrganization());</b>
+<b class="nc"><i>137</i>&nbsp;    tfWebLink.setText(myProject.getWebLink());</b>
+<b class="nc"><i>138</i>&nbsp;    taDescr.setText(myProject.getDescription());</b>
+<i>139</i>&nbsp;  }
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;  /** @return the selected project name */
+<i>142</i>&nbsp;  public String getProjectName() {
+<b class="nc"><i>143</i>&nbsp;    return tfName.getText();</b>
+<i>144</i>&nbsp;  }
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  /** @return the organization */
+<i>147</i>&nbsp;  public String getProjectOrganization() {
+<b class="nc"><i>148</i>&nbsp;    return tfOrganization.getText();</b>
+<i>149</i>&nbsp;  }
+<i>150</i>&nbsp;
+<i>151</i>&nbsp;  /** @return the web link */
+<i>152</i>&nbsp;  public String getWebLink() {
+<b class="nc"><i>153</i>&nbsp;    return tfWebLink.getText();</b>
+<i>154</i>&nbsp;  }
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  /** @return the project description */
+<i>157</i>&nbsp;  public String getProjectDescription() {
+<b class="nc"><i>158</i>&nbsp;    return taDescr.getText();</b>
+<i>159</i>&nbsp;  }
+<i>160</i>&nbsp;
+<i>161</i>&nbsp;  public String getTitle() {
+<b class="nc"><i>162</i>&nbsp;    return language.correctLabel(language.getText(&quot;project&quot;));</b>
+<i>163</i>&nbsp;  }
+<i>164</i>&nbsp;
+<i>165</i>&nbsp;  public String getComment() {
+<b class="nc"><i>166</i>&nbsp;    return language.getText(&quot;settingsProject&quot;);</b>
+<i>167</i>&nbsp;  }
+<i>168</i>&nbsp;
+<i>169</i>&nbsp;  public JComponent getComponent() {
+<b class="nc"><i>170</i>&nbsp;    return myComponent;</b>
+<i>171</i>&nbsp;  }
+<i>172</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

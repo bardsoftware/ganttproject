@@ -1,0 +1,286 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: WebDavResource</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document.webdav</a> ]
+</div>
+
+<h1>Coverage Summary for Class: WebDavResource (net.sourceforge.ganttproject.document.webdav)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">WebDavResource$WebDavException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavResource$WebDavRuntimeException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document.webdav;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.InputStream;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * Interface which provides an abstraction of WebDAV client implementations.
+<i>26</i>&nbsp; *
+<i>27</i>&nbsp; * It is supposed that user credentials are passed in the constructor and are available
+<i>28</i>&nbsp; * to the resource instance during its lifetime.
+<i>29</i>&nbsp; *
+<i>30</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public interface WebDavResource {
+<i>33</i>&nbsp;  class WebDavException extends Exception {
+<i>34</i>&nbsp;    public WebDavException(String message) {
+<b class="nc"><i>35</i>&nbsp;      super(message);</b>
+<i>36</i>&nbsp;    }
+<i>37</i>&nbsp;    public WebDavException(String message, Throwable cause) {
+<b class="nc"><i>38</i>&nbsp;      super(message, cause);</b>
+<i>39</i>&nbsp;    }
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;  class WebDavRuntimeException extends RuntimeException {
+<i>42</i>&nbsp;    public WebDavRuntimeException(String message) {
+<b class="nc"><i>43</i>&nbsp;      super(message);</b>
+<i>44</i>&nbsp;    }
+<i>45</i>&nbsp;    public WebDavRuntimeException(String message, Throwable cause) {
+<b class="nc"><i>46</i>&nbsp;      super(message, cause);</b>
+<i>47</i>&nbsp;    }
+<i>48</i>&nbsp;    public WebDavRuntimeException(Throwable cause) {
+<b class="nc"><i>49</i>&nbsp;      super(cause);</b>
+<i>50</i>&nbsp;    }
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  /**
+<i>54</i>&nbsp;   * This method will try to connect to a server at least once. Implementation may
+<i>55</i>&nbsp;   * decide to cache its result.
+<i>56</i>&nbsp;   *
+<i>57</i>&nbsp;   * @return {@code true} if resource exists on the server
+<i>58</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>59</i>&nbsp;   */
+<i>60</i>&nbsp;  boolean exists() throws WebDavException;
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  WebDavUri getWebDavUri();
+<i>63</i>&nbsp;  /**
+<i>64</i>&nbsp;   * This method should be just a simple getter and should not issue any requests.
+<i>65</i>&nbsp;   * @return URL of this resource
+<i>66</i>&nbsp;   */
+<i>67</i>&nbsp;  String getUrl();
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  /**
+<i>70</i>&nbsp;   * This method should be just a simple getter and should not issue any requests.
+<i>71</i>&nbsp;   * @return short name of this resource
+<i>72</i>&nbsp;   */
+<i>73</i>&nbsp;  String getName();
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  /**
+<i>76</i>&nbsp;   * This method should be just a simple getter and should not issue any requests.
+<i>77</i>&nbsp;   * @return absolute path of this resource from the root
+<i>78</i>&nbsp;   */
+<i>79</i>&nbsp;  String getAbsolutePath();
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  /**
+<i>82</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to return
+<i>83</i>&nbsp;   * stub which has not yet received full information (and may not even exist on the server)
+<i>84</i>&nbsp;   *
+<i>85</i>&nbsp;   * @return parent resource
+<i>86</i>&nbsp;   */
+<i>87</i>&nbsp;  WebDavResource getParent();
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  /**
+<i>90</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to fetch
+<i>91</i>&nbsp;   * all required pieces of information before calling this method or to delay fetching
+<i>92</i>&nbsp;   * information about the children until this method is called
+<i>93</i>&nbsp;   *
+<i>94</i>&nbsp;   * @return {@code true} if this resource is a collection
+<i>95</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>96</i>&nbsp;   */
+<i>97</i>&nbsp;  boolean isCollection() throws WebDavException;
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  /**
+<i>100</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to fetch
+<i>101</i>&nbsp;   * all required pieces of information before calling this method or to delay fetching
+<i>102</i>&nbsp;   * information about the children until this method is called
+<i>103</i>&nbsp;   *
+<i>104</i>&nbsp;   * @return child resources if it is a collection or empty list otherwise
+<i>105</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>106</i>&nbsp;   */
+<i>107</i>&nbsp;  List&lt;WebDavResource&gt; getChildResources() throws WebDavException;
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  boolean isLockSupported(boolean exclusive);
+<i>110</i>&nbsp;  /**
+<i>111</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to fetch
+<i>112</i>&nbsp;   * all required pieces of information before calling this method or to delay fetching
+<i>113</i>&nbsp;   * information until this method is called
+<i>114</i>&nbsp;   *
+<i>115</i>&nbsp;   * @return list of lock owners
+<i>116</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>117</i>&nbsp;   */
+<i>118</i>&nbsp;  List&lt;String&gt; getLockOwners() throws WebDavException;
+<i>119</i>&nbsp;
+<i>120</i>&nbsp;  /**
+<i>121</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to fetch
+<i>122</i>&nbsp;   * all required pieces of information before calling this method or to delay fetching
+<i>123</i>&nbsp;   * information until this method is called
+<i>124</i>&nbsp;   *
+<i>125</i>&nbsp;   * @return {@code true} if this resource is locked
+<i>126</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>127</i>&nbsp;   */
+<i>128</i>&nbsp;  boolean isLocked() throws WebDavException;
+<i>129</i>&nbsp;
+<i>130</i>&nbsp;  /**
+<i>131</i>&nbsp;   * This method may or may not issue a request to a server. Implementation may decide to fetch
+<i>132</i>&nbsp;   * all required pieces of information before calling this method or to delay fetching
+<i>133</i>&nbsp;   * information until this method is called
+<i>134</i>&nbsp;   *
+<i>135</i>&nbsp;   * @return {@code true} if user can lock this resource
+<i>136</i>&nbsp;   * @throws WebDavException if information is unavailable, e.g. due to network problems
+<i>137</i>&nbsp;   */
+<i>138</i>&nbsp;  boolean canLock() throws WebDavException;
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;  /**
+<i>141</i>&nbsp;   * This method issues a request to lock this resource with the given expiration time
+<i>142</i>&nbsp;   *
+<i>143</i>&nbsp;   * @param expirationTimeSec time in seconds after which lock expires
+<i>144</i>&nbsp;   * @throws WebDavException if locking fails, e.g. due to network problems
+<i>145</i>&nbsp;   */
+<i>146</i>&nbsp;  void lock(int expirationTimeSec) throws WebDavException;
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;  /**
+<i>149</i>&nbsp;   * This method issues a request to unlock this resource
+<i>150</i>&nbsp;   *
+<i>151</i>&nbsp;   * @throws WebDavException if unlocking fails, e.g. due to network problems
+<i>152</i>&nbsp;   */
+<i>153</i>&nbsp;  void unlock() throws WebDavException;
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  /**
+<i>156</i>&nbsp;   * @return {@code true} if this resource is writable
+<i>157</i>&nbsp;   */
+<i>158</i>&nbsp;  boolean isWritable();
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  /**
+<i>161</i>&nbsp;   * Writes data to the resource.
+<i>162</i>&nbsp;   *
+<i>163</i>&nbsp;   * @param byteArray data to write
+<i>164</i>&nbsp;   * @throws WebDavException if writing fails, e.g. due to network problems
+<i>165</i>&nbsp;   */
+<i>166</i>&nbsp;  void write(byte[] byteArray) throws WebDavException;
+<i>167</i>&nbsp;
+<i>168</i>&nbsp;  /**
+<i>169</i>&nbsp;   * Reads data from the resource.
+<i>170</i>&nbsp;   *
+<i>171</i>&nbsp;   * @throws WebDavException if reading fails, e.g. due to network problems
+<i>172</i>&nbsp;   */
+<i>173</i>&nbsp;  InputStream getInputStream() throws WebDavException;
+<i>174</i>&nbsp;
+<i>175</i>&nbsp;  void delete() throws WebDavException;
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

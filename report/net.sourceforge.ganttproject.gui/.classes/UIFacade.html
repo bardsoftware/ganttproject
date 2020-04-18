@@ -1,0 +1,267 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: UIFacade</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: UIFacade (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">UIFacade$Centering</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">UIFacade$Choice</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.IntegerOption;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.chart.GanttChart;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.chart.TimelineChart;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.task.TaskView;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import javax.swing.*;
+<i>36</i>&nbsp;import java.awt.*;
+<i>37</i>&nbsp;import java.util.Collection;
+<i>38</i>&nbsp;import java.util.Locale;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;/**
+<i>41</i>&nbsp; * @author bard
+<i>42</i>&nbsp; */
+<i>43</i>&nbsp;public interface UIFacade {
+<i>44</i>&nbsp;  ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource(&quot;/icons/big.png&quot;));
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;   interface Dialog {
+<i>47</i>&nbsp;    void show();
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;    void hide();
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;    void layout();
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;    void center(Centering centering);
+<i>54</i>&nbsp;    //void resize();
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<b class="nc"><i>57</i>&nbsp;  public enum Centering {</b>
+<b class="nc"><i>58</i>&nbsp;    SCREEN, WINDOW</b>
+<i>59</i>&nbsp;  };
+<i>60</i>&nbsp;
+<b class="nc"><i>61</i>&nbsp;  public enum Choice {</b>
+<b class="nc"><i>62</i>&nbsp;    YES, NO, CANCEL, OK</b>
+<i>63</i>&nbsp;  };
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  int DEFAULT_DPI = 96;
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  int GANTT_INDEX = 0;
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  int RESOURCES_INDEX = 1;
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  IntegerOption getDpiOption();
+<i>72</i>&nbsp;  GPOption&lt;String&gt; getLafOption();
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  ScrollingManager getScrollingManager();
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  ZoomManager getZoomManager();
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  /** @returns an object containing the zoom related actions */
+<i>79</i>&nbsp;  ZoomActionSet getZoomActionSet();
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  GPUndoManager getUndoManager();
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  void setLookAndFeel(GanttLookAndFeelInfo laf);
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  GanttLookAndFeelInfo getLookAndFeel();
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  Choice showConfirmationDialog(String message, String title);
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  void showPopupMenu(Component invoker, Action[] actions, int x, int y);
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  void showPopupMenu(Component invoker, Collection&lt;Action&gt; actions, int x, int y);
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  void showOptionDialog(int messageType, String message, Action[] actions);
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  Dialog createDialog(Component content, Action[] buttonActions, String title);
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  void setStatusText(String text);
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  void showErrorDialog(String errorMessage);
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  void showNotificationDialog(NotificationChannel channel, String message);
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  void showSettingsDialog(String pageID);
+<i>104</i>&nbsp;  /**
+<i>105</i>&nbsp;   * Shows the given exception in an error dialog and also puts it into the log
+<i>106</i>&nbsp;   * file
+<i>107</i>&nbsp;   *
+<i>108</i>&nbsp;   * @param e
+<i>109</i>&nbsp;   *          the exception to show (and log)
+<i>110</i>&nbsp;   */
+<i>111</i>&nbsp;  void showErrorDialog(Throwable e);
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;  NotificationManager getNotificationManager();
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;  GanttChart getGanttChart();
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  TimelineChart getResourceChart();
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  Chart getActiveChart();
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  /** @return the index of the displayed tab. */
+<i>122</i>&nbsp;  int getViewIndex();
+<i>123</i>&nbsp;
+<i>124</i>&nbsp;  void setViewIndex(int viewIndex);
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  int getGanttDividerLocation();
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  void setGanttDividerLocation(int location);
+<i>129</i>&nbsp;
+<i>130</i>&nbsp;  int getResourceDividerLocation();
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  void setResourceDividerLocation(int location);
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  /** Refreshes the UI (ie repaints all tasks in the chart) */
+<i>135</i>&nbsp;  void refresh();
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;  Frame getMainFrame();
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;  Image getLogo();
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;  void setWorkbenchTitle(String title);
+<i>142</i>&nbsp;
+<i>143</i>&nbsp;  TaskView getCurrentTaskView();
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  TaskTreeUIFacade getTaskTree();
+<i>146</i>&nbsp;
+<i>147</i>&nbsp;  ResourceTreeUIFacade getResourceTree();
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  TaskSelectionManager getTaskSelectionManager();
+<i>150</i>&nbsp;
+<i>151</i>&nbsp;  TaskSelectionContext getTaskSelectionContext();
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;  DefaultEnumerationOption&lt;Locale&gt; getLanguageOption();
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  GPOptionGroup[] getOptions();
+<i>156</i>&nbsp;
+<i>157</i>&nbsp;  void addOnUpdateComponentTreeUi(Runnable callback);
+<i>158</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

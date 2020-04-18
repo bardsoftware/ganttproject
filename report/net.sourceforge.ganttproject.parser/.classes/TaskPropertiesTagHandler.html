@@ -1,0 +1,123 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskPropertiesTagHandler</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.parser</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskPropertiesTagHandler (net.sourceforge.ganttproject.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskPropertiesTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on Mar 10, 2005
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * TODO To change the template for this generated file go to
+<i>5</i>&nbsp; * Window - Preferences - Java - Code Style - Code Templates
+<i>6</i>&nbsp; */
+<i>7</i>&nbsp;package net.sourceforge.ganttproject.parser;
+<i>8</i>&nbsp;
+<i>9</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;import org.xml.sax.Attributes;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;/**
+<i>14</i>&nbsp; * @author bbaranne Mar 10, 2005
+<i>15</i>&nbsp; */
+<i>16</i>&nbsp;public class TaskPropertiesTagHandler extends AbstractTagHandler {
+<i>17</i>&nbsp;  private final CustomPropertyManager myCustomPropertyManager;
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;  public TaskPropertiesTagHandler(CustomPropertyManager customPropertyManager) {
+<b class="nc"><i>20</i>&nbsp;    super(&quot;taskproperty&quot;);</b>
+<b class="nc"><i>21</i>&nbsp;    myCustomPropertyManager = customPropertyManager;</b>
+<i>22</i>&nbsp;  }
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  @Override
+<i>25</i>&nbsp;  protected boolean onStartElement(Attributes attrs) {
+<b class="nc"><i>26</i>&nbsp;     loadTaskProperty(attrs);</b>
+<b class="nc"><i>27</i>&nbsp;     return true;</b>
+<i>28</i>&nbsp;  }
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  private void loadTaskProperty(Attributes atts) {
+<b class="nc"><i>31</i>&nbsp;    String name = atts.getValue(&quot;name&quot;);</b>
+<b class="nc"><i>32</i>&nbsp;    String id = atts.getValue(&quot;id&quot;);</b>
+<b class="nc"><i>33</i>&nbsp;    String type = atts.getValue(&quot;valuetype&quot;);</b>
+<i>34</i>&nbsp;
+<b class="nc"><i>35</i>&nbsp;    if (atts.getValue(&quot;type&quot;).equals(&quot;custom&quot;)) {</b>
+<b class="nc"><i>36</i>&nbsp;      String valueStr = atts.getValue(&quot;defaultvalue&quot;);</b>
+<b class="nc"><i>37</i>&nbsp;      myCustomPropertyManager.createDefinition(id, type, name, valueStr);</b>
+<i>38</i>&nbsp;    }
+<i>39</i>&nbsp;  }
+<i>40</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

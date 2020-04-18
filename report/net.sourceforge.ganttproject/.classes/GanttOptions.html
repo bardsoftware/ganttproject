@@ -1,0 +1,1293 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttOptions</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttOptions (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttOptions</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 77)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 288)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttOptions$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttOptions$GanttXMLOptionsParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 176)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 84)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 471)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2003-2011 Alexandre Thomas, GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.model.task.TaskDefaultColumn;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.BooleanOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.ChangeValueEvent;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.ChangeValueListener;
+<i>25</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>26</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>27</i>&nbsp;import biz.ganttproject.core.option.ListOption;
+<i>28</i>&nbsp;import com.google.common.base.Objects;
+<i>29</i>&nbsp;import com.google.common.collect.Maps;
+<i>30</i>&nbsp;import com.google.common.io.ByteStreams;
+<i>31</i>&nbsp;import com.google.common.xml.XmlEscapers;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.document.DocumentManager;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.gui.UIConfiguration;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.io.CSVOptions;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.io.GanttXMLOpen;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.io.OptionSaver;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.io.SaverBase;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.parser.RoleTagHandler;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleSet;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.util.ColorConvertion;
+<i>44</i>&nbsp;import org.osgi.service.prefs.BackingStoreException;
+<i>45</i>&nbsp;import org.osgi.service.prefs.Preferences;
+<i>46</i>&nbsp;import org.xml.sax.Attributes;
+<i>47</i>&nbsp;import org.xml.sax.SAXException;
+<i>48</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>49</i>&nbsp;import org.xml.sax.helpers.DefaultHandler;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;import javax.swing.*;
+<i>52</i>&nbsp;import javax.xml.parsers.SAXParser;
+<i>53</i>&nbsp;import javax.xml.parsers.SAXParserFactory;
+<i>54</i>&nbsp;import javax.xml.transform.OutputKeys;
+<i>55</i>&nbsp;import javax.xml.transform.Transformer;
+<i>56</i>&nbsp;import javax.xml.transform.TransformerFactoryConfigurationError;
+<i>57</i>&nbsp;import javax.xml.transform.sax.SAXTransformerFactory;
+<i>58</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>59</i>&nbsp;import javax.xml.transform.stream.StreamResult;
+<i>60</i>&nbsp;import java.awt.*;
+<i>61</i>&nbsp;import java.io.BufferedOutputStream;
+<i>62</i>&nbsp;import java.io.ByteArrayInputStream;
+<i>63</i>&nbsp;import java.io.ByteArrayOutputStream;
+<i>64</i>&nbsp;import java.io.File;
+<i>65</i>&nbsp;import java.io.FileOutputStream;
+<i>66</i>&nbsp;import java.io.OutputStream;
+<i>67</i>&nbsp;import java.security.AccessControlException;
+<i>68</i>&nbsp;import java.util.HashMap;
+<i>69</i>&nbsp;import java.util.Map;
+<i>70</i>&nbsp;import java.util.concurrent.ExecutorService;
+<i>71</i>&nbsp;import java.util.concurrent.Executors;
+<i>72</i>&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;/**
+<i>75</i>&nbsp; * This class is able to load and save options on the file
+<i>76</i>&nbsp; */
+<i>77</i>&nbsp;public class GanttOptions extends SaverBase {
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;  private int x = 0, y = 0, width = 800, height = 600;</b>
+<i>80</i>&nbsp;  private boolean isMaximized;
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  private boolean isloaded;
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  private boolean automatic;
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  private boolean redline;
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  private int lockDAVMinutes;
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  private int undoNumber;
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  private String xslDir;
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;  private String xslFo;
+<i>95</i>&nbsp;
+<b class="nc"><i>96</i>&nbsp;  private String workingDir = &quot;&quot;;</b>
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;  private final RoleManager myRoleManager;
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  private UIConfiguration myUIConfig;
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;  private int toolBarPosition;
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  private boolean bShowStatusBar;
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  private String iconSize;
+<i>107</i>&nbsp;
+<i>108</i>&nbsp;  public static final int ICONS = 0;
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;  public static final int ICONS_TEXT = 1;
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  public static final int TEXT = 2;
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  private int buttonsshow;
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;  /**
+<i>117</i>&nbsp;   * FTP options
+<i>118</i>&nbsp;   */
+<b class="nc"><i>119</i>&nbsp;  private String FTPUrl = &quot;&quot;;</b>
+<i>120</i>&nbsp;
+<b class="nc"><i>121</i>&nbsp;  private String FTPDirectory = &quot;&quot;;</b>
+<i>122</i>&nbsp;
+<b class="nc"><i>123</i>&nbsp;  private String FTPUser = &quot;&quot;;</b>
+<i>124</i>&nbsp;
+<b class="nc"><i>125</i>&nbsp;  private String FTPPwd = &quot;&quot;;</b>
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  /**
+<i>128</i>&nbsp;   * Export options.
+<i>129</i>&nbsp;   */
+<i>130</i>&nbsp;  private boolean bExportName;
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  private boolean bExportComplete;
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;  private boolean bExportRelations;
+<i>135</i>&nbsp;
+<i>136</i>&nbsp;  private boolean bExport3DBorders;
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  /**
+<i>139</i>&nbsp;   * CSV export options.
+<i>140</i>&nbsp;   */
+<i>141</i>&nbsp;  private CSVOptions csvOptions;
+<i>142</i>&nbsp;
+<b class="nc"><i>143</i>&nbsp;  private Map&lt;String, GPOption&lt;?&gt;&gt; myGPOptions = Maps.newLinkedHashMap();</b>
+<b class="nc"><i>144</i>&nbsp;  private Map&lt;String, GP1XOptionConverter&gt; myTagDotAttribute_Converter = new HashMap&lt;String, GP1XOptionConverter&gt;();</b>
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  private final DocumentManager myDocumentManager;
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;  private final PluginPreferencesImpl myPluginPreferencesRootNode;
+<i>149</i>&nbsp;
+<i>150</i>&nbsp;  private String myVersion;
+<i>151</i>&nbsp;
+<b class="nc"><i>152</i>&nbsp;  private ExecutorService mySaveExecutor = Executors.newSingleThreadExecutor();</b>
+<b class="nc"><i>153</i>&nbsp;  private AtomicBoolean mySaveScheduled = new AtomicBoolean(true);</b>
+<i>154</i>&nbsp;
+<b class="nc"><i>155</i>&nbsp;  private ChangeValueListener myOnOptionValueChange = new ChangeValueListener() {</b>
+<i>156</i>&nbsp;    @Override
+<i>157</i>&nbsp;    public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>158</i>&nbsp;      if (!Objects.equal(event.getOldValue(), event.getNewValue())) {</b>
+<b class="nc"><i>159</i>&nbsp;        if (!mySaveScheduled.get()) {</b>
+<b class="nc"><i>160</i>&nbsp;          mySaveScheduled.set(true);</b>
+<b class="nc"><i>161</i>&nbsp;          mySaveExecutor.submit(() -&gt; {</b>
+<b class="nc"><i>162</i>&nbsp;            GanttOptions.this.save();</b>
+<b class="nc"><i>163</i>&nbsp;            mySaveScheduled.set(false);</b>
+<i>164</i>&nbsp;          });
+<i>165</i>&nbsp;        }
+<i>166</i>&nbsp;      }
+<i>167</i>&nbsp;    }
+<i>168</i>&nbsp;  };
+<i>169</i>&nbsp;
+<b class="nc"><i>170</i>&nbsp;  public GanttOptions(RoleManager roleManager, DocumentManager documentManager, boolean isOnlyViewer) {</b>
+<b class="nc"><i>171</i>&nbsp;    myDocumentManager = documentManager;</b>
+<b class="nc"><i>172</i>&nbsp;    myRoleManager = roleManager;</b>
+<b class="nc"><i>173</i>&nbsp;    myPluginPreferencesRootNode = new PluginPreferencesImpl(null, &quot;&quot;);</b>
+<b class="nc"><i>174</i>&nbsp;    initDefault();</b>
+<i>175</i>&nbsp;    try {
+<b class="nc"><i>176</i>&nbsp;      this.workingDir = System.getProperty(&quot;user.home&quot;);</b>
+<b class="nc"><i>177</i>&nbsp;    } catch (AccessControlException e) {</b>
+<i>178</i>&nbsp;      // This can happen when running in a sandbox (Java WebStart)
+<b class="nc"><i>179</i>&nbsp;      System.err.println(e + &quot;: &quot; + e.getMessage());</b>
+<b class="nc"><i>180</i>&nbsp;    }</b>
+<i>181</i>&nbsp;  }
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  public Preferences getPluginPreferences() {
+<b class="nc"><i>184</i>&nbsp;    return myPluginPreferencesRootNode;</b>
+<i>185</i>&nbsp;  }
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;  /**
+<i>188</i>&nbsp;   * Initialize the options with default values.
+<i>189</i>&nbsp;   */
+<i>190</i>&nbsp;  public void initDefault() {
+<b class="nc"><i>191</i>&nbsp;    automatic = false;</b>
+<b class="nc"><i>192</i>&nbsp;    redline = false;</b>
+<b class="nc"><i>193</i>&nbsp;    lockDAVMinutes = 240;</b>
+<b class="nc"><i>194</i>&nbsp;    undoNumber = 50;</b>
+<b class="nc"><i>195</i>&nbsp;    xslDir = String.valueOf(GanttOptions.class.getResource(&quot;/xslt&quot;));</b>
+<b class="nc"><i>196</i>&nbsp;    xslFo = String.valueOf(GanttOptions.class.getResource(&quot;/xslfo/ganttproject.xsl&quot;));</b>
+<b class="nc"><i>197</i>&nbsp;    toolBarPosition = JToolBar.HORIZONTAL;</b>
+<b class="nc"><i>198</i>&nbsp;    bShowStatusBar = true;</b>
+<i>199</i>&nbsp;    // must be 16 small, 24 for big (32 for extra big not directly include on
+<i>200</i>&nbsp;    // UI)
+<b class="nc"><i>201</i>&nbsp;    iconSize = &quot;16&quot;;</b>
+<b class="nc"><i>202</i>&nbsp;    buttonsshow = GanttOptions.ICONS;</b>
+<i>203</i>&nbsp;
+<i>204</i>&nbsp;    // Export options
+<b class="nc"><i>205</i>&nbsp;    bExportName = true;</b>
+<b class="nc"><i>206</i>&nbsp;    bExportComplete = true;</b>
+<b class="nc"><i>207</i>&nbsp;    bExportRelations = true;</b>
+<b class="nc"><i>208</i>&nbsp;    bExport3DBorders = false;</b>
+<i>209</i>&nbsp;
+<i>210</i>&nbsp;    // CSV export options
+<b class="nc"><i>211</i>&nbsp;    csvOptions = new CSVOptions();</b>
+<i>212</i>&nbsp;  }
+<i>213</i>&nbsp;
+<i>214</i>&nbsp;  public static File getOptionsFile() {
+<b class="nc"><i>215</i>&nbsp;    return new File(System.getProperty(&quot;user.home&quot;) + System.getProperty(&quot;file.separator&quot;) + &quot;.ganttproject&quot;);</b>
+<i>216</i>&nbsp;  }
+<i>217</i>&nbsp;
+<i>218</i>&nbsp;
+<i>219</i>&nbsp;  /**
+<i>220</i>&nbsp;   * Save the options file
+<i>221</i>&nbsp;   */
+<i>222</i>&nbsp;  public void save() {
+<i>223</i>&nbsp;    try {
+<b class="nc"><i>224</i>&nbsp;      File file = getOptionsFile();</b>
+<b class="nc"><i>225</i>&nbsp;      ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();</b>
+<b class="nc"><i>226</i>&nbsp;      doSave(outBuffer);</b>
+<b class="nc"><i>227</i>&nbsp;      BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(file));</b>
+<b class="nc"><i>228</i>&nbsp;      ByteStreams.copy(new ByteArrayInputStream(outBuffer.toByteArray()), outFile);</b>
+<b class="nc"><i>229</i>&nbsp;      outFile.flush();</b>
+<b class="nc"><i>230</i>&nbsp;      outFile.close();</b>
+<b class="nc"><i>231</i>&nbsp;    } catch (Throwable e) {</b>
+<b class="nc"><i>232</i>&nbsp;      GPLogger.log(e);</b>
+<b class="nc"><i>233</i>&nbsp;    }</b>
+<i>234</i>&nbsp;  }
+<i>235</i>&nbsp;
+<i>236</i>&nbsp;  private void doSave(OutputStream out) throws Exception {
+<b class="nc"><i>237</i>&nbsp;    final TransformerHandler handler = ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();</b>
+<b class="nc"><i>238</i>&nbsp;    Transformer serializer = handler.getTransformer();</b>
+<b class="nc"><i>239</i>&nbsp;    serializer.setOutputProperty(OutputKeys.ENCODING, &quot;UTF-8&quot;);</b>
+<b class="nc"><i>240</i>&nbsp;    serializer.setOutputProperty(OutputKeys.INDENT, &quot;yes&quot;);</b>
+<b class="nc"><i>241</i>&nbsp;    serializer.setOutputProperty(&quot;{http://xml.apache.org/xslt}indent-amount&quot;, &quot;4&quot;);</b>
+<b class="nc"><i>242</i>&nbsp;    handler.setResult(new StreamResult(out));</b>
+<b class="nc"><i>243</i>&nbsp;    handler.startDocument();</b>
+<i>244</i>&nbsp;    // handler.startDTD(&quot;ganttproject.sourceforge.net&quot;,
+<i>245</i>&nbsp;    // &quot;-//GanttProject.org//DTD GanttProject-1.x//EN&quot;,
+<i>246</i>&nbsp;    // &quot;http://ganttproject.sourceforge.net/dtd/ganttproject.dtd&quot;);
+<i>247</i>&nbsp;    // handler.endDTD();
+<i>248</i>&nbsp;
+<b class="nc"><i>249</i>&nbsp;    final AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>250</i>&nbsp;    addAttribute(&quot;version&quot;, GPVersion.getCurrentVersionNumber(), attrs);</b>
+<b class="nc"><i>251</i>&nbsp;    handler.startElement(&quot;&quot;, &quot;ganttproject-options&quot;, &quot;ganttproject-options&quot;, attrs);</b>
+<i>252</i>&nbsp;
+<b class="nc"><i>253</i>&nbsp;    attrs.clear();</b>
+<i>254</i>&nbsp;    // write the task Color
+<i>255</i>&nbsp;
+<i>256</i>&nbsp;    // Color color = getUIConfiguration().getTaskColor();
+<i>257</i>&nbsp;    // attrs.addAttribute(&quot;&quot;, &quot;red&quot;, &quot;red&quot;, &quot;CDATA&quot;, &quot;&quot; + color.getRed());
+<i>258</i>&nbsp;    // attrs.addAttribute(&quot;&quot;, &quot;green&quot;, &quot;green&quot;, &quot;CDATA&quot;, &quot;&quot;
+<i>259</i>&nbsp;    // + color.getGreen());
+<i>260</i>&nbsp;    // attrs.addAttribute(&quot;&quot;, &quot;blue&quot;, &quot;blue&quot;, &quot;CDATA&quot;, &quot;&quot;
+<i>261</i>&nbsp;    // + color.getBlue());
+<i>262</i>&nbsp;    // handler.startElement(&quot;&quot;, &quot;task-color&quot;, &quot;task-color&quot;, attrs);
+<i>263</i>&nbsp;    // handler.endElement(&quot;&quot;, &quot;task-color&quot;, &quot;task-color&quot;); attrs.clear();
+<i>264</i>&nbsp;
+<b class="nc"><i>265</i>&nbsp;    Color resourceColor = myUIConfig.getResourceColor();</b>
+<b class="nc"><i>266</i>&nbsp;    if (resourceColor != null) {</b>
+<b class="nc"><i>267</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;resources&quot;, &quot;resources&quot;, &quot;CDATA&quot;, ColorConvertion.getColor(resourceColor));</b>
+<i>268</i>&nbsp;    }
+<b class="nc"><i>269</i>&nbsp;    Color resourceOverloadColor = myUIConfig.getResourceOverloadColor();</b>
+<b class="nc"><i>270</i>&nbsp;    if (resourceOverloadColor != null) {</b>
+<b class="nc"><i>271</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;resourcesOverload&quot;, &quot;resourcesOverload&quot;, &quot;CDATA&quot;,</b>
+<b class="nc"><i>272</i>&nbsp;          ColorConvertion.getColor(resourceOverloadColor));</b>
+<i>273</i>&nbsp;    }
+<b class="nc"><i>274</i>&nbsp;    Color resourceUnderloadColor = myUIConfig.getResourceUnderloadColor();</b>
+<b class="nc"><i>275</i>&nbsp;    if (resourceUnderloadColor != null) {</b>
+<b class="nc"><i>276</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;resourcesUnderload&quot;, &quot;resourcesUnderload&quot;, &quot;CDATA&quot;,</b>
+<b class="nc"><i>277</i>&nbsp;          ColorConvertion.getColor(resourceUnderloadColor));</b>
+<i>278</i>&nbsp;    }
+<b class="nc"><i>279</i>&nbsp;    Color weekEndColor = myUIConfig.getWeekEndColor();</b>
+<b class="nc"><i>280</i>&nbsp;    if (weekEndColor != null) {</b>
+<b class="nc"><i>281</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;weekEnd&quot;, &quot;weekEnd&quot;, &quot;CDATA&quot;, ColorConvertion.getColor(weekEndColor));</b>
+<i>282</i>&nbsp;    }
+<b class="nc"><i>283</i>&nbsp;    Color daysOffColor = myUIConfig.getDayOffColor();</b>
+<b class="nc"><i>284</i>&nbsp;    if (daysOffColor != null) {</b>
+<b class="nc"><i>285</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;daysOff&quot;, &quot;daysOff&quot;, &quot;CDATA&quot;, ColorConvertion.getColor(daysOffColor));</b>
+<i>286</i>&nbsp;    }
+<b class="nc"><i>287</i>&nbsp;    handler.startElement(&quot;&quot;, &quot;colors&quot;, &quot;colors&quot;, attrs);</b>
+<b class="nc"><i>288</i>&nbsp;    handler.endElement(&quot;&quot;, &quot;colors&quot;, &quot;colors&quot;);</b>
+<b class="nc"><i>289</i>&nbsp;    attrs.clear();</b>
+<i>290</i>&nbsp;
+<i>291</i>&nbsp;    // Geometry of the window
+<b class="nc"><i>292</i>&nbsp;    addAttribute(&quot;x&quot;, &quot;&quot; + x, attrs);</b>
+<b class="nc"><i>293</i>&nbsp;    addAttribute(&quot;y&quot;, &quot;&quot; + y, attrs);</b>
+<b class="nc"><i>294</i>&nbsp;    addAttribute(&quot;width&quot;, &quot;&quot; + width, attrs);</b>
+<b class="nc"><i>295</i>&nbsp;    addAttribute(&quot;height&quot;, &quot;&quot; + height, attrs);</b>
+<b class="nc"><i>296</i>&nbsp;    addAttribute(&quot;maximized&quot;, String.valueOf(this.isMaximized), attrs);</b>
+<b class="nc"><i>297</i>&nbsp;    emptyElement(&quot;geometry&quot;, attrs, handler);</b>
+<i>298</i>&nbsp;
+<i>299</i>&nbsp;    // ToolBar position
+<b class="nc"><i>300</i>&nbsp;    addAttribute(&quot;position&quot;, &quot;&quot; + toolBarPosition, attrs);</b>
+<b class="nc"><i>301</i>&nbsp;    addAttribute(&quot;icon-size&quot;, &quot;&quot; + iconSize, attrs);</b>
+<b class="nc"><i>302</i>&nbsp;    addAttribute(&quot;show&quot;, &quot;&quot; + buttonsshow, attrs);</b>
+<b class="nc"><i>303</i>&nbsp;    emptyElement(&quot;toolBar&quot;, attrs, handler);</b>
+<b class="nc"><i>304</i>&nbsp;    addAttribute(&quot;show&quot;, &quot;&quot; + bShowStatusBar, attrs);</b>
+<b class="nc"><i>305</i>&nbsp;    emptyElement(&quot;statusBar&quot;, attrs, handler);</b>
+<i>306</i>&nbsp;
+<i>307</i>&nbsp;    // Export options
+<b class="nc"><i>308</i>&nbsp;    addAttribute(&quot;name&quot;, &quot;&quot; + bExportName, attrs);</b>
+<b class="nc"><i>309</i>&nbsp;    addAttribute(&quot;complete&quot;, &quot;&quot; + bExportComplete, attrs);</b>
+<b class="nc"><i>310</i>&nbsp;    addAttribute(&quot;border3d&quot;, &quot;&quot; + bExport3DBorders, attrs);</b>
+<b class="nc"><i>311</i>&nbsp;    addAttribute(&quot;relations&quot;, &quot;&quot; + bExportRelations, attrs);</b>
+<b class="nc"><i>312</i>&nbsp;    emptyElement(&quot;export&quot;, attrs, handler);</b>
+<i>313</i>&nbsp;
+<i>314</i>&nbsp;    // csv export options
+<b class="nc"><i>315</i>&nbsp;    startElement(&quot;csv-export&quot;, attrs, handler);</b>
+<b class="nc"><i>316</i>&nbsp;    addAttribute(&quot;fixed&quot;, &quot;&quot; + csvOptions.bFixedSize, attrs);</b>
+<b class="nc"><i>317</i>&nbsp;    addAttribute(&quot;separatedChar&quot;, &quot;&quot; + csvOptions.sSeparatedChar, attrs);</b>
+<b class="nc"><i>318</i>&nbsp;    addAttribute(&quot;separatedTextChar&quot;, &quot;&quot; + csvOptions.sSeparatedTextChar, attrs);</b>
+<b class="nc"><i>319</i>&nbsp;    emptyElement(&quot;csv-general&quot;, attrs, handler);</b>
+<i>320</i>&nbsp;
+<b class="nc"><i>321</i>&nbsp;    endElement(&quot;csv-export&quot;, handler);</b>
+<i>322</i>&nbsp;
+<b class="nc"><i>323</i>&nbsp;    addAttribute(&quot;id&quot;, &quot;csv-export&quot;, attrs);</b>
+<b class="nc"><i>324</i>&nbsp;    startElement(&quot;view&quot;, attrs, handler);</b>
+<b class="nc"><i>325</i>&nbsp;    for (Map.Entry&lt;String, BooleanOption&gt; entry : csvOptions.getTaskOptions().entrySet()) {</b>
+<b class="nc"><i>326</i>&nbsp;      if (entry.getValue().isChecked()) {</b>
+<b class="nc"><i>327</i>&nbsp;        addAttribute(&quot;id&quot;, XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);</b>
+<b class="nc"><i>328</i>&nbsp;        emptyElement(&quot;field&quot;, attrs, handler);</b>
+<i>329</i>&nbsp;      }
+<b class="nc"><i>330</i>&nbsp;    }</b>
+<b class="nc"><i>331</i>&nbsp;    startElement(&quot;resources&quot;, attrs, handler);</b>
+<b class="nc"><i>332</i>&nbsp;    for (Map.Entry&lt;String, BooleanOption&gt; entry : csvOptions.getResourceOptions().entrySet()) {</b>
+<b class="nc"><i>333</i>&nbsp;      if (entry.getValue().isChecked()) {</b>
+<b class="nc"><i>334</i>&nbsp;        addAttribute(&quot;id&quot;, XmlEscapers.xmlAttributeEscaper().escape(entry.getKey()), attrs);</b>
+<b class="nc"><i>335</i>&nbsp;        emptyElement(&quot;field&quot;, attrs, handler);</b>
+<i>336</i>&nbsp;      }
+<b class="nc"><i>337</i>&nbsp;    }</b>
+<b class="nc"><i>338</i>&nbsp;    endElement(&quot;resources&quot;, handler);</b>
+<b class="nc"><i>339</i>&nbsp;    if (csvOptions.getBomOption().getValue()) {</b>
+<b class="nc"><i>340</i>&nbsp;      new OptionSaver().saveOption(</b>
+<b class="nc"><i>341</i>&nbsp;          &quot;write-bom&quot;, csvOptions.getBomOption(), handler);</b>
+<i>342</i>&nbsp;    }
+<b class="nc"><i>343</i>&nbsp;    endElement(&quot;view&quot;, handler);</b>
+<i>344</i>&nbsp;
+<i>345</i>&nbsp;    // automatic popup launch
+<b class="nc"><i>346</i>&nbsp;    addAttribute(&quot;value&quot;, &quot;&quot; + automatic, attrs);</b>
+<b class="nc"><i>347</i>&nbsp;    emptyElement(&quot;automatic-launch&quot;, attrs, handler);</b>
+<i>348</i>&nbsp;    // automatic tips of the day launch
+<i>349</i>&nbsp;    // Should WebDAV resources be locked, when opening them?
+<b class="nc"><i>350</i>&nbsp;    addAttribute(&quot;value&quot;, &quot;&quot; + lockDAVMinutes, attrs);</b>
+<b class="nc"><i>351</i>&nbsp;    emptyElement(&quot;lockdavminutes&quot;, attrs, handler);</b>
+<i>352</i>&nbsp;    // write the xsl directory
+<b class="nc"><i>353</i>&nbsp;    addAttribute(&quot;dir&quot;, xslDir, attrs);</b>
+<b class="nc"><i>354</i>&nbsp;    emptyElement(&quot;xsl-dir&quot;, attrs, handler);</b>
+<i>355</i>&nbsp;    // write the xslfo directory
+<b class="nc"><i>356</i>&nbsp;    addAttribute(&quot;file&quot;, xslFo, attrs);</b>
+<b class="nc"><i>357</i>&nbsp;    emptyElement(&quot;xsl-fo&quot;, attrs, handler);</b>
+<i>358</i>&nbsp;    // write the working directory directory
+<b class="nc"><i>359</i>&nbsp;    addAttribute(&quot;dir&quot;, workingDir, attrs);</b>
+<b class="nc"><i>360</i>&nbsp;    emptyElement(&quot;working-dir&quot;, attrs, handler);</b>
+<i>361</i>&nbsp;    // The last opened files
+<i>362</i>&nbsp;    {
+<b class="nc"><i>363</i>&nbsp;      startElement(&quot;files&quot;, attrs, handler);</b>
+<i>364</i>&nbsp;
+<b class="nc"><i>365</i>&nbsp;      for (String recent : myDocumentManager.getRecentDocuments()) {</b>
+<b class="nc"><i>366</i>&nbsp;        addAttribute(&quot;path&quot;, recent, attrs);</b>
+<b class="nc"><i>367</i>&nbsp;        emptyElement(&quot;file&quot;, attrs, handler);</b>
+<b class="nc"><i>368</i>&nbsp;      }</b>
+<b class="nc"><i>369</i>&nbsp;      endElement(&quot;files&quot;, handler);</b>
+<i>370</i>&nbsp;    }
+<i>371</i>&nbsp;
+<i>372</i>&nbsp;    //addAttribute(&quot;category&quot;, &quot;chart-main&quot;, attrs);
+<i>373</i>&nbsp;    //addAttribute(&quot;spec&quot;, getFontSpec(getUIConfiguration().getChartMainFont()), attrs);
+<i>374</i>&nbsp;    //emptyElement(&quot;font&quot;, attrs, handler);
+<i>375</i>&nbsp;
+<b class="nc"><i>376</i>&nbsp;    saveRoleSets(handler);</b>
+<b class="nc"><i>377</i>&nbsp;    new OptionSaver().saveOptionMap(myGPOptions.entrySet(), handler);</b>
+<b class="nc"><i>378</i>&nbsp;    savePreferences(myPluginPreferencesRootNode.node(&quot;/configuration&quot;), handler);</b>
+<b class="nc"><i>379</i>&nbsp;    savePreferences(myPluginPreferencesRootNode.node(&quot;/instance&quot;), handler);</b>
+<b class="nc"><i>380</i>&nbsp;    endElement(&quot;ganttproject-options&quot;, handler);</b>
+<i>381</i>&nbsp;
+<b class="nc"><i>382</i>&nbsp;    GPLogger.log(&quot;[GanttOptions] save(): finished!!&quot;);</b>
+<b class="nc"><i>383</i>&nbsp;    handler.endDocument();</b>
+<i>384</i>&nbsp;  }
+<i>385</i>&nbsp;
+<i>386</i>&nbsp;  private void savePreferences(Preferences node, TransformerHandler handler) throws BackingStoreException, SAXException {
+<b class="nc"><i>387</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>388</i>&nbsp;    startElement(node.name(), attrs, handler);</b>
+<b class="nc"><i>389</i>&nbsp;    String[] keys = node.keys();</b>
+<b class="nc"><i>390</i>&nbsp;    for (int i = 0; i &lt; keys.length; i++) {</b>
+<b class="nc"><i>391</i>&nbsp;      addAttribute(&quot;name&quot;, keys[i], attrs);</b>
+<b class="nc"><i>392</i>&nbsp;      addAttribute(&quot;value&quot;, node.get(keys[i], &quot;&quot;), attrs);</b>
+<b class="nc"><i>393</i>&nbsp;      emptyElement(&quot;option&quot;, attrs, handler);</b>
+<i>394</i>&nbsp;    }
+<b class="nc"><i>395</i>&nbsp;    String[] children = node.childrenNames();</b>
+<b class="nc"><i>396</i>&nbsp;    for (int i = 0; i &lt; children.length; i++) {</b>
+<b class="nc"><i>397</i>&nbsp;      savePreferences(node.node(children[i]), handler);</b>
+<i>398</i>&nbsp;    }
+<b class="nc"><i>399</i>&nbsp;    endElement(node.name(), handler);</b>
+<i>400</i>&nbsp;  }
+<i>401</i>&nbsp;
+<i>402</i>&nbsp;  private String getFontSpec(Font font) {
+<b class="nc"><i>403</i>&nbsp;    return font.getFamily() + &quot;-&quot; + getFontStyle(font) + &quot;-&quot; + font.getSize();</b>
+<i>404</i>&nbsp;  }
+<i>405</i>&nbsp;
+<i>406</i>&nbsp;  private String getFontStyle(Font font) {
+<i>407</i>&nbsp;    String result;
+<b class="nc"><i>408</i>&nbsp;    final int BOLDITALIC = Font.BOLD + Font.ITALIC;</b>
+<b class="nc"><i>409</i>&nbsp;    switch (font.getStyle()) {</b>
+<i>410</i>&nbsp;      case Font.PLAIN: {
+<b class="nc"><i>411</i>&nbsp;        result = &quot;plain&quot;;</b>
+<b class="nc"><i>412</i>&nbsp;        break;</b>
+<i>413</i>&nbsp;      }
+<i>414</i>&nbsp;      case Font.BOLD: {
+<b class="nc"><i>415</i>&nbsp;        result = &quot;bold&quot;;</b>
+<b class="nc"><i>416</i>&nbsp;        break;</b>
+<i>417</i>&nbsp;      }
+<i>418</i>&nbsp;      case Font.ITALIC: {
+<b class="nc"><i>419</i>&nbsp;        result = &quot;italic&quot;;</b>
+<b class="nc"><i>420</i>&nbsp;        break;</b>
+<i>421</i>&nbsp;      }
+<i>422</i>&nbsp;      case BOLDITALIC: {
+<b class="nc"><i>423</i>&nbsp;        result = &quot;bolditalic&quot;;</b>
+<b class="nc"><i>424</i>&nbsp;        break;</b>
+<i>425</i>&nbsp;      }
+<i>426</i>&nbsp;      default: {
+<b class="nc"><i>427</i>&nbsp;        throw new RuntimeException(&quot;Illegal value of font style. style=&quot; + font.getStyle() + &quot; font=&quot; + font);</b>
+<i>428</i>&nbsp;      }
+<i>429</i>&nbsp;    }
+<b class="nc"><i>430</i>&nbsp;    return result;</b>
+<i>431</i>&nbsp;  }
+<i>432</i>&nbsp;
+<i>433</i>&nbsp;  public String correct(String s) {
+<i>434</i>&nbsp;    String res;
+<b class="nc"><i>435</i>&nbsp;    res = s.replaceAll(&quot;&amp;&quot;, &quot;&amp;#38;&quot;);</b>
+<b class="nc"><i>436</i>&nbsp;    res = res.replaceAll(&quot;&lt;&quot;, &quot;&amp;#60;&quot;);</b>
+<b class="nc"><i>437</i>&nbsp;    res = res.replaceAll(&quot;&gt;&quot;, &quot;&amp;#62;&quot;);</b>
+<b class="nc"><i>438</i>&nbsp;    res = res.replaceAll(&quot;/&quot;, &quot;&amp;#47;&quot;);</b>
+<b class="nc"><i>439</i>&nbsp;    res = res.replaceAll(&quot;\&quot;&quot;, &quot;&amp;#34;&quot;);</b>
+<b class="nc"><i>440</i>&nbsp;    return res;</b>
+<i>441</i>&nbsp;  }
+<i>442</i>&nbsp;
+<i>443</i>&nbsp;  /**
+<i>444</i>&nbsp;   * Load the options file
+<i>445</i>&nbsp;   */
+<i>446</i>&nbsp;  public boolean load() {
+<i>447</i>&nbsp;    // Use an instance of ourselves as the SAX event handler
+<b class="nc"><i>448</i>&nbsp;    DefaultHandler handler = new GanttXMLOptionsParser();</b>
+<i>449</i>&nbsp;
+<i>450</i>&nbsp;    // Use the default (non-validating) parser
+<b class="nc"><i>451</i>&nbsp;    SAXParserFactory factory = SAXParserFactory.newInstance();</b>
+<i>452</i>&nbsp;    try {
+<b class="nc"><i>453</i>&nbsp;      String sFileName = &quot;.ganttproject&quot;;</b>
+<i>454</i>&nbsp;      /*
+<i>455</i>&nbsp;       * if(System.getProperty(&quot;os.name&quot;).startsWith(&quot;Windows&quot;) ||
+<i>456</i>&nbsp;       * System.getProperty(&quot;os.name&quot;).startsWith(&quot;Mac&quot;)) sFileName =
+<i>457</i>&nbsp;       * &quot;ganttproject.ini&quot;;
+<i>458</i>&nbsp;       */
+<i>459</i>&nbsp;
+<b class="nc"><i>460</i>&nbsp;      File file = new File(System.getProperty(&quot;user.home&quot;) + System.getProperty(&quot;file.separator&quot;) + sFileName);</b>
+<b class="nc"><i>461</i>&nbsp;      if (!file.exists()) {</b>
+<b class="nc"><i>462</i>&nbsp;        return false;</b>
+<i>463</i>&nbsp;      }
+<i>464</i>&nbsp;
+<b class="nc"><i>465</i>&nbsp;      myDocumentManager.clearRecentDocuments();</b>
+<i>466</i>&nbsp;
+<i>467</i>&nbsp;      // Parse the input
+<b class="nc"><i>468</i>&nbsp;      SAXParser saxParser = factory.newSAXParser();</b>
+<b class="nc"><i>469</i>&nbsp;      saxParser.parse(file, handler);</b>
+<i>470</i>&nbsp;
+<b class="nc"><i>471</i>&nbsp;      loadRoleSets(file);</b>
+<i>472</i>&nbsp;
+<b class="nc"><i>473</i>&nbsp;    } catch (Exception e) {</b>
+<b class="nc"><i>474</i>&nbsp;      if (!GPLogger.log(e)) {</b>
+<b class="nc"><i>475</i>&nbsp;        e.printStackTrace(System.err);</b>
+<i>476</i>&nbsp;      }
+<b class="nc"><i>477</i>&nbsp;      return false;</b>
+<b class="nc"><i>478</i>&nbsp;    }</b>
+<i>479</i>&nbsp;
+<b class="nc"><i>480</i>&nbsp;    isloaded = true;</b>
+<b class="nc"><i>481</i>&nbsp;    mySaveScheduled.set(false);</b>
+<b class="nc"><i>482</i>&nbsp;    return true;</b>
+<i>483</i>&nbsp;  }
+<i>484</i>&nbsp;
+<i>485</i>&nbsp;  private void loadRoleSets(File optionsFile) {
+<b class="nc"><i>486</i>&nbsp;    GanttXMLOpen loader = new GanttXMLOpen(null);</b>
+<i>487</i>&nbsp;
+<b class="nc"><i>488</i>&nbsp;    loader.addTagHandler(new RoleTagHandler(getRoleManager()));</b>
+<b class="nc"><i>489</i>&nbsp;    loader.load(optionsFile);</b>
+<i>490</i>&nbsp;  }
+<i>491</i>&nbsp;
+<i>492</i>&nbsp;  private void saveRoleSets(TransformerHandler handler) throws TransformerFactoryConfigurationError, SAXException {
+<b class="nc"><i>493</i>&nbsp;    RoleSet[] roleSets = getRoleManager().getRoleSets();</b>
+<b class="nc"><i>494</i>&nbsp;    for (int i = 0; i &lt; roleSets.length; i++) {</b>
+<b class="nc"><i>495</i>&nbsp;      AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>496</i>&nbsp;      attrs.addAttribute(&quot;&quot;, &quot;roleset-name&quot;, &quot;roleset-name&quot;, &quot;CDATA&quot;, roleSets[i].getName());</b>
+<b class="nc"><i>497</i>&nbsp;      handler.startElement(&quot;&quot;, &quot;roles&quot;, &quot;roles&quot;, attrs);</b>
+<b class="nc"><i>498</i>&nbsp;      saveRoles(roleSets[i], handler);</b>
+<b class="nc"><i>499</i>&nbsp;      handler.endElement(&quot;&quot;, &quot;roles&quot;, &quot;roles&quot;);</b>
+<i>500</i>&nbsp;    }
+<i>501</i>&nbsp;  }
+<i>502</i>&nbsp;
+<i>503</i>&nbsp;  private void saveRoles(RoleSet roleSet, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>504</i>&nbsp;    Role[] roles = roleSet.getRoles();</b>
+<b class="nc"><i>505</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>506</i>&nbsp;    for (int i = 0; i &lt; roles.length; i++) {</b>
+<b class="nc"><i>507</i>&nbsp;      Role next = roles[i];</b>
+<b class="nc"><i>508</i>&nbsp;      addAttribute(&quot;id&quot;, &quot;&quot; + next.getID(), attrs);</b>
+<b class="nc"><i>509</i>&nbsp;      addAttribute(&quot;name&quot;, next.getName(), attrs);</b>
+<b class="nc"><i>510</i>&nbsp;      emptyElement(&quot;role&quot;, attrs, handler);</b>
+<i>511</i>&nbsp;    }
+<i>512</i>&nbsp;
+<i>513</i>&nbsp;  }
+<i>514</i>&nbsp;
+<i>515</i>&nbsp;  public UIConfiguration getUIConfiguration() {
+<b class="nc"><i>516</i>&nbsp;    if (myUIConfig == null) {</b>
+<b class="nc"><i>517</i>&nbsp;      myUIConfig = new UIConfiguration(new Color(140, 182, 206), redline);</b>
+<i>518</i>&nbsp;    }
+<b class="nc"><i>519</i>&nbsp;    return myUIConfig;</b>
+<i>520</i>&nbsp;  }
+<i>521</i>&nbsp;
+<i>522</i>&nbsp;  private RoleManager getRoleManager() {
+<b class="nc"><i>523</i>&nbsp;    return myRoleManager;</b>
+<i>524</i>&nbsp;  }
+<i>525</i>&nbsp;
+<i>526</i>&nbsp;  /**
+<i>527</i>&nbsp;   * Class to parse the xml option file
+<i>528</i>&nbsp;   */
+<b class="nc"><i>529</i>&nbsp;  class GanttXMLOptionsParser extends DefaultHandler {</b>
+<i>530</i>&nbsp;
+<i>531</i>&nbsp;    private PluginOptionsHandler myPluginOptionsHandler;
+<i>532</i>&nbsp;    private ListOption myContextOption;
+<b class="nc"><i>533</i>&nbsp;    private StringBuilder myCdataBuffer = new StringBuilder();</b>
+<b class="nc"><i>534</i>&nbsp;    private Map&lt;String, BooleanOption&gt; myContextViewOptions = null;</b>
+<i>535</i>&nbsp;
+<i>536</i>&nbsp;    @Override
+<i>537</i>&nbsp;    public void startElement(String namespaceURI, String sName, // simple name
+<i>538</i>&nbsp;                             String qName, // qualified name
+<i>539</i>&nbsp;                             Attributes attrs) throws SAXException {
+<i>540</i>&nbsp;
+<b class="nc"><i>541</i>&nbsp;      if (&quot;ganttproject-options&quot;.equals(qName)) {</b>
+<b class="nc"><i>542</i>&nbsp;        myVersion = attrs.getValue(&quot;version&quot;);</b>
+<i>543</i>&nbsp;        return;
+<i>544</i>&nbsp;      }
+<b class="nc"><i>545</i>&nbsp;      if (&quot;configuration&quot;.equals(qName) || &quot;instance&quot;.equals(qName)) {</b>
+<b class="nc"><i>546</i>&nbsp;        myPluginOptionsHandler = new PluginOptionsHandler(myPluginPreferencesRootNode);</b>
+<i>547</i>&nbsp;      }
+<b class="nc"><i>548</i>&nbsp;      if (myPluginOptionsHandler != null) {</b>
+<b class="nc"><i>549</i>&nbsp;        myPluginOptionsHandler.startElement(namespaceURI, sName, qName, attrs);</b>
+<i>550</i>&nbsp;        return;
+<i>551</i>&nbsp;      }
+<b class="nc"><i>552</i>&nbsp;      int r = 0, g = 0, b = 0;</b>
+<i>553</i>&nbsp;
+<b class="nc"><i>554</i>&nbsp;      if (&quot;option&quot;.equals(qName)) {</b>
+<b class="nc"><i>555</i>&nbsp;        String id = attrs.getValue(&quot;id&quot;);</b>
+<i>556</i>&nbsp;        GPOption option;
+<b class="nc"><i>557</i>&nbsp;        if (id.equals(csvOptions.getBomOption().getID())) {</b>
+<b class="nc"><i>558</i>&nbsp;          option = csvOptions.getBomOption();</b>
+<i>559</i>&nbsp;        } else {
+<b class="nc"><i>560</i>&nbsp;          option = myGPOptions.get(id);</b>
+<i>561</i>&nbsp;        }
+<b class="nc"><i>562</i>&nbsp;        if (option instanceof ListOption) {</b>
+<b class="nc"><i>563</i>&nbsp;          myContextOption = (ListOption) option;</b>
+<i>564</i>&nbsp;        } else {
+<b class="nc"><i>565</i>&nbsp;          if (option != null) {</b>
+<b class="nc"><i>566</i>&nbsp;            option.loadPersistentValue(attrs.getValue(&quot;value&quot;));</b>
+<i>567</i>&nbsp;          }
+<i>568</i>&nbsp;        }
+<i>569</i>&nbsp;        return;
+<i>570</i>&nbsp;      }
+<i>571</i>&nbsp;
+<b class="nc"><i>572</i>&nbsp;      if (&quot;view&quot;.equals(qName)) {</b>
+<b class="nc"><i>573</i>&nbsp;        String viewId = attrs.getValue(&quot;id&quot;);</b>
+<b class="nc"><i>574</i>&nbsp;        if (&quot;csv-export&quot;.equals(viewId)) {</b>
+<b class="nc"><i>575</i>&nbsp;          myContextViewOptions = csvOptions.getTaskOptions();</b>
+<b class="nc"><i>576</i>&nbsp;          for (BooleanOption o : myContextViewOptions.values()) {</b>
+<b class="nc"><i>577</i>&nbsp;            o.setValue(false);</b>
+<b class="nc"><i>578</i>&nbsp;          }</b>
+<i>579</i>&nbsp;        }
+<i>580</i>&nbsp;      }
+<b class="nc"><i>581</i>&nbsp;      if (&quot;resources&quot;.equals(qName) &amp;&amp; myContextViewOptions != null) {</b>
+<b class="nc"><i>582</i>&nbsp;        myContextViewOptions = csvOptions.getResourceOptions();</b>
+<b class="nc"><i>583</i>&nbsp;        for (BooleanOption o : myContextViewOptions.values()) {</b>
+<b class="nc"><i>584</i>&nbsp;          o.setValue(false);</b>
+<b class="nc"><i>585</i>&nbsp;        }</b>
+<i>586</i>&nbsp;      }
+<b class="nc"><i>587</i>&nbsp;      if (&quot;field&quot;.equals(qName) &amp;&amp; myContextViewOptions != null) {</b>
+<b class="nc"><i>588</i>&nbsp;        BooleanOption option = myContextViewOptions.get(attrs.getValue(&quot;id&quot;));</b>
+<b class="nc"><i>589</i>&nbsp;        if (option != null) {</b>
+<b class="nc"><i>590</i>&nbsp;          option.setValue(true);</b>
+<i>591</i>&nbsp;        }
+<i>592</i>&nbsp;      }
+<b class="nc"><i>593</i>&nbsp;      if (attrs != null) {</b>
+<b class="nc"><i>594</i>&nbsp;        for (int i = 0; i &lt; attrs.getLength(); i++) {</b>
+<i>595</i>&nbsp;          /** Attribute name */
+<b class="nc"><i>596</i>&nbsp;          String aName = attrs.getQName(i);</b>
+<i>597</i>&nbsp;          /** Value of attribute */
+<b class="nc"><i>598</i>&nbsp;          String value = attrs.getValue(i);</b>
+<i>599</i>&nbsp;
+<b class="nc"><i>600</i>&nbsp;          String tagDotAttribute = qName + &quot;.&quot; + aName;</b>
+<b class="nc"><i>601</i>&nbsp;          GP1XOptionConverter converter = myTagDotAttribute_Converter.get(tagDotAttribute);</b>
+<b class="nc"><i>602</i>&nbsp;          if (converter != null) {</b>
+<b class="nc"><i>603</i>&nbsp;            converter.loadValue(value);</b>
+<b class="nc"><i>604</i>&nbsp;            continue;</b>
+<i>605</i>&nbsp;          }
+<b class="nc"><i>606</i>&nbsp;          if (qName.equals(&quot;task-color&quot;)) {</b>
+<b class="nc"><i>607</i>&nbsp;            if (aName.equals(&quot;red&quot;)) {</b>
+<b class="nc"><i>608</i>&nbsp;              r = new Integer(value).hashCode();</b>
+<b class="nc"><i>609</i>&nbsp;            } else if (aName.equals(&quot;green&quot;)) {</b>
+<b class="nc"><i>610</i>&nbsp;              g = new Integer(value).hashCode();</b>
+<b class="nc"><i>611</i>&nbsp;            } else if (aName.equals(&quot;blue&quot;)) {</b>
+<b class="nc"><i>612</i>&nbsp;              b = new Integer(value).hashCode();</b>
+<i>613</i>&nbsp;            }
+<b class="nc"><i>614</i>&nbsp;          } else if (qName.equals(&quot;geometry&quot;)) {</b>
+<b class="nc"><i>615</i>&nbsp;            if (aName.equals(&quot;x&quot;)) {</b>
+<b class="nc"><i>616</i>&nbsp;              x = new Integer(value).hashCode();</b>
+<b class="nc"><i>617</i>&nbsp;            } else if (aName.equals(&quot;y&quot;)) {</b>
+<b class="nc"><i>618</i>&nbsp;              y = new Integer(value).hashCode();</b>
+<b class="nc"><i>619</i>&nbsp;            } else if (aName.equals(&quot;width&quot;)) {</b>
+<b class="nc"><i>620</i>&nbsp;              width = new Integer(value).hashCode();</b>
+<b class="nc"><i>621</i>&nbsp;            } else if (aName.equals(&quot;height&quot;)) {</b>
+<b class="nc"><i>622</i>&nbsp;              height = new Integer(value).hashCode();</b>
+<b class="nc"><i>623</i>&nbsp;            } else if (&quot;maximized&quot;.equals(aName)) {</b>
+<b class="nc"><i>624</i>&nbsp;              isMaximized = Boolean.parseBoolean(value);</b>
+<i>625</i>&nbsp;            }
+<b class="nc"><i>626</i>&nbsp;          } else if (qName.equals(&quot;file&quot;)) {</b>
+<b class="nc"><i>627</i>&nbsp;            if (aName.equals(&quot;path&quot;)) {</b>
+<b class="nc"><i>628</i>&nbsp;              myDocumentManager.addToRecentDocuments(value);</b>
+<i>629</i>&nbsp;            }
+<b class="nc"><i>630</i>&nbsp;          } else if (qName.equals(&quot;automatic-launch&quot;)) {</b>
+<b class="nc"><i>631</i>&nbsp;            if (aName.equals(&quot;value&quot;)) {</b>
+<b class="nc"><i>632</i>&nbsp;              automatic = (new Boolean(value)).booleanValue();</b>
+<i>633</i>&nbsp;            }
+<b class="nc"><i>634</i>&nbsp;          } else if (qName.equals(&quot;lockdavminutes&quot;)) {</b>
+<b class="nc"><i>635</i>&nbsp;            if (aName.equals(&quot;value&quot;)) {</b>
+<b class="nc"><i>636</i>&nbsp;              lockDAVMinutes = (new Integer(value)).intValue();</b>
+<i>637</i>&nbsp;            }
+<b class="nc"><i>638</i>&nbsp;          } else if (qName.equals(&quot;xsl-dir&quot;)) {</b>
+<b class="nc"><i>639</i>&nbsp;            if (aName.equals(&quot;dir&quot;)) {</b>
+<b class="nc"><i>640</i>&nbsp;              if (new File(value).exists())</b>
+<b class="nc"><i>641</i>&nbsp;                xslDir = value;</b>
+<i>642</i>&nbsp;            }
+<b class="nc"><i>643</i>&nbsp;          } else if (qName.equals(&quot;xsl-fo&quot;)) {</b>
+<b class="nc"><i>644</i>&nbsp;            if (aName.equals(&quot;file&quot;)) {</b>
+<b class="nc"><i>645</i>&nbsp;              if (new File(value).exists())</b>
+<b class="nc"><i>646</i>&nbsp;                xslFo = value;</b>
+<i>647</i>&nbsp;            }
+<b class="nc"><i>648</i>&nbsp;          } else if (qName.equals(&quot;working-dir&quot;)) {</b>
+<b class="nc"><i>649</i>&nbsp;            if (aName.equals(&quot;dir&quot;)) {</b>
+<b class="nc"><i>650</i>&nbsp;              if (new File(value).exists())</b>
+<b class="nc"><i>651</i>&nbsp;                workingDir = value;</b>
+<i>652</i>&nbsp;            }
+<b class="nc"><i>653</i>&nbsp;          } else if (qName.equals(&quot;toolBar&quot;)) {</b>
+<b class="nc"><i>654</i>&nbsp;            if (aName.equals(&quot;position&quot;))</b>
+<b class="nc"><i>655</i>&nbsp;              toolBarPosition = (new Integer(value)).intValue();</b>
+<b class="nc"><i>656</i>&nbsp;            else if (aName.equals(&quot;icon-size&quot;))</b>
+<b class="nc"><i>657</i>&nbsp;              iconSize = value;</b>
+<b class="nc"><i>658</i>&nbsp;            else if (aName.equals(&quot;show&quot;))</b>
+<b class="nc"><i>659</i>&nbsp;              buttonsshow = (new Integer(value)).intValue();</b>
+<b class="nc"><i>660</i>&nbsp;          } else if (qName.equals(&quot;statusBar&quot;)) {</b>
+<b class="nc"><i>661</i>&nbsp;            if (aName.equals(&quot;show&quot;))</b>
+<b class="nc"><i>662</i>&nbsp;              bShowStatusBar = (new Boolean(value)).booleanValue();</b>
+<b class="nc"><i>663</i>&nbsp;          } else if (qName.equals(&quot;export&quot;)) {</b>
+<b class="nc"><i>664</i>&nbsp;            if (aName.equals(&quot;name&quot;)) {</b>
+<b class="nc"><i>665</i>&nbsp;              bExportName = (new Boolean(value)).booleanValue();</b>
+<b class="nc"><i>666</i>&nbsp;            } else if (aName.equals(&quot;complete&quot;)) {</b>
+<b class="nc"><i>667</i>&nbsp;              bExportComplete = (new Boolean(value)).booleanValue();</b>
+<b class="nc"><i>668</i>&nbsp;            } else if (aName.equals(&quot;relations&quot;)) {</b>
+<b class="nc"><i>669</i>&nbsp;              bExportRelations = (new Boolean(value)).booleanValue();</b>
+<b class="nc"><i>670</i>&nbsp;            } else if (aName.equals(&quot;border3d&quot;)) {</b>
+<b class="nc"><i>671</i>&nbsp;              bExport3DBorders = (new Boolean(value)).booleanValue();</b>
+<i>672</i>&nbsp;            }
+<b class="nc"><i>673</i>&nbsp;          } else if (qName.equals(&quot;colors&quot;)) {</b>
+<b class="nc"><i>674</i>&nbsp;            if (aName.equals(&quot;resources&quot;)) {</b>
+<b class="nc"><i>675</i>&nbsp;              Color colorR = ColorConvertion.determineColor(value);</b>
+<b class="nc"><i>676</i>&nbsp;              if (colorR != null)</b>
+<b class="nc"><i>677</i>&nbsp;                setResourceColor(colorR);</b>
+<b class="nc"><i>678</i>&nbsp;            } else if (aName.equals(&quot;resourcesOverload&quot;)) {</b>
+<b class="nc"><i>679</i>&nbsp;              Color colorR = ColorConvertion.determineColor(value);</b>
+<b class="nc"><i>680</i>&nbsp;              if (colorR != null)</b>
+<b class="nc"><i>681</i>&nbsp;                setResourceOverloadColor(colorR);</b>
+<b class="nc"><i>682</i>&nbsp;            } else if (aName.equals(&quot;resourcesUnderload&quot;)) {</b>
+<b class="nc"><i>683</i>&nbsp;              Color colorR = ColorConvertion.determineColor(value);</b>
+<b class="nc"><i>684</i>&nbsp;              if (colorR != null)</b>
+<b class="nc"><i>685</i>&nbsp;                setResourceUnderloadColor(colorR);</b>
+<b class="nc"><i>686</i>&nbsp;            } else if (aName.equals(&quot;weekEnd&quot;)) {</b>
+<b class="nc"><i>687</i>&nbsp;              Color colorR = ColorConvertion.determineColor(value);</b>
+<b class="nc"><i>688</i>&nbsp;              if (colorR != null)</b>
+<b class="nc"><i>689</i>&nbsp;                setWeekEndColor(colorR);</b>
+<b class="nc"><i>690</i>&nbsp;            } else if (aName.equals(&quot;daysOff&quot;)) {</b>
+<b class="nc"><i>691</i>&nbsp;              Color colorD = ColorConvertion.determineColor(value);</b>
+<b class="nc"><i>692</i>&nbsp;              if (colorD != null)</b>
+<b class="nc"><i>693</i>&nbsp;                setDaysOffColor(colorD);</b>
+<b class="nc"><i>694</i>&nbsp;            }</b>
+<b class="nc"><i>695</i>&nbsp;          } else if (qName.equals(&quot;csv-general&quot;)) {</b>
+<b class="nc"><i>696</i>&nbsp;            if (aName.equals(&quot;fixed&quot;))</b>
+<b class="nc"><i>697</i>&nbsp;              csvOptions.bFixedSize = (new Boolean(value)).booleanValue();</b>
+<b class="nc"><i>698</i>&nbsp;            if (aName.equals(&quot;separatedChar&quot;))</b>
+<b class="nc"><i>699</i>&nbsp;              csvOptions.sSeparatedChar = value;</b>
+<b class="nc"><i>700</i>&nbsp;            if (aName.equals(&quot;separatedTextChar&quot;))</b>
+<b class="nc"><i>701</i>&nbsp;              csvOptions.sSeparatedTextChar = value;</b>
+<b class="nc"><i>702</i>&nbsp;          } else if (qName.equals(&quot;csv-tasks&quot;)) {</b>
+<b class="nc"><i>703</i>&nbsp;            if (aName.equals(&quot;id&quot;)) {</b>
+<b class="nc"><i>704</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.ID.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>705</i>&nbsp;            } else if (aName.equals(&quot;name&quot;)) {</b>
+<b class="nc"><i>706</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.NAME.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>707</i>&nbsp;            } else if (aName.equals(&quot;start-date&quot;)) {</b>
+<b class="nc"><i>708</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.BEGIN_DATE.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>709</i>&nbsp;            } else if (aName.equals(&quot;end-date&quot;)) {</b>
+<b class="nc"><i>710</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.END_DATE.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>711</i>&nbsp;            } else if (aName.equals(&quot;percent&quot;)) {</b>
+<b class="nc"><i>712</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.COMPLETION.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>713</i>&nbsp;            } else if (aName.equals(&quot;duration&quot;)) {</b>
+<b class="nc"><i>714</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.DURATION.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>715</i>&nbsp;            } else if (aName.equals(&quot;color&quot;)) {</b>
+<b class="nc"><i>716</i>&nbsp;              csvOptions.getTaskOptions().get(TaskDefaultColumn.COLOR.getStub().getID()).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>717</i>&nbsp;            } else if (aName.equals(&quot;webLink&quot;)) {</b>
+<b class="nc"><i>718</i>&nbsp;              csvOptions.getTaskOptions().get(&quot;webLink&quot;).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>719</i>&nbsp;            } else if (aName.equals(&quot;resources&quot;)) {</b>
+<b class="nc"><i>720</i>&nbsp;              csvOptions.getTaskOptions().get(&quot;resources&quot;).setValue(Boolean.valueOf(value));</b>
+<b class="nc"><i>721</i>&nbsp;            } else if (aName.equals(&quot;notes&quot;)) {</b>
+<b class="nc"><i>722</i>&nbsp;              csvOptions.getTaskOptions().get(&quot;notes&quot;).setValue(Boolean.valueOf(value));</b>
+<i>723</i>&nbsp;            }
+<b class="nc"><i>724</i>&nbsp;          } else if (qName.equals(&quot;csv-resources&quot;)) {</b>
+<b class="nc"><i>725</i>&nbsp;            Boolean bValue = Boolean.valueOf(value);</b>
+<b class="nc"><i>726</i>&nbsp;            switch (aName) {</b>
+<i>727</i>&nbsp;              case &quot;id&quot;:
+<b class="nc"><i>728</i>&nbsp;                csvOptions.getResourceOptions().get(&quot;id&quot;).setValue(bValue);</b>
+<b class="nc"><i>729</i>&nbsp;                break;</b>
+<i>730</i>&nbsp;              case &quot;name&quot;:
+<b class="nc"><i>731</i>&nbsp;                csvOptions.getResourceOptions().get(ResourceDefaultColumn.NAME.getStub().getID()).setValue(bValue);</b>
+<b class="nc"><i>732</i>&nbsp;                break;</b>
+<i>733</i>&nbsp;              case &quot;mail&quot;:
+<b class="nc"><i>734</i>&nbsp;                csvOptions.getResourceOptions().get(ResourceDefaultColumn.EMAIL.getStub().getID()).setValue(bValue);</b>
+<b class="nc"><i>735</i>&nbsp;                break;</b>
+<i>736</i>&nbsp;              case &quot;phone&quot;:
+<b class="nc"><i>737</i>&nbsp;                csvOptions.getResourceOptions().get(ResourceDefaultColumn.PHONE.getStub().getID()).setValue(bValue);</b>
+<b class="nc"><i>738</i>&nbsp;                break;</b>
+<i>739</i>&nbsp;              case &quot;role&quot;:
+<b class="nc"><i>740</i>&nbsp;                csvOptions.getResourceOptions().get(ResourceDefaultColumn.ROLE.getStub().getID()).setValue(bValue);</b>
+<i>741</i>&nbsp;                break;
+<i>742</i>&nbsp;            }
+<i>743</i>&nbsp;          }
+<i>744</i>&nbsp;        }
+<i>745</i>&nbsp;      }
+<i>746</i>&nbsp;    }
+<i>747</i>&nbsp;
+<i>748</i>&nbsp;    @Override
+<i>749</i>&nbsp;    public void endElement(String uri, String localName, String name) throws SAXException {
+<b class="nc"><i>750</i>&nbsp;      if (myPluginOptionsHandler != null) {</b>
+<b class="nc"><i>751</i>&nbsp;        myPluginOptionsHandler.endElement(uri, localName, name);</b>
+<i>752</i>&nbsp;      }
+<b class="nc"><i>753</i>&nbsp;      if (&quot;configuration&quot;.equals(name) || &quot;instance&quot;.equals(name)) {</b>
+<b class="nc"><i>754</i>&nbsp;        myPluginOptionsHandler = null;</b>
+<i>755</i>&nbsp;      }
+<b class="nc"><i>756</i>&nbsp;      if (myContextOption != null) {</b>
+<b class="nc"><i>757</i>&nbsp;        myContextOption.loadPersistentValue(myCdataBuffer.toString());</b>
+<b class="nc"><i>758</i>&nbsp;        myContextOption = null;</b>
+<b class="nc"><i>759</i>&nbsp;        myCdataBuffer = new StringBuilder();</b>
+<i>760</i>&nbsp;      }
+<b class="nc"><i>761</i>&nbsp;      if (&quot;view&quot;.equals(name)) {</b>
+<b class="nc"><i>762</i>&nbsp;        myContextViewOptions = null;</b>
+<i>763</i>&nbsp;      }
+<i>764</i>&nbsp;    }
+<i>765</i>&nbsp;
+<i>766</i>&nbsp;    @Override
+<i>767</i>&nbsp;    public void characters(char[] ch, int start, int length) throws SAXException {
+<b class="nc"><i>768</i>&nbsp;      if (myContextOption != null) {</b>
+<b class="nc"><i>769</i>&nbsp;        myCdataBuffer.append(ch, start, length);</b>
+<i>770</i>&nbsp;      }
+<i>771</i>&nbsp;    }
+<i>772</i>&nbsp;  }
+<i>773</i>&nbsp;
+<i>774</i>&nbsp;  /**
+<i>775</i>&nbsp;   * @return the color for resources.
+<i>776</i>&nbsp;   */
+<i>777</i>&nbsp;  public Color getResourceColor() {
+<b class="nc"><i>778</i>&nbsp;    return getUIConfiguration().getResourceColor();</b>
+<i>779</i>&nbsp;  }
+<i>780</i>&nbsp;
+<i>781</i>&nbsp;  /**
+<i>782</i>&nbsp;   * @return the lock DAV Minutes.
+<i>783</i>&nbsp;   */
+<i>784</i>&nbsp;  public int getLockDAVMinutes() {
+<b class="nc"><i>785</i>&nbsp;    return lockDAVMinutes;</b>
+<i>786</i>&nbsp;  }
+<i>787</i>&nbsp;
+<i>788</i>&nbsp;  /**
+<i>789</i>&nbsp;   * @return the undo number
+<i>790</i>&nbsp;   */
+<i>791</i>&nbsp;  public int getUndoNumber() {
+<b class="nc"><i>792</i>&nbsp;    return undoNumber;</b>
+<i>793</i>&nbsp;  }
+<i>794</i>&nbsp;
+<i>795</i>&nbsp;  /**
+<i>796</i>&nbsp;   * @return the working directory.
+<i>797</i>&nbsp;   */
+<i>798</i>&nbsp;  public String getWorkingDir() {
+<b class="nc"><i>799</i>&nbsp;    return workingDir;</b>
+<i>800</i>&nbsp;  }
+<i>801</i>&nbsp;
+<i>802</i>&nbsp;  /**
+<i>803</i>&nbsp;   * @return the xsl directory.
+<i>804</i>&nbsp;   */
+<i>805</i>&nbsp;  public String getXslDir() {
+<b class="nc"><i>806</i>&nbsp;    return xslDir;</b>
+<i>807</i>&nbsp;  }
+<i>808</i>&nbsp;
+<i>809</i>&nbsp;  /**
+<i>810</i>&nbsp;   * @return the xsl-fo file.
+<i>811</i>&nbsp;   */
+<i>812</i>&nbsp;  public String getXslFo() {
+<b class="nc"><i>813</i>&nbsp;    return (new File(xslFo).exists()) ? xslFo : getClass().getResource(&quot;/xslfo/ganttproject.xsl&quot;).toString();</b>
+<i>814</i>&nbsp;  }
+<i>815</i>&nbsp;
+<i>816</i>&nbsp;  /**
+<i>817</i>&nbsp;   * @return automatic launch properties box when create a new task.
+<i>818</i>&nbsp;   */
+<i>819</i>&nbsp;  public boolean getAutomatic() {
+<b class="nc"><i>820</i>&nbsp;    return automatic;</b>
+<i>821</i>&nbsp;  }
+<i>822</i>&nbsp;
+<i>823</i>&nbsp;  /**
+<i>824</i>&nbsp;   * @return true is options are loaded from the options file.
+<i>825</i>&nbsp;   */
+<i>826</i>&nbsp;  public boolean isLoaded() {
+<b class="nc"><i>827</i>&nbsp;    return isloaded;</b>
+<i>828</i>&nbsp;  }
+<i>829</i>&nbsp;
+<i>830</i>&nbsp;  /**
+<i>831</i>&nbsp;   * @return true if show the status bar.
+<i>832</i>&nbsp;   */
+<i>833</i>&nbsp;  public boolean getShowStatusBar() {
+<b class="nc"><i>834</i>&nbsp;    return bShowStatusBar;</b>
+<i>835</i>&nbsp;  }
+<i>836</i>&nbsp;
+<i>837</i>&nbsp;  /**
+<i>838</i>&nbsp;   * set show the status bar.
+<i>839</i>&nbsp;   */
+<i>840</i>&nbsp;  public void setShowStatusBar(boolean showStatusBar) {
+<b class="nc"><i>841</i>&nbsp;    bShowStatusBar = showStatusBar;</b>
+<i>842</i>&nbsp;  }
+<i>843</i>&nbsp;
+<i>844</i>&nbsp;  /**
+<i>845</i>&nbsp;   * @return the top left x position of the window.
+<i>846</i>&nbsp;   */
+<i>847</i>&nbsp;  public int getX() {
+<b class="nc"><i>848</i>&nbsp;    return x;</b>
+<i>849</i>&nbsp;  }
+<i>850</i>&nbsp;
+<i>851</i>&nbsp;  /**
+<i>852</i>&nbsp;   * @return the top left y position of the window.
+<i>853</i>&nbsp;   */
+<i>854</i>&nbsp;  public int getY() {
+<b class="nc"><i>855</i>&nbsp;    return y;</b>
+<i>856</i>&nbsp;  }
+<i>857</i>&nbsp;
+<i>858</i>&nbsp;  /**
+<i>859</i>&nbsp;   * @return the width of the window.
+<i>860</i>&nbsp;   */
+<i>861</i>&nbsp;  public int getWidth() {
+<b class="nc"><i>862</i>&nbsp;    return width;</b>
+<i>863</i>&nbsp;  }
+<i>864</i>&nbsp;
+<i>865</i>&nbsp;  /**
+<i>866</i>&nbsp;   * @return the height of the window.
+<i>867</i>&nbsp;   */
+<i>868</i>&nbsp;  public int getHeight() {
+<b class="nc"><i>869</i>&nbsp;    return height;</b>
+<i>870</i>&nbsp;  }
+<i>871</i>&nbsp;
+<i>872</i>&nbsp;  public boolean isMaximized() {
+<b class="nc"><i>873</i>&nbsp;    return this.isMaximized;</b>
+<i>874</i>&nbsp;  }
+<i>875</i>&nbsp;
+<i>876</i>&nbsp;  /**
+<i>877</i>&nbsp;   * @return the csvOptions.
+<i>878</i>&nbsp;   */
+<i>879</i>&nbsp;  public CSVOptions getCSVOptions() {
+<b class="nc"><i>880</i>&nbsp;    return csvOptions;</b>
+<i>881</i>&nbsp;  }
+<i>882</i>&nbsp;
+<i>883</i>&nbsp;  /**
+<i>884</i>&nbsp;   * @return the toolbar position.
+<i>885</i>&nbsp;   */
+<i>886</i>&nbsp;  public int getToolBarPosition() {
+<b class="nc"><i>887</i>&nbsp;    return toolBarPosition;</b>
+<i>888</i>&nbsp;  }
+<i>889</i>&nbsp;
+<i>890</i>&nbsp;  /**
+<i>891</i>&nbsp;   * @return the size of the icons on the toolbar.
+<i>892</i>&nbsp;   */
+<i>893</i>&nbsp;  public String getIconSize() {
+<b class="nc"><i>894</i>&nbsp;    return iconSize;</b>
+<i>895</i>&nbsp;  }
+<i>896</i>&nbsp;
+<i>897</i>&nbsp;  /**
+<i>898</i>&nbsp;   * @return true if you want to export the name of the task on the exported
+<i>899</i>&nbsp;   * chart.
+<i>900</i>&nbsp;   */
+<i>901</i>&nbsp;  public boolean getExportName() {
+<b class="nc"><i>902</i>&nbsp;    return bExportName;</b>
+<i>903</i>&nbsp;  }
+<i>904</i>&nbsp;
+<i>905</i>&nbsp;  /**
+<i>906</i>&nbsp;   * @return true if you want to export the complete percent of the task on the
+<i>907</i>&nbsp;   * exported chart.
+<i>908</i>&nbsp;   */
+<i>909</i>&nbsp;  public boolean getExportComplete() {
+<b class="nc"><i>910</i>&nbsp;    return bExportComplete;</b>
+<i>911</i>&nbsp;  }
+<i>912</i>&nbsp;
+<i>913</i>&nbsp;  /**
+<i>914</i>&nbsp;   * @return true if you want to export the relations of the task on the
+<i>915</i>&nbsp;   * exported chart.
+<i>916</i>&nbsp;   */
+<i>917</i>&nbsp;  public boolean getExportRelations() {
+<b class="nc"><i>918</i>&nbsp;    return bExportRelations;</b>
+<i>919</i>&nbsp;  }
+<i>920</i>&nbsp;
+<i>921</i>&nbsp;  /**
+<i>922</i>&nbsp;   * @return the 3d borders export.
+<i>923</i>&nbsp;   */
+<i>924</i>&nbsp;  public boolean getExport3dBorders() {
+<b class="nc"><i>925</i>&nbsp;    return bExport3DBorders;</b>
+<i>926</i>&nbsp;  }
+<i>927</i>&nbsp;
+<i>928</i>&nbsp;  public GanttExportSettings getExportSettings() {
+<b class="nc"><i>929</i>&nbsp;    return new GanttExportSettings(bExportName, bExportComplete, bExportRelations, bExport3DBorders);</b>
+<i>930</i>&nbsp;  }
+<i>931</i>&nbsp;
+<i>932</i>&nbsp;  public void setExportName(boolean exportName) {
+<b class="nc"><i>933</i>&nbsp;    bExportName = exportName;</b>
+<i>934</i>&nbsp;  }
+<i>935</i>&nbsp;
+<i>936</i>&nbsp;  public void setExportComplete(boolean exportComplete) {
+<b class="nc"><i>937</i>&nbsp;    bExportComplete = exportComplete;</b>
+<i>938</i>&nbsp;  }
+<i>939</i>&nbsp;
+<i>940</i>&nbsp;  public void setExportRelations(boolean eportRelations) {
+<b class="nc"><i>941</i>&nbsp;    bExportRelations = eportRelations;</b>
+<i>942</i>&nbsp;  }
+<i>943</i>&nbsp;
+<i>944</i>&nbsp;  public void setExport3dBorders(boolean borders3d) {
+<b class="nc"><i>945</i>&nbsp;    bExport3DBorders = borders3d;</b>
+<i>946</i>&nbsp;  }
+<i>947</i>&nbsp;
+<i>948</i>&nbsp;  /**
+<i>949</i>&nbsp;   * @return the button show attribute must be GanttOptions.ICONS or
+<i>950</i>&nbsp;   * GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
+<i>951</i>&nbsp;   */
+<i>952</i>&nbsp;  public int getButtonShow() {
+<b class="nc"><i>953</i>&nbsp;    return buttonsshow;</b>
+<i>954</i>&nbsp;  }
+<i>955</i>&nbsp;
+<i>956</i>&nbsp;  /**
+<i>957</i>&nbsp;   * set a new button show value must be GanttOptions.ICONS or GanttOptions.TEXT
+<i>958</i>&nbsp;   * ir GanttOptions.ICONS_TEXT
+<i>959</i>&nbsp;   */
+<i>960</i>&nbsp;  public void setButtonShow(int buttonShow) {
+<b class="nc"><i>961</i>&nbsp;    if (buttonShow != GanttOptions.ICONS &amp;&amp; buttonShow != GanttOptions.TEXT &amp;&amp; buttonShow != GanttOptions.ICONS_TEXT)</b>
+<b class="nc"><i>962</i>&nbsp;      buttonShow = GanttOptions.ICONS;</b>
+<b class="nc"><i>963</i>&nbsp;    buttonsshow = buttonShow;</b>
+<i>964</i>&nbsp;  }
+<i>965</i>&nbsp;
+<i>966</i>&nbsp;  /**
+<i>967</i>&nbsp;   * Set a new icon size. Must be 16, 24 (or 32 exceptionnally)
+<i>968</i>&nbsp;   */
+<i>969</i>&nbsp;  public void setIconSize(String sIconSize) {
+<b class="nc"><i>970</i>&nbsp;    iconSize = sIconSize;</b>
+<i>971</i>&nbsp;  }
+<i>972</i>&nbsp;
+<i>973</i>&nbsp;  /**
+<i>974</i>&nbsp;   * set the toolbar position.
+<i>975</i>&nbsp;   */
+<i>976</i>&nbsp;  public void setToolBarPosition(int iToolBarPosition) {
+<b class="nc"><i>977</i>&nbsp;    toolBarPosition = iToolBarPosition;</b>
+<i>978</i>&nbsp;  }
+<i>979</i>&nbsp;
+<i>980</i>&nbsp;  /**
+<i>981</i>&nbsp;   * Set new window position (top left corner)
+<i>982</i>&nbsp;   */
+<i>983</i>&nbsp;  public void setWindowPosition(int x, int y) {
+<b class="nc"><i>984</i>&nbsp;    this.x = x;</b>
+<b class="nc"><i>985</i>&nbsp;    this.y = y;</b>
+<i>986</i>&nbsp;  }
+<i>987</i>&nbsp;
+<i>988</i>&nbsp;  /**
+<i>989</i>&nbsp;   * Set new window position (top left corner)
+<i>990</i>&nbsp;   */
+<i>991</i>&nbsp;  public void setWindowSize(int width, int height, boolean isMaximized) {
+<b class="nc"><i>992</i>&nbsp;    this.width = width;</b>
+<b class="nc"><i>993</i>&nbsp;    this.height = height;</b>
+<b class="nc"><i>994</i>&nbsp;    this.isMaximized = isMaximized;</b>
+<i>995</i>&nbsp;  }
+<i>996</i>&nbsp;
+<i>997</i>&nbsp;  /**
+<i>998</i>&nbsp;   * Set new working directory value.
+<i>999</i>&nbsp;   */
+<i>1000</i>&nbsp;  public void setWorkingDirectory(String workingDirectory) {
+<b class="nc"><i>1001</i>&nbsp;    workingDir = workingDirectory;</b>
+<i>1002</i>&nbsp;  }
+<i>1003</i>&nbsp;
+<i>1004</i>&nbsp;  /**
+<i>1005</i>&nbsp;   * set a new value for web dav locking.
+<i>1006</i>&nbsp;   */
+<i>1007</i>&nbsp;  public void setLockDAVMinutes(int minuteslock) {
+<b class="nc"><i>1008</i>&nbsp;    lockDAVMinutes = minuteslock;</b>
+<i>1009</i>&nbsp;  }
+<i>1010</i>&nbsp;
+<i>1011</i>&nbsp;  /**
+<i>1012</i>&nbsp;   * set a new value for undo number.
+<i>1013</i>&nbsp;   */
+<i>1014</i>&nbsp;  public void setUndoNumber(int number) {
+<b class="nc"><i>1015</i>&nbsp;    undoNumber = number;</b>
+<i>1016</i>&nbsp;  }
+<i>1017</i>&nbsp;
+<i>1018</i>&nbsp;  /**
+<i>1019</i>&nbsp;   * set a new default resources color.
+<i>1020</i>&nbsp;   */
+<i>1021</i>&nbsp;  public void setResourceColor(Color color) {
+<b class="nc"><i>1022</i>&nbsp;    getUIConfiguration().setResourceColor(color);</b>
+<i>1023</i>&nbsp;  }
+<i>1024</i>&nbsp;
+<i>1025</i>&nbsp;  /**
+<i>1026</i>&nbsp;   * set a new resources overload tasks color.
+<i>1027</i>&nbsp;   */
+<i>1028</i>&nbsp;  public void setResourceOverloadColor(Color color) {
+<b class="nc"><i>1029</i>&nbsp;    getUIConfiguration().setResourceOverloadColor(color);</b>
+<i>1030</i>&nbsp;  }
+<i>1031</i>&nbsp;
+<i>1032</i>&nbsp;  /**
+<i>1033</i>&nbsp;   * set a new resources underload tasks color.
+<i>1034</i>&nbsp;   */
+<i>1035</i>&nbsp;  public void setResourceUnderloadColor(Color color) {
+<b class="nc"><i>1036</i>&nbsp;    getUIConfiguration().setResourceUnderloadColor(color);</b>
+<i>1037</i>&nbsp;  }
+<i>1038</i>&nbsp;
+<i>1039</i>&nbsp;  /**
+<i>1040</i>&nbsp;   * set a new previous tasks color.
+<i>1041</i>&nbsp;   */
+<i>1042</i>&nbsp;  public void setPreviousTaskColor(Color color) {
+<b class="nc"><i>1043</i>&nbsp;    getUIConfiguration().setPreviousTaskColor(color);</b>
+<i>1044</i>&nbsp;  }
+<i>1045</i>&nbsp;
+<i>1046</i>&nbsp;  /**
+<i>1047</i>&nbsp;   * set a new earlier previous tasks color.
+<i>1048</i>&nbsp;   */
+<i>1049</i>&nbsp;  public void setEarlierPreviousTaskColor(Color color) {
+<b class="nc"><i>1050</i>&nbsp;    getUIConfiguration().setEarlierPreviousTaskColor(color);</b>
+<i>1051</i>&nbsp;  }
+<i>1052</i>&nbsp;
+<i>1053</i>&nbsp;  /**
+<i>1054</i>&nbsp;   * set a new later previous tasks color.
+<i>1055</i>&nbsp;   */
+<i>1056</i>&nbsp;  public void setLaterPreviousTaskColor(Color color) {
+<b class="nc"><i>1057</i>&nbsp;    getUIConfiguration().setLaterPreviousTaskColor(color);</b>
+<i>1058</i>&nbsp;  }
+<i>1059</i>&nbsp;
+<i>1060</i>&nbsp;  /**
+<i>1061</i>&nbsp;   * Set a new week end color.
+<i>1062</i>&nbsp;   */
+<i>1063</i>&nbsp;  public void setWeekEndColor(Color color) {
+<b class="nc"><i>1064</i>&nbsp;    getUIConfiguration().setWeekEndColor(color);</b>
+<i>1065</i>&nbsp;  }
+<i>1066</i>&nbsp;
+<i>1067</i>&nbsp;  /**
+<i>1068</i>&nbsp;   * Set a new week end color.
+<i>1069</i>&nbsp;   */
+<i>1070</i>&nbsp;  public void setDaysOffColor(Color color) {
+<b class="nc"><i>1071</i>&nbsp;    getUIConfiguration().setDayOffColor(color);</b>
+<i>1072</i>&nbsp;  }
+<i>1073</i>&nbsp;
+<i>1074</i>&nbsp;  /**
+<i>1075</i>&nbsp;   * Set a new xsl directory for html export.
+<i>1076</i>&nbsp;   */
+<i>1077</i>&nbsp;  public void setXslDir(String xslDir) {
+<b class="nc"><i>1078</i>&nbsp;    this.xslDir = xslDir;</b>
+<i>1079</i>&nbsp;  }
+<i>1080</i>&nbsp;
+<i>1081</i>&nbsp;  /**
+<i>1082</i>&nbsp;   * Set a new xsl-fo file for pdf export.
+<i>1083</i>&nbsp;   */
+<i>1084</i>&nbsp;  public void setXslFo(String xslFo) {
+<b class="nc"><i>1085</i>&nbsp;    this.xslFo = xslFo;</b>
+<i>1086</i>&nbsp;  }
+<i>1087</i>&nbsp;
+<i>1088</i>&nbsp;  public void setUIConfiguration(UIConfiguration uiConfiguration) {
+<b class="nc"><i>1089</i>&nbsp;    this.myUIConfig = uiConfiguration;</b>
+<i>1090</i>&nbsp;  }
+<i>1091</i>&nbsp;
+<i>1092</i>&nbsp;  /**
+<i>1093</i>&nbsp;   * set new automatic launch value.
+<i>1094</i>&nbsp;   */
+<i>1095</i>&nbsp;  public void setAutomatic(boolean automatic) {
+<b class="nc"><i>1096</i>&nbsp;    this.automatic = automatic;</b>
+<i>1097</i>&nbsp;  }
+<i>1098</i>&nbsp;
+<i>1099</i>&nbsp;  public void setRedline(boolean isOn) {
+<b class="nc"><i>1100</i>&nbsp;    this.redline = isOn;</b>
+<b class="nc"><i>1101</i>&nbsp;    getUIConfiguration().setRedlineOn(isOn);</b>
+<i>1102</i>&nbsp;  }
+<i>1103</i>&nbsp;
+<i>1104</i>&nbsp;  public String getFTPDirectory() {
+<b class="nc"><i>1105</i>&nbsp;    return FTPDirectory;</b>
+<i>1106</i>&nbsp;  }
+<i>1107</i>&nbsp;
+<i>1108</i>&nbsp;  public String getFTPPwd() {
+<b class="nc"><i>1109</i>&nbsp;    return FTPPwd;</b>
+<i>1110</i>&nbsp;  }
+<i>1111</i>&nbsp;
+<i>1112</i>&nbsp;  public String getFTPUrl() {
+<b class="nc"><i>1113</i>&nbsp;    return FTPUrl;</b>
+<i>1114</i>&nbsp;  }
+<i>1115</i>&nbsp;
+<i>1116</i>&nbsp;  public String getFTPUser() {
+<b class="nc"><i>1117</i>&nbsp;    return FTPUser;</b>
+<i>1118</i>&nbsp;  }
+<i>1119</i>&nbsp;
+<i>1120</i>&nbsp;  public void setFTPDirectory(String pvString) {
+<b class="nc"><i>1121</i>&nbsp;    FTPDirectory = pvString;</b>
+<i>1122</i>&nbsp;  }
+<i>1123</i>&nbsp;
+<i>1124</i>&nbsp;  public void setFTPPwd(String pvString) {
+<b class="nc"><i>1125</i>&nbsp;    FTPPwd = pvString;</b>
+<i>1126</i>&nbsp;  }
+<i>1127</i>&nbsp;
+<i>1128</i>&nbsp;  public void setFTPUrl(String pvString) {
+<b class="nc"><i>1129</i>&nbsp;    FTPUrl = pvString;</b>
+<i>1130</i>&nbsp;  }
+<i>1131</i>&nbsp;
+<i>1132</i>&nbsp;  public void setFTPUser(String pvString) {
+<b class="nc"><i>1133</i>&nbsp;    FTPUser = pvString;</b>
+<i>1134</i>&nbsp;  }
+<i>1135</i>&nbsp;
+<i>1136</i>&nbsp;  public void addOptionGroups(GPOptionGroup... optionGroups) {
+<b class="nc"><i>1137</i>&nbsp;    for (GPOptionGroup group : optionGroups) {</b>
+<b class="nc"><i>1138</i>&nbsp;      addOptions(group);</b>
+<i>1139</i>&nbsp;    }
+<i>1140</i>&nbsp;  }
+<i>1141</i>&nbsp;
+<i>1142</i>&nbsp;  public void addOptionGroups(Iterable&lt;GPOptionGroup&gt; optionGroups) {
+<b class="nc"><i>1143</i>&nbsp;    for (GPOptionGroup group : optionGroups) {</b>
+<b class="nc"><i>1144</i>&nbsp;      addOptions(group);</b>
+<b class="nc"><i>1145</i>&nbsp;    }</b>
+<i>1146</i>&nbsp;  }
+<i>1147</i>&nbsp;
+<i>1148</i>&nbsp;  public void addOptions(GPOptionGroup optionGroup) {
+<b class="nc"><i>1149</i>&nbsp;    GPOption[] options = optionGroup.getOptions();</b>
+<b class="nc"><i>1150</i>&nbsp;    for (int i = 0; i &lt; options.length; i++) {</b>
+<b class="nc"><i>1151</i>&nbsp;      GPOption nextOption = options[i];</b>
+<b class="nc"><i>1152</i>&nbsp;      nextOption.addChangeValueListener(myOnOptionValueChange);</b>
+<b class="nc"><i>1153</i>&nbsp;      myGPOptions.put(optionGroup.getID() + &quot;.&quot; + nextOption.getID(), nextOption);</b>
+<b class="nc"><i>1154</i>&nbsp;      if (nextOption instanceof GP1XOptionConverter) {</b>
+<b class="nc"><i>1155</i>&nbsp;        GP1XOptionConverter nextConverter = (GP1XOptionConverter) nextOption;</b>
+<b class="nc"><i>1156</i>&nbsp;        myTagDotAttribute_Converter.put(nextConverter.getTagName() + &quot;.&quot; + nextConverter.getAttributeName(),</b>
+<i>1157</i>&nbsp;            nextConverter);
+<i>1158</i>&nbsp;      }
+<i>1159</i>&nbsp;    }
+<i>1160</i>&nbsp;  }
+<i>1161</i>&nbsp;
+<i>1162</i>&nbsp;  public String getVersion() {
+<b class="nc"><i>1163</i>&nbsp;    return myVersion;</b>
+<i>1164</i>&nbsp;  }
+<i>1165</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

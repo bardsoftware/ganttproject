@@ -1,0 +1,159 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ShowChannelAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ShowChannelAction (net.sourceforge.ganttproject.action)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShowChannelAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.event.ActionEvent;
+<i>22</i>&nbsp;import java.text.MessageFormat;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationChannel;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationItem;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationManager;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;public class ShowChannelAction extends GPAction implements NotificationChannel.Listener {
+<i>29</i>&nbsp;  private final NotificationChannel myChannel;
+<i>30</i>&nbsp;  private final NotificationManager myManager;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  public ShowChannelAction(NotificationManager manager, NotificationChannel channel) {
+<b class="nc"><i>33</i>&nbsp;    super(&quot;notification.channel.&quot; + channel.toString().toLowerCase() + &quot;.label&quot;);</b>
+<b class="nc"><i>34</i>&nbsp;    myChannel = channel;</b>
+<b class="nc"><i>35</i>&nbsp;    myManager = manager;</b>
+<b class="nc"><i>36</i>&nbsp;    myChannel.addListener(this);</b>
+<b class="nc"><i>37</i>&nbsp;    updateState();</b>
+<i>38</i>&nbsp;  }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>42</i>&nbsp;    myManager.showNotification(myChannel);</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  @Override
+<i>46</i>&nbsp;  protected String getLocalizedName() {
+<b class="nc"><i>47</i>&nbsp;    int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();</b>
+<b class="nc"><i>48</i>&nbsp;    String channelName = super.getLocalizedName();</b>
+<b class="nc"><i>49</i>&nbsp;    return unreadCount == 0 ? MessageFormat.format(getI18n(&quot;notification.channel.clearformat&quot;), channelName)</b>
+<b class="nc"><i>50</i>&nbsp;        : MessageFormat.format(getI18n(&quot;notification.channel.unreadformat&quot;), channelName, unreadCount);</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private void updateState() {
+<b class="nc"><i>54</i>&nbsp;    if (myChannel.isEmpty() &amp;&amp; myChannel.getDefaultNotification() == null) {</b>
+<b class="nc"><i>55</i>&nbsp;      setEnabled(false);</b>
+<i>56</i>&nbsp;    } else {
+<b class="nc"><i>57</i>&nbsp;      setEnabled(true);</b>
+<i>58</i>&nbsp;    }
+<b class="nc"><i>59</i>&nbsp;    updateName();</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  @Override
+<i>63</i>&nbsp;  public void notificationAdded() {
+<b class="nc"><i>64</i>&nbsp;    updateState();</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public void notificationRead(NotificationItem item) {
+<b class="nc"><i>69</i>&nbsp;    updateState();</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  public void channelCleared() {
+<b class="nc"><i>74</i>&nbsp;    updateState();</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

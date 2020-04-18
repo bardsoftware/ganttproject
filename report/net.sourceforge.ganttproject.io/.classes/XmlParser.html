@@ -1,0 +1,215 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: XmlParser</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: XmlParser (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">XmlParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2014 BarD Software s.r.o
+<i>3</i>&nbsp;Copyright 2003-2013 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>8</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>9</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>10</i>&nbsp; (at your option) any later version.
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>13</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>14</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>15</i>&nbsp;GNU General Public License for more details.
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>18</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>19</i>&nbsp;*/
+<i>20</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.parser.FileFormatException;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.parser.ParsingListener;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.parser.TagHandler;
+<i>26</i>&nbsp;import org.xml.sax.Attributes;
+<i>27</i>&nbsp;import org.xml.sax.SAXException;
+<i>28</i>&nbsp;import org.xml.sax.XMLReader;
+<i>29</i>&nbsp;import org.xml.sax.ext.DefaultHandler2;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import javax.xml.parsers.ParserConfigurationException;
+<i>32</i>&nbsp;import javax.xml.parsers.SAXParser;
+<i>33</i>&nbsp;import javax.xml.parsers.SAXParserFactory;
+<i>34</i>&nbsp;import java.io.IOException;
+<i>35</i>&nbsp;import java.io.InputStream;
+<i>36</i>&nbsp;import java.util.List;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;/**
+<i>39</i>&nbsp; * SAX parser which delegates parsing semantics to TagHandler instances.
+<i>40</i>&nbsp; *
+<i>41</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>42</i>&nbsp; */
+<i>43</i>&nbsp;public class XmlParser extends DefaultHandler2 {
+<i>44</i>&nbsp;  private final List&lt;TagHandler&gt; myTagHandlers;
+<i>45</i>&nbsp;  private final List&lt;ParsingListener&gt; myListeners;
+<i>46</i>&nbsp;  private boolean myCdataStarted;
+<i>47</i>&nbsp;
+<b class="nc"><i>48</i>&nbsp;  public XmlParser(List&lt;TagHandler&gt; tagHandlers, List&lt;ParsingListener&gt; listeners) {</b>
+<b class="nc"><i>49</i>&nbsp;    myTagHandlers = tagHandlers;</b>
+<b class="nc"><i>50</i>&nbsp;    myListeners = listeners;</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  @Override
+<i>54</i>&nbsp;  public void startDocument() throws SAXException {
+<b class="nc"><i>55</i>&nbsp;    super.startDocument();</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  @Override
+<i>59</i>&nbsp;  public void endDocument() {
+<b class="nc"><i>60</i>&nbsp;    for (ParsingListener l : myListeners) {</b>
+<b class="nc"><i>61</i>&nbsp;      l.parsingFinished();</b>
+<b class="nc"><i>62</i>&nbsp;    }</b>
+<i>63</i>&nbsp;  }
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  @Override
+<i>66</i>&nbsp;  public void startElement(String namespaceURI, String sName, // simple
+<i>67</i>&nbsp;      // name
+<i>68</i>&nbsp;      String qName, // qualified name
+<i>69</i>&nbsp;      Attributes attrs) {
+<b class="nc"><i>70</i>&nbsp;    for (TagHandler next : myTagHandlers) {</b>
+<i>71</i>&nbsp;      try {
+<b class="nc"><i>72</i>&nbsp;        next.startElement(namespaceURI, sName, qName, attrs);</b>
+<b class="nc"><i>73</i>&nbsp;      } catch (FileFormatException e) {</b>
+<b class="nc"><i>74</i>&nbsp;        System.err.println(e.getMessage());</b>
+<b class="nc"><i>75</i>&nbsp;      }</b>
+<b class="nc"><i>76</i>&nbsp;    }</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  @Override
+<i>80</i>&nbsp;  public void endElement(String namespaceURI, String sName, String qName) {
+<b class="nc"><i>81</i>&nbsp;    for (TagHandler next : myTagHandlers) {</b>
+<b class="nc"><i>82</i>&nbsp;      next.endElement(namespaceURI, sName, qName);</b>
+<b class="nc"><i>83</i>&nbsp;    }</b>
+<i>84</i>&nbsp;  }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  @Override
+<i>87</i>&nbsp;  public void startCDATA() {
+<b class="nc"><i>88</i>&nbsp;    myCdataStarted = true;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  @Override
+<i>92</i>&nbsp;  public void endCDATA() {
+<b class="nc"><i>93</i>&nbsp;    myCdataStarted = false;</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  @Override
+<i>97</i>&nbsp;  public void characters(char buf[], int offset, int len) {
+<b class="nc"><i>98</i>&nbsp;    if (!myCdataStarted) {</b>
+<i>99</i>&nbsp;      return;
+<i>100</i>&nbsp;    }
+<b class="nc"><i>101</i>&nbsp;    String s = new String(buf, offset, len);</b>
+<b class="nc"><i>102</i>&nbsp;    for (TagHandler tagHandler : myTagHandlers) {</b>
+<b class="nc"><i>103</i>&nbsp;      if (tagHandler.hasCdata()) {</b>
+<b class="nc"><i>104</i>&nbsp;        tagHandler.appendCdata(s);</b>
+<i>105</i>&nbsp;      }
+<b class="nc"><i>106</i>&nbsp;    }</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  public void parse(InputStream inStream) throws IOException {
+<i>110</i>&nbsp;    // Use the default (non-validating) parser
+<b class="nc"><i>111</i>&nbsp;    SAXParserFactory factory = SAXParserFactory.newInstance();</b>
+<i>112</i>&nbsp;    try {
+<i>113</i>&nbsp;      // Parse the input
+<i>114</i>&nbsp;      SAXParser saxParser;
+<b class="nc"><i>115</i>&nbsp;      saxParser = factory.newSAXParser();</b>
+<b class="nc"><i>116</i>&nbsp;      XMLReader xmlReader = saxParser.getXMLReader();</b>
+<b class="nc"><i>117</i>&nbsp;      xmlReader.setProperty(&quot;http://xml.org/sax/properties/lexical-handler&quot;,</b>
+<i>118</i>&nbsp;          this);
+<b class="nc"><i>119</i>&nbsp;      saxParser.parse(inStream, this);</b>
+<b class="nc"><i>120</i>&nbsp;    } catch (ParserConfigurationException | SAXException e) {</b>
+<b class="nc"><i>121</i>&nbsp;      if (!GPLogger.log(e)) {</b>
+<b class="nc"><i>122</i>&nbsp;        e.printStackTrace(System.err);</b>
+<i>123</i>&nbsp;      }
+<b class="nc"><i>124</i>&nbsp;      throw new IOException(e.getMessage());</b>
+<b class="nc"><i>125</i>&nbsp;    } catch (RuntimeException e) {</b>
+<b class="nc"><i>126</i>&nbsp;      if (!GPLogger.logToLogger(e)) {</b>
+<b class="nc"><i>127</i>&nbsp;        e.printStackTrace(System.err);</b>
+<i>128</i>&nbsp;      }
+<b class="nc"><i>129</i>&nbsp;      throw new IOException(e.getMessage());</b>
+<b class="nc"><i>130</i>&nbsp;    }</b>
+<i>131</i>&nbsp;  }
+<i>132</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

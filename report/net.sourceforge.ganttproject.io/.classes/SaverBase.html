@@ -1,0 +1,180 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: SaverBase</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: SaverBase (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SaverBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import org.xml.sax.SAXException;
+<i>22</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import javax.xml.transform.OutputKeys;
+<i>25</i>&nbsp;import javax.xml.transform.Result;
+<i>26</i>&nbsp;import javax.xml.transform.Transformer;
+<i>27</i>&nbsp;import javax.xml.transform.TransformerConfigurationException;
+<i>28</i>&nbsp;import javax.xml.transform.sax.SAXTransformerFactory;
+<i>29</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;public class SaverBase {</b>
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  protected TransformerHandler createHandler(Result result) throws TransformerConfigurationException {
+<b class="nc"><i>34</i>&nbsp;    SAXTransformerFactory factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();</b>
+<b class="nc"><i>35</i>&nbsp;    TransformerHandler handler = factory.newTransformerHandler();</b>
+<b class="nc"><i>36</i>&nbsp;    Transformer serializer = handler.getTransformer();</b>
+<b class="nc"><i>37</i>&nbsp;    serializer.setOutputProperty(OutputKeys.ENCODING, &quot;UTF-8&quot;);</b>
+<b class="nc"><i>38</i>&nbsp;    serializer.setOutputProperty(OutputKeys.INDENT, &quot;yes&quot;);</b>
+<b class="nc"><i>39</i>&nbsp;    serializer.setOutputProperty(OutputKeys.METHOD, &quot;xml&quot;);</b>
+<b class="nc"><i>40</i>&nbsp;    serializer.setOutputProperty(&quot;{http://xml.apache.org/xslt}indent-amount&quot;, &quot;4&quot;);</b>
+<b class="nc"><i>41</i>&nbsp;    handler.setResult(result);</b>
+<b class="nc"><i>42</i>&nbsp;    return handler;</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  protected void startElement(String name, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>46</i>&nbsp;    startElement(name, ourEmptyAttributes, handler);</b>
+<i>47</i>&nbsp;  }
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  protected void startElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>50</i>&nbsp;    handler.startElement(&quot;&quot;, name, name, attrs);</b>
+<b class="nc"><i>51</i>&nbsp;    attrs.clear();</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  protected void endElement(String name, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>55</i>&nbsp;    handler.endElement(&quot;&quot;, name, name);</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  protected void addAttribute(String name, String value, AttributesImpl attrs) {
+<b class="nc"><i>59</i>&nbsp;    if (value != null) {</b>
+<b class="nc"><i>60</i>&nbsp;      attrs.addAttribute(&quot;&quot;, name, name, &quot;CDATA&quot;, value);</b>
+<i>61</i>&nbsp;    }
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  protected void addAttribute(String name, int value, AttributesImpl attrs) {
+<b class="nc"><i>65</i>&nbsp;    addAttribute(name, String.valueOf(value), attrs);</b>
+<i>66</i>&nbsp;  }
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  protected void addAttribute(String name, Boolean value, AttributesImpl attrs) {
+<b class="nc"><i>69</i>&nbsp;    addAttribute(name, value.toString(), attrs);</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  protected void emptyElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>73</i>&nbsp;    startElement(name, attrs, handler);</b>
+<b class="nc"><i>74</i>&nbsp;    endElement(name, handler);</b>
+<b class="nc"><i>75</i>&nbsp;    attrs.clear();</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  protected void cdataElement(String name, String cdata, AttributesImpl attrs, TransformerHandler handler)
+<i>79</i>&nbsp;      throws SAXException {
+<b class="nc"><i>80</i>&nbsp;    if (cdata == null) {</b>
+<i>81</i>&nbsp;      return;
+<i>82</i>&nbsp;    }
+<b class="nc"><i>83</i>&nbsp;    startElement(name, attrs, handler);</b>
+<b class="nc"><i>84</i>&nbsp;    handler.startCDATA();</b>
+<b class="nc"><i>85</i>&nbsp;    handler.characters(cdata.toCharArray(), 0, cdata.length());</b>
+<b class="nc"><i>86</i>&nbsp;    handler.endCDATA();</b>
+<b class="nc"><i>87</i>&nbsp;    endElement(name, handler);</b>
+<i>88</i>&nbsp;  }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  protected void emptyComment(TransformerHandler handler) throws SAXException {
+<b class="nc"><i>91</i>&nbsp;    handler.comment(new char[] { &#39; &#39; }, 0, 1);</b>
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<b class="nc"><i>95</i>&nbsp;  private static AttributesImpl ourEmptyAttributes = new AttributesImpl();</b>
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskActivityPart</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskActivityPart (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskActivityPart</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.9%
+  </span>
+  <span class="absValue">
+    (10/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.2%
+  </span>
+  <span class="absValue">
+    (25/ 26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 18.10.2004
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>7</i>&nbsp;import com.google.common.base.Preconditions;
+<i>8</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>9</i>&nbsp;import net.sourceforge.ganttproject.task.TaskActivity;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;import java.util.Date;
+<i>12</i>&nbsp;import java.util.Objects;
+<i>13</i>&nbsp;
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;/**
+<i>16</i>&nbsp; * @author bard
+<i>17</i>&nbsp; */
+<i>18</i>&nbsp;class TaskActivityPart implements TaskActivity {
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;  private final Date myEndDate;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;  private final Date myStartDate;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  private final TimeDuration myDuration;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;  private final TaskActivity myOriginal;
+<i>27</i>&nbsp;
+<b class="fc"><i>28</i>&nbsp;  TaskActivityPart(TaskActivity original, Date startDate, Date endDate) {</b>
+<b class="fc"><i>29</i>&nbsp;    myStartDate = Preconditions.checkNotNull(startDate);</b>
+<b class="fc"><i>30</i>&nbsp;    myEndDate = Preconditions.checkNotNull(endDate);</b>
+<b class="fc"><i>31</i>&nbsp;    myOriginal = Preconditions.checkNotNull(original);</b>
+<b class="fc"><i>32</i>&nbsp;    Task task = original.getOwner();</b>
+<b class="fc"><i>33</i>&nbsp;    myDuration = task.getManager().createLength(task.getDuration().getTimeUnit(), startDate, endDate);</b>
+<b class="fc"><i>34</i>&nbsp;    Preconditions.checkState(myStartDate.compareTo(myOriginal.getStart()) &gt;= 0);</b>
+<b class="fc"><i>35</i>&nbsp;    Preconditions.checkState(myEndDate.compareTo(myOriginal.getEnd()) &lt;= 0);</b>
+<b class="fc"><i>36</i>&nbsp;    Preconditions.checkState(myEndDate.after(myStartDate));</b>
+<b class="fc"><i>37</i>&nbsp;  }</b>
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  @Override
+<i>40</i>&nbsp;  public Date getStart() {
+<b class="fc"><i>41</i>&nbsp;    return myStartDate;</b>
+<i>42</i>&nbsp;  }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  @Override
+<i>45</i>&nbsp;  public Date getEnd() {
+<b class="fc"><i>46</i>&nbsp;    return myEndDate;</b>
+<i>47</i>&nbsp;  }
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  @Override
+<i>50</i>&nbsp;  public TimeDuration getDuration() {
+<b class="fc"><i>51</i>&nbsp;    return myDuration;</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public float getIntensity() {
+<b class="fc"><i>56</i>&nbsp;    return myOriginal.getIntensity();</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  @Override
+<i>60</i>&nbsp;  public String toString() {
+<b class="nc"><i>61</i>&nbsp;    return myOriginal.toString() + &quot; part [&quot; + getStart() + &quot;, &quot; + getEnd() + &quot;]&quot;;</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  @Override
+<i>65</i>&nbsp;  public Task getOwner() {
+<b class="fc"><i>66</i>&nbsp;    return myOriginal.getOwner();</b>
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  @Override
+<i>70</i>&nbsp;  public boolean isFirst() {
+<b class="fc"><i>71</i>&nbsp;    return myOriginal.isFirst() &amp;&amp; myStartDate.equals(myOriginal.getStart());</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  @Override
+<i>75</i>&nbsp;  public boolean isLast() {
+<b class="fc"><i>76</i>&nbsp;    return myOriginal.isLast() &amp;&amp; myEndDate.equals(myOriginal.getEnd());</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  @Override
+<i>80</i>&nbsp;  public boolean equals(Object o) {
+<b class="fc"><i>81</i>&nbsp;    if (this == o) return true;</b>
+<b class="fc"><i>82</i>&nbsp;    if (o == null || getClass() != o.getClass()) return false;</b>
+<b class="fc"><i>83</i>&nbsp;    TaskActivityPart that = (TaskActivityPart) o;</b>
+<b class="fc"><i>84</i>&nbsp;    return Objects.equals(getOwner(), that.getOwner()) &amp;&amp;</b>
+<b class="fc"><i>85</i>&nbsp;        Objects.equals(myEndDate, that.myEndDate) &amp;&amp;</b>
+<b class="fc"><i>86</i>&nbsp;        Objects.equals(myStartDate, that.myStartDate) &amp;&amp;</b>
+<b class="fc"><i>87</i>&nbsp;        Objects.equals(myDuration, that.myDuration);</b>
+<i>88</i>&nbsp;  }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  @Override
+<i>91</i>&nbsp;  public int hashCode() {
+<b class="fc"><i>92</i>&nbsp;    return Objects.hash(myEndDate, myStartDate, myDuration);</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

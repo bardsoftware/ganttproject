@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: NetworkOptionPageProvider</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document</a> ]
+</div>
+
+<h1>Coverage Summary for Class: NetworkOptionPageProvider (net.sourceforge.ganttproject.document)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NetworkOptionPageProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 36)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">NetworkOptionPageProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">NetworkOptionPageProvider$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 51)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.BorderLayout;
+<i>22</i>&nbsp;import java.awt.Component;
+<i>23</i>&nbsp;import java.awt.event.ActionEvent;
+<i>24</i>&nbsp;import java.io.IOException;
+<i>25</i>&nbsp;import javax.swing.AbstractAction;
+<i>26</i>&nbsp;import javax.swing.Action;
+<i>27</i>&nbsp;import javax.swing.JButton;
+<i>28</i>&nbsp;import javax.swing.JComponent;
+<i>29</i>&nbsp;import javax.swing.JOptionPane;
+<i>30</i>&nbsp;import javax.swing.JPanel;
+<i>31</i>&nbsp;import javax.swing.SwingConstants;
+<i>32</i>&nbsp;import javax.swing.border.EmptyBorder;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;import biz.ganttproject.core.option.ChangeValueEvent;
+<i>37</i>&nbsp;import biz.ganttproject.core.option.ChangeValueListener;
+<i>38</i>&nbsp;import biz.ganttproject.core.option.DefaultStringOption;
+<i>39</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.action.OkAction;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.export.WebPublisher;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>47</i>&nbsp;
+<b class="nc"><i>48</i>&nbsp;public class NetworkOptionPageProvider extends OptionPageProviderBase {</b>
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  public NetworkOptionPageProvider() {
+<b class="nc"><i>51</i>&nbsp;    super(&quot;impex.ftp&quot;);</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public GPOptionGroup[] getOptionGroups() {
+<b class="nc"><i>56</i>&nbsp;    return new GPOptionGroup[] {getProject().getDocumentManager().getFTPOptions()};</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  @Override
+<i>60</i>&nbsp;  public boolean hasCustomComponent() {
+<b class="nc"><i>61</i>&nbsp;    return true;</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  @Override
+<i>65</i>&nbsp;  public Component buildPageComponent() {
+<b class="nc"><i>66</i>&nbsp;    OptionsPageBuilder builder = new OptionsPageBuilder();</b>
+<b class="nc"><i>67</i>&nbsp;    final GPOptionGroup ftpGroup = getProject().getDocumentManager().getNetworkOptionGroups()[0];</b>
+<b class="nc"><i>68</i>&nbsp;    ftpGroup.setTitled(false);</b>
+<b class="nc"><i>69</i>&nbsp;    I18N i18n = new OptionsPageBuilder.I18N();</b>
+<i>70</i>&nbsp;
+<b class="nc"><i>71</i>&nbsp;    final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);</b>
+<b class="nc"><i>72</i>&nbsp;    ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(usernameOption), &quot;ftpuser&quot;);</b>
+<i>73</i>&nbsp;
+<b class="nc"><i>74</i>&nbsp;    final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);</b>
+<b class="nc"><i>75</i>&nbsp;    ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(servernameOption), &quot;ftpserver&quot;);</b>
+<i>76</i>&nbsp;
+<b class="nc"><i>77</i>&nbsp;    final DefaultStringOption dirnameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.DIRECTORYNAME_OPTION_ID);</b>
+<b class="nc"><i>78</i>&nbsp;    ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(dirnameOption), &quot;ftpdirectory&quot;);</b>
+<i>79</i>&nbsp;
+<b class="nc"><i>80</i>&nbsp;    final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);</b>
+<b class="nc"><i>81</i>&nbsp;    ftpGroup.setI18Nkey(i18n.getCanonicalOptionLabelKey(passwordOption), &quot;ftppwd&quot;);</b>
+<i>82</i>&nbsp;
+<b class="nc"><i>83</i>&nbsp;    final JComponent optionsPane = builder.buildPage(new GPOptionGroup[] {ftpGroup}, getPageID());</b>
+<b class="nc"><i>84</i>&nbsp;    final Action testConnectionAction = new AbstractAction() {</b>
+<i>85</i>&nbsp;      {
+<b class="nc"><i>86</i>&nbsp;        putValue(Action.NAME, GanttLanguage.getInstance().getText(&quot;testFTPConnection&quot;));</b>
+<b class="nc"><i>87</i>&nbsp;        setEnabled(canEnableTestAction(ftpGroup));</b>
+<i>88</i>&nbsp;      }
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;      @Override
+<i>91</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>92</i>&nbsp;        WebPublisher.Ftp ftp = new WebPublisher.Ftp();</b>
+<i>93</i>&nbsp;        try {
+<b class="nc"><i>94</i>&nbsp;          IStatus status = ftp.loginAndChangedir(getProject().getDocumentManager().getFTPOptions());</b>
+<b class="nc"><i>95</i>&nbsp;          if (status.isOK()) {</b>
+<b class="nc"><i>96</i>&nbsp;            getUiFacade().showOptionDialog(JOptionPane.INFORMATION_MESSAGE,</b>
+<b class="nc"><i>97</i>&nbsp;                GanttLanguage.getInstance().getText(&quot;successFTPConnection&quot;),</b>
+<b class="nc"><i>98</i>&nbsp;                new Action[] { OkAction.createVoidAction(&quot;ok&quot;) });</b>
+<i>99</i>&nbsp;          } else {
+<b class="nc"><i>100</i>&nbsp;            getUiFacade().showErrorDialog(status.getMessage());</b>
+<i>101</i>&nbsp;          }
+<b class="nc"><i>102</i>&nbsp;        } catch (IOException e1) {</b>
+<b class="nc"><i>103</i>&nbsp;          getUiFacade().showErrorDialog(e1);</b>
+<b class="nc"><i>104</i>&nbsp;        }</b>
+<i>105</i>&nbsp;      }
+<i>106</i>&nbsp;    };
+<b class="nc"><i>107</i>&nbsp;    ChangeValueListener listener = new ChangeValueListener() {</b>
+<i>108</i>&nbsp;      @Override
+<i>109</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>110</i>&nbsp;        testConnectionAction.setEnabled(canEnableTestAction(ftpGroup));</b>
+<i>111</i>&nbsp;      }
+<i>112</i>&nbsp;    };
+<b class="nc"><i>113</i>&nbsp;    servernameOption.addChangeValueListener(listener);</b>
+<b class="nc"><i>114</i>&nbsp;    usernameOption.addChangeValueListener(listener);</b>
+<b class="nc"><i>115</i>&nbsp;    passwordOption.addChangeValueListener(listener);</b>
+<b class="nc"><i>116</i>&nbsp;    JPanel result = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>117</i>&nbsp;    result.setBorder(new EmptyBorder(5, 5, 5, 5));</b>
+<b class="nc"><i>118</i>&nbsp;    result.add(optionsPane, BorderLayout.NORTH);</b>
+<b class="nc"><i>119</i>&nbsp;    JButton testConnectionButton = new JButton(testConnectionAction);</b>
+<b class="nc"><i>120</i>&nbsp;    testConnectionButton.setAlignmentX(SwingConstants.RIGHT);</b>
+<i>121</i>&nbsp;
+<b class="nc"><i>122</i>&nbsp;    JPanel connectionWrapper = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>123</i>&nbsp;    connectionWrapper.add(testConnectionButton, BorderLayout.NORTH);</b>
+<i>124</i>&nbsp;
+<b class="nc"><i>125</i>&nbsp;    result.add(connectionWrapper, BorderLayout.CENTER);</b>
+<b class="nc"><i>126</i>&nbsp;    return result;</b>
+<i>127</i>&nbsp;  }
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;  private boolean canEnableTestAction(GPOptionGroup ftpGroup) {
+<b class="nc"><i>130</i>&nbsp;    final DefaultStringOption usernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.USERNAME_OPTION_ID);</b>
+<b class="nc"><i>131</i>&nbsp;    final DefaultStringOption servernameOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.SERVERNAME_OPTION_ID);</b>
+<b class="nc"><i>132</i>&nbsp;    final DefaultStringOption passwordOption = (DefaultStringOption) ftpGroup.getOption(DocumentCreator.PASSWORD_OPTION_ID);</b>
+<b class="nc"><i>133</i>&nbsp;    return servernameOption.getValue() != null &amp;&amp; usernameOption.getValue() != null</b>
+<b class="nc"><i>134</i>&nbsp;        &amp;&amp; passwordOption.getValue() != null;</b>
+<i>135</i>&nbsp;  }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

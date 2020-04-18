@@ -1,0 +1,185 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ImportFileWizardImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.importer</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ImportFileWizardImpl (net.sourceforge.ganttproject.importer)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ImportFileWizardImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.importer;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.File;
+<i>22</i>&nbsp;import java.io.UnsupportedEncodingException;
+<i>23</i>&nbsp;import java.net.URL;
+<i>24</i>&nbsp;import java.net.URLDecoder;
+<i>25</i>&nbsp;import java.util.List;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.GanttOptions;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.plugins.PluginManager;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.wizard.AbstractWizard;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;/**
+<i>38</i>&nbsp; * @author bard
+<i>39</i>&nbsp; */
+<i>40</i>&nbsp;public class ImportFileWizardImpl extends AbstractWizard {
+<b class="nc"><i>41</i>&nbsp;  private static List&lt;Importer&gt; ourImporters = getImporters();</b>
+<i>42</i>&nbsp;
+<b class="nc"><i>43</i>&nbsp;  private static GanttLanguage i18n = GanttLanguage.getInstance();</b>
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
+<b class="nc"><i>46</i>&nbsp;    super(uiFacade, i18n.getText(&quot;importWizard.dialog.title&quot;),</b>
+<b class="nc"><i>47</i>&nbsp;        new ImporterChooserPage(ourImporters, uiFacade, options.getPluginPreferences().node(&quot;/instance/net.sourceforge.ganttproject/import&quot;)));</b>
+<b class="nc"><i>48</i>&nbsp;    for (Importer importer : ourImporters) {</b>
+<b class="nc"><i>49</i>&nbsp;      importer.setContext(project, uiFacade, options.getPluginPreferences());</b>
+<b class="nc"><i>50</i>&nbsp;    }</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  private static List&lt;Importer&gt; getImporters() {
+<b class="nc"><i>54</i>&nbsp;    return PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;//  @Override
+<i>58</i>&nbsp;//  protected void onOkPressed() {
+<i>59</i>&nbsp;//    super.onOkPressed();
+<i>60</i>&nbsp;//    try {
+<i>61</i>&nbsp;//      myState.getImporter().run();
+<i>62</i>&nbsp;//    } catch (Throwable e) {
+<i>63</i>&nbsp;//      GPLogger.log(e);
+<i>64</i>&nbsp;//    }
+<i>65</i>&nbsp;//  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;//  class State {
+<i>68</i>&nbsp;//    private Importer myImporter;
+<i>69</i>&nbsp;//
+<i>70</i>&nbsp;//    private URL myUrl;
+<i>71</i>&nbsp;//
+<i>72</i>&nbsp;//    public void setUrl(URL url) {
+<i>73</i>&nbsp;//      if (url == null) {
+<i>74</i>&nbsp;//        return;
+<i>75</i>&nbsp;//      }
+<i>76</i>&nbsp;//      myUrl = url;
+<i>77</i>&nbsp;//      if (&quot;file&quot;.equals(url.getProtocol())) {
+<i>78</i>&nbsp;//        try {
+<i>79</i>&nbsp;//          String path = URLDecoder.decode(url.getPath(), &quot;utf-8&quot;);
+<i>80</i>&nbsp;//          myState.getImporter().setFile(new File(path));
+<i>81</i>&nbsp;//        } catch (UnsupportedEncodingException e) {
+<i>82</i>&nbsp;//          GPLogger.log(e);
+<i>83</i>&nbsp;//        }
+<i>84</i>&nbsp;//      } else {
+<i>85</i>&nbsp;//        GPLogger.logToLogger(new Exception(String.format(&quot;URL=%s is not a file&quot;, url.toString())));
+<i>86</i>&nbsp;//      }
+<i>87</i>&nbsp;//    }
+<i>88</i>&nbsp;//
+<i>89</i>&nbsp;//    public URL getUrl() {
+<i>90</i>&nbsp;//      return myUrl;
+<i>91</i>&nbsp;//    }
+<i>92</i>&nbsp;//
+<i>93</i>&nbsp;//    Importer getImporter() {
+<i>94</i>&nbsp;//      return myImporter;
+<i>95</i>&nbsp;//    }
+<i>96</i>&nbsp;//
+<i>97</i>&nbsp;//    void setImporter(Importer importer) {
+<i>98</i>&nbsp;//      myImporter = importer;
+<i>99</i>&nbsp;//      addImporterPages(importer);
+<i>100</i>&nbsp;//    }
+<i>101</i>&nbsp;//  }
+<i>102</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

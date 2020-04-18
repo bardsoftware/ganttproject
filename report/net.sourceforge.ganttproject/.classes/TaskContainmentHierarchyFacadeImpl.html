@@ -1,0 +1,482 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskContainmentHierarchyFacadeImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskContainmentHierarchyFacadeImpl (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskContainmentHierarchyFacadeImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 137)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskContainmentHierarchyFacadeImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskContainmentHierarchyFacadeImpl$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskContainmentHierarchyFacadeImpl$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 147)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Function;
+<i>22</i>&nbsp;import com.google.common.base.Preconditions;
+<i>23</i>&nbsp;import com.google.common.base.Predicate;
+<i>24</i>&nbsp;import com.google.common.collect.Lists;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManagerImpl;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.TaskNode;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.util.collect.Pair;
+<i>32</i>&nbsp;import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+<i>33</i>&nbsp;import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+<i>34</i>&nbsp;import org.jdesktop.swingx.treetable.TreeTableNode;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;import javax.swing.tree.TreeNode;
+<i>37</i>&nbsp;import javax.swing.tree.TreePath;
+<i>38</i>&nbsp;import java.util.ArrayList;
+<i>39</i>&nbsp;import java.util.Arrays;
+<i>40</i>&nbsp;import java.util.Comparator;
+<i>41</i>&nbsp;import java.util.Enumeration;
+<i>42</i>&nbsp;import java.util.HashMap;
+<i>43</i>&nbsp;import java.util.LinkedHashMap;
+<i>44</i>&nbsp;import java.util.List;
+<i>45</i>&nbsp;import java.util.Map;
+<i>46</i>&nbsp;
+<b class="nc"><i>47</i>&nbsp;class TaskContainmentHierarchyFacadeImpl implements TaskContainmentHierarchyFacade {</b>
+<b class="nc"><i>48</i>&nbsp;  private Map&lt;Task, MutableTreeTableNode&gt; myTask2treeNode = new HashMap&lt;Task, MutableTreeTableNode&gt;();</b>
+<b class="nc"><i>49</i>&nbsp;  private Map&lt;Task, Integer&gt; myTask2index = new LinkedHashMap&lt;Task, Integer&gt;();</b>
+<i>50</i>&nbsp;  private Task myRootTask;
+<i>51</i>&nbsp;
+<b class="nc"><i>52</i>&nbsp;  private List&lt;Task&gt; myPathBuffer = new ArrayList&lt;Task&gt;();</b>
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  private GanttTree2 myTree;
+<i>55</i>&nbsp;
+<b class="nc"><i>56</i>&nbsp;  public TaskContainmentHierarchyFacadeImpl(GanttTree2 tree) {</b>
+<b class="nc"><i>57</i>&nbsp;    List&lt;MutableTreeTableNode&gt; allTasks = tree.getAllTasks();</b>
+<b class="nc"><i>58</i>&nbsp;    for (int i = 0; i &lt; allTasks.size(); i++) {</b>
+<b class="nc"><i>59</i>&nbsp;      MutableTreeTableNode treeNode = allTasks.get(i);</b>
+<b class="nc"><i>60</i>&nbsp;      Task task = (Task) treeNode.getUserObject();</b>
+<b class="nc"><i>61</i>&nbsp;      if (treeNode == tree.getRoot()) {</b>
+<b class="nc"><i>62</i>&nbsp;        myRootTask = task;</b>
+<i>63</i>&nbsp;      }
+<b class="nc"><i>64</i>&nbsp;      myTask2treeNode.put(task, treeNode);</b>
+<b class="nc"><i>65</i>&nbsp;      myTask2index.put(task, new Integer(i));</b>
+<i>66</i>&nbsp;    }
+<b class="nc"><i>67</i>&nbsp;    myTree = tree;</b>
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  @Override
+<i>71</i>&nbsp;  public Task[] getNestedTasks(Task container) {
+<b class="nc"><i>72</i>&nbsp;    Task[] result = null;</b>
+<b class="nc"><i>73</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(container);</b>
+<b class="nc"><i>74</i>&nbsp;    if (treeNode != null) {</b>
+<b class="nc"><i>75</i>&nbsp;      ArrayList&lt;Task&gt; list = new ArrayList&lt;Task&gt;();</b>
+<b class="nc"><i>76</i>&nbsp;      for (Enumeration children = treeNode.children(); children.hasMoreElements();) {</b>
+<b class="nc"><i>77</i>&nbsp;        DefaultMutableTreeTableNode next = (DefaultMutableTreeTableNode) children.nextElement();</b>
+<b class="nc"><i>78</i>&nbsp;        if (next instanceof TaskNode) {</b>
+<b class="nc"><i>79</i>&nbsp;          list.add((Task) next.getUserObject());</b>
+<i>80</i>&nbsp;        }
+<b class="nc"><i>81</i>&nbsp;      }</b>
+<b class="nc"><i>82</i>&nbsp;      result = list.toArray(new Task[0]);</b>
+<i>83</i>&nbsp;    }
+<b class="nc"><i>84</i>&nbsp;    return result == null ? new Task[0] : result;</b>
+<i>85</i>&nbsp;  }
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  @Override
+<i>88</i>&nbsp;  public Task[] getDeepNestedTasks(Task container) {
+<b class="nc"><i>89</i>&nbsp;    ArrayList&lt;Task&gt; result = new ArrayList&lt;Task&gt;();</b>
+<b class="nc"><i>90</i>&nbsp;    MutableTreeTableNode treeNodes = myTask2treeNode.get(container);</b>
+<b class="nc"><i>91</i>&nbsp;    if (treeNodes != null) {</b>
+<b class="nc"><i>92</i>&nbsp;      for (MutableTreeTableNode curNode : TreeUtil.collectSubtree(treeNodes)) {</b>
+<b class="nc"><i>93</i>&nbsp;        assert curNode.getUserObject() instanceof Task;</b>
+<b class="nc"><i>94</i>&nbsp;        result.add((Task) curNode.getUserObject());</b>
+<b class="nc"><i>95</i>&nbsp;      }</b>
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;      // We remove the first task which is == container
+<b class="nc"><i>98</i>&nbsp;      assert result.size() &gt; 0;</b>
+<b class="nc"><i>99</i>&nbsp;      result.remove(0);</b>
+<i>100</i>&nbsp;    }
+<b class="nc"><i>101</i>&nbsp;    return result.toArray(new Task[result.size()]);</b>
+<i>102</i>&nbsp;  }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  /**
+<i>105</i>&nbsp;   * Purpose: Returns true if the container Task has any nested tasks. This
+<i>106</i>&nbsp;   * should be a quicker check than using getNestedTasks().
+<i>107</i>&nbsp;   *
+<i>108</i>&nbsp;   * @param container
+<i>109</i>&nbsp;   *          The Task on which to check for children.
+<i>110</i>&nbsp;   */
+<i>111</i>&nbsp;  @Override
+<i>112</i>&nbsp;  public boolean hasNestedTasks(Task container) {
+<b class="nc"><i>113</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(container);</b>
+<b class="nc"><i>114</i>&nbsp;    if (treeNode != null) {</b>
+<b class="nc"><i>115</i>&nbsp;      if (treeNode.children().hasMoreElements()) {</b>
+<b class="nc"><i>116</i>&nbsp;        return true;</b>
+<i>117</i>&nbsp;      }
+<i>118</i>&nbsp;    }
+<b class="nc"><i>119</i>&nbsp;    return false;</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  @Override
+<i>123</i>&nbsp;  public Task getRootTask() {
+<b class="nc"><i>124</i>&nbsp;    return myRootTask;</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  @Override
+<i>128</i>&nbsp;  public Task getContainer(Task nestedTask) {
+<b class="nc"><i>129</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);</b>
+<b class="nc"><i>130</i>&nbsp;    if (treeNode == null) {</b>
+<b class="nc"><i>131</i>&nbsp;      return null;</b>
+<i>132</i>&nbsp;    }
+<b class="nc"><i>133</i>&nbsp;    MutableTreeTableNode containerNode = (MutableTreeTableNode) treeNode.getParent();</b>
+<b class="nc"><i>134</i>&nbsp;    return containerNode == null ? null : (Task) containerNode.getUserObject();</b>
+<i>135</i>&nbsp;  }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;  @Override
+<i>138</i>&nbsp;  public void sort(Comparator&lt;Task&gt; comparator) {
+<b class="nc"><i>139</i>&nbsp;    Task[] tasks = getDeepNestedTasks(getRootTask());</b>
+<b class="nc"><i>140</i>&nbsp;    HashMap&lt;Task, Boolean&gt; expanded = new HashMap&lt;&gt;();</b>
+<b class="nc"><i>141</i>&nbsp;    for (Task t : tasks) {</b>
+<b class="nc"><i>142</i>&nbsp;      expanded.put(t, myTree.isExpanded(t));</b>
+<i>143</i>&nbsp;    }
+<i>144</i>&nbsp;
+<b class="nc"><i>145</i>&nbsp;    sortHelper(getRootTask(), comparator);</b>
+<i>146</i>&nbsp;
+<b class="nc"><i>147</i>&nbsp;    for (Task t : tasks) {</b>
+<b class="nc"><i>148</i>&nbsp;      myTree.setExpanded(t, expanded.get(t));</b>
+<i>149</i>&nbsp;    }
+<i>150</i>&nbsp;  }
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;  private void sortHelper(Task root, Comparator&lt;Task&gt; comparator) {
+<b class="nc"><i>153</i>&nbsp;    Task[] tasks = getNestedTasks(root);</b>
+<b class="nc"><i>154</i>&nbsp;    Arrays.sort(tasks, comparator);</b>
+<i>155</i>&nbsp;
+<b class="nc"><i>156</i>&nbsp;    for (Task t : tasks) {</b>
+<b class="nc"><i>157</i>&nbsp;      myTree.getModel().removeNodeFromParent(myTask2treeNode.get(t));</b>
+<i>158</i>&nbsp;    }
+<i>159</i>&nbsp;
+<b class="nc"><i>160</i>&nbsp;    for (int i = 0; i &lt; tasks.length; i++) {</b>
+<b class="nc"><i>161</i>&nbsp;      myTree.getModel().insertNodeInto(myTask2treeNode.get(tasks[i]), myTask2treeNode.get(root), i);</b>
+<b class="nc"><i>162</i>&nbsp;      sortHelper(tasks[i], comparator);</b>
+<i>163</i>&nbsp;    }
+<i>164</i>&nbsp;  }
+<i>165</i>&nbsp;
+<i>166</i>&nbsp;  @Override
+<i>167</i>&nbsp;  public Task getPreviousSibling(Task nestedTask) {
+<b class="nc"><i>168</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);</b>
+<b class="nc"><i>169</i>&nbsp;    assert treeNode != null : &quot;TreeNode of &quot; + nestedTask + &quot; not found. Please inform GanttProject developers&quot;;</b>
+<b class="nc"><i>170</i>&nbsp;    TreeTableNode siblingNode = TreeUtil.getPrevSibling(treeNode);</b>
+<b class="nc"><i>171</i>&nbsp;    return siblingNode == null ? null : (Task) siblingNode.getUserObject();</b>
+<i>172</i>&nbsp;  }
+<i>173</i>&nbsp;
+<i>174</i>&nbsp;  @Override
+<i>175</i>&nbsp;  public Task getNextSibling(Task nestedTask) {
+<b class="nc"><i>176</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);</b>
+<b class="nc"><i>177</i>&nbsp;    assert treeNode != null : &quot;TreeNode of &quot; + nestedTask + &quot; not found. Please inform GanttProject developers&quot;;</b>
+<b class="nc"><i>178</i>&nbsp;    TreeTableNode siblingNode = TreeUtil.getNextSibling(treeNode);</b>
+<b class="nc"><i>179</i>&nbsp;    return siblingNode == null ? null : (Task) siblingNode.getUserObject();</b>
+<i>180</i>&nbsp;  }
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;  @Override
+<i>183</i>&nbsp;  public int getTaskIndex(Task nestedTask) {
+<b class="nc"><i>184</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(nestedTask);</b>
+<b class="nc"><i>185</i>&nbsp;    assert treeNode != null : &quot;TreeNode of &quot; + nestedTask + &quot; not found. Please inform GanttProject developers&quot;;</b>
+<b class="nc"><i>186</i>&nbsp;    TreeNode containerNode = treeNode.getParent();</b>
+<b class="nc"><i>187</i>&nbsp;    return containerNode.getIndex(treeNode);</b>
+<i>188</i>&nbsp;  }
+<i>189</i>&nbsp;
+<i>190</i>&nbsp;  @Override
+<i>191</i>&nbsp;  public List&lt;Integer&gt; getOutlinePath(Task task) {
+<b class="nc"><i>192</i>&nbsp;    int depth = getDepth(task);</b>
+<b class="nc"><i>193</i>&nbsp;    List&lt;Integer&gt; result = Lists.newArrayListWithExpectedSize(depth);</b>
+<b class="nc"><i>194</i>&nbsp;    TreeNode node = myTask2treeNode.get(task);</b>
+<b class="nc"><i>195</i>&nbsp;    for (int i = 0; i &lt; depth; i++) {</b>
+<b class="nc"><i>196</i>&nbsp;      TreeNode containerNode = node.getParent();</b>
+<b class="nc"><i>197</i>&nbsp;      result.add(i, containerNode.getIndex(node) + 1);</b>
+<b class="nc"><i>198</i>&nbsp;      node = containerNode;</b>
+<i>199</i>&nbsp;    }
+<b class="nc"><i>200</i>&nbsp;    return Lists.reverse(result);</b>
+<i>201</i>&nbsp;  }
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;  @Override
+<i>204</i>&nbsp;  public boolean areUnrelated(Task first, Task second) {
+<b class="nc"><i>205</i>&nbsp;    if (first.equals(second)) {</b>
+<b class="nc"><i>206</i>&nbsp;      return false;</b>
+<i>207</i>&nbsp;    }
+<b class="nc"><i>208</i>&nbsp;    myPathBuffer.clear();</b>
+<b class="nc"><i>209</i>&nbsp;    for (Task container = getContainer(first); container != null; container = getContainer(container)) {</b>
+<b class="nc"><i>210</i>&nbsp;      myPathBuffer.add(container);</b>
+<i>211</i>&nbsp;    }
+<b class="nc"><i>212</i>&nbsp;    if (myPathBuffer.contains(second)) {</b>
+<b class="nc"><i>213</i>&nbsp;      return false;</b>
+<i>214</i>&nbsp;    }
+<b class="nc"><i>215</i>&nbsp;    myPathBuffer.clear();</b>
+<b class="nc"><i>216</i>&nbsp;    for (Task container = getContainer(second); container != null; container = getContainer(container)) {</b>
+<b class="nc"><i>217</i>&nbsp;      myPathBuffer.add(container);</b>
+<i>218</i>&nbsp;    }
+<b class="nc"><i>219</i>&nbsp;    if (myPathBuffer.contains(first)) {</b>
+<b class="nc"><i>220</i>&nbsp;      return false;</b>
+<i>221</i>&nbsp;    }
+<b class="nc"><i>222</i>&nbsp;    return true;</b>
+<i>223</i>&nbsp;  }
+<i>224</i>&nbsp;
+<i>225</i>&nbsp;  @Override
+<i>226</i>&nbsp;  public void move(Task whatMove, Task whereMove) {
+<b class="nc"><i>227</i>&nbsp;    MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);</b>
+<b class="nc"><i>228</i>&nbsp;    if (targetNode == null) {</b>
+<b class="nc"><i>229</i>&nbsp;      GPLogger.log(&quot;Failed to find tree node for task=&quot; + whereMove);</b>
+<i>230</i>&nbsp;      return;
+<i>231</i>&nbsp;    }
+<b class="nc"><i>232</i>&nbsp;    MutableTreeTableNode currentNode = myTask2treeNode.get(whatMove);</b>
+<b class="nc"><i>233</i>&nbsp;    if (currentNode != null &amp;&amp; currentNode.getParent() == targetNode) {</b>
+<i>234</i>&nbsp;      return;
+<i>235</i>&nbsp;    }
+<b class="nc"><i>236</i>&nbsp;    move(whatMove, whereMove, targetNode.getChildCount());</b>
+<i>237</i>&nbsp;  }
+<i>238</i>&nbsp;
+<i>239</i>&nbsp;  @Override
+<i>240</i>&nbsp;  public void move(Task whatMove, Task whereMove, int index) {
+<b class="nc"><i>241</i>&nbsp;    MutableTreeTableNode targetNode = myTask2treeNode.get(whereMove);</b>
+<b class="nc"><i>242</i>&nbsp;    MutableTreeTableNode movedNode = myTask2treeNode.get(whatMove);</b>
+<i>243</i>&nbsp;
+<b class="nc"><i>244</i>&nbsp;    if (movedNode == null) {</b>
+<b class="nc"><i>245</i>&nbsp;      movedNode = myTree.addObjectWithExpand(whatMove, targetNode);</b>
+<i>246</i>&nbsp;    }
+<i>247</i>&nbsp;
+<b class="nc"><i>248</i>&nbsp;    TreePath movedPath = TreeUtil.createPath(movedNode);</b>
+<b class="nc"><i>249</i>&nbsp;    boolean wasSelected = (myTree.getJTree().getTreeSelectionModel().isPathSelected(movedPath));</b>
+<b class="nc"><i>250</i>&nbsp;    if (wasSelected) {</b>
+<b class="nc"><i>251</i>&nbsp;      myTree.getJTree().getTreeSelectionModel().removeSelectionPath(movedPath);</b>
+<i>252</i>&nbsp;    }
+<b class="nc"><i>253</i>&nbsp;    myTree.getModel().removeNodeFromParent(movedNode);</b>
+<b class="nc"><i>254</i>&nbsp;    myTree.getModel().insertNodeInto(movedNode, targetNode, index);</b>
+<b class="nc"><i>255</i>&nbsp;    if (wasSelected) {</b>
+<b class="nc"><i>256</i>&nbsp;      movedPath = TreeUtil.createPath(movedNode);</b>
+<b class="nc"><i>257</i>&nbsp;      myTree.getJTree().getTreeSelectionModel().addSelectionPath(movedPath);</b>
+<i>258</i>&nbsp;    }
+<b class="nc"><i>259</i>&nbsp;    ((TaskManagerImpl)getTaskManager()).getDependencyGraph().move(whatMove, whereMove == getTaskManager().getRootTask() ? null : whereMove);</b>
+<b class="nc"><i>260</i>&nbsp;    getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(whatMove);</b>
+<i>261</i>&nbsp;    try {
+<b class="nc"><i>262</i>&nbsp;      getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();</b>
+<b class="nc"><i>263</i>&nbsp;    } catch (TaskDependencyException e) {</b>
+<b class="nc"><i>264</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>265</i>&nbsp;      throw new RuntimeException(e);</b>
+<b class="nc"><i>266</i>&nbsp;    }</b>
+<i>267</i>&nbsp;  }
+<i>268</i>&nbsp;
+<i>269</i>&nbsp;  private TaskManager getTaskManager() {
+<b class="nc"><i>270</i>&nbsp;    return myRootTask.getManager();</b>
+<i>271</i>&nbsp;  }
+<i>272</i>&nbsp;
+<i>273</i>&nbsp;  @Override
+<i>274</i>&nbsp;  public int getDepth(Task task) {
+<b class="nc"><i>275</i>&nbsp;    MutableTreeTableNode treeNode = myTask2treeNode.get(task);</b>
+<b class="nc"><i>276</i>&nbsp;    return TreeUtil.getLevel(treeNode);</b>
+<i>277</i>&nbsp;  }
+<i>278</i>&nbsp;
+<i>279</i>&nbsp;  @Override
+<i>280</i>&nbsp;  public int compareDocumentOrder(Task task1, Task task2) {
+<b class="nc"><i>281</i>&nbsp;    Integer index1 = myTask2index.get(task1);</b>
+<b class="nc"><i>282</i>&nbsp;    Integer index2 = myTask2index.get(task2);</b>
+<b class="nc"><i>283</i>&nbsp;    return index1.intValue() - index2.intValue();</b>
+<i>284</i>&nbsp;  }
+<i>285</i>&nbsp;
+<i>286</i>&nbsp;  @Override
+<i>287</i>&nbsp;  public boolean contains(Task task) {
+<b class="nc"><i>288</i>&nbsp;    return myTask2treeNode.containsKey(task);</b>
+<i>289</i>&nbsp;  }
+<i>290</i>&nbsp;
+<b class="nc"><i>291</i>&nbsp;  private static final Function&lt;MutableTreeTableNode, Task&gt; ourNodeToTaskFxn = new Function&lt;MutableTreeTableNode, Task&gt;() {</b>
+<i>292</i>&nbsp;    @Override
+<i>293</i>&nbsp;    public Task apply(MutableTreeTableNode input) {
+<b class="nc"><i>294</i>&nbsp;      return input == null ? null : (Task) input.getUserObject();</b>
+<i>295</i>&nbsp;    }
+<i>296</i>&nbsp;  };
+<i>297</i>&nbsp;
+<i>298</i>&nbsp;  @Override
+<i>299</i>&nbsp;  public List&lt;Task&gt; getTasksInDocumentOrder() {
+<b class="nc"><i>300</i>&nbsp;    MutableTreeTableNode rootNode = myTask2treeNode.get(getRootTask());</b>
+<b class="nc"><i>301</i>&nbsp;    List&lt;MutableTreeTableNode&gt; subtree = TreeUtil.collectSubtree(rootNode);</b>
+<i>302</i>&nbsp;
+<b class="nc"><i>303</i>&nbsp;    return Lists.transform(subtree.subList(1, subtree.size()), ourNodeToTaskFxn);</b>
+<i>304</i>&nbsp;  }
+<i>305</i>&nbsp;
+<i>306</i>&nbsp;  @Override
+<i>307</i>&nbsp;  public void breadthFirstSearch(Task root, final Predicate&lt;Pair&lt;Task, Task&gt;&gt; predicate) {
+<b class="nc"><i>308</i>&nbsp;    Preconditions.checkNotNull(root);</b>
+<b class="nc"><i>309</i>&nbsp;    MutableTreeTableNode rootNode = myTask2treeNode.get(root);</b>
+<b class="nc"><i>310</i>&nbsp;    TreeUtil.breadthFirstSearch(rootNode, new Predicate&lt;Pair&lt;MutableTreeTableNode,MutableTreeTableNode&gt;&gt;() {</b>
+<i>311</i>&nbsp;      @Override
+<i>312</i>&nbsp;      public boolean apply(Pair&lt;MutableTreeTableNode, MutableTreeTableNode&gt; parent_child) {
+<b class="nc"><i>313</i>&nbsp;        Task parentTask = ourNodeToTaskFxn.apply(parent_child.first());</b>
+<b class="nc"><i>314</i>&nbsp;        Task childTask = ourNodeToTaskFxn.apply(parent_child.second());</b>
+<b class="nc"><i>315</i>&nbsp;        return predicate.apply(Pair.create(parentTask, childTask));</b>
+<i>316</i>&nbsp;      }
+<i>317</i>&nbsp;    });
+<i>318</i>&nbsp;  }
+<i>319</i>&nbsp;
+<i>320</i>&nbsp;  @Override
+<i>321</i>&nbsp;  public List&lt;Task&gt; breadthFirstSearch(Task root, final boolean includeRoot) {
+<b class="nc"><i>322</i>&nbsp;    final Task _root = (root == null) ? getRootTask() : root;</b>
+<b class="nc"><i>323</i>&nbsp;    final List&lt;Task&gt; result = Lists.newArrayList();</b>
+<b class="nc"><i>324</i>&nbsp;    breadthFirstSearch(_root, new Predicate&lt;Pair&lt;Task,Task&gt;&gt;() {</b>
+<i>325</i>&nbsp;      @Override
+<i>326</i>&nbsp;      public boolean apply(Pair&lt;Task, Task&gt; parent_child) {
+<b class="nc"><i>327</i>&nbsp;        if (includeRoot || parent_child.first() != null) {</b>
+<b class="nc"><i>328</i>&nbsp;          result.add(parent_child.second());</b>
+<i>329</i>&nbsp;        }
+<b class="nc"><i>330</i>&nbsp;        return true;</b>
+<i>331</i>&nbsp;      }
+<i>332</i>&nbsp;    });
+<b class="nc"><i>333</i>&nbsp;    return result;</b>
+<i>334</i>&nbsp;  }
+<i>335</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

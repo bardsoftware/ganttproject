@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: KeyValueOption</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.option</a> ]
+</div>
+
+<h1>Coverage Summary for Class: KeyValueOption (biz.ganttproject.core.option)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">KeyValueOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (4/ 22)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">KeyValueOption$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.8%
+  </span>
+  <span class="absValue">
+    (5/ 24)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.core.option;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Function;
+<i>22</i>&nbsp;import com.google.common.base.Joiner;
+<i>23</i>&nbsp;import com.google.common.collect.ImmutableMap;
+<i>24</i>&nbsp;import com.google.common.collect.Iterables;
+<i>25</i>&nbsp;import com.google.common.collect.Maps;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import java.util.Map;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public abstract class KeyValueOption extends GPAbstractOption&lt;Map.Entry&lt;String, String&gt;&gt; implements ListOption&lt;Map.Entry&lt;String, String&gt;&gt; {
+<b class="fc"><i>33</i>&nbsp;  private static final Function&lt;Map.Entry&lt;String, String&gt;, String&gt; ENTRY_TO_KEY_VALUE = new Function&lt;Map.Entry&lt;String, String&gt;, String&gt;() {</b>
+<i>34</i>&nbsp;    @Override
+<i>35</i>&nbsp;    public String apply(Map.Entry&lt;String, String&gt; entry) {
+<b class="nc"><i>36</i>&nbsp;      return String.format(&quot;%s = %s&quot;, entry.getKey(), entry.getValue());</b>
+<i>37</i>&nbsp;    }
+<i>38</i>&nbsp;  };
+<b class="fc"><i>39</i>&nbsp;  private Map&lt;String, String&gt; myMap = Maps.newHashMap();</b>
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  public KeyValueOption(String id) {
+<b class="fc"><i>42</i>&nbsp;    super(id);</b>
+<b class="fc"><i>43</i>&nbsp;  }</b>
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  @Override
+<i>46</i>&nbsp;  public String getPersistentValue() {
+<b class="nc"><i>47</i>&nbsp;    return &quot;\n&quot; + Joiner.on(&#39;\n&#39;).join(Iterables.transform(getValues(), ENTRY_TO_KEY_VALUE)) + &quot;\n&quot;;</b>
+<i>48</i>&nbsp;  }
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  @Override
+<i>51</i>&nbsp;  public void loadPersistentValue(String value) {
+<b class="nc"><i>52</i>&nbsp;    myMap.clear();</b>
+<b class="nc"><i>53</i>&nbsp;    for (String line : value.split(&quot;\n&quot;)) {</b>
+<b class="nc"><i>54</i>&nbsp;      String[] keyValue = line.split(&quot;=&quot;);</b>
+<b class="nc"><i>55</i>&nbsp;      if (keyValue.length &lt; 2) {</b>
+<b class="nc"><i>56</i>&nbsp;        continue;</b>
+<i>57</i>&nbsp;      }
+<b class="nc"><i>58</i>&nbsp;      myMap.put(keyValue[0].trim(), keyValue[1].trim());</b>
+<i>59</i>&nbsp;    }
+<b class="nc"><i>60</i>&nbsp;    fireChangeValueEvent(new ChangeValueEvent(getID(), null, null, this));</b>
+<b class="nc"><i>61</i>&nbsp;  }</b>
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  @Override
+<i>64</i>&nbsp;  public void setValues(Iterable&lt;Map.Entry&lt;String, String&gt;&gt; values) {
+<b class="nc"><i>65</i>&nbsp;    Map oldValue = Maps.newHashMap(myMap);</b>
+<b class="nc"><i>66</i>&nbsp;    myMap.clear();</b>
+<b class="nc"><i>67</i>&nbsp;    for (Map.Entry&lt;String, String&gt; e : values) {</b>
+<b class="nc"><i>68</i>&nbsp;      myMap.put(e.getKey(), e.getValue());</b>
+<b class="nc"><i>69</i>&nbsp;    }</b>
+<b class="nc"><i>70</i>&nbsp;    fireChangeValueEvent(new ChangeValueEvent(getID(), oldValue, myMap, this));</b>
+<b class="nc"><i>71</i>&nbsp;  }</b>
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  @Override
+<i>74</i>&nbsp;  public Iterable&lt;Map.Entry&lt;String, String&gt;&gt; getValues() {
+<b class="nc"><i>75</i>&nbsp;    return myMap.entrySet();</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  public Map&lt;String, String&gt; getKeyValueMap() {
+<b class="nc"><i>79</i>&nbsp;    return ImmutableMap.copyOf(myMap);</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

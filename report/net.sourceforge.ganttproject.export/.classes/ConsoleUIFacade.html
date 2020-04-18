@@ -1,0 +1,341 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ConsoleUIFacade</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.export</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ConsoleUIFacade (net.sourceforge.ganttproject.export)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConsoleUIFacade</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.export;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.IntegerOption;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.chart.GanttChart;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.chart.TimelineChart;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.*;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.task.TaskView;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;import javax.swing.*;
+<i>37</i>&nbsp;import java.awt.*;
+<i>38</i>&nbsp;import java.util.Collection;
+<i>39</i>&nbsp;import java.util.Locale;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;public class ConsoleUIFacade implements UIFacade {
+<i>42</i>&nbsp;  private final UIFacade myRealFacade;
+<i>43</i>&nbsp;
+<b class="nc"><i>44</i>&nbsp;  ConsoleUIFacade(UIFacade realFacade) {</b>
+<b class="nc"><i>45</i>&nbsp;    myRealFacade = realFacade;</b>
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  @Override
+<i>49</i>&nbsp;  public IntegerOption getDpiOption() {
+<b class="nc"><i>50</i>&nbsp;    return null;</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  @Override
+<i>54</i>&nbsp;  public GPOption&lt;String&gt; getLafOption() {
+<b class="nc"><i>55</i>&nbsp;    return null;</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  @Override
+<i>59</i>&nbsp;  public ScrollingManager getScrollingManager() {
+<i>60</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>61</i>&nbsp;    return null;</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  @Override
+<i>65</i>&nbsp;  public ZoomManager getZoomManager() {
+<b class="nc"><i>66</i>&nbsp;    return myRealFacade.getZoomManager();</b>
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  @Override
+<i>70</i>&nbsp;  public ZoomActionSet getZoomActionSet() {
+<b class="nc"><i>71</i>&nbsp;    return myRealFacade.getZoomActionSet();</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  @Override
+<i>75</i>&nbsp;  public Choice showConfirmationDialog(String message, String title) {
+<i>76</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>77</i>&nbsp;    return null;</b>
+<i>78</i>&nbsp;  }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  @Override
+<i>81</i>&nbsp;  public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  @Override
+<i>85</i>&nbsp;  public void showPopupMenu(Component invoker, Collection&lt;Action&gt; actions, int x, int y) {
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  @Override
+<i>89</i>&nbsp;  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+<b class="nc"><i>90</i>&nbsp;    return null;</b>
+<i>91</i>&nbsp;  }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  @Override
+<i>94</i>&nbsp;  public void setStatusText(String text) {
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  @Override
+<i>98</i>&nbsp;  public void showOptionDialog(int messageType, String message, Action[] actions) {
+<b class="nc"><i>99</i>&nbsp;    System.err.println(&quot;[ConsoleUIFacade]: &quot; + message);</b>
+<i>100</i>&nbsp;  }
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;  @Override
+<i>103</i>&nbsp;  public void showErrorDialog(String errorMessage) {
+<b class="nc"><i>104</i>&nbsp;    System.err.println(&quot;[ConsoleUIFacade] ERROR: &quot; + errorMessage);</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  @Override
+<i>108</i>&nbsp;  public void showNotificationDialog(NotificationChannel channel, String message) {
+<b class="nc"><i>109</i>&nbsp;    System.err.println(&quot;[ConsoleUIFacade] &quot; + channel.toString() + &quot;: &quot; + message);</b>
+<i>110</i>&nbsp;  }
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  @Override
+<i>113</i>&nbsp;  public void showErrorDialog(Throwable e) {
+<b class="nc"><i>114</i>&nbsp;    System.err.println(&quot;[ConsoleUIFacade] ERROR: &quot; + e.getMessage());</b>
+<b class="nc"><i>115</i>&nbsp;    e.printStackTrace();</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  public void showSettingsDialog(String pageID) {
+<i>119</i>&nbsp;    // TODO Auto-generated method stub
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;  @Override
+<i>124</i>&nbsp;  public GanttChart getGanttChart() {
+<b class="nc"><i>125</i>&nbsp;    return myRealFacade.getGanttChart();</b>
+<i>126</i>&nbsp;  }
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  @Override
+<i>129</i>&nbsp;  public TimelineChart getResourceChart() {
+<b class="nc"><i>130</i>&nbsp;    return myRealFacade.getResourceChart();</b>
+<i>131</i>&nbsp;  }
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  @Override
+<i>134</i>&nbsp;  public Chart getActiveChart() {
+<i>135</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>136</i>&nbsp;    return null;</b>
+<i>137</i>&nbsp;  }
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;  @Override
+<i>140</i>&nbsp;  public int getViewIndex() {
+<i>141</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>142</i>&nbsp;    return 0;</b>
+<i>143</i>&nbsp;  }
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  @Override
+<i>146</i>&nbsp;  public void setViewIndex(int viewIndex) {
+<i>147</i>&nbsp;    // TODO Auto-generated method stub
+<i>148</i>&nbsp;  }
+<i>149</i>&nbsp;
+<i>150</i>&nbsp;  @Override
+<i>151</i>&nbsp;  public int getGanttDividerLocation() {
+<i>152</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>153</i>&nbsp;    return 0;</b>
+<i>154</i>&nbsp;  }
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  @Override
+<i>157</i>&nbsp;  public void setGanttDividerLocation(int location) {
+<i>158</i>&nbsp;    // TODO Auto-generated method stub
+<i>159</i>&nbsp;  }
+<i>160</i>&nbsp;
+<i>161</i>&nbsp;  @Override
+<i>162</i>&nbsp;  public int getResourceDividerLocation() {
+<i>163</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>164</i>&nbsp;    return 0;</b>
+<i>165</i>&nbsp;  }
+<i>166</i>&nbsp;
+<i>167</i>&nbsp;  @Override
+<i>168</i>&nbsp;  public void setResourceDividerLocation(int location) {
+<i>169</i>&nbsp;    // TODO Auto-generated method stub
+<i>170</i>&nbsp;  }
+<i>171</i>&nbsp;
+<i>172</i>&nbsp;  @Override
+<i>173</i>&nbsp;  public void refresh() {
+<i>174</i>&nbsp;    // TODO Auto-generated method stub
+<i>175</i>&nbsp;  }
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  @Override
+<i>178</i>&nbsp;  public Frame getMainFrame() {
+<i>179</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>180</i>&nbsp;    return null;</b>
+<i>181</i>&nbsp;  }
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  @Override
+<i>184</i>&nbsp;  public Image getLogo() {
+<i>185</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>186</i>&nbsp;    return null;</b>
+<i>187</i>&nbsp;  }
+<i>188</i>&nbsp;
+<i>189</i>&nbsp;  @Override
+<i>190</i>&nbsp;  public void setWorkbenchTitle(String title) {
+<i>191</i>&nbsp;    // TODO Auto-generated method stub
+<i>192</i>&nbsp;  }
+<i>193</i>&nbsp;
+<i>194</i>&nbsp;  @Override
+<i>195</i>&nbsp;  public GPUndoManager getUndoManager() {
+<i>196</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>197</i>&nbsp;    return null;</b>
+<i>198</i>&nbsp;  }
+<i>199</i>&nbsp;
+<i>200</i>&nbsp;  @Override
+<i>201</i>&nbsp;  public TaskView getCurrentTaskView() {
+<b class="nc"><i>202</i>&nbsp;    return myRealFacade.getCurrentTaskView();</b>
+<i>203</i>&nbsp;  }
+<i>204</i>&nbsp;
+<i>205</i>&nbsp;  @Override
+<i>206</i>&nbsp;  public TaskTreeUIFacade getTaskTree() {
+<b class="nc"><i>207</i>&nbsp;    return myRealFacade.getTaskTree();</b>
+<i>208</i>&nbsp;  }
+<i>209</i>&nbsp;
+<i>210</i>&nbsp;  @Override
+<i>211</i>&nbsp;  public ResourceTreeUIFacade getResourceTree() {
+<b class="nc"><i>212</i>&nbsp;    return myRealFacade.getResourceTree();</b>
+<i>213</i>&nbsp;  }
+<i>214</i>&nbsp;
+<i>215</i>&nbsp;  @Override
+<i>216</i>&nbsp;  public TaskSelectionContext getTaskSelectionContext() {
+<i>217</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>218</i>&nbsp;    return null;</b>
+<i>219</i>&nbsp;  }
+<i>220</i>&nbsp;
+<i>221</i>&nbsp;  @Override
+<i>222</i>&nbsp;  public TaskSelectionManager getTaskSelectionManager() {
+<i>223</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>224</i>&nbsp;    return null;</b>
+<i>225</i>&nbsp;  }
+<i>226</i>&nbsp;
+<i>227</i>&nbsp;  @Override
+<i>228</i>&nbsp;  public void setLookAndFeel(GanttLookAndFeelInfo laf) {
+<i>229</i>&nbsp;    // TODO Auto-generated method stub
+<i>230</i>&nbsp;  }
+<i>231</i>&nbsp;
+<i>232</i>&nbsp;  @Override
+<i>233</i>&nbsp;  public DefaultEnumerationOption&lt;Locale&gt; getLanguageOption() {
+<b class="nc"><i>234</i>&nbsp;    return null;</b>
+<i>235</i>&nbsp;  }
+<i>236</i>&nbsp;
+<i>237</i>&nbsp;  @Override
+<i>238</i>&nbsp;  public GPOptionGroup[] getOptions() {
+<i>239</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>240</i>&nbsp;    return null;</b>
+<i>241</i>&nbsp;  }
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;  @Override
+<i>244</i>&nbsp;  public void addOnUpdateComponentTreeUi(Runnable callback) {
+<i>245</i>&nbsp;  }
+<i>246</i>&nbsp;
+<i>247</i>&nbsp;  @Override
+<i>248</i>&nbsp;  public GanttLookAndFeelInfo getLookAndFeel() {
+<i>249</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>250</i>&nbsp;    return null;</b>
+<i>251</i>&nbsp;  }
+<i>252</i>&nbsp;
+<i>253</i>&nbsp;  @Override
+<i>254</i>&nbsp;  public NotificationManager getNotificationManager() {
+<i>255</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>256</i>&nbsp;    return null;</b>
+<i>257</i>&nbsp;  }
+<i>258</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,148 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: MouseInteractionBase</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.mouse</a> ]
+</div>
+
+<h1>Coverage Summary for Class: MouseInteractionBase (net.sourceforge.ganttproject.chart.mouse)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MouseInteractionBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.mouse;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Graphics;
+<i>22</i>&nbsp;import java.awt.event.MouseEvent;
+<i>23</i>&nbsp;import java.util.Date;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;abstract class MouseInteractionBase {
+<i>30</i>&nbsp;  protected Date myStartDate;
+<i>31</i>&nbsp;  private final MouseInteraction.TimelineFacade myChartDateGrid;
+<i>32</i>&nbsp;
+<b class="nc"><i>33</i>&nbsp;  protected MouseInteractionBase(Date startDate, MouseInteraction.TimelineFacade chartDateGrid) {</b>
+<b class="nc"><i>34</i>&nbsp;    myStartDate = startDate;</b>
+<b class="nc"><i>35</i>&nbsp;    myChartDateGrid = chartDateGrid;</b>
+<i>36</i>&nbsp;  }
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  protected TimeDuration getLengthDiff(MouseEvent event) {
+<b class="nc"><i>39</i>&nbsp;    Date dateUnderX = myChartDateGrid.getDateAt(event.getX());</b>
+<b class="nc"><i>40</i>&nbsp;    TimeDuration result = myChartDateGrid.createTimeInterval(myChartDateGrid.getTimeUnitStack().getDefaultTimeUnit(),</b>
+<i>41</i>&nbsp;        myStartDate, dateUnderX);
+<b class="nc"><i>42</i>&nbsp;    return result;</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  protected TimelineFacade getChartDateGrid() {
+<b class="nc"><i>46</i>&nbsp;    return myChartDateGrid;</b>
+<i>47</i>&nbsp;  }
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  /**
+<i>50</i>&nbsp;   * Method to show the visible cues of the interaction
+<i>51</i>&nbsp;   * 
+<i>52</i>&nbsp;   * @param g
+<i>53</i>&nbsp;   *          is the graphics context
+<i>54</i>&nbsp;   */
+<i>55</i>&nbsp;  public void paint(Graphics g) {
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  protected void setStartDate(Date date) {
+<b class="nc"><i>59</i>&nbsp;    myStartDate = date;</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  protected Date getStartDate() {
+<b class="nc"><i>63</i>&nbsp;    return myStartDate;</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

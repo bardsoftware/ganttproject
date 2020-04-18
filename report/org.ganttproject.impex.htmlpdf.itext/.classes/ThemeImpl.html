@@ -1,0 +1,800 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ThemeImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.ganttproject.impex.htmlpdf.itext</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ThemeImpl (org.ganttproject.impex.htmlpdf.itext)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThemeImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 284)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ThemeImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ThemeImpl$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ThemeImpl$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 45)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 335)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011-2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package org.ganttproject.impex.htmlpdf.itext;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.model.task.TaskDefaultColumn;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.BooleanOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.DefaultBooleanOption;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>25</i>&nbsp;import biz.ganttproject.core.option.EnumerationOption;
+<i>26</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>27</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>28</i>&nbsp;import biz.ganttproject.core.table.ColumnList.Column;
+<i>29</i>&nbsp;import com.itextpdf.text.BaseColor;
+<i>30</i>&nbsp;import com.itextpdf.text.Document;
+<i>31</i>&nbsp;import com.itextpdf.text.DocumentException;
+<i>32</i>&nbsp;import com.itextpdf.text.Element;
+<i>33</i>&nbsp;import com.itextpdf.text.Font;
+<i>34</i>&nbsp;import com.itextpdf.text.PageSize;
+<i>35</i>&nbsp;import com.itextpdf.text.Paragraph;
+<i>36</i>&nbsp;import com.itextpdf.text.Rectangle;
+<i>37</i>&nbsp;import com.itextpdf.text.pdf.PdfPCell;
+<i>38</i>&nbsp;import com.itextpdf.text.pdf.PdfPTable;
+<i>39</i>&nbsp;import com.itextpdf.text.pdf.PdfPageEvent;
+<i>40</i>&nbsp;import com.itextpdf.text.pdf.PdfWriter;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.ResourceDefaultColumn;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.export.ExportException;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.export.ExporterBase;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.export.TaskVisitor;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.language.LanguageOption;
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>54</i>&nbsp;import org.ganttproject.impex.htmlpdf.PropertyFetcher;
+<i>55</i>&nbsp;import org.ganttproject.impex.htmlpdf.StylesheetImpl;
+<i>56</i>&nbsp;import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;import java.io.IOException;
+<i>59</i>&nbsp;import java.io.OutputStream;
+<i>60</i>&nbsp;import java.lang.reflect.Field;
+<i>61</i>&nbsp;import java.net.URL;
+<i>62</i>&nbsp;import java.text.DateFormat;
+<i>63</i>&nbsp;import java.text.MessageFormat;
+<i>64</i>&nbsp;import java.util.ArrayList;
+<i>65</i>&nbsp;import java.util.Collections;
+<i>66</i>&nbsp;import java.util.Comparator;
+<i>67</i>&nbsp;import java.util.Date;
+<i>68</i>&nbsp;import java.util.HashMap;
+<i>69</i>&nbsp;import java.util.LinkedHashMap;
+<i>70</i>&nbsp;import java.util.List;
+<i>71</i>&nbsp;import java.util.Locale;
+<i>72</i>&nbsp;import java.util.Map;
+<i>73</i>&nbsp;import java.util.Map.Entry;
+<i>74</i>&nbsp;import java.util.Properties;
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;/**
+<i>77</i>&nbsp; * Implements Sortavala iText theme.
+<i>78</i>&nbsp; *
+<i>79</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>80</i>&nbsp; */
+<i>81</i>&nbsp;class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
+<b class="nc"><i>82</i>&nbsp;  private static List&lt;String&gt; ourSizes = new ArrayList&lt;&gt;();</b>
+<i>83</i>&nbsp;  static {
+<b class="nc"><i>84</i>&nbsp;    for (Field field : PageSize.class.getDeclaredFields()) {</b>
+<b class="nc"><i>85</i>&nbsp;      if (field.getType().equals(Rectangle.class)) {</b>
+<b class="nc"><i>86</i>&nbsp;        ourSizes.add(field.getName());</b>
+<i>87</i>&nbsp;      }
+<i>88</i>&nbsp;    }
+<i>89</i>&nbsp;  }
+<b class="nc"><i>90</i>&nbsp;  private static final BaseColor SORTAVALA_GREEN = new BaseColor(0x66, 0x99, 0x99);</b>
+<i>91</i>&nbsp;  private Document myDoc;
+<i>92</i>&nbsp;  private PdfWriter myWriter;
+<i>93</i>&nbsp;  private IGanttProject myProject;
+<i>94</i>&nbsp;  private UIFacade myUIFacade;
+<i>95</i>&nbsp;  private String myLeftSubcolontitle;
+<b class="nc"><i>96</i>&nbsp;  private final BooleanOption myShowNotesOption = new DefaultBooleanOption(&quot;export.itext.showNotes&quot;);</b>
+<b class="nc"><i>97</i>&nbsp;  private final BooleanOption myLandscapeOption = new DefaultBooleanOption(&quot;export.itext.landscape&quot;);</b>
+<b class="nc"><i>98</i>&nbsp;  private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption&lt;String&gt;(&quot;export.itext.pageSize&quot;,</b>
+<i>99</i>&nbsp;      ourSizes);
+<b class="nc"><i>100</i>&nbsp;  private final LanguageOption myLanguageOption = new LanguageOption() {</b>
+<i>101</i>&nbsp;    {
+<b class="nc"><i>102</i>&nbsp;      setSelectedValue(GanttLanguage.getInstance().getLocale());</b>
+<i>103</i>&nbsp;    }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;    @Override
+<i>106</i>&nbsp;    protected void applyLocale(Locale locale) {
+<i>107</i>&nbsp;    }
+<i>108</i>&nbsp;  };
+<b class="nc"><i>109</i>&nbsp;  private final GPOptionGroup myPageOptions = new GPOptionGroup(&quot;export.itext.page&quot;, myPageSizeOption,</b>
+<i>110</i>&nbsp;      myLandscapeOption);
+<b class="nc"><i>111</i>&nbsp;  private final GPOptionGroup myDataOptions = new GPOptionGroup(&quot;export.itext.data&quot;,</b>
+<i>112</i>&nbsp;      myShowNotesOption);
+<b class="nc"><i>113</i>&nbsp;  private boolean isColontitleEnabled = false;</b>
+<i>114</i>&nbsp;  private final Properties myProperties;
+<i>115</i>&nbsp;  private FontSubstitutionModel mySubstitutionModel;
+<i>116</i>&nbsp;  private final ExporterBase myExporter;
+<i>117</i>&nbsp;  private final TTFontCache myFontCache;
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  ThemeImpl(URL url, String localizedName, ExporterBase exporter, TTFontCache fontCache) {
+<b class="nc"><i>120</i>&nbsp;    super(url, localizedName + &quot; (iText)&quot;);</b>
+<b class="nc"><i>121</i>&nbsp;    myFontCache = fontCache;</b>
+<b class="nc"><i>122</i>&nbsp;    myExporter = exporter;</b>
+<b class="nc"><i>123</i>&nbsp;    myProperties = new Properties();</b>
+<i>124</i>&nbsp;    try {
+<b class="nc"><i>125</i>&nbsp;      myProperties.load(url.openStream());</b>
+<b class="nc"><i>126</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>127</i>&nbsp;      throw new RuntimeException(e);</b>
+<b class="nc"><i>128</i>&nbsp;    }</b>
+<b class="nc"><i>129</i>&nbsp;    myFontCache.setProperties(myProperties);</b>
+<b class="nc"><i>130</i>&nbsp;    I18N i18n = new OptionsPageBuilder.I18N();</b>
+<b class="nc"><i>131</i>&nbsp;    GPOptionGroup languageOptions = new GPOptionGroup(&quot;export.itext.language&quot;, myLanguageOption);</b>
+<b class="nc"><i>132</i>&nbsp;    languageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(languageOptions), &quot;language&quot;);</b>
+<b class="nc"><i>133</i>&nbsp;    languageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), &quot;language&quot;);</b>
+<i>134</i>&nbsp;
+<b class="nc"><i>135</i>&nbsp;    myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), &quot;show&quot;);</b>
+<b class="nc"><i>136</i>&nbsp;    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), &quot;notes&quot;);</b>
+<b class="nc"><i>137</i>&nbsp;    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + &quot;.yes&quot;, &quot;yes&quot;);</b>
+<b class="nc"><i>138</i>&nbsp;    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + &quot;.no&quot;, &quot;no&quot;);</b>
+<i>139</i>&nbsp;
+<b class="nc"><i>140</i>&nbsp;    myPageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myPageOptions), &quot;choosePaperFormat&quot;);</b>
+<b class="nc"><i>141</i>&nbsp;    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + &quot;.yes&quot;, &quot;landscape&quot;);</b>
+<b class="nc"><i>142</i>&nbsp;    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + &quot;.no&quot;, &quot;portrait&quot;);</b>
+<b class="nc"><i>143</i>&nbsp;    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myPageSizeOption), &quot;paperSize&quot;);</b>
+<i>144</i>&nbsp;
+<b class="nc"><i>145</i>&nbsp;    myPageOptions.lock();</b>
+<b class="nc"><i>146</i>&nbsp;    myDataOptions.lock();</b>
+<b class="nc"><i>147</i>&nbsp;    myPageSizeOption.setValue(&quot;A4&quot;);</b>
+<b class="nc"><i>148</i>&nbsp;    myShowNotesOption.loadPersistentValue(&quot;true&quot;);</b>
+<b class="nc"><i>149</i>&nbsp;    myLandscapeOption.loadPersistentValue(&quot;true&quot;);</b>
+<b class="nc"><i>150</i>&nbsp;    myPageOptions.commit();</b>
+<b class="nc"><i>151</i>&nbsp;    myDataOptions.commit();</b>
+<i>152</i>&nbsp;  }
+<i>153</i>&nbsp;
+<i>154</i>&nbsp;  GPOptionGroup[] getOptions() {
+<b class="nc"><i>155</i>&nbsp;    return new GPOptionGroup[] { myDataOptions, myPageOptions };</b>
+<i>156</i>&nbsp;  }
+<i>157</i>&nbsp;
+<i>158</i>&nbsp;  protected IGanttProject getProject() {
+<b class="nc"><i>159</i>&nbsp;    return myProject;</b>
+<i>160</i>&nbsp;  }
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  private UIFacade getUIFacade() {
+<b class="nc"><i>163</i>&nbsp;    return myUIFacade;</b>
+<i>164</i>&nbsp;  }
+<i>165</i>&nbsp;
+<i>166</i>&nbsp;  // /////////////////////////////////////
+<i>167</i>&nbsp;  // ITextStylesheet
+<i>168</i>&nbsp;  @Override
+<i>169</i>&nbsp;  public List&lt;String&gt; getFontFamilies() {
+<b class="nc"><i>170</i>&nbsp;    return Collections.singletonList(getOriginalFontName());</b>
+<i>171</i>&nbsp;  }
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;  @Override
+<i>174</i>&nbsp;  public void setFontSubstitutionModel(FontSubstitutionModel model) {
+<b class="nc"><i>175</i>&nbsp;    mySubstitutionModel = model;</b>
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;
+<i>178</i>&nbsp;  private String getOriginalFontName() {
+<b class="nc"><i>179</i>&nbsp;    return myProperties.getProperty(&quot;font-family&quot;);</b>
+<i>180</i>&nbsp;  }
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;  private String getFontName() {
+<b class="nc"><i>183</i>&nbsp;    return mySubstitutionModel.getSubstitution(getOriginalFontName()).getSubstitutionFamily();</b>
+<i>184</i>&nbsp;  }
+<i>185</i>&nbsp;
+<i>186</i>&nbsp;  private Font getSansRegular(float size) {
+<b class="nc"><i>187</i>&nbsp;    return myFontCache.getFont(getFontName(), getCharset(), Font.NORMAL, size);</b>
+<i>188</i>&nbsp;  }
+<i>189</i>&nbsp;
+<i>190</i>&nbsp;  private Font getSansItalic(float size) {
+<b class="nc"><i>191</i>&nbsp;    return myFontCache.getFont(getFontName(), getCharset(), Font.ITALIC, size);</b>
+<i>192</i>&nbsp;  }
+<i>193</i>&nbsp;
+<i>194</i>&nbsp;  private Font getSansRegularBold(float size) {
+<b class="nc"><i>195</i>&nbsp;    return myFontCache.getFont(getFontName(), getCharset(), Font.BOLD, size);</b>
+<i>196</i>&nbsp;  }
+<i>197</i>&nbsp;
+<i>198</i>&nbsp;  protected Font getSansRegularBold() {
+<b class="nc"><i>199</i>&nbsp;    return getSansRegularBold(12);</b>
+<i>200</i>&nbsp;  }
+<i>201</i>&nbsp;
+<i>202</i>&nbsp;  private String getCharset() {
+<b class="nc"><i>203</i>&nbsp;    return myProperties.getProperty(&quot;charset&quot;, GanttLanguage.getInstance().getCharSet());</b>
+<i>204</i>&nbsp;  }
+<i>205</i>&nbsp;
+<i>206</i>&nbsp;  private String i18n(String key) {
+<b class="nc"><i>207</i>&nbsp;    String value = myProperties.getProperty(key);</b>
+<b class="nc"><i>208</i>&nbsp;    if (value != null) {</b>
+<b class="nc"><i>209</i>&nbsp;      return value;</b>
+<i>210</i>&nbsp;    }
+<i>211</i>&nbsp;//    Locale selectedLocale = myLanguageOption.getSelectedValue();
+<i>212</i>&nbsp;//    if (selectedLocale != null) {
+<i>213</i>&nbsp;//      value = GanttLanguage.getInstance().getText(&quot;impex.pdf.theme.sortavala.&quot; + key, selectedLocale);
+<i>214</i>&nbsp;//    }
+<i>215</i>&nbsp;//    if (value != null) {
+<i>216</i>&nbsp;//      return value;
+<i>217</i>&nbsp;//    }
+<b class="nc"><i>218</i>&nbsp;    value = GanttLanguage.getInstance().getText(&quot;impex.pdf.theme.sortavala.&quot; + key);</b>
+<b class="nc"><i>219</i>&nbsp;    return value == null ? key : value;</b>
+<i>220</i>&nbsp;  }
+<i>221</i>&nbsp;
+<i>222</i>&nbsp;  void run(IGanttProject project, UIFacade facade, OutputStream out) throws ExportException {
+<b class="nc"><i>223</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>224</i>&nbsp;    myUIFacade = facade;</b>
+<b class="nc"><i>225</i>&nbsp;    Rectangle pageSize = PageSize.getRectangle(myPageSizeOption.getValue());</b>
+<b class="nc"><i>226</i>&nbsp;    if (myLandscapeOption.isChecked()) {</b>
+<b class="nc"><i>227</i>&nbsp;      pageSize = pageSize.rotate();</b>
+<i>228</i>&nbsp;    }
+<b class="nc"><i>229</i>&nbsp;    myDoc = new Document(pageSize, 20, 20, 70, 40);</b>
+<i>230</i>&nbsp;    try {
+<b class="nc"><i>231</i>&nbsp;      myWriter = PdfWriter.getInstance(myDoc, out);</b>
+<b class="nc"><i>232</i>&nbsp;      myWriter.setPageEvent(this);</b>
+<b class="nc"><i>233</i>&nbsp;      myDoc.open();</b>
+<b class="nc"><i>234</i>&nbsp;      writeProject();</b>
+<b class="nc"><i>235</i>&nbsp;    } catch (Throwable e) {</b>
+<b class="nc"><i>236</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>237</i>&nbsp;      throw new ExportException(&quot;Export failed&quot;, e);</b>
+<i>238</i>&nbsp;    } finally {
+<b class="nc"><i>239</i>&nbsp;      myDoc.close();</b>
+<b class="nc"><i>240</i>&nbsp;    }</b>
+<i>241</i>&nbsp;  }
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;  private void writeProject() throws Exception {
+<b class="nc"><i>244</i>&nbsp;    writeTitlePage();</b>
+<b class="nc"><i>245</i>&nbsp;    myDoc.newPage();</b>
+<b class="nc"><i>246</i>&nbsp;    isColontitleEnabled = true;</b>
+<b class="nc"><i>247</i>&nbsp;    myLeftSubcolontitle = i18n(&quot;title.tasks&quot;);</b>
+<b class="nc"><i>248</i>&nbsp;    writeTasks();</b>
+<b class="nc"><i>249</i>&nbsp;    myDoc.newPage();</b>
+<b class="nc"><i>250</i>&nbsp;    myLeftSubcolontitle = i18n(&quot;title.resources&quot;);</b>
+<b class="nc"><i>251</i>&nbsp;    writeResources();</b>
+<b class="nc"><i>252</i>&nbsp;    myDoc.newPage();</b>
+<b class="nc"><i>253</i>&nbsp;    writeGanttChart();</b>
+<b class="nc"><i>254</i>&nbsp;    myDoc.newPage();</b>
+<b class="nc"><i>255</i>&nbsp;    writeResourceChart();</b>
+<i>256</i>&nbsp;  }
+<i>257</i>&nbsp;
+<i>258</i>&nbsp;  private void writeAttributes(PdfPTable table, LinkedHashMap&lt;String, String&gt; attrs) {
+<b class="nc"><i>259</i>&nbsp;    for (Entry&lt;String, String&gt; nextEntry : attrs.entrySet()) {</b>
+<i>260</i>&nbsp;      {
+<b class="nc"><i>261</i>&nbsp;        Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));</b>
+<b class="nc"><i>262</i>&nbsp;        PdfPCell cell = new PdfPCell(p);</b>
+<b class="nc"><i>263</i>&nbsp;        cell.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>264</i>&nbsp;        table.addCell(cell);</b>
+<i>265</i>&nbsp;      }
+<i>266</i>&nbsp;      {
+<b class="nc"><i>267</i>&nbsp;        Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(12));</b>
+<b class="nc"><i>268</i>&nbsp;        PdfPCell cell = new PdfPCell(p);</b>
+<b class="nc"><i>269</i>&nbsp;        cell.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>270</i>&nbsp;        table.addCell(cell);</b>
+<i>271</i>&nbsp;      }
+<b class="nc"><i>272</i>&nbsp;    }</b>
+<i>273</i>&nbsp;  }
+<i>274</i>&nbsp;
+<i>275</i>&nbsp;  private void writeTitlePage() throws DocumentException {
+<b class="nc"><i>276</i>&nbsp;    Rectangle page = myDoc.getPageSize();</b>
+<b class="nc"><i>277</i>&nbsp;    PdfPTable head = new PdfPTable(1);</b>
+<b class="nc"><i>278</i>&nbsp;    PdfPTable colontitleTable = createColontitleTable(getProject().getProjectName(),</b>
+<b class="nc"><i>279</i>&nbsp;        GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), getProject().getOrganization(),</b>
+<b class="nc"><i>280</i>&nbsp;        getProject().getWebLink());</b>
+<i>281</i>&nbsp;
+<b class="nc"><i>282</i>&nbsp;    head.setTotalWidth(page.getWidth() - myDoc.leftMargin() - myDoc.rightMargin());</b>
+<i>283</i>&nbsp;    {
+<b class="nc"><i>284</i>&nbsp;      PdfPCell cell = new PdfPCell(colontitleTable);</b>
+<b class="nc"><i>285</i>&nbsp;      cell.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>286</i>&nbsp;      head.addCell(cell);</b>
+<i>287</i>&nbsp;    }
+<b class="nc"><i>288</i>&nbsp;    addEmptyRow(head, 20);</b>
+<b class="nc"><i>289</i>&nbsp;    LinkedHashMap&lt;String, String&gt; attrs = new LinkedHashMap&lt;&gt;();</b>
+<b class="nc"><i>290</i>&nbsp;    attrs.put(i18n(&quot;label.project_manager&quot;), buildManagerString());</b>
+<b class="nc"><i>291</i>&nbsp;    attrs.put(i18n(&quot;label.dates&quot;), buildProjectDatesString());</b>
+<b class="nc"><i>292</i>&nbsp;    attrs.put(&quot; &quot;, &quot; &quot;);</b>
+<b class="nc"><i>293</i>&nbsp;    attrs.put(i18n(&quot;label.completion&quot;), buildProjectCompletionString());</b>
+<b class="nc"><i>294</i>&nbsp;    attrs.put(i18n(&quot;label.tasks&quot;), String.valueOf(getProject().getTaskManager().getTaskCount()));</b>
+<b class="nc"><i>295</i>&nbsp;    attrs.put(i18n(&quot;label.resources&quot;), String.valueOf(getProject().getHumanResourceManager().getResources().size()));</b>
+<b class="nc"><i>296</i>&nbsp;    PdfPTable attrsTable = new PdfPTable(2);</b>
+<b class="nc"><i>297</i>&nbsp;    writeAttributes(attrsTable, attrs);</b>
+<b class="nc"><i>298</i>&nbsp;    PdfPCell attrsCell = new PdfPCell(attrsTable);</b>
+<b class="nc"><i>299</i>&nbsp;    attrsCell.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>300</i>&nbsp;    head.addCell(attrsCell);</b>
+<b class="nc"><i>301</i>&nbsp;    addEmptyRow(head, 20);</b>
+<b class="nc"><i>302</i>&nbsp;    if (getProject().getDescription().length() &gt; 0) {</b>
+<b class="nc"><i>303</i>&nbsp;      Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(12));</b>
+<b class="nc"><i>304</i>&nbsp;      PdfPCell cell = new PdfPCell(p);</b>
+<b class="nc"><i>305</i>&nbsp;      cell.setBorder(PdfPCell.TOP | PdfPCell.BOTTOM);</b>
+<b class="nc"><i>306</i>&nbsp;      cell.setBorderColor(SORTAVALA_GREEN);</b>
+<b class="nc"><i>307</i>&nbsp;      cell.setBorderWidth(1);</b>
+<b class="nc"><i>308</i>&nbsp;      cell.setPadding(5);</b>
+<b class="nc"><i>309</i>&nbsp;      cell.setVerticalAlignment(PdfPCell.ALIGN_CENTER);</b>
+<b class="nc"><i>310</i>&nbsp;      head.addCell(cell);</b>
+<i>311</i>&nbsp;    }
+<i>312</i>&nbsp;
+<b class="nc"><i>313</i>&nbsp;    myDoc.add(head);</b>
+<i>314</i>&nbsp;  }
+<i>315</i>&nbsp;
+<i>316</i>&nbsp;  private String buildProjectCompletionString() {
+<b class="nc"><i>317</i>&nbsp;    return String.valueOf(getProject().getTaskManager().getProjectCompletion()) + &quot;%&quot;;</b>
+<i>318</i>&nbsp;  }
+<i>319</i>&nbsp;
+<i>320</i>&nbsp;  private String buildManagerString() {
+<b class="nc"><i>321</i>&nbsp;    Role managerRole = getProject().getRoleManager().getRole(myProperties.getProperty(&quot;manager-role&quot;));</b>
+<b class="nc"><i>322</i>&nbsp;    if (managerRole == null) {</b>
+<b class="nc"><i>323</i>&nbsp;      return &quot;&quot;;</b>
+<i>324</i>&nbsp;    }
+<b class="nc"><i>325</i>&nbsp;    StringBuilder result = new StringBuilder();</b>
+<b class="nc"><i>326</i>&nbsp;    String delimiter = &quot;&quot;;</b>
+<b class="nc"><i>327</i>&nbsp;    List&lt;HumanResource&gt; resources = getProject().getHumanResourceManager().getResources();</b>
+<b class="nc"><i>328</i>&nbsp;    for (HumanResource resource : resources) {</b>
+<b class="nc"><i>329</i>&nbsp;      if (resource.getRole().equals(managerRole)) {</b>
+<b class="nc"><i>330</i>&nbsp;        result.append(delimiter).append(resource.getName());</b>
+<b class="nc"><i>331</i>&nbsp;        delimiter = &quot;, &quot;;</b>
+<i>332</i>&nbsp;      }
+<b class="nc"><i>333</i>&nbsp;    }</b>
+<b class="nc"><i>334</i>&nbsp;    return result.toString();</b>
+<i>335</i>&nbsp;  }
+<i>336</i>&nbsp;
+<i>337</i>&nbsp;  private String buildProjectDatesString() {
+<b class="nc"><i>338</i>&nbsp;    DateFormat dateFormat = GanttLanguage.getInstance().getMediumDateFormat();</b>
+<b class="nc"><i>339</i>&nbsp;    return MessageFormat.format(</b>
+<i>340</i>&nbsp;        &quot;{0} - {1}\n&quot;,
+<b class="nc"><i>341</i>&nbsp;        dateFormat.format(getProject().getTaskManager().getProjectStart()),</b>
+<b class="nc"><i>342</i>&nbsp;        dateFormat.format(getProject().getTaskManager().getProjectEnd()));</b>
+<i>343</i>&nbsp;  }
+<i>344</i>&nbsp;
+<i>345</i>&nbsp;  private void writeGanttChart() {
+<b class="nc"><i>346</i>&nbsp;    isColontitleEnabled = false;</b>
+<b class="nc"><i>347</i>&nbsp;    writeColontitle(getProject().getProjectName(),</b>
+<b class="nc"><i>348</i>&nbsp;        GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),</b>
+<b class="nc"><i>349</i>&nbsp;        GanttLanguage.getInstance().getText(&quot;ganttChart&quot;), String.valueOf(myWriter.getPageNumber()));</b>
+<b class="nc"><i>350</i>&nbsp;    ChartWriter ganttChartWriter = new ChartWriter(myUIFacade.getGanttChart(), myWriter, myDoc,</b>
+<b class="nc"><i>351</i>&nbsp;        myExporter.createExportSettings(), myFontCache, mySubstitutionModel, getCharset());</b>
+<b class="nc"><i>352</i>&nbsp;    ganttChartWriter.write();</b>
+<i>353</i>&nbsp;  }
+<i>354</i>&nbsp;
+<i>355</i>&nbsp;  private void writeResourceChart() {
+<b class="nc"><i>356</i>&nbsp;    isColontitleEnabled = false;</b>
+<b class="nc"><i>357</i>&nbsp;    writeColontitle(getProject().getProjectName(),</b>
+<b class="nc"><i>358</i>&nbsp;        GanttLanguage.getInstance().getMediumDateFormat().format(new Date()),</b>
+<b class="nc"><i>359</i>&nbsp;        GanttLanguage.getInstance().getText(&quot;resourcesChart&quot;), String.valueOf(myWriter.getPageNumber()));</b>
+<b class="nc"><i>360</i>&nbsp;    ChartWriter resourceChartWriter = new ChartWriter(myUIFacade.getResourceChart(), myWriter, myDoc,</b>
+<b class="nc"><i>361</i>&nbsp;        myExporter.createExportSettings(), myFontCache, mySubstitutionModel, getCharset());</b>
+<b class="nc"><i>362</i>&nbsp;    resourceChartWriter.write();</b>
+<i>363</i>&nbsp;  }
+<i>364</i>&nbsp;
+<i>365</i>&nbsp;  private PdfPTable createTableHeader(ColumnList tableHeader, ArrayList&lt;Column&gt; orderedColumns) {
+<b class="nc"><i>366</i>&nbsp;    for (int i = 0; i &lt; tableHeader.getSize(); i++) {</b>
+<b class="nc"><i>367</i>&nbsp;      Column c = tableHeader.getField(i);</b>
+<b class="nc"><i>368</i>&nbsp;      if (c.isVisible()) {</b>
+<b class="nc"><i>369</i>&nbsp;        orderedColumns.add(c);</b>
+<i>370</i>&nbsp;      }
+<i>371</i>&nbsp;    }
+<b class="nc"><i>372</i>&nbsp;    Collections.sort(orderedColumns, new Comparator&lt;Column&gt;() {</b>
+<i>373</i>&nbsp;      @Override
+<i>374</i>&nbsp;      public int compare(Column lhs, Column rhs) {
+<b class="nc"><i>375</i>&nbsp;        if (lhs == null || rhs == null) {</b>
+<b class="nc"><i>376</i>&nbsp;          return 0;</b>
+<i>377</i>&nbsp;        }
+<b class="nc"><i>378</i>&nbsp;        return lhs.getOrder() - rhs.getOrder();</b>
+<i>379</i>&nbsp;      }
+<i>380</i>&nbsp;    });
+<b class="nc"><i>381</i>&nbsp;    float[] widths = new float[orderedColumns.size()];</b>
+<b class="nc"><i>382</i>&nbsp;    for (int i = 0; i &lt; orderedColumns.size(); i++) {</b>
+<b class="nc"><i>383</i>&nbsp;      Column column = orderedColumns.get(i);</b>
+<b class="nc"><i>384</i>&nbsp;      widths[i] = column.getWidth();</b>
+<i>385</i>&nbsp;    }
+<i>386</i>&nbsp;
+<b class="nc"><i>387</i>&nbsp;    PdfPTable table = new PdfPTable(widths);</b>
+<b class="nc"><i>388</i>&nbsp;    table.setWidthPercentage(95);</b>
+<b class="nc"><i>389</i>&nbsp;    for (Column field : orderedColumns) {</b>
+<b class="nc"><i>390</i>&nbsp;      if (field.isVisible()) {</b>
+<b class="nc"><i>391</i>&nbsp;        PdfPCell cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(12f)));</b>
+<b class="nc"><i>392</i>&nbsp;        cell.setPaddingTop(4);</b>
+<b class="nc"><i>393</i>&nbsp;        cell.setPaddingBottom(4);</b>
+<b class="nc"><i>394</i>&nbsp;        cell.setPaddingLeft(5);</b>
+<b class="nc"><i>395</i>&nbsp;        cell.setPaddingRight(5);</b>
+<b class="nc"><i>396</i>&nbsp;        cell.setBorderWidth(0);</b>
+<b class="nc"><i>397</i>&nbsp;        cell.setBorder(PdfPCell.BOTTOM);</b>
+<b class="nc"><i>398</i>&nbsp;        cell.setBorderWidthBottom(1);</b>
+<b class="nc"><i>399</i>&nbsp;        cell.setBorderColor(SORTAVALA_GREEN);</b>
+<b class="nc"><i>400</i>&nbsp;        table.addCell(cell);</b>
+<i>401</i>&nbsp;      }
+<b class="nc"><i>402</i>&nbsp;    }</b>
+<b class="nc"><i>403</i>&nbsp;    table.setHeaderRows(1);</b>
+<b class="nc"><i>404</i>&nbsp;    return table;</b>
+<i>405</i>&nbsp;  }
+<i>406</i>&nbsp;
+<i>407</i>&nbsp;  private void addEmptyRow(PdfPTable table, float height) {
+<b class="nc"><i>408</i>&nbsp;    PdfPCell emptyCell = new PdfPCell(new Paragraph(&quot;  &quot;, getSansRegular(height)));</b>
+<b class="nc"><i>409</i>&nbsp;    emptyCell.setBorderWidth(0);</b>
+<b class="nc"><i>410</i>&nbsp;    for (int i = 0; i &lt; table.getNumberOfColumns(); i++) {</b>
+<b class="nc"><i>411</i>&nbsp;      table.addCell(emptyCell);</b>
+<i>412</i>&nbsp;    }
+<i>413</i>&nbsp;  }
+<i>414</i>&nbsp;
+<i>415</i>&nbsp;  private void writeProperties(ArrayList&lt;Column&gt; orderedColumns, Map&lt;String, String&gt; id2value, PdfPTable table,
+<i>416</i>&nbsp;                               Map&lt;String, PdfPCell&gt; id2cell) {
+<b class="nc"><i>417</i>&nbsp;    for (Column column : orderedColumns) {</b>
+<b class="nc"><i>418</i>&nbsp;      PdfPCell cell = id2cell.get(column.getID());</b>
+<b class="nc"><i>419</i>&nbsp;      if (cell == null) {</b>
+<b class="nc"><i>420</i>&nbsp;        String value = id2value.get(column.getID());</b>
+<b class="nc"><i>421</i>&nbsp;        if (value == null) {</b>
+<b class="nc"><i>422</i>&nbsp;          value = &quot;&quot;;</b>
+<i>423</i>&nbsp;        }
+<b class="nc"><i>424</i>&nbsp;        Paragraph p = new Paragraph(value, getSansRegular(12));</b>
+<b class="nc"><i>425</i>&nbsp;        cell = new PdfPCell(p);</b>
+<b class="nc"><i>426</i>&nbsp;        if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())</b>
+<b class="nc"><i>427</i>&nbsp;            || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())</b>
+<b class="nc"><i>428</i>&nbsp;            || ResourceDefaultColumn.TOTAL_COST.getStub().getID().equals(column.getID())</b>
+<b class="nc"><i>429</i>&nbsp;            || ResourceDefaultColumn.TOTAL_LOAD.getStub().getID().equals(column.getID())) {</b>
+<b class="nc"><i>430</i>&nbsp;          cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);</b>
+<i>431</i>&nbsp;        }
+<b class="nc"><i>432</i>&nbsp;        cell.setBorderWidth(0);</b>
+<b class="nc"><i>433</i>&nbsp;        cell.setPaddingLeft(5);</b>
+<i>434</i>&nbsp;      }
+<b class="nc"><i>435</i>&nbsp;      table.addCell(cell);</b>
+<b class="nc"><i>436</i>&nbsp;    }</b>
+<i>437</i>&nbsp;  }
+<i>438</i>&nbsp;
+<i>439</i>&nbsp;  private void writeTasks() throws Exception {
+<b class="nc"><i>440</i>&nbsp;    ColumnList visibleFields = getUIFacade().getTaskTree().getVisibleFields();</b>
+<b class="nc"><i>441</i>&nbsp;    final ArrayList&lt;Column&gt; orderedColumns = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>442</i>&nbsp;    final PdfPTable table = createTableHeader(visibleFields, orderedColumns);</b>
+<i>443</i>&nbsp;
+<b class="nc"><i>444</i>&nbsp;    TaskVisitor taskVisitor = new TaskVisitor() {</b>
+<b class="nc"><i>445</i>&nbsp;      int myPreviousChildTaskCount = 0;</b>
+<b class="nc"><i>446</i>&nbsp;      int myPreviousChildlessTaskCount = 0;</b>
+<i>447</i>&nbsp;
+<b class="nc"><i>448</i>&nbsp;      PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());</b>
+<i>449</i>&nbsp;
+<i>450</i>&nbsp;      @Override
+<i>451</i>&nbsp;      protected String serializeTask(Task t, int depth) throws Exception {
+<b class="nc"><i>452</i>&nbsp;        boolean addEmptyRow = false;</b>
+<b class="nc"><i>453</i>&nbsp;        if (depth == 0) {</b>
+<b class="nc"><i>454</i>&nbsp;          addEmptyRow = myPreviousChildTaskCount &gt; 0;</b>
+<b class="nc"><i>455</i>&nbsp;          boolean hasNested = getProject().getTaskManager().getTaskHierarchy().hasNestedTasks(t);</b>
+<b class="nc"><i>456</i>&nbsp;          if (!addEmptyRow) {</b>
+<b class="nc"><i>457</i>&nbsp;            if (hasNested) {</b>
+<b class="nc"><i>458</i>&nbsp;              addEmptyRow = myPreviousChildlessTaskCount &gt; 0;</b>
+<b class="nc"><i>459</i>&nbsp;              myPreviousChildlessTaskCount = 0;</b>
+<i>460</i>&nbsp;            }
+<i>461</i>&nbsp;          }
+<b class="nc"><i>462</i>&nbsp;          myPreviousChildTaskCount = 0;</b>
+<b class="nc"><i>463</i>&nbsp;          if (!hasNested) {</b>
+<b class="nc"><i>464</i>&nbsp;            myPreviousChildlessTaskCount++;</b>
+<i>465</i>&nbsp;          }
+<b class="nc"><i>466</i>&nbsp;        } else {</b>
+<b class="nc"><i>467</i>&nbsp;          myPreviousChildTaskCount++;</b>
+<b class="nc"><i>468</i>&nbsp;          myPreviousChildlessTaskCount = 0;</b>
+<i>469</i>&nbsp;        }
+<b class="nc"><i>470</i>&nbsp;        if (addEmptyRow) {</b>
+<b class="nc"><i>471</i>&nbsp;          addEmptyRow(table, 10);</b>
+<i>472</i>&nbsp;        }
+<b class="nc"><i>473</i>&nbsp;        HashMap&lt;String, String&gt; id2value = new HashMap&lt;&gt;();</b>
+<b class="nc"><i>474</i>&nbsp;        myTaskProperty.getTaskAttributes(t, id2value);</b>
+<b class="nc"><i>475</i>&nbsp;        HashMap&lt;String, PdfPCell&gt; id2cell = new HashMap&lt;&gt;();</b>
+<i>476</i>&nbsp;
+<i>477</i>&nbsp;        PdfPCell nameCell;
+<b class="nc"><i>478</i>&nbsp;        if (myShowNotesOption.isChecked() &amp;&amp; t.getNotes() != null &amp;&amp; !&quot;&quot;.equals(t.getNotes())) {</b>
+<b class="nc"><i>479</i>&nbsp;          nameCell = new PdfPCell(createNameCellContent(t));</b>
+<i>480</i>&nbsp;        } else {
+<b class="nc"><i>481</i>&nbsp;          nameCell = new PdfPCell(new Paragraph(t.getName(), getSansRegular(12)));</b>
+<i>482</i>&nbsp;        }
+<b class="nc"><i>483</i>&nbsp;        nameCell.setBorderWidth(0);</b>
+<b class="nc"><i>484</i>&nbsp;        nameCell.setPaddingLeft(5 + depth * 10);</b>
+<i>485</i>&nbsp;
+<b class="nc"><i>486</i>&nbsp;        id2cell.put(&quot;tpd3&quot;, nameCell);</b>
+<b class="nc"><i>487</i>&nbsp;        writeProperties(orderedColumns, id2value, table, id2cell);</b>
+<b class="nc"><i>488</i>&nbsp;        return &quot;&quot;;</b>
+<i>489</i>&nbsp;      }
+<i>490</i>&nbsp;
+<i>491</i>&nbsp;      private PdfPTable createNameCellContent(Task t) {
+<b class="nc"><i>492</i>&nbsp;        PdfPTable table = new PdfPTable(1);</b>
+<b class="nc"><i>493</i>&nbsp;        Paragraph p = new Paragraph(t.getName(), getSansRegular(12));</b>
+<b class="nc"><i>494</i>&nbsp;        PdfPCell cell1 = new PdfPCell();</b>
+<b class="nc"><i>495</i>&nbsp;        cell1.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>496</i>&nbsp;        cell1.setPhrase(p);</b>
+<b class="nc"><i>497</i>&nbsp;        cell1.setPaddingLeft(0);</b>
+<b class="nc"><i>498</i>&nbsp;        table.addCell(cell1);</b>
+<i>499</i>&nbsp;
+<b class="nc"><i>500</i>&nbsp;        Paragraph notes = new Paragraph(t.getNotes(), getSansItalic(8));</b>
+<b class="nc"><i>501</i>&nbsp;        PdfPCell cell2 = new PdfPCell();</b>
+<b class="nc"><i>502</i>&nbsp;        cell2.setBorder(PdfPCell.NO_BORDER);</b>
+<b class="nc"><i>503</i>&nbsp;        cell2.setPhrase(notes);</b>
+<b class="nc"><i>504</i>&nbsp;        cell2.setPaddingLeft(3);</b>
+<b class="nc"><i>505</i>&nbsp;        table.addCell(cell2);</b>
+<b class="nc"><i>506</i>&nbsp;        return table;</b>
+<i>507</i>&nbsp;      }
+<i>508</i>&nbsp;    };
+<b class="nc"><i>509</i>&nbsp;    taskVisitor.visit(getProject().getTaskManager());</b>
+<b class="nc"><i>510</i>&nbsp;    myDoc.add(table);</b>
+<i>511</i>&nbsp;  }
+<i>512</i>&nbsp;
+<i>513</i>&nbsp;  private void writeResources() throws Exception {
+<b class="nc"><i>514</i>&nbsp;    ColumnList visibleFields = getUIFacade().getResourceTree().getVisibleFields();</b>
+<b class="nc"><i>515</i>&nbsp;    final ArrayList&lt;Column&gt; orderedColumns = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>516</i>&nbsp;    final PdfPTable table = createTableHeader(visibleFields, orderedColumns);</b>
+<b class="nc"><i>517</i>&nbsp;    List&lt;HumanResource&gt; resources = getProject().getHumanResourceManager().getResources();</b>
+<i>518</i>&nbsp;
+<b class="nc"><i>519</i>&nbsp;    PropertyFetcher propFetcher = new PropertyFetcher(getProject());</b>
+<b class="nc"><i>520</i>&nbsp;    for (HumanResource resource : resources) {</b>
+<b class="nc"><i>521</i>&nbsp;      HashMap&lt;String, String&gt; id2value = new HashMap&lt;&gt;();</b>
+<b class="nc"><i>522</i>&nbsp;      propFetcher.getResourceAttributes(resource, id2value);</b>
+<b class="nc"><i>523</i>&nbsp;      HashMap&lt;String, PdfPCell&gt; id2cell = new HashMap&lt;&gt;();</b>
+<b class="nc"><i>524</i>&nbsp;      writeProperties(orderedColumns, id2value, table, id2cell);</b>
+<b class="nc"><i>525</i>&nbsp;    }</b>
+<b class="nc"><i>526</i>&nbsp;    myDoc.add(table);</b>
+<i>527</i>&nbsp;
+<i>528</i>&nbsp;  }
+<i>529</i>&nbsp;
+<i>530</i>&nbsp;  private PdfPTable createColontitleTable(String topLeft, String topRight, String bottomLeft, String bottomRight) {
+<b class="nc"><i>531</i>&nbsp;    PdfPTable head = new PdfPTable(2);</b>
+<i>532</i>&nbsp;    {
+<b class="nc"><i>533</i>&nbsp;      PdfPCell cell = new PdfPCell();</b>
+<b class="nc"><i>534</i>&nbsp;      cell.setBorder(Rectangle.NO_BORDER);</b>
+<b class="nc"><i>535</i>&nbsp;      Paragraph p = new Paragraph(topLeft, getSansRegularBold(18));</b>
+<b class="nc"><i>536</i>&nbsp;      p.setAlignment(Paragraph.ALIGN_LEFT);</b>
+<i>537</i>&nbsp;      // colontitle.setLeading(0);
+<b class="nc"><i>538</i>&nbsp;      cell.setHorizontalAlignment(Element.ALIGN_LEFT);</b>
+<b class="nc"><i>539</i>&nbsp;      cell.setVerticalAlignment(Element.ALIGN_BOTTOM);</b>
+<i>540</i>&nbsp;      // cell.setPaddingLeft(2);
+<b class="nc"><i>541</i>&nbsp;      cell.setPaddingBottom(6);</b>
+<b class="nc"><i>542</i>&nbsp;      cell.setPhrase(p);</b>
+<b class="nc"><i>543</i>&nbsp;      head.addCell(cell);</b>
+<i>544</i>&nbsp;    }
+<i>545</i>&nbsp;    {
+<b class="nc"><i>546</i>&nbsp;      PdfPCell cell = new PdfPCell();</b>
+<b class="nc"><i>547</i>&nbsp;      cell.setBorder(Rectangle.NO_BORDER);</b>
+<b class="nc"><i>548</i>&nbsp;      Paragraph p = new Paragraph(topRight, getSansRegularBold(10));</b>
+<b class="nc"><i>549</i>&nbsp;      p.setAlignment(Paragraph.ALIGN_RIGHT);</b>
+<b class="nc"><i>550</i>&nbsp;      cell.setHorizontalAlignment(Element.ALIGN_RIGHT);</b>
+<b class="nc"><i>551</i>&nbsp;      cell.setVerticalAlignment(Element.ALIGN_BOTTOM);</b>
+<b class="nc"><i>552</i>&nbsp;      cell.setPaddingBottom(6);</b>
+<b class="nc"><i>553</i>&nbsp;      cell.setPhrase(p);</b>
+<b class="nc"><i>554</i>&nbsp;      head.addCell(cell);</b>
+<i>555</i>&nbsp;    }
+<i>556</i>&nbsp;    {
+<b class="nc"><i>557</i>&nbsp;      PdfPCell cell = new PdfPCell();</b>
+<b class="nc"><i>558</i>&nbsp;      cell.setVerticalAlignment(Element.ALIGN_TOP);</b>
+<b class="nc"><i>559</i>&nbsp;      cell.setHorizontalAlignment(Element.ALIGN_LEFT);</b>
+<b class="nc"><i>560</i>&nbsp;      cell.setPaddingLeft(3);</b>
+<b class="nc"><i>561</i>&nbsp;      cell.setPaddingTop(2);</b>
+<b class="nc"><i>562</i>&nbsp;      cell.setPaddingBottom(6);</b>
+<b class="nc"><i>563</i>&nbsp;      cell.setBorder(Rectangle.TOP);</b>
+<b class="nc"><i>564</i>&nbsp;      cell.setBorderWidthTop(2);</b>
+<b class="nc"><i>565</i>&nbsp;      cell.setBorderColor(SORTAVALA_GREEN);</b>
+<b class="nc"><i>566</i>&nbsp;      Paragraph p = new Paragraph(bottomLeft, getSansRegularBold(18));</b>
+<b class="nc"><i>567</i>&nbsp;      p.setAlignment(Paragraph.ALIGN_LEFT);</b>
+<b class="nc"><i>568</i>&nbsp;      p.setExtraParagraphSpace(0);</b>
+<b class="nc"><i>569</i>&nbsp;      p.setIndentationLeft(0);</b>
+<b class="nc"><i>570</i>&nbsp;      p.setSpacingBefore(0);</b>
+<b class="nc"><i>571</i>&nbsp;      cell.setPhrase(p);</b>
+<i>572</i>&nbsp;      // cell.addElement(p);
+<b class="nc"><i>573</i>&nbsp;      head.addCell(cell);</b>
+<i>574</i>&nbsp;    }
+<i>575</i>&nbsp;    {
+<b class="nc"><i>576</i>&nbsp;      PdfPCell cell = new PdfPCell();</b>
+<b class="nc"><i>577</i>&nbsp;      cell.setVerticalAlignment(Element.ALIGN_TOP);</b>
+<b class="nc"><i>578</i>&nbsp;      cell.setHorizontalAlignment(Element.ALIGN_RIGHT);</b>
+<b class="nc"><i>579</i>&nbsp;      cell.setPaddingTop(2);</b>
+<b class="nc"><i>580</i>&nbsp;      cell.setPaddingBottom(6);</b>
+<b class="nc"><i>581</i>&nbsp;      cell.setBorder(Rectangle.TOP);</b>
+<b class="nc"><i>582</i>&nbsp;      cell.setBorderWidthTop(2);</b>
+<b class="nc"><i>583</i>&nbsp;      cell.setBorderColor(SORTAVALA_GREEN);</b>
+<b class="nc"><i>584</i>&nbsp;      Paragraph p = new Paragraph(bottomRight, getSansRegularBold(10));</b>
+<b class="nc"><i>585</i>&nbsp;      p.setAlignment(Paragraph.ALIGN_RIGHT);</b>
+<b class="nc"><i>586</i>&nbsp;      cell.setPhrase(p);</b>
+<b class="nc"><i>587</i>&nbsp;      head.addCell(cell);</b>
+<i>588</i>&nbsp;    }
+<b class="nc"><i>589</i>&nbsp;    final Document document = myDoc;</b>
+<b class="nc"><i>590</i>&nbsp;    Rectangle page = document.getPageSize();</b>
+<b class="nc"><i>591</i>&nbsp;    head.setTotalWidth(page.getWidth() - document.leftMargin() - document.rightMargin());</b>
+<b class="nc"><i>592</i>&nbsp;    return head;</b>
+<i>593</i>&nbsp;  }
+<i>594</i>&nbsp;
+<i>595</i>&nbsp;  private void writeColontitle(String topLeft, String topRight, String bottomLeft, String bottomRight) {
+<b class="nc"><i>596</i>&nbsp;    final Document document = myDoc;</b>
+<b class="nc"><i>597</i>&nbsp;    final PdfWriter writer = myWriter;</b>
+<b class="nc"><i>598</i>&nbsp;    Rectangle page = document.getPageSize();</b>
+<b class="nc"><i>599</i>&nbsp;    PdfPTable colontitleTable = createColontitleTable(topLeft, topRight, bottomLeft, bottomRight);</b>
+<b class="nc"><i>600</i>&nbsp;    colontitleTable.writeSelectedRows(0, -1, document.leftMargin(), page.getHeight() - document.topMargin()</b>
+<b class="nc"><i>601</i>&nbsp;        + colontitleTable.getTotalHeight(), writer.getDirectContent());</b>
+<i>602</i>&nbsp;
+<i>603</i>&nbsp;  }
+<i>604</i>&nbsp;
+<i>605</i>&nbsp;  @Override
+<i>606</i>&nbsp;  public void onChapter(PdfWriter arg0, Document arg1, float arg2, Paragraph arg3) {
+<i>607</i>&nbsp;  }
+<i>608</i>&nbsp;
+<i>609</i>&nbsp;  @Override
+<i>610</i>&nbsp;  public void onChapterEnd(PdfWriter arg0, Document arg1, float arg2) {
+<i>611</i>&nbsp;  }
+<i>612</i>&nbsp;
+<i>613</i>&nbsp;  @Override
+<i>614</i>&nbsp;  public void onCloseDocument(PdfWriter arg0, Document arg1) {
+<i>615</i>&nbsp;  }
+<i>616</i>&nbsp;
+<i>617</i>&nbsp;  @Override
+<i>618</i>&nbsp;  public void onEndPage(PdfWriter writer, Document document) {
+<b class="nc"><i>619</i>&nbsp;    if (isColontitleEnabled) {</b>
+<b class="nc"><i>620</i>&nbsp;      writeColontitle(getProject().getProjectName(),</b>
+<b class="nc"><i>621</i>&nbsp;          GanttLanguage.getInstance().getMediumDateFormat().format(new Date()), myLeftSubcolontitle,</b>
+<b class="nc"><i>622</i>&nbsp;          String.valueOf(writer.getPageNumber()));</b>
+<i>623</i>&nbsp;    }
+<i>624</i>&nbsp;  }
+<i>625</i>&nbsp;
+<i>626</i>&nbsp;  @Override
+<i>627</i>&nbsp;  public void onGenericTag(PdfWriter arg0, Document arg1, Rectangle arg2, String arg3) {
+<i>628</i>&nbsp;  }
+<i>629</i>&nbsp;
+<i>630</i>&nbsp;  @Override
+<i>631</i>&nbsp;  public void onOpenDocument(PdfWriter arg0, Document arg1) {
+<i>632</i>&nbsp;  }
+<i>633</i>&nbsp;
+<i>634</i>&nbsp;  @Override
+<i>635</i>&nbsp;  public void onParagraph(PdfWriter arg0, Document arg1, float arg2) {
+<i>636</i>&nbsp;  }
+<i>637</i>&nbsp;
+<i>638</i>&nbsp;  @Override
+<i>639</i>&nbsp;  public void onParagraphEnd(PdfWriter arg0, Document arg1, float arg2) {
+<i>640</i>&nbsp;  }
+<i>641</i>&nbsp;
+<i>642</i>&nbsp;  @Override
+<i>643</i>&nbsp;  public void onSection(PdfWriter arg0, Document arg1, float arg2, int arg3, Paragraph arg4) {
+<i>644</i>&nbsp;  }
+<i>645</i>&nbsp;
+<i>646</i>&nbsp;  @Override
+<i>647</i>&nbsp;  public void onSectionEnd(PdfWriter arg0, Document arg1, float arg2) {
+<i>648</i>&nbsp;  }
+<i>649</i>&nbsp;
+<i>650</i>&nbsp;  @Override
+<i>651</i>&nbsp;  public void onStartPage(PdfWriter writer, Document document) {
+<i>652</i>&nbsp;  }
+<i>653</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

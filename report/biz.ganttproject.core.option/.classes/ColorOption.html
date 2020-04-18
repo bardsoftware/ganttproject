@@ -1,0 +1,148 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ColorOption</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.option</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ColorOption (biz.ganttproject.core.option)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">ColorOption$Util</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 19)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 19)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.option;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;import java.util.regex.Pattern;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;public interface ColorOption extends GPOption&lt;Color&gt; {
+<b class="nc"><i>25</i>&nbsp;  class Util {</b>
+<b class="nc"><i>26</i>&nbsp;    private static Pattern HEX_COLOR = Pattern.compile(&quot;#[0-9abcdefABCDEF]{6}+&quot;);</b>
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;    public static String getColor(Color color) {
+<b class="nc"><i>29</i>&nbsp;      String res = &quot;#&quot;;</b>
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;      if (color.getRed() &lt;= 15)</b>
+<b class="nc"><i>32</i>&nbsp;        res += &quot;0&quot;;</b>
+<b class="nc"><i>33</i>&nbsp;      res += Integer.toHexString(color.getRed());</b>
+<b class="nc"><i>34</i>&nbsp;      if (color.getGreen() &lt;= 15)</b>
+<b class="nc"><i>35</i>&nbsp;        res += &quot;0&quot;;</b>
+<b class="nc"><i>36</i>&nbsp;      res += Integer.toHexString(color.getGreen());</b>
+<b class="nc"><i>37</i>&nbsp;      if (color.getBlue() &lt;= 15)</b>
+<b class="nc"><i>38</i>&nbsp;        res += &quot;0&quot;;</b>
+<b class="nc"><i>39</i>&nbsp;      res += Integer.toHexString(color.getBlue());</b>
+<i>40</i>&nbsp;
+<b class="nc"><i>41</i>&nbsp;      return res;</b>
+<i>42</i>&nbsp;    }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;    /** parse a string as hew and return the corresponding color. */
+<i>45</i>&nbsp;    public static Color determineColor(String hexString) {
+<b class="nc"><i>46</i>&nbsp;      assert isValidColor(hexString) : &quot;Can&#39;t parse color &quot; + hexString;</b>
+<i>47</i>&nbsp;      int r, g, b;
+<b class="nc"><i>48</i>&nbsp;      r = Integer.valueOf(hexString.substring(1, 3), 16).intValue();</b>
+<b class="nc"><i>49</i>&nbsp;      g = Integer.valueOf(hexString.substring(3, 5), 16).intValue();</b>
+<b class="nc"><i>50</i>&nbsp;      b = Integer.valueOf(hexString.substring(5, 7), 16).intValue();</b>
+<b class="nc"><i>51</i>&nbsp;      return new Color(r, g, b);</b>
+<i>52</i>&nbsp;    }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;    public static boolean isValidColor(String hexString) {
+<b class="nc"><i>55</i>&nbsp;      return HEX_COLOR.matcher(hexString).matches();</b>
+<i>56</i>&nbsp;    }
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

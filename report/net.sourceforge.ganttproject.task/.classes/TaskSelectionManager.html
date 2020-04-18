@@ -1,0 +1,302 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskSelectionManager</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskSelectionManager (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskSelectionManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 55)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskSelectionManager$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskSelectionManager$Listener</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 57)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;import java.util.Collections;
+<i>23</i>&nbsp;import java.util.Comparator;
+<i>24</i>&nbsp;import java.util.Date;
+<i>25</i>&nbsp;import java.util.Iterator;
+<i>26</i>&nbsp;import java.util.List;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import com.google.common.base.Supplier;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;/**
+<i>33</i>&nbsp; * This class manages the selected tasks.
+<i>34</i>&nbsp; *
+<i>35</i>&nbsp; * @author bbaranne
+<i>36</i>&nbsp; */
+<i>37</i>&nbsp;public class TaskSelectionManager implements TaskSelectionContext {
+<i>38</i>&nbsp;  public interface Listener {
+<i>39</i>&nbsp;    void selectionChanged(List&lt;Task&gt; currentSelection);
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;    void userInputConsumerChanged(Object newConsumer);
+<i>42</i>&nbsp;  }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  /**
+<i>45</i>&nbsp;   * List of the selected tasks.
+<i>46</i>&nbsp;   */
+<b class="nc"><i>47</i>&nbsp;  private final List&lt;Task&gt; selectedTasks = new ArrayList&lt;Task&gt;();</b>
+<b class="nc"><i>48</i>&nbsp;  private final List&lt;Listener&gt; myListeners = new ArrayList&lt;Listener&gt;();</b>
+<i>49</i>&nbsp;  private Object myUserInputConsumer;
+<i>50</i>&nbsp;  private final Supplier&lt;TaskManager&gt; myTaskManager;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  /**
+<i>53</i>&nbsp;   * Creates an instance of TaskSelectionManager
+<i>54</i>&nbsp;   */
+<b class="nc"><i>55</i>&nbsp;  public TaskSelectionManager(Supplier&lt;TaskManager&gt; taskManager) {</b>
+<b class="nc"><i>56</i>&nbsp;    myTaskManager = taskManager;</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public void setUserInputConsumer(Object consumer) {
+<b class="nc"><i>60</i>&nbsp;    if (consumer != myUserInputConsumer) {</b>
+<b class="nc"><i>61</i>&nbsp;      fireUserInputConsumerChanged();</b>
+<i>62</i>&nbsp;    }
+<b class="nc"><i>63</i>&nbsp;    myUserInputConsumer = consumer;</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  /**
+<i>67</i>&nbsp;   * Adds &lt;code&gt;task&lt;/code&gt; to the selected tasks.
+<i>68</i>&nbsp;   *
+<i>69</i>&nbsp;   * @param task
+<i>70</i>&nbsp;   *          A task to add to the selected tasks.
+<i>71</i>&nbsp;   */
+<i>72</i>&nbsp;  public void addTask(Task task) {
+<b class="nc"><i>73</i>&nbsp;    if (!selectedTasks.contains(task)) {</b>
+<b class="nc"><i>74</i>&nbsp;      selectedTasks.add(task);</b>
+<b class="nc"><i>75</i>&nbsp;      fireSelectionChanged();</b>
+<i>76</i>&nbsp;    }
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  /**
+<i>80</i>&nbsp;   * Removes &lt;code&gt;task&lt;/code&gt; from the selected tasks;
+<i>81</i>&nbsp;   *
+<i>82</i>&nbsp;   * @param task
+<i>83</i>&nbsp;   *          A task to remove from the selected tasks.
+<i>84</i>&nbsp;   */
+<i>85</i>&nbsp;  public void removeTask(Task task) {
+<b class="nc"><i>86</i>&nbsp;    if (selectedTasks.contains(task)) {</b>
+<b class="nc"><i>87</i>&nbsp;      selectedTasks.remove(task);</b>
+<b class="nc"><i>88</i>&nbsp;      fireSelectionChanged();</b>
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  private TaskContainmentHierarchyFacade getTaskHierarchy() {
+<b class="nc"><i>93</i>&nbsp;    return myTaskManager.get().getTaskHierarchy();</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  public void setSelectedTasks(List&lt;Task&gt; tasks) {
+<i>97</i>&nbsp;    // selection paths in Swing are stored in a hashtable
+<i>98</i>&nbsp;    // and thus come to selection listeners in pretty random order.
+<i>99</i>&nbsp;    // For correct indent/outdent operations with need
+<i>100</i>&nbsp;    // to order them the way they are ordered in the tree.
+<b class="nc"><i>101</i>&nbsp;    Collections.sort(tasks, new Comparator&lt;Task&gt;() {</b>
+<i>102</i>&nbsp;      @Override
+<i>103</i>&nbsp;      public int compare(Task o1, Task o2) {
+<b class="nc"><i>104</i>&nbsp;        return getTaskHierarchy().compareDocumentOrder(o1, o2);</b>
+<i>105</i>&nbsp;      }
+<i>106</i>&nbsp;    });
+<b class="nc"><i>107</i>&nbsp;    clear();</b>
+<b class="nc"><i>108</i>&nbsp;    for (Task t : tasks) {</b>
+<b class="nc"><i>109</i>&nbsp;      addTask(t);</b>
+<b class="nc"><i>110</i>&nbsp;    }</b>
+<i>111</i>&nbsp;  }
+<i>112</i>&nbsp;  /**
+<i>113</i>&nbsp;   * @param task
+<i>114</i>&nbsp;   *          The task to test.
+<i>115</i>&nbsp;   * @return &lt;code&gt;true&lt;/code&gt; if &lt;code&gt;task&lt;/code&gt; is selected,
+<i>116</i>&nbsp;   *         &lt;code&gt;false&lt;/code&gt; otherwise.
+<i>117</i>&nbsp;   */
+<i>118</i>&nbsp;  public boolean isTaskSelected(Task task) {
+<b class="nc"><i>119</i>&nbsp;    return selectedTasks.contains(task);</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  /** @return The selected tasks list. */
+<i>123</i>&nbsp;  @Override
+<i>124</i>&nbsp;  public List&lt;Task&gt; getSelectedTasks() {
+<b class="nc"><i>125</i>&nbsp;    return Collections.unmodifiableList(selectedTasks);</b>
+<i>126</i>&nbsp;  }
+<i>127</i>&nbsp;
+<i>128</i>&nbsp;  /** @return The earliest start date. */
+<i>129</i>&nbsp;  public Date getEarliestStart() {
+<b class="nc"><i>130</i>&nbsp;    Date res = null;</b>
+<b class="nc"><i>131</i>&nbsp;    Iterator&lt;Task&gt; it = selectedTasks.iterator();</b>
+<b class="nc"><i>132</i>&nbsp;    while (it.hasNext()) {</b>
+<i>133</i>&nbsp;
+<b class="nc"><i>134</i>&nbsp;      Task task = it.next();</b>
+<b class="nc"><i>135</i>&nbsp;      Date d = task.getStart().getTime();</b>
+<b class="nc"><i>136</i>&nbsp;      if (res == null) {</b>
+<b class="nc"><i>137</i>&nbsp;        res = d;</b>
+<b class="nc"><i>138</i>&nbsp;        continue;</b>
+<i>139</i>&nbsp;      }
+<b class="nc"><i>140</i>&nbsp;      if (d.before(res))</b>
+<b class="nc"><i>141</i>&nbsp;        res = d;</b>
+<b class="nc"><i>142</i>&nbsp;    }</b>
+<b class="nc"><i>143</i>&nbsp;    return res;</b>
+<i>144</i>&nbsp;  }
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  /** @return The latest end date. */
+<i>147</i>&nbsp;  public Date getLatestEnd() {
+<b class="nc"><i>148</i>&nbsp;    Date res = null;</b>
+<b class="nc"><i>149</i>&nbsp;    Iterator&lt;Task&gt; it = selectedTasks.iterator();</b>
+<b class="nc"><i>150</i>&nbsp;    while (it.hasNext()) {</b>
+<b class="nc"><i>151</i>&nbsp;      Task task = it.next();</b>
+<b class="nc"><i>152</i>&nbsp;      Date d = task.getEnd().getTime();</b>
+<b class="nc"><i>153</i>&nbsp;      if (res == null) {</b>
+<b class="nc"><i>154</i>&nbsp;        res = d;</b>
+<b class="nc"><i>155</i>&nbsp;        continue;</b>
+<i>156</i>&nbsp;      }
+<b class="nc"><i>157</i>&nbsp;      if (d.after(res))</b>
+<b class="nc"><i>158</i>&nbsp;        res = d;</b>
+<b class="nc"><i>159</i>&nbsp;    }</b>
+<b class="nc"><i>160</i>&nbsp;    return res;</b>
+<i>161</i>&nbsp;  }
+<i>162</i>&nbsp;
+<i>163</i>&nbsp;  /** Clears the selected tasks list. */
+<i>164</i>&nbsp;  public void clear() {
+<b class="nc"><i>165</i>&nbsp;    selectedTasks.clear();</b>
+<b class="nc"><i>166</i>&nbsp;    fireSelectionChanged();</b>
+<i>167</i>&nbsp;  }
+<i>168</i>&nbsp;
+<i>169</i>&nbsp;  public void addSelectionListener(Listener listener) {
+<b class="nc"><i>170</i>&nbsp;    myListeners.add(listener);</b>
+<i>171</i>&nbsp;  }
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;  public void removeSelectionListener(Listener listener) {
+<b class="nc"><i>174</i>&nbsp;    myListeners.remove(listener);</b>
+<i>175</i>&nbsp;  }
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  public void fireSelectionChanged() {
+<b class="nc"><i>178</i>&nbsp;    for (int i = 0; i &lt; myListeners.size(); i++) {</b>
+<b class="nc"><i>179</i>&nbsp;      Listener next = myListeners.get(i);</b>
+<b class="nc"><i>180</i>&nbsp;      next.selectionChanged(Collections.unmodifiableList(selectedTasks));</b>
+<i>181</i>&nbsp;    }
+<i>182</i>&nbsp;  }
+<i>183</i>&nbsp;
+<i>184</i>&nbsp;  private void fireUserInputConsumerChanged() {
+<b class="nc"><i>185</i>&nbsp;    for (int i = 0; i &lt; myListeners.size(); i++) {</b>
+<b class="nc"><i>186</i>&nbsp;      Listener next = myListeners.get(i);</b>
+<b class="nc"><i>187</i>&nbsp;      next.userInputConsumerChanged(myUserInputConsumer);</b>
+<i>188</i>&nbsp;    }
+<i>189</i>&nbsp;  }
+<i>190</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

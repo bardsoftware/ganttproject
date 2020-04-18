@@ -1,0 +1,353 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskManager</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskManager (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">TaskManager$Access</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskManager$TaskBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.5%
+  </span>
+  <span class="absValue">
+    (13/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.8%
+  </span>
+  <span class="absValue">
+    (25/ 33)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    73.7%
+  </span>
+  <span class="absValue">
+    (14/ 19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.3%
+  </span>
+  <span class="absValue">
+    (26/ 35)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2003-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>22</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarListener;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.ColorOption;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.EnumerationOption;
+<i>25</i>&nbsp;import biz.ganttproject.core.option.StringOption;
+<i>26</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>27</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.GanttTask;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.ProjectEventListener;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.task.Task.Priority;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.task.event.TaskListener;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;import java.awt.*;
+<i>42</i>&nbsp;import java.math.BigDecimal;
+<i>43</i>&nbsp;import java.util.Date;
+<i>44</i>&nbsp;import java.util.Map;
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;/**
+<i>47</i>&nbsp; * @author bard
+<i>48</i>&nbsp; */
+<i>49</i>&nbsp;public interface TaskManager {
+<b class="fc"><i>50</i>&nbsp;  abstract class TaskBuilder {</b>
+<i>51</i>&nbsp;    String myName;
+<i>52</i>&nbsp;    Integer myId;
+<i>53</i>&nbsp;    Date myStartDate;
+<i>54</i>&nbsp;    TimeDuration myDuration;
+<i>55</i>&nbsp;    Color myColor;
+<i>56</i>&nbsp;    Task myPrevSibling;
+<i>57</i>&nbsp;    Boolean isExpanded;
+<i>58</i>&nbsp;    Task myParent;
+<i>59</i>&nbsp;    boolean isLegacyMilestone;
+<i>60</i>&nbsp;    Date myEndDate;
+<i>61</i>&nbsp;    String myNotes;
+<i>62</i>&nbsp;    String myWebLink;
+<i>63</i>&nbsp;    Integer myCompletion;
+<i>64</i>&nbsp;    Priority myPriority;
+<i>65</i>&nbsp;    Task myPrototype;
+<i>66</i>&nbsp;    BigDecimal myCost;
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;    public TaskBuilder withColor(Color color) {
+<b class="fc"><i>69</i>&nbsp;      myColor = color;</b>
+<b class="fc"><i>70</i>&nbsp;      return this;</b>
+<i>71</i>&nbsp;    }
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;    public TaskBuilder withCompletion(int pctgCompletion) {
+<b class="fc"><i>74</i>&nbsp;      myCompletion = pctgCompletion;</b>
+<b class="fc"><i>75</i>&nbsp;      return this;</b>
+<i>76</i>&nbsp;    }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;    public TaskBuilder withDuration(TimeDuration duration) {
+<b class="fc"><i>79</i>&nbsp;      myDuration = duration;</b>
+<b class="fc"><i>80</i>&nbsp;      return this;</b>
+<i>81</i>&nbsp;    }
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;    public TaskBuilder withEndDate(Date date) {
+<b class="nc"><i>84</i>&nbsp;      myEndDate = date;</b>
+<b class="nc"><i>85</i>&nbsp;      return this;</b>
+<i>86</i>&nbsp;    }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;    public TaskBuilder withExpansionState(boolean isExpanded) {
+<b class="nc"><i>89</i>&nbsp;      this.isExpanded = isExpanded;</b>
+<b class="nc"><i>90</i>&nbsp;      return this;</b>
+<i>91</i>&nbsp;    }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;    public TaskBuilder withId(int id) {
+<b class="fc"><i>94</i>&nbsp;      myId = id;</b>
+<b class="fc"><i>95</i>&nbsp;      return this;</b>
+<i>96</i>&nbsp;    }
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;    public TaskBuilder withLegacyMilestone() {
+<b class="nc"><i>99</i>&nbsp;      isLegacyMilestone = true;</b>
+<b class="nc"><i>100</i>&nbsp;      return this;</b>
+<i>101</i>&nbsp;    }
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;    public TaskBuilder withName(String name) {
+<b class="fc"><i>104</i>&nbsp;      myName = name;</b>
+<b class="fc"><i>105</i>&nbsp;      return this;</b>
+<i>106</i>&nbsp;    }
+<i>107</i>&nbsp;
+<i>108</i>&nbsp;    public TaskBuilder withNotes(String notes) {
+<b class="fc"><i>109</i>&nbsp;      myNotes = notes;</b>
+<b class="fc"><i>110</i>&nbsp;      return this;</b>
+<i>111</i>&nbsp;    }
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;    public TaskBuilder withParent(Task parent) {
+<b class="fc"><i>114</i>&nbsp;      myParent = parent;</b>
+<b class="fc"><i>115</i>&nbsp;      return this;</b>
+<i>116</i>&nbsp;    }
+<i>117</i>&nbsp;    public TaskBuilder withPrevSibling(Task sibling) {
+<b class="fc"><i>118</i>&nbsp;      myPrevSibling = sibling;</b>
+<b class="fc"><i>119</i>&nbsp;      return this;</b>
+<i>120</i>&nbsp;    }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;    public TaskBuilder withPriority(Priority priority) {
+<b class="fc"><i>123</i>&nbsp;      myPriority = priority;</b>
+<b class="fc"><i>124</i>&nbsp;      return this;</b>
+<i>125</i>&nbsp;    }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;    public TaskBuilder withPrototype(Task prototype) {
+<b class="fc"><i>128</i>&nbsp;      myPrototype = prototype;</b>
+<b class="fc"><i>129</i>&nbsp;      return this;</b>
+<i>130</i>&nbsp;    }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;    public TaskBuilder withStartDate(Date startDate) {
+<b class="fc"><i>133</i>&nbsp;      myStartDate = startDate;</b>
+<b class="fc"><i>134</i>&nbsp;      return this;</b>
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;    public TaskBuilder withWebLink(String value) {
+<b class="fc"><i>138</i>&nbsp;      myWebLink = value;</b>
+<b class="fc"><i>139</i>&nbsp;      return this;</b>
+<i>140</i>&nbsp;    }
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;    public TaskBuilder withCost(BigDecimal value) {
+<b class="nc"><i>143</i>&nbsp;      myCost = value;</b>
+<b class="nc"><i>144</i>&nbsp;      return this;</b>
+<i>145</i>&nbsp;    }
+<i>146</i>&nbsp;
+<i>147</i>&nbsp;    public abstract Task build();
+<i>148</i>&nbsp;  }
+<i>149</i>&nbsp;
+<i>150</i>&nbsp;  public TaskBuilder newTaskBuilder();
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;  Task[] getTasks();
+<i>153</i>&nbsp;
+<i>154</i>&nbsp;  public Task getRootTask();
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  public GanttTask getTask(int taskId);
+<i>157</i>&nbsp;
+<i>158</i>&nbsp;  public void registerTask(Task task);
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  public GanttTask createTask();
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  @Deprecated
+<i>163</i>&nbsp;  public GanttTask createTask(int taskId);
+<i>164</i>&nbsp;
+<i>165</i>&nbsp;
+<i>166</i>&nbsp;  String encode(TimeDuration duration);
+<i>167</i>&nbsp;
+<i>168</i>&nbsp;  TimeDuration createLength(String lengthAsString);
+<i>169</i>&nbsp;
+<i>170</i>&nbsp;  public TimeDuration createLength(long length);
+<i>171</i>&nbsp;
+<i>172</i>&nbsp;  TimeDuration createLength(TimeUnit unit, float length);
+<i>173</i>&nbsp;
+<i>174</i>&nbsp;  public TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
+<i>175</i>&nbsp;
+<i>176</i>&nbsp;  Date shift(Date original, TimeDuration duration);
+<i>177</i>&nbsp;
+<i>178</i>&nbsp;  TaskDependencyCollection getDependencyCollection();
+<i>179</i>&nbsp;
+<i>180</i>&nbsp;  AlgorithmCollection getAlgorithmCollection();
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;  TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
+<i>183</i>&nbsp;
+<i>184</i>&nbsp;  GPCalendarCalc getCalendar();
+<i>185</i>&nbsp;
+<i>186</i>&nbsp;  TaskContainmentHierarchyFacade getTaskHierarchy();
+<i>187</i>&nbsp;
+<i>188</i>&nbsp;  void addTaskListener(TaskListener listener);
+<i>189</i>&nbsp;
+<b class="nc"><i>190</i>&nbsp;  public class Access {</b>
+<i>191</i>&nbsp;    public static TaskManager newInstance(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
+<i>192</i>&nbsp;        TaskManagerConfig config) {
+<b class="fc"><i>193</i>&nbsp;      return new TaskManagerImpl(containmentFacadeFactory, config);</b>
+<i>194</i>&nbsp;    }
+<i>195</i>&nbsp;  }
+<i>196</i>&nbsp;
+<i>197</i>&nbsp;  public TimeDuration getProjectLength();
+<i>198</i>&nbsp;
+<i>199</i>&nbsp;  public int getTaskCount();
+<i>200</i>&nbsp;
+<i>201</i>&nbsp;  public Date getProjectStart();
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;  public Date getProjectEnd();
+<i>204</i>&nbsp;
+<i>205</i>&nbsp;  int getProjectCompletion();
+<i>206</i>&nbsp;
+<i>207</i>&nbsp;  public TaskManager emptyClone();
+<i>208</i>&nbsp;
+<i>209</i>&nbsp;  public Map&lt;Task, Task&gt; importData(TaskManager taskManager,
+<i>210</i>&nbsp;      Map&lt;CustomPropertyDefinition, CustomPropertyDefinition&gt; customPropertyMapping);
+<i>211</i>&nbsp;
+<i>212</i>&nbsp;  public void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
+<i>213</i>&nbsp;      Map&lt;Task, Task&gt; original2importedTask, Map&lt;HumanResource, HumanResource&gt; original2importedResource);
+<i>214</i>&nbsp;
+<i>215</i>&nbsp;  /**
+<i>216</i>&nbsp;   * Processes the critical path finding on &lt;code&gt;root&lt;/code&gt; tasks.
+<i>217</i>&nbsp;   *
+<i>218</i>&nbsp;   * @param root
+<i>219</i>&nbsp;   *          The root of the tasks to consider in the critical path finding.
+<i>220</i>&nbsp;   */
+<i>221</i>&nbsp;  public void processCriticalPath(Task root);
+<i>222</i>&nbsp;
+<i>223</i>&nbsp;  public void deleteTask(Task tasktoRemove);
+<i>224</i>&nbsp;
+<i>225</i>&nbsp;  CustomPropertyManager getCustomPropertyManager();
+<i>226</i>&nbsp;
+<i>227</i>&nbsp;  StringOption getTaskNamePrefixOption();
+<i>228</i>&nbsp;
+<i>229</i>&nbsp;  StringOption getTaskCopyNamePrefixOption();
+<i>230</i>&nbsp;
+<i>231</i>&nbsp;  ColorOption getTaskDefaultColorOption();
+<i>232</i>&nbsp;
+<i>233</i>&nbsp;  EnumerationOption getDependencyHardnessOption();
+<i>234</i>&nbsp;
+<i>235</i>&nbsp;  void setZeroMilestones(Boolean b);
+<i>236</i>&nbsp;
+<i>237</i>&nbsp;  Boolean isZeroMilestones();
+<i>238</i>&nbsp;
+<i>239</i>&nbsp;  DependencyGraph getDependencyGraph();
+<i>240</i>&nbsp;
+<i>241</i>&nbsp;  ProjectEventListener getProjectListener();
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;  GPCalendarListener getCalendarListener();
+<i>244</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

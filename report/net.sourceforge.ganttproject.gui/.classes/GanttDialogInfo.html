@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttDialogInfo</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttDialogInfo (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttDialogInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 39)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttDialogInfo$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttDialogInfo$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttDialogInfo$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 51)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.BorderLayout;
+<i>22</i>&nbsp;import java.awt.Frame;
+<i>23</i>&nbsp;import java.awt.event.ActionEvent;
+<i>24</i>&nbsp;import java.awt.event.ActionListener;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import javax.swing.Box;
+<i>27</i>&nbsp;import javax.swing.ImageIcon;
+<i>28</i>&nbsp;import javax.swing.JButton;
+<i>29</i>&nbsp;import javax.swing.JDialog;
+<i>30</i>&nbsp;import javax.swing.JLabel;
+<i>31</i>&nbsp;import javax.swing.JPanel;
+<i>32</i>&nbsp;import javax.swing.JTextArea;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;public class GanttDialogInfo extends JDialog {
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  /** An error message */
+<i>39</i>&nbsp;  public static final int ERROR = 0;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  /** A warning message */
+<i>42</i>&nbsp;  public static final int WARNING = 1;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  /** An info message */
+<i>45</i>&nbsp;  public static final int INFO = 2;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  /** A question message */
+<i>48</i>&nbsp;  public static final int QUESTION = 3;
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  /** Ok result */
+<i>51</i>&nbsp;  public static final int YES = 0;
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  /** Cancel result */
+<i>54</i>&nbsp;  public static final int NO = 1;
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  /** Undo result */
+<i>57</i>&nbsp;  public static final int CANCEL = 2;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  /** The result of the dialog box */
+<b class="nc"><i>60</i>&nbsp;  public int res = 0;</b>
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  /** only ok button */
+<b class="nc"><i>63</i>&nbsp;  public static int YES_OPTION = 0;</b>
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  /** ok and cancel button */
+<b class="nc"><i>66</i>&nbsp;  public static int YES_NO_OPTION = 1;</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  /** ok and cancel button */
+<b class="nc"><i>69</i>&nbsp;  public static int YES_NO_CANCEL_OPTION = 2;</b>
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  public GanttDialogInfo(Frame parent, int msgtype, int button, String message, String title) {
+<i>72</i>&nbsp;
+<b class="nc"><i>73</i>&nbsp;    super(parent, title, true);</b>
+<i>74</i>&nbsp;
+<b class="nc"><i>75</i>&nbsp;    GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>76</i>&nbsp;
+<b class="nc"><i>77</i>&nbsp;    res = button;</b>
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;    Box b1 = Box.createVerticalBox();</b>
+<i>80</i>&nbsp;
+<b class="nc"><i>81</i>&nbsp;    switch (msgtype) {</b>
+<i>82</i>&nbsp;    case ERROR:
+<b class="nc"><i>83</i>&nbsp;      b1.add(new JLabel(new ImageIcon(getClass().getResource(&quot;/icons/error.png&quot;))));</b>
+<b class="nc"><i>84</i>&nbsp;      break;</b>
+<i>85</i>&nbsp;    case WARNING:
+<b class="nc"><i>86</i>&nbsp;      b1.add(new JLabel(new ImageIcon(getClass().getResource(&quot;/icons/warning.png&quot;))));</b>
+<i>87</i>&nbsp;    case INFO:
+<b class="nc"><i>88</i>&nbsp;      b1.add(new JLabel(new ImageIcon(getClass().getResource(&quot;/icons/info.png&quot;))));</b>
+<i>89</i>&nbsp;    case QUESTION:
+<b class="nc"><i>90</i>&nbsp;      b1.add(new JLabel(new ImageIcon(getClass().getResource(&quot;/icons/question.png&quot;))));</b>
+<i>91</i>&nbsp;    }
+<i>92</i>&nbsp;
+<b class="nc"><i>93</i>&nbsp;    getContentPane().add(b1, &quot;West&quot;);</b>
+<i>94</i>&nbsp;
+<b class="nc"><i>95</i>&nbsp;    Box b2 = Box.createVerticalBox();</b>
+<b class="nc"><i>96</i>&nbsp;    JTextArea textArea = new JTextArea(message);</b>
+<b class="nc"><i>97</i>&nbsp;    textArea.setEditable(false);</b>
+<b class="nc"><i>98</i>&nbsp;    textArea.setBackground(new JLabel().getBackground());</b>
+<b class="nc"><i>99</i>&nbsp;    b2.add(textArea);</b>
+<b class="nc"><i>100</i>&nbsp;    getContentPane().add(b2, &quot;Center&quot;);</b>
+<i>101</i>&nbsp;
+<b class="nc"><i>102</i>&nbsp;    JPanel p = new JPanel();</b>
+<i>103</i>&nbsp;    // YES/OK BUTTON
+<b class="nc"><i>104</i>&nbsp;    JButton yes = new JButton((button == 0) ? language.getText(&quot;ok&quot;) : language.getText(&quot;yes&quot;));</b>
+<b class="nc"><i>105</i>&nbsp;    getRootPane().setDefaultButton(yes);</b>
+<b class="nc"><i>106</i>&nbsp;    p.add(yes);</b>
+<b class="nc"><i>107</i>&nbsp;    yes.addActionListener(new ActionListener() {</b>
+<i>108</i>&nbsp;      @Override
+<i>109</i>&nbsp;      public void actionPerformed(ActionEvent evt) {
+<b class="nc"><i>110</i>&nbsp;        setVisible(false);</b>
+<b class="nc"><i>111</i>&nbsp;        dispose();</b>
+<b class="nc"><i>112</i>&nbsp;        res = YES;</b>
+<i>113</i>&nbsp;      }
+<i>114</i>&nbsp;    });
+<i>115</i>&nbsp;
+<b class="nc"><i>116</i>&nbsp;    if (button &gt; 0) {</b>
+<i>117</i>&nbsp;      // NO BUTTON
+<b class="nc"><i>118</i>&nbsp;      JButton no = new JButton(language.getText(&quot;no&quot;));</b>
+<b class="nc"><i>119</i>&nbsp;      p.add(no);</b>
+<b class="nc"><i>120</i>&nbsp;      no.addActionListener(new ActionListener() {</b>
+<i>121</i>&nbsp;        @Override
+<i>122</i>&nbsp;        public void actionPerformed(ActionEvent evt) {
+<b class="nc"><i>123</i>&nbsp;          setVisible(false);</b>
+<b class="nc"><i>124</i>&nbsp;          dispose();</b>
+<b class="nc"><i>125</i>&nbsp;          res = NO;</b>
+<i>126</i>&nbsp;        }
+<i>127</i>&nbsp;      });
+<i>128</i>&nbsp;
+<b class="nc"><i>129</i>&nbsp;      if (button &gt; 1) {</b>
+<i>130</i>&nbsp;        // CANCEL BUTTON
+<b class="nc"><i>131</i>&nbsp;        JButton cancel = new JButton(language.getText(&quot;cancel&quot;));</b>
+<b class="nc"><i>132</i>&nbsp;        p.add(cancel);</b>
+<b class="nc"><i>133</i>&nbsp;        cancel.addActionListener(new ActionListener() {</b>
+<i>134</i>&nbsp;          @Override
+<i>135</i>&nbsp;          public void actionPerformed(ActionEvent evt) {
+<b class="nc"><i>136</i>&nbsp;            setVisible(false);</b>
+<b class="nc"><i>137</i>&nbsp;            dispose();</b>
+<b class="nc"><i>138</i>&nbsp;            res = CANCEL;</b>
+<i>139</i>&nbsp;          }
+<i>140</i>&nbsp;        });
+<i>141</i>&nbsp;      }
+<i>142</i>&nbsp;    }
+<i>143</i>&nbsp;
+<b class="nc"><i>144</i>&nbsp;    getContentPane().add(p, BorderLayout.SOUTH);</b>
+<i>145</i>&nbsp;
+<b class="nc"><i>146</i>&nbsp;    pack();</b>
+<b class="nc"><i>147</i>&nbsp;    setResizable(false);</b>
+<b class="nc"><i>148</i>&nbsp;    DialogAligner.center(this, getParent());</b>
+<b class="nc"><i>149</i>&nbsp;    applyComponentOrientation(language.getComponentOrientation());</b>
+<i>150</i>&nbsp;  }
+<i>151</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

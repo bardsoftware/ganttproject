@@ -1,0 +1,140 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ChartModel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ChartModel (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ChartModel</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.grid.Offset;
+<i>22</i>&nbsp;import biz.ganttproject.core.chart.grid.OffsetList;
+<i>23</i>&nbsp;import biz.ganttproject.core.chart.scene.SceneBuilder;
+<i>24</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelBase.OptionEventDispatcher;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import java.awt.*;
+<i>31</i>&nbsp;import java.util.Date;
+<i>32</i>&nbsp;import java.util.List;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;/**
+<i>35</i>&nbsp; * @author dbarashev
+<i>36</i>&nbsp; */
+<i>37</i>&nbsp;public interface ChartModel {
+<i>38</i>&nbsp;  void setBounds(Dimension bounds);
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  Dimension getBounds();
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  // Dimension getMaxBounds();
+<i>43</i>&nbsp;  void setStartDate(Date startDate);
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  /**
+<i>46</i>&nbsp;   * This method calculates the end date of this chart. It is a function of
+<i>47</i>&nbsp;   * (start date, bounds, bottom time unit, top time unit, bottom unit width) so
+<i>48</i>&nbsp;   * it expects that all these parameters are set correctly.
+<i>49</i>&nbsp;   */
+<i>50</i>&nbsp;  Date getEndDate();
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  Date getStartDate();
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  void setBottomUnitWidth(int pixelsWidth);
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  int getBottomUnitWidth();
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  int calculateRowHeight();
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  void setRowHeight(int rowHeight);
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  void setTopTimeUnit(TimeUnit topTimeUnit);
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  void setBottomTimeUnit(TimeUnit bottomTimeUnit);
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  public TimeUnit getBottomUnit();
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  void setVisibleTasks(List&lt;Task&gt; visibleTasks);
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  void paint(Graphics g);
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  void setVerticalOffset(int i);
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  ChartUIConfiguration getChartUIConfiguration();
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  void addRenderer(SceneBuilder renderer);
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  void resetOffsets();
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  OffsetList getTopUnitOffsets();
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  OffsetList getBottomUnitOffsets();
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  OffsetList getDefaultUnitOffsets();
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  Offset getOffsetAt(int x);
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  TaskManager getTaskManager();
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  TimeUnitStack getTimeUnitStack();
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  OptionEventDispatcher getOptionEventDispatcher();
+<i>93</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

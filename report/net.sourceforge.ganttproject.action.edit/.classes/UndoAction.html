@@ -1,0 +1,175 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: UndoAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.edit</a> ]
+</div>
+
+<h1>Coverage Summary for Class: UndoAction (net.sourceforge.ganttproject.action.edit)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UndoAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2005-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.edit;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoListener;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import javax.swing.event.UndoableEditEvent;
+<i>27</i>&nbsp;import java.awt.event.ActionEvent;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * @author bard
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public class UndoAction extends GPAction implements GPUndoListener {
+<i>33</i>&nbsp;  private final GPUndoManager myUndoManager;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  public UndoAction(GPUndoManager undoManager) {
+<b class="nc"><i>36</i>&nbsp;    this(undoManager, IconSize.MENU);</b>
+<i>37</i>&nbsp;  }
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  private UndoAction(GPUndoManager undoManager, IconSize size) {
+<b class="nc"><i>40</i>&nbsp;    super(&quot;undo&quot;, size.asString());</b>
+<b class="nc"><i>41</i>&nbsp;    myUndoManager = undoManager;</b>
+<b class="nc"><i>42</i>&nbsp;    myUndoManager.addUndoableEditListener(this);</b>
+<b class="nc"><i>43</i>&nbsp;    setEnabled(myUndoManager.canUndo());</b>
+<i>44</i>&nbsp;  }
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  @Override
+<i>47</i>&nbsp;  public GPAction withIcon(IconSize size) {
+<b class="nc"><i>48</i>&nbsp;    return new UndoAction(myUndoManager, size);</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  @Override
+<i>52</i>&nbsp;  public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>53</i>&nbsp;    if (calledFromAppleScreenMenu(e)) {</b>
+<i>54</i>&nbsp;      return;
+<i>55</i>&nbsp;    }
+<i>56</i>&nbsp;
+<b class="nc"><i>57</i>&nbsp;    myUndoManager.undo();</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public void undoableEditHappened(UndoableEditEvent e) {
+<b class="nc"><i>62</i>&nbsp;    setEnabled(myUndoManager.canUndo());</b>
+<b class="nc"><i>63</i>&nbsp;    updateTooltip();</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  @Override
+<i>67</i>&nbsp;  public void undoOrRedoHappened() {
+<b class="nc"><i>68</i>&nbsp;    setEnabled(myUndoManager.canUndo());</b>
+<b class="nc"><i>69</i>&nbsp;    updateTooltip();</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  protected String getLocalizedName() {
+<b class="nc"><i>74</i>&nbsp;    if (myUndoManager == null || myUndoManager.canUndo() == false) {</b>
+<b class="nc"><i>75</i>&nbsp;      return super.getLocalizedName();</b>
+<i>76</i>&nbsp;    }
+<i>77</i>&nbsp;    // Use name of undoable action
+<b class="nc"><i>78</i>&nbsp;    return myUndoManager.getUndoPresentationName();</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  @Override
+<i>82</i>&nbsp;  protected String getIconFilePrefix() {
+<b class="nc"><i>83</i>&nbsp;    return &quot;undo_&quot;;</b>
+<i>84</i>&nbsp;  }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  @Override
+<i>87</i>&nbsp;  public UndoAction asToolbarAction() {
+<b class="nc"><i>88</i>&nbsp;    UndoAction result = new UndoAction(myUndoManager);</b>
+<b class="nc"><i>89</i>&nbsp;    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));</b>
+<b class="nc"><i>90</i>&nbsp;    return result;</b>
+<i>91</i>&nbsp;  }
+<i>92</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ScrollingManagerImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.scrolling</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ScrollingManagerImpl (net.sourceforge.ganttproject.gui.scrolling)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ScrollingManagerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 26.02.2005
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package net.sourceforge.ganttproject.gui.scrolling;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import java.util.ArrayList;
+<i>7</i>&nbsp;import java.util.Date;
+<i>8</i>&nbsp;import java.util.List;
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;/**
+<i>14</i>&nbsp; * @author bard
+<i>15</i>&nbsp; */
+<i>16</i>&nbsp;public class ScrollingManagerImpl implements ScrollingManager {
+<i>17</i>&nbsp;
+<b class="nc"><i>18</i>&nbsp;  public ScrollingManagerImpl() {</b>
+<i>19</i>&nbsp;  }
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;  @Override
+<i>22</i>&nbsp;  public void scrollBy(TimeDuration duration) {
+<b class="nc"><i>23</i>&nbsp;    for (ScrollingListener l : myListeners) {</b>
+<b class="nc"><i>24</i>&nbsp;      l.scrollBy(duration);</b>
+<b class="nc"><i>25</i>&nbsp;    }</b>
+<i>26</i>&nbsp;  }
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;  @Override
+<i>29</i>&nbsp;  public void scrollBy(int pixels) {
+<b class="nc"><i>30</i>&nbsp;    for (ScrollingListener l : myListeners) {</b>
+<b class="nc"><i>31</i>&nbsp;      l.scrollBy(pixels);</b>
+<b class="nc"><i>32</i>&nbsp;    }</b>
+<i>33</i>&nbsp;  }
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  @Override
+<i>36</i>&nbsp;  public void scrollTo(Date date) {
+<b class="nc"><i>37</i>&nbsp;    for (ScrollingListener l : myListeners) {</b>
+<b class="nc"><i>38</i>&nbsp;      l.scrollTo(date);</b>
+<b class="nc"><i>39</i>&nbsp;    }</b>
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  @Override
+<i>43</i>&nbsp;  public void addScrollingListener(ScrollingListener listener) {
+<b class="nc"><i>44</i>&nbsp;    myListeners.add(listener);</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public void removeScrollingListener(ScrollingListener listener) {
+<b class="nc"><i>49</i>&nbsp;    myListeners.remove(listener);</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<b class="nc"><i>52</i>&nbsp;  List&lt;ScrollingListener&gt; myListeners = new ArrayList&lt;ScrollingListener&gt;();</b>
+<i>53</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

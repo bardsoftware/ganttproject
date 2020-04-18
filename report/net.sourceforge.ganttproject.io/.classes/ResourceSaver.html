@@ -1,0 +1,194 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ResourceSaver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ResourceSaver (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResourceSaver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 47)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.CustomProperty;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>26</i>&nbsp;import org.xml.sax.SAXException;
+<i>27</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>30</i>&nbsp;import java.math.BigDecimal;
+<i>31</i>&nbsp;import java.util.List;
+<i>32</i>&nbsp;import java.util.Map;
+<i>33</i>&nbsp;
+<b class="nc"><i>34</i>&nbsp;class ResourceSaver extends SaverBase {</b>
+<i>35</i>&nbsp;  void save(IGanttProject project, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>36</i>&nbsp;    final AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>37</i>&nbsp;    startElement(&quot;resources&quot;, handler);</b>
+<b class="nc"><i>38</i>&nbsp;    saveCustomColumnDefinitions(project, handler);</b>
+<b class="nc"><i>39</i>&nbsp;    HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();</b>
+<b class="nc"><i>40</i>&nbsp;    for (int i = 0; i &lt; resources.length; i++) {</b>
+<b class="nc"><i>41</i>&nbsp;      HumanResource p = resources[i];</b>
+<b class="nc"><i>42</i>&nbsp;      addAttribute(&quot;id&quot;, p.getId(), attrs);</b>
+<b class="nc"><i>43</i>&nbsp;      addAttribute(&quot;name&quot;, p.getName(), attrs);</b>
+<b class="nc"><i>44</i>&nbsp;      addAttribute(&quot;function&quot;, p.getRole().getPersistentID(), attrs);</b>
+<b class="nc"><i>45</i>&nbsp;      addAttribute(&quot;contacts&quot;, p.getMail(), attrs);</b>
+<b class="nc"><i>46</i>&nbsp;      addAttribute(&quot;phone&quot;, p.getPhone(), attrs);</b>
+<b class="nc"><i>47</i>&nbsp;      startElement(&quot;resource&quot;, attrs, handler);</b>
+<i>48</i>&nbsp;      {
+<b class="nc"><i>49</i>&nbsp;        saveRates(p, handler);</b>
+<b class="nc"><i>50</i>&nbsp;        saveCustomProperties(project, p, handler);</b>
+<i>51</i>&nbsp;      }
+<b class="nc"><i>52</i>&nbsp;      endElement(&quot;resource&quot;, handler);</b>
+<i>53</i>&nbsp;    }
+<b class="nc"><i>54</i>&nbsp;    endElement(&quot;resources&quot;, handler);</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  private void saveRates(HumanResource p, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>58</i>&nbsp;    if (!BigDecimal.ZERO.equals(p.getStandardPayRate())) {</b>
+<b class="nc"><i>59</i>&nbsp;      AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>60</i>&nbsp;      addAttribute(&quot;name&quot;, &quot;standard&quot;, attrs);</b>
+<b class="nc"><i>61</i>&nbsp;      addAttribute(&quot;value&quot;, p.getStandardPayRate().toPlainString(), attrs);</b>
+<b class="nc"><i>62</i>&nbsp;      emptyElement(&quot;rate&quot;, attrs, handler);</b>
+<i>63</i>&nbsp;    }
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler)
+<i>67</i>&nbsp;      throws SAXException {
+<i>68</i>&nbsp;    // CustomPropertyManager customPropsManager =
+<i>69</i>&nbsp;    // project.getHumanResourceManager().getCustomPropertyManager();
+<b class="nc"><i>70</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<b class="nc"><i>71</i>&nbsp;    List&lt;CustomProperty&gt; properties = resource.getCustomProperties();</b>
+<b class="nc"><i>72</i>&nbsp;    for (int i = 0; i &lt; properties.size(); i++) {</b>
+<b class="nc"><i>73</i>&nbsp;      CustomProperty nextProperty = properties.get(i);</b>
+<b class="nc"><i>74</i>&nbsp;      CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();</b>
+<b class="nc"><i>75</i>&nbsp;      assert nextProperty != null : &quot;WTF? null property in properties=&quot; + properties;</b>
+<b class="nc"><i>76</i>&nbsp;      assert nextDefinition != null : &quot;WTF? null property definition for property=&quot; + i + &quot;(value=&quot;</b>
+<b class="nc"><i>77</i>&nbsp;          + nextProperty.getValueAsString() + &quot;)&quot;;</b>
+<b class="nc"><i>78</i>&nbsp;      if (nextProperty.getValue() != null &amp;&amp; !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {</b>
+<b class="nc"><i>79</i>&nbsp;        addAttribute(&quot;definition-id&quot;, nextDefinition.getID(), attrs);</b>
+<b class="nc"><i>80</i>&nbsp;        addAttribute(&quot;value&quot;, nextProperty.getValueAsString(), attrs);</b>
+<b class="nc"><i>81</i>&nbsp;        emptyElement(&quot;custom-property&quot;, attrs, handler);</b>
+<i>82</i>&nbsp;      }
+<i>83</i>&nbsp;    }
+<i>84</i>&nbsp;  }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  private void saveCustomColumnDefinitions(IGanttProject project, TransformerHandler handler) throws SAXException {
+<b class="nc"><i>87</i>&nbsp;    CustomPropertyManager customPropsManager = project.getHumanResourceManager().getCustomPropertyManager();</b>
+<b class="nc"><i>88</i>&nbsp;    List&lt;CustomPropertyDefinition&gt; definitions = customPropsManager.getDefinitions();</b>
+<i>89</i>&nbsp;    // HumanResourceManager hrManager = (HumanResourceManager)
+<i>90</i>&nbsp;    // project.getHumanResourceManager();
+<i>91</i>&nbsp;    // Map customFields = hrManager.getCustomFields();
+<i>92</i>&nbsp;    // if (customFields.size()==0) {
+<i>93</i>&nbsp;    // return;
+<i>94</i>&nbsp;    // }
+<b class="nc"><i>95</i>&nbsp;    final AttributesImpl attrs = new AttributesImpl();</b>
+<i>96</i>&nbsp;    // startElement(&quot;custom-properties-definition&quot;, handler);
+<b class="nc"><i>97</i>&nbsp;    for (int i = 0; i &lt; definitions.size(); i++) {</b>
+<i>98</i>&nbsp;      // ResourceColumn nextField = (ResourceColumn) fields.next();
+<b class="nc"><i>99</i>&nbsp;      CustomPropertyDefinition nextDefinition = definitions.get(i);</b>
+<b class="nc"><i>100</i>&nbsp;      addAttribute(&quot;id&quot;, nextDefinition.getID(), attrs);</b>
+<b class="nc"><i>101</i>&nbsp;      addAttribute(&quot;name&quot;, nextDefinition.getName(), attrs);</b>
+<b class="nc"><i>102</i>&nbsp;      addAttribute(&quot;type&quot;, nextDefinition.getTypeAsString(), attrs);</b>
+<b class="nc"><i>103</i>&nbsp;      addAttribute(&quot;default-value&quot;, nextDefinition.getDefaultValueAsString(), attrs);</b>
+<b class="nc"><i>104</i>&nbsp;      for (Map.Entry&lt;String,String&gt; kv : nextDefinition.getAttributes().entrySet()) {</b>
+<b class="nc"><i>105</i>&nbsp;        addAttribute(kv.getKey(), kv.getValue(), attrs);</b>
+<b class="nc"><i>106</i>&nbsp;      }</b>
+<b class="nc"><i>107</i>&nbsp;      emptyElement(&quot;custom-property-definition&quot;, attrs, handler);</b>
+<i>108</i>&nbsp;    }
+<i>109</i>&nbsp;    // endElement(&quot;custom-properties-definition&quot;, handler);
+<i>110</i>&nbsp;  }
+<i>111</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

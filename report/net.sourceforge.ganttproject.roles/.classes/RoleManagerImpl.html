@@ -1,0 +1,317 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RoleManagerImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.roles</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RoleManagerImpl (net.sourceforge.ganttproject.roles)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RoleManagerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.2%
+  </span>
+  <span class="absValue">
+    (5/ 16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.2%
+  </span>
+  <span class="absValue">
+    (40/ 97)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">RoleManagerImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (6/ 18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41%
+  </span>
+  <span class="absValue">
+    (41/ 100)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.roles;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;import java.util.Arrays;
+<i>23</i>&nbsp;import java.util.HashSet;
+<i>24</i>&nbsp;import java.util.List;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * @author athomas
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public class RoleManagerImpl implements RoleManager {
+<b class="fc"><i>33</i>&nbsp;  private final List&lt;Listener&gt; myListeners = new ArrayList&lt;Listener&gt;();</b>
+<i>34</i>&nbsp;
+<b class="fc"><i>35</i>&nbsp;  private final RoleSetImpl myProjectRoleSet = new RoleSetImpl(null, this);</b>
+<i>36</i>&nbsp;
+<b class="fc"><i>37</i>&nbsp;  private final ArrayList&lt;RoleSet&gt; myRoleSets = new ArrayList&lt;RoleSet&gt;();</b>
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  private final RoleSetImpl SOFTWARE_DEVELOPMENT_ROLE_SET;
+<i>40</i>&nbsp;  private final RoleSetImpl DEFAULT_ROLE_SET;
+<i>41</i>&nbsp;
+<b class="fc"><i>42</i>&nbsp;  public RoleManagerImpl() {</b>
+<b class="fc"><i>43</i>&nbsp;    DEFAULT_ROLE_SET = new RoleSetImpl(RoleSet.DEFAULT, this);</b>
+<b class="fc"><i>44</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET = new RoleSetImpl(RoleSet.SOFTWARE_DEVELOPMENT, this);</b>
+<b class="fc"><i>45</i>&nbsp;    createRoleSet();</b>
+<b class="fc"><i>46</i>&nbsp;    clear();</b>
+<b class="fc"><i>47</i>&nbsp;    myRoleSets.add(DEFAULT_ROLE_SET);</b>
+<b class="fc"><i>48</i>&nbsp;    myRoleSets.add(SOFTWARE_DEVELOPMENT_ROLE_SET);</b>
+<b class="fc"><i>49</i>&nbsp;    myProjectRoleSet.setEnabled(true);</b>
+<b class="fc"><i>50</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.setEnabled(false);</b>
+<i>51</i>&nbsp;
+<b class="fc"><i>52</i>&nbsp;    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {</b>
+<i>53</i>&nbsp;      @Override
+<i>54</i>&nbsp;      public void languageChanged(Event event) {
+<b class="nc"><i>55</i>&nbsp;        changeRoleSet();</b>
+<b class="nc"><i>56</i>&nbsp;      }</b>
+<i>57</i>&nbsp;    });
+<b class="fc"><i>58</i>&nbsp;  }</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public void clear() {
+<b class="fc"><i>62</i>&nbsp;    myProjectRoleSet.clear();</b>
+<b class="fc"><i>63</i>&nbsp;    for (int i = 0; i &lt; myRoleSets.size(); i++) {</b>
+<b class="nc"><i>64</i>&nbsp;      RoleSet next = myRoleSets.get(i);</b>
+<b class="nc"><i>65</i>&nbsp;      next.setEnabled(false);</b>
+<i>66</i>&nbsp;    }
+<b class="fc"><i>67</i>&nbsp;    myProjectRoleSet.setEnabled(true);</b>
+<b class="fc"><i>68</i>&nbsp;    DEFAULT_ROLE_SET.setEnabled(true);</b>
+<b class="fc"><i>69</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.setEnabled(false);</b>
+<b class="fc"><i>70</i>&nbsp;  }</b>
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  public Role[] getProjectLevelRoles() {
+<b class="nc"><i>74</i>&nbsp;    return myProjectRoleSet.getRoles();</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  @Override
+<i>78</i>&nbsp;  public RoleSet[] getRoleSets() {
+<b class="nc"><i>79</i>&nbsp;    return myRoleSets.toArray(new RoleSet[0]);</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  @Override
+<i>83</i>&nbsp;  public RoleSet createRoleSet(String name) {
+<b class="nc"><i>84</i>&nbsp;    RoleSet result = new RoleSetImpl(name, this);</b>
+<b class="nc"><i>85</i>&nbsp;    myRoleSets.add(result);</b>
+<i>86</i>&nbsp;    // System.err.println(&quot;[RoleManagerImpl] createRoleSet():
+<i>87</i>&nbsp;    // created:&quot;+name);
+<b class="nc"><i>88</i>&nbsp;    return result;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  @Override
+<i>92</i>&nbsp;  public RoleSet getProjectRoleSet() {
+<b class="nc"><i>93</i>&nbsp;    return myProjectRoleSet;</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  @Override
+<i>97</i>&nbsp;  public RoleSet getRoleSet(String rolesetName) {
+<b class="nc"><i>98</i>&nbsp;    RoleSet result = null;</b>
+<b class="nc"><i>99</i>&nbsp;    RoleSet[] roleSets = getRoleSets();</b>
+<b class="nc"><i>100</i>&nbsp;    for (int i = 0; i &lt; roleSets.length; i++) {</b>
+<b class="nc"><i>101</i>&nbsp;      if (roleSets[i].getName().equals(rolesetName)) {</b>
+<b class="nc"><i>102</i>&nbsp;        result = roleSets[i];</b>
+<b class="nc"><i>103</i>&nbsp;        break;</b>
+<i>104</i>&nbsp;      }
+<i>105</i>&nbsp;    }
+<b class="nc"><i>106</i>&nbsp;    return result;</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public Role[] getEnabledRoles() {
+<b class="nc"><i>111</i>&nbsp;    ArrayList&lt;Role&gt; result = new ArrayList&lt;Role&gt;();</b>
+<b class="nc"><i>112</i>&nbsp;    RoleSet[] roleSets = getRoleSets();</b>
+<b class="nc"><i>113</i>&nbsp;    for (int i = 0; i &lt; roleSets.length; i++) {</b>
+<b class="nc"><i>114</i>&nbsp;      if (roleSets[i].isEnabled()) {</b>
+<b class="nc"><i>115</i>&nbsp;        result.addAll(Arrays.asList(roleSets[i].getRoles()));</b>
+<i>116</i>&nbsp;      }
+<i>117</i>&nbsp;    }
+<b class="nc"><i>118</i>&nbsp;    result.addAll(Arrays.asList(getProjectRoleSet().getRoles()));</b>
+<b class="nc"><i>119</i>&nbsp;    return result.toArray(new Role[0]);</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  @Override
+<i>123</i>&nbsp;  public Role getDefaultRole() {
+<b class="fc"><i>124</i>&nbsp;    return DEFAULT_ROLE_SET.findRole(0);</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  @Override
+<i>128</i>&nbsp;  public Role getRole(String persistentID) {
+<b class="nc"><i>129</i>&nbsp;    Role[] enabledRoles = getEnabledRoles();</b>
+<b class="nc"><i>130</i>&nbsp;    for (int i = 0; i &lt; enabledRoles.length; i++) {</b>
+<b class="nc"><i>131</i>&nbsp;      if (enabledRoles[i].getPersistentID().equalsIgnoreCase(persistentID)) {</b>
+<b class="nc"><i>132</i>&nbsp;        return enabledRoles[i];</b>
+<i>133</i>&nbsp;      }
+<i>134</i>&nbsp;    }
+<b class="nc"><i>135</i>&nbsp;    return null;</b>
+<i>136</i>&nbsp;  }
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  @Override
+<i>139</i>&nbsp;  public void importData(RoleManager original) {
+<b class="nc"><i>140</i>&nbsp;    myProjectRoleSet.importData(original.getProjectRoleSet());</b>
+<b class="nc"><i>141</i>&nbsp;    RoleSet[] originalRoleSets = original.getRoleSets();</b>
+<b class="nc"><i>142</i>&nbsp;    HashSet&lt;String&gt; thisNames = new HashSet&lt;String&gt;();</b>
+<b class="nc"><i>143</i>&nbsp;    for (int i = 0; i &lt; myRoleSets.size(); i++) {</b>
+<b class="nc"><i>144</i>&nbsp;      RoleSet next = myRoleSets.get(i);</b>
+<b class="nc"><i>145</i>&nbsp;      thisNames.add(next.getName());</b>
+<i>146</i>&nbsp;    }
+<b class="nc"><i>147</i>&nbsp;    for (int i = 0; i &lt; originalRoleSets.length; i++) {</b>
+<b class="nc"><i>148</i>&nbsp;      RoleSet next = originalRoleSets[i];</b>
+<b class="nc"><i>149</i>&nbsp;      if (!thisNames.contains(next.getName())) {</b>
+<b class="nc"><i>150</i>&nbsp;        myRoleSets.add(next);</b>
+<i>151</i>&nbsp;      }
+<i>152</i>&nbsp;    }
+<i>153</i>&nbsp;    // myRoleSets.addAll(Arrays.asList(originalRoleSets));
+<b class="nc"><i>154</i>&nbsp;  }</b>
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  @Override
+<i>157</i>&nbsp;  public void addRoleListener(Listener listener) {
+<b class="nc"><i>158</i>&nbsp;    myListeners.add(listener);</b>
+<b class="nc"><i>159</i>&nbsp;  }</b>
+<i>160</i>&nbsp;
+<i>161</i>&nbsp;  @Override
+<i>162</i>&nbsp;  public void removeRoleListener(Listener listener) {
+<b class="nc"><i>163</i>&nbsp;    myListeners.remove(listener);</b>
+<b class="nc"><i>164</i>&nbsp;  }</b>
+<i>165</i>&nbsp;
+<i>166</i>&nbsp;  void fireRolesChanged(RoleSet changedRoleSet) {
+<b class="fc"><i>167</i>&nbsp;    RoleEvent event = new RoleEvent(this, changedRoleSet);</b>
+<b class="fc"><i>168</i>&nbsp;    for (int i = 0; i &lt; myListeners.size(); i++) {</b>
+<b class="nc"><i>169</i>&nbsp;      Listener next = myListeners.get(i);</b>
+<b class="nc"><i>170</i>&nbsp;      next.rolesChanged(event);</b>
+<i>171</i>&nbsp;    }
+<b class="fc"><i>172</i>&nbsp;  }</b>
+<i>173</i>&nbsp;
+<i>174</i>&nbsp;  private void createRoleSet() {
+<b class="fc"><i>175</i>&nbsp;    GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>176</i>&nbsp;
+<b class="fc"><i>177</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.clear();</b>
+<b class="fc"><i>178</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resDeveloper&quot;), 2);</b>
+<b class="fc"><i>179</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resDocWriter&quot;), 3);</b>
+<b class="fc"><i>180</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resTester&quot;), 4);</b>
+<b class="fc"><i>181</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resGraphicDesigner&quot;), 5);</b>
+<b class="fc"><i>182</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resDocTranslator&quot;), 6);</b>
+<b class="fc"><i>183</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resPackager&quot;), 7);</b>
+<b class="fc"><i>184</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resAnalysis&quot;), 8);</b>
+<b class="fc"><i>185</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resWebDesigner&quot;), 9);</b>
+<b class="fc"><i>186</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.createRole(language.getText(&quot;resNoSpecificRole&quot;), 10);</b>
+<b class="fc"><i>187</i>&nbsp;    DEFAULT_ROLE_SET.clear();</b>
+<b class="fc"><i>188</i>&nbsp;    DEFAULT_ROLE_SET.createRole(language.getText(&quot;resUndefined&quot;), 0);</b>
+<b class="fc"><i>189</i>&nbsp;    DEFAULT_ROLE_SET.createRole(language.getText(&quot;resProjectManager&quot;), 1);</b>
+<b class="fc"><i>190</i>&nbsp;    DEFAULT_ROLE_SET.setEnabled(true);</b>
+<b class="fc"><i>191</i>&nbsp;  }</b>
+<i>192</i>&nbsp;
+<i>193</i>&nbsp;  private void changeRoleSet() {
+<b class="nc"><i>194</i>&nbsp;    GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>195</i>&nbsp;
+<b class="nc"><i>196</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resDeveloper&quot;), 2);</b>
+<b class="nc"><i>197</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resDocWriter&quot;), 3);</b>
+<b class="nc"><i>198</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resTester&quot;), 4);</b>
+<b class="nc"><i>199</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resGraphicDesigner&quot;), 5);</b>
+<b class="nc"><i>200</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resDocTranslator&quot;), 6);</b>
+<b class="nc"><i>201</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resPackager&quot;), 7);</b>
+<b class="nc"><i>202</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resAnalysis&quot;), 8);</b>
+<b class="nc"><i>203</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resWebDesigner&quot;), 9);</b>
+<b class="nc"><i>204</i>&nbsp;    SOFTWARE_DEVELOPMENT_ROLE_SET.changeRole(language.getText(&quot;resNoSpecificRole&quot;), 10);</b>
+<b class="nc"><i>205</i>&nbsp;    DEFAULT_ROLE_SET.changeRole(language.getText(&quot;resUndefined&quot;), 0);</b>
+<b class="nc"><i>206</i>&nbsp;    DEFAULT_ROLE_SET.changeRole(language.getText(&quot;resProjectManager&quot;), 1);</b>
+<b class="nc"><i>207</i>&nbsp;  }</b>
+<i>208</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

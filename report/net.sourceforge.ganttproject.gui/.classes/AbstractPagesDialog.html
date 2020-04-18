@@ -1,0 +1,336 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: AbstractPagesDialog</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: AbstractPagesDialog (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractPagesDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 42)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AbstractPagesDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AbstractPagesDialog$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AbstractPagesDialog$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 25)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AbstractPagesDialog$ListItem</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 77)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.action.CancelAction;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.OkAction;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.*;
+<i>26</i>&nbsp;import java.awt.*;
+<i>27</i>&nbsp;import java.awt.event.ActionEvent;
+<i>28</i>&nbsp;import java.util.HashSet;
+<i>29</i>&nbsp;import java.util.List;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;public abstract class AbstractPagesDialog {
+<i>32</i>&nbsp;  private final UIFacade myUIFacade;
+<i>33</i>&nbsp;  private final List&lt;ListItem&gt; myItems;
+<b class="nc"><i>34</i>&nbsp;  private final HashSet&lt;String&gt; myPageIds = new HashSet&lt;&gt;();</b>
+<i>35</i>&nbsp;  private final String myTitleKey;
+<i>36</i>&nbsp;  private JList&lt;ListItem&gt; myPagesList;
+<i>37</i>&nbsp;
+<b class="nc"><i>38</i>&nbsp;  protected AbstractPagesDialog(String titleKey, UIFacade uifacade, List&lt;ListItem&gt; pages) {</b>
+<b class="nc"><i>39</i>&nbsp;    myTitleKey = titleKey;</b>
+<b class="nc"><i>40</i>&nbsp;    myUIFacade = uifacade;</b>
+<b class="nc"><i>41</i>&nbsp;    myItems = pages;</b>
+<b class="nc"><i>42</i>&nbsp;    for (ListItem li : myItems) {</b>
+<b class="nc"><i>43</i>&nbsp;      myPageIds.add(li.id);</b>
+<b class="nc"><i>44</i>&nbsp;    }</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  protected boolean isPageVisible(String pageId) {
+<b class="nc"><i>48</i>&nbsp;    return myPageIds.contains(pageId);</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public void show() {
+<b class="nc"><i>52</i>&nbsp;    show(null);</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public void show(String pageID) {
+<b class="nc"><i>56</i>&nbsp;    OkAction okAction = new OkAction() {</b>
+<i>57</i>&nbsp;      @Override
+<i>58</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>59</i>&nbsp;        onOk();</b>
+<i>60</i>&nbsp;      }
+<i>61</i>&nbsp;    };
+<b class="nc"><i>62</i>&nbsp;    myUIFacade.createDialog(getComponent(), new Action[]{okAction, CancelAction.EMPTY},</b>
+<b class="nc"><i>63</i>&nbsp;        GanttLanguage.getInstance().getCorrectedLabel(myTitleKey)).show();</b>
+<b class="nc"><i>64</i>&nbsp;    if (pageID != null) {</b>
+<b class="nc"><i>65</i>&nbsp;      for (int i = 0; i &lt; myItems.size(); i++) {</b>
+<b class="nc"><i>66</i>&nbsp;        if (pageID.equals(myItems.get(i).id)) {</b>
+<b class="nc"><i>67</i>&nbsp;          myPagesList.setSelectedIndex(i);</b>
+<b class="nc"><i>68</i>&nbsp;          break;</b>
+<i>69</i>&nbsp;        }
+<i>70</i>&nbsp;      }
+<i>71</i>&nbsp;    }
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  protected static class ListItem {
+<i>75</i>&nbsp;    final boolean isGroupHeader;
+<i>76</i>&nbsp;    final String name;
+<i>77</i>&nbsp;    final Container component;
+<i>78</i>&nbsp;    final String id;
+<i>79</i>&nbsp;
+<b class="nc"><i>80</i>&nbsp;    public ListItem(boolean isGroupHeader, String id, String name, Container component) {</b>
+<b class="nc"><i>81</i>&nbsp;      this.isGroupHeader = isGroupHeader;</b>
+<b class="nc"><i>82</i>&nbsp;      this.id = id;</b>
+<b class="nc"><i>83</i>&nbsp;      this.name = name;</b>
+<b class="nc"><i>84</i>&nbsp;      this.component = component;</b>
+<i>85</i>&nbsp;    }
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  protected abstract void onOk();
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;  private Component getComponent() {
+<b class="nc"><i>91</i>&nbsp;    final JPanel contentPanel = new JPanel(new CardLayout());</b>
+<i>92</i>&nbsp;    // Add panels to CardLayout
+<b class="nc"><i>93</i>&nbsp;    for (ListItem li : myItems) {</b>
+<b class="nc"><i>94</i>&nbsp;      if (li.component != null) {</b>
+<b class="nc"><i>95</i>&nbsp;        contentPanel.add(li.component, li.id);</b>
+<i>96</i>&nbsp;      }
+<b class="nc"><i>97</i>&nbsp;    }</b>
+<b class="nc"><i>98</i>&nbsp;    myPagesList = new JList&lt;ListItem&gt;(new AbstractListModel&lt;ListItem&gt;() {</b>
+<i>99</i>&nbsp;      @Override
+<i>100</i>&nbsp;      public ListItem getElementAt(int idx) {
+<b class="nc"><i>101</i>&nbsp;        return myItems.get(idx);</b>
+<i>102</i>&nbsp;      }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;      @Override
+<i>105</i>&nbsp;      public int getSize() {
+<b class="nc"><i>106</i>&nbsp;        return myItems.size();</b>
+<i>107</i>&nbsp;      }
+<i>108</i>&nbsp;    });
+<b class="nc"><i>109</i>&nbsp;    myPagesList.setVisibleRowCount(myItems.size());</b>
+<b class="nc"><i>110</i>&nbsp;    myPagesList.setCellRenderer(new DefaultListCellRenderer() {</b>
+<b class="nc"><i>111</i>&nbsp;      private final JButton EMPTY_BUTTON = new JButton();</b>
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;      @Override
+<i>114</i>&nbsp;      public Component getListCellRendererComponent(JList list, Object value, int idx, boolean isSelected,
+<i>115</i>&nbsp;                                                    boolean cellHasFocus) {
+<b class="nc"><i>116</i>&nbsp;        ListItem listItem = (ListItem) value;</b>
+<b class="nc"><i>117</i>&nbsp;        Component defaultResult = super.getListCellRendererComponent(list, listItem.name, idx, isSelected, false);</b>
+<b class="nc"><i>118</i>&nbsp;        Font font = defaultResult.getFont();</b>
+<i>119</i>&nbsp;
+<b class="nc"><i>120</i>&nbsp;        JPanel wrapper = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>121</i>&nbsp;        if (listItem.isGroupHeader) {</b>
+<b class="nc"><i>122</i>&nbsp;          defaultResult.setFont(font.deriveFont(Font.BOLD, font.getSize() + 2.0f));</b>
+<b class="nc"><i>123</i>&nbsp;          defaultResult.setBackground(EMPTY_BUTTON.getBackground());</b>
+<b class="nc"><i>124</i>&nbsp;          defaultResult.setForeground(EMPTY_BUTTON.getForeground());</b>
+<b class="nc"><i>125</i>&nbsp;          wrapper.setBorder(BorderFactory.createCompoundBorder(</b>
+<b class="nc"><i>126</i>&nbsp;              BorderFactory.createMatteBorder(1, 0, 0, 0, EMPTY_BUTTON.getBackground().darker()),</b>
+<b class="nc"><i>127</i>&nbsp;              BorderFactory.createEmptyBorder(2, 3, 2, 5)));</b>
+<i>128</i>&nbsp;        } else {
+<b class="nc"><i>129</i>&nbsp;          defaultResult.setFont(font.deriveFont(font.getSize() + 2.0f));</b>
+<b class="nc"><i>130</i>&nbsp;          wrapper.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));</b>
+<i>131</i>&nbsp;        }
+<b class="nc"><i>132</i>&nbsp;        wrapper.setBackground(defaultResult.getBackground());</b>
+<b class="nc"><i>133</i>&nbsp;        wrapper.add(defaultResult, BorderLayout.CENTER);</b>
+<b class="nc"><i>134</i>&nbsp;        if (listItem.isGroupHeader) {</b>
+<b class="nc"><i>135</i>&nbsp;          JPanel headerWrapper = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>136</i>&nbsp;          headerWrapper.setBackground(list.getBackground());</b>
+<b class="nc"><i>137</i>&nbsp;          if (idx &gt; 0) {</b>
+<b class="nc"><i>138</i>&nbsp;            headerWrapper.add(new JLabel(&quot; &quot;), BorderLayout.NORTH);</b>
+<i>139</i>&nbsp;          }
+<b class="nc"><i>140</i>&nbsp;          headerWrapper.add(wrapper, BorderLayout.CENTER);</b>
+<b class="nc"><i>141</i>&nbsp;          return headerWrapper;</b>
+<i>142</i>&nbsp;        }
+<b class="nc"><i>143</i>&nbsp;        return wrapper;</b>
+<i>144</i>&nbsp;      }
+<i>145</i>&nbsp;    });
+<b class="nc"><i>146</i>&nbsp;    myPagesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);</b>
+<b class="nc"><i>147</i>&nbsp;    myPagesList.addListSelectionListener(e -&gt; {</b>
+<b class="nc"><i>148</i>&nbsp;      ListItem listItem = myPagesList.getSelectedValue();</b>
+<b class="nc"><i>149</i>&nbsp;      if (listItem.isGroupHeader) {</b>
+<i>150</i>&nbsp;        // Assumes that the list does not end with a GroupHeader!
+<b class="nc"><i>151</i>&nbsp;        myPagesList.setSelectedIndex(myPagesList.getSelectedIndex() + 1);</b>
+<i>152</i>&nbsp;      } else {
+<b class="nc"><i>153</i>&nbsp;        final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();</b>
+<b class="nc"><i>154</i>&nbsp;        cardLayout.show(contentPanel, listItem.id);</b>
+<i>155</i>&nbsp;      }
+<i>156</i>&nbsp;    });
+<b class="nc"><i>157</i>&nbsp;    myPagesList.setBorder(BorderFactory.createEtchedBorder());</b>
+<i>158</i>&nbsp;
+<b class="nc"><i>159</i>&nbsp;    SwingUtilities.invokeLater(() -&gt; myPagesList.setSelectedIndex(0));</b>
+<i>160</i>&nbsp;
+<b class="nc"><i>161</i>&nbsp;    JPanel rootPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>162</i>&nbsp;    rootPanel.add(myPagesList, BorderLayout.WEST);</b>
+<b class="nc"><i>163</i>&nbsp;    JPanel contentPanelWrapper = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>164</i>&nbsp;    contentPanelWrapper.add(contentPanel, BorderLayout.CENTER);</b>
+<b class="nc"><i>165</i>&nbsp;    rootPanel.add(contentPanelWrapper, BorderLayout.CENTER);</b>
+<b class="nc"><i>166</i>&nbsp;    rootPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));</b>
+<b class="nc"><i>167</i>&nbsp;    return rootPanel;</b>
+<i>168</i>&nbsp;  }
+<i>169</i>&nbsp;
+<i>170</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

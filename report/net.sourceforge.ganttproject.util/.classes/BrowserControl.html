@@ -1,0 +1,447 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: BrowserControl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.util</a> ]
+</div>
+
+<h1>Coverage Summary for Class: BrowserControl (net.sourceforge.ganttproject.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BrowserControl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 94)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BrowserControl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">BrowserControl$Platforms</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 100)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Based on Steven Spencer&#39;s Java Tip in JavaWorld:
+<i>3</i>&nbsp; * http://www.javaworld.com/javaworld/javatips/jw-javatip66.html
+<i>4</i>&nbsp; */
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;package net.sourceforge.ganttproject.util;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;import java.io.IOException;
+<i>9</i>&nbsp;import java.net.URI;
+<i>10</i>&nbsp;import java.net.URISyntaxException;
+<i>11</i>&nbsp;import java.net.URL;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;/**
+<i>14</i>&nbsp; * &lt;p&gt;
+<i>15</i>&nbsp; * A simple, static class to display an URL in the system browser.
+<i>16</i>&nbsp; * &lt;/p&gt;
+<i>17</i>&nbsp; * &lt;p&gt;
+<i>18</i>&nbsp; * Under Windows, this will bring up the default browser, usually either
+<i>19</i>&nbsp; * Netscape or Microsoft IE. The default browser is determined by the OS. This
+<i>20</i>&nbsp; * has been tested under: Windows 95/98/NT/2000.
+<i>21</i>&nbsp; * &lt;/p&gt;
+<i>22</i>&nbsp; * &lt;p&gt;
+<i>23</i>&nbsp; * Under MacOS, this will bring up the default browser. The default browser is
+<i>24</i>&nbsp; * determined by the OS. This has been tested under: n/a
+<i>25</i>&nbsp; * &lt;/p&gt;
+<i>26</i>&nbsp; * &lt;p&gt;
+<i>27</i>&nbsp; * Under (K)Ubuntu, Debian and other *nix platforms, try sensible-browser. It
+<i>28</i>&nbsp; * checks $BROWSER and the variable is not available &lt;a
+<i>29</i>&nbsp; * href=&quot;http://wiki.debian.org/DebianAlternatives&quot;&gt;Debian Alternatives&lt;/a&gt;. If
+<i>30</i>&nbsp; * that fails, fallback on the &#39;&lt;em&gt;other platforms&lt;/em&gt;&#39; methods. This has been
+<i>31</i>&nbsp; * tested under: Kubuntu 11.10
+<i>32</i>&nbsp; * &lt;/p&gt;
+<i>33</i>&nbsp; * &lt;p&gt;
+<i>34</i>&nbsp; * In other platforms, a range of known browsers is invoked.
+<i>35</i>&nbsp; * &lt;/p&gt;
+<i>36</i>&nbsp; * &lt;p&gt;
+<i>37</i>&nbsp; * Examples:
+<i>38</i>&nbsp; * &lt;ul&gt;
+<i>39</i>&nbsp; * &lt;li&gt;BrowserControl.displayURL(&quot;http://www.javaworld.com&quot;)&lt;/li&gt;
+<i>40</i>&nbsp; * &lt;li&gt;BrowserControl.displayURL(&quot;file://c:\\docs\\index.html&quot;)&lt;/li&gt;
+<i>41</i>&nbsp; * &lt;li&gt;BrowserContorl.displayURL(&quot;file:///user/joe/index.html&quot;)&lt;/li&gt;
+<i>42</i>&nbsp; * &lt;/p&gt;
+<i>43</i>&nbsp; * &lt;p&gt;
+<i>44</i>&nbsp; * Note - you must include the url type -- either &quot;http://&quot; or &quot;file://&quot;.
+<i>45</i>&nbsp; * &lt;/p&gt;
+<i>46</i>&nbsp; */
+<b class="nc"><i>47</i>&nbsp;public class BrowserControl {</b>
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  private static boolean displayUrlWithDesktopApi(String url) {
+<b class="nc"><i>50</i>&nbsp;    if (!java.awt.Desktop.isDesktopSupported()) {</b>
+<b class="nc"><i>51</i>&nbsp;      return false;</b>
+<i>52</i>&nbsp;    }
+<b class="nc"><i>53</i>&nbsp;    java.awt.Desktop desktop = java.awt.Desktop.getDesktop();</b>
+<b class="nc"><i>54</i>&nbsp;    if (!desktop.isSupported(java.awt.Desktop.Action.BROWSE)) {</b>
+<b class="nc"><i>55</i>&nbsp;      return false;</b>
+<i>56</i>&nbsp;    }
+<i>57</i>&nbsp;    try {
+<b class="nc"><i>58</i>&nbsp;      desktop.browse(new URI(url));</b>
+<b class="nc"><i>59</i>&nbsp;    } catch (IOException e) {</b>
+<i>60</i>&nbsp;      // TODO Auto-generated catch block
+<b class="nc"><i>61</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>62</i>&nbsp;      return false;</b>
+<b class="nc"><i>63</i>&nbsp;    } catch (URISyntaxException e) {</b>
+<i>64</i>&nbsp;      // TODO Auto-generated catch block
+<b class="nc"><i>65</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>66</i>&nbsp;      return false;</b>
+<b class="nc"><i>67</i>&nbsp;    }</b>
+<b class="nc"><i>68</i>&nbsp;    return true;</b>
+<i>69</i>&nbsp;  }
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  private static boolean displayUrlWithJnlpApi(String url) {
+<i>72</i>&nbsp;    // Opening a browser, even when running sandbox-restricted
+<i>73</i>&nbsp;    // in JavaWebStart.
+<i>74</i>&nbsp;    try {
+<b class="nc"><i>75</i>&nbsp;      Class&lt;?&gt; serManClass = Class.forName(&quot;javax.jnlp.ServiceManager&quot;);</b>
+<b class="nc"><i>76</i>&nbsp;      Class&lt;?&gt; basSerClass = Class.forName(&quot;javax.jnlp.BasicService&quot;);</b>
+<b class="nc"><i>77</i>&nbsp;      Class&lt;?&gt;[] stringParam = { String.class };</b>
+<b class="nc"><i>78</i>&nbsp;      Class&lt;?&gt;[] urlParam = { URL.class };</b>
+<i>79</i>&nbsp;
+<b class="nc"><i>80</i>&nbsp;      Object basicService = serManClass.getMethod(&quot;lookup&quot;, stringParam).invoke(serManClass,</b>
+<i>81</i>&nbsp;          new Object[] { &quot;javax.jnlp.BasicService&quot; });
+<b class="nc"><i>82</i>&nbsp;      basSerClass.getMethod(&quot;showDocument&quot;, urlParam).invoke(basicService, new Object[] { new URL(url) });</b>
+<i>83</i>&nbsp;
+<b class="nc"><i>84</i>&nbsp;      return true;</b>
+<b class="nc"><i>85</i>&nbsp;    } catch (Exception e) {</b>
+<b class="nc"><i>86</i>&nbsp;      return false;</b>
+<i>87</i>&nbsp;      // Not running in JavaWebStart or service is not supported.
+<i>88</i>&nbsp;      // We continue with the methods below ...
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  /**
+<i>93</i>&nbsp;   * Display an URL in the system browser. If you want to display a file, you
+<i>94</i>&nbsp;   * must include the absolute path name.
+<i>95</i>&nbsp;   * 
+<i>96</i>&nbsp;   * @param url
+<i>97</i>&nbsp;   *          the document&#39;s url (the url must start with either &quot;http://&quot; or
+<i>98</i>&nbsp;   *          &quot;file://&quot;).
+<i>99</i>&nbsp;   * @return true when the method succeeded in displaying the URL in the system
+<i>100</i>&nbsp;   *         browser
+<i>101</i>&nbsp;   */
+<i>102</i>&nbsp;  public static boolean displayURL(String url) {
+<b class="nc"><i>103</i>&nbsp;    if (displayUrlWithDesktopApi(url)) {</b>
+<b class="nc"><i>104</i>&nbsp;      return true;</b>
+<i>105</i>&nbsp;    }
+<b class="nc"><i>106</i>&nbsp;    if (displayUrlWithJnlpApi(url)) {</b>
+<b class="nc"><i>107</i>&nbsp;      return true;</b>
+<i>108</i>&nbsp;    }
+<b class="nc"><i>109</i>&nbsp;    Platforms platform = getPlatform();</b>
+<b class="nc"><i>110</i>&nbsp;    switch (platform) {</b>
+<i>111</i>&nbsp;    case WINDOWS:
+<b class="nc"><i>112</i>&nbsp;      return runCmdLine(replaceToken(WIN_CMDLINE, URLTOKEN, url));</b>
+<i>113</i>&nbsp;    case MAC:
+<b class="nc"><i>114</i>&nbsp;      return runCmdLine(replaceToken(MAC_CMDLINE, URLTOKEN, url));</b>
+<i>115</i>&nbsp;    case LINUX:
+<b class="nc"><i>116</i>&nbsp;      if (runCmdLine(replaceToken(LINUX_CMDLINE, URLTOKEN, url))) {</b>
+<i>117</i>&nbsp;        // Succeeded
+<b class="nc"><i>118</i>&nbsp;        return true;</b>
+<i>119</i>&nbsp;      }
+<i>120</i>&nbsp;      // Fallback on &#39;brute-force&#39; method
+<i>121</i>&nbsp;    }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;    // Try out a series of commands and hope one is recognized...
+<b class="nc"><i>124</i>&nbsp;    assert OTHER_CMDLINES.length == OTHER_FALLBACKS.length;</b>
+<b class="nc"><i>125</i>&nbsp;    for (int i = 0; i &lt; OTHER_CMDLINES.length; i++) {</b>
+<b class="nc"><i>126</i>&nbsp;      if (runCmdLine(replaceToken(OTHER_CMDLINES[i], URLTOKEN, url), replaceToken(OTHER_FALLBACKS[i], URLTOKEN, url))) {</b>
+<b class="nc"><i>127</i>&nbsp;        return true;</b>
+<i>128</i>&nbsp;      }
+<i>129</i>&nbsp;    }
+<b class="nc"><i>130</i>&nbsp;    return false;</b>
+<i>131</i>&nbsp;  }
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  /**
+<i>134</i>&nbsp;   * Try to determine whether this application is running under Windows or some
+<i>135</i>&nbsp;   * other platform by examining the &quot;os.name&quot; property.
+<i>136</i>&nbsp;   * 
+<i>137</i>&nbsp;   * @return the ID of the platform
+<i>138</i>&nbsp;   */
+<i>139</i>&nbsp;  private static Platforms getPlatform() {
+<b class="nc"><i>140</i>&nbsp;    String os = System.getProperty(&quot;os.name&quot;);</b>
+<b class="nc"><i>141</i>&nbsp;    if (os != null &amp;&amp; os.startsWith(WIN_PREFIX)) {</b>
+<b class="nc"><i>142</i>&nbsp;      return Platforms.WINDOWS;</b>
+<i>143</i>&nbsp;    }
+<b class="nc"><i>144</i>&nbsp;    if (os != null &amp;&amp; os.startsWith(MAC_PREFIX)) {</b>
+<b class="nc"><i>145</i>&nbsp;      return Platforms.MAC;</b>
+<i>146</i>&nbsp;    }
+<b class="nc"><i>147</i>&nbsp;    if (os != null &amp;&amp; os.startsWith(LINUX_PREFIX)) {</b>
+<b class="nc"><i>148</i>&nbsp;      return Platforms.LINUX;</b>
+<i>149</i>&nbsp;    }
+<b class="nc"><i>150</i>&nbsp;    return Platforms.OTHER;</b>
+<i>151</i>&nbsp;  }
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;  private static String connectStringArray(String[] a) {
+<b class="nc"><i>154</i>&nbsp;    if (a == null)</b>
+<b class="nc"><i>155</i>&nbsp;      return null;</b>
+<i>156</i>&nbsp;
+<b class="nc"><i>157</i>&nbsp;    String s = &quot;&quot;;</b>
+<b class="nc"><i>158</i>&nbsp;    for (int i = 0; i &lt; a.length; i++) {</b>
+<b class="nc"><i>159</i>&nbsp;      if (i &gt; 0)</b>
+<b class="nc"><i>160</i>&nbsp;        s += &quot; &quot;;</b>
+<b class="nc"><i>161</i>&nbsp;      s += a[i];</b>
+<i>162</i>&nbsp;    }
+<i>163</i>&nbsp;
+<b class="nc"><i>164</i>&nbsp;    return s;</b>
+<i>165</i>&nbsp;  }
+<i>166</i>&nbsp;
+<i>167</i>&nbsp;  private static String[] replaceToken(String[] target, String token, String replacement) {
+<b class="nc"><i>168</i>&nbsp;    if (null == target)</b>
+<b class="nc"><i>169</i>&nbsp;      return null;</b>
+<b class="nc"><i>170</i>&nbsp;    String[] result = new String[target.length];</b>
+<i>171</i>&nbsp;
+<b class="nc"><i>172</i>&nbsp;    for (int i = 0; i &lt; target.length; i++)</b>
+<b class="nc"><i>173</i>&nbsp;      result[i] = target[i].replaceAll(token, replacement);</b>
+<i>174</i>&nbsp;
+<b class="nc"><i>175</i>&nbsp;    return result;</b>
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;
+<i>178</i>&nbsp;  private static boolean runCmdLine(String[] cmdLine) {
+<b class="nc"><i>179</i>&nbsp;    return runCmdLine(cmdLine, null);</b>
+<i>180</i>&nbsp;  }
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;  // TODO Maybe make method a little less chatty...
+<i>183</i>&nbsp;  private static boolean runCmdLine(String[] cmdLine, String[] fallBackCmdLine) {
+<i>184</i>&nbsp;    try {
+<b class="nc"><i>185</i>&nbsp;      System.err.println(&quot;Trying to invoke browser, cmd=&#39;&quot; + connectStringArray(cmdLine) + &quot;&#39; ... &quot;);</b>
+<b class="nc"><i>186</i>&nbsp;      Process p = Runtime.getRuntime().exec(cmdLine);</b>
+<i>187</i>&nbsp;
+<b class="nc"><i>188</i>&nbsp;      int exitCode = p.waitFor();</b>
+<b class="nc"><i>189</i>&nbsp;      if (exitCode == 0) {</b>
+<i>190</i>&nbsp;        // Succeeded!
+<b class="nc"><i>191</i>&nbsp;        System.err.println();</b>
+<b class="nc"><i>192</i>&nbsp;        return true;</b>
+<i>193</i>&nbsp;      }
+<b class="nc"><i>194</i>&nbsp;      System.err.println(exitCode);</b>
+<b class="nc"><i>195</i>&nbsp;      System.err.println();</b>
+<i>196</i>&nbsp;
+<b class="nc"><i>197</i>&nbsp;    } catch (InterruptedException e) {</b>
+<b class="nc"><i>198</i>&nbsp;      System.err.println(&quot;Caught: &quot; + e);</b>
+<b class="nc"><i>199</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>200</i>&nbsp;      System.err.println(&quot;Caught: &quot; + e);</b>
+<b class="nc"><i>201</i>&nbsp;    }</b>
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;    // Failed, caught exception or exitCode indicated an error
+<b class="nc"><i>204</i>&nbsp;    if (null != fallBackCmdLine) {</b>
+<i>205</i>&nbsp;      // Start fallBackCmdLine
+<i>206</i>&nbsp;      try {
+<b class="nc"><i>207</i>&nbsp;        System.err.println(&quot;Trying to invoke browser, cmd=&#39;&quot; + connectStringArray(fallBackCmdLine) + &quot;&#39; ...&quot;);</b>
+<b class="nc"><i>208</i>&nbsp;        Process p = Runtime.getRuntime().exec(fallBackCmdLine);</b>
+<b class="nc"><i>209</i>&nbsp;        int exitCode = p.waitFor();</b>
+<b class="nc"><i>210</i>&nbsp;        if (exitCode == 0) {</b>
+<i>211</i>&nbsp;          // Succeeded!
+<b class="nc"><i>212</i>&nbsp;          System.err.println();</b>
+<b class="nc"><i>213</i>&nbsp;          return true;</b>
+<i>214</i>&nbsp;        }
+<b class="nc"><i>215</i>&nbsp;      } catch (InterruptedException e) {</b>
+<b class="nc"><i>216</i>&nbsp;        System.err.println(&quot;Caught: &quot; + e);</b>
+<b class="nc"><i>217</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>218</i>&nbsp;        System.err.println(&quot;Caught: &quot; + e);</b>
+<b class="nc"><i>219</i>&nbsp;      }</b>
+<i>220</i>&nbsp;    }
+<i>221</i>&nbsp;
+<b class="nc"><i>222</i>&nbsp;    System.err.println();</b>
+<b class="nc"><i>223</i>&nbsp;    return false;</b>
+<i>224</i>&nbsp;  }
+<i>225</i>&nbsp;
+<i>226</i>&nbsp;  /** Available/Supported platforms for opening URLs in browsers */
+<b class="nc"><i>227</i>&nbsp;  private enum Platforms {</b>
+<i>228</i>&nbsp;    /** Used to identify the Windows platform. */
+<b class="nc"><i>229</i>&nbsp;    WINDOWS,</b>
+<i>230</i>&nbsp;    /** Used to identify the &lt;ac platform. */
+<b class="nc"><i>231</i>&nbsp;    MAC,</b>
+<i>232</i>&nbsp;    /** Used to identify the (generic) Linux platform. */
+<b class="nc"><i>233</i>&nbsp;    LINUX,</b>
+<i>234</i>&nbsp;    /** Unable to identify the platform */
+<b class="nc"><i>235</i>&nbsp;    OTHER</b>
+<i>236</i>&nbsp;  };
+<i>237</i>&nbsp;
+<i>238</i>&nbsp;  // This token is a place holder for the actual URL
+<i>239</i>&nbsp;  private static final String URLTOKEN = &quot;%URLTOKEN%&quot;;
+<i>240</i>&nbsp;
+<i>241</i>&nbsp;  // Used to discover the windows platform.
+<i>242</i>&nbsp;  private static final String WIN_PREFIX = &quot;Windows&quot;;
+<i>243</i>&nbsp;
+<i>244</i>&nbsp;  // The default system browser under windows.
+<i>245</i>&nbsp;  // Once upon a time:
+<i>246</i>&nbsp;  // for &#39;Windows 9&#39; and &#39;Windows M&#39;: start
+<i>247</i>&nbsp;  // for &#39;Windows&#39;: cmd /c start
+<b class="nc"><i>248</i>&nbsp;  private static final String[] WIN_CMDLINE = { &quot;rundll32&quot;, &quot;url.dll,FileProtocolHandler&quot;, URLTOKEN };</b>
+<i>249</i>&nbsp;
+<i>250</i>&nbsp;  // Used to discover the mac platform.
+<i>251</i>&nbsp;  private static final String MAC_PREFIX = &quot;Mac&quot;;
+<i>252</i>&nbsp;
+<i>253</i>&nbsp;  // The default system browser under mac.
+<b class="nc"><i>254</i>&nbsp;  private static final String[] MAC_CMDLINE = { &quot;open&quot;, URLTOKEN };</b>
+<i>255</i>&nbsp;
+<i>256</i>&nbsp;  // Used to discover the Linux platform.
+<i>257</i>&nbsp;  private static final String LINUX_PREFIX = &quot;Linux&quot;;
+<i>258</i>&nbsp;
+<i>259</i>&nbsp;  // The default definition for the preferred browser under Linux
+<b class="nc"><i>260</i>&nbsp;  private static final String[] LINUX_CMDLINE = { &quot;sensible-browser&quot;, URLTOKEN };</b>
+<i>261</i>&nbsp;
+<b class="nc"><i>262</i>&nbsp;  private static final String[][] OTHER_CMDLINES = {</b>
+<i>263</i>&nbsp;
+<i>264</i>&nbsp;      // Try to invoke the browser specified in the BROWSER environment
+<i>265</i>&nbsp;      // variable
+<i>266</i>&nbsp;      // Comment because this method, because it use a deprecated method
+<i>267</i>&nbsp;      // and cause exception
+<i>268</i>&nbsp;      // GetEnv.GetEnvironement(URLTOKEN),
+<i>269</i>&nbsp;
+<i>270</i>&nbsp;      // The first guess for a browser under other systems (and unix):
+<i>271</i>&nbsp;      // Remote controlling mozilla
+<i>272</i>&nbsp;      // (http://www.mozilla.org/unix/remote.html)
+<i>273</i>&nbsp;      { &quot;mozilla&quot;, &quot;-remote&quot;, &quot;openURL(&quot; + URLTOKEN + &quot;,new-window)&quot; },
+<i>274</i>&nbsp;
+<i>275</i>&nbsp;      // Next guess for a browser under other systems (and unix):
+<i>276</i>&nbsp;      // The RedHat script htmlview
+<i>277</i>&nbsp;      { &quot;htmlview&quot;, URLTOKEN },
+<i>278</i>&nbsp;
+<i>279</i>&nbsp;      // Next guess, try Opera (if a user installed it, it is probably
+<i>280</i>&nbsp;      // &#39;more-wanted&#39; than the default browser)
+<i>281</i>&nbsp;      // See /usr/share/applications/opera-browser.desktop
+<i>282</i>&nbsp;      { &quot;opera&quot;, &quot;-remote&quot;, &quot;openURL(&quot; + URLTOKEN + &quot;)&quot; },
+<i>283</i>&nbsp;
+<i>284</i>&nbsp;      // Next guess for a browser under Gnome: try FireFox (
+<i>285</i>&nbsp;      // See /usr/share/applications/firefox.desktop
+<i>286</i>&nbsp;      { &quot;firefox&quot;, URLTOKEN },
+<i>287</i>&nbsp;
+<i>288</i>&nbsp;      // Next guess for a browser under KDE4: rekonq
+<i>289</i>&nbsp;      // See /usr/share/applications/kde4/rekonq.desktop
+<i>290</i>&nbsp;      { &quot;rekonq&quot;, URLTOKEN },
+<i>291</i>&nbsp;
+<i>292</i>&nbsp;      // Next guess for a browser under other systems (and unix):
+<i>293</i>&nbsp;      // Remote controlling netscape
+<i>294</i>&nbsp;      // (http://wp.netscape.com/newsref/std/x-remote.html)
+<i>295</i>&nbsp;      { &quot;netscape&quot;, &quot;-remote&quot;, &quot;openURL(&quot; + URLTOKEN + &quot;)&quot; } };
+<i>296</i>&nbsp;
+<b class="nc"><i>297</i>&nbsp;  private static final String[][] OTHER_FALLBACKS = {</b>
+<i>298</i>&nbsp;      // Fallback for remote controlling mozilla:
+<i>299</i>&nbsp;      // Starting up a new mozilla
+<i>300</i>&nbsp;      { &quot;mozilla&quot;, URLTOKEN },
+<i>301</i>&nbsp;
+<i>302</i>&nbsp;      // No fallback for htmlview
+<i>303</i>&nbsp;      null,
+<i>304</i>&nbsp;
+<i>305</i>&nbsp;      // Fallback for Opera: Opera-Next (alpha/development version
+<i>306</i>&nbsp;      // of Opera, can be separately used next to Opera)
+<i>307</i>&nbsp;      // See /usr/share/applications/opera-next-browser.desktop
+<i>308</i>&nbsp;      { &quot;opera-next&quot;, &quot;-remote&quot;, &quot;openURL(&quot; + URLTOKEN + &quot;)&quot; },
+<i>309</i>&nbsp;
+<i>310</i>&nbsp;      // No fallback for FireFox
+<i>311</i>&nbsp;      null,
+<i>312</i>&nbsp;
+<i>313</i>&nbsp;      // Fallback for rekonq: old KDE browser is konqueror
+<i>314</i>&nbsp;      { &quot;konqueror&quot;, URLTOKEN },
+<i>315</i>&nbsp;
+<i>316</i>&nbsp;      // Fallback for remote controlling netscape:
+<i>317</i>&nbsp;      // Starting up a new netscape
+<i>318</i>&nbsp;      { &quot;netscape&quot;, URLTOKEN } };
+<i>319</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

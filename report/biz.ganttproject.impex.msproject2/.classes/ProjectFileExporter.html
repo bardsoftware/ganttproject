@@ -1,0 +1,603 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectFileExporter</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.msproject2</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectFileExporter (biz.ganttproject.impex.msproject2)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectFileExporter</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.1%
+  </span>
+  <span class="absValue">
+    (2/ 33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (12/ 226)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProjectFileExporter$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProjectFileExporter$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProjectFileExporter$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProjectFileExporter$CustomPropertySetter</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (2/ 38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.2%
+  </span>
+  <span class="absValue">
+    (12/ 232)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010-2012 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.impex.msproject2;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.calendar.CalendarEvent;
+<i>22</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar;
+<i>23</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar.DayType;
+<i>24</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>25</i>&nbsp;import biz.ganttproject.core.calendar.GanttDaysOff;
+<i>26</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>27</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>28</i>&nbsp;import net.sf.mpxj.DateRange;
+<i>29</i>&nbsp;import net.sf.mpxj.Day;
+<i>30</i>&nbsp;import net.sf.mpxj.Duration;
+<i>31</i>&nbsp;import net.sf.mpxj.FieldType;
+<i>32</i>&nbsp;import net.sf.mpxj.MPXJException;
+<i>33</i>&nbsp;import net.sf.mpxj.Priority;
+<i>34</i>&nbsp;import net.sf.mpxj.ProjectCalendar;
+<i>35</i>&nbsp;import net.sf.mpxj.ProjectCalendarException;
+<i>36</i>&nbsp;import net.sf.mpxj.ProjectCalendarHours;
+<i>37</i>&nbsp;import net.sf.mpxj.ProjectFile;
+<i>38</i>&nbsp;import net.sf.mpxj.Rate;
+<i>39</i>&nbsp;import net.sf.mpxj.RelationType;
+<i>40</i>&nbsp;import net.sf.mpxj.Resource;
+<i>41</i>&nbsp;import net.sf.mpxj.ResourceType;
+<i>42</i>&nbsp;import net.sf.mpxj.TaskMode;
+<i>43</i>&nbsp;import net.sf.mpxj.TimeUnit;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.CustomProperty;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyClass;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyHolder;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.GanttTask;
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.task.ResourceAssignment;
+<i>54</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>55</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>56</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>57</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>58</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;import javax.swing.*;
+<i>61</i>&nbsp;import java.math.BigDecimal;
+<i>62</i>&nbsp;import java.util.Calendar;
+<i>63</i>&nbsp;import java.util.Date;
+<i>64</i>&nbsp;import java.util.HashMap;
+<i>65</i>&nbsp;import java.util.Map;
+<i>66</i>&nbsp;import java.util.Map.Entry;
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;/**
+<i>69</i>&nbsp; * Creates MPXJ ProjectFile from GanttProject&#39;s IGanttProject.
+<i>70</i>&nbsp; *
+<i>71</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>72</i>&nbsp; */
+<b class="fc"><i>73</i>&nbsp;class ProjectFileExporter {</b>
+<i>74</i>&nbsp;  private IGanttProject myNativeProject;
+<i>75</i>&nbsp;  private ProjectFile myOutputProject;
+<i>76</i>&nbsp;
+<b class="nc"><i>77</i>&nbsp;  public ProjectFileExporter(IGanttProject nativeProject) {</b>
+<b class="nc"><i>78</i>&nbsp;    myNativeProject = nativeProject;</b>
+<b class="nc"><i>79</i>&nbsp;    myOutputProject = new ProjectFile();</b>
+<b class="nc"><i>80</i>&nbsp;    myOutputProject.getProjectConfig().setAutoOutlineLevel(true);</b>
+<b class="nc"><i>81</i>&nbsp;    myOutputProject.getProjectConfig().setAutoWBS(true);</b>
+<b class="nc"><i>82</i>&nbsp;    myOutputProject.getProjectConfig().setAutoOutlineNumber(true);</b>
+<b class="nc"><i>83</i>&nbsp;    myOutputProject.getProjectConfig().setAutoResourceUniqueID(false);</b>
+<b class="nc"><i>84</i>&nbsp;    myOutputProject.getProjectConfig().setAutoTaskUniqueID(false);</b>
+<b class="nc"><i>85</i>&nbsp;  }</b>
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  ProjectFile run() throws MPXJException {
+<b class="nc"><i>88</i>&nbsp;    Map&lt;Integer, net.sf.mpxj.Task&gt; id2mpxjTask = new HashMap&lt;Integer, net.sf.mpxj.Task&gt;();</b>
+<b class="nc"><i>89</i>&nbsp;    exportCalendar();</b>
+<b class="nc"><i>90</i>&nbsp;    exportTasks(id2mpxjTask);</b>
+<b class="nc"><i>91</i>&nbsp;    exportDependencies(id2mpxjTask);</b>
+<i>92</i>&nbsp;
+<b class="nc"><i>93</i>&nbsp;    Map&lt;Integer, Resource&gt; id2mpxjResource = new HashMap&lt;Integer, Resource&gt;();</b>
+<b class="nc"><i>94</i>&nbsp;    exportResources(id2mpxjResource);</b>
+<i>95</i>&nbsp;
+<b class="nc"><i>96</i>&nbsp;    exportAssignments(id2mpxjTask, id2mpxjResource);</b>
+<b class="nc"><i>97</i>&nbsp;    return myOutputProject;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  private void exportCalendar() {
+<b class="nc"><i>101</i>&nbsp;    ProjectCalendar calendar = myOutputProject.addDefaultBaseCalendar();</b>
+<b class="nc"><i>102</i>&nbsp;    exportWeekends(calendar);</b>
+<b class="nc"><i>103</i>&nbsp;    exportHolidays(calendar);</b>
+<b class="nc"><i>104</i>&nbsp;  }</b>
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  private boolean isWorkingDay(int day) {
+<b class="nc"><i>107</i>&nbsp;    return getCalendar().getOnlyShowWeekends() || getCalendar().getWeekDayType(day) == DayType.WORKING;</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;  private void exportWeekends(ProjectCalendar calendar) {
+<b class="nc"><i>111</i>&nbsp;    ProjectCalendarHours workingDayHours = calendar.getCalendarHours(Day.MONDAY);</b>
+<b class="nc"><i>112</i>&nbsp;    calendar.setWorkingDay(Day.MONDAY, isWorkingDay(Calendar.MONDAY));</b>
+<b class="nc"><i>113</i>&nbsp;    calendar.setWorkingDay(Day.TUESDAY, isWorkingDay(Calendar.TUESDAY));</b>
+<b class="nc"><i>114</i>&nbsp;    calendar.setWorkingDay(Day.WEDNESDAY, isWorkingDay(Calendar.WEDNESDAY));</b>
+<b class="nc"><i>115</i>&nbsp;    calendar.setWorkingDay(Day.THURSDAY, isWorkingDay(Calendar.THURSDAY));</b>
+<b class="nc"><i>116</i>&nbsp;    calendar.setWorkingDay(Day.FRIDAY, isWorkingDay(Calendar.FRIDAY));</b>
+<b class="nc"><i>117</i>&nbsp;    calendar.setWorkingDay(Day.SATURDAY, isWorkingDay(Calendar.SATURDAY));</b>
+<b class="nc"><i>118</i>&nbsp;    if (calendar.isWorkingDay(Day.SATURDAY)) {</b>
+<b class="nc"><i>119</i>&nbsp;      copyHours(workingDayHours, calendar.addCalendarHours(Day.SATURDAY));</b>
+<i>120</i>&nbsp;    }
+<b class="nc"><i>121</i>&nbsp;    calendar.setWorkingDay(Day.SUNDAY, isWorkingDay(Calendar.SUNDAY));</b>
+<b class="nc"><i>122</i>&nbsp;    if (calendar.isWorkingDay(Day.SUNDAY)) {</b>
+<b class="nc"><i>123</i>&nbsp;      copyHours(workingDayHours, calendar.addCalendarHours(Day.SUNDAY));</b>
+<i>124</i>&nbsp;    }
+<b class="nc"><i>125</i>&nbsp;  }</b>
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  private void copyHours(ProjectCalendarHours from, ProjectCalendarHours to) {
+<b class="nc"><i>128</i>&nbsp;    for (DateRange range : from) {</b>
+<b class="nc"><i>129</i>&nbsp;      to.addRange(range);</b>
+<b class="nc"><i>130</i>&nbsp;    }</b>
+<b class="nc"><i>131</i>&nbsp;  }</b>
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  private void exportHolidays(ProjectCalendar calendar) {
+<b class="nc"><i>134</i>&nbsp;    exportHolidays(getCalendar(), calendar);</b>
+<b class="nc"><i>135</i>&nbsp;  }</b>
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;  static void exportHolidays(GPCalendar gpCalendar, ProjectCalendar calendar) {
+<b class="fc"><i>138</i>&nbsp;    for (CalendarEvent h : gpCalendar.getPublicHolidays()) {</b>
+<b class="fc"><i>139</i>&nbsp;      if (!h.isRecurring &amp;&amp; h.getType() == CalendarEvent.Type.HOLIDAY) {</b>
+<b class="fc"><i>140</i>&nbsp;        Date d = h.myDate;</b>
+<b class="fc"><i>141</i>&nbsp;        calendar.addCalendarException(d, d);</b>
+<i>142</i>&nbsp;      }
+<b class="fc"><i>143</i>&nbsp;      if (!h.isRecurring &amp;&amp; h.getType() == CalendarEvent.Type.WORKING_DAY &amp;&amp; !calendar.isWorkingDate(h.myDate)) {</b>
+<b class="fc"><i>144</i>&nbsp;        Date d = h.myDate;</b>
+<b class="fc"><i>145</i>&nbsp;        ProjectCalendarException exception = calendar.addCalendarException(d, d);</b>
+<b class="fc"><i>146</i>&nbsp;        exception.addRange(ProjectCalendar.DEFAULT_WORKING_MORNING);</b>
+<b class="fc"><i>147</i>&nbsp;        exception.addRange(ProjectCalendar.DEFAULT_WORKING_AFTERNOON);</b>
+<i>148</i>&nbsp;      }
+<b class="fc"><i>149</i>&nbsp;    }</b>
+<b class="fc"><i>150</i>&nbsp;  }</b>
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;  private void exportTasks(Map&lt;Integer, net.sf.mpxj.Task&gt; id2mpxjTask) throws MPXJException {
+<i>153</i>&nbsp;//    Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType = new HashMap&lt;CustomPropertyDefinition, FieldType&gt;();
+<i>154</i>&nbsp;//    collectCustomProperties(getTaskManager().getCustomPropertyManager(), customProperty_fieldType, TaskField.class);
+<b class="nc"><i>155</i>&nbsp;    Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType = CustomPropertyMapping.buildMapping(getTaskManager());</b>
+<b class="nc"><i>156</i>&nbsp;    exportCustomFieldTypes(customProperty_fieldType);</b>
+<b class="nc"><i>157</i>&nbsp;    net.sf.mpxj.Task rootTask = myOutputProject.addTask();</b>
+<b class="nc"><i>158</i>&nbsp;    rootTask.setEffortDriven(false);</b>
+<b class="nc"><i>159</i>&nbsp;    rootTask.setID(0);</b>
+<b class="nc"><i>160</i>&nbsp;    rootTask.setUniqueID(0);</b>
+<b class="nc"><i>161</i>&nbsp;    rootTask.setOutlineLevel(0);</b>
+<b class="nc"><i>162</i>&nbsp;    rootTask.setWBS(&quot;0&quot;);</b>
+<b class="nc"><i>163</i>&nbsp;    rootTask.setOutlineNumber(&quot;0&quot;);</b>
+<b class="nc"><i>164</i>&nbsp;    rootTask.setStart(convertStartTime(getTaskManager().getProjectStart()));</b>
+<b class="nc"><i>165</i>&nbsp;    rootTask.setFinish(convertFinishTime(getTaskManager().getProjectEnd()));</b>
+<b class="nc"><i>166</i>&nbsp;    rootTask.setDuration(convertDuration(getTaskManager().createLength(</b>
+<b class="nc"><i>167</i>&nbsp;        getTaskManager().getRootTask().getDuration().getTimeUnit(), getTaskManager().getProjectStart(),</b>
+<b class="nc"><i>168</i>&nbsp;        getTaskManager().getProjectEnd())));</b>
+<i>169</i>&nbsp;    // rootTask.setDurationFormat(TimeUnit.DAYS);
+<b class="nc"><i>170</i>&nbsp;    rootTask.setTaskMode(TaskMode.AUTO_SCHEDULED);</b>
+<i>171</i>&nbsp;
+<b class="nc"><i>172</i>&nbsp;    int i = 0;</b>
+<b class="nc"><i>173</i>&nbsp;    for (Task t : getTaskHierarchy().getNestedTasks(getTaskHierarchy().getRootTask())) {</b>
+<b class="nc"><i>174</i>&nbsp;      exportTask(t, null, 1, ++i, id2mpxjTask, customProperty_fieldType);</b>
+<i>175</i>&nbsp;    }
+<b class="nc"><i>176</i>&nbsp;  }</b>
+<i>177</i>&nbsp;
+<i>178</i>&nbsp;  private void exportTask(Task t, net.sf.mpxj.Task mpxjParentTask, int outlineLevel, int ordinalNum,
+<i>179</i>&nbsp;      Map&lt;Integer, net.sf.mpxj.Task&gt; id2mpxjTask, Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType) {
+<b class="nc"><i>180</i>&nbsp;    final net.sf.mpxj.Task mpxjTask = mpxjParentTask == null ? myOutputProject.addTask() : mpxjParentTask.addTask();</b>
+<b class="nc"><i>181</i>&nbsp;    mpxjTask.setOutlineLevel(outlineLevel);</b>
+<b class="nc"><i>182</i>&nbsp;    String wbs = (mpxjParentTask == null ? &quot;&quot; : mpxjParentTask.getWBS() + &quot;.&quot;) + String.valueOf(ordinalNum);</b>
+<b class="nc"><i>183</i>&nbsp;    mpxjTask.setWBS(wbs);</b>
+<b class="nc"><i>184</i>&nbsp;    mpxjTask.setOutlineNumber(wbs);</b>
+<b class="nc"><i>185</i>&nbsp;    mpxjTask.setUniqueID(convertTaskId(t.getTaskID()));</b>
+<b class="nc"><i>186</i>&nbsp;    mpxjTask.setID(id2mpxjTask.size() + 1);</b>
+<b class="nc"><i>187</i>&nbsp;    mpxjTask.setName(t.getName());</b>
+<b class="nc"><i>188</i>&nbsp;    mpxjTask.setNotes(t.getNotes());</b>
+<b class="nc"><i>189</i>&nbsp;    mpxjTask.setMilestone(t.isMilestone());</b>
+<b class="nc"><i>190</i>&nbsp;    mpxjTask.setPercentageComplete(t.getCompletionPercentage());</b>
+<b class="nc"><i>191</i>&nbsp;    mpxjTask.setHyperlink(((GanttTask) t).getWebLink());</b>
+<b class="nc"><i>192</i>&nbsp;    mpxjTask.setIgnoreResourceCalendar(true);</b>
+<i>193</i>&nbsp;
+<b class="nc"><i>194</i>&nbsp;    Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);</b>
+<b class="nc"><i>195</i>&nbsp;    mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);</b>
+<b class="nc"><i>196</i>&nbsp;    Date startTime = convertStartTime(t.getStart().getTime());</b>
+<b class="nc"><i>197</i>&nbsp;    mpxjTask.setStart(startTime);</b>
+<i>198</i>&nbsp;
+<b class="nc"><i>199</i>&nbsp;    Duration duration = convertDuration(t.getDuration());</b>
+<b class="nc"><i>200</i>&nbsp;    mpxjTask.setDuration(duration);</b>
+<b class="nc"><i>201</i>&nbsp;    mpxjTask.setManualDuration(duration);</b>
+<b class="nc"><i>202</i>&nbsp;    if (t.isMilestone()) {</b>
+<b class="nc"><i>203</i>&nbsp;      mpxjTask.setFinish(startTime);</b>
+<i>204</i>&nbsp;    } else {
+<b class="nc"><i>205</i>&nbsp;      Date finishTime = convertFinishTime(t.getEnd().getTime());</b>
+<b class="nc"><i>206</i>&nbsp;      mpxjTask.setFinish(finishTime);</b>
+<i>207</i>&nbsp;    }
+<b class="nc"><i>208</i>&nbsp;    mpxjTask.setCost(t.getCost().getValue());</b>
+<i>209</i>&nbsp;    // mpxjTask.setDurationFormat(TimeUnit.DAYS);
+<b class="nc"><i>210</i>&nbsp;    Duration[] durations = getActualAndRemainingDuration(mpxjTask);</b>
+<b class="nc"><i>211</i>&nbsp;    mpxjTask.setActualDuration(durations[0]);</b>
+<b class="nc"><i>212</i>&nbsp;    mpxjTask.setRemainingDuration(durations[1]);</b>
+<b class="nc"><i>213</i>&nbsp;    mpxjTask.setPriority(convertPriority(t));</b>
+<i>214</i>&nbsp;
+<b class="nc"><i>215</i>&nbsp;    exportCustomProperties(t.getCustomValues(), customProperty_fieldType, new CustomPropertySetter() {</b>
+<i>216</i>&nbsp;      @Override
+<i>217</i>&nbsp;      public void set(FieldType ft, Object value) {
+<b class="nc"><i>218</i>&nbsp;        mpxjTask.set(ft, value);</b>
+<i>219</i>&nbsp;      }
+<i>220</i>&nbsp;    });
+<b class="nc"><i>221</i>&nbsp;    id2mpxjTask.put(mpxjTask.getUniqueID(), mpxjTask);</b>
+<i>222</i>&nbsp;
+<b class="nc"><i>223</i>&nbsp;    int i = 0;</b>
+<b class="nc"><i>224</i>&nbsp;    for (Task child : nestedTasks) {</b>
+<b class="nc"><i>225</i>&nbsp;      exportTask(child, mpxjTask, outlineLevel + 1, ++i, id2mpxjTask, customProperty_fieldType);</b>
+<i>226</i>&nbsp;    }
+<i>227</i>&nbsp;
+<b class="nc"><i>228</i>&nbsp;  }</b>
+<i>229</i>&nbsp;
+<i>230</i>&nbsp;  private Date convertStartTime(Date gpStartDate) {
+<b class="nc"><i>231</i>&nbsp;    Date startTime = myOutputProject.getDefaultCalendar().getStartTime(gpStartDate);</b>
+<b class="nc"><i>232</i>&nbsp;    if (startTime == null) {</b>
+<b class="nc"><i>233</i>&nbsp;      GPLogger.getLogger(getClass()).warning(String.format(&quot;Failed to convert start date=%s to start time in MPXJ project, got null. &quot; +</b>
+<b class="nc"><i>234</i>&nbsp;          &quot;Chances are that task start date is non-working day in MPXJ project calendar. Let&#39;s take the start date as is&quot;, gpStartDate.toString()));</b>
+<b class="nc"><i>235</i>&nbsp;      startTime = gpStartDate;</b>
+<i>236</i>&nbsp;    }
+<b class="nc"><i>237</i>&nbsp;    Calendar c = (Calendar) Calendar.getInstance().clone();</b>
+<b class="nc"><i>238</i>&nbsp;    c.setTime(gpStartDate);</b>
+<b class="nc"><i>239</i>&nbsp;    c.set(Calendar.HOUR, startTime.getHours());</b>
+<b class="nc"><i>240</i>&nbsp;    c.set(Calendar.MINUTE, startTime.getMinutes());</b>
+<b class="nc"><i>241</i>&nbsp;    return c.getTime();</b>
+<i>242</i>&nbsp;  }
+<i>243</i>&nbsp;
+<i>244</i>&nbsp;  private Date convertFinishTime(Date gpFinishDate) {
+<b class="nc"><i>245</i>&nbsp;    Calendar c = (Calendar) Calendar.getInstance().clone();</b>
+<b class="nc"><i>246</i>&nbsp;    c.setTime(gpFinishDate);</b>
+<b class="nc"><i>247</i>&nbsp;    c.add(Calendar.DAY_OF_YEAR, -1);</b>
+<b class="nc"><i>248</i>&nbsp;    Date finishTime = myOutputProject.getDefaultCalendar().getFinishTime(c.getTime());</b>
+<b class="nc"><i>249</i>&nbsp;    if (finishTime != null) {</b>
+<b class="nc"><i>250</i>&nbsp;	    c.set(Calendar.HOUR, finishTime.getHours());</b>
+<b class="nc"><i>251</i>&nbsp;	    c.set(Calendar.MINUTE, finishTime.getMinutes());</b>
+<i>252</i>&nbsp;    }
+<b class="nc"><i>253</i>&nbsp;    return c.getTime();</b>
+<i>254</i>&nbsp;
+<i>255</i>&nbsp;  }
+<i>256</i>&nbsp;
+<i>257</i>&nbsp;  private Duration convertDuration(TimeDuration duration) {
+<b class="nc"><i>258</i>&nbsp;    return Duration.getInstance(duration.getLength(), TimeUnit.DAYS);</b>
+<i>259</i>&nbsp;  }
+<i>260</i>&nbsp;
+<i>261</i>&nbsp;  private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask) {
+<b class="nc"><i>262</i>&nbsp;	  return getActualAndRemainingDuration(mpxjTask, 1.0);</b>
+<i>263</i>&nbsp;  }
+<i>264</i>&nbsp;
+<i>265</i>&nbsp;  private static Duration[] getActualAndRemainingDuration(net.sf.mpxj.Task mpxjTask, double load) {
+<b class="nc"><i>266</i>&nbsp;    TimeUnit durationUnits = mpxjTask.getDuration().getUnits();</b>
+<b class="nc"><i>267</i>&nbsp;    double actualWork = (mpxjTask.getDuration().getDuration() * mpxjTask.getPercentageComplete().doubleValue() * load) / 100;</b>
+<b class="nc"><i>268</i>&nbsp;    double remainingWork = mpxjTask.getDuration().getDuration() - actualWork;</b>
+<i>269</i>&nbsp;
+<b class="nc"><i>270</i>&nbsp;    return new Duration[] { Duration.getInstance(actualWork, durationUnits),</b>
+<b class="nc"><i>271</i>&nbsp;        Duration.getInstance(remainingWork, durationUnits) };</b>
+<i>272</i>&nbsp;  }
+<i>273</i>&nbsp;
+<i>274</i>&nbsp;  private void exportDependencies(Map&lt;Integer, net.sf.mpxj.Task&gt; id2mpxjTask) {
+<b class="nc"><i>275</i>&nbsp;    for (Task t : getTaskManager().getTasks()) {</b>
+<b class="nc"><i>276</i>&nbsp;      net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(convertTaskId(t.getTaskID()));</b>
+<i>277</i>&nbsp;
+<b class="nc"><i>278</i>&nbsp;      TaskDependencySlice dependencies = t.getDependenciesAsDependant();</b>
+<b class="nc"><i>279</i>&nbsp;      for (TaskDependency dep : dependencies.toArray()) {</b>
+<b class="nc"><i>280</i>&nbsp;        net.sf.mpxj.Task mpxjPredecessor = id2mpxjTask.get(convertTaskId(dep.getDependee().getTaskID()));</b>
+<b class="nc"><i>281</i>&nbsp;        assert mpxjPredecessor != null : &quot;Can&#39;t find mpxj task for id=&quot; + dep.getDependee().getTaskID();</b>
+<b class="nc"><i>282</i>&nbsp;        mpxjTask.addPredecessor(mpxjPredecessor, convertConstraint(dep), convertLag(dep));</b>
+<i>283</i>&nbsp;      }
+<i>284</i>&nbsp;    }
+<b class="nc"><i>285</i>&nbsp;  }</b>
+<i>286</i>&nbsp;
+<i>287</i>&nbsp;  private RelationType convertConstraint(TaskDependency dep) {
+<b class="nc"><i>288</i>&nbsp;    switch (dep.getConstraint().getType()) {</b>
+<i>289</i>&nbsp;    case finishstart:
+<b class="nc"><i>290</i>&nbsp;      return RelationType.FINISH_START;</b>
+<i>291</i>&nbsp;    case startfinish:
+<b class="nc"><i>292</i>&nbsp;      return RelationType.START_FINISH;</b>
+<i>293</i>&nbsp;    case finishfinish:
+<b class="nc"><i>294</i>&nbsp;      return RelationType.FINISH_FINISH;</b>
+<i>295</i>&nbsp;    case startstart:
+<b class="nc"><i>296</i>&nbsp;      return RelationType.START_START;</b>
+<i>297</i>&nbsp;    default:
+<b class="nc"><i>298</i>&nbsp;      assert false : &quot;Should not be here&quot;;</b>
+<b class="nc"><i>299</i>&nbsp;      return null;</b>
+<i>300</i>&nbsp;    }
+<i>301</i>&nbsp;  }
+<i>302</i>&nbsp;
+<i>303</i>&nbsp;  private static Duration convertLag(TaskDependency dep) {
+<i>304</i>&nbsp;    // TODO(dbarashev): Get rid of days
+<b class="nc"><i>305</i>&nbsp;    return Duration.getInstance(dep.getDifference(), TimeUnit.DAYS);</b>
+<i>306</i>&nbsp;  }
+<i>307</i>&nbsp;
+<i>308</i>&nbsp;  private Priority convertPriority(Task t) {
+<b class="nc"><i>309</i>&nbsp;    switch (t.getPriority()) {</b>
+<i>310</i>&nbsp;    case LOWEST:
+<b class="nc"><i>311</i>&nbsp;      return Priority.getInstance(Priority.LOWEST);</b>
+<i>312</i>&nbsp;    case LOW:
+<b class="nc"><i>313</i>&nbsp;      return Priority.getInstance(Priority.LOW);</b>
+<i>314</i>&nbsp;    case NORMAL:
+<b class="nc"><i>315</i>&nbsp;      return Priority.getInstance(Priority.MEDIUM);</b>
+<i>316</i>&nbsp;    case HIGH:
+<b class="nc"><i>317</i>&nbsp;      return Priority.getInstance(Priority.HIGH);</b>
+<i>318</i>&nbsp;    case HIGHEST:
+<b class="nc"><i>319</i>&nbsp;      return Priority.getInstance(Priority.HIGHEST);</b>
+<i>320</i>&nbsp;    default:
+<b class="nc"><i>321</i>&nbsp;      assert false : &quot;Should not be here&quot;;</b>
+<b class="nc"><i>322</i>&nbsp;      return Priority.getInstance(Priority.MEDIUM);</b>
+<i>323</i>&nbsp;    }
+<i>324</i>&nbsp;  }
+<i>325</i>&nbsp;
+<i>326</i>&nbsp;  private int convertTaskId(int taskId) {
+<b class="nc"><i>327</i>&nbsp;    return taskId == 0 ? getMaxTaskID() + 1 : taskId;</b>
+<i>328</i>&nbsp;  }
+<i>329</i>&nbsp;
+<i>330</i>&nbsp;  private int getMaxTaskID() {
+<b class="nc"><i>331</i>&nbsp;    int maxID = 0;</b>
+<b class="nc"><i>332</i>&nbsp;    for (Task t : getTaskManager().getTasks()) {</b>
+<b class="nc"><i>333</i>&nbsp;      if (t.getTaskID() &gt; maxID) {</b>
+<b class="nc"><i>334</i>&nbsp;        maxID = t.getTaskID();</b>
+<i>335</i>&nbsp;      }
+<i>336</i>&nbsp;    }
+<b class="nc"><i>337</i>&nbsp;    return maxID;</b>
+<i>338</i>&nbsp;  }
+<i>339</i>&nbsp;
+<i>340</i>&nbsp;  private void exportResources(Map&lt;Integer, Resource&gt; id2mpxjResource) throws MPXJException {
+<b class="nc"><i>341</i>&nbsp;    Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType = CustomPropertyMapping.buildMapping(getResourceManager());</b>
+<b class="nc"><i>342</i>&nbsp;    exportCustomFieldTypes(customProperty_fieldType);</b>
+<b class="nc"><i>343</i>&nbsp;    for (HumanResource hr : getResourceManager().getResources()) {</b>
+<b class="nc"><i>344</i>&nbsp;      exportResource(hr, id2mpxjResource, customProperty_fieldType);</b>
+<b class="nc"><i>345</i>&nbsp;    }</b>
+<b class="nc"><i>346</i>&nbsp;  }</b>
+<i>347</i>&nbsp;
+<i>348</i>&nbsp;  private void exportCustomFieldTypes(Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType) {
+<b class="nc"><i>349</i>&nbsp;    for (Entry&lt;CustomPropertyDefinition, FieldType&gt; e : customProperty_fieldType.entrySet()) {</b>
+<b class="nc"><i>350</i>&nbsp;      String alias = e.getKey().getName();</b>
+<b class="nc"><i>351</i>&nbsp;      if (&quot;&quot;.equals(alias.trim())) {</b>
+<b class="nc"><i>352</i>&nbsp;        alias = e.getValue().getName();</b>
+<i>353</i>&nbsp;
+<i>354</i>&nbsp;      }
+<b class="nc"><i>355</i>&nbsp;      myOutputProject.getCustomFields().getCustomField(e.getValue()).setAlias(alias);</b>
+<b class="nc"><i>356</i>&nbsp;    }</b>
+<b class="nc"><i>357</i>&nbsp;  }</b>
+<i>358</i>&nbsp;
+<i>359</i>&nbsp;  private void exportResource(HumanResource hr, Map&lt;Integer, Resource&gt; id2mpxjResource,
+<i>360</i>&nbsp;      Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType) throws MPXJException {
+<b class="nc"><i>361</i>&nbsp;    final Resource mpxjResource = myOutputProject.addResource();</b>
+<b class="nc"><i>362</i>&nbsp;    mpxjResource.setUniqueID(hr.getId()  + 1);</b>
+<b class="nc"><i>363</i>&nbsp;    mpxjResource.setID(id2mpxjResource.size() + 1);</b>
+<b class="nc"><i>364</i>&nbsp;    mpxjResource.setName(hr.getName());</b>
+<b class="nc"><i>365</i>&nbsp;    mpxjResource.setEmailAddress(hr.getMail());</b>
+<b class="nc"><i>366</i>&nbsp;    mpxjResource.setType(ResourceType.WORK);</b>
+<b class="nc"><i>367</i>&nbsp;    mpxjResource.setCanLevel(false);</b>
+<b class="nc"><i>368</i>&nbsp;    if (hr.getStandardPayRate() != BigDecimal.ZERO) {</b>
+<b class="nc"><i>369</i>&nbsp;      mpxjResource.setStandardRate(new Rate(hr.getStandardPayRate(), TimeUnit.DAYS));</b>
+<i>370</i>&nbsp;    }
+<i>371</i>&nbsp;
+<b class="nc"><i>372</i>&nbsp;    exportDaysOff(hr, mpxjResource);</b>
+<b class="nc"><i>373</i>&nbsp;    exportCustomProperties</b>
+<b class="nc"><i>374</i>&nbsp;        (hr, customProperty_fieldType, new CustomPropertySetter() {</b>
+<i>375</i>&nbsp;      @Override
+<i>376</i>&nbsp;      public void set(FieldType ft, Object value) {
+<b class="nc"><i>377</i>&nbsp;        mpxjResource.set(ft, value);</b>
+<i>378</i>&nbsp;      }
+<i>379</i>&nbsp;    });
+<b class="nc"><i>380</i>&nbsp;    id2mpxjResource.put(hr.getId(), mpxjResource);</b>
+<b class="nc"><i>381</i>&nbsp;  }</b>
+<i>382</i>&nbsp;
+<i>383</i>&nbsp;  private static interface CustomPropertySetter {
+<i>384</i>&nbsp;    void set(FieldType ft, Object value);
+<i>385</i>&nbsp;  }
+<i>386</i>&nbsp;
+<i>387</i>&nbsp;  private static void exportCustomProperties(CustomPropertyHolder holder,
+<i>388</i>&nbsp;      Map&lt;CustomPropertyDefinition, FieldType&gt; customProperty_fieldType, CustomPropertySetter setter) {
+<b class="nc"><i>389</i>&nbsp;    for (CustomProperty cp : holder.getCustomProperties()) {</b>
+<b class="nc"><i>390</i>&nbsp;      FieldType ft = customProperty_fieldType.get(cp.getDefinition());</b>
+<b class="nc"><i>391</i>&nbsp;      if (ft != null) {</b>
+<b class="nc"><i>392</i>&nbsp;        setter.set(ft, convertValue(cp));</b>
+<i>393</i>&nbsp;      }
+<b class="nc"><i>394</i>&nbsp;    }</b>
+<b class="nc"><i>395</i>&nbsp;  }</b>
+<i>396</i>&nbsp;
+<i>397</i>&nbsp;  private static Object convertValue(CustomProperty cp) {
+<b class="nc"><i>398</i>&nbsp;    if (cp.getDefinition().getPropertyClass() == CustomPropertyClass.DATE) {</b>
+<b class="nc"><i>399</i>&nbsp;      GanttCalendar value = (GanttCalendar) cp.getValue();</b>
+<b class="nc"><i>400</i>&nbsp;      return value.getTime();</b>
+<i>401</i>&nbsp;    }
+<b class="nc"><i>402</i>&nbsp;    return cp.getValue();</b>
+<i>403</i>&nbsp;  }
+<i>404</i>&nbsp;
+<i>405</i>&nbsp;  private void exportDaysOff(HumanResource hr, Resource mpxjResource) throws MPXJException {
+<b class="nc"><i>406</i>&nbsp;    DefaultListModel daysOff = hr.getDaysOff();</b>
+<b class="nc"><i>407</i>&nbsp;    if (!daysOff.isEmpty()) {</b>
+<b class="nc"><i>408</i>&nbsp;      ProjectCalendar resourceCalendar = mpxjResource.addResourceCalendar();</b>
+<b class="nc"><i>409</i>&nbsp;      resourceCalendar.addDefaultCalendarHours();</b>
+<b class="nc"><i>410</i>&nbsp;      exportWeekends(resourceCalendar);</b>
+<b class="nc"><i>411</i>&nbsp;      resourceCalendar.setParent(myOutputProject.getDefaultCalendar());</b>
+<i>412</i>&nbsp;      // resourceCalendar.setUniqueID(hr.getId());
+<b class="nc"><i>413</i>&nbsp;      for (int i = 0; i &lt; daysOff.size(); i++) {</b>
+<b class="nc"><i>414</i>&nbsp;        GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);</b>
+<b class="nc"><i>415</i>&nbsp;        resourceCalendar.addCalendarException(dayOff.getStart().getTime(), dayOff.getFinish().getTime());</b>
+<i>416</i>&nbsp;      }
+<i>417</i>&nbsp;    }
+<b class="nc"><i>418</i>&nbsp;  }</b>
+<i>419</i>&nbsp;
+<i>420</i>&nbsp;  private void exportAssignments(Map&lt;Integer, net.sf.mpxj.Task&gt; id2mpxjTask, Map&lt;Integer, Resource&gt; id2mpxjResource) {
+<b class="nc"><i>421</i>&nbsp;    for (Task t : getTaskManager().getTasks()) {</b>
+<b class="nc"><i>422</i>&nbsp;      net.sf.mpxj.Task mpxjTask = id2mpxjTask.get(convertTaskId(t.getTaskID()));</b>
+<b class="nc"><i>423</i>&nbsp;      for (ResourceAssignment ra : t.getAssignments()) {</b>
+<b class="nc"><i>424</i>&nbsp;        Resource mpxjResource = id2mpxjResource.get(ra.getResource().getId());</b>
+<b class="nc"><i>425</i>&nbsp;        net.sf.mpxj.ResourceAssignment mpxjAssignment = mpxjTask.addResourceAssignment(mpxjResource);</b>
+<b class="nc"><i>426</i>&nbsp;        mpxjAssignment.setUnits(ra.getLoad());</b>
+<b class="nc"><i>427</i>&nbsp;        mpxjAssignment.setStart(mpxjTask.getStart());</b>
+<b class="nc"><i>428</i>&nbsp;        mpxjAssignment.setFinish(mpxjTask.getFinish());</b>
+<i>429</i>&nbsp;
+<b class="nc"><i>430</i>&nbsp;        mpxjAssignment.setWork(mpxjTask.getDuration());</b>
+<b class="nc"><i>431</i>&nbsp;        Duration[] durations = getActualAndRemainingDuration(mpxjTask, ra.getLoad() / 100.0);</b>
+<b class="nc"><i>432</i>&nbsp;        mpxjAssignment.setActualWork(durations[0]);</b>
+<b class="nc"><i>433</i>&nbsp;        mpxjAssignment.setRemainingWork(durations[1]);</b>
+<i>434</i>&nbsp;      }
+<i>435</i>&nbsp;    }
+<b class="nc"><i>436</i>&nbsp;  }</b>
+<i>437</i>&nbsp;
+<i>438</i>&nbsp;  private TaskManager getTaskManager() {
+<b class="nc"><i>439</i>&nbsp;    return myNativeProject.getTaskManager();</b>
+<i>440</i>&nbsp;  }
+<i>441</i>&nbsp;
+<i>442</i>&nbsp;  private TaskContainmentHierarchyFacade getTaskHierarchy() {
+<b class="nc"><i>443</i>&nbsp;    return getTaskManager().getTaskHierarchy();</b>
+<i>444</i>&nbsp;  }
+<i>445</i>&nbsp;
+<i>446</i>&nbsp;  private HumanResourceManager getResourceManager() {
+<b class="nc"><i>447</i>&nbsp;    return myNativeProject.getHumanResourceManager();</b>
+<i>448</i>&nbsp;  }
+<i>449</i>&nbsp;
+<i>450</i>&nbsp;  private GPCalendarCalc getCalendar() {
+<b class="nc"><i>451</i>&nbsp;    return getTaskManager().getCalendar();</b>
+<i>452</i>&nbsp;  }
+<i>453</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,212 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RoleSetImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.roles</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RoleSetImpl (net.sourceforge.ganttproject.roles)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RoleSetImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (10/ 14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (33/ 44)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.roles;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;/**
+<i>24</i>&nbsp; * @author bard
+<i>25</i>&nbsp; */
+<i>26</i>&nbsp;public class RoleSetImpl implements RoleSet {
+<i>27</i>&nbsp;  private final String myName;
+<i>28</i>&nbsp;
+<b class="fc"><i>29</i>&nbsp;  private final ArrayList&lt;RoleImpl&gt; myRoles = new ArrayList&lt;RoleImpl&gt;();</b>
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  private boolean isEnabled;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  private final RoleManagerImpl myRoleManager;
+<i>34</i>&nbsp;
+<b class="fc"><i>35</i>&nbsp;  RoleSetImpl(String name, RoleManagerImpl roleManager) {</b>
+<b class="fc"><i>36</i>&nbsp;    myName = name;</b>
+<b class="fc"><i>37</i>&nbsp;    myRoleManager = roleManager;</b>
+<b class="fc"><i>38</i>&nbsp;  }</b>
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public String getName() {
+<b class="fc"><i>42</i>&nbsp;    return myName;</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  @Override
+<i>46</i>&nbsp;  public Role[] getRoles() {
+<b class="fc"><i>47</i>&nbsp;    return myRoles.toArray(new Role[0]);</b>
+<i>48</i>&nbsp;  }
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  @Override
+<i>51</i>&nbsp;  public Role createRole(String name) {
+<b class="fc"><i>52</i>&nbsp;    int maxId = 0;</b>
+<b class="fc"><i>53</i>&nbsp;    for (Role role : myRoles) {</b>
+<b class="fc"><i>54</i>&nbsp;      if (role.getID() &gt; maxId) {</b>
+<b class="fc"><i>55</i>&nbsp;        maxId = role.getID();</b>
+<i>56</i>&nbsp;      }
+<b class="fc"><i>57</i>&nbsp;    }</b>
+<b class="fc"><i>58</i>&nbsp;    return createRole(name, maxId + 1);</b>
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  @Override
+<i>62</i>&nbsp;  public Role createRole(String name, int persistentID) {
+<b class="fc"><i>63</i>&nbsp;    RoleImpl result = new RoleImpl(persistentID, name, this);</b>
+<b class="fc"><i>64</i>&nbsp;    myRoles.add(result);</b>
+<b class="fc"><i>65</i>&nbsp;    myRoleManager.fireRolesChanged(this);</b>
+<b class="fc"><i>66</i>&nbsp;    return result;</b>
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  @Override
+<i>70</i>&nbsp;  public void deleteRole(Role role) {
+<b class="fc"><i>71</i>&nbsp;    myRoles.remove(role);</b>
+<b class="fc"><i>72</i>&nbsp;    myRoleManager.fireRolesChanged(this);</b>
+<b class="fc"><i>73</i>&nbsp;  }</b>
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  @Override
+<i>76</i>&nbsp;  public void changeRole(String name, int roleID) {
+<b class="nc"><i>77</i>&nbsp;    Role role = findRole(roleID);</b>
+<b class="nc"><i>78</i>&nbsp;    if (role != null) {</b>
+<b class="nc"><i>79</i>&nbsp;      role.setName(name);</b>
+<i>80</i>&nbsp;    }
+<b class="nc"><i>81</i>&nbsp;  }</b>
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  @Override
+<i>84</i>&nbsp;  public Role findRole(int roleID) {
+<b class="fc"><i>85</i>&nbsp;    Role result = null;</b>
+<b class="fc"><i>86</i>&nbsp;    for (int i = 0; i &lt; myRoles.size(); i++) {</b>
+<b class="fc"><i>87</i>&nbsp;      Role next = myRoles.get(i);</b>
+<b class="fc"><i>88</i>&nbsp;      if (next.getID() == roleID) {</b>
+<b class="fc"><i>89</i>&nbsp;        result = next;</b>
+<b class="fc"><i>90</i>&nbsp;        break;</b>
+<i>91</i>&nbsp;      }
+<i>92</i>&nbsp;    }
+<b class="fc"><i>93</i>&nbsp;    return result;</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  @Override
+<i>97</i>&nbsp;  public boolean isEnabled() {
+<b class="nc"><i>98</i>&nbsp;    return isEnabled;</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public String toString() {
+<b class="nc"><i>103</i>&nbsp;    return getName();</b>
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  @Override
+<i>107</i>&nbsp;  public void setEnabled(boolean isEnabled) {
+<b class="fc"><i>108</i>&nbsp;    this.isEnabled = isEnabled;</b>
+<b class="fc"><i>109</i>&nbsp;    myRoleManager.fireRolesChanged(this);</b>
+<b class="fc"><i>110</i>&nbsp;  }</b>
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  @Override
+<i>113</i>&nbsp;  public boolean isEmpty() {
+<b class="fc"><i>114</i>&nbsp;    return myRoles.isEmpty();</b>
+<i>115</i>&nbsp;  }
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  @Override
+<i>118</i>&nbsp;  public void clear() {
+<b class="fc"><i>119</i>&nbsp;    myRoles.clear();</b>
+<b class="fc"><i>120</i>&nbsp;  }</b>
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  void importData(RoleSet original) {
+<b class="nc"><i>123</i>&nbsp;    Role[] originalRoles = original.getRoles();</b>
+<b class="nc"><i>124</i>&nbsp;    for (int i = 0; i &lt; originalRoles.length; i++) {</b>
+<b class="nc"><i>125</i>&nbsp;      Role nextRole = originalRoles[i];</b>
+<b class="nc"><i>126</i>&nbsp;      createRole(nextRole.getName(), nextRole.getID());</b>
+<i>127</i>&nbsp;    }
+<b class="nc"><i>128</i>&nbsp;  }</b>
+<i>129</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-04-18 11:00</div>
+</div>
+</body>
+</html>
