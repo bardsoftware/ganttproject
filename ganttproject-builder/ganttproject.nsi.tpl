@@ -79,7 +79,7 @@ Section "GanttProject"
   File LICENSE
   File logging.properties
 
-  File /r plugins-${VERSION}
+  File /r plugins
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"

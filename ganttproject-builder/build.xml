@@ -68,7 +68,7 @@
             </description>
             <!-- GanttProject distro goes into /usr/share/ganttproject -->
             <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
-                <include name="plugins-${version}/**/"/>
+                <include name="plugins/**/"/>
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
@@ -84,66 +84,4 @@
                dest="${distDebPackage}/${package.name}_${version_build}-1_all.deb"/>
     </target>
 
-    <taskdef name="bundleapp"
-             classname="com.oracle.appbundler.AppBundlerTask"
-             classpath="lib/appbundler-1.0.jar"/>
-
-    <target name="distMac" depends="distBin">
-        <mkdir dir="${distMacWork}"/>
-
-        <bundleapp outputdirectory="${distMacWork}"
-                   name="GanttProject"
-                   displayname="GanttProject"
-                   identifier="net.sourceforge.ganttproject"
-                   shortversion="${version}"
-                   icon="ganttproject.icns"
-                   copyright="Copyright 2019 BarD Software s.r.o. Distributed under GPL3"
-                   applicationCategory="public.app-category.productivity"
-                   mainclassname="org.bardsoftware.eclipsito.Boot">
-
-            <classpath dir=".">
-              <include name="eclipsito.jar"/>
-            </classpath>
-            <argument value="-app"/>
-            <argument value="net.sourceforge.ganttproject.GanttProject"/>
-            <argument value="-plugins-dir"/>
-            <argument value="$APP_ROOT/Contents/Java/plugins-${version}"/>
-            <argument value="-log"/>
-            <argument value="true"/>
-            <option value="-Dapple.laf.useScreenMenuBar=true"/>
-            <option value="-Dcom.apple.macos.useScreenMenuBar=true"/>
-            <option value="-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject"/>
-            <option value="-Xdock:name=GanttProject"/>
-            <option value="-Xmx512m"/>
-            <option value="-ea"/>
-            <option value="-Dfile.encoding=UTF-8"/>
-
-            <bundledocument contentTypes="com.bardsoftware.ganttproject"
-                            name="GanttProject"
-                            role="Editor"
-                            icon="ganttproject.icns">
-      		</bundledocument>
-            <typedeclaration identifier="com.bardsoftware.ganttproject"
-                             description="GanttProject document"
-                             conformsTo="public.xml"
-                             extensions="gan"
-                             icon="ganttproject.icns"/>
-        </bundleapp>
-        <copy todir="${distMacWork}/GanttProject.app/Contents/Java">
-            <fileset dir="${distBin}">
-                <include name="eclipsito.jar"/>
-                <include name="plugins-${version}/**"/>
-                <include name="logging.properties"/>
-            </fileset>
-        </copy>
-        <copy todir="${distMacWork}" file="HouseBuildingSample.gan"/>
-
-        <mkdir dir="${distMacWork}/GanttProject.app/Contents/Java/Classes"/>
-        <copy todir="${distMacWork}/GanttProject.app/Contents/Java/Classes" file="logging.properties"/>
-        <chmod perm="a+rx" file="${distMacWork}/GanttProject.app/Contents/MacOS/JavaAppLauncher"></chmod>
-        <zip destfile="${distMacZip}">
-            <zipfileset dir="${distMacWork}" includes="**">
-            </zipfileset>
-        </zip>
-    </target>
 </project>
