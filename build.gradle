@@ -1,7 +1,13 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
-apply plugin: 'java'
-apply plugin: 'eclipse'
+//apply plugin: 'java'
+//apply plugin: 'eclipse'
+//apply plugin: 'org.sonarqube'
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'org.sonarqube' version '2.7'
+}
 
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'

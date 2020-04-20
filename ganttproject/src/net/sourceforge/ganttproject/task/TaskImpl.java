@@ -305,7 +305,7 @@ public class TaskImpl implements Task {
             }
             URL relative = new URL(context, getWebLink());
             return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
-          } catch (URISyntaxException e) {
+          } catch (URISyntaxException e){
             // Do nothing
           } catch (MalformedURLException e) {
             // Do nothing
