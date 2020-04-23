@@ -65,10 +65,10 @@ fi
 cd "$GP_HOME"
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
-CONFIGURATION_FILE=ganttproject-eclipsito-config.xml
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
+ECLIPSITO_ARGS="-plugins-dir plugins -app net.sourceforge.ganttproject.GanttProject"
 
-JAVA_ARGS="-Xmx512m -Duser.dir=$GP_HOME $BOOT_CLASS -plugins-dir plugins -app net.sourceforge.ganttproject.GanttProject -log true -log_file $LOG_FILE"
+JAVA_ARGS="-Xmx1024m -Duser.dir=$GP_HOME $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else

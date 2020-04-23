@@ -45,7 +45,7 @@ if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
 fi
 
 LOG_TEXT=""
-echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"  
+echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"
 
 log() {
   if [ ! -z "$LOG_TEXT" ]; then
@@ -67,6 +67,7 @@ check_java() {
 
   VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
   log "...found $VERSION"
+  [[ "$VERSION" =~ "1.7" ]] && return 0;
   [[ "$VERSION" =~ "1.8" ]] && return 0;
   [[ "$VERSION" =~ "9." ]] && return 0;
   [[ "$VERSION" =~ "10." ]] && return 0;
@@ -76,7 +77,7 @@ check_java() {
   [[ "$VERSION" =~ "14." ]] && return 0;
   log "... this seems to be an old Java Runtime";
   JAVA_COMMAND=""
-  return 1 
+  return 1
 }
 
 find_java() {
@@ -87,7 +88,7 @@ find_java() {
   if [ "0" = "$?" ]; then
     check_java "$JAVA_COMMAND" && return 0;
   fi
-  
+
   if [ -x /usr/libexec/java_home ]; then
     check_java "$(/usr/libexec/java_home)/bin/java" && return 0;
   fi
@@ -99,7 +100,7 @@ find_java() {
   for f in $(ls /Library/Java/JavaVirtualMachines/); do
     check_java "/Library/Java/JavaVirtualMachines/$f/Contents/Home/bin/java" && return 0;
   done;
- 
+
   check_java "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java" && return 0;
   check_java /Library/Java/Home/bin/java && return 0;
 
@@ -111,8 +112,8 @@ report_java_not_found() {
   if [ -z "$LOG_TEXT" ]; then
     LOG_TEXT="$(cat /tmp/ganttproject-launcher.log)"
   fi
- 
-  LOG_TEXT=$(echo "$LOG_TEXT" | sed s/\"/\\\\\"/g) 
+
+  LOG_TEXT=$(echo "$LOG_TEXT" | sed s/\"/\\\\\"/g)
   osascript -e 'tell app "System Events" to display alert "Java Runtime not found" message "GanttProject cannot find a suitable Java Runtime.\n\nWhat we have tried:\n'"$LOG_TEXT"'\n\nYou can find this log in /tmp/ganttproject-launcher.log file\nProceed to http://docs.ganttproject.biz/user/troubleshooting-installation to learn how to fix this."'
 }
 
@@ -121,8 +122,8 @@ CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
 ECLIPSITO_ARGS="-plugins-dir plugins -app net.sourceforge.ganttproject.GanttProject"
-
-JAVA_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns -Xmx512m -ea -Dfile.encoding=UTF-8 $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
+MACOS_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns"
+JAVA_ARGS="-Duser.dir=$GP_HOME -Xmx1024m -ea -Dfile.encoding=UTF-8 $MACOS_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
