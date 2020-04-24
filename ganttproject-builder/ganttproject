@@ -111,9 +111,9 @@ if [ ! -x "$JAVA_COMMAND" ]; then
   exit 1
 fi
 
-CLASSPATH="$CLASSPATH:$GP_HOME/app/eclipsito.jar"
+CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar"
 export CLASSPATH
-BOOT_ARGS="--verbosity 4 --version-dirs app/plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
+BOOT_ARGS="--verbosity 4 --version-dirs plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
 JAVA_ARGS="-Xmx512m -Duser.dir=$GP_HOME $DEBUG_ARGS $BOOT_CLASS $BOOT_ARGS -- -log true -log_file $LOG_FILE"
