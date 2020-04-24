@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="france" name="France National Holidays 2008-2019" type="country">
+<calendar id="france" name="France National Holidays 2008-2020" type="country">
 <!-- http://www.officeholidays.com/countries/france/ -->
     <date year="" month="1" date="1" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
     <date year="" month="5" date="1" type="HOLIDAY"><![CDATA[Labour Day]]></date>

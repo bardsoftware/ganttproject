@@ -5,12 +5,12 @@
 <!-- http://www.japanspecialist.co.uk/Travel-tips/Japan/National-holidays -->
 <!-- http://www.timeanddate.com/holidays/japan/ -->
 	<date year="" month="01" date="01" type="HOLIDAY"><![CDATA[New Year's Day]]></date>
-  <date year="" month="02" date="11" type="HOLIDAY"><![CDATA[National Foundation Day]]></date>
-  <date year="" month="04" date="29" type="HOLIDAY"><![CDATA[Showa Day]]></date>
-  <date year="" month="05" date="03" type="HOLIDAY"><![CDATA[Constitution Memorial Day]]></date>
-  <date year="" month="05" date="04" type="HOLIDAY"><![CDATA[Greenery Day]]></date>
-  <date year="" month="05" date="05" type="HOLIDAY"><![CDATA[Children's Day]]></date>
-  <date year="" month="08" date="11" type="HOLIDAY"><![CDATA[Mountain Day]]></date>
+	<date year="" month="02" date="11" type="HOLIDAY"><![CDATA[National Foundation Day]]></date>
+	<date year="" month="04" date="29" type="HOLIDAY"><![CDATA[Showa Day]]></date>
+	<date year="" month="05" date="03" type="HOLIDAY"><![CDATA[Constitution Memorial Day]]></date>
+	<date year="" month="05" date="04" type="HOLIDAY"><![CDATA[Greenery Day]]></date>
+	<date year="" month="05" date="05" type="HOLIDAY"><![CDATA[Children's Day]]></date>
+	<date year="" month="08" date="11" type="HOLIDAY"><![CDATA[Mountain Day]]></date>
 	<date year="" month="11" date="03" type="HOLIDAY"><![CDATA[Culture Day]]></date>
 	<date year="" month="11" date="23" type="HOLIDAY"><![CDATA[Labour Thanksgiving Day]]></date>
 	<date year="" month="12" date="23" type="HOLIDAY"><![CDATA[The Emperor's Birthday]]></date>
@@ -75,5 +75,17 @@
   <date year="2019" month="10" date="14"><![CDATA[Health and Sports Day]]></date>
 	<date year="2019" month="11" date="4" type="HOLIDAY"><![CDATA[Culture Day (in lieu)]]></date>
 	<date year="2019" month="12" date="23" type="WORKING_DAY"><![CDATA[]]></date>
+
+	<date year="2020" month="1" date="13"><![CDATA[Coming of Age Day]]></date>
+	<date year="2020" month="2" date="23"><![CDATA[The Emperor's Birthday]]></date>
+	<date year="2020" month="2" date="24"><![CDATA[The Emperor's Birthday Holiday]]></date>
+	<date year="2020" month="3" date="20"><![CDATA[Vernal Equinox Day]]></date>
+	<date year="2020" month="5" date="6"><![CDATA[Constitution Memorial Day (in lieu)]]></date>
+	<date year="2020" month="7" date="23"><![CDATA[Marine Day]]></date>
+	<date year="2020" month="7" date="24"><![CDATA[Health and Sports Day]]></date>
+	<date year="2020" month="8" date="10"><![CDATA[Mountain Day]]></date>
+	<date year="2020" month="8" date="11" type="WORKING_DAY"><![CDATA[]]></date>
+	<date year="2020" month="9" date="21"><![CDATA[Respect for the Aged Day]]></date>
+	<date year="2020" month="9" date="22"><![CDATA[Autumnal Equinox Day]]></date>
 
 </calendar >

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="in.mh" name="India Karnataka Holidays 2020" type="country">
+    <!-- Data sources
+    https://www.officeholidays.com/countries/india/karnataka/2020
+    https://www.karnataka.com/govt/list-of-2020-karnataka-government-holidays/
+    https://publicholidays.in/karnataka/2020-dates/
+    -->
+    <date year="" month="1" date="26"><![CDATA[Republic Day]]></date>
+    <date year="" month="4" date="14"><![CDATA[Dr. Ambedkar Jayanti]]></date>
+    <date year="" month="8" date="15"><![CDATA[Independence Day]]></date>
+    <date year="" month="10" date="2"><![CDATA[Gandhi Jayanti]]></date>
+    <date year="" month="11" date="1"><![CDATA[Kannada Rajyothsava]]></date>
+    <date year="" month="12" date="25"><![CDATA[Christmas]]></date>
+
+    <date year="2020" month="1" date="15"><![CDATA[Makara Sankranti]]></date>
+    <date year="2020" month="2" date="21"><![CDATA[Maha Shivaratri]]></date>
+    <date year="2020" month="3" date="25"><![CDATA[Ugadi]]></date>
+    <date year="2020" month="4" date="6"><![CDATA[Mahavir Jayanti]]></date>
+    <date year="2020" month="4" date="10"><![CDATA[Good Friday]]></date>
+    <date year="2020" month="4" date="26"><![CDATA[Basava Jayanti]]></date>
+    <date year="2020" month="5" date="25"><![CDATA[Ramzan-Id/Id-Ul-Fitr]]></date>
+    <date year="2020" month="8" date="1"><![CDATA[Bakrid]]></date>
+    <date year="2020" month="8" date="22"><![CDATA[Ganesh Chaturthi]]></date>
+    <date year="2020" month="8" date="30"><![CDATA[Moharum]]></date>
+    <date year="2020" month="9" date="17"><![CDATA[Mahalaya Amavasye]]></date>
+    <date year="2020" month="10" date="25"><![CDATA[Maha Navami]]></date>
+    <date year="2020" month="10" date="26"><![CDATA[Vijaya Dashami]]></date>
+    <date year="2020" month="10" date="30"><![CDATA[Id-E-Milad]]></date>
+    <date year="2020" month="10" date="31"><![CDATA[Maharishi Valmiki Jayanti]]></date>
+    <date year="2020" month="11" date="14"><![CDATA[Deepavali]]></date>
+    <date year="2020" month="11" date="16"><![CDATA[Deepavali]]></date>
+    <date year="2020" month="12" date="3"><![CDATA[Kanakadasa Jayanti]]></date>
+
+</calendar>

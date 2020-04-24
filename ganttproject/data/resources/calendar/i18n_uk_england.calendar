@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="uk.england" name="United Kingdom (England and Wales) National Holidays 2015-2019" type="country">
+<calendar id="uk.england" name="United Kingdom (England and Wales) National Holidays 2015-2020" type="country">
 <!-- https://www.gov.uk/bank-holidays -->
 <!-- http://www.officeholidays.com/countries/united_kingdom/2012.asp -->
 <!-- The whole UK -->
@@ -30,7 +30,11 @@
     <date year="2019" month="5" date="6" type="HOLIDAY"><![CDATA[Early May Bank Holiday]]></date>
     <date year="2019" month="5" date="27" type="HOLIDAY"><![CDATA[Spring Bank Holiday ]]></date>
 
-<!-- England -->
+    <date year="2020" month="4" date="10"><![CDATA[Good Friday]]></date>
+    <date year="2020" month="5" date="8"><![CDATA[Early May Bank Holiday (VE day)]]></date>
+    <date year="2020" month="5" date="25"><![CDATA[Spring Bank Holiday ]]></date>
+
+    <!-- England -->
     <date year="" month="4" date="23" type="NEUTRAL"><![CDATA[St Georges Day]]></date>
     <date year="" month="11" date="5" type="NEUTRAL"><![CDATA[Guy Fawkes Night]]></date>
     <date year="2015" month="8" date="31" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
@@ -46,8 +50,13 @@
     <date year="2019" month="4" date="22" type="HOLIDAY"><![CDATA[Easter Monday]]></date>
     <date year="2019" month="8" date="26" type="HOLIDAY"><![CDATA[August Bank Holiday]]></date>
 
-<!-- Wales -->
+    <date year="2020" month="4" date="13"><![CDATA[Easter Monday]]></date>
+    <date year="2020" month="8" date="31"><![CDATA[Summer Bank Holiday]]></date>
+    <date year="2020" month="12" date="28"><![CDATA[Boxing Day (in lieu)]]></date>
+
+    <!-- Wales -->
     <date year="2015" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
     <date year="2018" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
     <date year="2019" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
+    <date year="2020" month="3" date="1" type="NEUTRAL"><![CDATA[St Davids Day]]></date>
 </calendar >

@@ -1,9 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="cn" name="Chinese Holidays 2019" type="country">
+<calendar id="cn" name="Chinese Holidays 2019-2020" type="country">
 <!-- http://www.officeholidays.com/countries/china/ -->
 	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
 	<date year="" month="05" date="01"><![CDATA[Labor Day]]></date>
 	<date year="" month="10" date="1"><![CDATA[National Day]]></date>
+
+	<date year="2020" month="01" date="19" type="WORKING_DAY"><![CDATA[Compensation of 2020-01-29]]></date>
+	<date year="2020" month="01" date="24"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="01" date="25"><![CDATA[Chinese New Year]]></date>
+	<date year="2020" month="01" date="26"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="01" date="27"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="01" date="28"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="01" date="29"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="01" date="30"><![CDATA[Chinese New Year Holiday]]></date>
+	<date year="2020" month="02" date="01" type="WORKING_DAY"><![CDATA[Compensation of 2020-01-30]]></date>
+	<date year="2020" month="04" date="04"><![CDATA[Ching Ming Festival]]></date>
+	<date year="2020" month="04" date="05"><![CDATA[Ching Ming Festival Holiday]]></date>
+	<date year="2020" month="04" date="06"><![CDATA[Ching Ming Festival Holiday]]></date>
+	<date year="2020" month="04" date="26" type="WORKING_DAY"><![CDATA[Compensation of 2020-05-04]]></date>
+	<date year="2020" month="05" date="04"><![CDATA[Labor Day Holiday]]></date>
+	<date year="2020" month="05" date="05"><![CDATA[Labor Day Holiday]]></date>
+	<date year="2020" month="05" date="09" type="WORKING_DAY"><![CDATA[Compensation of 2020-05-05]]></date>
+	<date year="2020" month="06" date="25"><![CDATA[Dragon Boat Festival]]></date>
+	<date year="2020" month="06" date="26"><![CDATA[Dragon Boat Festival Holiday]]></date>
+	<date year="2020" month="06" date="28" type="WORKING_DAY"><![CDATA[Compensation of 2020-06-26]]></date>
+	<date year="2020" month="09" date="27" type="WORKING_DAY"><![CDATA[Compensation of 2020-10-07]]></date>
+	<date year="2020" month="10" date="01"><![CDATA[Mid Autumn Festival]]></date>
+	<date year="2020" month="10" date="02"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="03"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="04"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="05"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="06"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="07"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="08"><![CDATA[National Day Holiday]]></date>
+	<date year="2020" month="10" date="10" type="WORKING_DAY"><![CDATA[Compensation of 2020-10-08]]></date>
 
 	<date year="2019" month="02" date="02" type="WORKING_DAY"><![CDATA[Compensation of 2019-02-07]]></date>
 	<date year="2019" month="02" date="03" type="WORKING_DAY"><![CDATA[Compensation of 2019-02-08]]></date>
@@ -23,6 +53,7 @@
 	<date year="2019" month="10" date="04"><![CDATA[National Day Holiday]]></date>
 	<date year="2019" month="10" date="07"><![CDATA[National Day Holiday]]></date>
 	<date year="2019" month="10" date="12" type="WORKING_DAY"><![CDATA[Compensation of 2019-10-07]]></date>
+
 
 	<date year="2011" month="02" date="03"/> #Chinese New Year
 	<date year="2011" month="04" date="05"/> #Qingming Festival

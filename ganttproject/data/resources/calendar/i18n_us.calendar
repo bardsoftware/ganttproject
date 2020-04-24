@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="us.federal" name="United States Federal Holidays 2008-2019" type="country">
+<calendar id="us.federal" name="United States Federal Holidays 2008-2020" type="country">
 <!-- Data sources
 http://www.opm.gov/operating_status_schedules/fedhol/2012.asp -->
 http://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays/#url=2015 -->
@@ -150,6 +150,20 @@ http://www.officeholidays.com/countries/usa/index.php
     <date year="2019" month="11" date="28" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
     <date year="2019" month="11" date="29" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
 
+    <!-- Data sources
+    http://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays/#url=2020
+    http://www.officeholidays.com/countries/usa/index.php
+    -->
+    <date year="2020" month="1" date="20" type="HOLIDAY"><![CDATA[Martin Luther King Day]]></date>
+    <date year="2020" month="2" date="17" type="HOLIDAY"><![CDATA[Presidents' Day]]></date>
+    <date year="2020" month="5" date="10" type="NEUTRAL"><![CDATA[Mother's Day]]></date>
+    <date year="2020" month="5" date="25" type="HOLIDAY"><![CDATA[Memorial Day]]></date>
+    <date year="2020" month="6" date="21" type="NEUTRAL"><![CDATA[Father's Day]]></date>
+    <date year="2020" month="7" date="3" type="HOLIDAY"><![CDATA[Independence Day (in lieu)]]></date>
+    <date year="2020" month="9" date="7" type="HOLIDAY"><![CDATA[Labor Day]]></date>
+    <date year="2020" month="10" date="12" type="HOLIDAY"><![CDATA[Columbus Day]]></date>
+    <date year="2020" month="11" date="26" type="HOLIDAY"><![CDATA[Thanksgiving]]></date>
+    <date year="2020" month="11" date="27" type="NEUTRAL"><![CDATA[Day after Thanksgiving]]></date>
 
 </calendar >
 
