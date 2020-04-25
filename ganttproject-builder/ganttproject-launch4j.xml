@@ -1,43 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
-    <dontWrapJar>true</dontWrapJar>
-    <headerType>gui</headerType>
-    <jar>eclipsito.jar</jar>
-    <outfile>ganttproject.exe</outfile>
-    <errTitle></errTitle>
-    <cmdLine>ganttproject-eclipsito-config.xml -log true</cmdLine>
-    <chdir>.</chdir>
-    <priority>normal</priority>
-    <downloadUrl>http://java.com/download</downloadUrl>
-    <supportUrl>http://ganttproject.biz/discuss</supportUrl>
-    <stayAlive>true</stayAlive>
-    <restartOnCrash>false</restartOnCrash>
-    <manifest></manifest>
-    <icon>ganttproject.ico</icon>
-    <classPath>
-        <mainClass>org.bardsoftware.eclipsito.Boot</mainClass>
-        <cp>%EXEDIR%</cp>
-    </classPath>
-    <jre>
-        <path></path>
-        <bundledJre64Bit>false</bundledJre64Bit>
-        <minVersion>1.7.0</minVersion>
-        <maxVersion></maxVersion>
-        <jdkPreference>preferJre</jdkPreference>
-        <runtimeBits>64/32</runtimeBits>
-    </jre>
-    <messages>
-        <startupErr>GanttProject failed to start. Please refer to http://ganttproject.biz/discuss to get support
+  <dontWrapJar>true</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>eclipsito.jar</jar>
+  <outfile>ganttproject.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine>--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject</cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>http://ganttproject.biz/discuss</supportUrl>
+  <stayAlive>true</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>..\build-cfg\ganttproject.ico</icon>
+  <classPath>
+    <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
+    <cp>%EXEDIR%</cp>
+  </classPath>
+  <jre>
+    <path>.\runtime\</path>
+    <bundledJre64Bit>true</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>11</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>256</initialHeapSize>
+    <maxHeapSize>1024</maxHeapSize>
+  </jre>
+  <messages>
+    <startupErr>GanttProject failed to start. Please refer to http://ganttproject.biz/discuss to get support
         </startupErr>
-        <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is
+    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is
             missing or corrupted.
         </bundledJreErr>
-        <jreVersionErr>GanttProject needs Java 7 or higher. Please refer to http://ganttproject.biz/discuss to get
+    <jreVersionErr>GanttProject needs Java 7 or higher. Please refer to http://ganttproject.biz/discuss to get
             support
         </jreVersionErr>
-        <launcherErr>Java Runtime not found or is corrupted. Please refer to http://ganttproject.biz/discuss to get
+    <launcherErr>Java Runtime not found or is corrupted. Please refer to http://ganttproject.biz/discuss to get
             support
         </launcherErr>
-        <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
-    </messages>
+    <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
+  </messages>
 </launch4jConfig>

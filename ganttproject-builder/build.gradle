@@ -92,34 +92,41 @@ task distZip(type: Zip, dependsOn: distBin) {
     into archivesBaseName + '-' + version
 }
 
-//task distWin(dependsOn: distBin) {
-//    doLast {
-//        println '======== Building Windows Installer ========'
-//        println '= Generating NSIS script ...'
+task distWin(dependsOn: distBin) {
+    doLast {
+        println '======== Building Windows Installer ========'
+        println '= Generating NSIS script ...'
 //        exec {
 //            workingDir '.'
 //            commandLine './gen-nsis', semver, version
 //        }
+
 //        println '= Generating ganttproject.exe with launch4j ...'
 //        exec {
 //            workingDir '.'
 //            commandLine launch4j, 'ganttproject-launch4j.xml'
 //            standardOutput = devNull
 //        }
-//        println '= Copying required files to dist-win...'
-//        copy {
-//            from 'dist-bin'
-//            into 'dist-win'
-//            include '**'
-//        }
-//        copy {
-//            from '.'
-//            into 'dist-win'
-//            include "ganttproject.l4j.ini"
-//            include 'ganttproject.nsi'
-//            include "ganttproject_16.ico"
-//            include "ganttproject.ico"
-//        }
+        println '= Copying required files to dist-win...'
+        copy {
+            from 'dist-bin'
+            into 'dist-win'
+            include '**'
+        }
+        copy {
+            from '.'
+            into 'dist-win'
+            include "ganttproject.l4j.ini"
+            include 'ganttproject.nsi.tpl'
+            include "ganttproject_16.ico"
+            include "ganttproject.ico"
+            rename 'ganttproject.nsi.tpl', 'ganttproject.nsi'
+        }
+        copy {
+            from '.'
+            into 'dist-win'
+            include 'runtime/**'
+        }
 //        println '= Building installer...'
 //        exec {
 //            workingDir 'dist-win'
@@ -132,8 +139,8 @@ task distZip(type: Zip, dependsOn: distBin) {
 //            include "ganttproject-${version}.exe"
 //        }
 //        println "===== Windows installer is ready in ${buildDir}/distributions ====="
-//    }
-//}
+    }
+}
 //
 //task distDebPre {
 //    doLast {
