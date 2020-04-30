@@ -1033,6 +1033,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             if (DesktopIntegration.isMacOs()) {
               OSXAdapter.registerMacOSXApplication(ganttFrame);
             }
+          } catch (Exception e) {
+            GPLogger.logToLogger(e);
           } finally {
             OSXAdapter.setupSystemProperties();
           }

@@ -5,22 +5,25 @@
 
 SCRIPT_FILE="$0"
 
-WORKING_DIR="$(pwd)"
-# We want to find the directory where the real script file resides.
-# If real file is symlinked (possibly many times) then we need to follow
-# symlinks until we reach the real script
-# After that we run pwd to get directory path
-cd "$(dirname "$SCRIPT_FILE")"
-SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
-
-while [ -L "$SCRIPT_FILE" ]; do
-  SCRIPT_FILE="$(readlink "$SCRIPT_FILE")"
+find_ganttproject_home() {
+  WORKING_DIR="$(pwd)"
+  # We want to find the directory where the real script file resides.
+  # If real file is symlinked (possibly many times) then we need to follow
+  # symlinks until we reach the real script
+  # After that we run pwd to get directory path
   cd "$(dirname "$SCRIPT_FILE")"
   SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
-done
 
-GP_HOME="$(pwd)"
+  while [ -L "$SCRIPT_FILE" ]; do
+    SCRIPT_FILE="$(readlink "$SCRIPT_FILE")"
+    cd "$(dirname "$SCRIPT_FILE")"
+    SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
+  done
 
+  pwd
+}
+
+GP_HOME="$(find_ganttproject_home)"
 
 # Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d"
@@ -62,13 +65,22 @@ if [ ! -x "$JAVA_COMMAND" ]; then
   exit 1
 fi
 
-cd "$GP_HOME"
+if [ -z "$GP_HOME" ]; then
+  echo "GanttProject home directory is not set. Please point GP_HOME environment variable to the directory with GanttProject files."
+  exit 1
+fi
+
+echo "JAVA_HOME=$JAVA_HOME"
+echo "JAVA_COMMAND=$JAVA_COMMAND"
+echo "GP_HOME=$GP_HOME"
+echo "user.dir=$(pwd)"
+
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
 BOOT_CLASS=org.bardsoftware.eclipsito.Boot
-ECLIPSITO_ARGS="-plugins-dir plugins -app net.sourceforge.ganttproject.GanttProject"
+ECLIPSITO_ARGS="-plugins-dir $GP_HOME/plugins -app net.sourceforge.ganttproject.GanttProject"
 
-JAVA_ARGS="-Xmx1024m -Duser.dir=$GP_HOME $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
+JAVA_ARGS="-Xmx1024m -Duser.dir=$(pwd) $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else
