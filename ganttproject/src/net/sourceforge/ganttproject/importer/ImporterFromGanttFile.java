@@ -203,7 +203,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     }
 
     @Override
-    public void importData(ColumnList source) {
+    public void importData(ColumnList source, boolean keepVisibleColumnsIgnored) {
       for (int i = 0; i < source.getSize(); i++) {
         Column nextField = source.getField(i);
         myFields.add(nextField);
@@ -246,8 +246,8 @@ public class ImporterFromGanttFile extends ImporterBase {
       }
     }
     uiFacade.refresh();
-    uiFacade.getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields());
-    uiFacade.getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields);
+    uiFacade.getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields(), true);
+    uiFacade.getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields, true);
     return result;
   }
 }

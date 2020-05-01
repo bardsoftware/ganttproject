@@ -30,7 +30,7 @@ public interface ColumnList {
 
   void add(String name, int order, int width);
 
-  void importData(ColumnList source);
+  void importData(ColumnList source, boolean keepVisibleColumns);
 
   public interface Column {
     SortOrder getSort();
@@ -151,7 +151,7 @@ public interface ColumnList {
         }
 
         @Override
-        public void importData(ColumnList source) {
+        public void importData(ColumnList source, boolean keepVisibleColumns) {
           throw new UnsupportedOperationException();
         }
       };

@@ -340,10 +340,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     @Override
-    public void importData(ColumnList source) {
+    public void importData(ColumnList source, boolean keepVisibleColumns) {
       for (ColumnImpl column : myColumns) {
-        Boolean visible = myTableHeaderFacade.findColumnByID(column.getID()).isVisible();
-        column.getStub().setVisible(visible);
+        if (keepVisibleColumns) {
+          Boolean visible = myTableHeaderFacade.findColumnByID(column.getID()).isVisible();
+          column.getStub().setVisible(visible);
+        } else {
+          column.getStub().setVisible(false);
+        }
       }
       if (!importColumnList(source)) {
         importColumnList(ColumnList.Immutable.fromList(myDefaultColumnStubs));
@@ -682,7 +686,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
   protected void onProjectCreated() {
     getTableHeaderUiFacade().createDefaultColumns(getDefaultColumns());
-    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()));
+    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()), false);
   }
 
   void initTreeTable() {
@@ -858,7 +862,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
         getChart().reset();
       }
     });
-    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()));
+    getTableHeaderUiFacade().importData(ColumnList.Immutable.fromList(getDefaultColumns()), false);
 
     // getScrollPane().setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     getTable().setFillsViewportHeight(true);
