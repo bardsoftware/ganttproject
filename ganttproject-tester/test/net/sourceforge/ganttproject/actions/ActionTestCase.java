@@ -1,9 +1,5 @@
-package net.sourceforge.ganttproject.scenarios;
+package net.sourceforge.ganttproject.actions;
 
-import com.google.common.base.Suppliers;
-import com.google.common.base.Supplier;
-
-import biz.ganttproject.app.SingleTranslationLocalizer;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -13,7 +9,7 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.AppKt;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskNewAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
@@ -23,15 +19,14 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
-import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
-import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 
 import javax.swing.*;
 import javax.swing.undo.CannotRedoException;
@@ -39,19 +34,24 @@ import javax.swing.undo.CannotUndoException;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
-public abstract class ScenarioTestCase extends TestCase {
+public abstract class ActionTestCase extends TestCase {
     private UIFacade myUIFacade;
     private TaskSelectionManager myTaskSelectionManager;
     private GanttProject myGanttProject;
     private GanttTree2 myGanttTree;
     private TaskManager myTaskManager;
+    private HumanResourceManager myResourceManager;
+    private RoleManager myRoleManager;
     private GPUndoManager myUndoManager;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+    }
+
+    protected void start(){
+        while(myGanttProject != null){}
         AppKt.main(new String[] {});
         while(myGanttProject == null){
             myGanttProject = AppKt.getMainWindow().get();
@@ -60,17 +60,28 @@ public abstract class ScenarioTestCase extends TestCase {
         myGanttTree = myGanttProject.getTree();
         myUIFacade = myGanttProject.getUIFacade();
         myTaskManager = myGanttProject.getTaskManager();
+        myResourceManager = myGanttProject.getHumanResourceManager();
+        myRoleManager = myGanttProject.getRoleManager();
         myTaskSelectionManager = myGanttProject.getTaskSelectionManager();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    protected void stop(){
+        myGanttProject.close();
+        myGanttProject.setVisible(false);
+        myGanttProject.dispose();
         myGanttProject = null;
-        myUIFacade = null;
-        myTaskSelectionManager = null;
+        myUndoManager = null;
         myGanttTree = null;
+        myUIFacade = null;
         myTaskManager = null;
+        myResourceManager = null;
+        myRoleManager = null;
+        myTaskSelectionManager = null;
     }
 
     private GPUndoManager makeUndoManager() {
@@ -301,7 +312,7 @@ public abstract class ScenarioTestCase extends TestCase {
 
             @Override
             public ResourceTreeUIFacade getResourceTree() {
-                return null;
+                return myUIFacade.getResourceTree();
             }
 
             @Override
@@ -331,21 +342,25 @@ public abstract class ScenarioTestCase extends TestCase {
         };
     }
 
-    private TaskSelectionManager makeTaskSelectionManager(){
-        return new TaskSelectionManager(Suppliers.memoize(new Supplier<TaskManager>() {
-                public TaskManager get() {
-                    return getTaskManager();
-                }
-            }
-        ));
-    }
+//    private TaskSelectionManager makeTaskSelectionManager(){
+//        return new TaskSelectionManager(Suppliers.memoize(new Supplier<TaskManager>() {
+//                public TaskManager get() {
+//                    return getTaskManager();
+//                }
+//            }
+//        ));
+//    }
 
-    protected TaskDeleteAction makeDeleteAction(){
+    protected TaskDeleteAction makeDeleteTaskAction(){
         return new TaskDeleteAction(getTaskManager(), getTaskSelectionManager(), makeUIFacade(), getGanttTree());
     }
 
-    protected TaskNewAction makeNewAction(){
+    protected TaskNewAction makeNewTaskAction(){
         return new TaskNewAction(getGanttProject(), getUIFacade());
+    }
+
+    protected ResourceNewAction makeNewResourceAction(){
+        return new ResourceNewAction(getHumanResourceManger(), getRoleManager(), getTaskManager(), makeUIFacade());
     }
 
 //    protected GPUndoManager getUndoManager(){
@@ -370,6 +385,14 @@ public abstract class ScenarioTestCase extends TestCase {
 
     protected GanttTree2 getGanttTree(){
         return myGanttTree;
+    }
+
+    protected HumanResourceManager getHumanResourceManger(){
+        return myResourceManager;
+    }
+
+    protected RoleManager getRoleManager(){
+        return myRoleManager;
     }
 
     protected Task createTask() {
