@@ -44,6 +44,7 @@ public abstract class ActionTestCase extends TestCase {
     private HumanResourceManager myResourceManager;
     private RoleManager myRoleManager;
     private GPUndoManager myUndoManager;
+    private ResourceNewAction myResourceNewAction;
 
     @Override
     protected void setUp() throws Exception {
@@ -202,7 +203,27 @@ public abstract class ActionTestCase extends TestCase {
 
             @Override
             public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-                return null;
+                buttonActions[0].actionPerformed(null);
+                return new Dialog() {
+                    @Override
+                    public void show() {
+                    }
+
+                    @Override
+                    public void hide() {
+
+                    }
+
+                    @Override
+                    public void layout() {
+
+                    }
+
+                    @Override
+                    public void center(Centering centering) {
+
+                    }
+                };
             }
 
             @Override
@@ -360,7 +381,8 @@ public abstract class ActionTestCase extends TestCase {
     }
 
     protected ResourceNewAction makeNewResourceAction(){
-        return new ResourceNewAction(getHumanResourceManger(), getRoleManager(), getTaskManager(), makeUIFacade());
+        myResourceNewAction = new ResourceNewAction(getHumanResourceManger(), getRoleManager(), getTaskManager(), makeUIFacade());
+        return myResourceNewAction;
     }
 
 //    protected GPUndoManager getUndoManager(){

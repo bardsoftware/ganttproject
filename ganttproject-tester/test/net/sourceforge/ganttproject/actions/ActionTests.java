@@ -6,7 +6,10 @@ import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 
 import net.sourceforge.ganttproject.action.task.TaskNewAction;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.*;
+
+
 
 public class ActionTests extends ActionTestCase {
     public void testTaskDeleteActionWithSelectedTask() {
@@ -20,7 +23,7 @@ public class ActionTests extends ActionTestCase {
         taskNewAction.actionPerformed(null);
         taskNewAction.actionPerformed(null);
 
-        selection = new ArrayList<Task> ();
+        selection = new ArrayList<Task>();
 
         assertEquals(2, taskManager.getTaskCount());
 
@@ -33,7 +36,7 @@ public class ActionTests extends ActionTestCase {
         stop();
     }
 
-    public void testTaskDeleteActionWithoutSelectedTask(){
+    public void testTaskDeleteActionWithoutSelectedTask() {
         start();
 
         TaskManager taskManager = getTaskManager();
@@ -48,6 +51,23 @@ public class ActionTests extends ActionTestCase {
         taskDeleteAction.actionPerformed(null);
 
         assertEquals(1, taskManager.getTaskCount());
+
+        stop();
+    }
+
+    public void testResourceNewAction() {
+        start();
+
+        HumanResourceManager resourceManager = getHumanResourceManger();
+        ResourceNewAction resourceNewAction = makeNewResourceAction();
+
+        resourceNewAction.actionPerformed(null);
+
+        assertEquals(1, resourceManager.getResources().size());
+
+        resourceNewAction.actionPerformed(null);
+
+        assertEquals(2, resourceManager.getResources().size());
 
         stop();
     }
