@@ -14,6 +14,21 @@ import net.sourceforge.ganttproject.task.*;
 
 
 public class ActionTests extends ActionTestCase {
+    public void testTaskNewAction(){
+        TaskManager taskManager = getTaskManager();
+        TaskNewAction taskNewAction = makeNewTaskAction();
+
+        assertEquals(0, taskManager.getTaskCount());
+
+        taskNewAction.actionPerformed(null);
+
+        assertEquals(1, taskManager.getTaskCount());
+
+        taskNewAction.actionPerformed(null);
+
+        assertEquals(2, taskManager.getTaskCount());
+    }
+
     public void testTaskDeleteActionWithSelectedTask() {
         ArrayList<Task> selection;
         TaskManager taskManager = getTaskManager();
