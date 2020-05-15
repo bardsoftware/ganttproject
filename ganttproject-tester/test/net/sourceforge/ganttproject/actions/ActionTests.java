@@ -85,4 +85,19 @@ public class ActionTests extends ActionTestCase {
 
         assertEquals(0, resourceManager.getResources().size());
     }
+
+    public void testResourceDeleteActionWithoutSelectedResource(){
+        HumanResourceManager resourceManager = getHumanResourceManger();
+        ResourceNewAction resourceNewAction = makeNewResourceAction();
+        ResourceDeleteAction resourceDeleteAction = makeDeleteResourceAction();
+
+        resourceNewAction.actionPerformed(null);
+        resourceNewAction.actionPerformed(null);
+
+        assertEquals(2, resourceManager.getResources().size());
+
+        resourceDeleteAction.actionPerformed(null);
+
+        assertEquals(2, resourceManager.getResources().size());
+    }
 }
