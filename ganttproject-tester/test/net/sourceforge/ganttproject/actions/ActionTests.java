@@ -137,5 +137,10 @@ public class ActionTests extends ActionTestCase {
         assignmentToggleAction.actionPerformed(null);
 
         assertEquals(1, task.getAssignments().length);
+
+        assignmentToggleAction.putValue(Action.SELECTED_KEY, false);
+        assignmentToggleAction.actionPerformed(null);
+
+        assertEquals(0, task.getAssignments().length);
     }
 }

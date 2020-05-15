@@ -63,8 +63,6 @@ public abstract class ActionTestCase extends TestCase {
         while(myGanttProject == null){
             myGanttProject = AppKt.getMainWindow().get();
         }
-        myGanttProject.close();
-        myGanttProject.setVisible(false);
         myUndoManager = makeUndoManager();
         myGanttTree = myGanttProject.getTree();
         myUIFacade = myGanttProject.getUIFacade();
@@ -78,6 +76,8 @@ public abstract class ActionTestCase extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        myGanttProject.close();
+        myGanttProject.setVisible(false);
         myGanttProject.dispose();
         myGanttProject = null;
         myUndoManager = null;
