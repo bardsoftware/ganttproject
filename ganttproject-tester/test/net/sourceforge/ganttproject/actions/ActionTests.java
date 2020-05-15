@@ -143,4 +143,31 @@ public class ActionTests extends ActionTestCase {
 
         assertEquals(0, task.getAssignments().length);
     }
+
+    public void testDeletionOfAssignedResources(){
+        HumanResourceManager resourceManager = getHumanResourceManger();
+        TaskManager taskManager = getTaskManager();
+        ResourceNewAction resourceNewAction = makeNewResourceAction();
+        TaskNewAction taskNewAction = makeNewTaskAction();
+
+        resourceNewAction.actionPerformed(null);
+        taskNewAction.actionPerformed(null);
+
+        HumanResource resource = resourceManager.getById(0);
+        Task task = taskManager.getTask(0);
+
+        assertEquals(0, task.getAssignments().length);
+
+        AssignmentToggleAction assignmentToggleAction = makeAssignmentToggleAction(resource, task);
+        assignmentToggleAction.putValue(Action.SELECTED_KEY, true);
+        assignmentToggleAction.actionPerformed(null);
+
+        assertEquals(1, task.getAssignments().length);
+
+        ResourceDeleteAction resourceDeleteAction = makeDeleteResourceAction();
+        addHumanResourceToSelection(resourceManager.getById(0));
+        resourceDeleteAction.actionPerformed(null);
+
+        assertEquals(0, task.getAssignments().length);
+    }
 }
