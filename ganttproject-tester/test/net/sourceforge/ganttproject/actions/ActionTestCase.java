@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.AppKt;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
@@ -62,6 +63,8 @@ public abstract class ActionTestCase extends TestCase {
         while(myGanttProject == null){
             myGanttProject = AppKt.getMainWindow().get();
         }
+        myGanttProject.close();
+        myGanttProject.setVisible(false);
         myUndoManager = makeUndoManager();
         myGanttTree = myGanttProject.getTree();
         myUIFacade = myGanttProject.getUIFacade();
@@ -75,8 +78,6 @@ public abstract class ActionTestCase extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        myGanttProject.close();
-        myGanttProject.setVisible(false);
         myGanttProject.dispose();
         myGanttProject = null;
         myUndoManager = null;
@@ -398,6 +399,10 @@ public abstract class ActionTestCase extends TestCase {
             }
         };
         return new ResourceDeleteAction(getHumanResourceManger(), context, getGanttProject(), makeUIFacade());
+    }
+
+    protected AssignmentToggleAction makeAssignmentToggleAction(HumanResource resource, Task task){
+        return new AssignmentToggleAction(resource, task, getUIFacade());
     }
 
 //    protected GPUndoManager getUndoManager(){

@@ -2,6 +2,7 @@ package net.sourceforge.ganttproject.actions;
 
 import java.util.ArrayList;
 
+import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
@@ -11,6 +12,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.*;
 
+import javax.swing.*;
 
 
 public class ActionTests extends ActionTestCase {
@@ -114,5 +116,26 @@ public class ActionTests extends ActionTestCase {
         resourceDeleteAction.actionPerformed(null);
 
         assertEquals(2, resourceManager.getResources().size());
+    }
+
+    public void testAssignmentToggleAction(){
+        HumanResourceManager resourceManager = getHumanResourceManger();
+        TaskManager taskManager = getTaskManager();
+        ResourceNewAction resourceNewAction = makeNewResourceAction();
+        TaskNewAction taskNewAction = makeNewTaskAction();
+
+        resourceNewAction.actionPerformed(null);
+        taskNewAction.actionPerformed(null);
+
+        HumanResource resource = resourceManager.getById(0);
+        Task task = taskManager.getTask(0);
+
+        assertEquals(0, task.getAssignments().length);
+
+        AssignmentToggleAction assignmentToggleAction = makeAssignmentToggleAction(resource, task);
+        assignmentToggleAction.putValue(Action.SELECTED_KEY, true);
+        assignmentToggleAction.actionPerformed(null);
+
+        assertEquals(1, task.getAssignments().length);
     }
 }
