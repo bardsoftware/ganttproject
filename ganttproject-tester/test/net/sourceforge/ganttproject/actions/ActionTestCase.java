@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.AppKt;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
 import net.sourceforge.ganttproject.action.task.TaskNewAction;
@@ -19,7 +20,9 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.ResourceContext;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -32,6 +35,8 @@ import javax.swing.*;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
@@ -45,14 +50,14 @@ public abstract class ActionTestCase extends TestCase {
     private RoleManager myRoleManager;
     private GPUndoManager myUndoManager;
     private ResourceNewAction myResourceNewAction;
+    private HumanResource[] myHumanResources;
+    int lock = 1;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-    }
-
-    protected void start(){
-        while(myGanttProject != null){}
+        while(lock == 0){}
+        lock = 0;
         AppKt.main(new String[] {});
         while(myGanttProject == null){
             myGanttProject = AppKt.getMainWindow().get();
@@ -64,14 +69,12 @@ public abstract class ActionTestCase extends TestCase {
         myResourceManager = myGanttProject.getHumanResourceManager();
         myRoleManager = myGanttProject.getRoleManager();
         myTaskSelectionManager = myGanttProject.getTaskSelectionManager();
+        myHumanResources = new HumanResource[] {};
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-    }
-
-    protected void stop(){
         myGanttProject.close();
         myGanttProject.setVisible(false);
         myGanttProject.dispose();
@@ -83,6 +86,8 @@ public abstract class ActionTestCase extends TestCase {
         myResourceManager = null;
         myRoleManager = null;
         myTaskSelectionManager = null;
+        myHumanResources = null;
+        lock = 1;
     }
 
     private GPUndoManager makeUndoManager() {
@@ -385,6 +390,16 @@ public abstract class ActionTestCase extends TestCase {
         return myResourceNewAction;
     }
 
+    protected ResourceDeleteAction makeDeleteResourceAction(){
+        ResourceContext context = new ResourceContext() {
+            @Override
+            public HumanResource[] getResources() {
+                return myHumanResources;
+            }
+        };
+        return new ResourceDeleteAction(getHumanResourceManger(), context, getGanttProject(), makeUIFacade());
+    }
+
 //    protected GPUndoManager getUndoManager(){
 //        return myUndoManager;
 //    }
@@ -417,10 +432,24 @@ public abstract class ActionTestCase extends TestCase {
         return myRoleManager;
     }
 
+//    protected ResourceContext getResourceContext(){
+//        return myResourceContext;
+//    }
+
     protected Task createTask() {
         Task result = getTaskManager().createTask();
         result.move(getTaskManager().getRootTask());
         result.setName(String.valueOf(result.getTaskID()));
         return result;
+    }
+
+    protected void addHumanResourceToSelection(HumanResource resource){
+        ArrayList<HumanResource> temp = new ArrayList<>(Arrays.asList(myHumanResources));
+        temp.add(resource);
+        myHumanResources = temp.toArray(myHumanResources);
+    }
+
+    protected void resetHumanResourceSelection(){
+        myHumanResources = new HumanResource[] {};
     }
 }
