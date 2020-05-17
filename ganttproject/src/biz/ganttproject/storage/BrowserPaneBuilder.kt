@@ -65,7 +65,7 @@ typealias Loader<T> = (path: Path, success: Consumer<ObservableList<T>>, loading
  * This function is called when some action happens on some element, e.g. "select",
  * "delete", "open" or "launch".
  */
-typealias OnItemAction<T> = Consumer<T>
+typealias OnItemAction<T> = (T) -> Unit
 
 typealias ItemActionFactory<T> = Function<FolderItem, Map<String, OnItemAction<T>>>
 
@@ -105,8 +105,9 @@ class BrowserPaneBuilder<T: FolderItem>(
 
   private var breadcrumbView: BreadcrumbView? = null
   private lateinit var saveBox: HBox
-  private lateinit var onOpenItem: OnItemAction<T>
+  private lateinit var onSelectionChange: OnItemAction<T>
   private lateinit var onLaunch: OnItemAction<T>
+  private lateinit var onOpenDirectory: OnItemAction<T>
   private var validationSupport: ValidationSupport = ValidationSupport()
   private lateinit var i18n: Localizer
 
@@ -122,10 +123,12 @@ class BrowserPaneBuilder<T: FolderItem>(
   }
 
   fun withListView(
-      onOpenItem: OnItemAction<T> = Consumer {},
-      onLaunch: OnItemAction<T> = Consumer {},
-      onDelete: OnItemAction<T> = Consumer {},
-      onLock: OnItemAction<T> = Consumer {},
+      /** This is called on double-click or Enter */
+      onSelectionChange: OnItemAction<T> = {},
+      onLaunch: OnItemAction<T> = {},
+      onOpenDirectory: OnItemAction<T> = {},
+      onDelete: OnItemAction<T> = {},
+      onLock: OnItemAction<T> = {},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
       itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },
@@ -135,7 +138,8 @@ class BrowserPaneBuilder<T: FolderItem>(
         onDelete,
         onLock,
         canLock, canDelete, itemActionFactory, cellFactory)
-    this.onOpenItem = onOpenItem
+    this.onSelectionChange = onSelectionChange
+    this.onOpenDirectory = onOpenDirectory
     this.onLaunch = onLaunch
   }
 
@@ -150,17 +154,17 @@ class BrowserPaneBuilder<T: FolderItem>(
     this.breadcrumbView = BreadcrumbView(rootPath, onSelectCrumb)
   }
 
-  fun withActionButton(onAction: EventHandler<ActionEvent>) {
+  fun withActionButton(btnSetup: (Button) -> Unit) {
     this.btnSave = Button().also {
       it.textProperty().bind(i18n.create("${this.mode.name.toLowerCase()}.actionLabel"))
     }
-    btnSave.addEventHandler(ActionEvent.ACTION, onAction)
     btnSave.styleClass.add("btn-attention")
 
     this.saveBox = HBox().apply {
       children.addAll(busyIndicator, btnSave)
       styleClass.add("doclist-save-box")
     }
+    btnSetup(btnSave)
   }
 
   fun withValidator(validator: Validator<String>) {
@@ -206,23 +210,30 @@ class BrowserPaneBuilder<T: FolderItem>(
   private fun installEventHandlers() {
     fun selectItem(item: T, withEnter: Boolean, withControl: Boolean) {
       when {
+        // It is just selection change. Call the listener and update
+        // filename in the text field unless it is a directory.
+        !withEnter && item.isDirectory -> {
+          this.onSelectionChange(item)
+        }
+        !withEnter && !item.isDirectory -> {
+          this.onSelectionChange(item)
+          filename.text = item.name
+        }
+        // Enter key is hold. We need to distinguish "launch" case (Ctrl+Enter or double-click) for
+        // non-folders vs just Enter.
         withEnter && item.isDirectory -> {
+          // We just open directories, no matter if Ctrl is hold or not
           breadcrumbView?.append(item.name)
-          this.onOpenItem.accept(item)
+          this.onSelectionChange(item)
+          this.onOpenDirectory(item)
           filename.text = ""
         }
         withEnter && !item.isDirectory -> {
-          this.onOpenItem.accept(item)
+          this.onSelectionChange(item)
           filename.text = item.name
           if (withControl) {
-            this.onLaunch.accept(item)
+            this.onLaunch(item)
           }
-        }
-        !withEnter && item.isDirectory -> {
-        }
-        !withEnter && !item.isDirectory -> {
-          this.onOpenItem.accept(item)
-          filename.text = item.name
         }
       }
     }

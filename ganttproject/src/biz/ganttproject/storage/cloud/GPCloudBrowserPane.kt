@@ -25,7 +25,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import javafx.application.Platform
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.control.Button
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -147,17 +149,22 @@ class GPCloudBrowserPane(
     }
 
     val actionButtonHandler = object {
+      var button: Button? = null
       var selectedProject: ProjectJsonAsFolderItem? = null
       var selectedTeam: TeamJsonAsFolderItem? = null
 
-      fun onOpenItem(item: FolderItem) {
+      fun onSelectionChange(item: FolderItem) {
+        // We just remember the selection and update action button state.
+        // We can "open" files but we can't "open" directories.
+        selectedProject = null
+        selectedTeam = null
         when (item) {
           is ProjectJsonAsFolderItem -> selectedProject = item
           is TeamJsonAsFolderItem -> selectedTeam = item
           else -> {
           }
         }
-
+        button?.isDisable = selectedTeam != null;
       }
 
       fun onAction() {
@@ -170,10 +177,16 @@ class GPCloudBrowserPane(
     this.paneElements = builder.apply {
       withI18N(RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(ROOT_URI)
-      withActionButton(EventHandler { actionButtonHandler.onAction() })
+      withActionButton { btn ->
+        actionButtonHandler.button = btn
+        btn.addEventHandler(ActionEvent.ACTION) {
+          actionButtonHandler.onAction()
+        }
+      }
       withListView(
-          onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
-          onLaunch = Consumer {
+          onSelectionChange = actionButtonHandler::onSelectionChange,
+          onOpenDirectory = {},
+          onLaunch = {
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
             }

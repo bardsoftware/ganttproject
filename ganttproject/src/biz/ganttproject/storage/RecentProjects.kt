@@ -22,6 +22,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.app.RootLocalizer
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Label
@@ -70,7 +71,7 @@ class RecentProjects(
     val actionButtonHandler = object {
       var selectedItem: RecentDocAsFolderItem? = null
 
-      fun onOpenItem(item: FolderItem) {
+      fun onSelectionChange(item: FolderItem) {
         if (item is RecentDocAsFolderItem) {
             selectedItem = item
           }
@@ -90,10 +91,10 @@ class RecentProjects(
 
     val paneElements = builder.apply {
       withI18N(i18n)
-      withActionButton(EventHandler { actionButtonHandler.onAction() })
+      withActionButton { btn -> btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }}
       withListView(
-          onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
-          onLaunch = Consumer { actionButtonHandler.onAction() },
+          onSelectionChange = actionButtonHandler::onSelectionChange,
+          onLaunch = { actionButtonHandler.onAction() },
           itemActionFactory = java.util.function.Function {
             Collections.emptyMap()
           },

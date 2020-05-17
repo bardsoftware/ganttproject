@@ -25,6 +25,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import javafx.stage.FileChooser
@@ -122,7 +123,7 @@ class LocalStorage(
       var selectedProject: FileAsFolderItem? = null
       var selectedDir: FileAsFolderItem? = null
 
-      fun onOpenItem(item: FolderItem) {
+      fun onSelectionChange(item: FolderItem) {
         if (item is FileAsFolderItem) {
           when {
             item.isDirectory -> {
@@ -154,10 +155,10 @@ class LocalStorage(
           if (filePath.toFile().isDirectory) createPath(filePath.toFile())
           else createPath(filePath.parent.toFile())
       )
-      withActionButton(EventHandler { actionButtonHandler.onAction() })
+      withActionButton { btn -> btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }}
       withListView(
-          onOpenItem = Consumer { actionButtonHandler.onOpenItem(it) },
-          onLaunch = Consumer {
+          onSelectionChange = actionButtonHandler::onSelectionChange,
+          onLaunch = {
             if (it is FileAsFolderItem) {
               myDocumentReceiver(FileDocument(it.file))
             }
