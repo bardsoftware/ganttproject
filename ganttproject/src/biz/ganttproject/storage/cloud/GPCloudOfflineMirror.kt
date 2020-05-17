@@ -20,10 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
-import biz.ganttproject.storage.BrowserPaneBuilder
-import biz.ganttproject.storage.DocumentUri
-import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.collections.FXCollections
@@ -127,14 +124,9 @@ class GPCloudOfflinePane(
     val paneElements = builder.apply {
       withI18N(RootLocalizer.createWithRootKey("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
-      withActionButton(EventHandler { })
+      withActionButton {}
       withListView(
-          onOpenItem = Consumer { },
-          onLaunch = Consumer {
-          },
-          itemActionFactory = java.util.function.Function { it ->
-            Collections.emptyMap<String, Consumer<OfflineMirrorOptionsAsFolderItem>>()
-          }
+          itemActionFactory = java.util.function.Function { Collections.emptyMap() }
       )
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")

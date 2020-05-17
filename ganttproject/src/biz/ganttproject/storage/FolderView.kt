@@ -61,8 +61,8 @@ typealias ExceptionUi = (Exception) -> Unit
  */
 class FolderView<T : FolderItem>(
     val exceptionUi: ExceptionUi,
-    onDeleteResource: Consumer<T> = Consumer {  },
-    onToggleLockResource: Consumer<T> = Consumer {  },
+    onDeleteResource: OnItemAction<T> = {},
+    onToggleLockResource: OnItemAction<T> = {},
     isLockingSupported: BooleanProperty = unsupported,
     isDeleteSupported: ReadOnlyBooleanProperty = unsupported,
     private val itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },
@@ -164,8 +164,8 @@ fun <T : FolderItem> createExtractor(): Callback<ListViewItem<T>, Array<Observab
 
 fun <T : FolderItem> createListCell(
     exceptionUi: ExceptionUi,
-    onDeleteResource: Consumer<T>,
-    onToggleLockResource: Consumer<T>,
+    onDeleteResource: OnItemAction<T>,
+    onToggleLockResource: OnItemAction<T>,
     isLockingSupported: BooleanProperty,
     isDeleteSupported: ReadOnlyBooleanProperty,
     itemActionFactory: ItemActionFactory<T>): ListCell<ListViewItem<T>> {
@@ -248,16 +248,16 @@ fun <T : FolderItem> createListCell(
             }
 
         if (btnLock != null) {
-          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { onToggleLockResource.accept(item.resource.value) }
+          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { onToggleLockResource(item.resource.value) }
           btnBox.children.add(btnLock)
         }
         if (btnDelete != null) {
-          btnDelete.addEventHandler(ActionEvent.ACTION) { onDeleteResource.accept(item.resource.value) }
+          btnDelete.addEventHandler(ActionEvent.ACTION) { onDeleteResource(item.resource.value) }
           btnBox.children.add(btnDelete)
         }
         itemActionFactory.apply(item.resource.value).forEach { key, action ->
           createButton(key).also {
-            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { action.accept(item.resource.value) }
+            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { action(item.resource.value) }
             btnBox.children.add(it)
           }
         }
@@ -356,6 +356,19 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
 
 fun <T : FolderItem> connect(
     filename: TextField?, listView: FolderView<T>, breadcrumbView: BreadcrumbView?,
+    /**
+     * This is called on selection change or on some action with the selected item.
+     * In case of mere selection change both withEnter and withControl are false
+     * In case of double-click or hitting Ctrl+Enter in the list both flags are true.
+     * In case of hitting Enter in the list withEnter == true and withControl == false.
+     * In case of typing in the text search field and hitting Enter, withEnter == true and
+     * withControl depends on whether modifier key is hold.
+     *
+     * Typical expected behavior of the handler:
+     * - both flags false (selection change) may update some UI control state (e.g. disable or enable action button)
+     * - both flags true (dbl-click or Ctrl+Enter) is equivalent to action button click or to opening a folder
+     * - withEnter == true may open a folder or do something with file, depending on what is selected
+     */
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
     onFilenameEnter: () -> Unit) {
   listView.listView.onMouseClicked = EventHandler { evt ->

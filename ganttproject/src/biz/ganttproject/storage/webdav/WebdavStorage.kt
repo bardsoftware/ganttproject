@@ -9,6 +9,7 @@ import com.google.common.base.Strings
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
@@ -139,7 +140,7 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       withI18N(RootLocalizer.createWithRootKey("storageService.webdav", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
       withListView(
-          onOpenItem = Consumer { item ->
+          onSelectionChange = { item ->
             if (item is WebDavResourceAsFolderItem) {
               if (item.isDirectory) {
                 myState.folder = item.myResource
@@ -150,15 +151,15 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
               }
             }
           },
-          onLaunch = Consumer {
+          onLaunch = {
             myOpenDocument(createDocument(myState.server, createResource(myState)))
           },
-          onDelete = Consumer { item ->
+          onDelete = { item ->
             if (item is WebDavResourceAsFolderItem) {
               deleteResource(item)
             }
           },
-          onLock = Consumer { item ->
+          onLock = { item ->
             if (item is WebDavResourceAsFolderItem) {
               toggleLockResource(item)
             }
@@ -168,9 +169,11 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       )
 
 
-      withActionButton(EventHandler {
-        myOpenDocument(createDocument(myState.server, createResource(myState)))
-      })
+      withActionButton { btn ->
+        btn.addEventHandler(ActionEvent.ACTION) {
+          myOpenDocument(createDocument(myState.server, createResource(myState)))
+        }
+      }
     }
     val browserPaneElements = builder.build()
     return browserPaneElements.browserPane
