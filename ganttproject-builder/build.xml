@@ -32,7 +32,7 @@
                 toFile="${distDebWork}/usr/share/applications/ganttproject.desktop"
                 name="GanttProject"
                 icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
-                exec="/usr/bin/ganttproject %U"
+                exec="/usr/bin/ganttproject -j %U"
                 mimetype="application/x-ganttproject;"
                 categories="Office;"
                 onlyshowin="GNOME;KDE;Unity;LXDE;MATE;Cinnamon;"

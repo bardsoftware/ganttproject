@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "configure" ]; then
+  if [ -e /usr/bin/ganttproject ]; then rm -f /usr/bin/ganttproject; fi
+  ln -s /usr/share/ganttproject/ganttproject /usr/bin/ganttproject
+
+  if [ -x "$(which update-menus 2>/dev/null)" ]; then update-menus; fi
+  if [ -x "$(which update-mime 2>/dev/null)" ]; then update-mime; fi
+  if [ -x "$(which update-mime-database 2>/dev/null)" ]; then update-mime-database /usr/share/mime; fi
+  if [ -x "$(which gtk-update-icon-cache 2>/dev/null)" ] && [ -d /usr/share/icons/gnome ]; then gtk-update-icon-cache -t -f /usr/share/icons/gnome; fi
+  if [ -x "$(which xdg-mime 2>/dev/null)" ]; then xdg-mime default ganttproject.desktop application/x-ganttproject; fi
+fi

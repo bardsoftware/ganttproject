@@ -6,21 +6,12 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
     }
-    dependencies {
-        classpath 'org.openjfx:javafx-plugin:0.0.+'
-    }
 }
 
 apply plugin: 'java'
-apply plugin: 'org.openjfx.javafxplugin'
-
 
 ext {
     libDir = 'lib'
-}
-
-javafx {
-    modules = ['javafx.controls', 'javafx.swing']
 }
 
 configurations {
@@ -71,8 +62,8 @@ task copyPluginFiles(dependsOn: jar) {
             into(new File(rootProject.pluginsDir, "${project.name}/lib"))
             from(configurations.exported) {
                 include "*.jar"
+                exclude "javafx*.jar"
             }
-            rename { filename -> filename + ".lib" }
         }
         println "<<< $project.name"
     }
