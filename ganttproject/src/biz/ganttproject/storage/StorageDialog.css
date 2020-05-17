@@ -151,11 +151,11 @@ HBox.title-integrated Label {
 
 .hint {
     -fx-padding: 0.25ex 0 0 0;
-    -fx-text-fill: -gp-light-gray;
+    -fx-text-fill: -gp-medium-gray;
 }
 
 .hint .glyph-icon {
-    -fx-fill: -gp-light-gray;
+    -fx-fill: -gp-medium-gray;
 }
 
 .hint.error {
@@ -235,6 +235,9 @@ HBox.title-integrated Label {
     -fx-padding: 0 0 5 0;
 }
 
+.pane-service-contents > .folder-view-hint {
+    -fx-padding: 1ex 0 0 0;
+}
 .pane-service-contents > .progress-indicator {
     -fx-progress-color: #99cc99;
     -fx-scale-x: 0.75;

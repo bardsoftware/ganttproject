@@ -27,6 +27,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.scene.control.Button
 import javafx.scene.layout.Pane
 import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
@@ -122,6 +123,7 @@ class LocalStorage(
     val actionButtonHandler = object {
       var selectedProject: FileAsFolderItem? = null
       var selectedDir: FileAsFolderItem? = null
+      var button: Button? = null
 
       fun onSelectionChange(item: FolderItem) {
         if (item is FileAsFolderItem) {
@@ -130,11 +132,13 @@ class LocalStorage(
               selectedDir = item
               state.currentDir.set(item.file)
               state.setCurrentFile(null)
+              button?.isDisable = true
             }
             else -> {
               selectedProject = item
               state.currentDir.set(item.file.parentFile)
               state.setCurrentFile(item.file)
+              button?.isDisable = false
             }
           }
         }
@@ -155,7 +159,12 @@ class LocalStorage(
           if (filePath.toFile().isDirectory) createPath(filePath.toFile())
           else createPath(filePath.parent.toFile())
       )
-      withActionButton { btn -> btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }}
+      withActionButton { btn ->
+        actionButtonHandler.button = btn
+        btn.addEventHandler(ActionEvent.ACTION) {
+          actionButtonHandler.onAction()
+        }
+      }
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           onLaunch = {

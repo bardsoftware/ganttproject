@@ -24,6 +24,7 @@ import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import javafx.application.Platform
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -174,6 +175,8 @@ class GPCloudBrowserPane(
       }
     }
 
+    val listViewHint = SimpleStringProperty(i18n.formatText("open.listViewHint"))
+
     this.paneElements = builder.apply {
       withI18N(RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(ROOT_URI)
@@ -200,6 +203,8 @@ class GPCloudBrowserPane(
             }
           },*/
       )
+      withListViewHint(listViewHint)
+
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
 
@@ -302,3 +307,4 @@ class GPCloudBrowserPane(
   }
 }
 
+private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)

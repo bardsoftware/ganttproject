@@ -99,7 +99,7 @@ class BrowserPaneBuilder<T: FolderItem>(
   }
   private val filename = CustomTextField()
   private val listViewHint = Label().also {
-    it.styleClass.addAll("hint", "noerror")
+    it.styleClass.addAll("hint", "folder-view-hint", "noerror")
   }
   private lateinit var btnSave: Button
 
