@@ -18,17 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.export;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
+import net.sourceforge.ganttproject.chart.ChartModel;
+import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-
-import net.sourceforge.ganttproject.chart.ChartModel;
-import net.sourceforge.ganttproject.chart.SimpleRenderedImage;
 
 public class RenderedChartImage extends SimpleRenderedImage {
   private BufferedImage myTaskImage;
@@ -91,7 +89,10 @@ public class RenderedChartImage extends SimpleRenderedImage {
 
   private BufferedImage getChart(int offsetx, int offsety, int width, int height, int chartWidth, int chartHeight) {
     BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-    Graphics g2 = result.getGraphics();
+    Graphics2D g2 = (Graphics2D) result.getGraphics();
+    g2.setRenderingHint(
+        RenderingHints.KEY_TEXT_ANTIALIASING,
+        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
     g2.setColor(Color.white);
     g2.fillRect(0, 0, width, height);
     g2.translate(offsetx, -offsety);

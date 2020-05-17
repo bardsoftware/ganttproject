@@ -4,6 +4,14 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
+// Path to launch4j binary
+ext.launch4j = '/opt/launch4j/launch4j'
+// Directories where we build the distro
+ext.semver = '2.8.11'
+ext.distBinDir = file('dist-bin')
+ext.pluginsVersion = file("dist-bin/plugins/VERSION")
+ext.pluginsDir = file("dist-bin/plugins/${semver}")
+ext.buildNum = getBuildNum()
 
 archivesBaseName = 'ganttproject'
 version = "${rootProject.semver}-r${getBuildNum()}"
@@ -23,13 +31,8 @@ def devNull = new OutputStream() {
     public void write(int b) {}
 }
 
-task updateEclipsito(type: Jar) {
-    destinationDir rootProject.distBinDir
-    archiveName 'eclipsito.jar'
-    from zipTree(project(":ganttproject").projectDir.toPath().resolve("lib/core/eclipsito.jar").toFile())
-    from(".") {
-        include "ganttproject-eclipsito-config.xml"
-    }
+clean {
+    delete += "dist-bin"
 }
 
 task distBin(dependsOn: [
@@ -70,6 +73,7 @@ task distBin(dependsOn: [
                 include "VERSION"
             }
         }
+        rootProject.pluginsVersion.text = semver
     }
 }
 distBin.finalizedBy(updateEclipsito)

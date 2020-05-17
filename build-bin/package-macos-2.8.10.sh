@@ -22,6 +22,7 @@ ${JLINK} \
 
 echo "Testing Java Runtime"
 ${OUTPUT}/runtime/bin/java -version
+cp ganttproject-builder/ganttproject build/runtime/bin/java
 
 echo "Building packages"
 java --module-path build-bin/mac/ \

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Argentina Holidays 2020" type="country">
+	<!-- Data Sources -->
+	<!-- http://www.officeholidays.com/countries/argentina -->
+	<date year="" month="01" date="01"><![CDATA[New Year's Day]]></date>
+	<date year="" month="03" date="24"><![CDATA[Truth and Justice Memorial Day]]></date>
+	<date year="" month="04" date="02"><![CDATA[Malvinas Day]]></date>
+    <date year="" month="05" date="01"><![CDATA[Labour Day]]></date>
+	<date year="" month="05" date="25"><![CDATA[May Day Revolution]]></date>
+	<date year="" month="07" date="09"><![CDATA[Independence Day]]></date>
+	<date year="" month="12" date="08"><![CDATA[Immaculate Conception Day]]></date>
+	<date year="" month="12" date="25"><![CDATA[Christmas Day]]></date>
+
+	<date year="2020" month="2" date="24"><![CDATA[Carnival Monday]]></date>
+	<date year="2020" month="2" date="25"><![CDATA[Carnival Tuesday]]></date>
+	<date year="2020" month="3" date="23"><![CDATA[Truth and Justice Memorial Bridge Holiday]]></date>
+	<date year="2020" month="4" date="10"><![CDATA[Good Friday]]></date>
+	<date year="2020" month="6" date="15"><![CDATA[Martin Miguel de Guemes Day]]></date>
+	<date year="2020" month="6" date="20"><![CDATA[National Flag Day]]></date>
+	<date year="2020" month="7" date="10"><![CDATA[Independence Day Bridge Holiday]]></date>
+	<date year="2020" month="8" date="17"><![CDATA[San Martin's Day]]></date>
+	<date year="2020" month="10" date="12"><![CDATA[Day of respect for cultural diversity]]></date>
+	<date year="2020" month="11" date="23"><![CDATA[National Sovereignty Day]]></date>
+	<date year="2020" month="12" date="7"><![CDATA[Immaculate Conception Bridge Holiday]]></date>
+</calendar>

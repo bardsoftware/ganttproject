@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<calendar id="ru" name="Russian Holidays 2015-2019" type="country">
+<calendar id="ru" name="Russian Holidays 2015-2020" type="country">
 <!-- Data sources
 Calendar contributed by Dmitry Barashev
 http://www.consultant.ru/law/ref/calendar/proizvodstvennye/2018/
@@ -12,6 +12,25 @@ http://www.consultant.ru/law/ref/calendar/proizvodstvennye/2018/
         <date year="" month="5" date="9" type="HOLIDAY"><![CDATA[День Победы]]></date>
         <date year="" month="6" date="12" type="HOLIDAY"><![CDATA[День России]]></date>
         <date year="" month="11" date="4" type="HOLIDAY"><![CDATA[День народного единства]]></date>
+
+        <date year="2020" month="1" date="2" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="1" date="3" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="1" date="4" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="1" date="5" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="1" date="6" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="1" date="8" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2020" month="2" date="24" type="HOLIDAY"><![CDATA[Перенесённый выходной (с 23 февраля)]]></date>
+        <date year="2020" month="3" date="9" type="HOLIDAY"><![CDATA[Перенесённый выходной (с 8 марта)]]></date>
+        <date year="2020" month="5" date="4"><![CDATA[Перенесённый выходной (с 4 января)]]></date>
+        <date year="2020" month="5" date="5"><![CDATA[Перенесённый выходной (с 5 января)]]></date>
+
+        <date year="2019" month="1" date="2" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="3" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="4" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="1" date="8" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
+        <date year="2019" month="5" date="2"><![CDATA[Перенесённый выходной (с 5 января)]]></date>
+        <date year="2019" month="5" date="3"><![CDATA[Перенесённый выходной (с 6 января)]]></date>
+        <date year="2019" month="5" date="10"><![CDATA[Перенесённый выходной (с 23 февраля)]]></date>
 
         <date year="2015" month="1" date="2" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
         <date year="2015" month="1" date="3" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
@@ -62,9 +81,9 @@ http://www.consultant.ru/law/ref/calendar/proizvodstvennye/2018/
         <date year="2019" month="1" date="3" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
         <date year="2019" month="1" date="4" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
         <date year="2019" month="1" date="8" type="HOLIDAY"><![CDATA[Новогодние каникулы]]></date>
-        <date year="2018" month="5" date="2"><![CDATA[Перенесённый выходной (с 5 января)]]></date>
-        <date year="2018" month="5" date="3"><![CDATA[Перенесённый выходной (с 6 января)]]></date>
-        <date year="2018" month="5" date="10"><![CDATA[Перенесённый выходной (с 23 февраля)]]></date>
+        <date year="2019" month="5" date="2"><![CDATA[Перенесённый выходной (с 5 января)]]></date>
+        <date year="2019" month="5" date="3"><![CDATA[Перенесённый выходной (с 6 января)]]></date>
+        <date year="2019" month="5" date="10"><![CDATA[Перенесённый выходной (с 23 февраля)]]></date>
 
 </calendar >
 

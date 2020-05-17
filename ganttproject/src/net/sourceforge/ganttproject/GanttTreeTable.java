@@ -72,6 +72,7 @@ public class GanttTreeTable extends GPTreeTableBase {
     addMouseMotionListener(new MouseMotionAdapter() {
       @Override
       public void mouseDragged(MouseEvent e) {
+        setEditingStartExpected(false);
         transferHandler.exportAsDrag(getTable(), e, TransferHandler.MOVE);
       }
     });

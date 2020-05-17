@@ -2,6 +2,7 @@
 <configuration name="ganttproject"
                platform-classname="org.bardsoftware.impl.eclipsito.BootImpl"
                modules-resource="/plugins-3.0.0"
+               modules-dir="plugins-3.0.0"
                descriptor-file-pattern="plugin.xml"
                logging-level="ALL"
                application="net.sourceforge.ganttproject.GanttProject"

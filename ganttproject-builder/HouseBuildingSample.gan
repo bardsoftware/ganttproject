@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2019-01-01" view-index="0" gantt-divider-location="369" resource-divider-location="322" version="2.8.10" locale="en_US">
+<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2020-04-01" view-index="0" gantt-divider-location="369" resource-divider-location="322" version="2.8.11" locale="en">
     <description/>
     <view zooming-state="default:8" id="gantt-chart">
-        <field id="tpd3" name="Name" width="155" order="0"/>
-        <field id="tpd4" name="Begin date" width="66" order="1"/>
-        <field id="tpd5" name="End date" width="63" order="2"/>
-        <field id="tpd12" name="Cost" width="66" order="3"/>
-        <option id="taskLabelLeft" value="name"/>
+        <field id="tpd3" name="Name" width="159" order="0"/>
+        <field id="tpd4" name="Begin date" width="70" order="1"/>
+        <field id="tpd5" name="End date" width="67" order="2"/>
+        <field id="tpd12" name="Cost" width="69" order="3"/>
+        <option id="taskLabelDown" value=""/>
+        <option id="taskLabelLeft" value=""/>
+        <option id="taskLabelRight" value=""/>
     </view>
     <view id="resource-table">
         <field id="0" name="Name" width="160" order="0"/>
@@ -36,59 +38,59 @@
             <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
             <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
         </taskproperties>
-        <task id="0" name="Architectural design" color="#99ccff" meeting="false" start="2019-01-29" duration="25" complete="81" expand="true">
-            <task id="9" name="Create draft of architecture" color="#99ccff" meeting="false" start="2019-01-29" duration="10" complete="100" expand="true">
+        <task id="0" name="Architectural design" color="#99ccff" meeting="false" start="2020-04-22" duration="25" complete="81" expand="true">
+            <task id="9" name="Create draft of architecture" color="#99ccff" meeting="false" start="2020-04-22" duration="10" complete="100" expand="true">
                 <depend id="10" type="2" difference="0" hardness="Strong"/>
                 <depend id="12" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="10" name="Prepare construction documents" color="#99ccff" meeting="false" start="2019-02-12" duration="15" complete="75" expand="true">
+            <task id="10" name="Prepare construction documents" color="#99ccff" meeting="false" start="2020-05-06" duration="15" complete="75" expand="true">
                 <depend id="17" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="17" name="Agreement on architectural plan " color="#000000" meeting="true" start="2019-03-05" duration="0" complete="0" expand="true">
+            <task id="17" name="Agreement on architectural plan " color="#000000" meeting="true" start="2020-05-27" duration="0" complete="0" expand="true">
                 <depend id="1" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="11" name="Interior design" color="#99ccff" meeting="false" start="2019-02-12" duration="10" complete="33" expand="true">
+        <task id="11" name="Interior design" color="#99ccff" meeting="false" start="2020-05-06" duration="10" complete="33" expand="true">
             <depend id="6" type="2" difference="0" hardness="Strong"/>
-            <task id="12" name="Pre-design" color="#99ccff" meeting="false" start="2019-02-12" duration="5" complete="100" expand="true">
+            <task id="12" name="Pre-design" color="#99ccff" meeting="false" start="2020-05-06" duration="5" complete="100" expand="true">
                 <depend id="13" type="2" difference="0" hardness="Strong"/>
                 <depend id="14" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2019-02-19" duration="5" complete="0" expand="true"/>
-            <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2019-02-19" duration="5" complete="0" expand="true">
+            <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2020-05-13" duration="5" complete="0" expand="true"/>
+            <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2020-05-13" duration="5" complete="0" expand="true">
                 <notes><![CDATA[Embedded devices, kitchen, washing machine, dryer etc]]></notes>
             </task>
         </task>
-        <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2019-03-05" duration="75" complete="0" expand="true">
+        <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2020-05-27" duration="75" complete="0" expand="true">
             <depend id="20" type="2" difference="0" hardness="Strong"/>
-            <task id="1" name="Foundation building" color="#99ccff" meeting="false" start="2019-03-05" duration="15" complete="0" expand="false">
+            <task id="1" name="Foundation building" color="#99ccff" meeting="false" start="2020-05-27" duration="15" complete="0" expand="false">
                 <depend id="2" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="2" name="Ground Floor building" color="#99ccff" meeting="false" start="2019-03-26" duration="20" complete="0" expand="false">
+            <task id="2" name="Ground Floor building" color="#99ccff" meeting="false" start="2020-06-17" duration="20" complete="0" expand="false">
                 <depend id="4" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="4" name="First Floor building" color="#99ccff" meeting="false" start="2019-04-23" duration="20" complete="0" expand="false">
+            <task id="4" name="First Floor building" color="#99ccff" meeting="false" start="2020-07-15" duration="20" complete="0" expand="false">
                 <depend id="5" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="5" name="Roof" color="#99ccff" meeting="false" start="2019-05-21" duration="10" complete="0" expand="false">
+            <task id="5" name="Roof" color="#99ccff" meeting="false" start="2020-08-12" duration="10" complete="0" expand="false">
                 <depend id="18" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="16" name="Connect to communications" color="#99ccff" meeting="false" start="2019-06-04" duration="10" complete="0" expand="true"/>
-            <task id="18" name="Construction completed " color="#000000" meeting="true" start="2019-06-04" duration="0" complete="0" expand="true">
+            <task id="16" name="Connect to communications" color="#99ccff" meeting="false" start="2020-08-26" duration="10" complete="0" expand="true"/>
+            <task id="18" name="Construction completed " color="#000000" meeting="true" start="2020-08-26" duration="0" complete="0" expand="true">
                 <depend id="6" type="2" difference="0" hardness="Strong"/>
                 <depend id="16" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="8" name="Decoration phase" color="#99ccff" meeting="false" start="2019-06-04" duration="10" complete="0" expand="true">
-            <task id="6" name="Walls" color="#99ccff" meeting="false" start="2019-06-04" duration="5" complete="0" expand="false">
+        <task id="8" name="Decoration phase" color="#99ccff" meeting="false" start="2020-08-26" duration="10" complete="0" expand="true">
+            <task id="6" name="Walls" color="#99ccff" meeting="false" start="2020-08-26" duration="5" complete="0" expand="false">
                 <depend id="15" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="15" name="Furniture" color="#99ccff" meeting="false" start="2019-06-11" duration="3" complete="0" expand="true">
+            <task id="15" name="Furniture" color="#99ccff" meeting="false" start="2020-09-02" duration="3" complete="0" expand="true">
                 <depend id="20" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="20" name="Bring your family here" color="#000000" meeting="true" start="2019-06-18" duration="0" complete="0" expand="true"/>
+            <task id="20" name="Bring your family here" color="#000000" meeting="true" start="2020-09-09" duration="0" complete="0" expand="true"/>
         </task>
-        <task id="49" name="GanttProject 2.8.10" color="#ff3333" meeting="true" start="2019-01-29" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true">
+        <task id="49" name="GanttProject 2.8.11" color="#ff3333" meeting="true" start="2020-04-22" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Rubber"/>
         </task>
     </tasks>

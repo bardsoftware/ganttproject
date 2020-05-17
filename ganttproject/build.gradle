@@ -50,7 +50,6 @@ dependencies {
     testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
 
 //    compile "de.jensd:fontawesomefx-materialicons:2.2.+"
-
 }
 
 compileKotlin {
