@@ -4,7 +4,7 @@ set OUTPUT=%1
 set VERSION=%3
 set JAVAFX_MODS_PATH=%4
 jlink ^
-  --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web ^
+  --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.crypto.ec,jdk.localedata,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web ^
   --no-header-files --no-man-pages ^
   --output "%OUTPUT%\runtime" ^
   --strip-debug ^

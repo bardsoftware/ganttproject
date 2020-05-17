@@ -373,7 +373,9 @@ class WebSocketListenerImpl : WebSocketListener() {
 }
 
 class WebSocketClient {
-  private val okClient = OkHttpClient()
+  private val okClient = OkHttpClient.Builder()
+          .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
+          .build()
   private var isStarted = false
   private val wsListener = WebSocketListenerImpl()
   private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
