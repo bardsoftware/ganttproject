@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import net.sourceforge.ganttproject.AppKt;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTree2;
+import net.sourceforge.ganttproject.GlobalTestLock;
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction;
 import net.sourceforge.ganttproject.action.resource.ResourceNewAction;
@@ -41,7 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
-public abstract class ActionTestCase extends TestCase {
+public abstract class ActionTestCase extends GlobalTestLock {
     private UIFacade myUIFacade;
     private TaskSelectionManager myTaskSelectionManager;
     private GanttProject myGanttProject;
@@ -52,17 +53,11 @@ public abstract class ActionTestCase extends TestCase {
     private GPUndoManager myUndoManager;
     private ResourceNewAction myResourceNewAction;
     private HumanResource[] myHumanResources;
-    int lock = 1;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        while(lock == 0){}
-        lock = 0;
-        AppKt.main(new String[] {});
-        while(myGanttProject == null){
-            myGanttProject = AppKt.getMainWindow().get();
-        }
+        myGanttProject = GlobalTestLock.myproject;
         myUndoManager = makeUndoManager();
         myGanttTree = myGanttProject.getTree();
         myUIFacade = myGanttProject.getUIFacade();
@@ -76,9 +71,6 @@ public abstract class ActionTestCase extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        myGanttProject.close();
-        myGanttProject.setVisible(false);
-        myGanttProject.dispose();
         myGanttProject = null;
         myUndoManager = null;
         myGanttTree = null;
@@ -88,7 +80,6 @@ public abstract class ActionTestCase extends TestCase {
         myRoleManager = null;
         myTaskSelectionManager = null;
         myHumanResources = null;
-        lock = 1;
     }
 
     private GPUndoManager makeUndoManager() {
