@@ -80,6 +80,7 @@ Section "GanttProject"
   File logging.properties
 
   File /r plugins
+  File /r runtime
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"
