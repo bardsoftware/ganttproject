@@ -5,25 +5,24 @@
   <jar>eclipsito.jar</jar>
   <outfile>ganttproject.exe</outfile>
   <errTitle></errTitle>
-  <cmdLine>--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject</cmdLine>
+  <cmdLine>--verbosity 4 --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>http://java.com/download</downloadUrl>
+  <downloadUrl>http://docs.ganttproject.biz/user/troubleshoot-installation</downloadUrl>
   <supportUrl>http://docs.ganttproject.biz/user/troubleshoot-installation</supportUrl>
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>ganttproject.ico</icon>
-    <classPath>
-        <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
-        <cp>%EXEDIR%</cp>
-    </classPath>
+  <icon>C:\Users\Dmitry\IdeaProjects\ganttproject\build-cfg\ganttproject.ico</icon>
+  <classPath>
+    <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
+    <cp>%EXEDIR%</cp>
+  </classPath>
   <jre>
     <path>.\runtime\</path>
     <bundledJre64Bit>true</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
     <minVersion>11</minVersion>
-
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>

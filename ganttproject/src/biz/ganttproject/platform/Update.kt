@@ -283,7 +283,7 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
 private val i18n = RootLocalizer.createWithRootKey("platform.update")
 
 object UpdateOptions {
-  val isCheckEnabled = DefaultBooleanOption("checkEnabled")
+  val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
   val latestShownVersion = DefaultStringOption("latestShownVersion")
   val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion)
 

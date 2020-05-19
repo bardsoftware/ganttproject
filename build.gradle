@@ -15,7 +15,7 @@ archivesBaseName = 'ganttproject'
 version = "${semver}-r${getBuildNum()}"
 
 def getBuildNum() {
-    return "2901"
+    return "2903"
 /*
   def stdout = new ByteArrayOutputStream()
     exec {

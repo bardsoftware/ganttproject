@@ -1,3 +1,5 @@
+!define VERSION "2.99"
+!define VERSION_BUILD "2903"
 ; The name of the installer
 !include "MUI.nsh"
 !include "LogicLib.nsh"
