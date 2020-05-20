@@ -93,9 +93,11 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
   }
 
+  // This is called whenever open document changes and handles different cases.
   private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
     Platform.runLater {
 
+      // First we un-proxy old and new documents.
       val newDoc = if (newDocument is ProxyDocument) {
         newDocument.realDocument
       } else {
@@ -107,6 +109,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         oldDocument
       }
 
+      // Then we remove listeners from the old document
       if (oldDoc is LockableDocument) {
         oldDoc.status.removeListener(this::onLockStatusChange)
       }
@@ -116,6 +119,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         this.onLatestVersionChange = null
       }
 
+      // If new document is lockable, we'll add listeners and show the icon.
       if (newDoc is LockableDocument) {
         newDoc.status.addListener(this::onLockStatusChange)
         this.btnLock.isVisible = true
@@ -124,11 +128,14 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         this.btnLock.isVisible = false
       }
 
+      // If new document is online, we'll add some listeners too.
       if (newDoc is OnlineDocument) {
+        // Listen to online mode changes: online only/mirrored/offline only
         newDoc.mode.addListener(this::onOnlineModeChange)
         this.btnOffline.isVisible = true
         this.updateOnlineMode(newDoc.mode.value)
 
+        // Listen to the version updates
         this.onLatestVersionChange = ChangeListener { _, _, newValue ->
           handleLatestVersionChange(newDoc, newValue)
         }
@@ -252,12 +259,11 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
   }
 
+  // This is called when cloud document changes and we receive an update notification.
+  // We want to show a dialog asking to reload document or ignore the update.
   private fun handleLatestVersionChange(doc: OnlineDocument, newValue: LatestVersion) {
     OptionPaneBuilder<Boolean>().run {
       i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
       graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)
       elements = listOf(
           OptionElementData("reload", true, true),
