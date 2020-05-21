@@ -5,8 +5,6 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
 
-import junit.framework.TestCase;
-import net.sourceforge.ganttproject.AppKt;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.GlobalTestLock;
@@ -37,13 +35,9 @@ import javax.swing.*;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
+import java.util.*;
 
 public abstract class ActionTestCase extends GlobalTestLock {
-    private UIFacade myUIFacade;
     private TaskSelectionManager myTaskSelectionManager;
     private GanttProject myGanttProject;
     private GanttTree2 myGanttTree;
@@ -57,10 +51,9 @@ public abstract class ActionTestCase extends GlobalTestLock {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        myGanttProject = GlobalTestLock.myproject;
+        myGanttProject = myproject;
         myUndoManager = makeUndoManager();
         myGanttTree = myGanttProject.getTree();
-        myUIFacade = myGanttProject.getUIFacade();
         myTaskManager = myGanttProject.getTaskManager();
         myResourceManager = myGanttProject.getHumanResourceManager();
         myRoleManager = myGanttProject.getRoleManager();
@@ -74,7 +67,6 @@ public abstract class ActionTestCase extends GlobalTestLock {
         myGanttProject = null;
         myUndoManager = null;
         myGanttTree = null;
-        myUIFacade = null;
         myTaskManager = null;
         myResourceManager = null;
         myRoleManager = null;
@@ -86,7 +78,13 @@ public abstract class ActionTestCase extends GlobalTestLock {
         return new GPUndoManager() {
             @Override
             public void undoableEdit(String localizedName, Runnable runnableEdit) {
-                runnableEdit.run();
+                try{
+                    runnableEdit.run();
+                }
+                catch(ConcurrentModificationException e){
+                    System.out.print("Concurrent error occured, trying again.");
+                    undoableEdit(localizedName, runnableEdit);
+                }
             }
 
             @Override
@@ -255,7 +253,7 @@ public abstract class ActionTestCase extends GlobalTestLock {
 
             @Override
             public GanttChart getGanttChart() {
-                return null;
+                return myproject.getUIFacade().getGanttChart();
             }
 
             @Override
@@ -325,22 +323,22 @@ public abstract class ActionTestCase extends GlobalTestLock {
 
             @Override
             public TaskTreeUIFacade getTaskTree() {
-                return null;
+                return myGanttProject.getUIFacade().getTaskTree();
             }
 
             @Override
             public ResourceTreeUIFacade getResourceTree() {
-                return myUIFacade.getResourceTree();
+                return myGanttProject.getUIFacade().getResourceTree();
             }
 
             @Override
             public TaskSelectionManager getTaskSelectionManager() {
-                return null;
+                return myGanttProject.getUIFacade().getTaskSelectionManager();
             }
 
             @Override
             public TaskSelectionContext getTaskSelectionContext() {
-                return null;
+                return myGanttProject.getUIFacade().getTaskSelectionContext();
             }
 
             @Override
@@ -374,7 +372,7 @@ public abstract class ActionTestCase extends GlobalTestLock {
     }
 
     protected TaskNewAction makeNewTaskAction(){
-        return new TaskNewAction(getGanttProject(), getUIFacade());
+        return new TaskNewAction(getGanttProject(), makeUIFacade());
     }
 
     protected ResourceNewAction makeNewResourceAction(){
@@ -393,7 +391,7 @@ public abstract class ActionTestCase extends GlobalTestLock {
     }
 
     protected AssignmentToggleAction makeAssignmentToggleAction(HumanResource resource, Task task){
-        return new AssignmentToggleAction(resource, task, getUIFacade());
+        return new AssignmentToggleAction(resource, task, makeUIFacade());
     }
 
 //    protected GPUndoManager getUndoManager(){
@@ -402,10 +400,6 @@ public abstract class ActionTestCase extends GlobalTestLock {
 
     protected TaskManager getTaskManager(){
         return myTaskManager;
-    }
-
-    protected UIFacade getUIFacade(){
-        return myUIFacade;
     }
 
     protected TaskSelectionManager getTaskSelectionManager(){

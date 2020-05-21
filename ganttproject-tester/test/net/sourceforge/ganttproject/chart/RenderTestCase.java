@@ -18,30 +18,39 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
+import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import org.eclipse.core.runtime.IStatus;
 
 import javax.swing.*;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import java.awt.*;
 import java.awt.image.RenderedImage;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class RenderTestCase extends GlobalTestLock {
     private GanttProject myGanttProject;
     private HumanResource[] myHumanResources;
     private ArrayList<biz.ganttproject.core.chart.canvas.Canvas.Rectangle> shapes = new ArrayList<>();
+    private GPUndoManager myUndoManager;
+
+    private final ReentrantLock actionLock = new ReentrantLock();
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        myGanttProject = GlobalTestLock.myproject;
+        myGanttProject = myproject;
+        myUndoManager = makeUndoManager();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         myGanttProject = null;
+        myUndoManager = null;
     }
 
     protected HumanResourceManager getHumanResourceManger(){
@@ -194,7 +203,7 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
             @Override
             public GPUndoManager getUndoManager() {
-                return myGanttProject.getUndoManager();
+                return myUndoManager;
             }
 
             @Override
@@ -284,7 +293,7 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
             @Override
             public GanttChart getGanttChart() {
-                return null;
+                return myGanttProject.getUIFacade().getGanttChart();
             }
 
             @Override
@@ -354,7 +363,7 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
             @Override
             public TaskTreeUIFacade getTaskTree() {
-                return null;
+                return myGanttProject.getUIFacade().getTaskTree();
             }
 
             @Override
@@ -364,7 +373,7 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
             @Override
             public TaskSelectionManager getTaskSelectionManager() {
-                return null;
+                return myGanttProject.getUIFacade().getTaskSelectionManager();
             }
 
             @Override
@@ -391,11 +400,11 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
 
     protected TaskNewAction makeNewTaskAction(){
-        return new TaskNewAction(myGanttProject, myGanttProject.getUIFacade());
+        return new TaskNewAction(myGanttProject, makeUIFacade());
     }
 
     protected AssignmentToggleAction makeAssignmentToggleAction(HumanResource resource, Task task){
-        return new AssignmentToggleAction(resource, task, myGanttProject.getUIFacade());
+        return new AssignmentToggleAction(resource, task, makeUIFacade());
     }
 
     protected ResourceNewAction makeNewResourceAction(){
@@ -453,6 +462,66 @@ public abstract class RenderTestCase extends GlobalTestLock {
 
             @Override
             public void paint(biz.ganttproject.core.chart.canvas.Canvas.Polygon p) {
+
+            }
+        };
+    }
+
+    private GPUndoManager makeUndoManager() {
+        return new GPUndoManager() {
+            @Override
+            public void undoableEdit(String localizedName, Runnable runnableEdit) {
+                try{
+                    runnableEdit.run();
+                }
+                catch(ConcurrentModificationException e){
+                    System.out.print("Concurrent error occured, trying again.");
+                    undoableEdit(localizedName, runnableEdit);
+                }
+            }
+
+            @Override
+            public boolean canUndo() {
+                return false;
+            }
+
+            @Override
+            public boolean canRedo() {
+                return false;
+            }
+
+            @Override
+            public void undo() throws CannotUndoException {
+
+            }
+
+            @Override
+            public void redo() throws CannotRedoException {
+
+            }
+
+            @Override
+            public String getUndoPresentationName() {
+                return null;
+            }
+
+            @Override
+            public String getRedoPresentationName() {
+                return null;
+            }
+
+            @Override
+            public void addUndoableEditListener(GPUndoListener listener) {
+
+            }
+
+            @Override
+            public void removeUndoableEditListener(GPUndoListener listener) {
+
+            }
+
+            @Override
+            public void die() {
 
             }
         };
