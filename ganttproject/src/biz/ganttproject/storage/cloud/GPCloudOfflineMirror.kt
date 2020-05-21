@@ -31,6 +31,8 @@ import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -53,7 +55,9 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
  */
 class GPCloudOfflinePane(
     val mode: StorageDialogBuilder.Mode,
-    private val dialogUi: StorageDialogBuilder.DialogUi) {
+    private val dialogUi: StorageDialogBuilder.DialogUi,
+    private val documentManager: DocumentManager,
+    private val documentConsumer: (Document) -> Unit) {
   var controller: GPCloudStorage.Controller? = null
 
   fun createPane(): Pane {
@@ -116,6 +120,24 @@ class GPCloudOfflinePane(
 
   val browser: Pane by lazy(this::createBrowserPane)
 
+  private val actionButtonHandler = object {
+    private var selectedProject: FolderItem? = null
+
+    fun onSelectionChange(item: FolderItem) {
+      this.selectedProject = item
+    }
+
+    fun onAction() {
+      selectedProject?.let {
+        if (it is OfflineMirrorOptionsAsFolderItem) {
+          it.options.offlineMirror?.let { path ->
+            documentConsumer(documentManager.newDocument(path))
+          }
+        }
+      }
+    }
+  }
+
   private fun createBrowserPane(): Pane {
     val builder = BrowserPaneBuilder<OfflineMirrorOptionsAsFolderItem>(this.mode, this.dialogUi::error) { path, success, loading ->
       loadOfflineMirrors(success)
@@ -126,8 +148,15 @@ class GPCloudOfflinePane(
       withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
       withActionButton {}
       withListView(
+          onSelectionChange = actionButtonHandler::onSelectionChange,
           itemActionFactory = java.util.function.Function { Collections.emptyMap() }
       )
+      withActionButton { btn ->
+        btn.addEventHandler(ActionEvent.ACTION) {
+          actionButtonHandler.onAction()
+        }
+      }
+
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
     return paneElements.browserPane

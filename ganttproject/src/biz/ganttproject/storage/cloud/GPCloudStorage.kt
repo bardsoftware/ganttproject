@@ -131,7 +131,7 @@ class GPCloudStorage(
   }
 
   private fun doCreateUi(): Pane {
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager) { doc ->
+    val documentConsumer: (Document) -> Unit = {doc ->
       GlobalScope.async(Dispatchers.JavaFx) {
         val spinner = Spinner().also { it.state = Spinner.State.WAITING }
         nextPage(spinner.pane)
@@ -140,6 +140,7 @@ class GPCloudStorage(
         openDocument(doc)
       }
     }
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {
@@ -147,7 +148,7 @@ class GPCloudStorage(
       }
     }
 
-    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi)
+    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi, this.documentManager, documentConsumer)
     val signinPane = SigninPane(onTokenCallback)
     val signupPane = GPCloudSignupPane(signinPane, ::nextPage)
     Controller(signupPane, signinPane, offlinePane, browserPane, this::nextPage).start()

@@ -265,7 +265,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
         // Run coroutine which fetches document and wait until it sends the result to the channel.
-        val job = GlobalScope.launch(Dispatchers.Main) {
+        val job = GlobalScope.launch(Dispatchers.IO) {
           val successChannel = Channel<Document>()
 
           strategy.open(document, successChannel)
@@ -300,9 +300,9 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
             }
           }
         }
-        runBlocking {
-          job.join()
-        }
+//        runBlocking {
+//          job.join()
+//        }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
