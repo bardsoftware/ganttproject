@@ -38,7 +38,15 @@ public class LoadDistributionTest extends TaskTestCase {
     resourceManager.add(humanResource);
 
     LoadDistribution ld = new LoadDistribution(humanResource);
+    assertEquals(humanResource, ld.getResource());
+
     List<LoadDistribution.Load> loads = ld.getLoads();
+    assertEquals(1, loads.size());
+    assertEquals(0.0f, loads.get(0).load);
+    assertNull(loads.get(0).startDate);
+    assertNull(loads.get(0).endDate);
+
+    List<LoadDistribution.Load> daysOff = ld.getDaysOff();
     assertEquals(1, loads.size());
     assertEquals(0.0f, loads.get(0).load);
     assertNull(loads.get(0).startDate);
