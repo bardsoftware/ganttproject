@@ -113,7 +113,8 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private fun lockDurationHandler(document: LockableDocument, onLockDone: OnLockDone): LockDurationHandler {
     return { duration ->
-      if (!duration.isNegative) {
+      val canReturn = duration.isNegative || duration.isZero && !document.status.value.locked
+      if (!canReturn) {
         toggleProjectLock(
             document = document,
             done = onLockDone,
