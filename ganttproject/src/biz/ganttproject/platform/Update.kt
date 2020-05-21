@@ -85,13 +85,13 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
     val bodyBuilder = VBoxBuilder("content-pane")
 
     val props = GridPane().also { it.styleClass.add("props") }
-    props.add(Label(i18n.formatText("installedVersion")).also {
+    props.add(Label(ourLocalizer.formatText("installedVersion")).also {
       GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
     },0, 0)
     props.add(Label(bean.version).also {
       GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
     }, 1, 0)
-    props.add(Label(i18n.formatText("checkUpdates")).also {
+    props.add(Label(ourLocalizer.formatText("checkUpdates")).also {
       GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
     }, 0, 1)
     val toggleSwitch = object : ToggleSwitch() {
@@ -103,11 +103,11 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
     }
     props.add(toggleSwitch, 1, 1)
-    props.add(HyperlinkLabel(i18n.formatText("checkUpdates.helpline")).also {
+    props.add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
       it.styleClass.add("helpline")
       it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
     }, 1, 2)
-    props.add(Label(i18n.formatText("availableUpdates")).also { GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0)) },
+    props.add(Label(ourLocalizer.formatText("availableUpdates")).also { GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0)) },
         0, 3)
     bodyBuilder.add(props)
 
@@ -146,25 +146,27 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
         "/biz/ganttproject/storage/StorageDialog.css",
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css")
 
-    val vboxBuilder = VBoxBuilder()
-    vboxBuilder.addTitle(i18n.formatText(if (this.hasUpdates) "hasUpdates.title" else "noUpdates.title"))
-    vboxBuilder.add(Label().apply {
-      this.styleClass.add("help")
-      if (this@UpdateDialog.hasUpdates) {
-        this.text = i18n.formatText("hasUpdates.titleHelp",
-            installedVersion,
-            this@UpdateDialog.updates.first().version
-        )
-      }
-    })
+    dialogApi.setHeader(VBoxBuilder("header").apply {
+      addTitle(ourLocalizer.formatText(
+          if (this@UpdateDialog.hasUpdates) "hasUpdates.title" else "noUpdates.title")
+      )
+      add(Label().apply {
+        this.styleClass.add("help")
+        if (this@UpdateDialog.hasUpdates) {
+          this.text = ourLocalizer.formatText("hasUpdates.titleHelp",
+              installedVersion,
+              this@UpdateDialog.updates.first().version
+          )
+        }
+      })
+    }.vbox)
 
     val downloadCompleted = SimpleBooleanProperty(false)
-    dialogApi.setHeader(vboxBuilder.vbox)
     if (this.hasUpdates) {
       dialogApi.setupButton(ButtonType.APPLY) { btn ->
         ButtonBar.setButtonUniformSize(btn, false)
         btn.styleClass.add("btn-attention")
-        btn.text = i18n.formatText("button.ok")
+        btn.text = ourLocalizer.formatText("button.ok")
         btn.maxWidth = Double.MAX_VALUE
         btn.addEventFilter(ActionEvent.ACTION) { event ->
           if (btn.properties["restart"] == true) {
@@ -178,7 +180,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
         downloadCompleted.addListener { _, _, newValue ->
           if (newValue) {
             btn.disableProperty().set(false)
-            btn.text = i18n.formatText("restart")
+            btn.text = ourLocalizer.formatText("restart")
             btn.properties["restart"] = true
           }
         }
@@ -186,13 +188,13 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
     }
     dialogApi.setupButton(ButtonType.CLOSE) { btn ->
       btn.styleClass.add("btn")
-      btn.text = i18n.formatText("button.close_skip")
+      btn.text = ourLocalizer.formatText("button.close_skip")
       btn.addEventFilter(ActionEvent.ACTION) {
         UpdateOptions.latestShownVersion.value = this.updates.first().version
       }
       downloadCompleted.addListener { _, _, newValue ->
         if (newValue) {
-          btn.text = i18n.formatText("close")
+          btn.text = ourLocalizer.formatText("close")
         }
       }
     }
@@ -219,7 +221,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       }
     }?.exceptionally { ex ->
       GPLogger.logToLogger(ex)
-      this.dialogApi.showAlert(i18n.create("alert.title"), createAlertBody(ex.message ?: ""))
+      this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
   }
@@ -243,18 +245,18 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   val title: Label
   val subtitle: Label
   val text: MDFXNode
-  val progressText = i18n.create("bodyItem.progress")
+  val progressText = ourLocalizer.create("bodyItem.progress")
   val progress: Label
   var progressValue: Int = -1
 
   init {
-    title = Label(i18n.formatText("bodyItem.title", update.version)).also { l ->
+    title = Label(ourLocalizer.formatText("bodyItem.title", update.version)).also { l ->
       l.styleClass.add("title")
     }
-    subtitle = Label(i18n.formatText("bodyItem.subtitle", update.date, update.sizeAsString())).also { l ->
+    subtitle = Label(ourLocalizer.formatText("bodyItem.subtitle", update.date, update.sizeAsString())).also { l ->
       l.styleClass.add("subtitle")
     }
-    text = MDFXNode(i18n.formatText("bodyItem.description", update.description)).also { l ->
+    text = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
       l.styleClass.add("par")
     }
     progress = Label().also {
@@ -280,7 +282,7 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   }
 }
 
-private val i18n = RootLocalizer.createWithRootKey("platform.update")
+private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
 
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
