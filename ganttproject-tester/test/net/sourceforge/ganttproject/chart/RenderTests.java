@@ -233,5 +233,48 @@ public class RenderTests extends RenderTestCase {
         assertEquals(60, getShapes().get(2).getRightX());
     }
 
+    public void testMultipleResources(){
+        ResourceLoadRenderer renderer = makeResourceLoadRenderer();
 
+        ResourceNewAction resourceNewAction = makeNewResourceAction();
+        TaskNewAction taskNewAction = makeNewTaskAction();
+
+        HumanResourceManager resourceManager = getHumanResourceManger();
+        TaskManager taskManager = getTaskManager();
+
+        resourceNewAction.actionPerformed(null);
+        resourceNewAction.actionPerformed(null);
+        taskNewAction.actionPerformed(null);
+
+        Task task = taskManager.getTask(0);
+        task.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 20));
+        task.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 21));
+
+        HumanResource resource_0 = resourceManager.getById(0);
+        HumanResource resource_1 = resourceManager.getById(1);
+
+        AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource_0, task);
+        assignmentToggleAction_0.putValue(Action.SELECTED_KEY, true);
+        assignmentToggleAction_0.actionPerformed(null);
+
+        AssignmentToggleAction assignmentToggleAction_1 = makeAssignmentToggleAction(resource_1, task);
+        assignmentToggleAction_1.putValue(Action.SELECTED_KEY, true);
+        assignmentToggleAction_1.actionPerformed(null);
+
+        renderer.render();
+        Canvas temp = renderer.getCanvas();
+        temp.paint(makePainter());
+
+        assertEquals(2, getShapes().size());
+        assertEquals("load.normal.first.last", getShapes().get(0).getStyle());
+        assertEquals(44, getShapes().get(0).getTopY());
+        assertEquals(54, getShapes().get(0).getBottomY());
+        assertEquals(0, getShapes().get(0).getLeftX());
+        assertEquals(20, getShapes().get(0).getRightX());
+        assertEquals("load.normal.first.last", getShapes().get(1).getStyle());
+        assertEquals(54, getShapes().get(1).getTopY());
+        assertEquals(64, getShapes().get(1).getBottomY());
+        assertEquals(0, getShapes().get(1).getLeftX());
+        assertEquals(20, getShapes().get(1).getRightX());
+    }
 }
