@@ -13,7 +13,7 @@
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>..\build-cfg\ganttproject.ico</icon>
+  <icon>.\ganttproject.ico</icon>
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
     <cp>%EXEDIR%</cp>
