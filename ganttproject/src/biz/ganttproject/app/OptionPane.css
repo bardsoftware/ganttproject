@@ -1,6 +1,3 @@
-.btn-option {
-    -fx-padding: 1ex 0 0 0;
-}
 
 .content-pane {
     -fx-background-color: transparent;
@@ -8,6 +5,10 @@
     -fx-border-color: transparent;
     -fx-border-radius: 0;
     -fx-padding: 1ex 1em;
+}
+
+.content-pane .btn-option {
+    -fx-padding: 1ex 0 0 0;
 }
 
 .header .glyph-icon {

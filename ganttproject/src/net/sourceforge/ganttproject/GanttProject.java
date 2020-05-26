@@ -707,7 +707,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   public void newProject() {
     getProjectUIFacade().createProject(getProject());
-    fireProjectCreated();
+    try {
+      Document newDocument = getDocumentManager().newUntitledDocument();
+      getProject().setDocument(newDocument);
+      myObservableDocument.set(newDocument);
+      fireProjectCreated();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

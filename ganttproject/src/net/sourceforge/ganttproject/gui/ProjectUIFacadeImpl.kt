@@ -24,10 +24,7 @@ import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.storage.ForbiddenException
-import biz.ganttproject.storage.StorageDialogAction
-import biz.ganttproject.storage.VersionMismatchException
-import biz.ganttproject.storage.asOnlineDocument
+import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.AuthTokenCallback
 import biz.ganttproject.storage.cloud.GPCloudOptions
 import biz.ganttproject.storage.cloud.SigninPane
@@ -47,6 +44,7 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
@@ -71,6 +69,10 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
 
   override fun saveProject(project: IGanttProject) {
     if (project.document == null) {
+      saveProjectAs(project)
+      return
+    }
+    if (project.document.asLocalDocument()?.canRead() == false) {
       saveProjectAs(project)
       return
     }

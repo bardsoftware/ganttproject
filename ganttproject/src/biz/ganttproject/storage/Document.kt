@@ -26,6 +26,7 @@ import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
 import java.io.File
 import java.nio.file.Paths
@@ -198,6 +199,15 @@ interface OnlineDocument {
   suspend fun fetch(): FetchResult
   suspend fun fetchVersion(version: Long): FetchResult
   fun write(force: Boolean = false)
+}
+
+fun (Document).asLocalDocument(): FileDocument? {
+  if (this is ProxyDocument) {
+    if (this.realDocument is FileDocument) {
+      return this.realDocument as FileDocument
+    }
+  }
+  return null
 }
 
 fun (Document).asOnlineDocument(): OnlineDocument? {
