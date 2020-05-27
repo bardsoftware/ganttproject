@@ -24,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -45,12 +46,21 @@ public enum ResourceDefaultColumn {
   private final boolean isEditable;
   private final String myNameKey;
   private final Class<?> myValueClass;
+  private Comparator<?> mySortComparator;
 
   private ResourceDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, boolean editable) {
     myDelegate = delegate;
     myNameKey = nameKey;
     isEditable = editable;
     myValueClass = valueClass;
+  }
+
+  public Comparator<?> getSortComparator() {
+    return mySortComparator;
+  }
+
+  public void setSortComparator(Comparator<?> sortComparator) {
+    mySortComparator = sortComparator;
   }
 
   public Column getStub() {
