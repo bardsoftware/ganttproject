@@ -108,6 +108,7 @@ class BrowserPaneBuilder<T: FolderItem>(
   private lateinit var onSelectionChange: OnItemAction<T>
   private lateinit var onLaunch: OnItemAction<T>
   private lateinit var onOpenDirectory: OnItemAction<T>
+  private lateinit var onNameTyped: (filename: String, matchedItems: List<T>) -> Unit
   private var validationSupport: ValidationSupport = ValidationSupport()
   private lateinit var i18n: Localizer
 
@@ -129,6 +130,7 @@ class BrowserPaneBuilder<T: FolderItem>(
       onOpenDirectory: OnItemAction<T> = {},
       onDelete: OnItemAction<T> = {},
       onLock: OnItemAction<T> = {},
+      onNameTyped: (filename: String, matchedItems: List<T>) -> Unit = {_,_ ->},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
       itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },
@@ -141,6 +143,7 @@ class BrowserPaneBuilder<T: FolderItem>(
     this.onSelectionChange = onSelectionChange
     this.onOpenDirectory = onOpenDirectory
     this.onLaunch = onLaunch
+    this.onNameTyped = onNameTyped
   }
 
   fun withBreadcrumbs(rootPath: Path) {
@@ -242,11 +245,13 @@ class BrowserPaneBuilder<T: FolderItem>(
       listView.selectedResource.ifPresent { item -> selectItem(item, withEnter, withControl) }
     }
 
-    fun onFilenameEnter() {
+    fun onFilenameEnter(withEnter: Boolean) {
       val filtered = listView.doFilter(filename.text)
-      if (filtered.size == 1) {
-        selectItem(filtered[0], true, true)
+      if (filtered.size == 1 && withEnter) {
+        selectItem(filtered[0], withEnter, withEnter)
       }
+      listView.filter(filename.text)
+      onNameTyped(filename.text, filtered)
     }
 
     listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {

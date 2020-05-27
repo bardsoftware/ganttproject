@@ -173,6 +173,14 @@ class GPCloudBrowserPane(
             ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
 
       }
+
+      fun onNameTyped(filename: String, itemsMatched: List<FolderItem>) {
+        this.button?.isDisable =
+            when (this@GPCloudBrowserPane.mode) {
+              StorageDialogBuilder.Mode.OPEN -> itemsMatched.isEmpty()
+              StorageDialogBuilder.Mode.SAVE -> filename.isBlank()
+            }
+      }
     }
 
     val listViewHint = SimpleStringProperty(i18n.formatText("open.listViewHint"))
@@ -193,15 +201,8 @@ class GPCloudBrowserPane(
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
             }
-          }/*
-          onLock = Consumer {
-            if (it is ProjectJsonAsFolderItem) {
-              this@GPCloudBrowserPane.toggleProjectLock(it,
-                  Consumer { this@GPCloudBrowserPane.reload() },
-                  builder.busyIndicatorToggler
-              )
-            }
-          },*/
+          },
+          onNameTyped = actionButtonHandler::onNameTyped
       )
       withListViewHint(listViewHint)
 

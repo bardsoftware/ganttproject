@@ -370,7 +370,7 @@ fun <T : FolderItem> connect(
      * - withEnter == true may open a folder or do something with file, depending on what is selected
      */
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
-    onFilenameEnter: () -> Unit) {
+    onFilenameEnter: (withEnter: Boolean) -> Unit) {
   listView.listView.onMouseClicked = EventHandler { evt ->
     val dblClick = evt.clickCount == 2
     selectItem(dblClick, dblClick)
@@ -397,20 +397,21 @@ fun <T : FolderItem> connect(
     }
   }
 
-  TextFields.bindAutoCompletion(filename) { req ->
-    // Filter folder with user text and map each item to its name. Return the result if
-    // filtered list has less than 5 items.
-    listView.doFilter(req.userText).let {
-      if (it.size <= 5) it.map { it.name }.toList() else emptyList()
-    }
-  }
+//  TextFields.bindAutoCompletion(filename) { req ->
+//    // Filter folder with user text and map each item to its name. Return the result if
+//    // filtered list has less than 5 items.
+//    listView.doFilter(req.userText).let {
+//      if (it.size <= 5) it.map { it.name }.toList() else emptyList()
+//    }
+//  }
   filename?.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.DOWN -> listView.requestFocus()
       KeyCode.ENTER -> {
-        onFilenameEnter()
+        onFilenameEnter(true)
       }
       else -> {
+        onFilenameEnter(false)
       }
     }
   }
