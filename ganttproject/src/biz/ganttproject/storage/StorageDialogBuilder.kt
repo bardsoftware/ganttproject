@@ -30,6 +30,10 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -62,9 +66,15 @@ class StorageDialogBuilder(
 
   init {
     myDocumentReceiver = Consumer { document: Document ->
-      SwingUtilities.invokeLater {
+      myDialogUi.toggleProgress(true)
+      val onFinish = Channel<Boolean>()
+
+      GlobalScope.launch(Dispatchers.IO) {
         try {
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject)
+          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
+          onFinish.receive()
+          myDialogUi.toggleProgress(false)
+          myDialogUi.close()
         } catch (e: IOException) {
           e.printStackTrace()
         } catch (e: Document.DocumentException) {
@@ -73,13 +83,18 @@ class StorageDialogBuilder(
       }
     }
     myDocumentUpdater = Consumer { document ->
-      SwingUtilities.invokeLater {
+      myDialogUi.toggleProgress(true)
+      val onFinish = Channel<Boolean>()
+      GlobalScope.launch(Dispatchers.IO) {
         if (myProject.document == null) {
           myProject.document = documentManager.getProxyDocument(document)
         } else {
           myProject.document.setMirror(document)
         }
-        projectUi.saveProject(myProject)
+        projectUi.saveProject(myProject, onFinish)
+        onFinish.receive()
+        myDialogUi.toggleProgress(false)
+        myDialogUi.close()
       }
     }
   }
@@ -195,6 +210,10 @@ class StorageDialogBuilder(
       notificationText.styleClass.add("info")
       this.notificationPane().graphic = notificationText
       this.notificationPane().show()
+    }
+
+    fun toggleProgress(isShown: Boolean) {
+      dialogController.toggleProgress(isShown)
     }
   }
 

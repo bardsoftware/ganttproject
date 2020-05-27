@@ -18,15 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 /**
  * Creates a new action, that stores the specified document and invokes the
@@ -63,7 +63,7 @@ public class OpenMRUDocumentAction extends GPAction {
     if (myProjectUIFacade.ensureProjectSaved(myProject)) {
       try {
         Document doc = myProject.getDocumentManager().getDocument(myDocument);
-        myProjectUIFacade.openProject(doc, myProject);
+        myProjectUIFacade.openProject(doc, myProject, null);
       } catch (DocumentException exception) {
         myUIFacade.showErrorDialog(exception);
       } catch (IOException exception) {

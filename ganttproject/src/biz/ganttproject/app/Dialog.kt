@@ -117,6 +117,7 @@ interface DialogController {
   fun setHeader(header: Node)
   fun hide()
   fun removeButtonBar()
+  fun toggleProgress(shown: Boolean)
 }
 
 class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) : DialogController {
@@ -190,6 +191,15 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     buttons.add(type)
     this.buttonNodes[type]?.let {
       code(it)
+    }
+  }
+
+  override fun toggleProgress(shown: Boolean) {
+    Platform.runLater {
+      createOverlayPane(this.content, this.contentStack) {pane ->
+        pane.center = Label("")
+        pane.opacity = 0.5
+      }
     }
   }
 
@@ -273,6 +283,15 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     }
   }
 
+  override fun toggleProgress(shown: Boolean) {
+    Platform.runLater {
+      createOverlayPane(this.content, this.stackPane) {pane ->
+        pane.center = Label("")
+        pane.opacity = 0.5
+      }
+    }
+  }
+
   override fun showAlert(title: LocalizedString, content: Node) {
     Platform.runLater {
       createAlertPane(this.content, this.stackPane, title, content)
@@ -301,26 +320,8 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 }
 
-fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
-  val notificationPane = BorderPane().also { pane ->
-    pane.styleClass.add("alert-glasspane")
-    val vboxBuilder = VBoxBuilder("alert-box")
-    vboxBuilder.addTitle(title).also { hbox ->
-      hbox.alignment = Pos.CENTER_LEFT
-      hbox.isFillHeight = true
-      hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
-      val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
-      hbox.children.add(btnClose)
-      btnClose.addEventHandler(ActionEvent.ACTION) {
-        stackPane.children.remove(pane)
-        underlayPane.effect = null
-      }
-
-    }
-    vboxBuilder.add(body, Pos.CENTER, Priority.ALWAYS)
-    pane.center = vboxBuilder.vbox
-    pane.opacity = 0.0
-  }
+fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) {
+  val notificationPane = BorderPane().also(overlayBuilder)
   stackPane.children.add(notificationPane)
   val fadeIn = FadeTransition(Duration.seconds(1.0), notificationPane)
   fadeIn.fromValue = 0.0
@@ -341,6 +342,28 @@ fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedSt
     }
   }
   ParallelTransition(fadeIn, washOut).play()
+}
+
+fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
+  createOverlayPane(underlayPane, stackPane) { pane ->
+    pane.styleClass.add("alert-glasspane")
+    val vboxBuilder = VBoxBuilder("alert-box")
+    vboxBuilder.addTitle(title).also { hbox ->
+      hbox.alignment = Pos.CENTER_LEFT
+      hbox.isFillHeight = true
+      hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
+      val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
+      hbox.children.add(btnClose)
+      btnClose.addEventHandler(ActionEvent.ACTION) {
+        stackPane.children.remove(pane)
+        underlayPane.effect = null
+      }
+
+    }
+    vboxBuilder.add(body, Pos.CENTER, Priority.ALWAYS)
+    pane.center = vboxBuilder.vbox
+    pane.opacity = 0.0
+  }
 }
 
 fun createAlertBody(message: String): Node =

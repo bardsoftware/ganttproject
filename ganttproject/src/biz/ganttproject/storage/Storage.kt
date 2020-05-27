@@ -149,7 +149,6 @@ class StoragePane internal constructor(
     val openDocument = { document: Document ->
       try {
         (if (mode == StorageDialogBuilder.Mode.OPEN) documentReceiver else documentUpdater).accept(document)
-        dialogUi.close()
       } catch (e: Exception) {
         dialogUi.error(e)
       }

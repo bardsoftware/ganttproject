@@ -62,22 +62,28 @@ import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
-class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val documentManager: DocumentManager, private val undoManager: GPUndoManager) : ProjectUIFacade {
+class ProjectUIFacadeImpl(
+    private val myWorkbenchFacade: UIFacade,
+    private val documentManager: DocumentManager,
+    private val undoManager: GPUndoManager) : ProjectUIFacade {
   private val i18n = GanttLanguage.getInstance()
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
 
-  override fun saveProject(project: IGanttProject) {
-    if (project.document == null) {
-      saveProjectAs(project)
-      return
+  override fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?) {
+    GlobalScope.launch {
+      if (project.document == null) {
+        saveProjectAs(project)
+        onFinish?.send(true)
+      }
+      if (project.document.asLocalDocument()?.canRead() == false) {
+        saveProjectAs(project)
+        onFinish?.send(true)
+      }
+      val document = project.document
+      saveProjectTryWrite(project, document)
+      onFinish?.send(true)
     }
-    if (project.document.asLocalDocument()?.canRead() == false) {
-      saveProjectAs(project)
-      return
-    }
-    val document = project.document
-    saveProjectTryWrite(project, document)
   }
 
   private fun saveProjectTryWrite(project: IGanttProject, document: Document): Boolean {
@@ -198,7 +204,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
 
   @Throws(IOException::class)
   private fun saveProject(document: Document) {
-    myWorkbenchFacade.setStatusText(GanttLanguage.getInstance().getText("saving") + " " + document.path)
+    //myWorkbenchFacade.setStatusText(GanttLanguage.getInstance().getText("saving") + " " + document.path)
     document.write()
   }
 
@@ -223,7 +229,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
       }
       if (UIFacade.Choice.YES == saveChoice) {
         return try {
-          saveProject(project)
+          saveProject(project, null)
           // If all those complex save procedures complete successfully and project gets saved
           // then its modified state becomes false
           // Otherwise it remains true which means we have not saved and can't continue
@@ -256,23 +262,22 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
     val returnVal = fc.showOpenDialog(myWorkbenchFacade.mainFrame)
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       val document = documentManager.getDocument(fc.selectedFile.absolutePath)
-      openProject(document, project)
+      openProject(document, project, null)
     }
   }
 
   @Throws(IOException::class, DocumentException::class)
-  override fun openProject(document: Document, project: IGanttProject) {
-
-
+  override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?) {
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
         // Run coroutine which fetches document and wait until it sends the result to the channel.
-        val job = GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(Dispatchers.IO) {
           val successChannel = Channel<Document>()
 
           strategy.open(document, successChannel)
           try {
             val doc = successChannel.receive()
+            onFinish?.send(true)
             // If document is obtained, we need to run further steps.
             // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
             SwingUtilities.invokeLater {
@@ -284,7 +289,7 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
                   .runUiTasks()
                   .onFetchResultChange(doc) {
                     SwingUtilities.invokeLater {
-                      openProject(doc, project)
+                      openProject(doc, project, null)
                     }
                   }
             }
@@ -293,18 +298,16 @@ class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val d
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
               is ForbiddenException -> {
                 signin {
-                  openProject(document, project)
+                  openProject(document, project, null)
                 }
               }
               else -> {
                 GPLogger.log(DocumentException("Can't open document $document", ex ))
+                onFinish?.close(ex)
               }
             }
           }
         }
-//        runBlocking {
-//          job.join()
-//        }
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)

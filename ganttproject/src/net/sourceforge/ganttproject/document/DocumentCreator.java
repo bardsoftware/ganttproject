@@ -315,8 +315,7 @@ public class DocumentCreator implements DocumentManager {
   }
 
   String createTemporaryFile() throws IOException {
-    File tempFile = File.createTempFile("project", ".gan", getWorkingDirectoryFile());
-    return tempFile.getAbsolutePath();
+    return getWorkingDirectoryFile().getAbsolutePath();
   }
 
   @Override

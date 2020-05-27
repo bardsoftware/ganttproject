@@ -38,7 +38,7 @@ public class ProjectMenu extends JMenu {
   public ProjectMenu(final GanttProject project, JMenu mru, String key) {
     super(GPAction.createVoidAction(key));
     myNewProjectAction = new NewProjectAction(project);
-    mySaveProjectAction = new SaveProjectAction(project);
+    mySaveProjectAction = new SaveProjectAction(project.getProject(), project.getProjectUIFacade());
     myPrintAction = new PrintAction(project);
 
     ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);

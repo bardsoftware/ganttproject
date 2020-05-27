@@ -57,7 +57,7 @@ public class OpenURLAction extends CloudProjectActionBase {
   public void openRemoteProject(final IGanttProject project) throws IOException, DocumentException {
     final Document document = showURLDialog(project, true);
     if (document != null) {
-      myProjectUiFacade.openProject(document, project);
+      myProjectUiFacade.openProject(document, project, null);
     }
   }
 }
