@@ -44,7 +44,7 @@ public class ActionTests extends ActionTestCase {
 
         assertEquals(2, taskManager.getTaskCount());
 
-        selection.add(taskManager.getTask(1));
+        selection.add(taskManager.getTasks()[1]);
         taskDeleteAction.selectionChanged(selection);
         taskDeleteAction.actionPerformed(null);
 
@@ -127,7 +127,7 @@ public class ActionTests extends ActionTestCase {
         resourceNewAction.actionPerformed(null);
         taskNewAction.actionPerformed(null);
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResourcesArray()[0];
         Task task = taskManager.getTask(0);
 
         assertEquals(0, task.getAssignments().length);
@@ -153,7 +153,7 @@ public class ActionTests extends ActionTestCase {
         resourceNewAction.actionPerformed(null);
         taskNewAction.actionPerformed(null);
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResourcesArray()[0];
         Task task = taskManager.getTask(0);
 
         assertEquals(0, task.getAssignments().length);
@@ -165,7 +165,7 @@ public class ActionTests extends ActionTestCase {
         assertEquals(1, task.getAssignments().length);
 
         ResourceDeleteAction resourceDeleteAction = makeDeleteResourceAction();
-        addHumanResourceToSelection(resourceManager.getById(0));
+        addHumanResourceToSelection(resourceManager.getResourcesArray()[0]);
         resourceDeleteAction.actionPerformed(null);
 
         assertEquals(0, task.getAssignments().length);
@@ -180,7 +180,7 @@ public class ActionTests extends ActionTestCase {
         resourceNewAction.actionPerformed(null);
         taskNewAction.actionPerformed(null);
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResourcesArray()[0];
         Task task = taskManager.getTask(0);
 
         assertEquals(0, task.getAssignments().length);

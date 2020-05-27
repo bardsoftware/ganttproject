@@ -37,20 +37,23 @@ public abstract class GlobalTestLock extends TestCase {
             AppKt.main(new String[]{});
             CheckConditionTurn task = new CheckConditionTurn(conditionSucceeded);
             timer.schedule(task, 0, 2000);
-            success = conditionSucceeded.await(3, TimeUnit.SECONDS);
+            success = conditionSucceeded.await(4, TimeUnit.SECONDS);
         }
+        GPLogger.log("UI started, starting tests!");
         myproject = AppKt.getMainWindow().get();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        GPLogger.log("tests have finished!");
         AppKt.getMainWindow().set(null);
+        GPLogger.log("Starting to close UI.");
         myproject.close();
         myproject.setVisible(false);
-        myproject.dispose();
         myproject = null;
         GlobalTestLock.turn.set(true);
+        GPLogger.log("UI closed!");
     }
 }
 
