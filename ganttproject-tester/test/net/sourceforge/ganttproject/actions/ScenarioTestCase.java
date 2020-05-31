@@ -37,7 +37,7 @@ import javax.swing.undo.CannotUndoException;
 import java.awt.*;
 import java.util.*;
 
-public abstract class ActionTestCase extends GlobalTestLock {
+public abstract class ScenarioTestCase extends GlobalTestLock {
     private TaskSelectionManager myTaskSelectionManager;
     private GanttProject myGanttProject;
     private GanttTree2 myGanttTree;

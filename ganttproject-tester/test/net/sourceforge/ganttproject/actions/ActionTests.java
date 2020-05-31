@@ -15,7 +15,7 @@ import net.sourceforge.ganttproject.task.*;
 import javax.swing.*;
 
 
-public class ActionTests extends ActionTestCase {
+public class ActionTests extends ScenarioTestCase {
     public void testTaskNewAction(){
         TaskManager taskManager = getTaskManager();
         TaskNewAction taskNewAction = makeNewTaskAction();
