@@ -35,7 +35,7 @@ public class RenderTests extends RenderTestCase {
         task_0.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 20));
         task_0.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 21));
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResources().get(0);
         resource.addDaysOff(new GanttDaysOff(new Date(120, Calendar.MAY, 21), new Date(120, Calendar.MAY, 25)));
 
         AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource, task_0);
@@ -80,7 +80,7 @@ public class RenderTests extends RenderTestCase {
         task_1.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 22));
         task_1.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 25));
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResources().get(0);
 
         AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource, task_0);
         assignmentToggleAction_0.putValue(Action.SELECTED_KEY, true);
@@ -128,7 +128,7 @@ public class RenderTests extends RenderTestCase {
         task_1.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 22));
         task_1.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 26));  // Will be split by a weekend
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResources().get(0);
 
         AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource, task_0);
         assignmentToggleAction_0.putValue(Action.SELECTED_KEY, true);
@@ -191,7 +191,7 @@ public class RenderTests extends RenderTestCase {
         task_3.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 22));
         task_3.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 25));
 
-        HumanResource resource = resourceManager.getById(0);
+        HumanResource resource = resourceManager.getResources().get(0);
 
         AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource, task_0);
         assignmentToggleAction_0.putValue(Action.SELECTED_KEY, true);
@@ -250,8 +250,8 @@ public class RenderTests extends RenderTestCase {
         task.setStart(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 20));
         task.setEnd(CalendarFactory.createGanttCalendar(2020, Calendar.MAY, 21));
 
-        HumanResource resource_0 = resourceManager.getById(0);
-        HumanResource resource_1 = resourceManager.getById(1);
+        HumanResource resource_0 = resourceManager.getResources().get(0);
+        HumanResource resource_1 = resourceManager.getResources().get(1);
 
         AssignmentToggleAction assignmentToggleAction_0 = makeAssignmentToggleAction(resource_0, task);
         assignmentToggleAction_0.putValue(Action.SELECTED_KEY, true);
