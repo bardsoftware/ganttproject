@@ -147,10 +147,13 @@ class GPCloudDocumentTest {
         "fileContents" to Base64.getEncoder().encodeToString(BODY_566),
         "lockToken" to null,
         "oldVersion" to "100500"
-    ))).andReturn(TestResponse(headers = mapOf(
-        "ETag" to "146512",
-        "Digest" to "crc32c=${BODY_566.checksum()}"
-    )))
+    ))).andReturn(TestResponse(
+        headers = mapOf(
+          "ETag" to "146512",
+          "Digest" to "crc32c=${BODY_566.checksum()}"
+        ),
+        rawBody = JACKSON.writeValueAsBytes(ProjectWriteResponse(projectRefid = "prj1"))
+    ))
     EasyMock.replay(mockHttpClient)
     doc.outputStream.use {
       ByteStreams.copy(byteArrayOf(5, 6, 6).inputStream(), it)
@@ -293,10 +296,13 @@ class GPCloudDocumentTest {
         "fileContents" to Base64.getEncoder().encodeToString(BODY_566),
         "lockToken" to null,
         "oldVersion" to null
-    ))).andReturn(TestResponse(headers = mapOf(
-        "ETag" to "146512",
-        "Digest" to "crc32c=${BODY_566.checksum()}"
-    )))
+    ))).andReturn(TestResponse(
+        headers = mapOf(
+          "ETag" to "146512",
+          "Digest" to "crc32c=${BODY_566.checksum()}"
+        ),
+        rawBody = JACKSON.writeValueAsBytes(ProjectWriteResponse(projectRefid = "prj1"))
+    ))
     EasyMock.replay(mockHttpClient)
 
     retryCounter.await()
