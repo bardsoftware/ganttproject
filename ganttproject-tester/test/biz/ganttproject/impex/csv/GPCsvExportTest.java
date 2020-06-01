@@ -18,7 +18,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import org.apache.commons.csv.CSVFormat;
-import org.junit.Ignore;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -29,7 +28,6 @@ import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 /**
  * @author dbarashev@bardsoftware.com
  */
-@Ignore
 public class GPCsvExportTest extends TaskTestCase {
   @Override
   protected void setUp() throws Exception {

@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import org.junit.Ignore;
 
 import java.awt.*;
 import java.io.ByteArrayInputStream;
@@ -60,7 +59,6 @@ import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-@Ignore
 public class GPCsvImportTest extends TestCase {
 
   private Supplier<InputStream> createSupplier(final byte[] data) {

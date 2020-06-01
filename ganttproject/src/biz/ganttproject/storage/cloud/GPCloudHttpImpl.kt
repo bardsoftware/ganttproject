@@ -458,7 +458,8 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
 
 interface GPCloudHttpClient {
   interface Response {
-    val body: ByteArray
+    val decodedBody: ByteArray
+    val rawBody: ByteArray
     val code: Int
     val reason: String
     fun header(name: String): String?
@@ -472,10 +473,12 @@ interface GPCloudHttpClient {
 class HttpClientApache(
     val client: HttpClient, val host: HttpHost, val context: HttpContext) : GPCloudHttpClient {
   class ResponseImpl(val resp: HttpResponse) : GPCloudHttpClient.Response {
-    override val body: ByteArray by lazy {
-      val encodedStream = Base64InputStream(resp.entity.content)
-      ByteStreams.toByteArray(encodedStream)
+    override val decodedBody: ByteArray by lazy {
+      Base64InputStream(resp.entity.content).readAllBytes()
     }
+
+    override val rawBody: ByteArray
+      get() = resp.entity.content.readAllBytes()
 
     override val code: Int by lazy {
       resp.statusLine.statusCode
@@ -498,7 +501,7 @@ class HttpClientApache(
     val httpPost = HttpPost(uri)
     val multipartBuilder = MultipartEntityBuilder.create()
     parts.filterValues { it != null }.forEach { key, value ->
-      multipartBuilder.addPart(key, StringBody(value, ContentType.TEXT_PLAIN))
+      multipartBuilder.addPart(key, StringBody(value, ContentType.TEXT_PLAIN.withCharset(Charsets.UTF_8)))
     }
     httpPost.entity = multipartBuilder.build()
     return ResponseImpl(this.client.execute(this.host, httpPost, this.context))
@@ -548,3 +551,13 @@ fun isNetworkAvailable(): Boolean {
   }
 }
 private val LOG = GPLogger.create("Cloud.Http")
+
+data class Lock(var uid: String = "",
+                var name: String = "",
+                var email: String = ""
+)
+
+data class ProjectWriteResponse(
+    var projectRefid: String = "",
+    var lock: Lock? = null
+)

@@ -22,6 +22,7 @@ import biz.ganttproject.storage.*
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
 import com.google.common.hash.Hashing
@@ -59,7 +60,7 @@ private val ourExecutor = Executors.newSingleThreadExecutor()
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
-                      internal val projectRefid: String?,
+                      internal var projectRefid: String?,
                       private val projectName: String,
                       val projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
@@ -74,7 +75,9 @@ class GPCloudDocument(private val teamRefid: String?,
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
 
-  val projectIdFingerprint = Hashing.farmHashFingerprint64().hashUnencodedChars(this.projectRefid!!).toString()
+  val projectIdFingerprint get() = this.projectRefid?.let {
+    Hashing.farmHashFingerprint64().hashUnencodedChars(it).toString()
+  } ?: ""
 
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
   var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
@@ -295,7 +298,7 @@ class GPCloudDocument(private val teamRefid: String?,
         val etagValue = resp.header("ETag")
         val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
 
-        val documentBody = resp.body
+        val documentBody = resp.decodedBody
 
         return FetchResult(
             this@GPCloudDocument,
@@ -348,12 +351,14 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
+  private val OBJECT_MAPPER = ObjectMapper()
+
   @Throws(NetworkUnavailableException::class, VersionMismatchException::class, ForbiddenException::class)
   private fun saveOnline(body: ByteArray) {
     val http = this.httpClientFactory()
     try {
       val resp = http.sendPost("/p/write", mapOf(
-          "projectRefid" to this.projectRefid,
+          "projectRefid" to this.projectRefid.orEmpty(),
           "teamRefid" to this.teamRefid,
           "filename" to this.projectName,
           "fileContents" to Base64.getEncoder().encodeToString(body),
@@ -364,6 +369,10 @@ class GPCloudDocument(private val teamRefid: String?,
         200 -> {
           val etagValue = resp.header("ETag")
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
+
+          val response = OBJECT_MAPPER.readValue(resp.rawBody, ProjectWriteResponse::class.java)
+          println(response)
+          this.projectRefid = response.projectRefid
           val fetch = FetchResult(
               this@GPCloudDocument,
               this.mirrorOptions?.lastOnlineChecksum ?: "",
@@ -390,7 +399,7 @@ class GPCloudDocument(private val teamRefid: String?,
           }
         }
         else -> {
-          val respBody = resp.body.toString(com.google.common.base.Charsets.UTF_8)
+          val respBody = resp.decodedBody.toString(com.google.common.base.Charsets.UTF_8)
           println(respBody)
           throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.code}: ${resp.reason}")
         }
