@@ -27,18 +27,15 @@ public class LoadDistribution {
   public static class Load {
     public float load;
 
-    public final Task refTask;
-
-    Load(Date startDate, Date endDate, float load, Task ref) {
+    Load(Date startDate, Date endDate, float load) {
       this.load = load;
-      this.refTask = ref;
       this.startDate = startDate;
       this.endDate = endDate;
     }
 
     @Override
     public String toString() {
-      return "start=" + this.startDate + " load=" + this.load + " refTask = " + this.refTask;
+      return "start=" + this.startDate + " load=" + this.load;
     }
 
     public boolean isResourceUnavailable() {
@@ -49,17 +46,32 @@ public class LoadDistribution {
     public final Date endDate;
   }
 
+  public static class TaskLoad extends Load{
+    public final Task refTask;
+
+    TaskLoad(Date startDate, Date endDate, float load, Task ref) {
+      super(startDate, endDate, load);
+
+      this.refTask = ref;
+    }
+
+    @Override
+    public String toString() {
+      return "start=" + this.startDate + " load=" + this.load + " refTask = " + this.refTask;
+    }
+  }
+
   private final List<Load> myDaysOff = new LinkedList<Load>();
 
   private final List<Load> myLoads = new ArrayList<Load>();
 
-  private final List<Load> myTasksLoads = new ArrayList<Load>();
+  private final List<TaskLoad> myTasksLoads = new ArrayList<TaskLoad>();
 
   private final HumanResource myResource;
 
   public LoadDistribution(HumanResource resource) {
-    myLoads.add(new Load(null, null, 0, null));
-    myDaysOff.add(new Load(null, null, 0, null));
+    myLoads.add(new Load(null, null, 0));
+    myDaysOff.add(new Load(null, null, 0));
     myResource = resource;
     ResourceAssignment[] assignments = myResource.getAssignments();
     for (int j = 0; j < assignments.length; j++) {
@@ -98,7 +110,7 @@ public class LoadDistribution {
   }
 
   private void addLoad(Date startDate, Date endDate, float load, List<Load> loads, Task t) {
-    Load taskLoad = new Load(startDate, endDate, load, t);
+    TaskLoad taskLoad = new TaskLoad(startDate, endDate, load, t);
 
     myTasksLoads.add(taskLoad);
 
@@ -117,14 +129,14 @@ public class LoadDistribution {
         }
         idxStart = i;
         if (startDate.compareTo(nextLoad.startDate) < 0) {
-          loads.add(i, new Load(startDate, null, currentLoad, null));
+          loads.add(i, new Load(startDate, null, currentLoad));
         }
         break;
       }
     }
     if (idxStart == -1) {
       idxStart = loads.size();
-      loads.add(new Load(startDate, null, 0, t));
+      loads.add(new Load(startDate, null, 0));
     }
     int idxEnd = -1;
     if (endDate == null) {
@@ -139,14 +151,14 @@ public class LoadDistribution {
         idxEnd = i;
         if (endDate.compareTo(nextLoad.startDate) < 0) {
           Load prevLoad = loads.get(i - 1);
-          loads.add(i, new Load(endDate, null, prevLoad.load - load, null));
+          loads.add(i, new Load(endDate, null, prevLoad.load - load));
         }
         break;
       }
     }
     if (idxEnd == -1) {
       idxEnd = loads.size();
-      loads.add(new Load(endDate, null, 0, t));
+      loads.add(new Load(endDate, null, 0));
     }
   }
 
@@ -166,15 +178,15 @@ public class LoadDistribution {
    * @return a list of lists of <code>Load</code> instances. Each list contains
    *         a set of <code>Load</code>
    */
-  public List<Load> getTasksLoads() {
+  public List<TaskLoad> getTasksLoads() {
     return myTasksLoads;
   }
 
   public Map<Task, List<Load>> getSeparatedTaskLoads() {
     HashMap<Task, List<Load>> result = new HashMap<Task, List<Load>>();
-    List<Load> taskLoads = getTasksLoads();
+    List<TaskLoad> taskLoads = getTasksLoads();
     for (int i = 0; i < taskLoads.size(); i++) {
-      Load nextLoad = taskLoads.get(i);
+      TaskLoad nextLoad = taskLoads.get(i);
       Task nextTask = nextLoad.refTask;
       List<Load> partition = result.get(nextTask);
       if (partition == null) {

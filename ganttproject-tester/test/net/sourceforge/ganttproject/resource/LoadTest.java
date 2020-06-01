@@ -24,8 +24,8 @@ import junit.framework.TestCase;
  */
 public class LoadTest extends TestCase {
   public void testLoadIsUnavailable() {
-    LoadDistribution.Load load_day_of = new LoadDistribution.Load(null, null, -1f, null);
-    LoadDistribution.Load load_working = new LoadDistribution.Load(null, null, 100f, null);
+    LoadDistribution.Load load_day_of = new LoadDistribution.Load(null, null, -1f);
+    LoadDistribution.Load load_working = new LoadDistribution.Load(null, null, 100f);
 
     assertTrue(load_day_of.isResourceUnavailable());
     assertFalse(load_working.isResourceUnavailable());

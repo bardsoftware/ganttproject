@@ -81,7 +81,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
       }
       ypos += getConfig().getRowHeight();
       Canvas.Line nextLine = getPrimitiveContainer().createLine(0, ypos,
-          (int) getChartModel().getBounds().getWidth(), ypos);
+              (int) getChartModel().getBounds().getWidth(), ypos);
       nextLine.setForegroundColor(Color.GRAY);
     }
   }

@@ -378,6 +378,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   @Override
   public OffsetList getDefaultUnitOffsets() {
+    if(getBottomUnit() == null){
+      System.out.println(0);
+    }
     if (getBottomUnit().equals(getTimeUnitStack().getDefaultTimeUnit())) {
       return getBottomUnitOffsets();
     }
