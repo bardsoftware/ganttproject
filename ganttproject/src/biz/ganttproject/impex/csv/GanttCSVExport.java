@@ -153,7 +153,11 @@ public class GanttCSVExport {
   }
 
   private String i18n(String key) {
-    return GanttLanguage.getInstance().getText(key);
+    String result = GanttLanguage.getInstance().getText(key);
+    if (result== null){
+      result = key;
+    }
+    return result;
   }
 
   private void writeTasks(SpreadsheetWriter writer) throws IOException {
@@ -230,6 +234,7 @@ public class GanttCSVExport {
   }
 
   private List<CustomPropertyDefinition> writeResourceHeaders(SpreadsheetWriter writer) throws IOException {
+    List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
     for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
@@ -245,7 +250,6 @@ public class GanttCSVExport {
         writer.print(defaultColumn.getName());
       }
     }
-    List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
     for (CustomPropertyDefinition nextDef : customFieldDefs) {
       writer.print(nextDef.getName());
     }
