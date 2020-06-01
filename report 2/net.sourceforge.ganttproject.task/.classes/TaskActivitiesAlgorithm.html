@@ -1,0 +1,134 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskActivitiesAlgorithm</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskActivitiesAlgorithm (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskActivitiesAlgorithm</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/ 13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarActivity;
+<i>25</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;public class TaskActivitiesAlgorithm {
+<i>29</i>&nbsp;  private final GPCalendarCalc myCalendar;
+<i>30</i>&nbsp;
+<b class="fc"><i>31</i>&nbsp;  public TaskActivitiesAlgorithm(GPCalendarCalc calendar) {</b>
+<b class="fc"><i>32</i>&nbsp;    myCalendar = calendar;</b>
+<b class="fc"><i>33</i>&nbsp;  }</b>
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  public void recalculateActivities(Task task, List&lt;TaskActivity&gt; output, Date startDate, Date endDate) {
+<b class="fc"><i>36</i>&nbsp;    output.clear();</b>
+<b class="fc"><i>37</i>&nbsp;    List&lt;GPCalendarActivity&gt; activities = myCalendar.getActivities(startDate, endDate);</b>
+<b class="fc"><i>38</i>&nbsp;    for (int i = 0; i &lt; activities.size(); i++) {</b>
+<b class="fc"><i>39</i>&nbsp;      GPCalendarActivity activity = activities.get(i);</b>
+<i>40</i>&nbsp;      TaskActivity nextTaskActivity;
+<b class="fc"><i>41</i>&nbsp;      if (activity.isWorkingTime()) {</b>
+<b class="fc"><i>42</i>&nbsp;        nextTaskActivity = new TaskActivityImpl(task, activity.getStart(), activity.getEnd());</b>
+<b class="fc"><i>43</i>&nbsp;      } else if (i &gt; 0 &amp;&amp; i + 1 &lt; activities.size()) {</b>
+<b class="fc"><i>44</i>&nbsp;        nextTaskActivity = new TaskActivityImpl(task, activity.getStart(), activity.getEnd(), 0);</b>
+<i>45</i>&nbsp;      } else {
+<i>46</i>&nbsp;        continue;
+<i>47</i>&nbsp;      }
+<b class="fc"><i>48</i>&nbsp;      output.add(nextTaskActivity);</b>
+<i>49</i>&nbsp;    }
+<b class="fc"><i>50</i>&nbsp;  }</b>
+<i>51</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

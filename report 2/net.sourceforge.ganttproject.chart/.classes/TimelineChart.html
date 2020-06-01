@@ -1,0 +1,112 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TimelineChart</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TimelineChart (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">TimelineChart$VScrollController</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>22</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;public interface TimelineChart extends Chart {
+<i>25</i>&nbsp;  interface VScrollController {
+<i>26</i>&nbsp;    boolean isScrollable();
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;    void scrollBy(int pixels);
+<i>29</i>&nbsp;  }
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  void setBottomUnitWidth(int width);
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  void setTopUnit(TimeUnit topUnit);
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  void setBottomUnit(TimeUnit bottomUnit);
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  // void paintChart(Graphics g);
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  void addRenderer(ChartRendererBase renderer);
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  void resetRenderers();
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  /**
+<i>44</i>&nbsp;   * Scrolls the chart by a number of days
+<i>45</i>&nbsp;   *
+<i>46</i>&nbsp;   * @param days
+<i>47</i>&nbsp;   *          are the number of days to scroll. If days &lt; 0 it scrolls to the
+<i>48</i>&nbsp;   *          right otherwise to the left.
+<i>49</i>&nbsp;   */
+<i>50</i>&nbsp;  public void scrollBy(TimeDuration duration);
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  void setVScrollController(VScrollController vscrollController);
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  ChartModel getModel();
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  ChartUIConfiguration getStyle();
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  void setStartOffset(int pixels);
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  void setTimelineHeight(int height);
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

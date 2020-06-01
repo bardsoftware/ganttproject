@@ -1,0 +1,155 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ScrollViewInteraction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.mouse</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ScrollViewInteraction (net.sourceforge.ganttproject.chart.mouse)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ScrollViewInteraction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.mouse;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.ChartComponentBase;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import java.awt.*;
+<i>26</i>&nbsp;import java.awt.event.InputEvent;
+<i>27</i>&nbsp;import java.awt.event.MouseEvent;
+<i>28</i>&nbsp;import java.awt.event.MouseWheelEvent;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;public class ScrollViewInteraction extends MouseInteractionBase implements MouseInteraction {
+<b class="nc"><i>31</i>&nbsp;  private final double myWheelFactor = Double.parseDouble(GPAction.getKeyStrokeText(&quot;mouse.wheel.factor&quot;));</b>
+<i>32</i>&nbsp;  private int myCurY;
+<i>33</i>&nbsp;  private int myCurX;
+<i>34</i>&nbsp;  private ScrollingSession myScrollingSession;
+<i>35</i>&nbsp;  private Component myComponent;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade) {
+<b class="nc"><i>38</i>&nbsp;    super(timelineFacade.getDateAt(0), timelineFacade);</b>
+<b class="nc"><i>39</i>&nbsp;    myComponent = e.getComponent();</b>
+<b class="nc"><i>40</i>&nbsp;    e.getComponent().setCursor(ChartComponentBase.CURSOR_DRAG);</b>
+<b class="nc"><i>41</i>&nbsp;    myScrollingSession = timelineFacade.createScrollingSession(e.getX(), e.getY());</b>
+<b class="nc"><i>42</i>&nbsp;    myCurX = e.getX();</b>
+<b class="nc"><i>43</i>&nbsp;    myCurY = e.getY();</b>
+<i>44</i>&nbsp;  }
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  @Override
+<i>47</i>&nbsp;  public void apply(MouseEvent event) {
+<b class="nc"><i>48</i>&nbsp;    if (event instanceof MouseWheelEvent) {</b>
+<b class="nc"><i>49</i>&nbsp;      MouseWheelEvent wheelEvent = (MouseWheelEvent) event;</b>
+<b class="nc"><i>50</i>&nbsp;      int scrollIncrement = (int)(</b>
+<b class="nc"><i>51</i>&nbsp;          Math.max(wheelEvent.getScrollAmount(), 10)</b>
+<b class="nc"><i>52</i>&nbsp;              * (wheelEvent.getWheelRotation() &lt; 0 ? myWheelFactor : -myWheelFactor)</b>
+<i>53</i>&nbsp;      );
+<b class="nc"><i>54</i>&nbsp;      if ((event.getModifiersEx() &amp; InputEvent.SHIFT_DOWN_MASK) == 0) {</b>
+<i>55</i>&nbsp;        // Vertical scroll
+<b class="nc"><i>56</i>&nbsp;        myCurY += scrollIncrement;</b>
+<i>57</i>&nbsp;      } else {
+<b class="nc"><i>58</i>&nbsp;        myCurX += scrollIncrement;</b>
+<i>59</i>&nbsp;      }
+<b class="nc"><i>60</i>&nbsp;    } else {</b>
+<b class="nc"><i>61</i>&nbsp;      myCurX = event.getX();</b>
+<b class="nc"><i>62</i>&nbsp;      myCurY = event.getY();</b>
+<i>63</i>&nbsp;    }
+<b class="nc"><i>64</i>&nbsp;    myScrollingSession.scrollTo(myCurX, myCurY);</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public void finish() {
+<b class="nc"><i>69</i>&nbsp;    myScrollingSession.finish();</b>
+<b class="nc"><i>70</i>&nbsp;    myComponent.setCursor(ChartComponentBase.DEFAULT_CURSOR);</b>
+<i>71</i>&nbsp;  }
+<i>72</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

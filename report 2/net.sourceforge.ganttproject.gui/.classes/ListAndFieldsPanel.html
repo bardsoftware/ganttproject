@@ -1,0 +1,155 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ListAndFieldsPanel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ListAndFieldsPanel (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ListAndFieldsPanel</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.BorderLayout;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import javax.swing.BorderFactory;
+<i>24</i>&nbsp;import javax.swing.Box;
+<i>25</i>&nbsp;import javax.swing.JComponent;
+<i>26</i>&nbsp;import javax.swing.JLabel;
+<i>27</i>&nbsp;import javax.swing.JPanel;
+<i>28</i>&nbsp;import javax.swing.SpringLayout;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;public class ListAndFieldsPanel&lt;T&gt; {
+<i>31</i>&nbsp;  private EditableList&lt;T&gt; myList;
+<i>32</i>&nbsp;  private JComponent myFields;
+<i>33</i>&nbsp;  private Box myPanel;
+<i>34</i>&nbsp;
+<b class="nc"><i>35</i>&nbsp;  public ListAndFieldsPanel(EditableList&lt;T&gt; list, JComponent fields) {</b>
+<b class="nc"><i>36</i>&nbsp;    myList = list;</b>
+<b class="nc"><i>37</i>&nbsp;    myFields = fields;</b>
+<i>38</i>&nbsp;  }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  public JComponent getComponent() {
+<b class="nc"><i>41</i>&nbsp;    if (myPanel == null) {</b>
+<b class="nc"><i>42</i>&nbsp;      SpringLayout topPanelLayout = new SpringLayout();</b>
+<b class="nc"><i>43</i>&nbsp;      JPanel topPanel = new JPanel(topPanelLayout);</b>
+<i>44</i>&nbsp;
+<b class="nc"><i>45</i>&nbsp;      JComponent depsComponent = myList.getTableComponent();</b>
+<b class="nc"><i>46</i>&nbsp;      JComponent titleComponent = new JLabel(myList.getTitle());</b>
+<b class="nc"><i>47</i>&nbsp;      JComponent actionsComponent = myList.getActionsComponent();</b>
+<b class="nc"><i>48</i>&nbsp;      topPanel.add(titleComponent);</b>
+<b class="nc"><i>49</i>&nbsp;      topPanel.add(actionsComponent);</b>
+<i>50</i>&nbsp;
+<b class="nc"><i>51</i>&nbsp;      topPanelLayout.putConstraint(SpringLayout.WEST, titleComponent, 0, SpringLayout.WEST, topPanel);</b>
+<b class="nc"><i>52</i>&nbsp;      topPanelLayout.putConstraint(SpringLayout.NORTH, titleComponent, 0, SpringLayout.NORTH, topPanel);</b>
+<i>53</i>&nbsp;
+<b class="nc"><i>54</i>&nbsp;      topPanelLayout.putConstraint(SpringLayout.NORTH, actionsComponent, 2, SpringLayout.SOUTH, titleComponent);</b>
+<b class="nc"><i>55</i>&nbsp;      topPanelLayout.putConstraint(SpringLayout.SOUTH, topPanel, 2, SpringLayout.SOUTH, actionsComponent);</b>
+<b class="nc"><i>56</i>&nbsp;      topPanelLayout.putConstraint(SpringLayout.WEST, actionsComponent, 0, SpringLayout.WEST, topPanel);</b>
+<i>57</i>&nbsp;
+<b class="nc"><i>58</i>&nbsp;      JPanel centerPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>59</i>&nbsp;      centerPanel.add(depsComponent, BorderLayout.CENTER);</b>
+<i>60</i>&nbsp;
+<b class="nc"><i>61</i>&nbsp;      myFields.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));</b>
+<b class="nc"><i>62</i>&nbsp;      centerPanel.add(myFields, BorderLayout.EAST);</b>
+<i>63</i>&nbsp;
+<b class="nc"><i>64</i>&nbsp;      myPanel = Box.createVerticalBox();</b>
+<b class="nc"><i>65</i>&nbsp;      myPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));</b>
+<b class="nc"><i>66</i>&nbsp;      myPanel.add(topPanel);</b>
+<b class="nc"><i>67</i>&nbsp;      myPanel.add(Box.createVerticalStrut(5));</b>
+<b class="nc"><i>68</i>&nbsp;      myPanel.add(centerPanel);</b>
+<i>69</i>&nbsp;    }
+<b class="nc"><i>70</i>&nbsp;    return myPanel;</b>
+<i>71</i>&nbsp;  }
+<i>72</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

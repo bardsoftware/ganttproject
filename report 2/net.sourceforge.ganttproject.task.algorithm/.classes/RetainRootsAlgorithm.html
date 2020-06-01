@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RetainRootsAlgorithm</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.algorithm</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RetainRootsAlgorithm (net.sourceforge.ganttproject.task.algorithm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RetainRootsAlgorithm</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (10/ 12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2012 GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp;the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp;(at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.algorithm;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Arrays;
+<i>22</i>&nbsp;import java.util.Collection;
+<i>23</i>&nbsp;import java.util.Set;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import com.google.common.base.Function;
+<i>26</i>&nbsp;import com.google.common.collect.Sets;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * Examines the given array of nodes and retains only those
+<i>30</i>&nbsp; * whose parents are not in the input array.
+<i>31</i>&nbsp; *
+<i>32</i>&nbsp; * @author dbarashev
+<i>33</i>&nbsp; *
+<i>34</i>&nbsp; * @param &lt;T&gt; Node type
+<i>35</i>&nbsp; */
+<b class="fc"><i>36</i>&nbsp;public class RetainRootsAlgorithm&lt;T&gt; {</b>
+<i>37</i>&nbsp;  public void run(T[] nodes, Function&lt;T, T&gt; getParent, Collection&lt;T&gt; output) {
+<b class="nc"><i>38</i>&nbsp;    run(Arrays.asList(nodes), getParent, output);</b>
+<b class="nc"><i>39</i>&nbsp;  }</b>
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  public void run(Collection&lt;T&gt; nodes, Function&lt;T, T&gt; getParent, Collection&lt;T&gt; output) {
+<b class="fc"><i>42</i>&nbsp;    final Set&lt;T&gt; set = Sets.newHashSet(nodes);</b>
+<b class="fc"><i>43</i>&nbsp;    for (T node : nodes) {</b>
+<b class="fc"><i>44</i>&nbsp;      for (T parent = getParent.apply(node); parent != null; parent = getParent.apply(parent)) {</b>
+<b class="fc"><i>45</i>&nbsp;        if (set.contains(parent)) {</b>
+<b class="fc"><i>46</i>&nbsp;          set.remove(node);</b>
+<b class="fc"><i>47</i>&nbsp;          break;</b>
+<i>48</i>&nbsp;        }
+<i>49</i>&nbsp;      }
+<b class="fc"><i>50</i>&nbsp;    }</b>
+<b class="fc"><i>51</i>&nbsp;    output.addAll(set);</b>
+<b class="fc"><i>52</i>&nbsp;  }</b>
+<i>53</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

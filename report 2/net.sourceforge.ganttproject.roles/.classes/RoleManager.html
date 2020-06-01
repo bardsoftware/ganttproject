@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RoleManager</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.roles</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RoleManager (net.sourceforge.ganttproject.roles)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">RoleManager$Access</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">RoleManager$Listener</td>
+  </tr>
+  <tr>
+    <td class="name">RoleManager$RoleEvent</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/ 4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/ 7)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.roles;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.EventListener;
+<i>22</i>&nbsp;import java.util.EventObject;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * @author athomas
+<i>26</i>&nbsp; */
+<i>27</i>&nbsp;public interface RoleManager {
+<i>28</i>&nbsp;  public RoleSet createRoleSet(String name);
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  public RoleSet[] getRoleSets();
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  /** Clear the role list */
+<i>33</i>&nbsp;  public void clear();
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  /** Return all roles except the default roles */
+<i>36</i>&nbsp;  // public String [] getRolesShort();
+<i>37</i>&nbsp;  public Role[] getProjectLevelRoles();
+<i>38</i>&nbsp;
+<b class="nc"><i>39</i>&nbsp;  public class Access {</b>
+<i>40</i>&nbsp;    public static RoleManager getInstance() {
+<b class="fc"><i>41</i>&nbsp;      return ourInstance;</b>
+<i>42</i>&nbsp;    }
+<i>43</i>&nbsp;
+<b class="fc"><i>44</i>&nbsp;    private static RoleManager ourInstance = new RoleManagerImpl();</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public static int DEFAULT_ROLES_NUMBER = 11;
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  public RoleSet getProjectRoleSet();
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public RoleSet getRoleSet(String rolesetName);
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  public Role[] getEnabledRoles();
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public Role getDefaultRole();
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  public Role getRole(String persistentID);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public void importData(RoleManager roleManager);
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  public void addRoleListener(Listener listener);
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  public void removeRoleListener(Listener listener);
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  public interface Listener extends EventListener {
+<i>66</i>&nbsp;    public void rolesChanged(RoleEvent e);
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  public class RoleEvent extends EventObject {
+<i>70</i>&nbsp;    private RoleSet myChangedRoleSet;
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;    public RoleEvent(RoleManager source, RoleSet changedRoleSet) {
+<b class="fc"><i>73</i>&nbsp;      super(source);</b>
+<b class="fc"><i>74</i>&nbsp;      myChangedRoleSet = changedRoleSet;</b>
+<b class="fc"><i>75</i>&nbsp;    }</b>
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;    public RoleSet getChangedRoleSet() {
+<b class="nc"><i>78</i>&nbsp;      return myChangedRoleSet;</b>
+<i>79</i>&nbsp;    }
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

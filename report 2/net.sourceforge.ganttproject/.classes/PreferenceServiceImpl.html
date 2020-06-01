@@ -1,0 +1,234 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: PreferenceServiceImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: PreferenceServiceImpl (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PreferenceServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.InputStream;
+<i>22</i>&nbsp;import java.io.OutputStream;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import org.eclipse.core.runtime.CoreException;
+<i>25</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>26</i>&nbsp;import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+<i>27</i>&nbsp;import org.eclipse.core.runtime.preferences.IExportedPreferences;
+<i>28</i>&nbsp;import org.eclipse.core.runtime.preferences.IPreferenceFilter;
+<i>29</i>&nbsp;import org.eclipse.core.runtime.preferences.IPreferencesService;
+<i>30</i>&nbsp;import org.eclipse.core.runtime.preferences.IScopeContext;
+<i>31</i>&nbsp;import org.osgi.service.prefs.Preferences;
+<i>32</i>&nbsp;
+<b class="nc"><i>33</i>&nbsp;public class PreferenceServiceImpl implements IPreferencesService {</b>
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  @Override
+<i>36</i>&nbsp;  public IStatus applyPreferences(IExportedPreferences preferences) throws CoreException {
+<i>37</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>38</i>&nbsp;    return null;</b>
+<i>39</i>&nbsp;  }
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  @Override
+<i>42</i>&nbsp;  public void applyPreferences(IEclipsePreferences node, IPreferenceFilter[] filters) throws CoreException {
+<i>43</i>&nbsp;    // TODO Auto-generated method stub
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public IStatus exportPreferences(IEclipsePreferences node, OutputStream output, String[] excludesList)
+<i>49</i>&nbsp;      throws CoreException {
+<i>50</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>51</i>&nbsp;    return null;</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public void exportPreferences(IEclipsePreferences node, IPreferenceFilter[] filters, OutputStream output)
+<i>56</i>&nbsp;      throws CoreException {
+<i>57</i>&nbsp;    // TODO Auto-generated method stub
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  @Override
+<i>62</i>&nbsp;  public String get(String key, String defaultValue, Preferences[] nodes) {
+<i>63</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>64</i>&nbsp;    return null;</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public boolean getBoolean(String qualifier, String key, boolean defaultValue, IScopeContext[] contexts) {
+<i>69</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>70</i>&nbsp;    return false;</b>
+<i>71</i>&nbsp;  }
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  @Override
+<i>74</i>&nbsp;  public byte[] getByteArray(String qualifier, String key, byte[] defaultValue, IScopeContext[] contexts) {
+<i>75</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>76</i>&nbsp;    return null;</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  @Override
+<i>80</i>&nbsp;  public String[] getDefaultLookupOrder(String qualifier, String key) {
+<i>81</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>82</i>&nbsp;    return null;</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  @Override
+<i>86</i>&nbsp;  public double getDouble(String qualifier, String key, double defaultValue, IScopeContext[] contexts) {
+<i>87</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>88</i>&nbsp;    return 0;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  @Override
+<i>92</i>&nbsp;  public float getFloat(String qualifier, String key, float defaultValue, IScopeContext[] contexts) {
+<i>93</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>94</i>&nbsp;    return 0;</b>
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  @Override
+<i>98</i>&nbsp;  public int getInt(String qualifier, String key, int defaultValue, IScopeContext[] contexts) {
+<i>99</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>100</i>&nbsp;    return 0;</b>
+<i>101</i>&nbsp;  }
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  @Override
+<i>104</i>&nbsp;  public long getLong(String qualifier, String key, long defaultValue, IScopeContext[] contexts) {
+<i>105</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>106</i>&nbsp;    return 0;</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public String[] getLookupOrder(String qualifier, String key) {
+<i>111</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>112</i>&nbsp;    return null;</b>
+<i>113</i>&nbsp;  }
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;  @Override
+<i>116</i>&nbsp;  public IEclipsePreferences getRootNode() {
+<i>117</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>118</i>&nbsp;    return null;</b>
+<i>119</i>&nbsp;  }
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  @Override
+<i>122</i>&nbsp;  public String getString(String qualifier, String key, String defaultValue, IScopeContext[] contexts) {
+<i>123</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>124</i>&nbsp;    return null;</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  @Override
+<i>128</i>&nbsp;  public IStatus importPreferences(InputStream input) throws CoreException {
+<i>129</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>130</i>&nbsp;    return null;</b>
+<i>131</i>&nbsp;  }
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  @Override
+<i>134</i>&nbsp;  public IPreferenceFilter[] matches(IEclipsePreferences node, IPreferenceFilter[] filters) throws CoreException {
+<i>135</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>136</i>&nbsp;    return null;</b>
+<i>137</i>&nbsp;  }
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;  @Override
+<i>140</i>&nbsp;  public IExportedPreferences readPreferences(InputStream input) throws CoreException {
+<i>141</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>142</i>&nbsp;    return null;</b>
+<i>143</i>&nbsp;  }
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  @Override
+<i>146</i>&nbsp;  public void setDefaultLookupOrder(String qualifier, String key, String[] order) {
+<i>147</i>&nbsp;    // TODO Auto-generated method stub
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  }
+<i>150</i>&nbsp;
+<i>151</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

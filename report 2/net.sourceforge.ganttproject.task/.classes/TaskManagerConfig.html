@@ -1,0 +1,86 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskManagerConfig</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskManagerConfig (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">TaskManagerConfig</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; LICENSE:
+<i>3</i>&nbsp;
+<i>4</i>&nbsp; This program is free software; you can redistribute it and/or modify
+<i>5</i>&nbsp; it under the terms of the GNU General Public License as published by
+<i>6</i>&nbsp; the Free Software Foundation; either version 3 of the License, or
+<i>7</i>&nbsp; (at your option) any later version.
+<i>8</i>&nbsp;
+<i>9</i>&nbsp; Copyright (C) 2004, GanttProject Development Team
+<i>10</i>&nbsp; */
+<i>11</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>14</i>&nbsp;import biz.ganttproject.core.option.ColorOption;
+<i>15</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>16</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationManager;
+<i>17</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;import java.awt.*;
+<i>20</i>&nbsp;import java.net.URL;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;/**
+<i>23</i>&nbsp; * Created by IntelliJ IDEA. User: bard
+<i>24</i>&nbsp; */
+<i>25</i>&nbsp;public interface TaskManagerConfig {
+<i>26</i>&nbsp;  Color getDefaultColor();
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;  ColorOption getDefaultColorOption();
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  GPCalendarCalc getCalendar();
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  TimeUnitStack getTimeUnitStack();
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  HumanResourceManager getResourceManager();
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  URL getProjectDocumentURL();
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  NotificationManager getNotificationManager();
+<i>39</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

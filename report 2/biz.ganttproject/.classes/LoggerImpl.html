@@ -1,0 +1,132 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: LoggerImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: LoggerImpl (biz.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoggerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (2/ 12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2020 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an open-source project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import org.slf4j.LoggerFactory
+<i>22</i>&nbsp;import org.slf4j.MDC
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>26</i>&nbsp; */
+<i>27</i>&nbsp;interface LoggerApi {
+<i>28</i>&nbsp;  fun error(msg: String, vararg params: Any, kv: Map&lt;String, Any&gt; = emptyMap(), exception: Exception? = null)
+<i>29</i>&nbsp;  fun debug(msg: String, vararg params: Any, kv: Map&lt;String, Any&gt; = emptyMap())
+<i>30</i>&nbsp;}
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;class LoggerImpl(name: String) : LoggerApi {</b>
+<b class="fc"><i>33</i>&nbsp;  private val delegate = LoggerFactory.getLogger(name)</b>
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  override fun error(msg: String, vararg params: Any, kv: Map&lt;String, Any&gt;, exception: Exception?) {
+<b class="nc"><i>36</i>&nbsp;    kv.mapValues { it.value?.toString() }.filterValues { it != null }</b>
+<b class="nc"><i>37</i>&nbsp;        .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }</b>
+<b class="nc"><i>38</i>&nbsp;    delegate.error(msg, params, exception)</b>
+<b class="nc"><i>39</i>&nbsp;    MDC.clear()</b>
+<b class="nc"><i>40</i>&nbsp;  }</b>
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  override fun debug(msg: String, vararg params: Any, kv: Map&lt;String, Any&gt;) {
+<b class="nc"><i>43</i>&nbsp;    kv.mapValues { it.value?.toString() }.filterValues { it != null }</b>
+<b class="nc"><i>44</i>&nbsp;        .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }</b>
+<b class="nc"><i>45</i>&nbsp;    delegate.debug(msg, params)</b>
+<b class="nc"><i>46</i>&nbsp;    MDC.clear()</b>
+<b class="nc"><i>47</i>&nbsp;  }</b>
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

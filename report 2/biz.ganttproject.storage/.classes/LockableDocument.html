@@ -1,0 +1,266 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: LockableDocument</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.storage</a> ]
+</div>
+
+<h1>Coverage Summary for Class: LockableDocument (biz.ganttproject.storage)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">LockableDocument</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.storage
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.storage.cloud.GPCloudOptions
+<i>22</i>&nbsp;import com.fasterxml.jackson.databind.JsonNode
+<i>23</i>&nbsp;import com.google.common.hash.Hashing
+<i>24</i>&nbsp;import com.google.common.io.ByteStreams
+<i>25</i>&nbsp;import javafx.beans.property.ObjectProperty
+<i>26</i>&nbsp;import javafx.beans.value.ObservableBooleanValue
+<i>27</i>&nbsp;import javafx.beans.value.ObservableObjectValue
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.document.Document
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.document.ProxyDocument
+<i>30</i>&nbsp;import java.io.File
+<i>31</i>&nbsp;import java.nio.file.Paths
+<i>32</i>&nbsp;import java.time.Duration
+<i>33</i>&nbsp;import java.util.concurrent.CompletableFuture
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>37</i>&nbsp; */
+<i>38</i>&nbsp;class DocumentUri(private val components: List&lt;String&gt;,
+<i>39</i>&nbsp;                  private val isAbsolute: Boolean = true,
+<i>40</i>&nbsp;                  private val root: String = &quot;/&quot;) {
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  fun isAbsolute(): Boolean {
+<i>43</i>&nbsp;    return this.isAbsolute
+<i>44</i>&nbsp;  }
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  fun getNameCount(): Int {
+<i>47</i>&nbsp;    return this.components.size
+<i>48</i>&nbsp;  }
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  fun subpath(start: Int, end: Int): DocumentUri {
+<i>51</i>&nbsp;    val resultAbsolute = if (start == 0) this.isAbsolute else false
+<i>52</i>&nbsp;    return DocumentUri(this.components.subList(start, end), resultAbsolute, this.root)
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  fun getRoot(): DocumentUri {
+<i>56</i>&nbsp;    return DocumentUri(listOf(), true, this.root)
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  fun getName(idx: Int): String {
+<i>60</i>&nbsp;    return this.components[idx]
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  fun getFileName(): String {
+<i>64</i>&nbsp;    return this.components.last()
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  fun getParent(): DocumentUri {
+<i>68</i>&nbsp;    if (this.components.isEmpty()) {
+<i>69</i>&nbsp;      return this
+<i>70</i>&nbsp;    }
+<i>71</i>&nbsp;    return DocumentUri(this.components.subList(0, this.components.size - 1), this.isAbsolute, this.root)
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  fun resolve(name: String): DocumentUri {
+<i>75</i>&nbsp;    if (name == &quot;&quot; || name == &quot;.&quot;) {
+<i>76</i>&nbsp;      return this
+<i>77</i>&nbsp;    }
+<i>78</i>&nbsp;    if (name == &quot;..&quot;) {
+<i>79</i>&nbsp;      return getParent()
+<i>80</i>&nbsp;    }
+<i>81</i>&nbsp;    return DocumentUri(this.components.toMutableList().apply {
+<i>82</i>&nbsp;      add(name)
+<i>83</i>&nbsp;      toList()
+<i>84</i>&nbsp;    }, this.isAbsolute, this.root)
+<i>85</i>&nbsp;  }
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  fun resolve(path: DocumentUri): DocumentUri {
+<i>88</i>&nbsp;    if (path.isAbsolute) {
+<i>89</i>&nbsp;      return path
+<i>90</i>&nbsp;    }
+<i>91</i>&nbsp;    var result = this
+<i>92</i>&nbsp;    for (idx in 0 until path.getNameCount()) {
+<i>93</i>&nbsp;      result = result.resolve(path.getName(idx))
+<i>94</i>&nbsp;    }
+<i>95</i>&nbsp;    return result
+<i>96</i>&nbsp;  }
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;  fun normalize(): DocumentUri {
+<i>99</i>&nbsp;    return this.getRoot().resolve(DocumentUri(this.components, false, this.root))
+<i>100</i>&nbsp;  }
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;  fun getRootName(): String {
+<i>103</i>&nbsp;    return this.root
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  override fun equals(other: Any?): Boolean {
+<i>107</i>&nbsp;    if (this === other) return true
+<i>108</i>&nbsp;    if (javaClass != other?.javaClass) return false
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;    other as DocumentUri
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;    if (components != other.components) return false
+<i>113</i>&nbsp;    if (isAbsolute != other.isAbsolute) return false
+<i>114</i>&nbsp;    if (root != other.root) return false
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;    return true
+<i>117</i>&nbsp;  }
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  override fun hashCode(): Int {
+<i>120</i>&nbsp;    var result = components.hashCode()
+<i>121</i>&nbsp;    result = 31 * result + isAbsolute.hashCode()
+<i>122</i>&nbsp;    result = 31 * result + root.hashCode()
+<i>123</i>&nbsp;    return result
+<i>124</i>&nbsp;  }
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  companion object LocalDocument {
+<i>128</i>&nbsp;    fun toFile(path: DocumentUri): File {
+<i>129</i>&nbsp;      val filePath = java.nio.file.Paths.get(path.root, *path.components.toTypedArray())
+<i>130</i>&nbsp;      return filePath.toFile()
+<i>131</i>&nbsp;    }
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;    fun createPath(file: File): DocumentUri {
+<i>134</i>&nbsp;      return createPath(file.toPath())
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;    fun createPath(pathAsString: String): DocumentUri {
+<i>138</i>&nbsp;      return createPath(Paths.get(pathAsString))
+<i>139</i>&nbsp;    }
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;    private fun createPath(filePath: java.nio.file.Path): DocumentUri {
+<i>142</i>&nbsp;      val isAbsolute = filePath.isAbsolute
+<i>143</i>&nbsp;      val root = if (filePath.isAbsolute) filePath.root.toString() else &quot;&quot;
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;      val components = mutableListOf&lt;String&gt;()
+<i>146</i>&nbsp;      for (idx in 0 until filePath.nameCount) {
+<i>147</i>&nbsp;        components.add(filePath.getName(idx).toString())
+<i>148</i>&nbsp;      }
+<i>149</i>&nbsp;      return DocumentUri(components, isAbsolute, root)
+<i>150</i>&nbsp;    }
+<i>151</i>&nbsp;  }
+<i>152</i>&nbsp;}
+<i>153</i>&nbsp;
+<i>154</i>&nbsp;data class LockStatus(val locked: Boolean,
+<i>155</i>&nbsp;                      val lockOwnerName: String? = null,
+<i>156</i>&nbsp;                      val lockOwnerEmail: String? = null,
+<i>157</i>&nbsp;                      val lockOwnerId: String? = null,
+<i>158</i>&nbsp;                      val raw: JsonNode? = null) {
+<i>159</i>&nbsp;  val lockedBySomeone: Boolean get() = locked &amp;&amp; (lockOwnerId != GPCloudOptions.userId.value)
+<i>160</i>&nbsp;  val lockExpiration: Long get() = raw?.get(&quot;expirationEpochTs&quot;)?.longValue() ?: -1
+<i>161</i>&nbsp;}
+<i>162</i>&nbsp;
+<i>163</i>&nbsp;interface LockableDocument {
+<i>164</i>&nbsp;  fun toggleLocked(duration: Duration?): CompletableFuture&lt;LockStatus&gt;
+<i>165</i>&nbsp;
+<i>166</i>&nbsp;  val status: ObservableObjectValue&lt;LockStatus&gt;
+<i>167</i>&nbsp;}
+<i>168</i>&nbsp;
+<i>169</i>&nbsp;class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
+<i>170</i>&nbsp;class VersionMismatchException : RuntimeException()
+<i>171</i>&nbsp;class ForbiddenException : RuntimeException()
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;enum class OnlineDocumentMode {
+<i>174</i>&nbsp;  ONLINE_ONLY, MIRROR, OFFLINE_ONLY
+<i>175</i>&nbsp;}
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;data class FetchResult(val onlineDocument: OnlineDocument,
+<i>178</i>&nbsp;                       val syncChecksum: String,
+<i>179</i>&nbsp;                       val syncVersion: Long,
+<i>180</i>&nbsp;                       val actualChecksum: String,
+<i>181</i>&nbsp;                       val actualVersion: Long,
+<i>182</i>&nbsp;                       val body: ByteArray,
+<i>183</i>&nbsp;                       val updateFxn: (FetchResult)-&gt;Unit = {}) {
+<i>184</i>&nbsp;  var useMirror: Boolean = false
+<i>185</i>&nbsp;  fun update() = updateFxn(this)
+<i>186</i>&nbsp;}
+<i>187</i>&nbsp;
+<i>188</i>&nbsp;data class LatestVersion(val timestamp: Long, val author: String)
+<i>189</i>&nbsp;
+<i>190</i>&nbsp;interface OnlineDocument {
+<i>191</i>&nbsp;  var offlineMirror: Document?
+<i>192</i>&nbsp;  val isMirrored: ObservableBooleanValue
+<i>193</i>&nbsp;  val mode: ObjectProperty&lt;OnlineDocumentMode&gt;
+<i>194</i>&nbsp;  val fetchResultProperty: ObservableObjectValue&lt;FetchResult?&gt;
+<i>195</i>&nbsp;  val latestVersionProperty: ObservableObjectValue&lt;LatestVersion&gt;
+<i>196</i>&nbsp;
+<i>197</i>&nbsp;  fun setMirrored(mirrored: Boolean)
+<i>198</i>&nbsp;  suspend fun fetch(): FetchResult
+<i>199</i>&nbsp;  suspend fun fetchVersion(version: Long): FetchResult
+<i>200</i>&nbsp;  fun write(force: Boolean = false)
+<i>201</i>&nbsp;}
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;fun (Document).asOnlineDocument(): OnlineDocument? {
+<i>204</i>&nbsp;  if (this is ProxyDocument) {
+<i>205</i>&nbsp;    if (this.realDocument is OnlineDocument) {
+<i>206</i>&nbsp;      return this.realDocument as OnlineDocument
+<i>207</i>&nbsp;    }
+<i>208</i>&nbsp;  }
+<i>209</i>&nbsp;  return null
+<i>210</i>&nbsp;}
+<i>211</i>&nbsp;
+<i>212</i>&nbsp;fun (Document).checksum(): String {
+<i>213</i>&nbsp;  return Hashing.crc32c().hashBytes(ByteStreams.toByteArray(this.inputStream)).toString()
+<i>214</i>&nbsp;}
+<i>215</i>&nbsp;
+<i>216</i>&nbsp;fun (ByteArray).checksum(): String {
+<i>217</i>&nbsp;  return Hashing.crc32c().hashBytes(this).toString()
+<i>218</i>&nbsp;}
+<i>219</i>&nbsp;
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

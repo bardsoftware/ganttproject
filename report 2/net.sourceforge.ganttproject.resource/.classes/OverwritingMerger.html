@@ -1,0 +1,189 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OverwritingMerger</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.resource</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OverwritingMerger (net.sourceforge.ganttproject.resource)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OverwritingMerger</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.8%
+  </span>
+  <span class="absValue">
+    (34/ 48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.resource;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.HashMap;
+<i>22</i>&nbsp;import java.util.Iterator;
+<i>23</i>&nbsp;import java.util.List;
+<i>24</i>&nbsp;import java.util.Map;
+<i>25</i>&nbsp;import java.util.Map.Entry;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import biz.ganttproject.core.calendar.GanttDaysOff;
+<i>28</i>&nbsp;import biz.ganttproject.core.option.EnumerationOption;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.CustomProperty;
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;public class OverwritingMerger implements HumanResourceMerger {</b>
+<i>33</i>&nbsp;  private final EnumerationOption myMergeOption;
+<b class="fc"><i>34</i>&nbsp;  private final Map&lt;String, HumanResource&gt; myCache = new HashMap&lt;String, HumanResource&gt;();</b>
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;  public OverwritingMerger(EnumerationOption mergeOption) {</b>
+<b class="fc"><i>37</i>&nbsp;    myMergeOption = mergeOption;</b>
+<b class="fc"><i>38</i>&nbsp;  }</b>
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public void merge(Map&lt;HumanResource, HumanResource&gt; foreign2native) {
+<b class="fc"><i>42</i>&nbsp;    for (Iterator&lt;Entry&lt;HumanResource, HumanResource&gt;&gt; entries = foreign2native.entrySet().iterator(); entries.hasNext();) {</b>
+<b class="fc"><i>43</i>&nbsp;      Map.Entry&lt;HumanResource, HumanResource&gt; entry = entries.next();</b>
+<b class="fc"><i>44</i>&nbsp;      merge(entry.getKey(), entry.getValue());</b>
+<b class="fc"><i>45</i>&nbsp;    }</b>
+<b class="fc"><i>46</i>&nbsp;  }</b>
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  private void merge(HumanResource mergeFrom, HumanResource mergeTo) {
+<b class="fc"><i>49</i>&nbsp;    if (mergeFrom.getDaysOff() != null) {</b>
+<b class="fc"><i>50</i>&nbsp;      for (int i = 0; i &lt; mergeFrom.getDaysOff().size(); i++) {</b>
+<b class="nc"><i>51</i>&nbsp;        mergeTo.addDaysOff(GanttDaysOff.create((GanttDaysOff) mergeFrom.getDaysOff().get(i)));</b>
+<i>52</i>&nbsp;      }
+<i>53</i>&nbsp;    }
+<b class="fc"><i>54</i>&nbsp;    mergeTo.setName(mergeFrom.getName());</b>
+<b class="fc"><i>55</i>&nbsp;    mergeTo.setDescription(mergeFrom.getDescription());</b>
+<b class="fc"><i>56</i>&nbsp;    mergeTo.setMail(mergeFrom.getMail());</b>
+<b class="fc"><i>57</i>&nbsp;    mergeTo.setPhone(mergeFrom.getPhone());</b>
+<b class="fc"><i>58</i>&nbsp;    mergeTo.setRole(mergeFrom.getRole());</b>
+<b class="fc"><i>59</i>&nbsp;    mergeTo.setStandardPayRate(mergeFrom.getStandardPayRate());</b>
+<b class="fc"><i>60</i>&nbsp;    List&lt;CustomProperty&gt; customProperties = mergeFrom.getCustomProperties();</b>
+<b class="fc"><i>61</i>&nbsp;    for (int i = 0; i &lt; customProperties.size(); i++) {</b>
+<b class="nc"><i>62</i>&nbsp;      CustomProperty nextProperty = customProperties.get(i);</b>
+<b class="nc"><i>63</i>&nbsp;      mergeTo.addCustomProperty(nextProperty.getDefinition(), nextProperty.getValueAsString());</b>
+<i>64</i>&nbsp;    }
+<b class="fc"><i>65</i>&nbsp;  }</b>
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr) {
+<b class="fc"><i>69</i>&nbsp;    if (MergeResourcesOption.NO.equals(myMergeOption.getValue())) {</b>
+<b class="nc"><i>70</i>&nbsp;      return null;</b>
+<i>71</i>&nbsp;    }
+<b class="fc"><i>72</i>&nbsp;    if (MergeResourcesOption.BY_ID.equals(myMergeOption.getValue())) {</b>
+<b class="fc"><i>73</i>&nbsp;      return nativeMgr.getById(foreign.getId());</b>
+<i>74</i>&nbsp;    }
+<b class="fc"><i>75</i>&nbsp;    if (MergeResourcesOption.BY_EMAIL.equals(myMergeOption.getValue())) {</b>
+<b class="nc"><i>76</i>&nbsp;      if (myCache.isEmpty()) {</b>
+<b class="nc"><i>77</i>&nbsp;        buildEmailCache(nativeMgr);</b>
+<i>78</i>&nbsp;      }
+<b class="nc"><i>79</i>&nbsp;      return myCache.get(foreign.getMail());</b>
+<i>80</i>&nbsp;    }
+<b class="fc"><i>81</i>&nbsp;    if (MergeResourcesOption.BY_NAME.equals(myMergeOption.getValue())) {</b>
+<b class="fc"><i>82</i>&nbsp;      if (myCache.isEmpty()) {</b>
+<b class="fc"><i>83</i>&nbsp;        buildNameCache(nativeMgr);</b>
+<i>84</i>&nbsp;      }
+<b class="fc"><i>85</i>&nbsp;      return myCache.get(foreign.getName());</b>
+<i>86</i>&nbsp;    }
+<b class="nc"><i>87</i>&nbsp;    assert false : &quot;We should not be here. Option ID=&quot; + myMergeOption.getValue();</b>
+<b class="nc"><i>88</i>&nbsp;    return null;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  private void buildNameCache(HumanResourceManager nativeMgr) {
+<b class="fc"><i>92</i>&nbsp;    List&lt;HumanResource&gt; resources = nativeMgr.getResources();</b>
+<b class="fc"><i>93</i>&nbsp;    for (int i = 0; i &lt; resources.size(); i++) {</b>
+<b class="fc"><i>94</i>&nbsp;      HumanResource hr = resources.get(i);</b>
+<b class="fc"><i>95</i>&nbsp;      myCache.put(hr.getName(), hr);</b>
+<i>96</i>&nbsp;    }
+<b class="fc"><i>97</i>&nbsp;  }</b>
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  private void buildEmailCache(HumanResourceManager nativeMgr) {
+<b class="nc"><i>100</i>&nbsp;    List&lt;HumanResource&gt; resources = nativeMgr.getResources();</b>
+<b class="nc"><i>101</i>&nbsp;    for (int i = 0; i &lt; resources.size(); i++) {</b>
+<b class="nc"><i>102</i>&nbsp;      HumanResource hr = resources.get(i);</b>
+<b class="nc"><i>103</i>&nbsp;      myCache.put(hr.getMail(), hr);</b>
+<i>104</i>&nbsp;    }
+<b class="nc"><i>105</i>&nbsp;  }</b>
+<i>106</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,138 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RolePersistentID</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.roles</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RolePersistentID (net.sourceforge.ganttproject.roles)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RolePersistentID</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (10/ 14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.roles;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;public class RolePersistentID {
+<i>22</i>&nbsp;  private static final String ROLESET_DELIMITER = &quot;:&quot;;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  private final String myRoleSetID;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;  private final int myRoleID;
+<i>27</i>&nbsp;
+<b class="fc"><i>28</i>&nbsp;  public RolePersistentID(String persistentID) {</b>
+<b class="fc"><i>29</i>&nbsp;    int posDelimiter = persistentID.lastIndexOf(ROLESET_DELIMITER);</b>
+<b class="fc"><i>30</i>&nbsp;    String rolesetName = posDelimiter == -1 ? null : persistentID.substring(0, posDelimiter);</b>
+<b class="fc"><i>31</i>&nbsp;    String roleIDasString = posDelimiter == -1 ? persistentID : persistentID.substring(posDelimiter + 1);</b>
+<i>32</i>&nbsp;    int roleID;
+<i>33</i>&nbsp;    try {
+<b class="fc"><i>34</i>&nbsp;      roleID = Integer.parseInt(roleIDasString);</b>
+<b class="nc"><i>35</i>&nbsp;    } catch (NumberFormatException e) {</b>
+<b class="nc"><i>36</i>&nbsp;      roleID = 0;</b>
+<b class="fc"><i>37</i>&nbsp;    }</b>
+<b class="fc"><i>38</i>&nbsp;    myRoleID = roleID;</b>
+<b class="fc"><i>39</i>&nbsp;    myRoleSetID = rolesetName;</b>
+<i>40</i>&nbsp;
+<b class="fc"><i>41</i>&nbsp;  }</b>
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  public String getRoleSetID() {
+<b class="nc"><i>44</i>&nbsp;    return myRoleSetID;</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public int getRoleID() {
+<b class="fc"><i>48</i>&nbsp;    return myRoleID;</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public String asString() {
+<b class="nc"><i>52</i>&nbsp;    return myRoleSetID + ROLESET_DELIMITER + myRoleID;</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

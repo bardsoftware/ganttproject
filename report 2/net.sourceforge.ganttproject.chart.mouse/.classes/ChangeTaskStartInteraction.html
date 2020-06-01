@@ -1,0 +1,144 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ChangeTaskStartInteraction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.mouse</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ChangeTaskStartInteraction (net.sourceforge.ganttproject.chart.mouse)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ChangeTaskStartInteraction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.mouse;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.event.MouseEvent;
+<i>22</i>&nbsp;import java.util.Date;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.TaskMutator;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;public class ChangeTaskStartInteraction extends ChangeTaskBoundaryInteraction implements MouseInteraction {
+<i>31</i>&nbsp;  private TaskMutator myMutator;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  public ChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary, TimelineFacade chartDateGrid,
+<i>34</i>&nbsp;      UIFacade uiFacade, RecalculateTaskScheduleAlgorithm taskScheduleAlgorithm) {
+<i>35</i>&nbsp;
+<b class="nc"><i>36</i>&nbsp;    super(taskBoundary.getTask().getEnd().getTime(), taskBoundary.getTask(), chartDateGrid, uiFacade,</b>
+<i>37</i>&nbsp;        taskScheduleAlgorithm);
+<b class="nc"><i>38</i>&nbsp;    myMutator = getTask().createMutator();</b>
+<i>39</i>&nbsp;  }
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  @Override
+<i>42</i>&nbsp;  public void apply(MouseEvent e) {
+<b class="nc"><i>43</i>&nbsp;    Date dateUnderX = getChartDateGrid().getDateAt(e.getX());</b>
+<b class="nc"><i>44</i>&nbsp;    if (!dateUnderX.equals(getStartDate()) &amp;&amp; dateUnderX.before(getTask().getEnd().getTime())) {</b>
+<b class="nc"><i>45</i>&nbsp;      myMutator.setStart(CalendarFactory.createGanttCalendar(dateUnderX));</b>
+<b class="nc"><i>46</i>&nbsp;      getTask().applyThirdDateConstraint();</b>
+<i>47</i>&nbsp;    }
+<b class="nc"><i>48</i>&nbsp;    updateTooltip(e);</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  @Override
+<i>52</i>&nbsp;  public void finish() {
+<b class="nc"><i>53</i>&nbsp;    super.finish(myMutator);</b>
+<b class="nc"><i>54</i>&nbsp;    getTask().applyThirdDateConstraint();</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  @Override
+<i>58</i>&nbsp;  protected String getNotesText() {
+<b class="nc"><i>59</i>&nbsp;    return getTask().getStart().toString();</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

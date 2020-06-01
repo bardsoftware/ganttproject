@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: XlsReaderImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.csv</a> ]
+</div>
+
+<h1>Coverage Summary for Class: XlsReaderImpl (biz.ganttproject.impex.csv)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">XlsReaderImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80.8%
+  </span>
+  <span class="absValue">
+    (21/ 26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2017 Roman Torkhov, BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.impex.csv;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.collect.Iterables;
+<i>22</i>&nbsp;import com.google.common.collect.Iterators;
+<i>23</i>&nbsp;import com.google.common.collect.Lists;
+<i>24</i>&nbsp;import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+<i>25</i>&nbsp;import org.apache.poi.ss.usermodel.Cell;
+<i>26</i>&nbsp;import org.apache.poi.ss.usermodel.Row;
+<i>27</i>&nbsp;import org.apache.poi.ss.usermodel.Workbook;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import java.io.IOException;
+<i>30</i>&nbsp;import java.io.InputStream;
+<i>31</i>&nbsp;import java.util.Iterator;
+<i>32</i>&nbsp;import java.util.LinkedHashMap;
+<i>33</i>&nbsp;import java.util.List;
+<i>34</i>&nbsp;import java.util.Map;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;/**
+<i>37</i>&nbsp; * @author torkhov
+<i>38</i>&nbsp; */
+<i>39</i>&nbsp;class XlsReaderImpl implements SpreadsheetReader {
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  private final Workbook myBook;
+<i>42</i>&nbsp;  private final Map&lt;String, Integer&gt; myHeaders;
+<i>43</i>&nbsp;
+<b class="fc"><i>44</i>&nbsp;  XlsReaderImpl(InputStream is, List&lt;String&gt; columnHeaders) throws IOException {</b>
+<b class="fc"><i>45</i>&nbsp;    myBook = new HSSFWorkbook(is);</b>
+<b class="fc"><i>46</i>&nbsp;    myHeaders = initializeHeader(columnHeaders);</b>
+<b class="fc"><i>47</i>&nbsp;  }</b>
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  @Override
+<i>50</i>&nbsp;  public void close() throws IOException {
+<b class="fc"><i>51</i>&nbsp;    myBook.close();</b>
+<b class="fc"><i>52</i>&nbsp;  }</b>
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public Iterator&lt;SpreadsheetRecord&gt; iterator() {
+<b class="fc"><i>56</i>&nbsp;    return Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -&gt; new XlsRecordImpl(getCellValues(input), myHeaders));</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  private List&lt;String&gt; getCellValues(Row row) {
+<b class="fc"><i>60</i>&nbsp;    return Lists.newArrayList(Iterables.transform(row, Cell::getStringCellValue));</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  /**
+<i>64</i>&nbsp;   * This method was taken from {@link org.apache.commons.csv.CSVParser#initializeHeader}
+<i>65</i>&nbsp;   * Create the name to index mapping if the column headers not {@code null}.
+<i>66</i>&nbsp;   * @param columnHeaders column headers
+<i>67</i>&nbsp;   * @return the name to index mapping
+<i>68</i>&nbsp;   */
+<i>69</i>&nbsp;  private Map&lt;String, Integer&gt; initializeHeader(List&lt;String&gt; columnHeaders) {
+<b class="fc"><i>70</i>&nbsp;    Map&lt;String, Integer&gt; hdrMap = null;</b>
+<b class="fc"><i>71</i>&nbsp;    List&lt;String&gt; formatHeader = columnHeaders;</b>
+<b class="fc"><i>72</i>&nbsp;    if (formatHeader != null) {</b>
+<b class="fc"><i>73</i>&nbsp;      hdrMap = new LinkedHashMap&lt;&gt;();</b>
+<b class="fc"><i>74</i>&nbsp;      List&lt;String&gt; headerRecord = null;</b>
+<b class="fc"><i>75</i>&nbsp;      if (formatHeader.isEmpty()) {</b>
+<i>76</i>&nbsp;        // read the header from the first line of the file
+<b class="nc"><i>77</i>&nbsp;        Row row = myBook.getSheetAt(0).getRow(0);</b>
+<b class="nc"><i>78</i>&nbsp;        if (row != null) {</b>
+<b class="nc"><i>79</i>&nbsp;          headerRecord = getCellValues(row);</b>
+<i>80</i>&nbsp;        }
+<b class="nc"><i>81</i>&nbsp;      } else {</b>
+<b class="fc"><i>82</i>&nbsp;        headerRecord = formatHeader;</b>
+<i>83</i>&nbsp;      }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;      // build the name to index mappings
+<b class="fc"><i>86</i>&nbsp;      if (headerRecord != null) {</b>
+<b class="fc"><i>87</i>&nbsp;        for (int i = 0; i &lt; headerRecord.size(); i++) {</b>
+<b class="fc"><i>88</i>&nbsp;          String header = headerRecord.get(i);</b>
+<b class="fc"><i>89</i>&nbsp;          if (hdrMap.containsKey(header)) {</b>
+<b class="nc"><i>90</i>&nbsp;            throw new IllegalArgumentException(&quot;The header contains a duplicate name: \&quot;&quot; + header + &quot;\&quot; in &quot; + headerRecord);</b>
+<i>91</i>&nbsp;          }
+<b class="fc"><i>92</i>&nbsp;          hdrMap.put(header, i);</b>
+<i>93</i>&nbsp;        }
+<i>94</i>&nbsp;      }
+<i>95</i>&nbsp;    }
+<b class="fc"><i>96</i>&nbsp;    return hdrMap;</b>
+<i>97</i>&nbsp;  }
+<i>98</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

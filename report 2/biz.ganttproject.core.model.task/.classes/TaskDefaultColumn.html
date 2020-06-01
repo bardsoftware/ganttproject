@@ -1,0 +1,294 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskDefaultColumn</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.model.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskDefaultColumn (biz.ganttproject.core.model.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskDefaultColumn</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (12/ 15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.4%
+  </span>
+  <span class="absValue">
+    (38/ 44)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskDefaultColumn$Functions</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDefaultColumn$Functions$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDefaultColumn$Functions$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDefaultColumn$LocaleApi</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    76.2%
+  </span>
+  <span class="absValue">
+    (16/ 21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.3%
+  </span>
+  <span class="absValue">
+    (43/ 51)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.core.model.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>22</i>&nbsp;import biz.ganttproject.core.table.ColumnList.Column;
+<i>23</i>&nbsp;import com.google.common.base.Predicate;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.*;
+<i>26</i>&nbsp;import java.awt.*;
+<i>27</i>&nbsp;import java.util.ArrayList;
+<i>28</i>&nbsp;import java.util.Comparator;
+<i>29</i>&nbsp;import java.util.GregorianCalendar;
+<i>30</i>&nbsp;import java.util.List;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;/**
+<i>33</i>&nbsp; * Enumeration of built-in task properties.
+<i>34</i>&nbsp; *
+<i>35</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>36</i>&nbsp; */
+<b class="fc"><i>37</i>&nbsp;public enum TaskDefaultColumn {</b>
+<b class="fc"><i>38</i>&nbsp;  TYPE(new ColumnList.ColumnStub(&quot;tpd0&quot;, null, false, -1, -1), Icon.class, &quot;tableColType&quot;),</b>
+<b class="fc"><i>39</i>&nbsp;  PRIORITY(new ColumnList.ColumnStub(&quot;tpd1&quot;, null, false, -1, 50), Icon.class, &quot;tableColPriority&quot;),</b>
+<b class="fc"><i>40</i>&nbsp;  INFO(new ColumnList.ColumnStub(&quot;tpd2&quot;, null, false, -1, -1), Icon.class, &quot;tableColInfo&quot;, Functions.NOT_EDITABLE),</b>
+<b class="fc"><i>41</i>&nbsp;  NAME(new ColumnList.ColumnStub(&quot;tpd3&quot;, null, true, 0, 200), String.class, &quot;tableColName&quot;),</b>
+<b class="fc"><i>42</i>&nbsp;  BEGIN_DATE(new ColumnList.ColumnStub(&quot;tpd4&quot;, null, true, 1, 75), GregorianCalendar.class, &quot;tableColBegDate&quot;),</b>
+<b class="fc"><i>43</i>&nbsp;  END_DATE(new ColumnList.ColumnStub(&quot;tpd5&quot;, null, true, 2, 75), GregorianCalendar.class, &quot;tableColEndDate&quot;, null),</b>
+<b class="fc"><i>44</i>&nbsp;  DURATION(new ColumnList.ColumnStub(&quot;tpd6&quot;, null, false, -1, 50), Integer.class, &quot;tableColDuration&quot;, null),</b>
+<b class="fc"><i>45</i>&nbsp;  COMPLETION(new ColumnList.ColumnStub(&quot;tpd7&quot;, null, false, -1, 50), Integer.class, &quot;tableColCompletion&quot;),</b>
+<b class="fc"><i>46</i>&nbsp;  COORDINATOR(new ColumnList.ColumnStub(&quot;tpd8&quot;, null, false, -1, 200), String.class, &quot;tableColCoordinator&quot;, Functions.NOT_EDITABLE),</b>
+<b class="fc"><i>47</i>&nbsp;  PREDECESSORS(new ColumnList.ColumnStub(&quot;tpd9&quot;, null, false, -1, 200), String.class, &quot;tableColPredecessors&quot;),</b>
+<b class="fc"><i>48</i>&nbsp;  ID(new ColumnList.ColumnStub(&quot;tpd10&quot;, null, false, -1, 20), Integer.class, &quot;tableColID&quot;, Functions.NOT_EDITABLE),</b>
+<b class="fc"><i>49</i>&nbsp;  OUTLINE_NUMBER(new ColumnList.ColumnStub(&quot;tpd11&quot;, null, false, 4, 20), String.class, &quot;tableColOutline&quot;, Functions.NOT_EDITABLE),</b>
+<b class="fc"><i>50</i>&nbsp;  COST(new ColumnList.ColumnStub(&quot;tpd12&quot;, null, false, -1, 20), Double.class, &quot;tableColCost&quot;),</b>
+<b class="fc"><i>51</i>&nbsp;  RESOURCES(new ColumnList.ColumnStub(&quot;tpd13&quot;, null, false, -1, 20), String.class, &quot;resources&quot;, Functions.NOT_EDITABLE),</b>
+<b class="fc"><i>52</i>&nbsp;  COLOR(new ColumnList.ColumnStub(&quot;tpd14&quot;, null, false, -1, 20), Color.class, &quot;option.taskDefaultColor.label&quot;);</b>
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  public interface LocaleApi {
+<i>55</i>&nbsp;    String i18n(String key);
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;  private static LocaleApi ourLocaleApi;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public static void setLocaleApi(LocaleApi localeApi) {
+<b class="fc"><i>60</i>&nbsp;    ourLocaleApi = localeApi;</b>
+<b class="fc"><i>61</i>&nbsp;  }</b>
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  private final Column myDelegate;
+<i>64</i>&nbsp;  private final Class&lt;?&gt; myValueClass;
+<i>65</i>&nbsp;  private Predicate&lt;? extends Object&gt; myIsEditablePredicate;
+<i>66</i>&nbsp;  private final String myNameKey;
+<i>67</i>&nbsp;  private Comparator&lt;?&gt; mySortComparator;
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  private TaskDefaultColumn(ColumnList.Column delegate, Class&lt;?&gt; valueClass, String nameKey) {
+<b class="fc"><i>70</i>&nbsp;    this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);</b>
+<b class="fc"><i>71</i>&nbsp;  }</b>
+<i>72</i>&nbsp;
+<b class="fc"><i>73</i>&nbsp;  private TaskDefaultColumn(ColumnList.Column delegate, Class&lt;?&gt; valueClass, String nameKey, Predicate&lt;? extends Object&gt; isEditable) {</b>
+<b class="fc"><i>74</i>&nbsp;    myDelegate = delegate;</b>
+<b class="fc"><i>75</i>&nbsp;    myValueClass = valueClass;</b>
+<b class="fc"><i>76</i>&nbsp;    myIsEditablePredicate= isEditable;</b>
+<b class="fc"><i>77</i>&nbsp;    myNameKey = nameKey;</b>
+<b class="fc"><i>78</i>&nbsp;  }</b>
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  public Comparator&lt;?&gt; getSortComparator() {
+<b class="nc"><i>81</i>&nbsp;    return mySortComparator;</b>
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  public void setSortComparator(Comparator&lt;?&gt; sortComparator) {
+<b class="fc"><i>85</i>&nbsp;    mySortComparator = sortComparator;</b>
+<b class="fc"><i>86</i>&nbsp;  }</b>
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  public Column getStub() {
+<b class="fc"><i>89</i>&nbsp;    return myDelegate;</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  public static List&lt;Column&gt; getColumnStubs() {
+<b class="fc"><i>93</i>&nbsp;    List&lt;Column&gt; result = new ArrayList&lt;Column&gt;();</b>
+<b class="fc"><i>94</i>&nbsp;    for (TaskDefaultColumn dc : values()) {</b>
+<b class="fc"><i>95</i>&nbsp;      result.add(dc.myDelegate);</b>
+<i>96</i>&nbsp;    }
+<b class="fc"><i>97</i>&nbsp;    return result;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  public static TaskDefaultColumn find(String id) {
+<b class="nc"><i>101</i>&nbsp;    for (TaskDefaultColumn column : values()) {</b>
+<b class="nc"><i>102</i>&nbsp;      if (column.getStub().getID().equals(id)) {</b>
+<b class="nc"><i>103</i>&nbsp;        return column;</b>
+<i>104</i>&nbsp;      }
+<i>105</i>&nbsp;    }
+<b class="nc"><i>106</i>&nbsp;    return null;</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  public Class&lt;?&gt; getValueClass() {
+<b class="fc"><i>110</i>&nbsp;    return myValueClass;</b>
+<i>111</i>&nbsp;  }
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;  public &lt;T&gt; void setIsEditablePredicate(Predicate&lt;T&gt; predicate) {
+<b class="fc"><i>114</i>&nbsp;    myIsEditablePredicate = predicate;</b>
+<b class="fc"><i>115</i>&nbsp;  }</b>
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  public &lt;T&gt; boolean isEditable(T task) {
+<b class="fc"><i>118</i>&nbsp;    return ((Predicate&lt;T&gt;)myIsEditablePredicate).apply(task);</b>
+<i>119</i>&nbsp;  }
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  public String getNameKey() {
+<b class="fc"><i>122</i>&nbsp;    return myNameKey;</b>
+<i>123</i>&nbsp;  }
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;  public String getName() {
+<b class="nc"><i>126</i>&nbsp;    return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());</b>
+<i>127</i>&nbsp;  }
+<i>128</i>&nbsp;
+<b class="nc"><i>129</i>&nbsp;  static class Functions {</b>
+<b class="fc"><i>130</i>&nbsp;    static Predicate&lt;Object&gt; NOT_EDITABLE = new Predicate&lt;Object&gt;() {</b>
+<i>131</i>&nbsp;      @Override
+<i>132</i>&nbsp;      public boolean apply(Object input) {
+<b class="nc"><i>133</i>&nbsp;        return false;</b>
+<i>134</i>&nbsp;      }
+<i>135</i>&nbsp;    };
+<i>136</i>&nbsp;
+<b class="fc"><i>137</i>&nbsp;    static Predicate&lt;Object&gt; ALWAYS_EDITABLE = new Predicate&lt;Object&gt;() {</b>
+<i>138</i>&nbsp;      @Override
+<i>139</i>&nbsp;      public boolean apply(Object input) {
+<b class="fc"><i>140</i>&nbsp;        return true;</b>
+<i>141</i>&nbsp;      }
+<i>142</i>&nbsp;    };
+<i>143</i>&nbsp;  }
+<i>144</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

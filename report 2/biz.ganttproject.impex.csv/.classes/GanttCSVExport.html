@@ -1,0 +1,479 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttCSVExport</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.csv</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttCSVExport (biz.ganttproject.impex.csv)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttCSVExport</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 168)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttCSVExport$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 171)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2004-2012 Thomas Alexandre, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.impex.csv;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.model.task.TaskDefaultColumn;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.BooleanOption;
+<i>23</i>&nbsp;import com.google.common.base.Joiner;
+<i>24</i>&nbsp;import com.google.common.base.Objects;
+<i>25</i>&nbsp;import com.google.common.base.Preconditions;
+<i>26</i>&nbsp;import com.google.common.base.Predicate;
+<i>27</i>&nbsp;import com.google.common.base.Strings;
+<i>28</i>&nbsp;import com.google.common.collect.Iterables;
+<i>29</i>&nbsp;import com.google.common.collect.Lists;
+<i>30</i>&nbsp;import com.google.common.collect.Maps;
+<i>31</i>&nbsp;import com.google.common.collect.Sets;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.CustomProperty;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.GanttTask;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.ResourceDefaultColumn;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.io.CSVOptions;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.task.ResourceAssignment;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.task.TaskProperties;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.util.ColorConvertion;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.util.StringUtils;
+<i>50</i>&nbsp;import org.apache.commons.csv.CSVFormat;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;import java.io.IOException;
+<i>53</i>&nbsp;import java.io.OutputStream;
+<i>54</i>&nbsp;import java.util.Arrays;
+<i>55</i>&nbsp;import java.util.List;
+<i>56</i>&nbsp;import java.util.Map;
+<i>57</i>&nbsp;import java.util.Set;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;/**
+<i>60</i>&nbsp; * Class to export the project in CSV text format
+<i>61</i>&nbsp; *
+<i>62</i>&nbsp; * @author athomas
+<i>63</i>&nbsp; */
+<i>64</i>&nbsp;public class GanttCSVExport {
+<b class="nc"><i>65</i>&nbsp;  private static final Predicate&lt;ResourceAssignment&gt; COORDINATOR_PREDICATE = arg -&gt; arg.isCoordinator();</b>
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  private CSVOptions myCsvOptions;
+<i>69</i>&nbsp;  private final TaskManager myTaskManager;
+<i>70</i>&nbsp;  private final CustomPropertyManager myTaskCustomPropertyManager;
+<i>71</i>&nbsp;  private final HumanResourceManager myHumanResourceManager;
+<i>72</i>&nbsp;  private final CustomPropertyManager myHumanResourceCustomPropertyManager;
+<i>73</i>&nbsp;  private final RoleManager myRoleManager;
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  public GanttCSVExport(IGanttProject project, CSVOptions csvOptions) {
+<b class="nc"><i>76</i>&nbsp;    this(project.getTaskManager(), project.getHumanResourceManager(), project.getRoleManager(), csvOptions);</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;  GanttCSVExport(TaskManager taskManager, HumanResourceManager resourceManager, RoleManager roleManager, CSVOptions csvOptions) {</b>
+<b class="nc"><i>80</i>&nbsp;    myTaskManager = Preconditions.checkNotNull(taskManager);</b>
+<b class="nc"><i>81</i>&nbsp;    myTaskCustomPropertyManager = Preconditions.checkNotNull(taskManager.getCustomPropertyManager());</b>
+<b class="nc"><i>82</i>&nbsp;    myHumanResourceManager = Preconditions.checkNotNull(resourceManager);</b>
+<b class="nc"><i>83</i>&nbsp;    myHumanResourceCustomPropertyManager = Preconditions.checkNotNull(resourceManager.getCustomPropertyManager());</b>
+<b class="nc"><i>84</i>&nbsp;    myRoleManager = Preconditions.checkNotNull(roleManager);</b>
+<b class="nc"><i>85</i>&nbsp;    myCsvOptions = Preconditions.checkNotNull(csvOptions);</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  private CSVFormat getCSVFormat() {
+<b class="nc"><i>89</i>&nbsp;    CSVFormat format = CSVFormat.DEFAULT.withEscape(&#39;\\&#39;);</b>
+<b class="nc"><i>90</i>&nbsp;    if (myCsvOptions.sSeparatedChar.length() == 1) {</b>
+<b class="nc"><i>91</i>&nbsp;      format = format.withDelimiter(myCsvOptions.sSeparatedChar.charAt(0));</b>
+<i>92</i>&nbsp;    }
+<b class="nc"><i>93</i>&nbsp;    if (myCsvOptions.sSeparatedTextChar.length() == 1) {</b>
+<b class="nc"><i>94</i>&nbsp;      format = format.withQuote(myCsvOptions.sSeparatedTextChar.charAt(0));</b>
+<i>95</i>&nbsp;    }
+<i>96</i>&nbsp;
+<b class="nc"><i>97</i>&nbsp;    return format;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  public SpreadsheetWriter createWriter(OutputStream stream, SpreadsheetFormat format) throws IOException {
+<b class="nc"><i>101</i>&nbsp;    format = Preconditions.checkNotNull(format);</b>
+<i>102</i>&nbsp;
+<b class="nc"><i>103</i>&nbsp;    switch (format) {</b>
+<i>104</i>&nbsp;      case CSV:
+<b class="nc"><i>105</i>&nbsp;        return getCsvWriter(stream);</b>
+<i>106</i>&nbsp;      case XLS:
+<b class="nc"><i>107</i>&nbsp;        return getXlsWriter(stream);</b>
+<i>108</i>&nbsp;      default:
+<b class="nc"><i>109</i>&nbsp;        throw new IllegalArgumentException(&quot;Unsupported format == &quot; + format + &quot;!&quot;);</b>
+<i>110</i>&nbsp;    }
+<i>111</i>&nbsp;  }
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  private SpreadsheetWriter getCsvWriter(OutputStream stream) throws IOException {
+<b class="nc"><i>115</i>&nbsp;    return new CsvWriterImpl(stream, getCSVFormat(), myCsvOptions.getBomOption().getValue());</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  private SpreadsheetWriter getXlsWriter(OutputStream stream) {
+<b class="nc"><i>119</i>&nbsp;    return new XlsWriterImpl(stream);</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;  public void save(SpreadsheetWriter writer) throws IOException {
+<b class="nc"><i>123</i>&nbsp;    writeTasks(writer);</b>
+<i>124</i>&nbsp;
+<b class="nc"><i>125</i>&nbsp;    if (myHumanResourceManager.getResources().size() &gt; 0) {</b>
+<b class="nc"><i>126</i>&nbsp;      writer.println();</b>
+<b class="nc"><i>127</i>&nbsp;      writer.println();</b>
+<b class="nc"><i>128</i>&nbsp;      writeResources(writer);</b>
+<i>129</i>&nbsp;    }
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  private List&lt;CustomPropertyDefinition&gt; writeTaskHeaders(SpreadsheetWriter writer) throws IOException {
+<b class="nc"><i>133</i>&nbsp;    List&lt;CustomPropertyDefinition&gt; defs = myTaskCustomPropertyManager.getDefinitions();</b>
+<b class="nc"><i>134</i>&nbsp;    for (Map.Entry&lt;String, BooleanOption&gt; entry : myCsvOptions.getTaskOptions().entrySet()) {</b>
+<b class="nc"><i>135</i>&nbsp;      TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());</b>
+<b class="nc"><i>136</i>&nbsp;      if (!entry.getValue().isChecked()) {</b>
+<b class="nc"><i>137</i>&nbsp;        continue;</b>
+<i>138</i>&nbsp;      }
+<b class="nc"><i>139</i>&nbsp;      if (defaultColumn == null) {</b>
+<b class="nc"><i>140</i>&nbsp;        writer.print(i18n(entry.getKey()));</b>
+<i>141</i>&nbsp;      } else {
+<b class="nc"><i>142</i>&nbsp;        writer.print(defaultColumn.getName());</b>
+<b class="nc"><i>143</i>&nbsp;        if (defaultColumn == TaskDefaultColumn.RESOURCES) {</b>
+<b class="nc"><i>144</i>&nbsp;          writer.print(TaskRecords.TaskFields.ASSIGNMENTS.toString());</b>
+<i>145</i>&nbsp;        }
+<i>146</i>&nbsp;      }
+<b class="nc"><i>147</i>&nbsp;    }</b>
+<b class="nc"><i>148</i>&nbsp;    for (CustomPropertyDefinition def : defs) {</b>
+<b class="nc"><i>149</i>&nbsp;      writer.print(def.getName());</b>
+<b class="nc"><i>150</i>&nbsp;    }</b>
+<b class="nc"><i>151</i>&nbsp;    writer.println();</b>
+<b class="nc"><i>152</i>&nbsp;    return defs;</b>
+<i>153</i>&nbsp;  }
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;  private String i18n(String key) {
+<b class="nc"><i>156</i>&nbsp;    return GanttLanguage.getInstance().getText(key);</b>
+<i>157</i>&nbsp;  }
+<i>158</i>&nbsp;
+<i>159</i>&nbsp;  private void writeTasks(SpreadsheetWriter writer) throws IOException {
+<b class="nc"><i>160</i>&nbsp;    List&lt;CustomPropertyDefinition&gt; customFields = writeTaskHeaders(writer);</b>
+<b class="nc"><i>161</i>&nbsp;    for (Task task : myTaskManager.getTasks()) {</b>
+<b class="nc"><i>162</i>&nbsp;      for (Map.Entry&lt;String, BooleanOption&gt; entry : myCsvOptions.getTaskOptions().entrySet()) {</b>
+<b class="nc"><i>163</i>&nbsp;        if (!entry.getValue().isChecked()) {</b>
+<b class="nc"><i>164</i>&nbsp;          continue;</b>
+<i>165</i>&nbsp;        }
+<b class="nc"><i>166</i>&nbsp;        TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());</b>
+<b class="nc"><i>167</i>&nbsp;        if (defaultColumn == null) {</b>
+<b class="nc"><i>168</i>&nbsp;          if (&quot;webLink&quot;.equals(entry.getKey())) {</b>
+<b class="nc"><i>169</i>&nbsp;            writer.print(getWebLink((GanttTask) task));</b>
+<b class="nc"><i>170</i>&nbsp;            continue;</b>
+<i>171</i>&nbsp;          }
+<b class="nc"><i>172</i>&nbsp;          if (&quot;notes&quot;.equals(entry.getKey())) {</b>
+<b class="nc"><i>173</i>&nbsp;            writer.print(task.getNotes());</b>
+<b class="nc"><i>174</i>&nbsp;            continue;</b>
+<i>175</i>&nbsp;          }
+<i>176</i>&nbsp;        } else {
+<b class="nc"><i>177</i>&nbsp;          switch (defaultColumn) {</b>
+<i>178</i>&nbsp;            case ID:
+<b class="nc"><i>179</i>&nbsp;              writer.print(String.valueOf(task.getTaskID()));</b>
+<b class="nc"><i>180</i>&nbsp;              break;</b>
+<i>181</i>&nbsp;            case NAME:
+<b class="nc"><i>182</i>&nbsp;              writer.print(getName(task));</b>
+<b class="nc"><i>183</i>&nbsp;              break;</b>
+<i>184</i>&nbsp;            case BEGIN_DATE:
+<b class="nc"><i>185</i>&nbsp;              writer.print(task.getStart().toString());</b>
+<b class="nc"><i>186</i>&nbsp;              break;</b>
+<i>187</i>&nbsp;            case END_DATE:
+<b class="nc"><i>188</i>&nbsp;              writer.print(task.getDisplayEnd().toString());</b>
+<b class="nc"><i>189</i>&nbsp;              break;</b>
+<i>190</i>&nbsp;            case DURATION:
+<b class="nc"><i>191</i>&nbsp;              writer.print(String.valueOf(task.getDuration().getLength()));</b>
+<b class="nc"><i>192</i>&nbsp;              break;</b>
+<i>193</i>&nbsp;            case COMPLETION:
+<b class="nc"><i>194</i>&nbsp;              writer.print(String.valueOf(task.getCompletionPercentage()));</b>
+<b class="nc"><i>195</i>&nbsp;              break;</b>
+<i>196</i>&nbsp;            case OUTLINE_NUMBER:
+<b class="nc"><i>197</i>&nbsp;              List&lt;Integer&gt; outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);</b>
+<b class="nc"><i>198</i>&nbsp;              writer.print(Joiner.on(&#39;.&#39;).join(outlinePath));</b>
+<b class="nc"><i>199</i>&nbsp;              break;</b>
+<i>200</i>&nbsp;            case COORDINATOR:
+<b class="nc"><i>201</i>&nbsp;              ResourceAssignment coordinator = Iterables.tryFind(Arrays.asList(task.getAssignments()), COORDINATOR_PREDICATE).orNull();</b>
+<b class="nc"><i>202</i>&nbsp;              writer.print(coordinator == null ? &quot;&quot; : coordinator.getResource().getName());</b>
+<b class="nc"><i>203</i>&nbsp;              break;</b>
+<i>204</i>&nbsp;            case PREDECESSORS:
+<b class="nc"><i>205</i>&nbsp;              writer.print(TaskProperties.formatPredecessors(task, &quot;;&quot;, true));</b>
+<b class="nc"><i>206</i>&nbsp;              break;</b>
+<i>207</i>&nbsp;            case RESOURCES:
+<b class="nc"><i>208</i>&nbsp;              writer.print(getAssignments(task));</b>
+<b class="nc"><i>209</i>&nbsp;              writer.print(buildAssignmentSpec(task));</b>
+<b class="nc"><i>210</i>&nbsp;              break;</b>
+<i>211</i>&nbsp;            case COST:
+<b class="nc"><i>212</i>&nbsp;              writer.print(task.getCost().getValue().toPlainString());</b>
+<b class="nc"><i>213</i>&nbsp;              break;</b>
+<i>214</i>&nbsp;            case COLOR:
+<b class="nc"><i>215</i>&nbsp;              if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {</b>
+<b class="nc"><i>216</i>&nbsp;                writer.print(ColorConvertion.getColor(task.getColor()));</b>
+<i>217</i>&nbsp;              } else {
+<b class="nc"><i>218</i>&nbsp;                writer.print(&quot;&quot;);</b>
+<i>219</i>&nbsp;              }
+<b class="nc"><i>220</i>&nbsp;              break;</b>
+<i>221</i>&nbsp;            case INFO:
+<i>222</i>&nbsp;            case PRIORITY:
+<i>223</i>&nbsp;            case TYPE:
+<i>224</i>&nbsp;              break;
+<i>225</i>&nbsp;          }
+<i>226</i>&nbsp;        }
+<b class="nc"><i>227</i>&nbsp;      }</b>
+<b class="nc"><i>228</i>&nbsp;      writeCustomPropertyValues(writer, customFields, task.getCustomValues().getCustomProperties());</b>
+<i>229</i>&nbsp;    }
+<i>230</i>&nbsp;  }
+<i>231</i>&nbsp;
+<i>232</i>&nbsp;  private List&lt;CustomPropertyDefinition&gt; writeResourceHeaders(SpreadsheetWriter writer) throws IOException {
+<b class="nc"><i>233</i>&nbsp;    for (Map.Entry&lt;String, BooleanOption&gt; entry : myCsvOptions.getResourceOptions().entrySet()) {</b>
+<b class="nc"><i>234</i>&nbsp;      ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());</b>
+<b class="nc"><i>235</i>&nbsp;      if (!entry.getValue().isChecked()) {</b>
+<b class="nc"><i>236</i>&nbsp;        continue;</b>
+<i>237</i>&nbsp;      }
+<b class="nc"><i>238</i>&nbsp;      if (defaultColumn == null) {</b>
+<b class="nc"><i>239</i>&nbsp;        if (&quot;id&quot;.equals(entry.getKey())) {</b>
+<b class="nc"><i>240</i>&nbsp;          writer.print(i18n(&quot;tableColID&quot;));</b>
+<i>241</i>&nbsp;        } else {
+<b class="nc"><i>242</i>&nbsp;          writer.print(i18n(entry.getKey()));</b>
+<i>243</i>&nbsp;        }
+<i>244</i>&nbsp;      } else {
+<b class="nc"><i>245</i>&nbsp;        writer.print(defaultColumn.getName());</b>
+<i>246</i>&nbsp;      }
+<b class="nc"><i>247</i>&nbsp;    }</b>
+<b class="nc"><i>248</i>&nbsp;    List&lt;CustomPropertyDefinition&gt; customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();</b>
+<b class="nc"><i>249</i>&nbsp;    for (CustomPropertyDefinition nextDef : customFieldDefs) {</b>
+<b class="nc"><i>250</i>&nbsp;      writer.print(nextDef.getName());</b>
+<b class="nc"><i>251</i>&nbsp;    }</b>
+<b class="nc"><i>252</i>&nbsp;    writer.println();</b>
+<b class="nc"><i>253</i>&nbsp;    return customFieldDefs;</b>
+<i>254</i>&nbsp;  }
+<i>255</i>&nbsp;
+<i>256</i>&nbsp;  private void writeResources(SpreadsheetWriter writer) throws IOException {
+<b class="nc"><i>257</i>&nbsp;    Set&lt;Role&gt; projectRoles = Sets.newHashSet(myRoleManager.getProjectLevelRoles());</b>
+<b class="nc"><i>258</i>&nbsp;    List&lt;CustomPropertyDefinition&gt; customPropDefs = writeResourceHeaders(writer);</b>
+<i>259</i>&nbsp;    // parse all resources
+<b class="nc"><i>260</i>&nbsp;    for (HumanResource p : myHumanResourceManager.getResources()) {</b>
+<b class="nc"><i>261</i>&nbsp;      for (Map.Entry&lt;String, BooleanOption&gt; entry : myCsvOptions.getResourceOptions().entrySet()) {</b>
+<b class="nc"><i>262</i>&nbsp;        if (!entry.getValue().isChecked()) {</b>
+<b class="nc"><i>263</i>&nbsp;          continue;</b>
+<i>264</i>&nbsp;        }
+<b class="nc"><i>265</i>&nbsp;        ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());</b>
+<b class="nc"><i>266</i>&nbsp;        if (defaultColumn == null) {</b>
+<b class="nc"><i>267</i>&nbsp;          if (&quot;id&quot;.equals(entry.getKey())) {</b>
+<b class="nc"><i>268</i>&nbsp;            writer.print(String.valueOf(p.getId()));</b>
+<b class="nc"><i>269</i>&nbsp;            continue;</b>
+<i>270</i>&nbsp;          }
+<i>271</i>&nbsp;        } else {
+<b class="nc"><i>272</i>&nbsp;          switch (defaultColumn) {</b>
+<i>273</i>&nbsp;            case NAME:
+<b class="nc"><i>274</i>&nbsp;              writer.print(p.getName());</b>
+<b class="nc"><i>275</i>&nbsp;              break;</b>
+<i>276</i>&nbsp;            case EMAIL:
+<b class="nc"><i>277</i>&nbsp;              writer.print(p.getMail());</b>
+<b class="nc"><i>278</i>&nbsp;              break;</b>
+<i>279</i>&nbsp;            case PHONE:
+<b class="nc"><i>280</i>&nbsp;              writer.print(p.getPhone());</b>
+<b class="nc"><i>281</i>&nbsp;              break;</b>
+<i>282</i>&nbsp;            case ROLE:
+<b class="nc"><i>283</i>&nbsp;              Role role = p.getRole();</b>
+<i>284</i>&nbsp;              final String sRoleID;
+<b class="nc"><i>285</i>&nbsp;              if (role == null) {</b>
+<b class="nc"><i>286</i>&nbsp;                sRoleID = &quot;0&quot;;</b>
+<b class="nc"><i>287</i>&nbsp;              } else if (projectRoles.contains(role)) {</b>
+<b class="nc"><i>288</i>&nbsp;                sRoleID = role.getName();</b>
+<i>289</i>&nbsp;              } else {
+<b class="nc"><i>290</i>&nbsp;                sRoleID = role.getPersistentID();</b>
+<i>291</i>&nbsp;              }
+<b class="nc"><i>292</i>&nbsp;              writer.print(sRoleID);</b>
+<b class="nc"><i>293</i>&nbsp;              break;</b>
+<i>294</i>&nbsp;            case ROLE_IN_TASK:
+<b class="nc"><i>295</i>&nbsp;              writer.print(&quot;&quot;);</b>
+<b class="nc"><i>296</i>&nbsp;              break;</b>
+<i>297</i>&nbsp;            case STANDARD_RATE:
+<b class="nc"><i>298</i>&nbsp;              writer.print(p.getStandardPayRate().toPlainString());</b>
+<b class="nc"><i>299</i>&nbsp;              break;</b>
+<i>300</i>&nbsp;            case TOTAL_COST:
+<b class="nc"><i>301</i>&nbsp;              writer.print(p.getTotalCost().toPlainString());</b>
+<b class="nc"><i>302</i>&nbsp;              break;</b>
+<i>303</i>&nbsp;            case TOTAL_LOAD:
+<b class="nc"><i>304</i>&nbsp;              writer.print(String.valueOf(p.getTotalLoad()));</b>
+<i>305</i>&nbsp;              break;
+<i>306</i>&nbsp;          }
+<i>307</i>&nbsp;        }
+<b class="nc"><i>308</i>&nbsp;      }</b>
+<b class="nc"><i>309</i>&nbsp;      writeCustomPropertyValues(writer, customPropDefs, p.getCustomProperties());</b>
+<b class="nc"><i>310</i>&nbsp;    }</b>
+<i>311</i>&nbsp;  }
+<i>312</i>&nbsp;
+<i>313</i>&nbsp;  private void writeCustomPropertyValues(SpreadsheetWriter writer,
+<i>314</i>&nbsp;                                         List&lt;CustomPropertyDefinition&gt; defs, List&lt;CustomProperty&gt; values) throws IOException {
+<b class="nc"><i>315</i>&nbsp;    Map&lt;String, CustomProperty&gt; definedProps = Maps.newHashMap();</b>
+<b class="nc"><i>316</i>&nbsp;    for (CustomProperty prop : values) {</b>
+<b class="nc"><i>317</i>&nbsp;      definedProps.put(prop.getDefinition().getID(), prop);</b>
+<b class="nc"><i>318</i>&nbsp;    }</b>
+<b class="nc"><i>319</i>&nbsp;    for (CustomPropertyDefinition def : defs) {</b>
+<b class="nc"><i>320</i>&nbsp;      CustomProperty value = definedProps.get(def.getID());</b>
+<b class="nc"><i>321</i>&nbsp;      String valueAsString = value == null ? null : Strings.nullToEmpty(value.getValueAsString());</b>
+<b class="nc"><i>322</i>&nbsp;      writer.print(valueAsString);</b>
+<b class="nc"><i>323</i>&nbsp;    }</b>
+<b class="nc"><i>324</i>&nbsp;    writer.println();</b>
+<i>325</i>&nbsp;
+<i>326</i>&nbsp;  }
+<i>327</i>&nbsp;
+<i>328</i>&nbsp;  /**
+<i>329</i>&nbsp;   * @return the name of task with the correct level.
+<i>330</i>&nbsp;   */
+<i>331</i>&nbsp;  private String getName(Task task) {
+<b class="nc"><i>332</i>&nbsp;    if (myCsvOptions.bFixedSize) {</b>
+<b class="nc"><i>333</i>&nbsp;      return task.getName();</b>
+<i>334</i>&nbsp;    }
+<b class="nc"><i>335</i>&nbsp;    int depth = task.getManager().getTaskHierarchy().getDepth(task) - 1;</b>
+<b class="nc"><i>336</i>&nbsp;    return StringUtils.padLeft(task.getName(), depth * 2);</b>
+<i>337</i>&nbsp;  }
+<i>338</i>&nbsp;
+<i>339</i>&nbsp;  /**
+<i>340</i>&nbsp;   * @return the link of the task.
+<i>341</i>&nbsp;   */
+<i>342</i>&nbsp;  private String getWebLink(GanttTask task) {
+<b class="nc"><i>343</i>&nbsp;    return (task.getWebLink() == null || task.getWebLink().equals(&quot;http://&quot;) ? &quot;&quot; : task.getWebLink());</b>
+<i>344</i>&nbsp;  }
+<i>345</i>&nbsp;
+<i>346</i>&nbsp;  /**
+<i>347</i>&nbsp;   * @return the list of the assignment for the resources.
+<i>348</i>&nbsp;   */
+<i>349</i>&nbsp;  private String getAssignments(Task task) {
+<b class="nc"><i>350</i>&nbsp;    StringBuilder res = new StringBuilder();</b>
+<b class="nc"><i>351</i>&nbsp;    ResourceAssignment[] assignment = task.getAssignments();</b>
+<b class="nc"><i>352</i>&nbsp;    for (int i = 0; i &lt; assignment.length; i++) {</b>
+<b class="nc"><i>353</i>&nbsp;      String assignmentDelimiter = i == assignment.length - 1</b>
+<b class="nc"><i>354</i>&nbsp;              ? &quot;&quot;</b>
+<b class="nc"><i>355</i>&nbsp;              : myCsvOptions.sSeparatedChar.equals(&quot;;&quot;) ? &quot;,&quot; : &quot;;&quot;;</b>
+<b class="nc"><i>356</i>&nbsp;      res.append(assignment[i].getResource()).append(assignmentDelimiter);</b>
+<i>357</i>&nbsp;    }
+<b class="nc"><i>358</i>&nbsp;    return res.toString();</b>
+<i>359</i>&nbsp;  }
+<i>360</i>&nbsp;
+<i>361</i>&nbsp;  private String buildAssignmentSpec(Task task) {
+<b class="nc"><i>362</i>&nbsp;    List&lt;String&gt; loads = Lists.newArrayList();</b>
+<b class="nc"><i>363</i>&nbsp;    for (ResourceAssignment ra : task.getAssignments()) {</b>
+<b class="nc"><i>364</i>&nbsp;      loads.add(String.format(&quot;%d:%.2f&quot;, ra.getResource().getId(), ra.getLoad()));</b>
+<i>365</i>&nbsp;    }
+<b class="nc"><i>366</i>&nbsp;    return Joiner.on(&#39;;&#39;).join(loads);</b>
+<i>367</i>&nbsp;  }
+<i>368</i>&nbsp;
+<i>369</i>&nbsp;
+<i>370</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

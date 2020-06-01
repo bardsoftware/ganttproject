@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: AssignmentToggleAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.resource</a> ]
+</div>
+
+<h1>Coverage Summary for Class: AssignmentToggleAction (net.sourceforge.ganttproject.action.resource)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AssignmentToggleAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (17/ 17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AssignmentToggleAction$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/ 5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (22/ 22)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2019 BarD Software s.r.o, Juanan Pereira
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.resource;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.ResourceAssignment;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import javax.swing.*;
+<i>29</i>&nbsp;import java.awt.event.ActionEvent;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;/**
+<i>33</i>&nbsp; * Action that adds/removes the assignment of a task to a resource
+<i>34</i>&nbsp; */
+<i>35</i>&nbsp;public class AssignmentToggleAction extends GPAction {
+<i>36</i>&nbsp;  private final HumanResource myHumanResource;
+<i>37</i>&nbsp;  private final Task myTask;
+<i>38</i>&nbsp;  private final UIFacade myUIFacade;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  public AssignmentToggleAction(HumanResource hr, Task task, UIFacade uiFacade) {
+<b class="fc"><i>41</i>&nbsp;    super(hr.getName(), IconSize.TOOLBAR_SMALL);</b>
+<b class="fc"><i>42</i>&nbsp;    myHumanResource = hr;</b>
+<b class="fc"><i>43</i>&nbsp;    myTask = task;</b>
+<b class="fc"><i>44</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="fc"><i>45</i>&nbsp;  }</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  private void createAssignment() {
+<b class="fc"><i>48</i>&nbsp;    ResourceAssignmentMutator mutator = myTask.getAssignmentCollection().createMutator();</b>
+<b class="fc"><i>49</i>&nbsp;    ResourceAssignment newAssignment = mutator.addAssignment(myHumanResource);</b>
+<b class="fc"><i>50</i>&nbsp;    newAssignment.setLoad(100);</b>
+<b class="fc"><i>51</i>&nbsp;    newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());</b>
+<b class="fc"><i>52</i>&nbsp;    mutator.commit();</b>
+<b class="fc"><i>53</i>&nbsp;  }</b>
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public void delete(HumanResource hr) {
+<b class="fc"><i>56</i>&nbsp;    ResourceAssignmentMutator mutator = myTask.getAssignmentCollection().createMutator();</b>
+<b class="fc"><i>57</i>&nbsp;    mutator.deleteAssignment(hr);</b>
+<b class="fc"><i>58</i>&nbsp;    mutator.commit();</b>
+<b class="fc"><i>59</i>&nbsp;  }</b>
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  @Override
+<i>62</i>&nbsp;  public void actionPerformed(ActionEvent e) {
+<b class="fc"><i>63</i>&nbsp;    myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {</b>
+<i>64</i>&nbsp;      @Override
+<i>65</i>&nbsp;      public void run() {
+<b class="fc"><i>66</i>&nbsp;        if (getValue(Action.SELECTED_KEY) == Boolean.TRUE) {</b>
+<b class="fc"><i>67</i>&nbsp;          createAssignment();</b>
+<i>68</i>&nbsp;        } else {
+<b class="fc"><i>69</i>&nbsp;          delete(myHumanResource);</b>
+<i>70</i>&nbsp;        }
+<b class="fc"><i>71</i>&nbsp;      }</b>
+<i>72</i>&nbsp;    });
+<b class="fc"><i>73</i>&nbsp;  }</b>
+<i>74</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

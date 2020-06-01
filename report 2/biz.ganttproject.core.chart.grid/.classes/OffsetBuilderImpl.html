@@ -1,0 +1,324 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OffsetBuilderImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.grid</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OffsetBuilderImpl (biz.ganttproject.core.chart.grid)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OffsetBuilderImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (72/ 78)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OffsetBuilderImpl$FactoryImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">OffsetBuilderImpl$OffsetStep</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (16/ 16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.7%
+  </span>
+  <span class="absValue">
+    (76/ 82)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * This code is provided under the terms of GPL version 3.
+<i>3</i>&nbsp; * Please see LICENSE file for details
+<i>4</i>&nbsp; * (C) Dmitry Barashev, GanttProject team, 2004-2010
+<i>5</i>&nbsp; */
+<i>6</i>&nbsp;package biz.ganttproject.core.chart.grid;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;import java.util.Date;
+<i>9</i>&nbsp;import java.util.List;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;import com.google.common.base.Function;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar;
+<i>14</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+<i>15</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar.DayType;
+<i>16</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>17</i>&nbsp;import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
+<i>18</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>19</i>&nbsp;import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;/**
+<i>23</i>&nbsp; * Builds grid offsets for timelines where top cells are always constructed from
+<i>24</i>&nbsp; * the integer number of bottom cells (e.g. week from days)
+<i>25</i>&nbsp; */
+<i>26</i>&nbsp;public class OffsetBuilderImpl implements OffsetBuilder {
+<b class="fc"><i>27</i>&nbsp;  protected static class OffsetStep {</b>
+<i>28</i>&nbsp;    public float parrots;
+<i>29</i>&nbsp;    public int dayMask;
+<i>30</i>&nbsp;  }
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  // We want weekend units to be less wide than working ones. This constant
+<i>33</i>&nbsp;  // is a decrease factor
+<i>34</i>&nbsp;  public static final int WEEKEND_UNIT_WIDTH_DECREASE_FACTOR = 10;
+<i>35</i>&nbsp;  private final TimeUnit myTopUnit;
+<i>36</i>&nbsp;  private final TimeUnit myBottomUnit;
+<i>37</i>&nbsp;  private final Date myStartDate;
+<i>38</i>&nbsp;  private final int myDefaultUnitWidth;
+<i>39</i>&nbsp;  private final int myChartWidth;
+<i>40</i>&nbsp;  private final GPCalendar myCalendar;
+<i>41</i>&nbsp;  private final float myWeekendDecreaseFactor;
+<i>42</i>&nbsp;  private final Date myEndDate;
+<i>43</i>&nbsp;  private final TimeUnit baseUnit;
+<i>44</i>&nbsp;  private final int myRightMarginBottomUnitCount;
+<i>45</i>&nbsp;  private final Date myViewportStartDate;
+<i>46</i>&nbsp;  private final Function&lt;TimeUnit, Float&gt; myOffsetStepFn;
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;//  protected RegularFrameOffsetBuilder(GPCalendar calendar, TimeUnit topUnit, TimeUnit bottomUnit, Date startDate,
+<i>49</i>&nbsp;//      Date viewportStartDate, int defaultUnitWidth, int chartWidth, float weekendDecreaseFactor, Date endDate,
+<i>50</i>&nbsp;//      int rightMarginTimeUnits) {
+<b class="fc"><i>51</i>&nbsp;  protected OffsetBuilderImpl(OffsetBuilder.Factory factory) {</b>
+<b class="fc"><i>52</i>&nbsp;    myCalendar = factory.myCalendar;</b>
+<b class="fc"><i>53</i>&nbsp;    myStartDate = factory.myStartDate;</b>
+<b class="fc"><i>54</i>&nbsp;    myViewportStartDate = factory.myViewportStartDate;</b>
+<b class="fc"><i>55</i>&nbsp;    myTopUnit = factory.myTopUnit;</b>
+<b class="fc"><i>56</i>&nbsp;    myBottomUnit = factory.myBottomUnit;</b>
+<b class="fc"><i>57</i>&nbsp;    myDefaultUnitWidth = factory.myAtomicUnitWidth;</b>
+<b class="fc"><i>58</i>&nbsp;    myChartWidth = factory.myEndOffset;</b>
+<b class="fc"><i>59</i>&nbsp;    myWeekendDecreaseFactor = factory.myWeekendDecreaseFactor;</b>
+<b class="fc"><i>60</i>&nbsp;    myEndDate = factory.myEndDate;</b>
+<b class="fc"><i>61</i>&nbsp;    baseUnit = factory.myBaseUnit;</b>
+<b class="fc"><i>62</i>&nbsp;    myRightMarginBottomUnitCount = factory.myRightMarginTimeUnits;</b>
+<b class="fc"><i>63</i>&nbsp;    myOffsetStepFn = factory.myOffsetStepFn;</b>
+<b class="fc"><i>64</i>&nbsp;  }</b>
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  private TimeUnit getBottomUnit() {
+<b class="fc"><i>67</i>&nbsp;    return myBottomUnit;</b>
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  private TimeUnit getTopUnit() {
+<b class="fc"><i>71</i>&nbsp;    return myTopUnit;</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  public static TimeUnit getConcreteUnit(TimeUnit timeUnit, Date date) {
+<b class="fc"><i>75</i>&nbsp;    return (timeUnit instanceof TimeUnitFunctionOfDate) ? ((TimeUnitFunctionOfDate) timeUnit).createTimeUnit(date)</b>
+<b class="fc"><i>76</i>&nbsp;        : timeUnit;</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  private int getDefaultUnitWidth() {
+<b class="fc"><i>80</i>&nbsp;    return myDefaultUnitWidth;</b>
+<i>81</i>&nbsp;  }
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  protected float getOffsetStep(TimeUnit timeUnit) {
+<b class="fc"><i>84</i>&nbsp;    return myOffsetStepFn.apply(timeUnit);</b>
+<i>85</i>&nbsp;  }
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  private int getChartWidth() {
+<b class="fc"><i>88</i>&nbsp;    return myChartWidth;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  private GPCalendar getCalendar() {
+<b class="fc"><i>92</i>&nbsp;    return myCalendar;</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;//  public void setRightMarginBottomUnitCount(int value) {
+<i>96</i>&nbsp;//    myRightMarginBottomUnitCount = value;
+<i>97</i>&nbsp;//  }
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  @Override
+<i>100</i>&nbsp;  public void constructOffsets(List&lt;Offset&gt; topUnitOffsets, OffsetList bottomUnitOffsets) {
+<b class="fc"><i>101</i>&nbsp;    constructOffsets(topUnitOffsets, bottomUnitOffsets, 0);</b>
+<b class="fc"><i>102</i>&nbsp;  }</b>
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  void constructOffsets(List&lt;Offset&gt; topUnitOffsets, List&lt;Offset&gt; bottomUnitOffsets, int initialEnd) {
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;    // bottomUnitOffsets.add(new Offset(getBottomUnit(), myStartDate,
+<i>107</i>&nbsp;    // myStartDate, myStartDate, 0, GPCalendar.DayType.WORKING));
+<b class="fc"><i>108</i>&nbsp;    constructBottomOffsets(bottomUnitOffsets, initialEnd);</b>
+<b class="fc"><i>109</i>&nbsp;    if (topUnitOffsets != null) {</b>
+<b class="fc"><i>110</i>&nbsp;      constructTopOffsets(getTopUnit(), topUnitOffsets, bottomUnitOffsets, initialEnd, getDefaultUnitWidth());</b>
+<i>111</i>&nbsp;    }
+<b class="fc"><i>112</i>&nbsp;  }</b>
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  void constructBottomOffsets(List&lt;Offset&gt; offsets, int initialEnd) {
+<b class="fc"><i>115</i>&nbsp;    int marginUnitCount = myRightMarginBottomUnitCount;</b>
+<b class="fc"><i>116</i>&nbsp;    Date currentDate = myStartDate;</b>
+<b class="fc"><i>117</i>&nbsp;    int shift = 0;</b>
+<b class="fc"><i>118</i>&nbsp;    OffsetStep step = new OffsetStep();</b>
+<b class="fc"><i>119</i>&nbsp;    int prevEnd = initialEnd;</b>
+<i>120</i>&nbsp;    do {
+<b class="fc"><i>121</i>&nbsp;      TimeUnit concreteTimeUnit = getConcreteUnit(getBottomUnit(), currentDate);</b>
+<b class="fc"><i>122</i>&nbsp;      calculateNextStep(step, concreteTimeUnit, currentDate);</b>
+<b class="fc"><i>123</i>&nbsp;      Date endDate = concreteTimeUnit.adjustRight(currentDate);</b>
+<b class="fc"><i>124</i>&nbsp;      if (endDate.compareTo(myViewportStartDate) &lt;= 0) {</b>
+<b class="fc"><i>125</i>&nbsp;        shift = (int) (step.parrots * getDefaultUnitWidth());</b>
+<i>126</i>&nbsp;      }
+<b class="fc"><i>127</i>&nbsp;      int offsetEnd = (int) (step.parrots * getDefaultUnitWidth()) - shift;</b>
+<b class="fc"><i>128</i>&nbsp;      Offset offset = Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, </b>
+<i>129</i>&nbsp;          prevEnd, initialEnd + offsetEnd, step.dayMask);
+<b class="fc"><i>130</i>&nbsp;      prevEnd = initialEnd + offsetEnd;</b>
+<b class="fc"><i>131</i>&nbsp;      offsets.add(offset);</b>
+<b class="fc"><i>132</i>&nbsp;      currentDate = endDate;</b>
+<i>133</i>&nbsp;
+<b class="fc"><i>134</i>&nbsp;      boolean hasNext = true;</b>
+<b class="fc"><i>135</i>&nbsp;      if (offsetEnd &gt; getChartWidth()) {</b>
+<b class="fc"><i>136</i>&nbsp;        hasNext &amp;= marginUnitCount-- &gt; 0;</b>
+<i>137</i>&nbsp;      }
+<b class="fc"><i>138</i>&nbsp;      if (hasNext &amp;&amp; myEndDate != null) {</b>
+<b class="nc"><i>139</i>&nbsp;        hasNext &amp;= currentDate.before(myEndDate);</b>
+<i>140</i>&nbsp;      }
+<b class="fc"><i>141</i>&nbsp;      if (!hasNext) {</b>
+<b class="fc"><i>142</i>&nbsp;        return;</b>
+<i>143</i>&nbsp;      }
+<b class="fc"><i>144</i>&nbsp;    } while (true);</b>
+<i>145</i>&nbsp;  }
+<i>146</i>&nbsp;
+<i>147</i>&nbsp;  private void constructTopOffsets(TimeUnit timeUnit, List&lt;Offset&gt; topOffsets, List&lt;Offset&gt; bottomOffsets,
+<i>148</i>&nbsp;      int initialEnd, int baseUnitWidth) {
+<b class="fc"><i>149</i>&nbsp;    int lastBottomOffset = bottomOffsets.get(bottomOffsets.size() - 1).getOffsetPixels();</b>
+<b class="fc"><i>150</i>&nbsp;    OffsetLookup offsetLookup = new OffsetLookup();</b>
+<b class="fc"><i>151</i>&nbsp;    Date currentDate = myStartDate;</b>
+<b class="fc"><i>152</i>&nbsp;    int prevEnd = initialEnd;</b>
+<i>153</i>&nbsp;    int offsetEnd;
+<i>154</i>&nbsp;    do {
+<b class="fc"><i>155</i>&nbsp;      TimeUnit concreteTimeUnit = getConcreteUnit(timeUnit, currentDate);</b>
+<b class="fc"><i>156</i>&nbsp;      Date endDate = concreteTimeUnit.adjustRight(currentDate);</b>
+<b class="fc"><i>157</i>&nbsp;      int bottomOffsetLowerBound = offsetLookup.lookupOffsetByEndDate(endDate, bottomOffsets);</b>
+<b class="fc"><i>158</i>&nbsp;      if (bottomOffsetLowerBound &gt;= 0) {</b>
+<b class="fc"><i>159</i>&nbsp;        offsetEnd = bottomOffsets.get(bottomOffsetLowerBound).getOffsetPixels();</b>
+<i>160</i>&nbsp;      } else {
+<b class="fc"><i>161</i>&nbsp;        if (-bottomOffsetLowerBound &gt; bottomOffsets.size()) {</b>
+<b class="fc"><i>162</i>&nbsp;          offsetEnd = lastBottomOffset + 1;</b>
+<i>163</i>&nbsp;        } else {
+<b class="nc"><i>164</i>&nbsp;          Offset ubOffset = bottomOffsetLowerBound &lt;= -2 ? bottomOffsets.get(-bottomOffsetLowerBound - 2) : null;</b>
+<b class="nc"><i>165</i>&nbsp;          Date ubEndDate = ubOffset == null ? myStartDate : ubOffset.getOffsetEnd();</b>
+<b class="nc"><i>166</i>&nbsp;          int ubEndPixel = ubOffset == null ? 0 : ubOffset.getOffsetPixels();</b>
+<b class="nc"><i>167</i>&nbsp;          WorkingUnitCounter counter = new WorkingUnitCounter(GPCalendarCalc.PLAIN, baseUnit);</b>
+<b class="nc"><i>168</i>&nbsp;          offsetEnd = ubEndPixel + counter.run(ubEndDate, endDate).getLength() * baseUnitWidth;</b>
+<i>169</i>&nbsp;        }
+<i>170</i>&nbsp;      }
+<b class="fc"><i>171</i>&nbsp;      topOffsets.add(Offset.createFullyClosed(concreteTimeUnit, myStartDate, currentDate, endDate, prevEnd, initialEnd</b>
+<i>172</i>&nbsp;          + offsetEnd, DayMask.WORKING));
+<b class="fc"><i>173</i>&nbsp;      prevEnd = initialEnd + offsetEnd;</b>
+<b class="fc"><i>174</i>&nbsp;      currentDate = endDate;</b>
+<i>175</i>&nbsp;
+<b class="fc"><i>176</i>&nbsp;    } while (offsetEnd &lt;= lastBottomOffset &amp;&amp; (myEndDate == null || currentDate.before(myEndDate)));</b>
+<b class="fc"><i>177</i>&nbsp;  }</b>
+<i>178</i>&nbsp;
+<i>179</i>&nbsp;  protected void calculateNextStep(OffsetStep step, TimeUnit timeUnit, Date startDate) {
+<b class="fc"><i>180</i>&nbsp;    float offsetStep = getOffsetStep(timeUnit);</b>
+<b class="fc"><i>181</i>&nbsp;    step.dayMask = getCalendar().getDayMask(startDate);</b>
+<b class="fc"><i>182</i>&nbsp;    if ((step.dayMask &amp; DayMask.WORKING) == 0) {</b>
+<b class="fc"><i>183</i>&nbsp;      offsetStep = offsetStep / myWeekendDecreaseFactor;</b>
+<i>184</i>&nbsp;    }
+<b class="fc"><i>185</i>&nbsp;    step.parrots += offsetStep;</b>
+<b class="fc"><i>186</i>&nbsp;  }</b>
+<i>187</i>&nbsp;
+<i>188</i>&nbsp;
+<b class="fc"><i>189</i>&nbsp;  public static class FactoryImpl extends OffsetBuilder.Factory {</b>
+<i>190</i>&nbsp;    @Override
+<i>191</i>&nbsp;    public OffsetBuilder build() {
+<b class="fc"><i>192</i>&nbsp;      preBuild();</b>
+<b class="fc"><i>193</i>&nbsp;      return new OffsetBuilderImpl(this);</b>
+<i>194</i>&nbsp;    }
+<i>195</i>&nbsp;  }
+<i>196</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

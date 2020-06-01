@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: MouseMotionListenerImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.gantt</a> ]
+</div>
+
+<h1>Coverage Summary for Class: MouseMotionListenerImpl (net.sourceforge.ganttproject.chart.gantt)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MouseMotionListenerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (15/ 36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.gantt;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Cursor;
+<i>22</i>&nbsp;import java.awt.event.MouseEvent;
+<i>23</i>&nbsp;import java.util.Date;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import com.google.common.base.Strings;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import biz.ganttproject.core.calendar.CalendarEvent;
+<i>28</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.ChartComponentBase;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.GanttGraphicArea;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelImpl;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.chart.item.ChartItem;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;class MouseMotionListenerImpl extends MouseMotionListenerBase {
+<i>43</i>&nbsp;  private final ChartComponentBase myChartComponent;
+<i>44</i>&nbsp;  private GanttChartController myChartController;
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  public MouseMotionListenerImpl(GanttChartController chartImplementation, ChartModelImpl chartModel,
+<i>47</i>&nbsp;      UIFacade uiFacade, ChartComponentBase chartComponent) {
+<b class="fc"><i>48</i>&nbsp;    super(uiFacade, chartImplementation);</b>
+<b class="fc"><i>49</i>&nbsp;    myChartController = chartImplementation;</b>
+<b class="fc"><i>50</i>&nbsp;    myChartComponent = chartComponent;</b>
+<b class="fc"><i>51</i>&nbsp;  }</b>
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  // Move the move on the area
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public void mouseMoved(MouseEvent e) {
+<b class="fc"><i>56</i>&nbsp;    ChartItem itemUnderPoint = myChartController.getChartItemUnderMousePoint(e.getX(), e.getY());</b>
+<b class="fc"><i>57</i>&nbsp;    Task taskUnderPoint = itemUnderPoint == null ? null : itemUnderPoint.getTask();</b>
+<i>58</i>&nbsp;    // System.err.println(&quot;[OldMouseMotionListenerImpl] mouseMoved:
+<i>59</i>&nbsp;    // taskUnderPoint=&quot;+taskUnderPoint);
+<b class="fc"><i>60</i>&nbsp;    myChartController.hideTooltip();</b>
+<b class="fc"><i>61</i>&nbsp;    if (taskUnderPoint == null) {</b>
+<b class="fc"><i>62</i>&nbsp;      myChartComponent.setDefaultCursor();</b>
+<i>63</i>&nbsp;
+<b class="fc"><i>64</i>&nbsp;      if (itemUnderPoint instanceof CalendarChartItem) {</b>
+<b class="fc"><i>65</i>&nbsp;        CalendarEvent event = findCalendarEvent(((CalendarChartItem) itemUnderPoint).getDate());</b>
+<b class="fc"><i>66</i>&nbsp;        if (event != null) {</b>
+<i>67</i>&nbsp;          String tooltipText;
+<b class="nc"><i>68</i>&nbsp;          if (event.isRecurring) {</b>
+<b class="nc"><i>69</i>&nbsp;            tooltipText = GanttLanguage.getInstance().formatText(</b>
+<i>70</i>&nbsp;                &quot;timeline.holidayTooltipRecurring.pattern&quot;,
+<b class="nc"><i>71</i>&nbsp;                GanttLanguage.getInstance().getRecurringDateFormat().format(event.myDate),</b>
+<b class="nc"><i>72</i>&nbsp;                Strings.nullToEmpty(event.getTitle()));</b>
+<i>73</i>&nbsp;          } else {
+<b class="nc"><i>74</i>&nbsp;            tooltipText = GanttLanguage.getInstance().formatText(</b>
+<i>75</i>&nbsp;                &quot;timeline.holidayTooltip.pattern&quot;,
+<b class="nc"><i>76</i>&nbsp;                GanttLanguage.getInstance().formatDate(CalendarFactory.createGanttCalendar(event.myDate)),</b>
+<b class="nc"><i>77</i>&nbsp;                Strings.nullToEmpty(event.getTitle()));</b>
+<i>78</i>&nbsp;          }
+<b class="nc"><i>79</i>&nbsp;          myChartController.showTooltip(e.getX(), e.getY(), tooltipText);</b>
+<i>80</i>&nbsp;        }
+<b class="fc"><i>81</i>&nbsp;      }</b>
+<i>82</i>&nbsp;    }
+<b class="nc"><i>83</i>&nbsp;    else if (itemUnderPoint instanceof TaskBoundaryChartItem) {</b>
+<b class="nc"><i>84</i>&nbsp;      Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR</b>
+<b class="nc"><i>85</i>&nbsp;          : GanttGraphicArea.E_RESIZE_CURSOR;</b>
+<b class="nc"><i>86</i>&nbsp;      myChartComponent.setCursor(cursor);</b>
+<b class="nc"><i>87</i>&nbsp;    }</b>
+<i>88</i>&nbsp;    // special cursor
+<b class="nc"><i>89</i>&nbsp;    else if (itemUnderPoint instanceof TaskProgressChartItem) {</b>
+<b class="nc"><i>90</i>&nbsp;      myChartComponent.setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);</b>
+<i>91</i>&nbsp;    }
+<b class="nc"><i>92</i>&nbsp;    else if (itemUnderPoint instanceof TaskNotesChartItem &amp;&amp; taskUnderPoint.getNotes() != null) {</b>
+<b class="nc"><i>93</i>&nbsp;      myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);</b>
+<b class="nc"><i>94</i>&nbsp;      myChartController.showTooltip(e.getX(), e.getY(),</b>
+<b class="nc"><i>95</i>&nbsp;          GanttLanguage.getInstance().formatText(</b>
+<b class="nc"><i>96</i>&nbsp;              &quot;task.notesTooltip.pattern&quot;, taskUnderPoint.getNotes().replace(&quot;\n&quot;, &quot;&lt;br&gt;&quot;)));</b>
+<i>97</i>&nbsp;    }
+<i>98</i>&nbsp;    else {
+<b class="nc"><i>99</i>&nbsp;      myChartComponent.setCursor(ChartComponentBase.HAND_CURSOR);</b>
+<i>100</i>&nbsp;    }
+<i>101</i>&nbsp;
+<b class="fc"><i>102</i>&nbsp;  }</b>
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  private CalendarEvent findCalendarEvent(Date date) {
+<b class="fc"><i>105</i>&nbsp;    return myChartComponent.getProject().getActiveCalendar().getEvent(date);</b>
+<i>106</i>&nbsp;  }
+<i>107</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

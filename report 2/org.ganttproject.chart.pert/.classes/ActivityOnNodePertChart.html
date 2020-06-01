@@ -1,0 +1,1101 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ActivityOnNodePertChart</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.ganttproject.chart.pert</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ActivityOnNodePertChart (org.ganttproject.chart.pert)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ActivityOnNodePertChart</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 280)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ActivityOnNodePertChart$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 13)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ActivityOnNodePertChart$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 18)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ActivityOnNodePertChart$GraphicalArrow</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 24)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ActivityOnNodePertChart$GraphicalNode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 54)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 63)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 389)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 Bernoit Baranne, Julien Seiler, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package org.ganttproject.chart.pert;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.GanttExportSettings;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.util.StringUtils;
+<i>27</i>&nbsp;import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import javax.swing.*;
+<i>30</i>&nbsp;import java.awt.*;
+<i>31</i>&nbsp;import java.awt.event.MouseEvent;
+<i>32</i>&nbsp;import java.awt.event.MouseListener;
+<i>33</i>&nbsp;import java.awt.event.MouseMotionListener;
+<i>34</i>&nbsp;import java.awt.image.BufferedImage;
+<i>35</i>&nbsp;import java.awt.image.RenderedImage;
+<i>36</i>&nbsp;import java.util.ArrayList;
+<i>37</i>&nbsp;import java.util.Date;
+<i>38</i>&nbsp;import java.util.List;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;/**
+<i>41</i>&nbsp; * PERT chart implementation where nodes are tasks and links succession
+<i>42</i>&nbsp; * relations.
+<i>43</i>&nbsp; *
+<i>44</i>&nbsp; * @author bbaranne
+<i>45</i>&nbsp; * @author Julien Seiler
+<i>46</i>&nbsp; *
+<i>47</i>&nbsp; */
+<i>48</i>&nbsp;public class ActivityOnNodePertChart extends PertChart {
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  /** List of abstract nodes. */
+<i>51</i>&nbsp;  private List&lt;TaskGraphNode&gt; myTaskGraphNodes;
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  /** List of graphical arrows. */
+<i>54</i>&nbsp;  private List&lt;GraphicalArrow&gt; myGraphicalArrows;
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  /** List of graphical nodes (in relation with abstract nodes) */
+<i>57</i>&nbsp;  private List&lt;GraphicalNode&gt; myGraphicalNodes;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  // private Map myMapPositionListOfNodes;
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  /** Number of columns */
+<i>62</i>&nbsp;  private int nbCols;
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  /** PERT chart abstraction used to build graph. */
+<i>65</i>&nbsp;  private PertChartAbstraction myPertAbstraction;
+<i>66</i>&nbsp;
+<b class="nc"><i>67</i>&nbsp;  private int myMaxX = 1;</b>
+<b class="nc"><i>68</i>&nbsp;  private int myMaxY = 1;</b>
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  /** The currently mouse pressed graphical node. */
+<i>71</i>&nbsp;  private GraphicalNode myPressedGraphicalNode;
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  /**
+<i>74</i>&nbsp;   * Offset between the mouse pointer when clicked on a graphical node and the
+<i>75</i>&nbsp;   * top left corner of this same node.
+<i>76</i>&nbsp;   */
+<i>77</i>&nbsp;  private int myXClickedOffset, myYClickedOffset;
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;  private final static GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  private final static int NODE_WIDTH = 110;// 205;
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  private final static int NODE_HEIGHT = 70;
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  private final static int X_GAP = 30;// 60;
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  private final static int Y_GAP = 15;// 30;
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  private final static int ARROW_HEIGHT = 10;
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  private final static int ARROW_WIDTH = 15;
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  private final static int ARROW_CORNER_WIDTH = 6;
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  private final static int X_OFFSET = 5;
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  private final static int Y_OFFSET = 5;
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  /** Color of the border of normal tasks. */
+<b class="nc"><i>100</i>&nbsp;  private final static Color NORMAL_COLOR = Color.BLUE.brighter();</b>
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;  /** Color of the border of supertasks. */
+<b class="nc"><i>103</i>&nbsp;  private final static Color SUPER_COLOR = Color.RED;</b>
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  /** Color of the border of milestones. */
+<b class="nc"><i>106</i>&nbsp;  private final static Color MILESTONE_COLOR = Color.BLACK;</b>
+<i>107</i>&nbsp;
+<i>108</i>&nbsp;  /** Color of the arrows. */
+<b class="nc"><i>109</i>&nbsp;  private final static Color ARROW_COLOR = Color.GRAY;</b>
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;  private final JScrollPane myScrollPane;
+<i>112</i>&nbsp;
+<b class="nc"><i>113</i>&nbsp;  public ActivityOnNodePertChart() {</b>
+<b class="nc"><i>114</i>&nbsp;    setBackground(Color.WHITE.brighter());</b>
+<i>115</i>&nbsp;
+<b class="nc"><i>116</i>&nbsp;    this.addMouseMotionListener(new MouseMotionListener() {</b>
+<i>117</i>&nbsp;      @Override
+<i>118</i>&nbsp;      public void mouseDragged(final MouseEvent e) {
+<b class="nc"><i>119</i>&nbsp;        if (myPressedGraphicalNode != null) {</b>
+<b class="nc"><i>120</i>&nbsp;          myPressedGraphicalNode.x = e.getX() - myXClickedOffset;</b>
+<b class="nc"><i>121</i>&nbsp;          myPressedGraphicalNode.y = e.getY() - myYClickedOffset;</b>
+<b class="nc"><i>122</i>&nbsp;          if (e.getX() &gt; getPreferredSize().getWidth()) {</b>
+<b class="nc"><i>123</i>&nbsp;            ActivityOnNodePertChart.this.setPreferredSize(new Dimension(myPressedGraphicalNode.x + getNodeWidth() + getxGap(),</b>
+<b class="nc"><i>124</i>&nbsp;                (int) getPreferredSize().getHeight()));</b>
+<b class="nc"><i>125</i>&nbsp;            revalidate();</b>
+<i>126</i>&nbsp;          }
+<b class="nc"><i>127</i>&nbsp;          if (e.getY() &gt; getPreferredSize().getHeight()) {</b>
+<b class="nc"><i>128</i>&nbsp;            ActivityOnNodePertChart.this.setPreferredSize(new Dimension((int) getPreferredSize().getWidth(),</b>
+<b class="nc"><i>129</i>&nbsp;                myPressedGraphicalNode.y + getNodeHeight() + getyGap()));</b>
+<b class="nc"><i>130</i>&nbsp;            revalidate();</b>
+<i>131</i>&nbsp;          }
+<b class="nc"><i>132</i>&nbsp;          repaint();</b>
+<i>133</i>&nbsp;        }
+<i>134</i>&nbsp;      }
+<i>135</i>&nbsp;
+<i>136</i>&nbsp;      @Override
+<i>137</i>&nbsp;      public void mouseMoved(MouseEvent e) {
+<i>138</i>&nbsp;        // nothing to do...
+<i>139</i>&nbsp;      }
+<i>140</i>&nbsp;    });
+<i>141</i>&nbsp;
+<b class="nc"><i>142</i>&nbsp;    this.addMouseListener(new MouseListener() {</b>
+<i>143</i>&nbsp;      @Override
+<i>144</i>&nbsp;      public void mouseClicked(MouseEvent arg0) {
+<i>145</i>&nbsp;        // nothing to do...
+<i>146</i>&nbsp;      }
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;      @Override
+<i>149</i>&nbsp;      public void mouseEntered(MouseEvent arg0) {
+<i>150</i>&nbsp;        // nothing to do...
+<i>151</i>&nbsp;      }
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;      @Override
+<i>154</i>&nbsp;      public void mouseExited(MouseEvent arg0) {
+<i>155</i>&nbsp;        // nothing to do...
+<i>156</i>&nbsp;      }
+<i>157</i>&nbsp;
+<i>158</i>&nbsp;      @Override
+<i>159</i>&nbsp;      public void mousePressed(MouseEvent e) {
+<b class="nc"><i>160</i>&nbsp;        myPressedGraphicalNode = getGraphicalNode(e.getX(), e.getY());</b>
+<b class="nc"><i>161</i>&nbsp;        if (myPressedGraphicalNode != null) {</b>
+<b class="nc"><i>162</i>&nbsp;          myXClickedOffset = e.getX() - myPressedGraphicalNode.x;</b>
+<b class="nc"><i>163</i>&nbsp;          myYClickedOffset = e.getY() - myPressedGraphicalNode.y;</b>
+<i>164</i>&nbsp;
+<b class="nc"><i>165</i>&nbsp;          myPressedGraphicalNode.backgroundColor = myPressedGraphicalNode.backgroundColor.darker();</b>
+<i>166</i>&nbsp;        }
+<b class="nc"><i>167</i>&nbsp;        repaint();</b>
+<i>168</i>&nbsp;      }
+<i>169</i>&nbsp;
+<i>170</i>&nbsp;      @Override
+<i>171</i>&nbsp;      public void mouseReleased(MouseEvent e) {
+<b class="nc"><i>172</i>&nbsp;        if (myPressedGraphicalNode != null) {</b>
+<b class="nc"><i>173</i>&nbsp;          if (myPressedGraphicalNode.node.isCritical()) {</b>
+<b class="nc"><i>174</i>&nbsp;            myPressedGraphicalNode.backgroundColor = defaultCriticalColor;</b>
+<i>175</i>&nbsp;          } else {
+<b class="nc"><i>176</i>&nbsp;            myPressedGraphicalNode.backgroundColor = defaultBackgroundColor;</b>
+<i>177</i>&nbsp;          }
+<b class="nc"><i>178</i>&nbsp;          myPressedGraphicalNode.x = getGridX(e.getX() - myXClickedOffset + getNodeWidth() / 2);</b>
+<b class="nc"><i>179</i>&nbsp;          myPressedGraphicalNode.y = getGridY(e.getY());</b>
+<b class="nc"><i>180</i>&nbsp;          myPressedGraphicalNode = null;</b>
+<b class="nc"><i>181</i>&nbsp;          repaint();</b>
+<i>182</i>&nbsp;        }
+<b class="nc"><i>183</i>&nbsp;        recalculatPreferredSize();</b>
+<b class="nc"><i>184</i>&nbsp;        revalidate();</b>
+<b class="nc"><i>185</i>&nbsp;        repaint();</b>
+<i>186</i>&nbsp;      }
+<i>187</i>&nbsp;    });
+<b class="nc"><i>188</i>&nbsp;    myScrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);</b>
+<i>189</i>&nbsp;  }
+<i>190</i>&nbsp;
+<i>191</i>&nbsp;  public int getTextPaddingX() {
+<b class="nc"><i>192</i>&nbsp;    return (int) (textPaddingX * getDpi());</b>
+<i>193</i>&nbsp;  }
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;
+<i>196</i>&nbsp;  public int getTextPaddingY() {
+<b class="nc"><i>197</i>&nbsp;    return (int) (textPaddingY * getDpi());</b>
+<i>198</i>&nbsp;  }
+<i>199</i>&nbsp;
+<i>200</i>&nbsp;
+<i>201</i>&nbsp;  /** Graphical nodes width. */
+<i>202</i>&nbsp;  private int getNodeWidth() {
+<b class="nc"><i>203</i>&nbsp;    return (int) (NODE_WIDTH * getDpi());</b>
+<i>204</i>&nbsp;  }
+<i>205</i>&nbsp;
+<i>206</i>&nbsp;  /** Graphical nodes height. */
+<i>207</i>&nbsp;  private  int getNodeHeight() {
+<b class="nc"><i>208</i>&nbsp;    return (int) (NODE_HEIGHT * getDpi());</b>
+<i>209</i>&nbsp;  }
+<i>210</i>&nbsp;
+<i>211</i>&nbsp;  /** Gap between two TaskGraphNodes with the same X coordinate. */
+<i>212</i>&nbsp;  private int getxGap() {
+<b class="nc"><i>213</i>&nbsp;    return (int) (X_GAP * getDpi());</b>
+<i>214</i>&nbsp;  }
+<i>215</i>&nbsp;
+<i>216</i>&nbsp;  /** Gap between two TaskGraphNodes with the same Y coordinate. */
+<i>217</i>&nbsp;  private int getyGap() {
+<b class="nc"><i>218</i>&nbsp;    return (int) (Y_GAP * getDpi());</b>
+<i>219</i>&nbsp;  }
+<i>220</i>&nbsp;
+<i>221</i>&nbsp;  private int getArrowHeight() {
+<b class="nc"><i>222</i>&nbsp;    return (int) (ARROW_HEIGHT * getDpi());</b>
+<i>223</i>&nbsp;  }
+<i>224</i>&nbsp;
+<i>225</i>&nbsp;  private int getArrowWidth() {
+<b class="nc"><i>226</i>&nbsp;    return (int) (ARROW_WIDTH * getDpi());</b>
+<i>227</i>&nbsp;  }
+<i>228</i>&nbsp;
+<i>229</i>&nbsp;  private int getArrowCornerWidth() {
+<b class="nc"><i>230</i>&nbsp;    return (int) (ARROW_CORNER_WIDTH * getDpi());</b>
+<i>231</i>&nbsp;  }
+<i>232</i>&nbsp;
+<i>233</i>&nbsp;  /** X offset for the top left task graph node. */
+<i>234</i>&nbsp;  private int getxOffset() {
+<b class="nc"><i>235</i>&nbsp;    return (int) (X_OFFSET * getDpi());</b>
+<i>236</i>&nbsp;  }
+<i>237</i>&nbsp;
+<i>238</i>&nbsp;  /** Y offset for the top left task graph node. */
+<i>239</i>&nbsp;  private int getYOffset() {
+<b class="nc"><i>240</i>&nbsp;    return (int) (Y_OFFSET * getDpi());</b>
+<i>241</i>&nbsp;  }
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;  /** Recalculate preferred size so that graphics fit with nodes positions. */
+<i>244</i>&nbsp;  private void recalculatPreferredSize() {
+<b class="nc"><i>245</i>&nbsp;    int maxX = 0;</b>
+<b class="nc"><i>246</i>&nbsp;    int maxY = 0;</b>
+<i>247</i>&nbsp;
+<b class="nc"><i>248</i>&nbsp;    for (GraphicalNode gn : myGraphicalNodes) {</b>
+<b class="nc"><i>249</i>&nbsp;      int x = gn.x + getNodeWidth();</b>
+<b class="nc"><i>250</i>&nbsp;      int y = gn.y + getNodeHeight();</b>
+<b class="nc"><i>251</i>&nbsp;      maxX = Math.max(maxX, x);</b>
+<b class="nc"><i>252</i>&nbsp;      maxY = Math.max(maxY, y);</b>
+<b class="nc"><i>253</i>&nbsp;    }</b>
+<b class="nc"><i>254</i>&nbsp;    setPreferredSize(new Dimension(maxX, maxY));</b>
+<b class="nc"><i>255</i>&nbsp;    setMaxX(maxX);</b>
+<b class="nc"><i>256</i>&nbsp;    setMaxY(maxY);</b>
+<i>257</i>&nbsp;  }
+<i>258</i>&nbsp;
+<i>259</i>&nbsp;  /**
+<i>260</i>&nbsp;   * @return &lt;code&gt;true&lt;/code&gt; if the point of coordinates &lt;code&gt;x&lt;/code&gt;,
+<i>261</i>&nbsp;   *         &lt;code&gt;y&lt;/code&gt; is in the rectangle described by is top left corner
+<i>262</i>&nbsp;   *         (&lt;code&gt;rectX&lt;/code&gt;, &lt;code&gt;rectY&lt;/code&gt;) and dimension (
+<i>263</i>&nbsp;   *         &lt;code&gt;rectWidth&lt;/code&gt;, &lt;code&gt;rectHeight&lt;/code&gt;),
+<i>264</i>&nbsp;   *         &lt;code&gt;false&lt;/code&gt; otherwise.
+<i>265</i>&nbsp;   */
+<i>266</i>&nbsp;  private static boolean isInRectancle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {
+<b class="nc"><i>267</i>&nbsp;    return (x &gt; rectX &amp;&amp; x &lt; rectX + rectWidth &amp;&amp; y &gt; rectY &amp;&amp; y &lt; rectY + rectHeight);</b>
+<i>268</i>&nbsp;  }
+<i>269</i>&nbsp;
+<i>270</i>&nbsp;  /**
+<i>271</i>&nbsp;   * @return The GraphicalNode at the &lt;code&gt;x&lt;/code&gt;, &lt;code&gt;y&lt;/code&gt; position,
+<i>272</i>&nbsp;   *         or &lt;code&gt;null&lt;/code&gt; if there is no node.
+<i>273</i>&nbsp;   */
+<i>274</i>&nbsp;  private GraphicalNode getGraphicalNode(int x, int y) {
+<b class="nc"><i>275</i>&nbsp;    for (GraphicalNode gn : myGraphicalNodes) {</b>
+<b class="nc"><i>276</i>&nbsp;      if (isInRectancle(x, y, gn.x, gn.y, getNodeWidth(), getNodeHeight())) {</b>
+<b class="nc"><i>277</i>&nbsp;        return gn;</b>
+<i>278</i>&nbsp;      }
+<b class="nc"><i>279</i>&nbsp;    }</b>
+<b class="nc"><i>280</i>&nbsp;    return null;</b>
+<i>281</i>&nbsp;  }
+<i>282</i>&nbsp;
+<i>283</i>&nbsp;  @Override
+<i>284</i>&nbsp;  protected void buildPertChart() {
+<b class="nc"><i>285</i>&nbsp;    if (myPertAbstraction == null) {</b>
+<b class="nc"><i>286</i>&nbsp;      myPertAbstraction = new PertChartAbstraction(myTaskManager);</b>
+<b class="nc"><i>287</i>&nbsp;      myTaskGraphNodes = myPertAbstraction.getTaskGraphNodes();</b>
+<b class="nc"><i>288</i>&nbsp;      myGraphicalNodes = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>289</i>&nbsp;      myGraphicalArrows = new ArrayList&lt;&gt;();</b>
+<i>290</i>&nbsp;      // myMapPositionListOfNodes = new HashMap();
+<i>291</i>&nbsp;      // rowsList = new HashMap();
+<b class="nc"><i>292</i>&nbsp;      nbCols = 0;</b>
+<b class="nc"><i>293</i>&nbsp;      setBackground(Color.WHITE);</b>
+<b class="nc"><i>294</i>&nbsp;      this.process();</b>
+<i>295</i>&nbsp;      // System.out.println(&quot;Position correction&quot;);
+<i>296</i>&nbsp;      // correctPositionBecauseOfSuperTasks();
+<b class="nc"><i>297</i>&nbsp;      avoidCrossingNode();</b>
+<b class="nc"><i>298</i>&nbsp;      avoidCrossingLine();</b>
+<b class="nc"><i>299</i>&nbsp;      removeEmptyColumn();</b>
+<b class="nc"><i>300</i>&nbsp;      calculateGraphicalNodesCoordinates();</b>
+<b class="nc"><i>301</i>&nbsp;      calculateArrowsCoordinates();</b>
+<b class="nc"><i>302</i>&nbsp;      setPreferredSize(new Dimension(getMaxX(), getMaxY()));</b>
+<i>303</i>&nbsp;    } else {
+<b class="nc"><i>304</i>&nbsp;      myPertAbstraction = new PertChartAbstraction(myTaskManager);</b>
+<b class="nc"><i>305</i>&nbsp;      myTaskGraphNodes = myPertAbstraction.getTaskGraphNodes();</b>
+<b class="nc"><i>306</i>&nbsp;      updateGraphNodesInfo();</b>
+<i>307</i>&nbsp;    }
+<i>308</i>&nbsp;  }
+<i>309</i>&nbsp;
+<i>310</i>&nbsp;  /** Updates the data for each nodes. */
+<i>311</i>&nbsp;  private void updateGraphNodesInfo() {
+<b class="nc"><i>312</i>&nbsp;    if (myTaskGraphNodes != null) {</b>
+<b class="nc"><i>313</i>&nbsp;      for (TaskGraphNode tgn : myTaskGraphNodes) {</b>
+<b class="nc"><i>314</i>&nbsp;        GraphicalNode graphicalNode = getGraphicalNodeByID(tgn.getID());</b>
+<b class="nc"><i>315</i>&nbsp;        if (graphicalNode != null) {</b>
+<b class="nc"><i>316</i>&nbsp;          graphicalNode.updateData(tgn);</b>
+<i>317</i>&nbsp;        }
+<b class="nc"><i>318</i>&nbsp;      }</b>
+<i>319</i>&nbsp;    }
+<i>320</i>&nbsp;  }
+<i>321</i>&nbsp;
+<i>322</i>&nbsp;  private boolean isZeroPosition(TaskGraphNode taskGraphNode) {
+<b class="nc"><i>323</i>&nbsp;    for (TaskGraphNode t : myTaskGraphNodes) {</b>
+<b class="nc"><i>324</i>&nbsp;      if (t.getSuccessors().contains(taskGraphNode)) {</b>
+<b class="nc"><i>325</i>&nbsp;        return false;</b>
+<i>326</i>&nbsp;      }
+<b class="nc"><i>327</i>&nbsp;    }</b>
+<b class="nc"><i>328</i>&nbsp;    return true;</b>
+<i>329</i>&nbsp;  }
+<i>330</i>&nbsp;
+<i>331</i>&nbsp;  private int getGridX(int x) {
+<b class="nc"><i>332</i>&nbsp;    int res = getxOffset();</b>
+<b class="nc"><i>333</i>&nbsp;    int tmp = 0;</b>
+<b class="nc"><i>334</i>&nbsp;    while (res &lt; x) {</b>
+<b class="nc"><i>335</i>&nbsp;      tmp = res;</b>
+<b class="nc"><i>336</i>&nbsp;      res += getNodeWidth() + getxGap();</b>
+<i>337</i>&nbsp;    }
+<b class="nc"><i>338</i>&nbsp;    return tmp;</b>
+<i>339</i>&nbsp;  }
+<i>340</i>&nbsp;
+<i>341</i>&nbsp;  private int getGridY(int y) {
+<b class="nc"><i>342</i>&nbsp;    int res = getYOffset();</b>
+<b class="nc"><i>343</i>&nbsp;    int tmp = 0;</b>
+<b class="nc"><i>344</i>&nbsp;    while (res &lt; y) {</b>
+<b class="nc"><i>345</i>&nbsp;      tmp = res;</b>
+<b class="nc"><i>346</i>&nbsp;      res += getNodeHeight() + getyGap();</b>
+<i>347</i>&nbsp;    }
+<b class="nc"><i>348</i>&nbsp;    return tmp;</b>
+<i>349</i>&nbsp;  }
+<i>350</i>&nbsp;
+<i>351</i>&nbsp;  private void process() {
+<b class="nc"><i>352</i>&nbsp;    for (TaskGraphNode tgn : myTaskGraphNodes) {</b>
+<b class="nc"><i>353</i>&nbsp;      if (isZeroPosition(tgn)) {</b>
+<b class="nc"><i>354</i>&nbsp;        add(0, new GraphicalNode(tgn));</b>
+<i>355</i>&nbsp;      }
+<b class="nc"><i>356</i>&nbsp;    }</b>
+<i>357</i>&nbsp;
+<i>358</i>&nbsp;    // TODO Translate:
+<i>359</i>&nbsp;    // ici tous les 0 position sont faits.
+<b class="nc"><i>360</i>&nbsp;    int col = 0;</b>
+<b class="nc"><i>361</i>&nbsp;    List&lt;TaskGraphNode&gt; l = getNodesThatAreInASpecificSuccessorPosition(col);</b>
+<b class="nc"><i>362</i>&nbsp;    while (l != null) {</b>
+<b class="nc"><i>363</i>&nbsp;      for (TaskGraphNode tnode : l) {</b>
+<b class="nc"><i>364</i>&nbsp;        GraphicalNode gnode = getGraphicalNodeByID(tnode.getID());</b>
+<b class="nc"><i>365</i>&nbsp;        if (gnode == null) {</b>
+<b class="nc"><i>366</i>&nbsp;          gnode = createGraphicalNode(tnode);</b>
+<i>367</i>&nbsp;        } else {
+<b class="nc"><i>368</i>&nbsp;          remove(gnode);</b>
+<i>369</i>&nbsp;        }
+<b class="nc"><i>370</i>&nbsp;        add(col + 1, gnode);</b>
+<b class="nc"><i>371</i>&nbsp;      }</b>
+<b class="nc"><i>372</i>&nbsp;      col++;</b>
+<b class="nc"><i>373</i>&nbsp;      l = getNodesThatAreInASpecificSuccessorPosition(col);</b>
+<i>374</i>&nbsp;    }
+<i>375</i>&nbsp;  }
+<i>376</i>&nbsp;
+<i>377</i>&nbsp;  /**
+<i>378</i>&nbsp;   * Creates or gets the graphical node corresponding to the taskGrahNode
+<i>379</i>&nbsp;   *
+<i>380</i>&nbsp;   * @param taskGraphNode
+<i>381</i>&nbsp;   */
+<i>382</i>&nbsp;  private GraphicalNode createGraphicalNode(TaskGraphNode taskGraphNode) {
+<b class="nc"><i>383</i>&nbsp;    GraphicalNode res = getGraphicalNodeByID(taskGraphNode.getID());</b>
+<b class="nc"><i>384</i>&nbsp;    if (res != null) {</b>
+<b class="nc"><i>385</i>&nbsp;      return res;</b>
+<i>386</i>&nbsp;    }
+<b class="nc"><i>387</i>&nbsp;    return new GraphicalNode(taskGraphNode);</b>
+<i>388</i>&nbsp;  }
+<i>389</i>&nbsp;
+<i>390</i>&nbsp;  private void moveDown(GraphicalNode graphicalNode) {
+<b class="nc"><i>391</i>&nbsp;    int row = graphicalNode.row;</b>
+<b class="nc"><i>392</i>&nbsp;    while (this.isOccupied(++row, graphicalNode.col)) {</b>
+<i>393</i>&nbsp;      // yup, the body is empty. But there is ++row above.
+<i>394</i>&nbsp;    }
+<b class="nc"><i>395</i>&nbsp;    graphicalNode.row = row;</b>
+<i>396</i>&nbsp;  }
+<i>397</i>&nbsp;
+<i>398</i>&nbsp;  private GraphicalNode getNode(int row, int col) {
+<b class="nc"><i>399</i>&nbsp;    for (GraphicalNode node : getNodeInColumn(col)) {</b>
+<b class="nc"><i>400</i>&nbsp;      if (node.row == row) {</b>
+<b class="nc"><i>401</i>&nbsp;        return node;</b>
+<i>402</i>&nbsp;      }
+<b class="nc"><i>403</i>&nbsp;    }</b>
+<b class="nc"><i>404</i>&nbsp;    return null;</b>
+<i>405</i>&nbsp;  }
+<i>406</i>&nbsp;
+<i>407</i>&nbsp;  private void moveRight(GraphicalNode graphicalNode) {
+<b class="nc"><i>408</i>&nbsp;    for (TaskGraphNode successor : graphicalNode.node.getSuccessors()) {</b>
+<b class="nc"><i>409</i>&nbsp;      moveRight(getGraphicalNodeByID(successor.getID()));</b>
+<b class="nc"><i>410</i>&nbsp;    }</b>
+<b class="nc"><i>411</i>&nbsp;    int newCol = graphicalNode.col + 1;</b>
+<b class="nc"><i>412</i>&nbsp;    if (isOccupied(graphicalNode.row, newCol)) {</b>
+<b class="nc"><i>413</i>&nbsp;      moveRight(getNode(graphicalNode.row, newCol));</b>
+<i>414</i>&nbsp;    }
+<b class="nc"><i>415</i>&nbsp;    graphicalNode.col = newCol;</b>
+<b class="nc"><i>416</i>&nbsp;    if (newCol == nbCols) {</b>
+<b class="nc"><i>417</i>&nbsp;      this.nbCols++;</b>
+<i>418</i>&nbsp;    }
+<i>419</i>&nbsp;  }
+<i>420</i>&nbsp;
+<i>421</i>&nbsp;  private void remove(GraphicalNode graphicalNode) {
+<b class="nc"><i>422</i>&nbsp;    myGraphicalNodes.remove(graphicalNode);</b>
+<i>423</i>&nbsp;
+<b class="nc"><i>424</i>&nbsp;    if (graphicalNode.col == -1) {</b>
+<i>425</i>&nbsp;      return;
+<i>426</i>&nbsp;    }
+<i>427</i>&nbsp;
+<b class="nc"><i>428</i>&nbsp;    for (GraphicalNode gnode : getNodeInColumn(graphicalNode.col)) {</b>
+<b class="nc"><i>429</i>&nbsp;      if (gnode.row &gt; graphicalNode.row) {</b>
+<b class="nc"><i>430</i>&nbsp;        gnode.row--;</b>
+<i>431</i>&nbsp;      }
+<b class="nc"><i>432</i>&nbsp;    }</b>
+<i>433</i>&nbsp;
+<i>434</i>&nbsp;    // int iNbRow = ((Integer)this.rowsList.get(new
+<i>435</i>&nbsp;    // Integer(graphicalNode.col))).intValue();
+<i>436</i>&nbsp;    // rowsList.put(new Integer(graphicalNode.col), new Integer(iNbRow-1));
+<i>437</i>&nbsp;
+<b class="nc"><i>438</i>&nbsp;    if (graphicalNode.col == nbCols - 1) {</b>
+<b class="nc"><i>439</i>&nbsp;      List&lt;GraphicalNode&gt; list = getNodeInColumn(this.nbCols - 1);</b>
+<b class="nc"><i>440</i>&nbsp;      while (list.size() == 0) {</b>
+<b class="nc"><i>441</i>&nbsp;        nbCols--;</b>
+<b class="nc"><i>442</i>&nbsp;        list = getNodeInColumn(nbCols - 1);</b>
+<i>443</i>&nbsp;      }
+<i>444</i>&nbsp;    }
+<i>445</i>&nbsp;
+<b class="nc"><i>446</i>&nbsp;    graphicalNode.row = -1;</b>
+<b class="nc"><i>447</i>&nbsp;    graphicalNode.col = -1;</b>
+<i>448</i>&nbsp;  }
+<i>449</i>&nbsp;
+<i>450</i>&nbsp;  private GraphicalNode getGraphicalNodeByID(int id) {
+<b class="nc"><i>451</i>&nbsp;    for (GraphicalNode gn : myGraphicalNodes) {</b>
+<b class="nc"><i>452</i>&nbsp;      if (gn.node.getID() == id) {</b>
+<b class="nc"><i>453</i>&nbsp;        return gn;</b>
+<i>454</i>&nbsp;      }
+<b class="nc"><i>455</i>&nbsp;    }</b>
+<b class="nc"><i>456</i>&nbsp;    return null;</b>
+<i>457</i>&nbsp;  }
+<i>458</i>&nbsp;
+<i>459</i>&nbsp;  // TODO Translate:
+<i>460</i>&nbsp;  /** ajoute la graphical node dans la map position/liste des successeurs */
+<i>461</i>&nbsp;  private void add(int col, GraphicalNode graphicalNode) {
+<b class="nc"><i>462</i>&nbsp;    myGraphicalNodes.remove(graphicalNode);</b>
+<i>463</i>&nbsp;
+<b class="nc"><i>464</i>&nbsp;    if (nbCols - 1 &lt; col) {</b>
+<b class="nc"><i>465</i>&nbsp;      nbCols = col + 1;</b>
+<i>466</i>&nbsp;    }
+<i>467</i>&nbsp;
+<b class="nc"><i>468</i>&nbsp;    int row = 0;</b>
+<b class="nc"><i>469</i>&nbsp;    while (isOccupied(row, col)) {</b>
+<b class="nc"><i>470</i>&nbsp;      row++;</b>
+<i>471</i>&nbsp;    }
+<i>472</i>&nbsp;
+<b class="nc"><i>473</i>&nbsp;    graphicalNode.row = row;</b>
+<b class="nc"><i>474</i>&nbsp;    graphicalNode.col = col;</b>
+<i>475</i>&nbsp;
+<b class="nc"><i>476</i>&nbsp;    myGraphicalNodes.add(graphicalNode);</b>
+<i>477</i>&nbsp;
+<i>478</i>&nbsp;    // rowsList.put(new Integer(col), new Integer(iNbRow+1));
+<i>479</i>&nbsp;  }
+<i>480</i>&nbsp;
+<i>481</i>&nbsp;  private List&lt;TaskGraphNode&gt; getNodesThatAreInASpecificSuccessorPosition(int col) {
+<b class="nc"><i>482</i>&nbsp;    List&lt;GraphicalNode&gt; graphicaleNodes = getNodeInColumn(col);</b>
+<b class="nc"><i>483</i>&nbsp;    if (graphicaleNodes.size() == 0) {</b>
+<b class="nc"><i>484</i>&nbsp;      return null;</b>
+<i>485</i>&nbsp;    }
+<i>486</i>&nbsp;
+<b class="nc"><i>487</i>&nbsp;    List&lt;TaskGraphNode&gt; res = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>488</i>&nbsp;    for (GraphicalNode gn : graphicaleNodes) {</b>
+<b class="nc"><i>489</i>&nbsp;      res.addAll(gn.node.getSuccessors());</b>
+<b class="nc"><i>490</i>&nbsp;    }</b>
+<i>491</i>&nbsp;
+<b class="nc"><i>492</i>&nbsp;    return res;</b>
+<i>493</i>&nbsp;  }
+<i>494</i>&nbsp;
+<i>495</i>&nbsp;  /**
+<i>496</i>&nbsp;   * Get the list of GraphicalNode that are in a column.
+<i>497</i>&nbsp;   *
+<i>498</i>&nbsp;   * @param col
+<i>499</i>&nbsp;   *          the column number to look in
+<i>500</i>&nbsp;   * @return the list of GraphicalNode in the col
+<i>501</i>&nbsp;   */
+<i>502</i>&nbsp;  private List&lt;GraphicalNode&gt; getNodeInColumn(int col) {
+<b class="nc"><i>503</i>&nbsp;    List&lt;GraphicalNode&gt; list = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>504</i>&nbsp;    for (GraphicalNode gnode : myGraphicalNodes) {</b>
+<b class="nc"><i>505</i>&nbsp;      if (gnode.col == col) {</b>
+<b class="nc"><i>506</i>&nbsp;        list.add(gnode);</b>
+<i>507</i>&nbsp;      }
+<b class="nc"><i>508</i>&nbsp;    }</b>
+<b class="nc"><i>509</i>&nbsp;    return list;</b>
+<i>510</i>&nbsp;  }
+<i>511</i>&nbsp;
+<i>512</i>&nbsp;  private boolean isOccupied(int row, int col) {
+<b class="nc"><i>513</i>&nbsp;    for (GraphicalNode gnode : getNodeInColumn(col)) {</b>
+<b class="nc"><i>514</i>&nbsp;      if (gnode.row == row) {</b>
+<b class="nc"><i>515</i>&nbsp;        return true;</b>
+<i>516</i>&nbsp;      }
+<b class="nc"><i>517</i>&nbsp;    }</b>
+<b class="nc"><i>518</i>&nbsp;    return false;</b>
+<i>519</i>&nbsp;  }
+<i>520</i>&nbsp;
+<i>521</i>&nbsp;  private List&lt;TaskGraphNode&gt; getAncestor(TaskGraphNode tgn) {
+<b class="nc"><i>522</i>&nbsp;    List&lt;TaskGraphNode&gt; ancestors = new ArrayList&lt;&gt;();</b>
+<b class="nc"><i>523</i>&nbsp;    for (TaskGraphNode tnode : myTaskGraphNodes) {</b>
+<b class="nc"><i>524</i>&nbsp;      List&lt;TaskGraphNode&gt; successor = tnode.getSuccessors();</b>
+<b class="nc"><i>525</i>&nbsp;      if (successor.contains(tgn)) {</b>
+<b class="nc"><i>526</i>&nbsp;        ancestors.add(tnode);</b>
+<i>527</i>&nbsp;      }
+<b class="nc"><i>528</i>&nbsp;    }</b>
+<b class="nc"><i>529</i>&nbsp;    return ancestors;</b>
+<i>530</i>&nbsp;  }
+<i>531</i>&nbsp;
+<i>532</i>&nbsp;  private boolean isCrossingNode(GraphicalNode gnode) {
+<b class="nc"><i>533</i>&nbsp;    for (TaskGraphNode ancestor : getAncestor(gnode.node)) {</b>
+<b class="nc"><i>534</i>&nbsp;      GraphicalNode gancestor = getGraphicalNodeByID(ancestor.getID());</b>
+<b class="nc"><i>535</i>&nbsp;      if (gancestor.col &lt; gnode.col - 1) {</b>
+<b class="nc"><i>536</i>&nbsp;        for (int col = gnode.col - 1; col &gt; gancestor.col; col--) {</b>
+<b class="nc"><i>537</i>&nbsp;          if (this.isOccupied(gnode.row, col)) {</b>
+<b class="nc"><i>538</i>&nbsp;            return true;</b>
+<i>539</i>&nbsp;          }
+<i>540</i>&nbsp;        }
+<i>541</i>&nbsp;      }
+<b class="nc"><i>542</i>&nbsp;    }</b>
+<b class="nc"><i>543</i>&nbsp;    return false;</b>
+<i>544</i>&nbsp;  }
+<i>545</i>&nbsp;
+<i>546</i>&nbsp;  private void avoidCrossingNode() {
+<b class="nc"><i>547</i>&nbsp;    if (nbCols == 0) {</b>
+<i>548</i>&nbsp;      return;
+<i>549</i>&nbsp;    }
+<i>550</i>&nbsp;
+<b class="nc"><i>551</i>&nbsp;    int col = nbCols - 1;</b>
+<b class="nc"><i>552</i>&nbsp;    while (col &gt; 0) {</b>
+<b class="nc"><i>553</i>&nbsp;      boolean hasmoved = false;</b>
+<b class="nc"><i>554</i>&nbsp;      for (GraphicalNode gnode : getNodeInColumn(col)) {</b>
+<b class="nc"><i>555</i>&nbsp;        while (isCrossingNode(gnode)) {</b>
+<b class="nc"><i>556</i>&nbsp;          moveDown(gnode);</b>
+<b class="nc"><i>557</i>&nbsp;          hasmoved = true;</b>
+<i>558</i>&nbsp;        }
+<b class="nc"><i>559</i>&nbsp;      }</b>
+<b class="nc"><i>560</i>&nbsp;      if (hasmoved &amp;&amp; col &lt; nbCols - 1) {</b>
+<b class="nc"><i>561</i>&nbsp;        col++;</b>
+<i>562</i>&nbsp;      } else {
+<b class="nc"><i>563</i>&nbsp;        col--;</b>
+<i>564</i>&nbsp;      }
+<b class="nc"><i>565</i>&nbsp;    }</b>
+<i>566</i>&nbsp;  }
+<i>567</i>&nbsp;
+<i>568</i>&nbsp;  private boolean isCrossingArrow(GraphicalNode gnode) {
+<i>569</i>&nbsp;    // search for the successors with the highest and lowest position
+<b class="nc"><i>570</i>&nbsp;    int maxUp = Integer.MAX_VALUE, maxDown = -1;</b>
+<b class="nc"><i>571</i>&nbsp;    for (TaskGraphNode successorNode : gnode.node.getSuccessors()) {</b>
+<b class="nc"><i>572</i>&nbsp;      GraphicalNode successor = getGraphicalNodeByID(successorNode.getID());</b>
+<b class="nc"><i>573</i>&nbsp;      if (successor.row &lt; maxUp) {</b>
+<b class="nc"><i>574</i>&nbsp;        maxUp = successor.row;</b>
+<i>575</i>&nbsp;      }
+<b class="nc"><i>576</i>&nbsp;      if (successor.row &gt; maxDown) {</b>
+<b class="nc"><i>577</i>&nbsp;        maxDown = successor.row;</b>
+<i>578</i>&nbsp;      }
+<b class="nc"><i>579</i>&nbsp;    }</b>
+<i>580</i>&nbsp;
+<i>581</i>&nbsp;    // Find all other nodes on the same column
+<b class="nc"><i>582</i>&nbsp;    List&lt;GraphicalNode&gt; otherNodes = this.getNodeInColumn(gnode.col);</b>
+<b class="nc"><i>583</i>&nbsp;    otherNodes.remove(gnode);</b>
+<i>584</i>&nbsp;
+<i>585</i>&nbsp;    // TODO Translate
+<i>586</i>&nbsp;    // parcours des nodes sur la même colonne
+<b class="nc"><i>587</i>&nbsp;    List&lt;TaskGraphNode&gt; gnodeSuccessors = gnode.node.getSuccessors();</b>
+<b class="nc"><i>588</i>&nbsp;    for (GraphicalNode otherNode : otherNodes) {</b>
+<b class="nc"><i>589</i>&nbsp;      for (TaskGraphNode otherSuccessor : otherNode.node.getSuccessors()) {</b>
+<b class="nc"><i>590</i>&nbsp;        GraphicalNode otherSuccessorNode = getGraphicalNodeByID(otherSuccessor.getID());</b>
+<b class="nc"><i>591</i>&nbsp;        if (maxUp &lt; gnode.row) {</b>
+<i>592</i>&nbsp;          // some arrows are going up
+<b class="nc"><i>593</i>&nbsp;          if (otherSuccessorNode.row &lt;= gnode.row &amp;&amp; !gnodeSuccessors.contains(otherSuccessor)) {</b>
+<b class="nc"><i>594</i>&nbsp;            return true;</b>
+<i>595</i>&nbsp;          }
+<i>596</i>&nbsp;        }
+<b class="nc"><i>597</i>&nbsp;        if (maxDown &gt; gnode.row) {</b>
+<i>598</i>&nbsp;          // some arrow are going down
+<b class="nc"><i>599</i>&nbsp;          if (otherSuccessorNode.row &gt;= gnode.row &amp;&amp; !gnodeSuccessors.contains(otherSuccessor)) {</b>
+<b class="nc"><i>600</i>&nbsp;            return true;</b>
+<i>601</i>&nbsp;          }
+<i>602</i>&nbsp;        }
+<b class="nc"><i>603</i>&nbsp;      }</b>
+<b class="nc"><i>604</i>&nbsp;    }</b>
+<b class="nc"><i>605</i>&nbsp;    return false;</b>
+<i>606</i>&nbsp;  }
+<i>607</i>&nbsp;
+<i>608</i>&nbsp;  private void avoidCrossingLine() {
+<i>609</i>&nbsp;    boolean restart;
+<i>610</i>&nbsp;    do {
+<b class="nc"><i>611</i>&nbsp;      restart = false;</b>
+<b class="nc"><i>612</i>&nbsp;      for (int col = 0; col &lt; nbCols &amp;&amp; restart == false; col++) {</b>
+<b class="nc"><i>613</i>&nbsp;        List&lt;GraphicalNode&gt; list = getNodeInColumn(col);</b>
+<b class="nc"><i>614</i>&nbsp;        if (list.size() &gt; 1) {</b>
+<b class="nc"><i>615</i>&nbsp;          for (GraphicalNode gnode : list) {</b>
+<b class="nc"><i>616</i>&nbsp;            if (isCrossingArrow(gnode)) {</b>
+<b class="nc"><i>617</i>&nbsp;              moveRight(gnode);</b>
+<b class="nc"><i>618</i>&nbsp;              avoidCrossingNode();</b>
+<i>619</i>&nbsp;              // Stop processing and start over
+<b class="nc"><i>620</i>&nbsp;              restart = true;</b>
+<b class="nc"><i>621</i>&nbsp;              break;</b>
+<i>622</i>&nbsp;            }
+<b class="nc"><i>623</i>&nbsp;          }</b>
+<i>624</i>&nbsp;        }
+<i>625</i>&nbsp;      }
+<b class="nc"><i>626</i>&nbsp;    } while (restart);</b>
+<i>627</i>&nbsp;  }
+<i>628</i>&nbsp;
+<i>629</i>&nbsp;  private void removeEmptyColumn() {
+<b class="nc"><i>630</i>&nbsp;    for (int col = nbCols - 1; col &gt;= 0; col--) {</b>
+<b class="nc"><i>631</i>&nbsp;      if (this.getNodeInColumn(col).size() == 0) {</b>
+<b class="nc"><i>632</i>&nbsp;        if (col != nbCols - 1) {</b>
+<b class="nc"><i>633</i>&nbsp;          for (int c = col + 1; c &lt; nbCols; c++) {</b>
+<b class="nc"><i>634</i>&nbsp;            for (GraphicalNode gnode : getNodeInColumn(c)) {</b>
+<b class="nc"><i>635</i>&nbsp;              gnode.col--;</b>
+<b class="nc"><i>636</i>&nbsp;            }</b>
+<i>637</i>&nbsp;          }
+<i>638</i>&nbsp;        }
+<b class="nc"><i>639</i>&nbsp;        nbCols--;</b>
+<i>640</i>&nbsp;      }
+<i>641</i>&nbsp;    }
+<i>642</i>&nbsp;  }
+<i>643</i>&nbsp;
+<i>644</i>&nbsp;  @Override
+<i>645</i>&nbsp;  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+<i>646</i>&nbsp;    // TODO Auto-generated method stub
+<i>647</i>&nbsp;
+<i>648</i>&nbsp;  }
+<i>649</i>&nbsp;
+<i>650</i>&nbsp;  @Override
+<i>651</i>&nbsp;  public RenderedImage getRenderedImage(GanttExportSettings settings) {
+<b class="nc"><i>652</i>&nbsp;    BufferedImage image = new BufferedImage(getMaxX(), getMaxY(), BufferedImage.TYPE_INT_RGB);</b>
+<b class="nc"><i>653</i>&nbsp;    Graphics g = image.getGraphics();</b>
+<b class="nc"><i>654</i>&nbsp;    g.fillRect(0, 0, getMaxX(), getMaxY());</b>
+<b class="nc"><i>655</i>&nbsp;    paint(g);</b>
+<b class="nc"><i>656</i>&nbsp;    return image;</b>
+<i>657</i>&nbsp;  }
+<i>658</i>&nbsp;
+<i>659</i>&nbsp;  @Override
+<i>660</i>&nbsp;  public String getName() {
+<b class="nc"><i>661</i>&nbsp;    return language.getText(&quot;pertChartLongName&quot;);</b>
+<i>662</i>&nbsp;  }
+<i>663</i>&nbsp;
+<i>664</i>&nbsp;  @Override
+<i>665</i>&nbsp;  public void reset() {
+<b class="nc"><i>666</i>&nbsp;    myPertAbstraction = null;</b>
+<i>667</i>&nbsp;  }
+<i>668</i>&nbsp;
+<i>669</i>&nbsp;  @Override
+<i>670</i>&nbsp;  public void paint(Graphics g) {
+<b class="nc"><i>671</i>&nbsp;    this.buildPertChart();</b>
+<b class="nc"><i>672</i>&nbsp;    super.paint(g);</b>
+<b class="nc"><i>673</i>&nbsp;    for (GraphicalNode myGraphicalNode : myGraphicalNodes) {</b>
+<b class="nc"><i>674</i>&nbsp;      myGraphicalNode.paint(g);</b>
+<b class="nc"><i>675</i>&nbsp;    }</b>
+<b class="nc"><i>676</i>&nbsp;    for (GraphicalArrow myGraphicalArrow : myGraphicalArrows) {</b>
+<b class="nc"><i>677</i>&nbsp;      myGraphicalArrow.paintMe(g);</b>
+<b class="nc"><i>678</i>&nbsp;    }</b>
+<i>679</i>&nbsp;  }
+<i>680</i>&nbsp;
+<i>681</i>&nbsp;  private void calculateGraphicalNodesCoordinates() {
+<b class="nc"><i>682</i>&nbsp;    setMaxX(0);</b>
+<b class="nc"><i>683</i>&nbsp;    setMaxY(0);</b>
+<b class="nc"><i>684</i>&nbsp;    for (GraphicalNode gnode : myGraphicalNodes) {</b>
+<b class="nc"><i>685</i>&nbsp;      gnode.x += (getNodeWidth() + getxGap()) * gnode.col;</b>
+<b class="nc"><i>686</i>&nbsp;      gnode.y += (getNodeHeight() + getyGap()) * gnode.row;</b>
+<i>687</i>&nbsp;
+<b class="nc"><i>688</i>&nbsp;      setMaxX(gnode.x &gt; getMaxX() ? gnode.x : getMaxX());</b>
+<b class="nc"><i>689</i>&nbsp;      setMaxY(gnode.y &gt; getMaxY() ? gnode.y : getMaxY());</b>
+<b class="nc"><i>690</i>&nbsp;    }</b>
+<i>691</i>&nbsp;
+<b class="nc"><i>692</i>&nbsp;    setMaxX(getMaxX() + getNodeWidth() + getxGap());</b>
+<b class="nc"><i>693</i>&nbsp;    setMaxY(getMaxY() + getNodeHeight() + getyGap());</b>
+<i>694</i>&nbsp;  }
+<i>695</i>&nbsp;
+<i>696</i>&nbsp;  private void calculateArrowsCoordinates() {
+<b class="nc"><i>697</i>&nbsp;    for (GraphicalNode gn : myGraphicalNodes) {</b>
+<b class="nc"><i>698</i>&nbsp;      for (TaskGraphNode tgn : gn.node.getSuccessors()) {</b>
+<b class="nc"><i>699</i>&nbsp;        int id = tgn.getID();</b>
+<b class="nc"><i>700</i>&nbsp;        GraphicalArrow arrow = new GraphicalArrow(gn, getGraphicalNodeByID(id));</b>
+<b class="nc"><i>701</i>&nbsp;        myGraphicalArrows.add(arrow);</b>
+<b class="nc"><i>702</i>&nbsp;      }</b>
+<b class="nc"><i>703</i>&nbsp;    }</b>
+<i>704</i>&nbsp;  }
+<i>705</i>&nbsp;
+<i>706</i>&nbsp;  @Override
+<i>707</i>&nbsp;  public Object getAdapter(Class adapter) {
+<b class="nc"><i>708</i>&nbsp;    if (adapter.equals(Chart.class)) {</b>
+<b class="nc"><i>709</i>&nbsp;      return this;</b>
+<i>710</i>&nbsp;    }
+<b class="nc"><i>711</i>&nbsp;    if (adapter.equals(Container.class)) {</b>
+<b class="nc"><i>712</i>&nbsp;      return myScrollPane;</b>
+<i>713</i>&nbsp;    }
+<b class="nc"><i>714</i>&nbsp;    return null;</b>
+<i>715</i>&nbsp;  }
+<i>716</i>&nbsp;
+<i>717</i>&nbsp;  /**
+<i>718</i>&nbsp;   * Max and min coordinates in the graphics that paints the graphical nodes and
+<i>719</i>&nbsp;   * arrows.
+<i>720</i>&nbsp;   */
+<i>721</i>&nbsp;  private int getMaxX() {
+<b class="nc"><i>722</i>&nbsp;    return myMaxX;</b>
+<i>723</i>&nbsp;  }
+<i>724</i>&nbsp;
+<i>725</i>&nbsp;  private void setMaxX(int myMaxX) {
+<b class="nc"><i>726</i>&nbsp;    this.myMaxX = myMaxX;</b>
+<i>727</i>&nbsp;  }
+<i>728</i>&nbsp;
+<i>729</i>&nbsp;  private int getMaxY() {
+<b class="nc"><i>730</i>&nbsp;    return myMaxY;</b>
+<i>731</i>&nbsp;  }
+<i>732</i>&nbsp;
+<i>733</i>&nbsp;  private void setMaxY(int myMaxY) {
+<b class="nc"><i>734</i>&nbsp;    this.myMaxY = myMaxY;</b>
+<i>735</i>&nbsp;  }
+<i>736</i>&nbsp;
+<b class="nc"><i>737</i>&nbsp;  private final static Color defaultBackgroundColor = new Color(0.9f, 0.9f, 0.9f);</b>
+<i>738</i>&nbsp;
+<b class="nc"><i>739</i>&nbsp;  private final static Color defaultCriticalColor = new Color(250, 250, 115).brighter();</b>
+<b class="nc"><i>740</i>&nbsp;  private static int textPaddingX = 10;</b>
+<i>741</i>&nbsp;
+<b class="nc"><i>742</i>&nbsp;  private static int textPaddingY = 0;</b>
+<i>743</i>&nbsp;
+<i>744</i>&nbsp;
+<i>745</i>&nbsp;
+<i>746</i>&nbsp;  /**
+<i>747</i>&nbsp;   * Graphical node that is rendered on graphics.
+<i>748</i>&nbsp;   *
+<i>749</i>&nbsp;   * @author bbaranne
+<i>750</i>&nbsp;   */
+<i>751</i>&nbsp;  private class GraphicalNode extends JComponent {
+<i>752</i>&nbsp;    private TaskGraphNode node;
+<i>753</i>&nbsp;
+<b class="nc"><i>754</i>&nbsp;    private int col = -1; // determines X</b>
+<b class="nc"><i>755</i>&nbsp;    private int row = -1;</b>
+<i>756</i>&nbsp;
+<b class="nc"><i>757</i>&nbsp;    private Color backgroundColor = null;</b>
+<i>758</i>&nbsp;
+<b class="nc"><i>759</i>&nbsp;    int x = getxOffset(), y = getxOffset();</b>
+<i>760</i>&nbsp;
+<b class="nc"><i>761</i>&nbsp;    GraphicalNode(TaskGraphNode node) {</b>
+<b class="nc"><i>762</i>&nbsp;      this.row = -1;</b>
+<b class="nc"><i>763</i>&nbsp;      this.col = -1;</b>
+<b class="nc"><i>764</i>&nbsp;      this.node = node;</b>
+<b class="nc"><i>765</i>&nbsp;      this.backgroundColor = defaultBackgroundColor;</b>
+<b class="nc"><i>766</i>&nbsp;      if (node.isCritical()) {</b>
+<b class="nc"><i>767</i>&nbsp;        this.backgroundColor = defaultCriticalColor;</b>
+<i>768</i>&nbsp;      }
+<i>769</i>&nbsp;    }
+<i>770</i>&nbsp;
+<i>771</i>&nbsp;    /**
+<i>772</i>&nbsp;     * Updates the linked abstract node.
+<i>773</i>&nbsp;     *
+<i>774</i>&nbsp;     * @param node
+<i>775</i>&nbsp;     *          new linked abstract node.
+<i>776</i>&nbsp;     */
+<i>777</i>&nbsp;    void updateData(TaskGraphNode node) {
+<b class="nc"><i>778</i>&nbsp;      this.node = node;</b>
+<i>779</i>&nbsp;    }
+<i>780</i>&nbsp;
+<i>781</i>&nbsp;    /**
+<i>782</i>&nbsp;     * Paints the graphical node.
+<i>783</i>&nbsp;     *
+<i>784</i>&nbsp;     * @param g
+<i>785</i>&nbsp;     *          Graphics where the graphical node is to be painted.
+<i>786</i>&nbsp;     */
+<i>787</i>&nbsp;    @Override
+<i>788</i>&nbsp;    public void paint(Graphics g) {
+<b class="nc"><i>789</i>&nbsp;      if (node.isCritical()) {</b>
+<b class="nc"><i>790</i>&nbsp;        this.backgroundColor = defaultCriticalColor;</b>
+<i>791</i>&nbsp;      } else {
+<b class="nc"><i>792</i>&nbsp;        this.backgroundColor = defaultBackgroundColor;</b>
+<i>793</i>&nbsp;      }
+<b class="nc"><i>794</i>&nbsp;      paintMe(g);</b>
+<i>795</i>&nbsp;    }
+<i>796</i>&nbsp;
+<i>797</i>&nbsp;    /**
+<i>798</i>&nbsp;     * Paints the graphical node.
+<i>799</i>&nbsp;     *
+<i>800</i>&nbsp;     * @param g
+<i>801</i>&nbsp;     *          Graphics where the graphical node is to be painted.
+<i>802</i>&nbsp;     */
+<i>803</i>&nbsp;    private void paintMe(Graphics g) {
+<b class="nc"><i>804</i>&nbsp;      Font f = g.getFont();</b>
+<b class="nc"><i>805</i>&nbsp;      g.setFont(getBoldFont());</b>
+<b class="nc"><i>806</i>&nbsp;      FontMetrics fontMetrics = g.getFontMetrics(g.getFont());</b>
+<i>807</i>&nbsp;
+<b class="nc"><i>808</i>&nbsp;      int type = this.node.getType();</b>
+<i>809</i>&nbsp;      Color color;
+<b class="nc"><i>810</i>&nbsp;      switch (type) {</b>
+<i>811</i>&nbsp;      case PertChartAbstraction.Type.NORMAL:
+<b class="nc"><i>812</i>&nbsp;        color = NORMAL_COLOR;</b>
+<b class="nc"><i>813</i>&nbsp;        break;</b>
+<i>814</i>&nbsp;      case PertChartAbstraction.Type.SUPER:
+<b class="nc"><i>815</i>&nbsp;        color = SUPER_COLOR;</b>
+<b class="nc"><i>816</i>&nbsp;        break;</b>
+<i>817</i>&nbsp;      case PertChartAbstraction.Type.MILESTONE:
+<b class="nc"><i>818</i>&nbsp;        color = MILESTONE_COLOR;</b>
+<b class="nc"><i>819</i>&nbsp;        break;</b>
+<i>820</i>&nbsp;      default:
+<b class="nc"><i>821</i>&nbsp;        color = NORMAL_COLOR;</b>
+<i>822</i>&nbsp;      }
+<b class="nc"><i>823</i>&nbsp;      g.setColor(this.backgroundColor);</b>
+<i>824</i>&nbsp;
+<b class="nc"><i>825</i>&nbsp;      g.fillRoundRect(x, y, getNodeWidth(), getNodeHeight(), 16, 16);</b>
+<b class="nc"><i>826</i>&nbsp;      g.setColor(color);</b>
+<b class="nc"><i>827</i>&nbsp;      g.drawRoundRect(x, y, getNodeWidth(), getNodeHeight(), 16, 16);</b>
+<b class="nc"><i>828</i>&nbsp;      g.drawRoundRect(x + 1, y + 1, getNodeWidth() - 2, getNodeHeight() - 2, 14, 14);</b>
+<i>829</i>&nbsp;
+<b class="nc"><i>830</i>&nbsp;      g.drawLine(x, y + getTextPaddingY() + fontMetrics.getHeight() + getYOffset(), x + getNodeWidth(), y + getTextPaddingY() + fontMetrics.getHeight()</b>
+<b class="nc"><i>831</i>&nbsp;          + getYOffset());</b>
+<i>832</i>&nbsp;
+<b class="nc"><i>833</i>&nbsp;      g.setColor(Color.BLACK);</b>
+<b class="nc"><i>834</i>&nbsp;      String name = node.getName();</b>
+<i>835</i>&nbsp;
+<b class="nc"><i>836</i>&nbsp;      g.drawString(StringUtils.getTruncatedString(name, getNodeWidth() - getTextPaddingX(), fontMetrics), x + getTextPaddingX(), y + getTextPaddingY()</b>
+<b class="nc"><i>837</i>&nbsp;          + fontMetrics.getHeight());</b>
+<i>838</i>&nbsp;
+<b class="nc"><i>839</i>&nbsp;      g.setFont(getBaseFont());</b>
+<b class="nc"><i>840</i>&nbsp;      fontMetrics = g.getFontMetrics(g.getFont());</b>
+<i>841</i>&nbsp;
+<b class="nc"><i>842</i>&nbsp;      g.setColor(Color.BLACK);</b>
+<b class="nc"><i>843</i>&nbsp;      g.drawString(language.getText(&quot;start&quot;) + &quot;: &quot; + node.getStartDate().toString(), x + getTextPaddingX(),</b>
+<b class="nc"><i>844</i>&nbsp;          (int) (y + getTextPaddingY() + 2.3 * fontMetrics.getHeight()));</b>
+<b class="nc"><i>845</i>&nbsp;      g.drawString(language.getText(&quot;end&quot;) + &quot;: &quot; + node.getEndDate().toString(), x + getTextPaddingX(),</b>
+<b class="nc"><i>846</i>&nbsp;          (int) (y + getTextPaddingY() + 3.3 * fontMetrics.getHeight()));</b>
+<i>847</i>&nbsp;
+<b class="nc"><i>848</i>&nbsp;      if (node.getDuration() != null)</b>
+<b class="nc"><i>849</i>&nbsp;        g.drawString(language.getText(&quot;duration&quot;) + &quot;: &quot; + node.getDuration().getLength(), x + getTextPaddingX(),</b>
+<b class="nc"><i>850</i>&nbsp;            (int) (y + getTextPaddingY() + 4.3 * fontMetrics.getHeight()));</b>
+<b class="nc"><i>851</i>&nbsp;      g.setFont(f);</b>
+<i>852</i>&nbsp;    }
+<i>853</i>&nbsp;
+<i>854</i>&nbsp;    @Override
+<i>855</i>&nbsp;    public boolean equals(Object o) {
+<b class="nc"><i>856</i>&nbsp;      if (o instanceof GraphicalNode) {</b>
+<b class="nc"><i>857</i>&nbsp;        return node.equals(((GraphicalNode) o).node);</b>
+<i>858</i>&nbsp;      }
+<b class="nc"><i>859</i>&nbsp;      return false;</b>
+<i>860</i>&nbsp;    }
+<i>861</i>&nbsp;
+<i>862</i>&nbsp;    @Override
+<i>863</i>&nbsp;    public String toString() {
+<b class="nc"><i>864</i>&nbsp;      return &quot;[&quot; + node.getName() + &quot; (&quot; + col + &quot;) &quot; + node.getSuccessors() + &quot;]&quot;;</b>
+<i>865</i>&nbsp;    }
+<i>866</i>&nbsp;  }
+<i>867</i>&nbsp;
+<i>868</i>&nbsp;  /**
+<i>869</i>&nbsp;   * Graphical arrow that is rendered on graphics.
+<i>870</i>&nbsp;   *
+<i>871</i>&nbsp;   * @author bbaranne
+<i>872</i>&nbsp;   */
+<i>873</i>&nbsp;  private class GraphicalArrow {
+<i>874</i>&nbsp;    GraphicalNode from;
+<i>875</i>&nbsp;
+<i>876</i>&nbsp;    GraphicalNode to;
+<i>877</i>&nbsp;
+<b class="nc"><i>878</i>&nbsp;    GraphicalArrow(GraphicalNode from, GraphicalNode to) {</b>
+<b class="nc"><i>879</i>&nbsp;      this.from = from;</b>
+<b class="nc"><i>880</i>&nbsp;      this.to = to;</b>
+<i>881</i>&nbsp;    }
+<i>882</i>&nbsp;
+<i>883</i>&nbsp;    private void paintMe(Graphics g) {
+<b class="nc"><i>884</i>&nbsp;      g.setColor(ARROW_COLOR);</b>
+<i>885</i>&nbsp;
+<i>886</i>&nbsp;      int arrowFromX, arrowFromY;
+<i>887</i>&nbsp;      int arrowToX, arrowToY;
+<i>888</i>&nbsp;
+<b class="nc"><i>889</i>&nbsp;      arrowFromX = from.x + getNodeWidth();</b>
+<b class="nc"><i>890</i>&nbsp;      arrowFromY = from.y + getNodeHeight() / 2;</b>
+<b class="nc"><i>891</i>&nbsp;      arrowToX = to.x;</b>
+<b class="nc"><i>892</i>&nbsp;      arrowToY = to.y + getNodeHeight() / 2;</b>
+<i>893</i>&nbsp;
+<b class="nc"><i>894</i>&nbsp;      int[] xS = { arrowToX, arrowToX - getArrowWidth(), arrowToX - getArrowWidth()};</b>
+<b class="nc"><i>895</i>&nbsp;      int[] yS = { arrowToY, arrowToY - getArrowHeight() / 2, arrowToY + getArrowHeight() / 2 };</b>
+<b class="nc"><i>896</i>&nbsp;      int nb = xS.length;</b>
+<i>897</i>&nbsp;
+<b class="nc"><i>898</i>&nbsp;      g.fillPolygon(xS, yS, nb); // flèche</b>
+<i>899</i>&nbsp;
+<b class="nc"><i>900</i>&nbsp;      if (arrowFromY != arrowToY) {</b>
+<b class="nc"><i>901</i>&nbsp;        int[] middleLineX = { arrowFromX + getxGap() / 2 - getArrowCornerWidth(), arrowFromX + getxGap() / 2,</b>
+<b class="nc"><i>902</i>&nbsp;            arrowFromX + getxGap() / 2, arrowFromX + getxGap() / 2 + getArrowCornerWidth()};</b>
+<b class="nc"><i>903</i>&nbsp;        int[] middleLineY = { arrowFromY,</b>
+<b class="nc"><i>904</i>&nbsp;            (arrowFromY &lt; arrowToY ? arrowFromY + getArrowCornerWidth() : arrowFromY - getArrowCornerWidth()),</b>
+<b class="nc"><i>905</i>&nbsp;            (arrowFromY &lt; arrowToY ? arrowToY - getArrowCornerWidth() : arrowToY + getArrowCornerWidth()), arrowToY };</b>
+<b class="nc"><i>906</i>&nbsp;        int middleLineNb = middleLineX.length;</b>
+<b class="nc"><i>907</i>&nbsp;        g.drawPolyline(middleLineX, middleLineY, middleLineNb);</b>
+<i>908</i>&nbsp;
+<b class="nc"><i>909</i>&nbsp;        g.drawLine(arrowFromX, arrowFromY, middleLineX[0], middleLineY[0]);</b>
+<b class="nc"><i>910</i>&nbsp;        g.drawLine(arrowFromX + getxGap() / 2 + getArrowCornerWidth(), arrowToY, arrowToX - getArrowWidth(), arrowToY);</b>
+<b class="nc"><i>911</i>&nbsp;      } else {</b>
+<b class="nc"><i>912</i>&nbsp;        g.drawLine(arrowFromX, arrowFromY, arrowToX, arrowToY);</b>
+<i>913</i>&nbsp;      }
+<i>914</i>&nbsp;
+<i>915</i>&nbsp;      // g.drawString(from.node.getName(),arrowFromX+5,arrowFromY+15);
+<i>916</i>&nbsp;      // g.drawString(to.node.getName(),arrowFromX+50,arrowFromY+15);
+<i>917</i>&nbsp;    }
+<i>918</i>&nbsp;  }
+<i>919</i>&nbsp;
+<i>920</i>&nbsp;  @Override
+<i>921</i>&nbsp;  public IGanttProject getProject() {
+<i>922</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>923</i>&nbsp;    return null;</b>
+<i>924</i>&nbsp;  }
+<i>925</i>&nbsp;
+<i>926</i>&nbsp;  @Override
+<i>927</i>&nbsp;  public void setDimensions(int height, int width) {
+<i>928</i>&nbsp;    // TODO Auto-generated method stub
+<i>929</i>&nbsp;  }
+<i>930</i>&nbsp;
+<i>931</i>&nbsp;  @Override
+<i>932</i>&nbsp;  public void setStartDate(Date startDate) {
+<i>933</i>&nbsp;    // TODO Auto-generated method stub
+<i>934</i>&nbsp;  }
+<i>935</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

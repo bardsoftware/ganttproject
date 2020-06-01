@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CustomColumn</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CustomColumn (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomColumn</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/ 19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.6%
+  </span>
+  <span class="absValue">
+    (19/ 48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>22</i>&nbsp;import org.eclipse.core.runtime.Status;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyClass;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyDefinition;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.CustomPropertyManager;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import javax.annotation.Nonnull;
+<i>30</i>&nbsp;import java.util.HashMap;
+<i>31</i>&nbsp;import java.util.Map;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;public class CustomColumn implements CustomPropertyDefinition {
+<b class="fc"><i>34</i>&nbsp;  private String id = null;</b>
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;  private String name = null;</b>
+<i>37</i>&nbsp;
+<b class="fc"><i>38</i>&nbsp;  private Object defaultValue = null;</b>
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  private final CustomColumnsManager myManager;
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  private CustomPropertyClass myPropertyClass;
+<b class="fc"><i>43</i>&nbsp;  private final Map&lt;String, String&gt; myAttributes = new HashMap&lt;&gt;();</b>
+<i>44</i>&nbsp;
+<b class="fc"><i>45</i>&nbsp;  CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClass propertyClass, Object colDefaultValue) {</b>
+<b class="fc"><i>46</i>&nbsp;    name = colName;</b>
+<b class="fc"><i>47</i>&nbsp;    myPropertyClass = propertyClass;</b>
+<b class="fc"><i>48</i>&nbsp;    defaultValue = colDefaultValue;</b>
+<b class="fc"><i>49</i>&nbsp;    myManager = manager;</b>
+<b class="fc"><i>50</i>&nbsp;  }</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  public String getId() {
+<b class="fc"><i>53</i>&nbsp;    return id;</b>
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  public void setId(String newId) {
+<b class="fc"><i>57</i>&nbsp;    id = newId;</b>
+<b class="fc"><i>58</i>&nbsp;  }</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public Object getDefaultValue() {
+<b class="fc"><i>62</i>&nbsp;    return defaultValue;</b>
+<i>63</i>&nbsp;  }
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  public void setDefaultValue(Object defaultValue) {
+<b class="nc"><i>66</i>&nbsp;    this.defaultValue = defaultValue;</b>
+<b class="nc"><i>67</i>&nbsp;  }</b>
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  @Override
+<i>70</i>&nbsp;  public void setDefaultValueAsString(String value) {
+<b class="nc"><i>71</i>&nbsp;    CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(</b>
+<b class="nc"><i>72</i>&nbsp;        getTypeAsString(), value);</b>
+<b class="nc"><i>73</i>&nbsp;    defaultValue = stub.getDefaultValue();</b>
+<b class="nc"><i>74</i>&nbsp;  }</b>
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  @Nonnull
+<i>77</i>&nbsp;  @Override
+<i>78</i>&nbsp;  public Map&lt;String, String&gt; getAttributes() {
+<b class="fc"><i>79</i>&nbsp;    return myAttributes;</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  @Nonnull
+<i>83</i>&nbsp;  @Override
+<i>84</i>&nbsp;  public String getName() {
+<b class="fc"><i>85</i>&nbsp;    return name;</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  @Override
+<i>89</i>&nbsp;  public void setName(String name) {
+<b class="nc"><i>90</i>&nbsp;    String oldName = this.name;</b>
+<b class="nc"><i>91</i>&nbsp;    this.name = name;</b>
+<b class="nc"><i>92</i>&nbsp;    myManager.fireDefinitionChanged(this, oldName);</b>
+<b class="nc"><i>93</i>&nbsp;  }</b>
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  @Nonnull
+<i>96</i>&nbsp;  @Override
+<i>97</i>&nbsp;  public CustomPropertyClass getPropertyClass() {
+<b class="fc"><i>98</i>&nbsp;    return myPropertyClass;</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public Class&lt;?&gt; getType() {
+<b class="nc"><i>103</i>&nbsp;    return myPropertyClass.getJavaClass();</b>
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  @Override
+<i>107</i>&nbsp;  public String toString() {
+<b class="nc"><i>108</i>&nbsp;    return this.name + &quot; [&quot; + getType() + &quot;] &lt;&quot; + this.defaultValue + &quot;&gt;&quot;;</b>
+<i>109</i>&nbsp;  }
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;  @Override
+<i>112</i>&nbsp;  public String getDefaultValueAsString() {
+<b class="nc"><i>113</i>&nbsp;    return this.defaultValue == null ? null : this.defaultValue.toString();</b>
+<i>114</i>&nbsp;  }
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;  @Override
+<i>117</i>&nbsp;  public String getID() {
+<b class="fc"><i>118</i>&nbsp;    return getId();</b>
+<i>119</i>&nbsp;  }
+<i>120</i>&nbsp;
+<i>121</i>&nbsp;  @Override
+<i>122</i>&nbsp;  public String getTypeAsString() {
+<b class="nc"><i>123</i>&nbsp;    return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(getType());</b>
+<i>124</i>&nbsp;  }
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  @Override
+<i>127</i>&nbsp;  public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
+<b class="nc"><i>128</i>&nbsp;    return Status.OK_STATUS;</b>
+<i>129</i>&nbsp;  }
+<i>130</i>&nbsp;
+<i>131</i>&nbsp;  @Override
+<i>132</i>&nbsp;  public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+<b class="nc"><i>133</i>&nbsp;    CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);</b>
+<b class="nc"><i>134</i>&nbsp;    myPropertyClass = propertyClass;</b>
+<b class="nc"><i>135</i>&nbsp;    String defaultValue = getDefaultValueAsString();</b>
+<b class="nc"><i>136</i>&nbsp;    if (defaultValue == null) {</b>
+<b class="nc"><i>137</i>&nbsp;      defaultValue = propertyClass.getDefaultValueAsString();</b>
+<i>138</i>&nbsp;    }
+<b class="nc"><i>139</i>&nbsp;    setDefaultValueAsString(defaultValue);</b>
+<b class="nc"><i>140</i>&nbsp;    myManager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue);</b>
+<b class="nc"><i>141</i>&nbsp;    return Status.OK_STATUS;</b>
+<i>142</i>&nbsp;  }
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  @Override
+<i>145</i>&nbsp;  public int hashCode() {
+<b class="fc"><i>146</i>&nbsp;    return id.hashCode();</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  @Override
+<i>150</i>&nbsp;  public boolean equals(Object obj) {
+<b class="nc"><i>151</i>&nbsp;    if (this == obj) {</b>
+<b class="nc"><i>152</i>&nbsp;      return true;</b>
+<i>153</i>&nbsp;    }
+<b class="nc"><i>154</i>&nbsp;    if (obj instanceof CustomColumn == false) {</b>
+<b class="nc"><i>155</i>&nbsp;      return false;</b>
+<i>156</i>&nbsp;    }
+<b class="nc"><i>157</i>&nbsp;    CustomColumn that = (CustomColumn) obj;</b>
+<b class="nc"><i>158</i>&nbsp;    return this.id.equals(that.id);</b>
+<i>159</i>&nbsp;  }
+<i>160</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

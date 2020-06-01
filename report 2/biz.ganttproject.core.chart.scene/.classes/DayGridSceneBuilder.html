@@ -1,0 +1,287 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DayGridSceneBuilder</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.scene</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DayGridSceneBuilder (biz.ganttproject.core.chart.scene)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DayGridSceneBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.3%
+  </span>
+  <span class="absValue">
+    (38/ 62)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DayGridSceneBuilder$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DayGridSceneBuilder$InputApi</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    91.7%
+  </span>
+  <span class="absValue">
+    (11/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64.7%
+  </span>
+  <span class="absValue">
+    (44/ 68)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>6</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>7</i>&nbsp;the Free Software Foundation, either version 3 of the License, or
+<i>8</i>&nbsp;(at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>17</i>&nbsp;*/
+<i>18</i>&nbsp;package biz.ganttproject.core.chart.scene;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;import java.awt.Color;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;import java.util.List;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.calendar.CalendarEvent;
+<i>25</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar;
+<i>26</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+<i>27</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas;
+<i>28</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas.Line;
+<i>29</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+<i>30</i>&nbsp;import biz.ganttproject.core.chart.grid.Offset;
+<i>31</i>&nbsp;import biz.ganttproject.core.chart.grid.OffsetList;
+<i>32</i>&nbsp;import biz.ganttproject.core.chart.grid.OffsetLookup;
+<i>33</i>&nbsp;import biz.ganttproject.core.option.BooleanOption;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * Builds a scene consisting of vertical columns on the charts, such as weekend days, today line and
+<i>37</i>&nbsp; * project boundaries.
+<i>38</i>&nbsp; *
+<i>39</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>40</i>&nbsp; */
+<i>41</i>&nbsp;public class DayGridSceneBuilder extends AbstractSceneBuilder {
+<i>42</i>&nbsp;  private final BooleanOption myRedlineOption;
+<i>43</i>&nbsp;  private final BooleanOption myProjectDatesOption;
+<i>44</i>&nbsp;  private final Canvas myTimelineCanvas;
+<i>45</i>&nbsp;  private final InputApi myInputApi;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public static interface InputApi {
+<i>48</i>&nbsp;    BooleanOption getRedlineOption();
+<i>49</i>&nbsp;    BooleanOption getProjectDatesOption();
+<i>50</i>&nbsp;    int getTopLineHeight();
+<i>51</i>&nbsp;    Color getWeekendColor();
+<i>52</i>&nbsp;    Color getHolidayColor(Date holiday);
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;    Date getProjectStart();
+<i>55</i>&nbsp;    Date getProjectEnd();
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;    OffsetList getAtomUnitOffsets();
+<i>58</i>&nbsp;    CalendarEvent getEvent(Date offsetStart);
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<b class="fc"><i>61</i>&nbsp;  public DayGridSceneBuilder(InputApi inputApi, Canvas timelineCanvas) {</b>
+<b class="fc"><i>62</i>&nbsp;    myInputApi = inputApi;</b>
+<b class="fc"><i>63</i>&nbsp;    myRedlineOption = inputApi.getRedlineOption();</b>
+<b class="fc"><i>64</i>&nbsp;    myProjectDatesOption = inputApi.getProjectDatesOption();</b>
+<b class="fc"><i>65</i>&nbsp;    myTimelineCanvas = timelineCanvas;</b>
+<b class="fc"><i>66</i>&nbsp;  }</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  @Override
+<i>69</i>&nbsp;  public void build() {
+<b class="fc"><i>70</i>&nbsp;    if (myRedlineOption.isChecked()) {</b>
+<b class="nc"><i>71</i>&nbsp;      renderLine(new Date(), &quot;timeline.today&quot;, 2, OffsetLookup.BY_END_DATE);</b>
+<i>72</i>&nbsp;    }
+<b class="fc"><i>73</i>&nbsp;    if (isProjectBoundariesOptionOn()) {</b>
+<b class="nc"><i>74</i>&nbsp;      renderLine(myInputApi.getProjectStart(), &quot;timeline.project_start&quot;, -2, OffsetLookup.BY_START_DATE);</b>
+<b class="nc"><i>75</i>&nbsp;      renderLine(myInputApi.getProjectEnd(), &quot;timeline.project_end&quot;, 2, OffsetLookup.BY_START_DATE);</b>
+<i>76</i>&nbsp;    }
+<b class="fc"><i>77</i>&nbsp;    renderNonWorkingDayColumns();</b>
+<b class="fc"><i>78</i>&nbsp;  }</b>
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  private void renderLine(Date date, String style, int marginPx, OffsetLookup.ComparatorBy&lt;Date&gt; dateComparator) {
+<b class="nc"><i>81</i>&nbsp;    final int topUnitHeight = myInputApi.getTopLineHeight();</b>
+<b class="nc"><i>82</i>&nbsp;    OffsetLookup lookup = new OffsetLookup();</b>
+<b class="nc"><i>83</i>&nbsp;    int todayOffsetIdx = lookup.lookupOffsetBy(date, myInputApi.getAtomUnitOffsets(), dateComparator);</b>
+<b class="nc"><i>84</i>&nbsp;    if (todayOffsetIdx &lt; 0) {</b>
+<b class="nc"><i>85</i>&nbsp;      todayOffsetIdx = -todayOffsetIdx - 1;</b>
+<i>86</i>&nbsp;    }
+<b class="nc"><i>87</i>&nbsp;    Offset yesterdayOffset = todayOffsetIdx == 0 ? null : myInputApi.getAtomUnitOffsets().get(</b>
+<i>88</i>&nbsp;        todayOffsetIdx - 1);
+<b class="nc"><i>89</i>&nbsp;    if (yesterdayOffset == null) {</b>
+<b class="nc"><i>90</i>&nbsp;      return;</b>
+<i>91</i>&nbsp;    }
+<b class="nc"><i>92</i>&nbsp;    int yesterdayEndPixel = yesterdayOffset.getOffsetPixels();</b>
+<b class="nc"><i>93</i>&nbsp;    Line line = getCanvas().createLine(yesterdayEndPixel + marginPx, topUnitHeight * 2,</b>
+<b class="nc"><i>94</i>&nbsp;        yesterdayEndPixel + marginPx, getHeight() + topUnitHeight * 2);</b>
+<b class="nc"><i>95</i>&nbsp;    line.setStyle(style);</b>
+<b class="nc"><i>96</i>&nbsp;  }</b>
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;  // This method creates colored vertical stripes on the chart which correspond 
+<i>99</i>&nbsp;  // to weekend days and holidays. It is not necessary that colored stripe is 
+<i>100</i>&nbsp;  // a non-working day, though: e.g. we may show weekends but count them as working days.
+<i>101</i>&nbsp;  private void renderNonWorkingDayColumns() {
+<b class="fc"><i>102</i>&nbsp;    List&lt;Offset&gt; defaultOffsets = myInputApi.getAtomUnitOffsets();</b>
+<b class="fc"><i>103</i>&nbsp;    int curX = defaultOffsets.get(0).getOffsetPixels();</b>
+<b class="fc"><i>104</i>&nbsp;    if (curX &gt; 0) {</b>
+<b class="nc"><i>105</i>&nbsp;      curX = 0;</b>
+<i>106</i>&nbsp;    }
+<b class="fc"><i>107</i>&nbsp;    for (final Offset offset : defaultOffsets) {</b>
+<b class="fc"><i>108</i>&nbsp;      int dayMask = offset.getDayMask();</b>
+<b class="fc"><i>109</i>&nbsp;      CalendarEvent event = myInputApi.getEvent(offset.getOffsetStart());</b>
+<b class="fc"><i>110</i>&nbsp;      final int _curX = curX;</b>
+<b class="fc"><i>111</i>&nbsp;      Runnable r = new Runnable() {</b>
+<i>112</i>&nbsp;        @Override
+<i>113</i>&nbsp;        public void run() {
+<i>114</i>&nbsp;          // Create a holiday/weekend day bar in the main area
+<b class="fc"><i>115</i>&nbsp;          renderNonWorkingDay(_curX, offset);</b>
+<i>116</i>&nbsp;          // And expand it to the timeline area.
+<b class="fc"><i>117</i>&nbsp;          Rectangle r = myTimelineCanvas.createRectangle(_curX, getLineTopPosition(), </b>
+<b class="fc"><i>118</i>&nbsp;              offset.getOffsetPixels() - _curX, getLineBottomPosition() - getLineTopPosition());</b>
+<b class="fc"><i>119</i>&nbsp;          applyRectangleStyle(r, offset);</b>
+<b class="fc"><i>120</i>&nbsp;        }        </b>
+<i>121</i>&nbsp;      };
+<b class="fc"><i>122</i>&nbsp;      if ((dayMask &amp; (DayMask.WEEKEND)) != 0) {</b>
+<i>123</i>&nbsp;        // We render weekends always. If there is a colored event its color will be applied
+<i>124</i>&nbsp;        // in applyRectangleStyle because getholidaycolor returns non-null
+<b class="fc"><i>125</i>&nbsp;        r.run();</b>
+<b class="fc"><i>126</i>&nbsp;      } else if (event != null) {</b>
+<i>127</i>&nbsp;        // It is not a weekends but it is an event
+<i>128</i>&nbsp;        // Holidays should always be painted, but neutral and working days should not unless
+<i>129</i>&nbsp;        // they have a custom color
+<b class="nc"><i>130</i>&nbsp;        if (event.getType() == CalendarEvent.Type.HOLIDAY || event.getColor() != null) {</b>
+<b class="nc"><i>131</i>&nbsp;          r.run();</b>
+<i>132</i>&nbsp;        }
+<i>133</i>&nbsp;      }
+<b class="fc"><i>134</i>&nbsp;      curX = offset.getOffsetPixels();</b>
+<b class="fc"><i>135</i>&nbsp;    }</b>
+<b class="fc"><i>136</i>&nbsp;  }</b>
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  private void renderNonWorkingDay(int curX, Offset curOffset) {
+<b class="fc"><i>139</i>&nbsp;    Canvas.Rectangle r = getCanvas().createRectangle(curX, getLineBottomPosition(),</b>
+<b class="fc"><i>140</i>&nbsp;        curOffset.getOffsetPixels() - curX, getHeight());</b>
+<b class="fc"><i>141</i>&nbsp;    applyRectangleStyle(r, curOffset);</b>
+<b class="fc"><i>142</i>&nbsp;  }</b>
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  private void applyRectangleStyle(Rectangle r, Offset offset) {
+<b class="fc"><i>145</i>&nbsp;    Color customColor = myInputApi.getHolidayColor(offset.getOffsetStart());</b>
+<b class="fc"><i>146</i>&nbsp;    if (customColor != null) {</b>
+<b class="nc"><i>147</i>&nbsp;      r.setBackgroundColor(customColor);</b>
+<b class="nc"><i>148</i>&nbsp;      r.setOpacity(1.0f);</b>
+<i>149</i>&nbsp;    }
+<b class="fc"><i>150</i>&nbsp;    if ((offset.getDayMask() &amp; DayMask.HOLIDAY) == DayMask.HOLIDAY) {</b>
+<b class="nc"><i>151</i>&nbsp;      r.setStyle(&quot;calendar.holiday&quot;);</b>
+<b class="nc"><i>152</i>&nbsp;      return;</b>
+<i>153</i>&nbsp;    }
+<b class="fc"><i>154</i>&nbsp;    if ((offset.getDayMask() &amp; DayMask.WEEKEND) == DayMask.WEEKEND) {</b>
+<b class="fc"><i>155</i>&nbsp;      r.setStyle(&quot;calendar.weekend&quot;);</b>
+<b class="fc"><i>156</i>&nbsp;      return;</b>
+<i>157</i>&nbsp;    }
+<b class="nc"><i>158</i>&nbsp;  }</b>
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  private boolean isProjectBoundariesOptionOn() {
+<b class="fc"><i>161</i>&nbsp;    return myProjectDatesOption.isChecked();</b>
+<i>162</i>&nbsp;  }
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;  private int getLineTopPosition() {
+<b class="fc"><i>165</i>&nbsp;    return myInputApi.getTopLineHeight();</b>
+<i>166</i>&nbsp;  }
+<i>167</i>&nbsp;
+<i>168</i>&nbsp;  private int getLineBottomPosition() {
+<b class="fc"><i>169</i>&nbsp;    return getLineTopPosition() + getLineHeight();</b>
+<i>170</i>&nbsp;  }
+<i>171</i>&nbsp;
+<i>172</i>&nbsp;  private int getLineHeight() {
+<b class="fc"><i>173</i>&nbsp;    return getLineTopPosition();</b>
+<i>174</i>&nbsp;  }
+<i>175</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

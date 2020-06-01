@@ -1,0 +1,168 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ZoomingPanel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.overview</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ZoomingPanel (net.sourceforge.ganttproject.chart.overview)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ZoomingPanel</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (15/ 15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ZoomingPanel$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.1%
+  </span>
+  <span class="absValue">
+    (16/ 17)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.overview;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Function;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.chart.TimelineChart;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import javax.annotation.Nullable;
+<i>27</i>&nbsp;import java.awt.*;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * Creates a panel containing buttons of the zoom actions
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public class ZoomingPanel {
+<i>33</i>&nbsp;  private final TimelineChart myChart;
+<i>34</i>&nbsp;  private final UIFacade myUIFacade;
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;  public ZoomingPanel(UIFacade uiFacade, TimelineChart chart) {</b>
+<b class="fc"><i>37</i>&nbsp;    myChart = chart;</b>
+<b class="fc"><i>38</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="fc"><i>39</i>&nbsp;  }</b>
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  public Component getComponent() {
+<b class="fc"><i>42</i>&nbsp;    ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();</b>
+<b class="fc"><i>43</i>&nbsp;    return new ToolbarBuilder()</b>
+<b class="fc"><i>44</i>&nbsp;        .withDpiOption(myUIFacade.getDpiOption())</b>
+<b class="fc"><i>45</i>&nbsp;        .withLafOption(myUIFacade.getLafOption(), new Function&lt;String, Float&gt;() {</b>
+<i>46</i>&nbsp;          @Override
+<i>47</i>&nbsp;          public Float apply(@Nullable String s) {
+<b class="nc"><i>48</i>&nbsp;            return (s.indexOf(&quot;nimbus&quot;) &gt;= 0) ? 2f : 1f;</b>
+<i>49</i>&nbsp;          }
+<i>50</i>&nbsp;        })
+<b class="fc"><i>51</i>&nbsp;        .withGapFactory(ToolbarBuilder.Gaps.VDASH)</b>
+<b class="fc"><i>52</i>&nbsp;        .withBackground(myChart.getStyle().getSpanningHeaderBackgroundColor())</b>
+<b class="fc"><i>53</i>&nbsp;        .withHeight(24)</b>
+<b class="fc"><i>54</i>&nbsp;        .addButton(zoomActionSet.getZoomInAction())</b>
+<b class="fc"><i>55</i>&nbsp;        .addButton(zoomActionSet.getZoomOutAction())</b>
+<b class="fc"><i>56</i>&nbsp;        .build()</b>
+<b class="fc"><i>57</i>&nbsp;        .getToolbar();</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

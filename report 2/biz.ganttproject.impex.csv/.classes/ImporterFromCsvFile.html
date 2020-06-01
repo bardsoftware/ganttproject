@@ -1,0 +1,163 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ImporterFromCsvFile</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.csv</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ImporterFromCsvFile (biz.ganttproject.impex.csv)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ImporterFromCsvFile</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2012 GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.impex.csv;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.GanttProject;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.importer.BufferProject;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.importer.ImporterBase;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.util.collect.Pair;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import java.io.File;
+<i>31</i>&nbsp;import java.io.IOException;
+<i>32</i>&nbsp;import java.util.List;
+<i>33</i>&nbsp;import java.util.logging.Level;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * Controls the process of importing CSV file.
+<i>37</i>&nbsp; *
+<i>38</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>39</i>&nbsp; */
+<i>40</i>&nbsp;public class ImporterFromCsvFile extends ImporterBase {
+<b class="nc"><i>41</i>&nbsp;  private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();</b>
+<b class="nc"><i>42</i>&nbsp;  private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption };</b>
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  public ImporterFromCsvFile() {
+<b class="nc"><i>45</i>&nbsp;    super(&quot;csvFiles&quot;);</b>
+<b class="nc"><i>46</i>&nbsp;    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);</b>
+<i>47</i>&nbsp;  }
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  @Override
+<i>50</i>&nbsp;  protected GPOption[] getOptions() {
+<b class="nc"><i>51</i>&nbsp;    return myOptions;</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  public String getFileNamePattern() {
+<b class="nc"><i>56</i>&nbsp;    return &quot;csv|xls&quot;;</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  @Override
+<i>60</i>&nbsp;  public String getFileTypeDescription() {
+<b class="nc"><i>61</i>&nbsp;    return language.getText(&quot;csvFiles&quot;);</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  @Override
+<i>65</i>&nbsp;  public void run() {
+<b class="nc"><i>66</i>&nbsp;    File selectedFile = getFile();</b>
+<b class="nc"><i>67</i>&nbsp;    BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());</b>
+<b class="nc"><i>68</i>&nbsp;    GanttCSVOpen opener = new GanttCSVOpen(selectedFile, bufferProject.getTaskManager(),</b>
+<b class="nc"><i>69</i>&nbsp;        bufferProject.getHumanResourceManager(), bufferProject.getRoleManager(),</b>
+<b class="nc"><i>70</i>&nbsp;        bufferProject.getTimeUnitStack());</b>
+<b class="nc"><i>71</i>&nbsp;    opener.setOptions(((GanttProject)getProject()).getGanttOptions().getCSVOptions());</b>
+<i>72</i>&nbsp;    try {
+<b class="nc"><i>73</i>&nbsp;      List&lt;Pair&lt;Level, String&gt;&gt; errors = opener.load();</b>
+<b class="nc"><i>74</i>&nbsp;      ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, null);</b>
+<b class="nc"><i>75</i>&nbsp;      reportErrors(errors, &quot;CSV&quot;);</b>
+<b class="nc"><i>76</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>77</i>&nbsp;      GPLogger.log(e);</b>
+<b class="nc"><i>78</i>&nbsp;    }</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

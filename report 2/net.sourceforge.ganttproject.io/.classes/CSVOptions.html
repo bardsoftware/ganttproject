@@ -1,0 +1,192 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CSVOptions</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.io</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CSVOptions (net.sourceforge.ganttproject.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CSVOptions</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (8/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    94.7%
+  </span>
+  <span class="absValue">
+    (36/ 38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.io;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.model.task.TaskDefaultColumn;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.BooleanOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.DefaultBooleanOption;
+<i>24</i>&nbsp;import com.google.common.collect.ImmutableList;
+<i>25</i>&nbsp;import com.google.common.collect.ImmutableSet;
+<i>26</i>&nbsp;import com.google.common.collect.Maps;
+<i>27</i>&nbsp;import com.google.common.collect.Sets;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.ResourceDefaultColumn;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import java.util.Arrays;
+<i>31</i>&nbsp;import java.util.LinkedHashSet;
+<i>32</i>&nbsp;import java.util.List;
+<i>33</i>&nbsp;import java.util.Map;
+<i>34</i>&nbsp;import java.util.Set;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;public class CSVOptions {
+<b class="fc"><i>37</i>&nbsp;  private static final Set&lt;TaskDefaultColumn&gt; ourIgnoredTaskColumns = ImmutableSet.of(</b>
+<i>38</i>&nbsp;      TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
+<b class="fc"><i>39</i>&nbsp;  private final Map&lt;String, BooleanOption&gt; myTaskOptions = Maps.newLinkedHashMap();</b>
+<b class="fc"><i>40</i>&nbsp;  private final Map&lt;String, BooleanOption&gt; myResourceOptions = Maps.newLinkedHashMap();</b>
+<b class="fc"><i>41</i>&nbsp;  private final BooleanOption myBomOption = new DefaultBooleanOption(&quot;write-bom&quot;, false);</b>
+<i>42</i>&nbsp;
+<b class="fc"><i>43</i>&nbsp;  public CSVOptions() {</b>
+<b class="fc"><i>44</i>&nbsp;    List&lt;TaskDefaultColumn&gt; orderedColumns = ImmutableList.of(</b>
+<i>45</i>&nbsp;        TaskDefaultColumn.ID, TaskDefaultColumn.NAME, TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE,
+<i>46</i>&nbsp;        TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION, TaskDefaultColumn.COST);
+<b class="fc"><i>47</i>&nbsp;    LinkedHashSet&lt;TaskDefaultColumn&gt; columns = Sets.newLinkedHashSet(Arrays.asList(TaskDefaultColumn.values()));</b>
+<b class="fc"><i>48</i>&nbsp;    columns.removeAll(orderedColumns);</b>
+<b class="fc"><i>49</i>&nbsp;    for (TaskDefaultColumn taskColumn : orderedColumns) {</b>
+<b class="fc"><i>50</i>&nbsp;      createTaskExportOption(taskColumn);</b>
+<b class="fc"><i>51</i>&nbsp;    }</b>
+<b class="fc"><i>52</i>&nbsp;    for (TaskDefaultColumn taskColumn : columns) {</b>
+<b class="fc"><i>53</i>&nbsp;      if (!ourIgnoredTaskColumns.contains(taskColumn)) {</b>
+<b class="fc"><i>54</i>&nbsp;        createTaskExportOption(taskColumn);</b>
+<i>55</i>&nbsp;      }
+<b class="fc"><i>56</i>&nbsp;    }</b>
+<b class="fc"><i>57</i>&nbsp;    createTaskExportOption(&quot;webLink&quot;);</b>
+<b class="fc"><i>58</i>&nbsp;    createTaskExportOption(&quot;notes&quot;);</b>
+<i>59</i>&nbsp;
+<b class="fc"><i>60</i>&nbsp;    myResourceOptions.put(&quot;id&quot;, new DefaultBooleanOption(&quot;id&quot;, true));</b>
+<b class="fc"><i>61</i>&nbsp;    for (ResourceDefaultColumn resourceColumn : ResourceDefaultColumn.values()) {</b>
+<b class="fc"><i>62</i>&nbsp;      createResourceExportOption(resourceColumn);</b>
+<i>63</i>&nbsp;    }
+<b class="fc"><i>64</i>&nbsp;  }</b>
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  private BooleanOption createResourceExportOption(ResourceDefaultColumn resourceColumn) {
+<b class="fc"><i>67</i>&nbsp;    DefaultBooleanOption result = new DefaultBooleanOption(resourceColumn.getStub().getID(), true);</b>
+<b class="fc"><i>68</i>&nbsp;    myResourceOptions.put(resourceColumn.getStub().getID(), result);</b>
+<b class="fc"><i>69</i>&nbsp;    return result;</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  public BooleanOption createTaskExportOption(TaskDefaultColumn taskColumn) {
+<b class="fc"><i>73</i>&nbsp;    DefaultBooleanOption result = new DefaultBooleanOption(taskColumn.getStub().getID(), true);</b>
+<b class="fc"><i>74</i>&nbsp;    myTaskOptions.put(taskColumn.getStub().getID(), result);</b>
+<b class="fc"><i>75</i>&nbsp;    return result;</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  public BooleanOption createTaskExportOption(String id) {
+<b class="fc"><i>79</i>&nbsp;    DefaultBooleanOption result = new DefaultBooleanOption(id, true);</b>
+<b class="fc"><i>80</i>&nbsp;    myTaskOptions.put(id, result);</b>
+<b class="fc"><i>81</i>&nbsp;    return result;</b>
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  public Map&lt;String, BooleanOption&gt; getTaskOptions() {
+<b class="fc"><i>85</i>&nbsp;    return myTaskOptions;</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  public Map&lt;String, BooleanOption&gt; getResourceOptions() {
+<b class="fc"><i>89</i>&nbsp;    return myResourceOptions;</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<b class="fc"><i>92</i>&nbsp;  public boolean bFixedSize = false;</b>
+<i>93</i>&nbsp;
+<b class="fc"><i>94</i>&nbsp;  public String sSeparatedChar = &quot;,&quot;;</b>
+<i>95</i>&nbsp;
+<b class="fc"><i>96</i>&nbsp;  public String sSeparatedTextChar = &quot;\&quot;&quot;;</b>
+<i>97</i>&nbsp;
+<i>98</i>&nbsp;  /**
+<i>99</i>&nbsp;   * @return a list of the possible separated char.
+<i>100</i>&nbsp;   */
+<i>101</i>&nbsp;  public String[] getSeparatedTextChars() {
+<b class="nc"><i>102</i>&nbsp;    String[] charText = {&quot;   \&#39;   &quot;, &quot;   \&quot;   &quot;};</b>
+<b class="nc"><i>103</i>&nbsp;    return charText;</b>
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;
+<i>106</i>&nbsp;  public BooleanOption getBomOption() {
+<b class="fc"><i>107</i>&nbsp;    return myBomOption;</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

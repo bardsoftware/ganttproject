@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: MiltonResourceFactory</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document.webdav</a> ]
+</div>
+
+<h1>Coverage Summary for Class: MiltonResourceFactory (net.sourceforge.ganttproject.document.webdav)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MiltonResourceFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.4%
+  </span>
+  <span class="absValue">
+    (31/ 56)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MiltonResourceFactory$Key</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 9)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (2/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.7%
+  </span>
+  <span class="absValue">
+    (31/ 65)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document.webdav;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.DefaultStringOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.StringOption;
+<i>24</i>&nbsp;import com.google.common.base.Objects;
+<i>25</i>&nbsp;import com.google.common.base.Strings;
+<i>26</i>&nbsp;import com.google.common.collect.Maps;
+<i>27</i>&nbsp;import io.milton.httpclient.Host;
+<i>28</i>&nbsp;import io.milton.httpclient.ProxyDetails;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import java.net.MalformedURLException;
+<i>32</i>&nbsp;import java.net.URL;
+<i>33</i>&nbsp;import java.util.Map;
+<i>34</i>&nbsp;import java.util.logging.Level;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;/**
+<i>37</i>&nbsp; * Caching factory of WebDavResource instances.
+<i>38</i>&nbsp; *
+<i>39</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>40</i>&nbsp; */
+<i>41</i>&nbsp;public class MiltonResourceFactory {
+<i>42</i>&nbsp;  private static final int TIMEOUT_MS = 30000;
+<i>43</i>&nbsp;  private static class Key {
+<i>44</i>&nbsp;    String url;
+<i>45</i>&nbsp;    String username;
+<i>46</i>&nbsp;    String password;
+<i>47</i>&nbsp;
+<b class="nc"><i>48</i>&nbsp;    Key(String url, String username, String password) {</b>
+<b class="nc"><i>49</i>&nbsp;      this.url = url;</b>
+<b class="nc"><i>50</i>&nbsp;      this.username = username;</b>
+<b class="nc"><i>51</i>&nbsp;      this.password = password;</b>
+<i>52</i>&nbsp;    }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;    @Override
+<i>55</i>&nbsp;    public int hashCode() {
+<b class="nc"><i>56</i>&nbsp;      return Objects.hashCode(url, username, password);</b>
+<i>57</i>&nbsp;    }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;    @Override
+<i>60</i>&nbsp;    public boolean equals(Object obj) {
+<b class="nc"><i>61</i>&nbsp;      if (obj instanceof Key == false) {</b>
+<b class="nc"><i>62</i>&nbsp;        return false;</b>
+<i>63</i>&nbsp;      }
+<b class="nc"><i>64</i>&nbsp;      Key that = (Key) obj;</b>
+<b class="nc"><i>65</i>&nbsp;      return Objects.equal(this.url, that.url) &amp;&amp; Objects.equal(this.username, that.username) &amp;&amp; Objects.equal(this.password, that.password);</b>
+<i>66</i>&nbsp;    }
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<b class="fc"><i>69</i>&nbsp;  private final Map&lt;String, Host&gt; myHostCache = Maps.newHashMap();</b>
+<b class="fc"><i>70</i>&nbsp;  private final Map&lt;Key, MiltonResourceImpl&gt; myResourceCache = Maps.newHashMap();</b>
+<i>71</i>&nbsp;  private String myUsername;
+<i>72</i>&nbsp;  private String myPassword;
+<i>73</i>&nbsp;  private final StringOption myProxy;
+<i>74</i>&nbsp;
+<b class="fc"><i>75</i>&nbsp;  public MiltonResourceFactory() {</b>
+<b class="fc"><i>76</i>&nbsp;    myProxy = new DefaultStringOption(&quot;&quot;);</b>
+<b class="fc"><i>77</i>&nbsp;  }</b>
+<i>78</i>&nbsp;
+<b class="nc"><i>79</i>&nbsp;  public MiltonResourceFactory(String username, String password, StringOption proxyOption) {</b>
+<b class="nc"><i>80</i>&nbsp;    myUsername = username;</b>
+<b class="nc"><i>81</i>&nbsp;    myPassword = password;</b>
+<b class="nc"><i>82</i>&nbsp;    myProxy = proxyOption;</b>
+<b class="nc"><i>83</i>&nbsp;  }</b>
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  public MiltonResourceImpl createResource(WebDavUri uri) {
+<b class="nc"><i>86</i>&nbsp;    Key key = new Key(uri.buildUrl(), myUsername, myPassword);</b>
+<b class="nc"><i>87</i>&nbsp;    MiltonResourceImpl result = myResourceCache.get(key);</b>
+<b class="nc"><i>88</i>&nbsp;    if (result == null) {</b>
+<b class="nc"><i>89</i>&nbsp;      result = new MiltonResourceImpl(uri, getHost(uri), this);</b>
+<b class="nc"><i>90</i>&nbsp;      myResourceCache.put(key, result);</b>
+<i>91</i>&nbsp;    }
+<b class="nc"><i>92</i>&nbsp;    return result;</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  void clearCache() {
+<b class="nc"><i>96</i>&nbsp;    myResourceCache.clear();</b>
+<b class="nc"><i>97</i>&nbsp;  }</b>
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  public void setCredentials(String username, String password) {
+<b class="nc"><i>100</i>&nbsp;    myUsername = username;</b>
+<b class="nc"><i>101</i>&nbsp;    myPassword = password;</b>
+<b class="nc"><i>102</i>&nbsp;  }</b>
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  private Host getHost(WebDavUri uri) {
+<b class="nc"><i>105</i>&nbsp;    String hostKey = uri.buildRootUrl();</b>
+<b class="nc"><i>106</i>&nbsp;    Host result = myHostCache.get(hostKey);</b>
+<b class="nc"><i>107</i>&nbsp;    if (result== null) {</b>
+<b class="nc"><i>108</i>&nbsp;      result = new Host(uri.hostUrl, uri.rootPath, uri.port, myUsername, myPassword, getProxyDetails(myProxy), TIMEOUT_MS, null, null);</b>
+<b class="nc"><i>109</i>&nbsp;      result.setSecure(uri.isSecure);</b>
+<i>110</i>&nbsp;      // myHostCache.put(hostKey, result);
+<i>111</i>&nbsp;    }
+<b class="nc"><i>112</i>&nbsp;    return result;</b>
+<i>113</i>&nbsp;  }
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;  static ProxyDetails getProxyDetails(StringOption proxyOption) {
+<b class="fc"><i>116</i>&nbsp;    if (Strings.isNullOrEmpty(proxyOption.getValue())) {</b>
+<b class="fc"><i>117</i>&nbsp;      return null;</b>
+<i>118</i>&nbsp;    }
+<b class="fc"><i>119</i>&nbsp;    String url = proxyOption.getValue().trim();</b>
+<b class="fc"><i>120</i>&nbsp;    ProxyDetails result = new ProxyDetails();</b>
+<b class="fc"><i>121</i>&nbsp;    if (&quot;system&quot;.equalsIgnoreCase(url)) {</b>
+<b class="fc"><i>122</i>&nbsp;      result.setUseSystemProxy(true);</b>
+<i>123</i>&nbsp;    } else {
+<b class="fc"><i>124</i>&nbsp;      result.setUseSystemProxy(false);</b>
+<b class="fc"><i>125</i>&nbsp;      if (!url.startsWith(&quot;http://&quot;) &amp;&amp; !url.startsWith(&quot;https://&quot;)) {</b>
+<b class="fc"><i>126</i>&nbsp;        url = &quot;http://&quot; + url;</b>
+<i>127</i>&nbsp;      }
+<i>128</i>&nbsp;      try {
+<b class="fc"><i>129</i>&nbsp;        URL parsedUrl = new URL(url);</b>
+<b class="fc"><i>130</i>&nbsp;        if (parsedUrl.getUserInfo() != null) {</b>
+<b class="fc"><i>131</i>&nbsp;          String userInfo = parsedUrl.getUserInfo().replace(&quot;%40&quot;, &quot;@&quot;);</b>
+<b class="fc"><i>132</i>&nbsp;          int posColon = userInfo.indexOf(&#39;:&#39;);</b>
+<b class="fc"><i>133</i>&nbsp;          String username = null;</b>
+<b class="fc"><i>134</i>&nbsp;          String password = null;</b>
+<i>135</i>&nbsp;
+<b class="fc"><i>136</i>&nbsp;          if (posColon &gt;= 0) {</b>
+<b class="fc"><i>137</i>&nbsp;            username = userInfo.substring(0, posColon);</b>
+<b class="fc"><i>138</i>&nbsp;            password = (posColon + 1) &gt; userInfo.length() ? null : userInfo.substring(posColon + 1);</b>
+<i>139</i>&nbsp;          } else {
+<b class="fc"><i>140</i>&nbsp;            username = userInfo;</b>
+<i>141</i>&nbsp;          }
+<b class="fc"><i>142</i>&nbsp;          result.setUserName(username.replace(&quot;%3A&quot;, &quot;:&quot;));</b>
+<b class="fc"><i>143</i>&nbsp;          result.setPassword(password == null ? null : password.replace(&quot;%3A&quot;, &quot;:&quot;));</b>
+<i>144</i>&nbsp;        }
+<b class="fc"><i>145</i>&nbsp;        result.setProxyHost(parsedUrl.getHost());</b>
+<b class="fc"><i>146</i>&nbsp;        if (parsedUrl.getPort() != -1 &amp;&amp; parsedUrl.getPort() != parsedUrl.getDefaultPort()) {</b>
+<b class="fc"><i>147</i>&nbsp;          result.setProxyPort(parsedUrl.getPort());</b>
+<i>148</i>&nbsp;        }
+<b class="nc"><i>149</i>&nbsp;      } catch (MalformedURLException e) {</b>
+<b class="nc"><i>150</i>&nbsp;        GPLogger.getLogger(MiltonResourceFactory.class).log(Level.WARNING, String.format(&quot;Failed to parse proxy settings: %s&quot;, url), e);</b>
+<b class="nc"><i>151</i>&nbsp;        return null;</b>
+<b class="fc"><i>152</i>&nbsp;      }</b>
+<i>153</i>&nbsp;    }
+<b class="fc"><i>154</i>&nbsp;    return result;</b>
+<i>155</i>&nbsp;  }
+<i>156</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

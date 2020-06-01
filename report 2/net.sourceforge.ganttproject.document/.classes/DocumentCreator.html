@@ -1,0 +1,647 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DocumentCreator</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DocumentCreator (net.sourceforge.ganttproject.document)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DocumentCreator</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.8%
+  </span>
+  <span class="absValue">
+    (13/ 29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47%
+  </span>
+  <span class="absValue">
+    (71/ 151)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DocumentCreator$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/ 8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DocumentCreator$1$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DocumentCreator$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DocumentCreator$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DocumentCreator$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/ 5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DocumentCreator$StringOptionImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    48.9%
+  </span>
+  <span class="absValue">
+    (23/ 47)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (89/ 178)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 20.08.2003
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; */
+<i>5</i>&nbsp;package net.sourceforge.ganttproject.document;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;import biz.ganttproject.core.option.DefaultStringOption;
+<i>8</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>9</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>10</i>&nbsp;import biz.ganttproject.core.option.StringOption;
+<i>11</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>12</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>13</i>&nbsp;import com.google.common.collect.ImmutableMap;
+<i>14</i>&nbsp;import com.google.common.collect.Lists;
+<i>15</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>16</i>&nbsp;import net.sourceforge.ganttproject.GanttOptions;
+<i>17</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>18</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.HttpDocument;
+<i>19</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+<i>20</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.parser.ParserFactory;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import java.io.File;
+<i>28</i>&nbsp;import java.io.FileFilter;
+<i>29</i>&nbsp;import java.io.FilenameFilter;
+<i>30</i>&nbsp;import java.io.IOException;
+<i>31</i>&nbsp;import java.net.URI;
+<i>32</i>&nbsp;import java.nio.file.FileSystem;
+<i>33</i>&nbsp;import java.nio.file.FileSystems;
+<i>34</i>&nbsp;import java.nio.file.Files;
+<i>35</i>&nbsp;import java.nio.file.attribute.BasicFileAttributes;
+<i>36</i>&nbsp;import java.nio.file.attribute.FileTime;
+<i>37</i>&nbsp;import java.util.Arrays;
+<i>38</i>&nbsp;import java.util.Comparator;
+<i>39</i>&nbsp;import java.util.List;
+<i>40</i>&nbsp;import java.util.logging.Level;
+<i>41</i>&nbsp;import java.util.logging.Logger;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;/**
+<i>44</i>&nbsp; * This is a helper class, to create new instances of Document easily. It
+<i>45</i>&nbsp; * chooses the correct implementation based on the given path.
+<i>46</i>&nbsp; *
+<i>47</i>&nbsp; * @author Michael Haeusler (michael at akatose.de)
+<i>48</i>&nbsp; */
+<b class="fc"><i>49</i>&nbsp;public class DocumentCreator implements DocumentManager {</b>
+<i>50</i>&nbsp;  private final IGanttProject myProject;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  private final UIFacade myUIFacade;
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  private final ParserFactory myParserFactory;
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  private final WebDavStorageImpl myWebDavStorage;
+<b class="fc"><i>57</i>&nbsp;  private final StringOption myWorkingDirectory = new StringOptionImpl(&quot;working-dir&quot;, &quot;working-dir&quot;, &quot;dir&quot;);</b>
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  private final GPOptionGroup myOptionGroup;
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  private final GPOptionGroup myWebDavOptionGroup;
+<b class="fc"><i>62</i>&nbsp;  private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);</b>
+<i>63</i>&nbsp;  /** List containing the Most Recent Used documents */
+<b class="fc"><i>64</i>&nbsp;  private final DocumentsMRU myMRU = new DocumentsMRU(5);</b>
+<i>65</i>&nbsp;  private final File myDocumentsFolder;
+<i>66</i>&nbsp;
+<b class="fc"><i>67</i>&nbsp;  public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {</b>
+<b class="fc"><i>68</i>&nbsp;    myProject = project;</b>
+<b class="fc"><i>69</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="fc"><i>70</i>&nbsp;    myParserFactory = parserFactory;</b>
+<b class="fc"><i>71</i>&nbsp;    myWebDavStorage = new WebDavStorageImpl(project, uiFacade);</b>
+<b class="fc"><i>72</i>&nbsp;    myOptionGroup = new GPOptionGroup(&quot;&quot;, new GPOption[] {</b>
+<i>73</i>&nbsp;        myWorkingDirectory,
+<b class="fc"><i>74</i>&nbsp;        myWebDavStorage.getLegacyLastWebDAVDocumentOption(),</b>
+<b class="fc"><i>75</i>&nbsp;        myWebDavStorage.getWebDavLockTimeoutOption()</b>
+<i>76</i>&nbsp;    });
+<b class="fc"><i>77</i>&nbsp;    myWebDavOptionGroup = new GPOptionGroup(&quot;webdav&quot;, new GPOption[] {</b>
+<b class="fc"><i>78</i>&nbsp;        myWebDavStorage.getServersOption(),</b>
+<b class="fc"><i>79</i>&nbsp;        myWebDavStorage.getLastWebDavDocumentOption(),</b>
+<b class="fc"><i>80</i>&nbsp;        myWebDavStorage.getWebDavReleaseLockOption(),</b>
+<b class="fc"><i>81</i>&nbsp;        myWebDavStorage.getProxyOption()</b>
+<i>82</i>&nbsp;    });
+<b class="fc"><i>83</i>&nbsp;    File userHome = new File(System.getProperty(&quot;user.home&quot;));</b>
+<b class="fc"><i>84</i>&nbsp;    File documents = new File(userHome, &quot;Documents&quot;);</b>
+<i>85</i>&nbsp;    File docsFolder;
+<b class="fc"><i>86</i>&nbsp;    if (!documents.exists() || !documents.canRead()) {</b>
+<b class="nc"><i>87</i>&nbsp;      docsFolder = userHome;</b>
+<i>88</i>&nbsp;    } else {
+<b class="fc"><i>89</i>&nbsp;      File ganttProjectDocs = new File(documents, &quot;GanttProject&quot;);</b>
+<b class="fc"><i>90</i>&nbsp;      if (ganttProjectDocs.exists()) {</b>
+<b class="fc"><i>91</i>&nbsp;        docsFolder =  ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;</b>
+<i>92</i>&nbsp;      } else {
+<b class="nc"><i>93</i>&nbsp;        ganttProjectDocs.mkdirs();</b>
+<b class="nc"><i>94</i>&nbsp;        docsFolder = ganttProjectDocs.exists() &amp;&amp; ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;</b>
+<i>95</i>&nbsp;      }
+<i>96</i>&nbsp;    }
+<b class="fc"><i>97</i>&nbsp;    myDocumentsFolder = docsFolder;</b>
+<b class="fc"><i>98</i>&nbsp;  }</b>
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  /**
+<i>101</i>&nbsp;   * Creates an HttpDocument if path starts with &quot;http://&quot; or &quot;https://&quot;;
+<i>102</i>&nbsp;   * creates a FileDocument otherwise.
+<i>103</i>&nbsp;   *
+<i>104</i>&nbsp;   * @param path
+<i>105</i>&nbsp;   *          path to the document
+<i>106</i>&nbsp;   * @return an implementation of the interface Document
+<i>107</i>&nbsp;   */
+<i>108</i>&nbsp;  private Document createDocument(String path) {
+<b class="fc"><i>109</i>&nbsp;    return createDocument(path, null, null);</b>
+<i>110</i>&nbsp;  }
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  /**
+<i>113</i>&nbsp;   * Creates an HttpDocument if path starts with &quot;http://&quot; or &quot;https://&quot;;
+<i>114</i>&nbsp;   * creates a FileDocument otherwise.
+<i>115</i>&nbsp;   *
+<i>116</i>&nbsp;   * @param path
+<i>117</i>&nbsp;   *          path to the document
+<i>118</i>&nbsp;   * @param user
+<i>119</i>&nbsp;   *          username
+<i>120</i>&nbsp;   * @param pass
+<i>121</i>&nbsp;   *          password
+<i>122</i>&nbsp;   * @return an implementation of the interface Document
+<i>123</i>&nbsp;   * @throws Exception when the specified protocol is not supported
+<i>124</i>&nbsp;   */
+<i>125</i>&nbsp;  private Document createDocument(String path, String user, String pass) {
+<b class="fc"><i>126</i>&nbsp;    assert path != null;</b>
+<b class="fc"><i>127</i>&nbsp;    path = path.trim();</b>
+<b class="fc"><i>128</i>&nbsp;    String lowerPath = path.toLowerCase();</b>
+<b class="fc"><i>129</i>&nbsp;    if (lowerPath.startsWith(&quot;http://&quot;) || lowerPath.startsWith(&quot;https://&quot;)) {</b>
+<i>130</i>&nbsp;      try {
+<b class="nc"><i>131</i>&nbsp;        if (user == null &amp;&amp; pass == null) {</b>
+<b class="nc"><i>132</i>&nbsp;          WebDavServerDescriptor server = myWebDavStorage.findServer(path);</b>
+<b class="nc"><i>133</i>&nbsp;          if (server != null) {</b>
+<b class="nc"><i>134</i>&nbsp;            user = server.getUsername();</b>
+<b class="nc"><i>135</i>&nbsp;            pass = server.getPassword();</b>
+<i>136</i>&nbsp;          }
+<i>137</i>&nbsp;        }
+<b class="nc"><i>138</i>&nbsp;        return new HttpDocument(path, user, pass, myWebDavStorage.getProxyOption());</b>
+<b class="nc"><i>139</i>&nbsp;      } catch (IOException e) {</b>
+<b class="nc"><i>140</i>&nbsp;        GPLogger.log(e);</b>
+<b class="nc"><i>141</i>&nbsp;        return null;</b>
+<b class="nc"><i>142</i>&nbsp;      } catch (WebDavException e) {</b>
+<b class="nc"><i>143</i>&nbsp;        GPLogger.log(e);</b>
+<b class="nc"><i>144</i>&nbsp;        return null;</b>
+<i>145</i>&nbsp;      }
+<b class="fc"><i>146</i>&nbsp;    } else if (lowerPath.startsWith(&quot;ftp:&quot;)) {</b>
+<b class="nc"><i>147</i>&nbsp;      return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);</b>
+<b class="fc"><i>148</i>&nbsp;    } else if (!lowerPath.startsWith(&quot;file://&quot;) &amp;&amp; path.contains(&quot;://&quot;)) {</b>
+<i>149</i>&nbsp;      // Generate error for unknown protocol
+<b class="nc"><i>150</i>&nbsp;      throw new RuntimeException(&quot;Unknown protocol: &quot; + path.substring(0, path.indexOf(&quot;://&quot;)));</b>
+<i>151</i>&nbsp;    }
+<b class="fc"><i>152</i>&nbsp;    File file = new File(path);</b>
+<b class="fc"><i>153</i>&nbsp;    if (file.toPath().isAbsolute()) {</b>
+<b class="fc"><i>154</i>&nbsp;      return new FileDocument(file);</b>
+<i>155</i>&nbsp;    }
+<b class="nc"><i>156</i>&nbsp;    File relativeFile = new File(myDocumentsFolder, path);</b>
+<b class="nc"><i>157</i>&nbsp;    return new FileDocument(relativeFile);</b>
+<i>158</i>&nbsp;  }
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  @Override
+<i>161</i>&nbsp;  public Document getDocument(String path) {
+<b class="fc"><i>162</i>&nbsp;    Document physicalDocument = createDocument(path);</b>
+<b class="fc"><i>163</i>&nbsp;    Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),</b>
+<b class="fc"><i>164</i>&nbsp;        getResourceVisibleFields(), getParserFactory());</b>
+<b class="fc"><i>165</i>&nbsp;    return proxyDocument;</b>
+<i>166</i>&nbsp;  }
+<i>167</i>&nbsp;
+<i>168</i>&nbsp;  @Override
+<i>169</i>&nbsp;  public Document getProxyDocument(Document physicalDocument) {
+<b class="nc"><i>170</i>&nbsp;    Document proxyDocument = new ProxyDocument(this, physicalDocument, myProject, myUIFacade, getVisibleFields(),</b>
+<b class="nc"><i>171</i>&nbsp;        getResourceVisibleFields(), getParserFactory());</b>
+<b class="nc"><i>172</i>&nbsp;    return proxyDocument;</b>
+<i>173</i>&nbsp;  }
+<i>174</i>&nbsp;
+<i>175</i>&nbsp;  @Override
+<i>176</i>&nbsp;  public Document newUntitledDocument() throws IOException {
+<b class="fc"><i>177</i>&nbsp;    for (int i = 1;; i++) {</b>
+<b class="fc"><i>178</i>&nbsp;      String filename = GanttLanguage.getInstance().formatText(&quot;document.storage.untitledDocument&quot;, i);</b>
+<b class="fc"><i>179</i>&nbsp;      File untitledFile = new File(myDocumentsFolder, filename);</b>
+<b class="fc"><i>180</i>&nbsp;      if (untitledFile.exists()) {</b>
+<b class="fc"><i>181</i>&nbsp;        continue;</b>
+<i>182</i>&nbsp;      }
+<b class="fc"><i>183</i>&nbsp;      return getDocument(untitledFile.getAbsolutePath());</b>
+<i>184</i>&nbsp;    }
+<i>185</i>&nbsp;  }
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;  @Override
+<i>188</i>&nbsp;  public Document newDocument(String path) throws IOException {
+<b class="nc"><i>189</i>&nbsp;    return createDocument(path);</b>
+<i>190</i>&nbsp;  }
+<i>191</i>&nbsp;
+<i>192</i>&nbsp;  @Override
+<i>193</i>&nbsp;  public Document newAutosaveDocument() throws IOException {
+<b class="nc"><i>194</i>&nbsp;    File tempFile = File.createTempFile(&quot;_ganttproject_autosave&quot;, &quot;.gan&quot;);</b>
+<b class="nc"><i>195</i>&nbsp;    return getDocument(tempFile.getAbsolutePath());</b>
+<i>196</i>&nbsp;  }
+<i>197</i>&nbsp;
+<i>198</i>&nbsp;  public static Runnable createAutosaveCleanup() {
+<b class="fc"><i>199</i>&nbsp;    long now = CalendarFactory.newCalendar().getTimeInMillis();</b>
+<b class="fc"><i>200</i>&nbsp;    final File tempDir = getTempDir();</b>
+<i>201</i>&nbsp;    final long cutoff;
+<i>202</i>&nbsp;    try {
+<b class="fc"><i>203</i>&nbsp;      File optionsFile = GanttOptions.getOptionsFile();</b>
+<b class="fc"><i>204</i>&nbsp;      if (!optionsFile.exists()) {</b>
+<b class="nc"><i>205</i>&nbsp;        return null;</b>
+<i>206</i>&nbsp;      }
+<b class="fc"><i>207</i>&nbsp;      GPLogger.log(&quot;Options file:&quot; + optionsFile.getAbsolutePath());</b>
+<b class="fc"><i>208</i>&nbsp;      BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);</b>
+<b class="fc"><i>209</i>&nbsp;      FileTime accessTime = attrs.lastAccessTime();</b>
+<b class="fc"><i>210</i>&nbsp;      cutoff = Math.min(accessTime.toMillis(), now);</b>
+<b class="nc"><i>211</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>212</i>&nbsp;      GPLogger.log(e);</b>
+<b class="nc"><i>213</i>&nbsp;      return null;</b>
+<b class="fc"><i>214</i>&nbsp;    }</b>
+<b class="fc"><i>215</i>&nbsp;    return new Runnable() {</b>
+<i>216</i>&nbsp;      @Override
+<i>217</i>&nbsp;      public void run() {
+<b class="fc"><i>218</i>&nbsp;        GPLogger.log(&quot;Deleting old auto-save files&quot;);</b>
+<b class="fc"><i>219</i>&nbsp;        deleteAutosaves();</b>
+<b class="fc"><i>220</i>&nbsp;      }</b>
+<i>221</i>&nbsp;
+<i>222</i>&nbsp;      private void deleteAutosaves() {
+<i>223</i>&nbsp;        // Let&#39;s find autosaves created before launch of this GP instance
+<b class="fc"><i>224</i>&nbsp;        File[] previousAutosaves = tempDir.listFiles(new FileFilter() {</b>
+<i>225</i>&nbsp;          @Override
+<i>226</i>&nbsp;          public boolean accept(File file) {
+<b class="fc"><i>227</i>&nbsp;            return file.getName().startsWith(&quot;_ganttproject_autosave&quot;) &amp;&amp; file.lastModified() &lt; cutoff;</b>
+<i>228</i>&nbsp;          }
+<i>229</i>&nbsp;        });
+<b class="fc"><i>230</i>&nbsp;        for (File f : previousAutosaves) {</b>
+<b class="nc"><i>231</i>&nbsp;          f.deleteOnExit();</b>
+<i>232</i>&nbsp;        }
+<b class="fc"><i>233</i>&nbsp;      }</b>
+<i>234</i>&nbsp;    };
+<i>235</i>&nbsp;  }
+<i>236</i>&nbsp;
+<i>237</i>&nbsp;  private FileSystem getAutosaveZipFs() {
+<i>238</i>&nbsp;    try {
+<b class="nc"><i>239</i>&nbsp;      File tempDir = getTempDir();</b>
+<b class="nc"><i>240</i>&nbsp;      if (tempDir == null) {</b>
+<b class="nc"><i>241</i>&nbsp;        return null;</b>
+<i>242</i>&nbsp;      }
+<b class="nc"><i>243</i>&nbsp;      File autosaveFile = new File(tempDir, &quot;_ganttproject_autosave.zip&quot;);</b>
+<b class="nc"><i>244</i>&nbsp;      if (autosaveFile.exists() &amp;&amp; !autosaveFile.canWrite()) {</b>
+<b class="nc"><i>245</i>&nbsp;        myLogger.warning(String.format(</b>
+<b class="nc"><i>246</i>&nbsp;            &quot;Autosave file %s is not writable&quot;, autosaveFile.getAbsolutePath()));</b>
+<b class="nc"><i>247</i>&nbsp;        return null;</b>
+<i>248</i>&nbsp;      }
+<b class="nc"><i>249</i>&nbsp;      URI uri = new URI(&quot;jar:file:&quot; + autosaveFile.toURI().getPath());</b>
+<b class="nc"><i>250</i>&nbsp;      return FileSystems.newFileSystem(uri, ImmutableMap.&lt;String, Object&gt;of(&quot;create&quot;, &quot;true&quot;));</b>
+<b class="nc"><i>251</i>&nbsp;    } catch (Throwable e) {</b>
+<b class="nc"><i>252</i>&nbsp;      myLogger.log(Level.SEVERE, &quot;Failure when creating ZIP FS for autosaves&quot;, e);</b>
+<b class="nc"><i>253</i>&nbsp;      return null;</b>
+<i>254</i>&nbsp;    }
+<i>255</i>&nbsp;  }
+<i>256</i>&nbsp;
+<i>257</i>&nbsp;  private static File getTempDir() {
+<b class="fc"><i>258</i>&nbsp;    File tempDir = new File(System.getProperty(&quot;java.io.tmpdir&quot;));</b>
+<b class="fc"><i>259</i>&nbsp;    if (tempDir.exists() &amp;&amp; tempDir.isDirectory() &amp;&amp; tempDir.canWrite()) {</b>
+<b class="fc"><i>260</i>&nbsp;      return tempDir;</b>
+<i>261</i>&nbsp;    }
+<i>262</i>&nbsp;    try {
+<b class="nc"><i>263</i>&nbsp;      File tempFile = File.createTempFile(&quot;_ganttproject_autosave&quot;, &quot;.empty&quot;);</b>
+<b class="nc"><i>264</i>&nbsp;      tempDir = tempFile.getParentFile();</b>
+<b class="nc"><i>265</i>&nbsp;      if (tempDir.exists() &amp;&amp; tempDir.isDirectory() &amp;&amp; tempDir.canWrite()) {</b>
+<b class="nc"><i>266</i>&nbsp;        return tempDir;</b>
+<i>267</i>&nbsp;      }
+<b class="nc"><i>268</i>&nbsp;    } catch (IOException e) {</b>
+<b class="nc"><i>269</i>&nbsp;      GPLogger.getLogger(DocumentManager.class).log(Level.WARNING, &quot;Can&#39;t get parent of the temp file&quot;, e);</b>
+<b class="nc"><i>270</i>&nbsp;    }</b>
+<b class="nc"><i>271</i>&nbsp;    GPLogger.getLogger(DocumentManager.class).warning(&quot;Failed to find temporary directory&quot;);</b>
+<b class="nc"><i>272</i>&nbsp;    return null;</b>
+<i>273</i>&nbsp;  }
+<i>274</i>&nbsp;
+<i>275</i>&nbsp;  @Override
+<i>276</i>&nbsp;  public Document getLastAutosaveDocument(Document priorTo) throws IOException {
+<b class="nc"><i>277</i>&nbsp;    File f = File.createTempFile(&quot;tmp&quot;, &quot;&quot;);</b>
+<b class="nc"><i>278</i>&nbsp;    File directory = f.getParentFile();</b>
+<b class="nc"><i>279</i>&nbsp;    File files[] = directory.listFiles(new FilenameFilter() {</b>
+<i>280</i>&nbsp;      @Override
+<i>281</i>&nbsp;      public boolean accept(File f, String arg1) {
+<b class="nc"><i>282</i>&nbsp;        return arg1.startsWith(&quot;_ganttproject_autosave&quot;);</b>
+<i>283</i>&nbsp;      }
+<i>284</i>&nbsp;    });
+<b class="nc"><i>285</i>&nbsp;    Arrays.sort(files, new Comparator&lt;File&gt;() {</b>
+<i>286</i>&nbsp;      @Override
+<i>287</i>&nbsp;      public int compare(File left, File right) {
+<b class="nc"><i>288</i>&nbsp;        return Long.valueOf(left.lastModified()).compareTo(Long.valueOf(right.lastModified()));</b>
+<i>289</i>&nbsp;      }
+<i>290</i>&nbsp;    });
+<b class="nc"><i>291</i>&nbsp;    if (files.length == 0) {</b>
+<b class="nc"><i>292</i>&nbsp;      return null;</b>
+<i>293</i>&nbsp;    }
+<b class="nc"><i>294</i>&nbsp;    if (priorTo == null) {</b>
+<b class="nc"><i>295</i>&nbsp;      return getDocument(files[files.length - 1].getAbsolutePath());</b>
+<i>296</i>&nbsp;    }
+<b class="nc"><i>297</i>&nbsp;    for (int i = files.length - 1; i &gt;= 0; i--) {</b>
+<b class="nc"><i>298</i>&nbsp;      if (files[i].getName().equals(priorTo.getFileName())) {</b>
+<b class="nc"><i>299</i>&nbsp;        return i &gt; 0 ? getDocument(files[i - 1].getAbsolutePath()) : null;</b>
+<i>300</i>&nbsp;      }
+<i>301</i>&nbsp;    }
+<b class="nc"><i>302</i>&nbsp;    return null;</b>
+<i>303</i>&nbsp;  }
+<i>304</i>&nbsp;
+<i>305</i>&nbsp;  protected ColumnList getVisibleFields() {
+<b class="nc"><i>306</i>&nbsp;    return null;</b>
+<i>307</i>&nbsp;  }
+<i>308</i>&nbsp;
+<i>309</i>&nbsp;  protected ColumnList getResourceVisibleFields() {
+<b class="nc"><i>310</i>&nbsp;    return null;</b>
+<i>311</i>&nbsp;  }
+<i>312</i>&nbsp;
+<i>313</i>&nbsp;  protected ParserFactory getParserFactory() {
+<b class="nc"><i>314</i>&nbsp;    return myParserFactory;</b>
+<i>315</i>&nbsp;  }
+<i>316</i>&nbsp;
+<i>317</i>&nbsp;  String createTemporaryFile() throws IOException {
+<b class="nc"><i>318</i>&nbsp;    File tempFile = File.createTempFile(&quot;project&quot;, &quot;.gan&quot;, getWorkingDirectoryFile());</b>
+<b class="nc"><i>319</i>&nbsp;    return tempFile.getAbsolutePath();</b>
+<i>320</i>&nbsp;  }
+<i>321</i>&nbsp;
+<i>322</i>&nbsp;  @Override
+<i>323</i>&nbsp;  public void changeWorkingDirectory(File directory) {
+<b class="nc"><i>324</i>&nbsp;    assert directory.isDirectory();</b>
+<b class="nc"><i>325</i>&nbsp;    myWorkingDirectory.lock();</b>
+<b class="nc"><i>326</i>&nbsp;    myWorkingDirectory.setValue(directory.getAbsolutePath());</b>
+<b class="nc"><i>327</i>&nbsp;    myWorkingDirectory.commit();</b>
+<b class="nc"><i>328</i>&nbsp;  }</b>
+<i>329</i>&nbsp;
+<i>330</i>&nbsp;  @Override
+<i>331</i>&nbsp;  public String getWorkingDirectory() {
+<b class="nc"><i>332</i>&nbsp;    return myWorkingDirectory.getValue();</b>
+<i>333</i>&nbsp;  }
+<i>334</i>&nbsp;
+<i>335</i>&nbsp;
+<i>336</i>&nbsp;  private File getWorkingDirectoryFile() {
+<b class="nc"><i>337</i>&nbsp;    return new File(getWorkingDirectory());</b>
+<i>338</i>&nbsp;  }
+<i>339</i>&nbsp;
+<i>340</i>&nbsp;  @Override
+<i>341</i>&nbsp;  public GPOptionGroup getOptionGroup() {
+<b class="nc"><i>342</i>&nbsp;    return myOptionGroup;</b>
+<i>343</i>&nbsp;  }
+<i>344</i>&nbsp;
+<i>345</i>&nbsp;  @Override
+<i>346</i>&nbsp;  public FTPOptions getFTPOptions() {
+<b class="nc"><i>347</i>&nbsp;    return myFtpOptions;</b>
+<i>348</i>&nbsp;  }
+<i>349</i>&nbsp;
+<i>350</i>&nbsp;  @Override
+<i>351</i>&nbsp;  public GPOptionGroup[] getNetworkOptionGroups() {
+<b class="fc"><i>352</i>&nbsp;    return new GPOptionGroup[] { myFtpOptions, myOptionGroup, myWebDavOptionGroup };</b>
+<i>353</i>&nbsp;  }
+<i>354</i>&nbsp;
+<i>355</i>&nbsp;  @Override
+<i>356</i>&nbsp;  public DocumentStorageUi getWebDavStorageUi() {
+<b class="fc"><i>357</i>&nbsp;    return myWebDavStorage;</b>
+<i>358</i>&nbsp;  }
+<i>359</i>&nbsp;
+<b class="fc"><i>360</i>&nbsp;  private final StringOption myFtpUserOption = new StringOptionImpl(&quot;user-name&quot;, &quot;ftp&quot;, &quot;ftpuser&quot;);</b>
+<b class="fc"><i>361</i>&nbsp;  private final StringOption myFtpServerNameOption = new StringOptionImpl(&quot;server-name&quot;, &quot;ftp&quot;, &quot;ftpurl&quot;);</b>
+<b class="fc"><i>362</i>&nbsp;  private final StringOption myFtpDirectoryNameOption = new StringOptionImpl(&quot;directory-name&quot;, &quot;ftp&quot;, &quot;ftpdir&quot;);</b>
+<b class="fc"><i>363</i>&nbsp;  private final StringOption myFtpPasswordOption = new StringOptionImpl(&quot;password&quot;, &quot;ftp&quot;, &quot;ftppwd&quot;);</b>
+<b class="fc"><i>364</i>&nbsp;  private final FTPOptions myFtpOptions = new FTPOptions(&quot;ftp&quot;, new GPOption[] { myFtpUserOption,</b>
+<b class="fc"><i>365</i>&nbsp;      myFtpServerNameOption, myFtpDirectoryNameOption, myFtpPasswordOption }) {</b>
+<i>366</i>&nbsp;    @Override
+<i>367</i>&nbsp;    public StringOption getDirectoryName() {
+<b class="nc"><i>368</i>&nbsp;      return myFtpDirectoryNameOption;</b>
+<i>369</i>&nbsp;    }
+<i>370</i>&nbsp;
+<i>371</i>&nbsp;    @Override
+<i>372</i>&nbsp;    public StringOption getPassword() {
+<b class="nc"><i>373</i>&nbsp;      return myFtpPasswordOption;</b>
+<i>374</i>&nbsp;    }
+<i>375</i>&nbsp;
+<i>376</i>&nbsp;    @Override
+<i>377</i>&nbsp;    public StringOption getServerName() {
+<b class="nc"><i>378</i>&nbsp;      return myFtpServerNameOption;</b>
+<i>379</i>&nbsp;    }
+<i>380</i>&nbsp;
+<i>381</i>&nbsp;    @Override
+<i>382</i>&nbsp;    public StringOption getUserName() {
+<b class="nc"><i>383</i>&nbsp;      return myFtpUserOption;</b>
+<i>384</i>&nbsp;    }
+<i>385</i>&nbsp;
+<i>386</i>&nbsp;  };
+<i>387</i>&nbsp;
+<i>388</i>&nbsp;  static final String USERNAME_OPTION_ID = &quot;user-name&quot;;
+<i>389</i>&nbsp;  static final String SERVERNAME_OPTION_ID = &quot;server-name&quot;;
+<i>390</i>&nbsp;  static final String DIRECTORYNAME_OPTION_ID = &quot;directory-name&quot;;
+<i>391</i>&nbsp;  static final String PASSWORD_OPTION_ID = &quot;password&quot;;
+<i>392</i>&nbsp;
+<i>393</i>&nbsp;  private static class StringOptionImpl extends DefaultStringOption implements GP1XOptionConverter {
+<i>394</i>&nbsp;    private final String myLegacyTagName;
+<i>395</i>&nbsp;    private final String myLegacyAttrName;
+<i>396</i>&nbsp;
+<i>397</i>&nbsp;    private StringOptionImpl(String optionName, String legacyTagName, String legacyAttrName) {
+<b class="fc"><i>398</i>&nbsp;      super(optionName);</b>
+<b class="fc"><i>399</i>&nbsp;      myLegacyTagName = legacyTagName;</b>
+<b class="fc"><i>400</i>&nbsp;      myLegacyAttrName = legacyAttrName;</b>
+<b class="fc"><i>401</i>&nbsp;    }</b>
+<i>402</i>&nbsp;
+<i>403</i>&nbsp;    @Override
+<i>404</i>&nbsp;    public String getTagName() {
+<b class="fc"><i>405</i>&nbsp;      return myLegacyTagName;</b>
+<i>406</i>&nbsp;    }
+<i>407</i>&nbsp;
+<i>408</i>&nbsp;    @Override
+<i>409</i>&nbsp;    public String getAttributeName() {
+<b class="fc"><i>410</i>&nbsp;      return myLegacyAttrName;</b>
+<i>411</i>&nbsp;    }
+<i>412</i>&nbsp;
+<i>413</i>&nbsp;    @Override
+<i>414</i>&nbsp;    public void loadValue(String legacyValue) {
+<b class="fc"><i>415</i>&nbsp;      loadPersistentValue(legacyValue);</b>
+<b class="fc"><i>416</i>&nbsp;    }</b>
+<i>417</i>&nbsp;  }
+<i>418</i>&nbsp;
+<i>419</i>&nbsp;  @Override
+<i>420</i>&nbsp;  public List&lt;String&gt; getRecentDocuments() {
+<b class="nc"><i>421</i>&nbsp;    return Lists.newArrayList(myMRU.iterator());</b>
+<i>422</i>&nbsp;  }
+<i>423</i>&nbsp;
+<i>424</i>&nbsp;  @Override
+<i>425</i>&nbsp;  public void addListener(DocumentMRUListener listener) {
+<b class="fc"><i>426</i>&nbsp;    myMRU.addListener(listener);</b>
+<b class="fc"><i>427</i>&nbsp;  }</b>
+<i>428</i>&nbsp;
+<i>429</i>&nbsp;  @Override
+<i>430</i>&nbsp;  public void addToRecentDocuments(Document document) {
+<b class="nc"><i>431</i>&nbsp;    myMRU.add(document.getPath(), true);</b>
+<b class="nc"><i>432</i>&nbsp;  }</b>
+<i>433</i>&nbsp;
+<i>434</i>&nbsp;  @Override
+<i>435</i>&nbsp;  public void addToRecentDocuments(String value) {
+<b class="fc"><i>436</i>&nbsp;    myMRU.add(value, false);</b>
+<b class="fc"><i>437</i>&nbsp;  }</b>
+<i>438</i>&nbsp;
+<i>439</i>&nbsp;  @Override
+<i>440</i>&nbsp;  public void clearRecentDocuments() {
+<b class="fc"><i>441</i>&nbsp;    myMRU.clear();</b>
+<b class="fc"><i>442</i>&nbsp;  }</b>
+<i>443</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

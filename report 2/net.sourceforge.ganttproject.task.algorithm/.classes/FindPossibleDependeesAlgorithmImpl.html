@@ -1,0 +1,144 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: FindPossibleDependeesAlgorithmImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.algorithm</a> ]
+</div>
+
+<h1>Coverage Summary for Class: FindPossibleDependeesAlgorithmImpl (net.sourceforge.ganttproject.task.algorithm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FindPossibleDependeesAlgorithmImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13.3%
+  </span>
+  <span class="absValue">
+    (2/ 15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.algorithm;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.ArrayList;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;/**
+<i>27</i>&nbsp; * Created by IntelliJ IDEA. User: bard
+<i>28</i>&nbsp; */
+<i>29</i>&nbsp;public abstract class FindPossibleDependeesAlgorithmImpl implements FindPossibleDependeesAlgorithm {
+<i>30</i>&nbsp;  private TaskContainmentHierarchyFacade myContainmentFacade;
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;  public FindPossibleDependeesAlgorithmImpl() {</b>
+<b class="fc"><i>33</i>&nbsp;  }</b>
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  @Override
+<i>36</i>&nbsp;  public Task[] run(Task dependant) {
+<b class="nc"><i>37</i>&nbsp;    myContainmentFacade = createContainmentFacade();</b>
+<b class="nc"><i>38</i>&nbsp;    ArrayList&lt;Task&gt; result = new ArrayList&lt;Task&gt;();</b>
+<b class="nc"><i>39</i>&nbsp;    Task root = myContainmentFacade.getRootTask();</b>
+<b class="nc"><i>40</i>&nbsp;    Task[] nestedTasks = myContainmentFacade.getNestedTasks(root);</b>
+<b class="nc"><i>41</i>&nbsp;    processTask(nestedTasks, dependant, result);</b>
+<b class="nc"><i>42</i>&nbsp;    return result.toArray(new Task[0]);</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  protected abstract TaskContainmentHierarchyFacade createContainmentFacade();
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  private void processTask(Task[] taskList, Task dependant, ArrayList&lt;Task&gt; result) {
+<b class="nc"><i>48</i>&nbsp;    for (int i = 0; i &lt; taskList.length; i++) {</b>
+<b class="nc"><i>49</i>&nbsp;      Task next = taskList[i];</b>
+<b class="nc"><i>50</i>&nbsp;      if (!next.equals(dependant)) {</b>
+<b class="nc"><i>51</i>&nbsp;        Task[] nested = myContainmentFacade.getNestedTasks(next);</b>
+<i>52</i>&nbsp;        // if (nested.length==0) {
+<b class="nc"><i>53</i>&nbsp;        result.add(next);</b>
+<i>54</i>&nbsp;        // }
+<i>55</i>&nbsp;        // else {
+<b class="nc"><i>56</i>&nbsp;        processTask(nested, dependant, result);</b>
+<i>57</i>&nbsp;        // }
+<i>58</i>&nbsp;      }
+<i>59</i>&nbsp;    }
+<b class="nc"><i>60</i>&nbsp;  }</b>
+<i>61</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

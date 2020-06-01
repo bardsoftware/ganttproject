@@ -1,0 +1,159 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: DocumentStorageUi</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document</a> ]
+</div>
+
+<h1>Coverage Summary for Class: DocumentStorageUi (net.sourceforge.ganttproject.document)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">DocumentStorageUi$Components</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import javax.swing.Action;
+<i>22</i>&nbsp;import javax.swing.JComponent;
+<i>23</i>&nbsp;import java.io.IOException;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;/**
+<i>26</i>&nbsp; * Interface for the document selection UI.
+<i>27</i>&nbsp; *
+<i>28</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>29</i>&nbsp; */
+<i>30</i>&nbsp;public interface DocumentStorageUi {
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  /**
+<i>33</i>&nbsp;   * Receives document descriptors as user changes selection in UI
+<i>34</i>&nbsp;   */
+<i>35</i>&nbsp;  interface DocumentReceiver {
+<i>36</i>&nbsp;    void setDocument(Document document) throws IOException, Document.DocumentException;
+<i>37</i>&nbsp;  }
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  class Components {
+<i>40</i>&nbsp;    public final JComponent contentPane;
+<i>41</i>&nbsp;    public final Action[] actions;
+<i>42</i>&nbsp;
+<b class="nc"><i>43</i>&nbsp;    public Components(JComponent contentPane, Action[] actions) {</b>
+<b class="nc"><i>44</i>&nbsp;      this.contentPane = contentPane;</b>
+<b class="nc"><i>45</i>&nbsp;      this.actions = actions;</b>
+<i>46</i>&nbsp;    }
+<i>47</i>&nbsp;  }
+<i>48</i>&nbsp;  /**
+<i>49</i>&nbsp;   * Creates UI to open a document. UI should allow for selecting a document from a list or for typing
+<i>50</i>&nbsp;   * document access parameters. Every time user changes something, UI should send an updated
+<i>51</i>&nbsp;   * document descriptor to the receiver
+<i>52</i>&nbsp;   *
+<i>53</i>&nbsp;   * @param currentDocument document currently opened in GanttProject
+<i>54</i>&nbsp;   * @param receiver receiver of the descriptors of selected documents
+<i>55</i>&nbsp;   * @return UI component ready for inserting into a dialog or other component
+<i>56</i>&nbsp;   */
+<i>57</i>&nbsp;  Components open(Document currentDocument, DocumentReceiver receiver);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  /**
+<i>60</i>&nbsp;   * Creates UI to save a document. UI should allow for selecting a document from a list or for typing
+<i>61</i>&nbsp;   * document access parameters. Every time user changes something, UI should send an updated
+<i>62</i>&nbsp;   * document descriptor to the receiver
+<i>63</i>&nbsp;   *
+<i>64</i>&nbsp;   * @param currentDocument document currently opened in GanttProject
+<i>65</i>&nbsp;   * @param receiver receiver of the descriptors of selected documents
+<i>66</i>&nbsp;   * @return UI component ready for inserting into a dialog or other component
+<i>67</i>&nbsp;   */
+<i>68</i>&nbsp;  Components save(Document currentDocument, DocumentReceiver receiver);
+<i>69</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

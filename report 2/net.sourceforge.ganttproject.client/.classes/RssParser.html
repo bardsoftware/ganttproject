@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RssParser</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.client</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RssParser (net.sourceforge.ganttproject.client)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RssParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.1%
+  </span>
+  <span class="absValue">
+    (54/ 71)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">RssParser$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (11/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74%
+  </span>
+  <span class="absValue">
+    (57/ 77)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.client;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Preconditions;
+<i>22</i>&nbsp;import com.google.common.base.Strings;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.GPVersion;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.util.StringUtils;
+<i>25</i>&nbsp;import org.w3c.dom.Element;
+<i>26</i>&nbsp;import org.w3c.dom.Node;
+<i>27</i>&nbsp;import org.w3c.dom.NodeList;
+<i>28</i>&nbsp;import org.w3c.util.DateParser;
+<i>29</i>&nbsp;import org.w3c.util.InvalidDateException;
+<i>30</i>&nbsp;import org.xml.sax.InputSource;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;import javax.xml.namespace.NamespaceContext;
+<i>33</i>&nbsp;import javax.xml.xpath.XPath;
+<i>34</i>&nbsp;import javax.xml.xpath.XPathConstants;
+<i>35</i>&nbsp;import javax.xml.xpath.XPathExpression;
+<i>36</i>&nbsp;import javax.xml.xpath.XPathExpressionException;
+<i>37</i>&nbsp;import javax.xml.xpath.XPathFactory;
+<i>38</i>&nbsp;import java.io.InputStream;
+<i>39</i>&nbsp;import java.io.InputStreamReader;
+<i>40</i>&nbsp;import java.util.Date;
+<i>41</i>&nbsp;import java.util.Iterator;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;public class RssParser {
+<i>44</i>&nbsp;
+<b class="fc"><i>45</i>&nbsp;  private final XPathFactory myXPathFactory = XPathFactory.newInstance();</b>
+<i>46</i>&nbsp;  private final String myCurrentBuildNumber;
+<i>47</i>&nbsp;  private final String myCurrentVersionNumber;
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  RssParser() {
+<b class="fc"><i>50</i>&nbsp;    this(GPVersion.getCurrentVersionNumber(), GPVersion.getCurrentBuildNumber());</b>
+<b class="fc"><i>51</i>&nbsp;  }</b>
+<i>52</i>&nbsp;
+<b class="fc"><i>53</i>&nbsp;  public RssParser(String currentVersionNumber, String currentBuildNumber) {</b>
+<b class="fc"><i>54</i>&nbsp;    myCurrentVersionNumber = Preconditions.checkNotNull(currentVersionNumber);</b>
+<b class="fc"><i>55</i>&nbsp;    myCurrentBuildNumber = Preconditions.checkNotNull(currentBuildNumber);</b>
+<b class="fc"><i>56</i>&nbsp;  }</b>
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  private XPathExpression getXPath(String expression) throws XPathExpressionException {
+<b class="fc"><i>59</i>&nbsp;    XPath xpath = myXPathFactory.newXPath();</b>
+<b class="fc"><i>60</i>&nbsp;    xpath.setNamespaceContext(new NamespaceContext() {</b>
+<i>61</i>&nbsp;      @Override
+<i>62</i>&nbsp;      public String getNamespaceURI(String s) {
+<b class="fc"><i>63</i>&nbsp;        if (&quot;atom&quot;.equals(s)) {</b>
+<b class="fc"><i>64</i>&nbsp;          return &quot;http://www.w3.org/2005/Atom&quot;;</b>
+<i>65</i>&nbsp;        }
+<b class="nc"><i>66</i>&nbsp;        throw new IllegalArgumentException(s);</b>
+<i>67</i>&nbsp;      }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;      @Override
+<i>70</i>&nbsp;      public String getPrefix(String s) {
+<b class="nc"><i>71</i>&nbsp;        throw new UnsupportedOperationException();</b>
+<i>72</i>&nbsp;      }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;      @Override
+<i>75</i>&nbsp;      public Iterator&lt;String&gt; getPrefixes(String s) {
+<b class="nc"><i>76</i>&nbsp;        throw new UnsupportedOperationException();</b>
+<i>77</i>&nbsp;      }
+<i>78</i>&nbsp;    });
+<b class="fc"><i>79</i>&nbsp;    return xpath.compile(expression);</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  public RssFeed parse(InputStream inputStream, Date lastCheckDate) {
+<b class="fc"><i>83</i>&nbsp;    RssFeed result = new RssFeed();</b>
+<i>84</i>&nbsp;    try {
+<b class="fc"><i>85</i>&nbsp;      XPathExpression xpath = getXPath(&quot;//atom:entry&quot;);</b>
+<b class="fc"><i>86</i>&nbsp;      NodeList items = (NodeList) xpath.evaluate(new InputSource(new InputStreamReader(inputStream)),</b>
+<i>87</i>&nbsp;          XPathConstants.NODESET);
+<b class="fc"><i>88</i>&nbsp;      for (int i = 0; i &lt; items.getLength(); i++) {</b>
+<b class="fc"><i>89</i>&nbsp;        if (isApplicableToVersion(items.item(i), myCurrentVersionNumber, myCurrentBuildNumber)) {</b>
+<b class="fc"><i>90</i>&nbsp;          addItem(result, items.item(i), lastCheckDate);</b>
+<i>91</i>&nbsp;        }
+<i>92</i>&nbsp;      }
+<i>93</i>&nbsp;
+<b class="nc"><i>94</i>&nbsp;    } catch (XPathExpressionException e) {</b>
+<b class="nc"><i>95</i>&nbsp;      e.printStackTrace();</b>
+<b class="fc"><i>96</i>&nbsp;    }</b>
+<b class="fc"><i>97</i>&nbsp;    return result;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  public RssUpdate parseUpdate(String content) {
+<b class="fc"><i>101</i>&nbsp;    if (!StringUtils.isEmptyOrNull(content)) {</b>
+<i>102</i>&nbsp;
+<b class="fc"><i>103</i>&nbsp;      String[] parts = content.split(&quot;\n&quot;, 3);</b>
+<b class="fc"><i>104</i>&nbsp;      if (parts.length == 3) {</b>
+<b class="fc"><i>105</i>&nbsp;        return new RssUpdate(parts[0], parts[1], parts[2]);</b>
+<i>106</i>&nbsp;      }
+<i>107</i>&nbsp;    }
+<b class="fc"><i>108</i>&nbsp;    return null;</b>
+<i>109</i>&nbsp;  }
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;  private boolean isApplicableToVersion(Node item, String version, String build) throws XPathExpressionException {
+<b class="fc"><i>112</i>&nbsp;    boolean hasRestriction = false;</b>
+<b class="fc"><i>113</i>&nbsp;    NodeList categories = (NodeList) getXPath(&quot;atom:category&quot;).evaluate(item, XPathConstants.NODESET);</b>
+<b class="fc"><i>114</i>&nbsp;    for (int i = 0; i &lt; categories.getLength(); i++) {</b>
+<b class="fc"><i>115</i>&nbsp;      Element elCategory = (Element) categories.item(i);</b>
+<b class="fc"><i>116</i>&nbsp;      String category = elCategory.getAttribute(&quot;term&quot;);</b>
+<b class="fc"><i>117</i>&nbsp;      if (!Strings.isNullOrEmpty(category)) {</b>
+<b class="fc"><i>118</i>&nbsp;        if (category.startsWith(&quot;__version&quot;)) {</b>
+<b class="fc"><i>119</i>&nbsp;          hasRestriction = true;</b>
+<b class="fc"><i>120</i>&nbsp;          if (compareCategory(category, &quot;version&quot;, version)) {</b>
+<b class="fc"><i>121</i>&nbsp;            return true;</b>
+<i>122</i>&nbsp;          }
+<i>123</i>&nbsp;        }
+<b class="nc"><i>124</i>&nbsp;        if (category.startsWith(&quot;__build&quot;)) {</b>
+<b class="nc"><i>125</i>&nbsp;          hasRestriction = true;</b>
+<b class="nc"><i>126</i>&nbsp;          if (compareCategory(category, &quot;build&quot;, build)) {</b>
+<b class="nc"><i>127</i>&nbsp;            return true;</b>
+<i>128</i>&nbsp;          }
+<i>129</i>&nbsp;        }
+<i>130</i>&nbsp;      }
+<i>131</i>&nbsp;    }
+<b class="nc"><i>132</i>&nbsp;    return !hasRestriction;</b>
+<i>133</i>&nbsp;  }
+<i>134</i>&nbsp;
+<i>135</i>&nbsp;  private boolean compareCategory(String category, String type, String value) {
+<b class="fc"><i>136</i>&nbsp;    if (category.startsWith(&quot;__&quot; + type + &quot;_lt_&quot;)) {</b>
+<b class="fc"><i>137</i>&nbsp;      String valueRequired = category.substring((&quot;__&quot; + type + &quot;_lt_&quot;).length());</b>
+<b class="fc"><i>138</i>&nbsp;      return value.compareTo(valueRequired) &lt; 0;</b>
+<b class="fc"><i>139</i>&nbsp;    } else if (category.startsWith(&quot;__&quot; + type + &quot;_gt_&quot;)) {</b>
+<b class="nc"><i>140</i>&nbsp;      String valueRequired = category.substring((&quot;__&quot; + type + &quot;_gt_&quot;).length());</b>
+<b class="nc"><i>141</i>&nbsp;      return value.compareTo(valueRequired) &gt; 0;</b>
+<b class="fc"><i>142</i>&nbsp;    } else if (category.startsWith(&quot;__&quot; + type + &quot;_eq_&quot;)) {</b>
+<b class="fc"><i>143</i>&nbsp;      String valueRequired = category.substring((&quot;__&quot; + type + &quot;_eq_&quot;).length());</b>
+<b class="fc"><i>144</i>&nbsp;      return value.equals(valueRequired);</b>
+<i>145</i>&nbsp;    }
+<b class="nc"><i>146</i>&nbsp;    return false;</b>
+<i>147</i>&nbsp;  }
+<i>148</i>&nbsp;
+<i>149</i>&nbsp;  private void addItem(RssFeed result, Node item, Date lastCheckDate) throws XPathExpressionException {
+<b class="fc"><i>150</i>&nbsp;    if (lastCheckDate != null) {</b>
+<b class="nc"><i>151</i>&nbsp;      String updateString = getXPath(&quot;atom:updated/text()&quot;).evaluate(item);</b>
+<i>152</i>&nbsp;      try {
+<b class="nc"><i>153</i>&nbsp;        Date updateDate = DateParser.parse(updateString);</b>
+<b class="nc"><i>154</i>&nbsp;        if (updateDate.before(lastCheckDate)) {</b>
+<b class="nc"><i>155</i>&nbsp;          return;</b>
+<i>156</i>&nbsp;        }
+<b class="nc"><i>157</i>&nbsp;      } catch (InvalidDateException e) {</b>
+<b class="nc"><i>158</i>&nbsp;        e.printStackTrace();</b>
+<b class="nc"><i>159</i>&nbsp;      }</b>
+<i>160</i>&nbsp;    }
+<b class="fc"><i>161</i>&nbsp;    String title = getXPath(&quot;atom:title/text()&quot;).evaluate(item);</b>
+<b class="fc"><i>162</i>&nbsp;    String body = getXPath(&quot;atom:content/text()&quot;).evaluate(item);</b>
+<b class="fc"><i>163</i>&nbsp;    boolean isUpdate = isUpdateItem(item);</b>
+<b class="fc"><i>164</i>&nbsp;    result.addItem(title, body, isUpdate);</b>
+<b class="fc"><i>165</i>&nbsp;  }</b>
+<i>166</i>&nbsp;
+<i>167</i>&nbsp;  private boolean isUpdateItem(Node item) throws XPathExpressionException {
+<b class="fc"><i>168</i>&nbsp;    NodeList categories = (NodeList) getXPath(&quot;atom:category&quot;).evaluate(item, XPathConstants.NODESET);</b>
+<b class="fc"><i>169</i>&nbsp;    for (int i = 0; i &lt; categories.getLength(); i++) {</b>
+<b class="fc"><i>170</i>&nbsp;      Element elCategory = (Element) categories.item(i);</b>
+<b class="fc"><i>171</i>&nbsp;      String category = elCategory.getAttribute(&quot;term&quot;);</b>
+<b class="fc"><i>172</i>&nbsp;      if (!Strings.isNullOrEmpty(category)) {</b>
+<b class="fc"><i>173</i>&nbsp;        if (category.equals(&quot;update&quot;)) {</b>
+<b class="fc"><i>174</i>&nbsp;          return true;</b>
+<i>175</i>&nbsp;        }
+<i>176</i>&nbsp;      }
+<i>177</i>&nbsp;    }
+<b class="fc"><i>178</i>&nbsp;    return false;</b>
+<i>179</i>&nbsp;  }
+<i>180</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

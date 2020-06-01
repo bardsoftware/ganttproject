@@ -1,0 +1,642 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttProjectBase</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttProjectBase (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttProjectBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    51%
+  </span>
+  <span class="absValue">
+    (26/ 51)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (63/ 105)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttProjectBase$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttProjectBase$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttProjectBase$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttProjectBase$RowHeightAligner</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/ 10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    57.4%
+  </span>
+  <span class="absValue">
+    (35/ 61)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65.3%
+  </span>
+  <span class="absValue">
+    (81/ 124)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 Dmitry Barashev, GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.GPOptionChangeListener;
+<i>25</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>26</i>&nbsp;import biz.ganttproject.core.option.IntegerOption;
+<i>27</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>28</i>&nbsp;import biz.ganttproject.core.time.TimeUnitStack;
+<i>29</i>&nbsp;import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+<i>30</i>&nbsp;import com.bardsoftware.eclipsito.update.Updater;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelBase;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.client.RssFeedChecker;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.document.Document;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.document.DocumentCreator;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.document.DocumentManager;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.gui.GanttStatusBar;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.gui.GanttTabbedPane;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationChannel;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationManager;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.gui.ProjectUIFacade;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.gui.UIConfiguration;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.gui.view.GPViewManager;
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>54</i>&nbsp;import net.sourceforge.ganttproject.parser.ParserFactory;
+<i>55</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>56</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>57</i>&nbsp;import net.sourceforge.ganttproject.task.CustomColumnsManager;
+<i>58</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>59</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>60</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>61</i>&nbsp;import net.sourceforge.ganttproject.task.TaskView;
+<i>62</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>63</i>&nbsp;import net.sourceforge.ganttproject.undo.UndoManagerImpl;
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;import javax.swing.*;
+<i>66</i>&nbsp;import javax.swing.table.AbstractTableModel;
+<i>67</i>&nbsp;import java.awt.*;
+<i>68</i>&nbsp;import java.util.ArrayList;
+<i>69</i>&nbsp;import java.util.Collection;
+<i>70</i>&nbsp;import java.util.List;
+<i>71</i>&nbsp;import java.util.Locale;
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;/**
+<i>74</i>&nbsp; * This class is designed to be a GanttProject-after-refactorings. I am going to
+<i>75</i>&nbsp; * refactor GanttProject in order to make true view communicating with other
+<i>76</i>&nbsp; * views through interfaces. This class is intentionally package local to
+<i>77</i>&nbsp; * prevent using it in other packages (use interfaces rather than concrete
+<i>78</i>&nbsp; * implementations!)
+<i>79</i>&nbsp; *
+<i>80</i>&nbsp; * @author dbarashev
+<i>81</i>&nbsp; */
+<i>82</i>&nbsp;abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
+<b class="fc"><i>83</i>&nbsp;  protected final static GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>84</i>&nbsp;  private final ViewManagerImpl myViewManager;
+<b class="fc"><i>85</i>&nbsp;  private final List&lt;ProjectEventListener&gt; myModifiedStateChangeListeners = new ArrayList&lt;ProjectEventListener&gt;();</b>
+<i>86</i>&nbsp;  private final UIFacadeImpl myUIFacade;
+<i>87</i>&nbsp;  private final GanttStatusBar statusBar;
+<i>88</i>&nbsp;  private final TimeUnitStack myTimeUnitStack;
+<i>89</i>&nbsp;  private final ProjectUIFacadeImpl myProjectUIFacade;
+<i>90</i>&nbsp;  private final DocumentManager myDocumentManager;
+<i>91</i>&nbsp;  /** The tabbed pane with the different parts of the project */
+<i>92</i>&nbsp;  private final GanttTabbedPane myTabPane;
+<i>93</i>&nbsp;  private final GPUndoManager myUndoManager;
+<i>94</i>&nbsp;
+<b class="fc"><i>95</i>&nbsp;  private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();</b>
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  private final RssFeedChecker myRssChecker;
+<i>98</i>&nbsp;  private final ContentPaneBuilder myContentPaneBuilder;
+<i>99</i>&nbsp;  private Updater myUpdater;
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  protected GanttProjectBase() {
+<b class="fc"><i>102</i>&nbsp;    super(&quot;GanttProject&quot;);</b>
+<i>103</i>&nbsp;
+<b class="fc"><i>104</i>&nbsp;    statusBar = new GanttStatusBar(this);</b>
+<b class="fc"><i>105</i>&nbsp;    myTabPane = new GanttTabbedPane();</b>
+<b class="fc"><i>106</i>&nbsp;    myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());</b>
+<i>107</i>&nbsp;
+<b class="fc"><i>108</i>&nbsp;    myTimeUnitStack = new GPTimeUnitStack();</b>
+<b class="fc"><i>109</i>&nbsp;    NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());</b>
+<b class="fc"><i>110</i>&nbsp;    myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);</b>
+<b class="fc"><i>111</i>&nbsp;    GPLogger.setUIFacade(myUIFacade);</b>
+<b class="fc"><i>112</i>&nbsp;    myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {</b>
+<i>113</i>&nbsp;      @Override
+<i>114</i>&nbsp;      protected ParserFactory getParserFactory() {
+<b class="fc"><i>115</i>&nbsp;        return GanttProjectBase.this.getParserFactory();</b>
+<i>116</i>&nbsp;      }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;      @Override
+<i>119</i>&nbsp;      protected ColumnList getVisibleFields() {
+<b class="fc"><i>120</i>&nbsp;        return getUIFacade().getTaskTree().getVisibleFields();</b>
+<i>121</i>&nbsp;      }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;      @Override
+<i>124</i>&nbsp;      protected ColumnList getResourceVisibleFields() {
+<b class="fc"><i>125</i>&nbsp;        return getUIFacade().getResourceTree().getVisibleFields();</b>
+<i>126</i>&nbsp;      }
+<i>127</i>&nbsp;    };
+<b class="fc"><i>128</i>&nbsp;    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {</b>
+<i>129</i>&nbsp;      @Override
+<i>130</i>&nbsp;      protected ParserFactory getParserFactory() {
+<b class="nc"><i>131</i>&nbsp;        return GanttProjectBase.this.getParserFactory();</b>
+<i>132</i>&nbsp;      }
+<i>133</i>&nbsp;    };
+<b class="fc"><i>134</i>&nbsp;    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());</b>
+<b class="fc"><i>135</i>&nbsp;    myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);</b>
+<b class="fc"><i>136</i>&nbsp;    myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);</b>
+<b class="fc"><i>137</i>&nbsp;    myUIFacade.addOptions(myRssChecker.getUiOptions());</b>
+<b class="fc"><i>138</i>&nbsp;  }</b>
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;  @Override
+<i>141</i>&nbsp;  public void addProjectEventListener(ProjectEventListener listener) {
+<b class="fc"><i>142</i>&nbsp;    myModifiedStateChangeListeners.add(listener);</b>
+<b class="fc"><i>143</i>&nbsp;  }</b>
+<i>144</i>&nbsp;
+<i>145</i>&nbsp;  @Override
+<i>146</i>&nbsp;  public void removeProjectEventListener(ProjectEventListener listener) {
+<b class="nc"><i>147</i>&nbsp;    myModifiedStateChangeListeners.remove(listener);</b>
+<b class="nc"><i>148</i>&nbsp;  }</b>
+<i>149</i>&nbsp;
+<i>150</i>&nbsp;  protected void fireProjectModified(boolean isModified) {
+<b class="fc"><i>151</i>&nbsp;    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {</b>
+<i>152</i>&nbsp;      try {
+<b class="fc"><i>153</i>&nbsp;        if (isModified) {</b>
+<b class="fc"><i>154</i>&nbsp;          modifiedStateChangeListener.projectModified();</b>
+<i>155</i>&nbsp;        } else {
+<b class="fc"><i>156</i>&nbsp;          modifiedStateChangeListener.projectSaved();</b>
+<i>157</i>&nbsp;        }
+<b class="nc"><i>158</i>&nbsp;      } catch (Exception e) {</b>
+<b class="nc"><i>159</i>&nbsp;        showErrorDialog(e);</b>
+<b class="fc"><i>160</i>&nbsp;      }</b>
+<b class="fc"><i>161</i>&nbsp;    }</b>
+<b class="fc"><i>162</i>&nbsp;  }</b>
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;  protected void fireProjectCreated() {
+<b class="fc"><i>165</i>&nbsp;    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {</b>
+<b class="fc"><i>166</i>&nbsp;      modifiedStateChangeListener.projectCreated();</b>
+<b class="fc"><i>167</i>&nbsp;    }</b>
+<i>168</i>&nbsp;    // A new project just got created, so it is not yet modified
+<b class="fc"><i>169</i>&nbsp;    SwingUtilities.invokeLater(new Runnable() {</b>
+<i>170</i>&nbsp;      @Override
+<i>171</i>&nbsp;      public void run() {
+<b class="fc"><i>172</i>&nbsp;        setModified(false);</b>
+<b class="fc"><i>173</i>&nbsp;      }</b>
+<i>174</i>&nbsp;    });
+<b class="fc"><i>175</i>&nbsp;  }</b>
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;  protected void fireProjectClosed() {
+<b class="fc"><i>178</i>&nbsp;    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {</b>
+<b class="fc"><i>179</i>&nbsp;      modifiedStateChangeListener.projectClosed();</b>
+<b class="fc"><i>180</i>&nbsp;    }</b>
+<b class="fc"><i>181</i>&nbsp;  }</b>
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  protected void fireProjectOpened() {
+<b class="nc"><i>184</i>&nbsp;    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {</b>
+<b class="nc"><i>185</i>&nbsp;      modifiedStateChangeListener.projectOpened();</b>
+<b class="nc"><i>186</i>&nbsp;    }</b>
+<b class="nc"><i>187</i>&nbsp;  }</b>
+<i>188</i>&nbsp;
+<i>189</i>&nbsp;  // ////////////////////////////////////////////////////////////////
+<i>190</i>&nbsp;  // UIFacade
+<i>191</i>&nbsp;  public ProjectUIFacade getProjectUIFacade() {
+<b class="fc"><i>192</i>&nbsp;    return myProjectUIFacade;</b>
+<i>193</i>&nbsp;  }
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;  public UIFacade getUIFacade() {
+<b class="fc"><i>196</i>&nbsp;    return myUIFacade;</b>
+<i>197</i>&nbsp;  }
+<i>198</i>&nbsp;
+<i>199</i>&nbsp;  protected UIFacadeImpl getUiFacadeImpl() {
+<b class="fc"><i>200</i>&nbsp;    return myUIFacade;</b>
+<i>201</i>&nbsp;  }
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;  @Override
+<i>204</i>&nbsp;  public Frame getMainFrame() {
+<b class="nc"><i>205</i>&nbsp;    return myUIFacade.getMainFrame();</b>
+<i>206</i>&nbsp;  }
+<i>207</i>&nbsp;
+<i>208</i>&nbsp;  @Override
+<i>209</i>&nbsp;  public Image getLogo() {
+<b class="nc"><i>210</i>&nbsp;    return myUIFacade.getLogo();</b>
+<i>211</i>&nbsp;  }
+<i>212</i>&nbsp;
+<i>213</i>&nbsp;  @Override
+<i>214</i>&nbsp;  public void setLookAndFeel(GanttLookAndFeelInfo laf) {
+<b class="nc"><i>215</i>&nbsp;    myUIFacade.setLookAndFeel(laf);</b>
+<b class="nc"><i>216</i>&nbsp;  }</b>
+<i>217</i>&nbsp;
+<i>218</i>&nbsp;  @Override
+<i>219</i>&nbsp;  public GanttLookAndFeelInfo getLookAndFeel() {
+<b class="nc"><i>220</i>&nbsp;    return myUIFacade.getLookAndFeel();</b>
+<i>221</i>&nbsp;  }
+<i>222</i>&nbsp;
+<i>223</i>&nbsp;  @Override
+<i>224</i>&nbsp;  public DefaultEnumerationOption&lt;Locale&gt; getLanguageOption() {
+<b class="nc"><i>225</i>&nbsp;    return myUIFacade.getLanguageOption();</b>
+<i>226</i>&nbsp;  }
+<i>227</i>&nbsp;
+<i>228</i>&nbsp;  @Override
+<i>229</i>&nbsp;  public IntegerOption getDpiOption() {
+<b class="nc"><i>230</i>&nbsp;    return myUIFacade.getDpiOption();</b>
+<i>231</i>&nbsp;  }
+<i>232</i>&nbsp;
+<i>233</i>&nbsp;  @Override
+<i>234</i>&nbsp;  public GPOption&lt;String&gt; getLafOption() {
+<b class="nc"><i>235</i>&nbsp;    return myUIFacade.getLafOption();</b>
+<i>236</i>&nbsp;  }
+<i>237</i>&nbsp;
+<i>238</i>&nbsp;  @Override
+<i>239</i>&nbsp;  public GPOptionGroup[] getOptions() {
+<b class="nc"><i>240</i>&nbsp;    return myUIFacade.getOptions();</b>
+<i>241</i>&nbsp;  }
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;  @Override
+<i>244</i>&nbsp;  public void addOnUpdateComponentTreeUi(Runnable callback) {
+<b class="nc"><i>245</i>&nbsp;    myUIFacade.addOnUpdateComponentTreeUi(callback);</b>
+<b class="nc"><i>246</i>&nbsp;  }</b>
+<i>247</i>&nbsp;
+<i>248</i>&nbsp;  @Override
+<i>249</i>&nbsp;  public ScrollingManager getScrollingManager() {
+<b class="fc"><i>250</i>&nbsp;    return myUIFacade.getScrollingManager();</b>
+<i>251</i>&nbsp;  }
+<i>252</i>&nbsp;
+<i>253</i>&nbsp;  @Override
+<i>254</i>&nbsp;  public ZoomManager getZoomManager() {
+<b class="fc"><i>255</i>&nbsp;    return myUIFacade.getZoomManager();</b>
+<i>256</i>&nbsp;  }
+<i>257</i>&nbsp;
+<i>258</i>&nbsp;  @Override
+<i>259</i>&nbsp;  public GPUndoManager getUndoManager() {
+<b class="fc"><i>260</i>&nbsp;    return myUndoManager;</b>
+<i>261</i>&nbsp;  }
+<i>262</i>&nbsp;
+<i>263</i>&nbsp;  @Override
+<i>264</i>&nbsp;  public void setStatusText(String text) {
+<b class="nc"><i>265</i>&nbsp;    myUIFacade.setStatusText(text);</b>
+<b class="nc"><i>266</i>&nbsp;  }</b>
+<i>267</i>&nbsp;
+<i>268</i>&nbsp;  @Override
+<i>269</i>&nbsp;  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+<b class="nc"><i>270</i>&nbsp;    return myUIFacade.createDialog(content, buttonActions, title);</b>
+<i>271</i>&nbsp;  }
+<i>272</i>&nbsp;
+<i>273</i>&nbsp;  @Override
+<i>274</i>&nbsp;  public UIFacade.Choice showConfirmationDialog(String message, String title) {
+<b class="nc"><i>275</i>&nbsp;    return myUIFacade.showConfirmationDialog(message, title);</b>
+<i>276</i>&nbsp;  }
+<i>277</i>&nbsp;
+<i>278</i>&nbsp;  @Override
+<i>279</i>&nbsp;  public void showOptionDialog(int messageType, String message, Action[] actions) {
+<b class="nc"><i>280</i>&nbsp;    myUIFacade.showOptionDialog(messageType, message, actions);</b>
+<b class="nc"><i>281</i>&nbsp;  }</b>
+<i>282</i>&nbsp;
+<i>283</i>&nbsp;  @Override
+<i>284</i>&nbsp;  public void showErrorDialog(String message) {
+<b class="nc"><i>285</i>&nbsp;    myUIFacade.showErrorDialog(message);</b>
+<b class="nc"><i>286</i>&nbsp;  }</b>
+<i>287</i>&nbsp;
+<i>288</i>&nbsp;  @Override
+<i>289</i>&nbsp;  public void showErrorDialog(Throwable e) {
+<b class="nc"><i>290</i>&nbsp;    myUIFacade.showErrorDialog(e);</b>
+<b class="nc"><i>291</i>&nbsp;  }</b>
+<i>292</i>&nbsp;
+<i>293</i>&nbsp;  @Override
+<i>294</i>&nbsp;  public void showNotificationDialog(NotificationChannel channel, String message) {
+<b class="nc"><i>295</i>&nbsp;    myUIFacade.showNotificationDialog(channel, message);</b>
+<b class="nc"><i>296</i>&nbsp;  }</b>
+<i>297</i>&nbsp;
+<i>298</i>&nbsp;  @Override
+<i>299</i>&nbsp;  public void showSettingsDialog(String pageID) {
+<b class="nc"><i>300</i>&nbsp;    myUIFacade.showSettingsDialog(pageID);</b>
+<b class="nc"><i>301</i>&nbsp;  }</b>
+<i>302</i>&nbsp;
+<i>303</i>&nbsp;  @Override
+<i>304</i>&nbsp;  public NotificationManager getNotificationManager() {
+<b class="nc"><i>305</i>&nbsp;    return myUIFacade.getNotificationManager();</b>
+<i>306</i>&nbsp;  }
+<i>307</i>&nbsp;
+<i>308</i>&nbsp;  @Override
+<i>309</i>&nbsp;  public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
+<b class="nc"><i>310</i>&nbsp;    myUIFacade.showPopupMenu(invoker, actions, x, y);</b>
+<b class="nc"><i>311</i>&nbsp;  }</b>
+<i>312</i>&nbsp;
+<i>313</i>&nbsp;  @Override
+<i>314</i>&nbsp;  public void showPopupMenu(Component invoker, Collection&lt;Action&gt; actions, int x, int y) {
+<b class="nc"><i>315</i>&nbsp;    myUIFacade.showPopupMenu(invoker, actions, x, y);</b>
+<b class="nc"><i>316</i>&nbsp;  }</b>
+<i>317</i>&nbsp;
+<i>318</i>&nbsp;  @Override
+<i>319</i>&nbsp;  public TaskSelectionContext getTaskSelectionContext() {
+<b class="nc"><i>320</i>&nbsp;    return myUIFacade.getTaskSelectionContext();</b>
+<i>321</i>&nbsp;  }
+<i>322</i>&nbsp;
+<i>323</i>&nbsp;  @Override
+<i>324</i>&nbsp;  public TaskSelectionManager getTaskSelectionManager() {
+<b class="fc"><i>325</i>&nbsp;    return myUIFacade.getTaskSelectionManager();</b>
+<i>326</i>&nbsp;  }
+<i>327</i>&nbsp;
+<i>328</i>&nbsp;  @Override
+<i>329</i>&nbsp;  public TaskView getCurrentTaskView() {
+<b class="nc"><i>330</i>&nbsp;    return myUIFacade.getCurrentTaskView();</b>
+<i>331</i>&nbsp;  }
+<i>332</i>&nbsp;
+<i>333</i>&nbsp;  @Override
+<i>334</i>&nbsp;  public void setWorkbenchTitle(String title) {
+<b class="nc"><i>335</i>&nbsp;    myUIFacade.setWorkbenchTitle(title);</b>
+<b class="nc"><i>336</i>&nbsp;  }</b>
+<i>337</i>&nbsp;
+<i>338</i>&nbsp;  public GPViewManager getViewManager() {
+<b class="fc"><i>339</i>&nbsp;    return myViewManager;</b>
+<i>340</i>&nbsp;  }
+<i>341</i>&nbsp;
+<i>342</i>&nbsp;  @Override
+<i>343</i>&nbsp;  public Chart getActiveChart() {
+<b class="fc"><i>344</i>&nbsp;    return myViewManager.getSelectedView().getChart();</b>
+<i>345</i>&nbsp;  }
+<i>346</i>&nbsp;
+<i>347</i>&nbsp;  protected static class RowHeightAligner implements GPOptionChangeListener {
+<i>348</i>&nbsp;    private final ChartModelBase myChartModel;
+<i>349</i>&nbsp;
+<i>350</i>&nbsp;    private final TreeTableContainer myTreeView;
+<i>351</i>&nbsp;
+<b class="fc"><i>352</i>&nbsp;    public RowHeightAligner(TreeTableContainer treeView, ChartModelBase chartModel) {</b>
+<b class="fc"><i>353</i>&nbsp;      myChartModel = chartModel;</b>
+<b class="fc"><i>354</i>&nbsp;      myTreeView = treeView;</b>
+<b class="fc"><i>355</i>&nbsp;      myChartModel.addOptionChangeListener(this);</b>
+<b class="fc"><i>356</i>&nbsp;    }</b>
+<i>357</i>&nbsp;
+<i>358</i>&nbsp;    @Override
+<i>359</i>&nbsp;    public void optionsChanged() {
+<b class="fc"><i>360</i>&nbsp;      myTreeView.getTreeTable().setRowHeight(myChartModel.calculateRowHeight());</b>
+<b class="fc"><i>361</i>&nbsp;      AbstractTableModel model = (AbstractTableModel) myTreeView.getTreeTable().getModel();</b>
+<b class="fc"><i>362</i>&nbsp;      model.fireTableStructureChanged();</b>
+<b class="fc"><i>363</i>&nbsp;      myTreeView.updateUI();</b>
+<b class="fc"><i>364</i>&nbsp;    }</b>
+<i>365</i>&nbsp;  }
+<i>366</i>&nbsp;
+<i>367</i>&nbsp;  protected void createContentPane(JComponent toolbar) {
+<b class="fc"><i>368</i>&nbsp;    myContentPaneBuilder.build(toolbar, getContentPane());</b>
+<b class="fc"><i>369</i>&nbsp;    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);</b>
+<i>370</i>&nbsp;
+<b class="fc"><i>371</i>&nbsp;    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();</b>
+<b class="fc"><i>372</i>&nbsp;    Dimension windowSize = getPreferredSize();</b>
+<i>373</i>&nbsp;    // Put the frame at the middle of the screen
+<b class="fc"><i>374</i>&nbsp;    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));</b>
+<b class="fc"><i>375</i>&nbsp;    pack();</b>
+<b class="fc"><i>376</i>&nbsp;  }</b>
+<i>377</i>&nbsp;
+<i>378</i>&nbsp;  public GanttTabbedPane getTabs() {
+<b class="fc"><i>379</i>&nbsp;    return myTabPane;</b>
+<i>380</i>&nbsp;  }
+<i>381</i>&nbsp;
+<i>382</i>&nbsp;  public IGanttProject getProject() {
+<b class="fc"><i>383</i>&nbsp;    return this;</b>
+<i>384</i>&nbsp;  }
+<i>385</i>&nbsp;
+<i>386</i>&nbsp;  @Override
+<i>387</i>&nbsp;  public TimeUnitStack getTimeUnitStack() {
+<b class="fc"><i>388</i>&nbsp;    return myTimeUnitStack;</b>
+<i>389</i>&nbsp;  }
+<i>390</i>&nbsp;
+<i>391</i>&nbsp;  @Override
+<i>392</i>&nbsp;  public CustomPropertyManager getTaskCustomColumnManager() {
+<b class="fc"><i>393</i>&nbsp;    return getTaskManager().getCustomPropertyManager();</b>
+<i>394</i>&nbsp;  }
+<i>395</i>&nbsp;
+<i>396</i>&nbsp;  @Override
+<i>397</i>&nbsp;  public CustomPropertyManager getResourceCustomPropertyManager() {
+<b class="fc"><i>398</i>&nbsp;    return myResourceCustomPropertyManager;</b>
+<i>399</i>&nbsp;  }
+<i>400</i>&nbsp;
+<i>401</i>&nbsp;  protected void setUpdater(Updater updater) {
+<b class="fc"><i>402</i>&nbsp;    myUpdater = updater;</b>
+<b class="fc"><i>403</i>&nbsp;  }</b>
+<i>404</i>&nbsp;
+<i>405</i>&nbsp;  protected Updater getUpdater() {
+<b class="fc"><i>406</i>&nbsp;    return myUpdater;</b>
+<i>407</i>&nbsp;  }
+<i>408</i>&nbsp;
+<i>409</i>&nbsp;
+<i>410</i>&nbsp;  protected RssFeedChecker getRssFeedChecker() {
+<b class="fc"><i>411</i>&nbsp;    return myRssChecker;</b>
+<i>412</i>&nbsp;  }
+<i>413</i>&nbsp;
+<i>414</i>&nbsp;  @Override
+<i>415</i>&nbsp;  public abstract String getProjectName();
+<i>416</i>&nbsp;
+<i>417</i>&nbsp;  @Override
+<i>418</i>&nbsp;  public abstract void setProjectName(String projectName);
+<i>419</i>&nbsp;
+<i>420</i>&nbsp;  @Override
+<i>421</i>&nbsp;  public abstract String getDescription();
+<i>422</i>&nbsp;
+<i>423</i>&nbsp;  @Override
+<i>424</i>&nbsp;  public abstract void setDescription(String description);
+<i>425</i>&nbsp;
+<i>426</i>&nbsp;  @Override
+<i>427</i>&nbsp;  public abstract String getOrganization();
+<i>428</i>&nbsp;
+<i>429</i>&nbsp;  @Override
+<i>430</i>&nbsp;  public abstract void setOrganization(String organization);
+<i>431</i>&nbsp;
+<i>432</i>&nbsp;  @Override
+<i>433</i>&nbsp;  public abstract String getWebLink();
+<i>434</i>&nbsp;
+<i>435</i>&nbsp;  @Override
+<i>436</i>&nbsp;  public abstract void setWebLink(String webLink);
+<i>437</i>&nbsp;
+<i>438</i>&nbsp;  @Override
+<i>439</i>&nbsp;  public abstract UIConfiguration getUIConfiguration();
+<i>440</i>&nbsp;
+<i>441</i>&nbsp;  @Override
+<i>442</i>&nbsp;  public abstract HumanResourceManager getHumanResourceManager();
+<i>443</i>&nbsp;
+<i>444</i>&nbsp;  @Override
+<i>445</i>&nbsp;  public abstract RoleManager getRoleManager();
+<i>446</i>&nbsp;
+<i>447</i>&nbsp;  @Override
+<i>448</i>&nbsp;  public abstract TaskManager getTaskManager();
+<i>449</i>&nbsp;
+<i>450</i>&nbsp;  @Override
+<i>451</i>&nbsp;  public abstract TaskContainmentHierarchyFacade getTaskContainment();
+<i>452</i>&nbsp;
+<i>453</i>&nbsp;  @Override
+<i>454</i>&nbsp;  public abstract GPCalendarCalc getActiveCalendar();
+<i>455</i>&nbsp;
+<i>456</i>&nbsp;  @Override
+<i>457</i>&nbsp;  public abstract void setModified();
+<i>458</i>&nbsp;
+<i>459</i>&nbsp;  @Override
+<i>460</i>&nbsp;  public abstract void close();
+<i>461</i>&nbsp;
+<i>462</i>&nbsp;  @Override
+<i>463</i>&nbsp;  public abstract Document getDocument();
+<i>464</i>&nbsp;
+<i>465</i>&nbsp;  protected GanttStatusBar getStatusBar() {
+<b class="fc"><i>466</i>&nbsp;    return statusBar;</b>
+<i>467</i>&nbsp;  }
+<i>468</i>&nbsp;
+<i>469</i>&nbsp;  @Override
+<i>470</i>&nbsp;  public DocumentManager getDocumentManager() {
+<b class="fc"><i>471</i>&nbsp;    return myDocumentManager;</b>
+<i>472</i>&nbsp;  }
+<i>473</i>&nbsp;
+<i>474</i>&nbsp;  protected abstract ParserFactory getParserFactory();
+<i>475</i>&nbsp;
+<i>476</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

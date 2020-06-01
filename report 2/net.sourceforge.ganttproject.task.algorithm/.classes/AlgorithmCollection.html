@@ -1,0 +1,174 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: AlgorithmCollection</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.algorithm</a> ]
+</div>
+
+<h1>Coverage Summary for Class: AlgorithmCollection (net.sourceforge.ganttproject.task.algorithm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AlgorithmCollection</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.8%
+  </span>
+  <span class="absValue">
+    (7/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (16/ 18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.algorithm;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManagerImpl;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * Created by IntelliJ IDEA. User: bard
+<i>26</i>&nbsp; */
+<i>27</i>&nbsp;public class AlgorithmCollection {
+<i>28</i>&nbsp;  private final FindPossibleDependeesAlgorithm myFindPossibleDependeesAlgorithm;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  private final RecalculateTaskScheduleAlgorithm myRecalculateTaskScheduleAlgorithm;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  private final AdjustTaskBoundsAlgorithm myAdjustTaskBoundsAlgorithm;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  private final RecalculateTaskCompletionPercentageAlgorithm myCompletionPercentageAlgorithm;
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  private final ChartBoundsAlgorithm myProjectBoundsAlgorithm;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  private final ShiftTaskTreeAlgorithm myShiftTaskTreeAlgorithm;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  private final CriticalPathAlgorithm myCriticalPathAlgorithm;
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  private final SchedulerImpl myScheduler;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  public AlgorithmCollection(TaskManagerImpl taskManager,
+<i>45</i>&nbsp;      FindPossibleDependeesAlgorithm myFindPossibleDependeesAlgorithm,
+<i>46</i>&nbsp;      RecalculateTaskScheduleAlgorithm recalculateTaskScheduleAlgorithm,
+<i>47</i>&nbsp;      AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
+<i>48</i>&nbsp;      RecalculateTaskCompletionPercentageAlgorithm completionPercentageAlgorithm,
+<b class="fc"><i>49</i>&nbsp;      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm, SchedulerImpl scheduler) {</b>
+<b class="fc"><i>50</i>&nbsp;    myScheduler = scheduler;</b>
+<b class="fc"><i>51</i>&nbsp;    this.myFindPossibleDependeesAlgorithm = myFindPossibleDependeesAlgorithm;</b>
+<b class="fc"><i>52</i>&nbsp;    myRecalculateTaskScheduleAlgorithm = recalculateTaskScheduleAlgorithm;</b>
+<b class="fc"><i>53</i>&nbsp;    myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;</b>
+<b class="fc"><i>54</i>&nbsp;    myCompletionPercentageAlgorithm = completionPercentageAlgorithm;</b>
+<b class="fc"><i>55</i>&nbsp;    myProjectBoundsAlgorithm = projectBoundsAlgorithm;</b>
+<b class="fc"><i>56</i>&nbsp;    myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(taskManager, recalculateTaskScheduleAlgorithm);</b>
+<b class="fc"><i>57</i>&nbsp;    myCriticalPathAlgorithm = criticalPathAlgorithm;</b>
+<b class="fc"><i>58</i>&nbsp;  }</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  public FindPossibleDependeesAlgorithm getFindPossibleDependeesAlgorithm() {
+<b class="nc"><i>61</i>&nbsp;    return myFindPossibleDependeesAlgorithm;</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  public RecalculateTaskScheduleAlgorithm getRecalculateTaskScheduleAlgorithm() {
+<b class="fc"><i>65</i>&nbsp;    return myRecalculateTaskScheduleAlgorithm;</b>
+<i>66</i>&nbsp;  }
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  public AdjustTaskBoundsAlgorithm getAdjustTaskBoundsAlgorithm() {
+<b class="fc"><i>69</i>&nbsp;    return myAdjustTaskBoundsAlgorithm;</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  public RecalculateTaskCompletionPercentageAlgorithm getRecalculateTaskCompletionPercentageAlgorithm() {
+<b class="fc"><i>73</i>&nbsp;    return myCompletionPercentageAlgorithm;</b>
+<i>74</i>&nbsp;  }
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  public ChartBoundsAlgorithm getProjectBoundsAlgorithm() {
+<b class="fc"><i>77</i>&nbsp;    return myProjectBoundsAlgorithm;</b>
+<i>78</i>&nbsp;  }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  public ShiftTaskTreeAlgorithm getShiftTaskTreeAlgorithm() {
+<b class="nc"><i>81</i>&nbsp;    return myShiftTaskTreeAlgorithm;</b>
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  public CriticalPathAlgorithm getCriticalPathAlgorithm() {
+<b class="fc"><i>85</i>&nbsp;    return myCriticalPathAlgorithm;</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;
+<i>88</i>&nbsp;  public AlgorithmBase getScheduler() {
+<b class="fc"><i>89</i>&nbsp;    return myScheduler;</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

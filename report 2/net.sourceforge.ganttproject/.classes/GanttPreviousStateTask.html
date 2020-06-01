@@ -1,0 +1,150 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttPreviousStateTask</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttPreviousStateTask (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttPreviousStateTask</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;/**
+<i>25</i>&nbsp; * @author nbohn
+<i>26</i>&nbsp; */
+<i>27</i>&nbsp;public class GanttPreviousStateTask {
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  private int myId;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  private GanttCalendar myStart;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  private int myDuration;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  private boolean isMilestone;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  private boolean hasNested;
+<i>38</i>&nbsp;
+<b class="nc"><i>39</i>&nbsp;  public GanttPreviousStateTask(int id, GanttCalendar start, int duration, boolean isMilestone, boolean hasNested) {</b>
+<b class="nc"><i>40</i>&nbsp;    myId = id;</b>
+<b class="nc"><i>41</i>&nbsp;    myStart = start;</b>
+<b class="nc"><i>42</i>&nbsp;    myDuration = duration;</b>
+<b class="nc"><i>43</i>&nbsp;    this.isMilestone = isMilestone;</b>
+<b class="nc"><i>44</i>&nbsp;    this.hasNested = hasNested;</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public int getId() {
+<b class="nc"><i>48</i>&nbsp;    return myId;</b>
+<i>49</i>&nbsp;  }
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public GanttCalendar getStart() {
+<b class="nc"><i>52</i>&nbsp;    return myStart;</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public int getDuration() {
+<b class="nc"><i>56</i>&nbsp;    return myDuration;</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public boolean isMilestone() {
+<b class="nc"><i>60</i>&nbsp;    return isMilestone;</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  public boolean hasNested() {
+<b class="nc"><i>64</i>&nbsp;    return hasNested;</b>
+<i>65</i>&nbsp;  }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

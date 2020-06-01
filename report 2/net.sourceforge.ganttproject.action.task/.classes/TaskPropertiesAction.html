@@ -1,0 +1,196 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskPropertiesAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskPropertiesAction (net.sourceforge.ganttproject.action.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskPropertiesAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/ 19)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskPropertiesAction$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.9%
+  </span>
+  <span class="absValue">
+    (9/ 22)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.GanttTask;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.GanttDialogProperties;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import javax.swing.*;
+<i>31</i>&nbsp;import java.util.List;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;public class TaskPropertiesAction extends TaskActionBase {
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  private final IGanttProject myProject;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  public TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+<b class="fc"><i>38</i>&nbsp;    this(project, selectionManager, uiFacade, IconSize.MENU);</b>
+<b class="fc"><i>39</i>&nbsp;  }</b>
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  private TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade,
+<i>42</i>&nbsp;      IconSize size) {
+<b class="fc"><i>43</i>&nbsp;    super(&quot;task.properties&quot;, project.getTaskManager(), selectionManager, uiFacade, null, size);</b>
+<b class="fc"><i>44</i>&nbsp;    myProject = project;</b>
+<b class="fc"><i>45</i>&nbsp;  }</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public GPAction withIcon(IconSize size) {
+<b class="nc"><i>49</i>&nbsp;    return new TaskPropertiesAction(myProject, getSelectionManager(), getUIFacade(), size);</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  @Override
+<i>53</i>&nbsp;  protected boolean isEnabled(List&lt;Task&gt; selection) {
+<b class="fc"><i>54</i>&nbsp;    return selection.size() == 1;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  @Override
+<i>58</i>&nbsp;  protected void run(List&lt;Task&gt; selection) throws Exception {
+<b class="nc"><i>59</i>&nbsp;    if (selection.size() != 1) {</b>
+<b class="nc"><i>60</i>&nbsp;      return;</b>
+<i>61</i>&nbsp;    }
+<i>62</i>&nbsp;    // TODO Allow to edit multiple tasks (instead of [0])
+<b class="nc"><i>63</i>&nbsp;    final GanttTask[] tasks = new GanttTask[] { (GanttTask) selection.get(0) };</b>
+<b class="nc"><i>64</i>&nbsp;    GanttDialogProperties pd = new GanttDialogProperties(tasks);</b>
+<b class="nc"><i>65</i>&nbsp;    getSelectionManager().setUserInputConsumer(pd);</b>
+<b class="nc"><i>66</i>&nbsp;    pd.show(myProject, getUIFacade());</b>
+<b class="nc"><i>67</i>&nbsp;    SwingUtilities.invokeLater(new Runnable() {</b>
+<i>68</i>&nbsp;      @Override
+<i>69</i>&nbsp;      public void run() {
+<b class="nc"><i>70</i>&nbsp;        getSelectionManager().clear();</b>
+<b class="nc"><i>71</i>&nbsp;        getSelectionManager().addTask(tasks[0]);</b>
+<i>72</i>&nbsp;      }
+<i>73</i>&nbsp;    });
+<b class="nc"><i>74</i>&nbsp;  }</b>
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  @Override
+<i>77</i>&nbsp;  protected String getIconFilePrefix() {
+<b class="nc"><i>78</i>&nbsp;    return &quot;properties_&quot;;</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  @Override
+<i>82</i>&nbsp;  public TaskPropertiesAction asToolbarAction() {
+<b class="fc"><i>83</i>&nbsp;    TaskPropertiesAction result = new TaskPropertiesAction(myProject, getSelectionManager(), getUIFacade());</b>
+<b class="fc"><i>84</i>&nbsp;    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));</b>
+<b class="fc"><i>85</i>&nbsp;    return result;</b>
+<i>86</i>&nbsp;  }
+<i>87</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

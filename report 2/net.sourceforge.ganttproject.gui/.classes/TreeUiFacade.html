@@ -1,0 +1,115 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TreeUiFacade</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TreeUiFacade (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">TreeUiFacade</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>22</i>&nbsp;import com.google.common.base.Predicate;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.*;
+<i>26</i>&nbsp;import java.awt.*;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public interface TreeUiFacade&lt;T&gt; {
+<i>32</i>&nbsp;  Component getTreeComponent();
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  ColumnList getVisibleFields();
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  boolean isVisible(T modelElement);
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  boolean isExpanded(T modelElement);
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  void setExpanded(T modelElement, boolean value);
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  void applyPreservingExpansionState(T modelElement, Predicate&lt;T&gt; callable);
+<i>43</i>&nbsp;  /**
+<i>44</i>&nbsp;   * Modifies the selected node(s) of the tree
+<i>45</i>&nbsp;   *
+<i>46</i>&nbsp;   * @param clear
+<i>47</i>&nbsp;   *          when true, it first clears the previous selection. When false the
+<i>48</i>&nbsp;   *          current selection gets extended
+<i>49</i>&nbsp;   * @param modelElement
+<i>50</i>&nbsp;   *          to be selected
+<i>51</i>&nbsp;   */
+<i>52</i>&nbsp;  void setSelected(T modelElement, boolean clear);
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  /** Clears the current selection */
+<i>55</i>&nbsp;  void clearSelection();
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  void makeVisible(T modelElement);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  GPAction getNewAction();
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  GPAction getPropertiesAction();
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  GPAction getDeleteAction();
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  void startDefaultEditing(T modelElement);
+<i>66</i>&nbsp;  void stopEditing();
+<i>67</i>&nbsp;  AbstractAction[] getTreeActions();
+<i>68</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: HighlightOnMouseOver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.overview</a> ]
+</div>
+
+<h1>Coverage Summary for Class: HighlightOnMouseOver (net.sourceforge.ganttproject.chart.overview)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HighlightOnMouseOver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.overview;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;import java.awt.event.MouseAdapter;
+<i>23</i>&nbsp;import java.awt.event.MouseEvent;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.AbstractButton;
+<i>26</i>&nbsp;import javax.swing.Action;
+<i>27</i>&nbsp;import javax.swing.UIManager;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;class HighlightOnMouseOver extends MouseAdapter {
+<b class="nc"><i>30</i>&nbsp;  static final Color backgroundColor = UIManager.getColor(&quot;MenuItem.selectionBackground&quot;);</b>
+<i>31</i>&nbsp;  static final String backgroundString = &quot;#&quot; + Integer.toHexString(backgroundColor.getRed())
+<b class="nc"><i>32</i>&nbsp;      + Integer.toHexString(backgroundColor.getGreen()) + Integer.toHexString(backgroundColor.getBlue());</b>
+<i>33</i>&nbsp;  private AbstractButton myComponent;
+<i>34</i>&nbsp;  private Action myActionOnClick;
+<i>35</i>&nbsp;
+<b class="nc"><i>36</i>&nbsp;  HighlightOnMouseOver(AbstractButton component, Action onClick) {</b>
+<b class="nc"><i>37</i>&nbsp;    myComponent = component;</b>
+<b class="nc"><i>38</i>&nbsp;    myActionOnClick = onClick;</b>
+<i>39</i>&nbsp;  }
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  @Override
+<i>42</i>&nbsp;  public void mouseEntered(MouseEvent arg0) {
+<b class="nc"><i>43</i>&nbsp;    if (myComponent.isEnabled()) {</b>
+<b class="nc"><i>44</i>&nbsp;      myComponent.setBorderPainted(true);</b>
+<i>45</i>&nbsp;    }
+<i>46</i>&nbsp;  }
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  @Override
+<i>49</i>&nbsp;  public void mouseExited(MouseEvent arg0) {
+<b class="nc"><i>50</i>&nbsp;    myComponent.setBorderPainted(false);</b>
+<i>51</i>&nbsp;  }
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  @Override
+<i>54</i>&nbsp;  public void mouseClicked(MouseEvent arg0) {
+<b class="nc"><i>55</i>&nbsp;    if (myActionOnClick != null) {</b>
+<b class="nc"><i>56</i>&nbsp;      myActionOnClick.actionPerformed(null);</b>
+<i>57</i>&nbsp;    }
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

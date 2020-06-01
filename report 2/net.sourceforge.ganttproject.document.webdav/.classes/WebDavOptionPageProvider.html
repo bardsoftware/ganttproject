@@ -1,0 +1,371 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: WebDavOptionPageProvider</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document.webdav</a> ]
+</div>
+
+<h1>Coverage Summary for Class: WebDavOptionPageProvider (net.sourceforge.ganttproject.document.webdav)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WebDavOptionPageProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 37)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$5</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">WebDavOptionPageProvider$6</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 68)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package net.sourceforge.ganttproject.document.webdav;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import java.awt.BorderLayout;
+<i>4</i>&nbsp;import java.awt.Component;
+<i>5</i>&nbsp;import java.awt.Dimension;
+<i>6</i>&nbsp;import java.util.Collections;
+<i>7</i>&nbsp;import java.util.List;
+<i>8</i>&nbsp;
+<i>9</i>&nbsp;import javax.swing.JComponent;
+<i>10</i>&nbsp;import javax.swing.JPanel;
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
+<i>13</i>&nbsp;import net.sourceforge.ganttproject.gui.EditableList;
+<i>14</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
+<i>15</i>&nbsp;import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+<i>16</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>17</i>&nbsp;import biz.ganttproject.core.option.ChangeValueEvent;
+<i>18</i>&nbsp;import biz.ganttproject.core.option.ChangeValueListener;
+<i>19</i>&nbsp;import biz.ganttproject.core.option.DefaultBooleanOption;
+<i>20</i>&nbsp;import biz.ganttproject.core.option.DefaultStringOption;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.ListOption;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import com.google.common.collect.Lists;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;public class WebDavOptionPageProvider extends OptionPageProviderBase {
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  public WebDavOptionPageProvider() {
+<b class="nc"><i>30</i>&nbsp;    super(&quot;storage.webdav&quot;);</b>
+<i>31</i>&nbsp;    // TODO Auto-generated constructor stub
+<i>32</i>&nbsp;  }
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  @Override
+<i>35</i>&nbsp;  public GPOptionGroup[] getOptionGroups() {
+<i>36</i>&nbsp;    // TODO Auto-generated method stub
+<b class="nc"><i>37</i>&nbsp;    return new GPOptionGroup[0];</b>
+<i>38</i>&nbsp;  }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  @Override
+<i>41</i>&nbsp;  public boolean hasCustomComponent() {
+<b class="nc"><i>42</i>&nbsp;    return true;</b>
+<i>43</i>&nbsp;  }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  @Override
+<i>46</i>&nbsp;  public Component buildPageComponent() {
+<b class="nc"><i>47</i>&nbsp;    WebDavStorageImpl webdavStorage = (WebDavStorageImpl) getProject().getDocumentManager().getWebDavStorageUi();</b>
+<b class="nc"><i>48</i>&nbsp;    final ListOption&lt;WebDavServerDescriptor&gt; serversOption = webdavStorage.getServersOption();</b>
+<b class="nc"><i>49</i>&nbsp;    final EditableList&lt;WebDavServerDescriptor&gt; serverList = new EditableList&lt;WebDavServerDescriptor&gt;(</b>
+<b class="nc"><i>50</i>&nbsp;        Lists.newArrayList(serversOption.getValues()), Collections.EMPTY_LIST) {</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;          @Override
+<i>53</i>&nbsp;          protected WebDavServerDescriptor updateValue(WebDavServerDescriptor newValue, WebDavServerDescriptor curValue) {
+<b class="nc"><i>54</i>&nbsp;            newValue.username = curValue.username;</b>
+<b class="nc"><i>55</i>&nbsp;            newValue.password = curValue.password;</b>
+<b class="nc"><i>56</i>&nbsp;            newValue.setRootUrl(curValue.getRootUrl());</b>
+<b class="nc"><i>57</i>&nbsp;            serversOption.updateValue(curValue, newValue);</b>
+<b class="nc"><i>58</i>&nbsp;            return newValue;</b>
+<i>59</i>&nbsp;          }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;          @Override
+<i>62</i>&nbsp;          protected WebDavServerDescriptor createValue(WebDavServerDescriptor prototype) {
+<b class="nc"><i>63</i>&nbsp;            serversOption.addValue(prototype);</b>
+<b class="nc"><i>64</i>&nbsp;            return prototype;</b>
+<i>65</i>&nbsp;          }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;          @Override
+<i>68</i>&nbsp;          protected void deleteValue(WebDavServerDescriptor value) {
+<b class="nc"><i>69</i>&nbsp;            serversOption.removeValueIndex(findIndex(value));</b>
+<i>70</i>&nbsp;          }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;          private int findIndex(WebDavServerDescriptor value) {
+<b class="nc"><i>73</i>&nbsp;            return Lists.newArrayList(serversOption.getValues()).indexOf(value);</b>
+<i>74</i>&nbsp;          }
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;          @Override
+<i>77</i>&nbsp;          protected WebDavServerDescriptor createPrototype(Object editValue) {
+<b class="nc"><i>78</i>&nbsp;            return new WebDavServerDescriptor(String.valueOf(editValue), &quot;&quot;, &quot;&quot;);</b>
+<i>79</i>&nbsp;          }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;          @Override
+<i>82</i>&nbsp;          protected String getStringValue(WebDavServerDescriptor t) {
+<b class="nc"><i>83</i>&nbsp;            return t.name;</b>
+<i>84</i>&nbsp;          }
+<i>85</i>&nbsp;    };
+<b class="nc"><i>86</i>&nbsp;    serverList.getTableComponent().setPreferredSize(new Dimension(150, 300));</b>
+<b class="nc"><i>87</i>&nbsp;    serverList.setUndefinedValueLabel(GanttLanguage.getInstance().getText(&quot;webdav.serverNamePrompt&quot;));</b>
+<i>88</i>&nbsp;
+<b class="nc"><i>89</i>&nbsp;    final DefaultStringOption urlOption = new DefaultStringOption(&quot;webdav.server.url&quot;);</b>
+<b class="nc"><i>90</i>&nbsp;    urlOption.addChangeValueListener(new ChangeValueListener() {</b>
+<i>91</i>&nbsp;      @Override
+<i>92</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>93</i>&nbsp;        if (serverList.getSelectedObject() != null) {</b>
+<b class="nc"><i>94</i>&nbsp;          serverList.getSelectedObject().setRootUrl(urlOption.getValue());</b>
+<i>95</i>&nbsp;        }
+<i>96</i>&nbsp;      }
+<i>97</i>&nbsp;    });
+<i>98</i>&nbsp;
+<b class="nc"><i>99</i>&nbsp;    final DefaultStringOption usernameOption = new DefaultStringOption(&quot;webdav.server.username&quot;);</b>
+<b class="nc"><i>100</i>&nbsp;    usernameOption.addChangeValueListener(new ChangeValueListener() {</b>
+<i>101</i>&nbsp;      @Override
+<i>102</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>103</i>&nbsp;        if (serverList.getSelectedObject() != null) {</b>
+<b class="nc"><i>104</i>&nbsp;          serverList.getSelectedObject().username = usernameOption.getValue();</b>
+<i>105</i>&nbsp;        }
+<i>106</i>&nbsp;      }
+<i>107</i>&nbsp;    });
+<i>108</i>&nbsp;
+<b class="nc"><i>109</i>&nbsp;    final DefaultStringOption passwordOption = new DefaultStringOption(&quot;webdav.server.password&quot;);</b>
+<b class="nc"><i>110</i>&nbsp;    passwordOption.addChangeValueListener(new ChangeValueListener() {</b>
+<i>111</i>&nbsp;      @Override
+<i>112</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>113</i>&nbsp;        if (serverList.getSelectedObject() != null) {</b>
+<b class="nc"><i>114</i>&nbsp;          serverList.getSelectedObject().password = passwordOption.getValue();</b>
+<i>115</i>&nbsp;        }
+<i>116</i>&nbsp;      }
+<i>117</i>&nbsp;    });
+<b class="nc"><i>118</i>&nbsp;    passwordOption.setScreened(true);</b>
+<i>119</i>&nbsp;
+<b class="nc"><i>120</i>&nbsp;    final DefaultBooleanOption savePasswordOption = new DefaultBooleanOption(&quot;webdav.server.savePassword&quot;, false);</b>
+<b class="nc"><i>121</i>&nbsp;    savePasswordOption.addChangeValueListener(new ChangeValueListener() {</b>
+<i>122</i>&nbsp;      @Override
+<i>123</i>&nbsp;      public void changeValue(ChangeValueEvent event) {
+<b class="nc"><i>124</i>&nbsp;        if (serverList.getSelectedObject() != null) {</b>
+<b class="nc"><i>125</i>&nbsp;          serverList.getSelectedObject().savePassword = savePasswordOption.getValue();</b>
+<i>126</i>&nbsp;        }
+<i>127</i>&nbsp;      }
+<i>128</i>&nbsp;    });
+<i>129</i>&nbsp;
+<b class="nc"><i>130</i>&nbsp;    GPOptionGroup optionGroup = new GPOptionGroup(&quot;webdav.server&quot;, urlOption, usernameOption, passwordOption, savePasswordOption);</b>
+<i>131</i>&nbsp;
+<b class="nc"><i>132</i>&nbsp;    serverList.getTableAndActions().addSelectionListener(new SelectionListener&lt;WebDavServerDescriptor&gt;() {</b>
+<i>133</i>&nbsp;      @Override
+<i>134</i>&nbsp;      public void selectionChanged(List&lt;WebDavServerDescriptor&gt; selection) {
+<b class="nc"><i>135</i>&nbsp;        if (selection.size() == 1) {</b>
+<b class="nc"><i>136</i>&nbsp;          WebDavServerDescriptor selected = selection.get(0);</b>
+<b class="nc"><i>137</i>&nbsp;          urlOption.setValue(selected.getRootUrl());</b>
+<b class="nc"><i>138</i>&nbsp;          usernameOption.setValue(selected.username);</b>
+<b class="nc"><i>139</i>&nbsp;          passwordOption.setValue(selected.password);</b>
+<b class="nc"><i>140</i>&nbsp;          savePasswordOption.setValue(selected.savePassword);</b>
+<i>141</i>&nbsp;        }
+<i>142</i>&nbsp;      }
+<i>143</i>&nbsp;    });
+<b class="nc"><i>144</i>&nbsp;    int selected = Lists.newArrayList(serversOption.getValues()).indexOf(serversOption.getValue());</b>
+<b class="nc"><i>145</i>&nbsp;    if (selected &gt;= 0) {</b>
+<b class="nc"><i>146</i>&nbsp;      serverList.getTableAndActions().setSelection(selected);</b>
+<i>147</i>&nbsp;    }
+<i>148</i>&nbsp;    //Box result = Box.createHorizontalBox();
+<b class="nc"><i>149</i>&nbsp;    JPanel serversPanel = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>150</i>&nbsp;    serversPanel.add(serverList.createDefaultComponent(), BorderLayout.CENTER);</b>
+<i>151</i>&nbsp;
+<b class="nc"><i>152</i>&nbsp;    OptionsPageBuilder builder = new OptionsPageBuilder();</b>
+<b class="nc"><i>153</i>&nbsp;    GPOptionGroup lockingGroup = new GPOptionGroup(&quot;webdav.lock&quot;, webdavStorage.getWebDavLockTimeoutOption(), webdavStorage.getWebDavReleaseLockOption());</b>
+<b class="nc"><i>154</i>&nbsp;    lockingGroup.setI18Nkey(builder.getI18N().getCanonicalOptionLabelKey(webdavStorage.getWebDavLockTimeoutOption()), &quot;webdav.lockTimeout.label&quot;);</b>
+<b class="nc"><i>155</i>&nbsp;    lockingGroup.setI18Nkey(builder.getI18N().getCanonicalOptionLabelKey(webdavStorage.getWebDavReleaseLockOption()), &quot;option.webdav.lock.releaseOnProjectClose.label&quot;);</b>
+<b class="nc"><i>156</i>&nbsp;    serversPanel.add(builder.buildPlanePage(new GPOptionGroup[] {lockingGroup}), BorderLayout.SOUTH);</b>
+<i>157</i>&nbsp;
+<b class="nc"><i>158</i>&nbsp;    builder = new OptionsPageBuilder(null, OptionsPageBuilder.ONE_COLUMN_LAYOUT);</b>
+<b class="nc"><i>159</i>&nbsp;    JPanel result = new JPanel(new BorderLayout());</b>
+<b class="nc"><i>160</i>&nbsp;    result.add(serversPanel, BorderLayout.WEST);</b>
+<b class="nc"><i>161</i>&nbsp;    JComponent serverDetails = builder.buildPlanePage(new GPOptionGroup[] {optionGroup});</b>
+<b class="nc"><i>162</i>&nbsp;    serverDetails.setPreferredSize(new Dimension(300, 300));</b>
+<b class="nc"><i>163</i>&nbsp;    result.add(serverDetails, BorderLayout.CENTER);</b>
+<i>164</i>&nbsp;    //result.add(Box.createHorizontalGlue());
+<b class="nc"><i>165</i>&nbsp;    return OptionPageProviderBase.wrapContentComponent(result, getCanonicalPageTitle(), null);</b>
+<i>166</i>&nbsp;  }
+<i>167</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ResourceActionSet</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.resource</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ResourceActionSet (net.sourceforge.ganttproject.action.resource)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResourceActionSet</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (23/ 23)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.resource;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.GanttProject;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.ResourceTreeTable;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.resource.AssignmentContext;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.resource.ResourceContext;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import javax.swing.*;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;public class ResourceActionSet {
+<i>31</i>&nbsp;  private final ResourceNewAction myResourceNewAction;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  private final ResourceDeleteAction myResourceDeleteAction;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;  private final ResourcePropertiesAction myResourcePropertiesAction;
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  private final ResourceMoveUpAction myResourceMoveUpAction;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  private final ResourceMoveDownAction myResourceMoveDownAction;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  private final ResourceSendMailAction myResourceSendMailAction;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  private final AssignmentDeleteAction myAssignmentDelete;
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  private AbstractAction[] myActions;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext,
+<b class="fc"><i>48</i>&nbsp;      GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {</b>
+<b class="fc"><i>49</i>&nbsp;    HumanResourceManager manager = projectFrame.getHumanResourceManager();</b>
+<b class="fc"><i>50</i>&nbsp;    myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), projectFrame.getTaskManager(), uiFacade);</b>
+<b class="fc"><i>51</i>&nbsp;    myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);</b>
+<b class="fc"><i>52</i>&nbsp;    myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);</b>
+<b class="fc"><i>53</i>&nbsp;    myResourceMoveUpAction = new ResourceMoveUpAction(table);</b>
+<b class="fc"><i>54</i>&nbsp;    myResourceMoveDownAction = new ResourceMoveDownAction(table);</b>
+<b class="fc"><i>55</i>&nbsp;    myResourceSendMailAction = new ResourceSendMailAction(table);</b>
+<b class="fc"><i>56</i>&nbsp;    myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);</b>
+<b class="fc"><i>57</i>&nbsp;  }</b>
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public AbstractAction[] getActions() {
+<b class="fc"><i>60</i>&nbsp;    if (myActions == null) {</b>
+<b class="fc"><i>61</i>&nbsp;      myResourceNewAction.putValue(Action.SHORT_DESCRIPTION, null);</b>
+<b class="fc"><i>62</i>&nbsp;      myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);</b>
+<b class="fc"><i>63</i>&nbsp;      myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);</b>
+<b class="fc"><i>64</i>&nbsp;      myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };</b>
+<i>65</i>&nbsp;    }
+<b class="fc"><i>66</i>&nbsp;    return myActions;</b>
+<i>67</i>&nbsp;  }
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;  public ResourceNewAction getResourceNewAction() {
+<b class="fc"><i>70</i>&nbsp;    return myResourceNewAction;</b>
+<i>71</i>&nbsp;  }
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  public ResourceDeleteAction getResourceDeleteAction() {
+<b class="fc"><i>74</i>&nbsp;    return myResourceDeleteAction;</b>
+<i>75</i>&nbsp;  }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  public ResourcePropertiesAction getResourcePropertiesAction() {
+<b class="fc"><i>78</i>&nbsp;    return myResourcePropertiesAction;</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  public ResourceMoveUpAction getResourceMoveUpAction() {
+<b class="fc"><i>82</i>&nbsp;    return myResourceMoveUpAction;</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;  public ResourceMoveDownAction getResourceMoveDownAction() {
+<b class="fc"><i>86</i>&nbsp;    return myResourceMoveDownAction;</b>
+<i>87</i>&nbsp;  }
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;  public ResourceSendMailAction getResourceSendMailAction() {
+<b class="fc"><i>90</i>&nbsp;    return myResourceSendMailAction;</b>
+<i>91</i>&nbsp;  }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  public AssignmentDeleteAction getAssignmentDelete() {
+<b class="fc"><i>94</i>&nbsp;    return myAssignmentDelete;</b>
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

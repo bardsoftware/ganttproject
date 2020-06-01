@@ -1,0 +1,108 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ChartImplementation</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ChartImplementation (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ChartImplementation</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Graphics;
+<i>22</i>&nbsp;import java.awt.event.MouseEvent;
+<i>23</i>&nbsp;import java.awt.event.MouseListener;
+<i>24</i>&nbsp;import java.awt.event.MouseMotionListener;
+<i>25</i>&nbsp;import java.util.List;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;public interface ChartImplementation extends ZoomListener {
+<i>35</i>&nbsp;  void paintChart(Graphics g);
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  // void paintComponent(Graphics g, List&lt;Task&gt; visibleTasks);
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  MouseListener getMouseListener();
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;  MouseMotionListener getMouseMotionListener();
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary);
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  MouseInteraction getActiveInteraction();
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  void beginChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary);
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  MouseInteraction finishInteraction();
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem item);
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  void beginDrawDependencyInteraction(MouseEvent initiatingEvent, TaskRegularAreaChartItem taskArea);
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  // void beginMoveTaskInteraction(MouseEvent e, Task task);
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  void beginMoveTaskInteractions(MouseEvent e, List&lt;Task&gt; tasks);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  void beginScrollViewInteraction(MouseEvent e);
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

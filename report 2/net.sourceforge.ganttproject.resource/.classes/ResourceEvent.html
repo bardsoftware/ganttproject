@@ -1,0 +1,131 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ResourceEvent</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.resource</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ResourceEvent (net.sourceforge.ganttproject.resource)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResourceEvent</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/ 13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 17.07.2003
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; */
+<i>5</i>&nbsp;package net.sourceforge.ganttproject.resource;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;import java.util.EventObject;
+<i>8</i>&nbsp;
+<i>9</i>&nbsp;/**
+<i>10</i>&nbsp; * @author bard
+<i>11</i>&nbsp; */
+<i>12</i>&nbsp;public class ResourceEvent extends EventObject {
+<i>13</i>&nbsp;  /**
+<i>14</i>&nbsp;   * @param source
+<i>15</i>&nbsp;   */
+<i>16</i>&nbsp;  public ResourceEvent(HumanResourceManager mgr, HumanResource resource) {
+<b class="fc"><i>17</i>&nbsp;    super(mgr);</b>
+<b class="fc"><i>18</i>&nbsp;    myManager = mgr;</b>
+<b class="fc"><i>19</i>&nbsp;    myResource = resource;</b>
+<b class="fc"><i>20</i>&nbsp;    myResources = new HumanResource[] { myResource };</b>
+<b class="fc"><i>21</i>&nbsp;  }</b>
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;  public ResourceEvent(HumanResourceManager mgr, HumanResource[] resources) {
+<b class="fc"><i>24</i>&nbsp;    super(mgr);</b>
+<b class="fc"><i>25</i>&nbsp;    myManager = mgr;</b>
+<b class="fc"><i>26</i>&nbsp;    myResources = resources;</b>
+<b class="fc"><i>27</i>&nbsp;    myResource = resources.length &gt; 0 ? resources[0] : null;</b>
+<b class="fc"><i>28</i>&nbsp;  }</b>
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  public HumanResourceManager getManager() {
+<b class="nc"><i>31</i>&nbsp;    return myManager;</b>
+<i>32</i>&nbsp;  }
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  public HumanResource getResource() {
+<b class="fc"><i>35</i>&nbsp;    return myResource;</b>
+<i>36</i>&nbsp;  }
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  public HumanResource[] getResources() {
+<b class="fc"><i>39</i>&nbsp;    return myResources;</b>
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  private HumanResource[] myResources;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  private HumanResourceManager myManager;
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  private HumanResource myResource;
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

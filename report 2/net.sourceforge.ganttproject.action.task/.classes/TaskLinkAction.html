@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskLinkAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskLinkAction (net.sourceforge.ganttproject.action.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskLinkAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (10/ 24)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskLinkAction$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/ 4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.3%
+  </span>
+  <span class="absValue">
+    (11/ 28)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import java.beans.PropertyChangeEvent;
+<i>31</i>&nbsp;import java.beans.PropertyChangeListener;
+<i>32</i>&nbsp;import java.util.List;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;public class TaskLinkAction extends TaskActionBase {
+<i>35</i>&nbsp;  public TaskLinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
+<b class="fc"><i>36</i>&nbsp;    super(&quot;task.link&quot;, taskManager, selectionManager, uiFacade, null);</b>
+<b class="fc"><i>37</i>&nbsp;  }</b>
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;  @Override
+<i>40</i>&nbsp;  protected String getIconFilePrefix() {
+<b class="fc"><i>41</i>&nbsp;    return &quot;link_&quot;;</b>
+<i>42</i>&nbsp;  }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  @Override
+<i>45</i>&nbsp;  protected void run(List&lt;Task&gt; selection) throws TaskDependencyException {
+<b class="nc"><i>46</i>&nbsp;    for (int i = 0; i &lt; selection.size() - 1; i++) {</b>
+<b class="nc"><i>47</i>&nbsp;      Task dependant = selection.get(i + 1);</b>
+<b class="nc"><i>48</i>&nbsp;      Task dependee = selection.get(i);</b>
+<i>49</i>&nbsp;      // FIXME If dependant is a supertask containing dependee, this check fails
+<i>50</i>&nbsp;      // and the dependency is created!!
+<b class="nc"><i>51</i>&nbsp;      if (getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {</b>
+<b class="nc"><i>52</i>&nbsp;        TaskDependency dependency = getTaskManager().getDependencyCollection().createDependency(dependant, dependee);</b>
+<b class="nc"><i>53</i>&nbsp;        dependency.setHardness(TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue()));</b>
+<i>54</i>&nbsp;      }
+<i>55</i>&nbsp;    }
+<i>56</i>&nbsp;    // Update (un)link buttons
+<b class="nc"><i>57</i>&nbsp;    getSelectionManager().fireSelectionChanged();</b>
+<b class="nc"><i>58</i>&nbsp;  }</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  protected boolean isEnabled(List&lt;Task&gt; selection) {
+<b class="fc"><i>62</i>&nbsp;    if (selection.size() &lt;= 1) {</b>
+<b class="fc"><i>63</i>&nbsp;      return false;</b>
+<i>64</i>&nbsp;    }
+<b class="nc"><i>65</i>&nbsp;    for (int i = 0; i &lt; selection.size() - 1; i++) {</b>
+<b class="nc"><i>66</i>&nbsp;      Task dependant = selection.get(i + 1);</b>
+<b class="nc"><i>67</i>&nbsp;      Task dependee = selection.get(i);</b>
+<i>68</i>&nbsp;      // FIXME If dependant is a supertask containing dependee, this check
+<i>69</i>&nbsp;      // fails!
+<b class="nc"><i>70</i>&nbsp;      if (!getTaskManager().getDependencyCollection().canCreateDependency(dependant, dependee)) {</b>
+<i>71</i>&nbsp;        // It is not possible to create a dependency
+<b class="nc"><i>72</i>&nbsp;        return false;</b>
+<i>73</i>&nbsp;      }
+<i>74</i>&nbsp;    }
+<b class="nc"><i>75</i>&nbsp;    return true;</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  @Override
+<i>79</i>&nbsp;  public GPAction asToolbarAction() {
+<b class="fc"><i>80</i>&nbsp;    final TaskLinkAction result = new TaskLinkAction(getTaskManager(), getSelectionManager(), getUIFacade());</b>
+<b class="fc"><i>81</i>&nbsp;    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));</b>
+<b class="fc"><i>82</i>&nbsp;    this.addPropertyChangeListener(new PropertyChangeListener() {</b>
+<i>83</i>&nbsp;      @Override
+<i>84</i>&nbsp;      public void propertyChange(PropertyChangeEvent evt) {
+<b class="nc"><i>85</i>&nbsp;        if (&quot;enabled&quot;.equals(evt.getPropertyName())) {</b>
+<b class="nc"><i>86</i>&nbsp;          result.setEnabled((Boolean)evt.getNewValue());</b>
+<i>87</i>&nbsp;        }
+<b class="nc"><i>88</i>&nbsp;      }</b>
+<i>89</i>&nbsp;    });
+<b class="fc"><i>90</i>&nbsp;    result.setEnabled(this.isEnabled());</b>
+<b class="fc"><i>91</i>&nbsp;    return result;</b>
+<i>92</i>&nbsp;  }
+<i>93</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,218 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: HtmlSerializer</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.ganttproject.impex.htmlpdf</a> ]
+</div>
+
+<h1>Coverage Summary for Class: HtmlSerializer (org.ganttproject.impex.htmlpdf)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HtmlSerializer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package org.ganttproject.impex.htmlpdf;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.File;
+<i>22</i>&nbsp;import java.io.IOException;
+<i>23</i>&nbsp;import java.util.Calendar;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.xml.transform.sax.TransformerHandler;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.GPVersion;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.GanttProject;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.export.ExportException;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.util.FileUtil;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import org.xml.sax.SAXException;
+<i>36</i>&nbsp;import org.xml.sax.helpers.AttributesImpl;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;import biz.ganttproject.core.time.CalendarFactory;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;/**
+<i>41</i>&nbsp; * HTML-specific serializer.
+<i>42</i>&nbsp; *
+<i>43</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>44</i>&nbsp; */
+<i>45</i>&nbsp;public class HtmlSerializer extends XmlSerializer {
+<i>46</i>&nbsp;  private ExporterToHTML myEngine;
+<i>47</i>&nbsp;
+<b class="nc"><i>48</i>&nbsp;  public HtmlSerializer(ExporterToHTML engine) {</b>
+<b class="nc"><i>49</i>&nbsp;    myEngine = engine;</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  void serialize(TransformerHandler handler, File outputFile) throws SAXException, IOException, ExportException {
+<b class="nc"><i>53</i>&nbsp;    String filenameWithoutExtension = getFilenameWithoutExtension(outputFile);</b>
+<b class="nc"><i>54</i>&nbsp;    handler.startDocument();</b>
+<b class="nc"><i>55</i>&nbsp;    AttributesImpl attrs = new AttributesImpl();</b>
+<i>56</i>&nbsp;
+<b class="nc"><i>57</i>&nbsp;    writeViews(getUIFacade(), handler);</b>
+<b class="nc"><i>58</i>&nbsp;    startElement(&quot;ganttproject&quot;, attrs, handler);</b>
+<b class="nc"><i>59</i>&nbsp;    textElement(&quot;title&quot;, attrs, &quot;GanttProject - &quot; + filenameWithoutExtension, handler);</b>
+<i>60</i>&nbsp;
+<b class="nc"><i>61</i>&nbsp;    addAttribute(&quot;prefix&quot;, filenameWithoutExtension, attrs);</b>
+<b class="nc"><i>62</i>&nbsp;    startElement(&quot;links&quot;, attrs, handler);</b>
+<b class="nc"><i>63</i>&nbsp;    textElement(&quot;home&quot;, attrs, i18n(&quot;home&quot;), handler);</b>
+<b class="nc"><i>64</i>&nbsp;    textElement(&quot;chart&quot;, attrs, i18n(&quot;gantt&quot;), handler);</b>
+<b class="nc"><i>65</i>&nbsp;    textElement(&quot;tasks&quot;, attrs, i18n(&quot;task&quot;), handler);</b>
+<b class="nc"><i>66</i>&nbsp;    textElement(&quot;resources&quot;, attrs, i18n(&quot;human&quot;), handler);</b>
+<b class="nc"><i>67</i>&nbsp;    endElement(&quot;links&quot;, handler);</b>
+<i>68</i>&nbsp;
+<b class="nc"><i>69</i>&nbsp;    startElement(&quot;project&quot;, attrs, handler);</b>
+<b class="nc"><i>70</i>&nbsp;    addAttribute(&quot;title&quot;, i18n(&quot;project&quot;), attrs);</b>
+<b class="nc"><i>71</i>&nbsp;    textElement(&quot;name&quot;, attrs, getProject().getProjectName(), handler);</b>
+<b class="nc"><i>72</i>&nbsp;    addAttribute(&quot;title&quot;, i18n(&quot;organization&quot;), attrs);</b>
+<b class="nc"><i>73</i>&nbsp;    textElement(&quot;organization&quot;, attrs, getProject().getOrganization(), handler);</b>
+<b class="nc"><i>74</i>&nbsp;    addAttribute(&quot;title&quot;, i18n(&quot;webLink&quot;), attrs);</b>
+<b class="nc"><i>75</i>&nbsp;    textElement(&quot;webLink&quot;, attrs, getProject().getWebLink(), handler);</b>
+<b class="nc"><i>76</i>&nbsp;    addAttribute(&quot;title&quot;, i18n(&quot;shortDescription&quot;), attrs);</b>
+<b class="nc"><i>77</i>&nbsp;    textElement(&quot;description&quot;, attrs, getProject().getDescription(), handler);</b>
+<b class="nc"><i>78</i>&nbsp;    endElement(&quot;project&quot;, handler);</b>
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;    // TODO: [dbarashev, 10.09.2005] introduce output files grouping structure
+<b class="nc"><i>81</i>&nbsp;    String ganttChartFileName = ExporterToHTML.replaceExtension(outputFile, ExporterToHTML.GANTT_CHART_FILE_EXTENSION).getName();</b>
+<b class="nc"><i>82</i>&nbsp;    textElement(&quot;chart&quot;, attrs, ganttChartFileName, handler);</b>
+<b class="nc"><i>83</i>&nbsp;    addAttribute(&quot;name&quot;, i18n(&quot;colName&quot;), attrs);</b>
+<b class="nc"><i>84</i>&nbsp;    addAttribute(&quot;role&quot;, i18n(&quot;colRole&quot;), attrs);</b>
+<b class="nc"><i>85</i>&nbsp;    addAttribute(&quot;mail&quot;, i18n(&quot;colMail&quot;), attrs);</b>
+<b class="nc"><i>86</i>&nbsp;    addAttribute(&quot;phone&quot;, i18n(&quot;colPhone&quot;), attrs);</b>
+<b class="nc"><i>87</i>&nbsp;    startElement(&quot;resources&quot;, attrs, handler);</b>
+<b class="nc"><i>88</i>&nbsp;    writeResources(getProject().getHumanResourceManager(), handler);</b>
+<i>89</i>&nbsp;
+<b class="nc"><i>90</i>&nbsp;    String resourceChartFileName = ExporterToHTML.replaceExtension(outputFile,</b>
+<b class="nc"><i>91</i>&nbsp;        ExporterToHTML.RESOURCE_CHART_FILE_EXTENSION).getName();</b>
+<b class="nc"><i>92</i>&nbsp;    addAttribute(&quot;path&quot;, resourceChartFileName, attrs);</b>
+<b class="nc"><i>93</i>&nbsp;    emptyElement(&quot;chart&quot;, attrs, handler);</b>
+<b class="nc"><i>94</i>&nbsp;    endElement(&quot;resources&quot;, handler);</b>
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;//    addAttribute(&quot;name&quot;, i18n(&quot;name&quot;), attrs);
+<i>97</i>&nbsp;//    addAttribute(&quot;begin&quot;, i18n(&quot;start&quot;), attrs);
+<i>98</i>&nbsp;//    addAttribute(&quot;end&quot;, i18n(&quot;end&quot;), attrs);
+<i>99</i>&nbsp;//    addAttribute(&quot;milestone&quot;, i18n(&quot;meetingPoint&quot;), attrs);
+<i>100</i>&nbsp;//    addAttribute(&quot;progress&quot;, i18n(&quot;advancement&quot;), attrs);
+<i>101</i>&nbsp;//    addAttribute(&quot;assigned-to&quot;, i18n(&quot;assignTo&quot;), attrs);
+<i>102</i>&nbsp;//    addAttribute(&quot;notes&quot;, i18n(&quot;notesTask&quot;), attrs);
+<i>103</i>&nbsp;    try {
+<b class="nc"><i>104</i>&nbsp;      writeTasks(getProject().getTaskManager(), handler);</b>
+<b class="nc"><i>105</i>&nbsp;    } catch (Exception e) {</b>
+<b class="nc"><i>106</i>&nbsp;      throw new ExportException(&quot;Failed to write tasks&quot;, e);</b>
+<b class="nc"><i>107</i>&nbsp;    }</b>
+<i>108</i>&nbsp;
+<b class="nc"><i>109</i>&nbsp;    addAttribute(&quot;version&quot;, &quot;Ganttproject (&quot; + GPVersion.CURRENT + &quot;)&quot;, attrs);</b>
+<b class="nc"><i>110</i>&nbsp;    Calendar c = CalendarFactory.newCalendar();</b>
+<b class="nc"><i>111</i>&nbsp;    String dateAndTime = GanttLanguage.getInstance().formatShortDate(c) + &quot; - &quot; + GanttLanguage.getInstance().formatTime(c);</b>
+<i>112</i>&nbsp;
+<b class="nc"><i>113</i>&nbsp;    addAttribute(&quot;date&quot;, dateAndTime, attrs);</b>
+<b class="nc"><i>114</i>&nbsp;    emptyElement(&quot;footer&quot;, attrs, handler);</b>
+<b class="nc"><i>115</i>&nbsp;    endElement(&quot;ganttproject&quot;, handler);</b>
+<b class="nc"><i>116</i>&nbsp;    handler.endDocument();</b>
+<i>117</i>&nbsp;  }
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  private IGanttProject getProject() {
+<b class="nc"><i>120</i>&nbsp;    return myEngine.getProject();</b>
+<i>121</i>&nbsp;  }
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;  private UIFacade getUIFacade() {
+<b class="nc"><i>124</i>&nbsp;    return myEngine.getUIFacade();</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  @Override
+<i>128</i>&nbsp;  protected String getAssignedResourcesDelimiter() {
+<b class="nc"><i>129</i>&nbsp;    return &quot;, &quot;;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<i>132</i>&nbsp;  private static String getFilenameWithoutExtension(File f) {
+<b class="nc"><i>133</i>&nbsp;    return FileUtil.getFilenameWithoutExtension(f);</b>
+<i>134</i>&nbsp;  }
+<i>135</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

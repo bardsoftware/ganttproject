@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CloudFileOptions</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.storage.cloud</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CloudFileOptions (biz.ganttproject.storage.cloud)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CloudFileOptions</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (6/ 36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.storage.cloud
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.*
+<i>22</i>&nbsp;import java.util.*
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;data class GPCloudFileOptions(
+<i>25</i>&nbsp;    var lockToken: String = &quot;&quot;,
+<i>26</i>&nbsp;    var lockExpiration: String = &quot;&quot;,
+<i>27</i>&nbsp;    var fingerprint: String = &quot;&quot;,
+<i>28</i>&nbsp;    var name: String = &quot;&quot;,
+<i>29</i>&nbsp;    var offlineMirror: String? = null,
+<i>30</i>&nbsp;    var lastOnlineVersion: String? = null,
+<i>31</i>&nbsp;    var lastOnlineChecksum: String? = null) {
+<i>32</i>&nbsp;  fun clearOfflineMirror() {
+<i>33</i>&nbsp;    this.name = &quot;&quot;
+<i>34</i>&nbsp;    this.offlineMirror = null
+<i>35</i>&nbsp;    this.lastOnlineChecksum = null
+<i>36</i>&nbsp;    this.lastOnlineVersion = null
+<i>37</i>&nbsp;  }
+<i>38</i>&nbsp;}
+<i>39</i>&nbsp;
+<b class="fc"><i>40</i>&nbsp;class CloudFileOptions : KeyValueOption(&quot;files&quot;) {</b>
+<b class="fc"><i>41</i>&nbsp;  val files = mutableMapOf&lt;String, GPCloudFileOptions&gt;()</b>
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  override fun loadPersistentValue(value: String?) {
+<b class="fc"><i>44</i>&nbsp;    super.loadPersistentValue(value)</b>
+<b class="fc"><i>45</i>&nbsp;    val sortedMap = keyValueMap.toSortedMap()</b>
+<b class="fc"><i>46</i>&nbsp;    for ((k, v) in sortedMap) {</b>
+<b class="nc"><i>47</i>&nbsp;      val (fp, property) = k.split(delimiters = *arrayOf(&quot;.&quot;), limit = 2)</b>
+<b class="nc"><i>48</i>&nbsp;      val options = this.files.getOrPut(fp) {</b>
+<b class="nc"><i>49</i>&nbsp;        GPCloudFileOptions(fingerprint = fp)</b>
+<i>50</i>&nbsp;      }
+<b class="nc"><i>51</i>&nbsp;      when (property) {</b>
+<b class="nc"><i>52</i>&nbsp;        &quot;lockToken&quot; -&gt; options.lockToken = v</b>
+<b class="nc"><i>53</i>&nbsp;        &quot;lockExpiration&quot; -&gt; options.lockExpiration = v</b>
+<b class="nc"><i>54</i>&nbsp;        &quot;name&quot; -&gt; options.name = v</b>
+<b class="nc"><i>55</i>&nbsp;        &quot;sync.offlinePath&quot; -&gt; options.offlineMirror = v</b>
+<b class="nc"><i>56</i>&nbsp;        &quot;sync.onlineVersion&quot; -&gt; options.lastOnlineVersion = v</b>
+<b class="nc"><i>57</i>&nbsp;        &quot;sync.onlineChecksum&quot; -&gt; options.lastOnlineChecksum = v</b>
+<b class="nc"><i>58</i>&nbsp;      }</b>
+<i>59</i>&nbsp;    }
+<b class="fc"><i>60</i>&nbsp;  }</b>
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  override fun setValueIndex(idx: Int) {
+<b class="nc"><i>63</i>&nbsp;    error(&quot;This method is not implemented&quot;)</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  override fun addValue(value: MutableMap.MutableEntry&lt;String, String&gt;?) {
+<b class="nc"><i>67</i>&nbsp;    error(&quot;This method is not implemented&quot;)</b>
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  override fun updateValue(oldValue: MutableMap.MutableEntry&lt;String, String&gt;?, newValue: MutableMap.MutableEntry&lt;String, String&gt;?) {
+<b class="nc"><i>71</i>&nbsp;    error(&quot;This method is not implemented&quot;)</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  override fun removeValueIndex(idx: Int) {
+<b class="nc"><i>75</i>&nbsp;    error(&quot;This method is not implemented&quot;)</b>
+<i>76</i>&nbsp;  }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;  override fun asEnumerationOption(): EnumerationOption {
+<b class="nc"><i>79</i>&nbsp;    error(&quot;This method is not implemented&quot;)</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;  fun save() {
+<b class="nc"><i>83</i>&nbsp;    this.values =</b>
+<b class="nc"><i>84</i>&nbsp;        this.files.mapValues {</b>
+<b class="nc"><i>85</i>&nbsp;          val kv = mutableMapOf&lt;String, String&gt;()</b>
+<b class="nc"><i>86</i>&nbsp;          kv[&quot;${it.value.fingerprint}.name&quot;] = it.value.name</b>
+<b class="nc"><i>87</i>&nbsp;          kv[&quot;${it.value.fingerprint}.lockToken&quot;] = it.value.lockToken</b>
+<b class="nc"><i>88</i>&nbsp;          kv[&quot;${it.value.fingerprint}.lockExpiration&quot;] = it.value.lockExpiration</b>
+<b class="nc"><i>89</i>&nbsp;          kv[&quot;${it.value.fingerprint}.sync.offlinePath&quot;] = it.value.offlineMirror ?: &quot;&quot;</b>
+<b class="nc"><i>90</i>&nbsp;          kv[&quot;${it.value.fingerprint}.sync.onlineVersion&quot;] = it.value.lastOnlineVersion ?: &quot;&quot;</b>
+<b class="nc"><i>91</i>&nbsp;          kv[&quot;${it.value.fingerprint}.sync.onlineChecksum&quot;] = it.value.lastOnlineChecksum ?: &quot;&quot;</b>
+<i>92</i>&nbsp;
+<b class="nc"><i>93</i>&nbsp;              kv.filterValues { value -&gt; value != &quot;&quot; }</b>
+<b class="nc"><i>94</i>&nbsp;        }.flatMap {</b>
+<b class="nc"><i>95</i>&nbsp;          it.value.entries</b>
+<i>96</i>&nbsp;        }
+<b class="nc"><i>97</i>&nbsp;  }</b>
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  fun getFileOptions(fp: String): GPCloudFileOptions {
+<b class="nc"><i>100</i>&nbsp;    return this.files.getOrPut(fp) { GPCloudFileOptions(fingerprint = fp) }</b>
+<i>101</i>&nbsp;  }
+<i>102</i>&nbsp;}
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;// Persistently stored options
+<i>105</i>&nbsp;object GPCloudOptions {
+<i>106</i>&nbsp;  val authToken: StringOption = object : DefaultStringOption(&quot;authToken&quot;, &quot;&quot;) {
+<i>107</i>&nbsp;    override fun getPersistentValue(): String? {
+<i>108</i>&nbsp;      return GPCloudOptions.validity.value.toLongOrNull()?.let {
+<i>109</i>&nbsp;        if (it &gt; 0) {
+<i>110</i>&nbsp;          super.getPersistentValue()
+<i>111</i>&nbsp;        } else {
+<i>112</i>&nbsp;          null
+<i>113</i>&nbsp;        }
+<i>114</i>&nbsp;      }
+<i>115</i>&nbsp;    }
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;  val validity: StringOption = DefaultStringOption(&quot;validity&quot;, &quot;&quot;)
+<i>118</i>&nbsp;  val userId: StringOption = object : DefaultStringOption(&quot;userId&quot;) {
+<i>119</i>&nbsp;    override fun getPersistentValue(): String? {
+<i>120</i>&nbsp;      return GPCloudOptions.validity.value.toLongOrNull()?.let {
+<i>121</i>&nbsp;        if (it &gt; 0) {
+<i>122</i>&nbsp;          super.getPersistentValue()
+<i>123</i>&nbsp;        } else {
+<i>124</i>&nbsp;          null
+<i>125</i>&nbsp;        }
+<i>126</i>&nbsp;      }
+<i>127</i>&nbsp;    }
+<i>128</i>&nbsp;  }
+<i>129</i>&nbsp;  val websocketAuthToken: String
+<i>130</i>&nbsp;    get() = Base64.getEncoder().encodeToString(
+<i>131</i>&nbsp;        &quot;${this.userId.value}:${GPCloudOptions.authToken.value}&quot;.toByteArray())
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;  var websocketToken: String? = null
+<i>134</i>&nbsp;  val cloudFiles = CloudFileOptions()
+<i>135</i>&nbsp;  val optionGroup: GPOptionGroup = GPOptionGroup(&quot;ganttproject-cloud&quot;, authToken, validity, userId, cloudFiles)
+<i>136</i>&nbsp;}
+<i>137</i>&nbsp;
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,216 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectRolesOptionPageProvider</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.options</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectRolesOptionPageProvider (net.sourceforge.ganttproject.gui.options)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectRolesOptionPageProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 11)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProjectRolesOptionPageProvider$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 21)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.options;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Component;
+<i>22</i>&nbsp;import java.util.ArrayList;
+<i>23</i>&nbsp;import java.util.Arrays;
+<i>24</i>&nbsp;import java.util.Collections;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.EditableList;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleImpl;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleSet;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * Provides project roles page in the project settings dialog.
+<i>37</i>&nbsp; *
+<i>38</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>39</i>&nbsp; */
+<i>40</i>&nbsp;public class ProjectRolesOptionPageProvider extends OptionPageProviderBase {
+<i>41</i>&nbsp;  private EditableList&lt;Role&gt; myRolesList;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  public ProjectRolesOptionPageProvider() {
+<b class="nc"><i>44</i>&nbsp;    super(&quot;project.roles&quot;);</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public GPOptionGroup[] getOptionGroups() {
+<b class="nc"><i>49</i>&nbsp;    return new GPOptionGroup[0];</b>
+<i>50</i>&nbsp;  }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  @Override
+<i>53</i>&nbsp;  public boolean hasCustomComponent() {
+<b class="nc"><i>54</i>&nbsp;    return true;</b>
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  @Override
+<i>58</i>&nbsp;  public Component buildPageComponent() {
+<b class="nc"><i>59</i>&nbsp;    ArrayList&lt;Role&gt; roles = new ArrayList&lt;Role&gt;(Arrays.asList(getRoleManager().getProjectLevelRoles()));</b>
+<b class="nc"><i>60</i>&nbsp;    myRolesList = new EditableList&lt;Role&gt;(roles, Collections.&lt;Role&gt; emptyList()) {</b>
+<i>61</i>&nbsp;      @Override
+<i>62</i>&nbsp;      protected Role updateValue(Role newValue, Role curValue) {
+<b class="nc"><i>63</i>&nbsp;        curValue.setName(newValue.getName());</b>
+<b class="nc"><i>64</i>&nbsp;        return curValue;</b>
+<i>65</i>&nbsp;      }
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;      @Override
+<i>68</i>&nbsp;      protected Role createValue(Role prototype) {
+<b class="nc"><i>69</i>&nbsp;        RoleSet projectRoles = getRoleManager().getProjectRoleSet();</b>
+<b class="nc"><i>70</i>&nbsp;        return projectRoles.createRole(prototype.getName());</b>
+<i>71</i>&nbsp;      }
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;      @Override
+<i>74</i>&nbsp;      protected void deleteValue(Role value) {
+<b class="nc"><i>75</i>&nbsp;        getRoleManager().getProjectRoleSet().deleteRole(value);</b>
+<i>76</i>&nbsp;      }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;      @Override
+<i>79</i>&nbsp;      protected Role createPrototype(Object editValue) {
+<b class="nc"><i>80</i>&nbsp;        if (editValue == null) {</b>
+<b class="nc"><i>81</i>&nbsp;          return null;</b>
+<i>82</i>&nbsp;        }
+<b class="nc"><i>83</i>&nbsp;        return new RoleImpl(0, String.valueOf(editValue), null);</b>
+<i>84</i>&nbsp;      }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;      @Override
+<i>87</i>&nbsp;      protected String getStringValue(Role role) {
+<b class="nc"><i>88</i>&nbsp;        return role.getName();</b>
+<i>89</i>&nbsp;      }
+<i>90</i>&nbsp;    };
+<b class="nc"><i>91</i>&nbsp;    myRolesList.setUndefinedValueLabel(GanttLanguage.getInstance().getText(</b>
+<i>92</i>&nbsp;        &quot;optionPage.project.roles.undefinedValueLabel&quot;));
+<b class="nc"><i>93</i>&nbsp;    return OptionPageProviderBase.wrapContentComponent(myRolesList.createDefaultComponent(),</b>
+<b class="nc"><i>94</i>&nbsp;        GanttLanguage.getInstance().getText(&quot;resourceRole&quot;), GanttLanguage.getInstance().getText(&quot;settingsRoles&quot;));</b>
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  private RoleManager getRoleManager() {
+<b class="nc"><i>98</i>&nbsp;    return getProject().getRoleManager();</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public void commit() {
+<b class="nc"><i>103</i>&nbsp;    if (myRolesList != null) {</b>
+<b class="nc"><i>104</i>&nbsp;      myRolesList.stopEditing();</b>
+<i>105</i>&nbsp;    }
+<i>106</i>&nbsp;  }
+<i>107</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

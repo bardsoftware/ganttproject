@@ -1,0 +1,288 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GTextField</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GTextField (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GTextField</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Toolkit;
+<i>22</i>&nbsp;import java.util.regex.Matcher;
+<i>23</i>&nbsp;import java.util.regex.Pattern;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.swing.JFormattedTextField;
+<i>26</i>&nbsp;import javax.swing.SwingConstants;
+<i>27</i>&nbsp;import javax.swing.text.AttributeSet;
+<i>28</i>&nbsp;import javax.swing.text.BadLocationException;
+<i>29</i>&nbsp;import javax.swing.text.Document;
+<i>30</i>&nbsp;import javax.swing.text.PlainDocument;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;/**
+<i>33</i>&nbsp; * &lt;p&gt;
+<i>34</i>&nbsp; * Title: GTextField
+<i>35</i>&nbsp; * &lt;/p&gt;
+<i>36</i>&nbsp; * &lt;p&gt;
+<i>37</i>&nbsp; * Description: This class is a text field enabling accurate character
+<i>38</i>&nbsp; * authorization. You can specify the valid characters you want authorize in
+<i>39</i>&nbsp; * edition or a regular expression pattern.
+<i>40</i>&nbsp; * &lt;/p&gt;
+<i>41</i>&nbsp; * 
+<i>42</i>&nbsp; * @author Benoit Baranne
+<i>43</i>&nbsp; */
+<i>44</i>&nbsp;public class GTextField extends JFormattedTextField {
+<i>45</i>&nbsp;  public static final String PATTERN_DOUBLE = &quot;[0-9]*\\.?[0-9]*&quot;;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public static final String PATTERN_INTEGER = &quot;[0-9]*&quot;;
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;  /**
+<i>50</i>&nbsp;   * Creates an instance of GTextField with a default format.
+<i>51</i>&nbsp;   * 
+<i>52</i>&nbsp;   * @param format
+<i>53</i>&nbsp;   *          Textfields format.
+<i>54</i>&nbsp;   */
+<i>55</i>&nbsp;  public GTextField(AbstractFormatter format) {
+<b class="nc"><i>56</i>&nbsp;    super(format);</b>
+<i>57</i>&nbsp;    // this.setDocument(new CPlainDocument(null));
+<b class="nc"><i>58</i>&nbsp;    this.setHorizontalAlignment(SwingConstants.RIGHT);</b>
+<i>59</i>&nbsp;  }
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  /**
+<i>62</i>&nbsp;   * Creates an instance of GTextField with a default text.
+<i>63</i>&nbsp;   * 
+<i>64</i>&nbsp;   * @param text
+<i>65</i>&nbsp;   *          Text to be put into the text field.
+<i>66</i>&nbsp;   */
+<i>67</i>&nbsp;  public GTextField(String text) {
+<b class="nc"><i>68</i>&nbsp;    super();</b>
+<b class="nc"><i>69</i>&nbsp;    this.setDocument(new GPlainDocument(null));</b>
+<b class="nc"><i>70</i>&nbsp;    this.setText(text);</b>
+<b class="nc"><i>71</i>&nbsp;    this.setHorizontalAlignment(SwingConstants.RIGHT);</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  /**
+<i>75</i>&nbsp;   * Creates an instance of GTextField.
+<i>76</i>&nbsp;   */
+<i>77</i>&nbsp;  public GTextField() {
+<b class="nc"><i>78</i>&nbsp;    super();</b>
+<b class="nc"><i>79</i>&nbsp;    super.setColumns(15);</b>
+<b class="nc"><i>80</i>&nbsp;    this.setDocument(new GPlainDocument(null));</b>
+<b class="nc"><i>81</i>&nbsp;    this.setHorizontalAlignment(SwingConstants.RIGHT);</b>
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  /**
+<i>85</i>&nbsp;   * Give the focus to the text field.
+<i>86</i>&nbsp;   */
+<i>87</i>&nbsp;  public void setFocus() {
+<b class="nc"><i>88</i>&nbsp;    super.requestFocusInWindow();</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  /**
+<i>92</i>&nbsp;   * Indicates the valid characters to accept in edition.
+<i>93</i>&nbsp;   * 
+<i>94</i>&nbsp;   * @param valid_chars
+<i>95</i>&nbsp;   *          String containing all the valid characters.
+<i>96</i>&nbsp;   */
+<i>97</i>&nbsp;  public void setValidCharacters(String valid_chars) {
+<b class="nc"><i>98</i>&nbsp;    Document d = this.getDocument();</b>
+<b class="nc"><i>99</i>&nbsp;    if (d instanceof GPlainDocument) {</b>
+<b class="nc"><i>100</i>&nbsp;      ((GPlainDocument) d).setValidCharacters(valid_chars);</b>
+<i>101</i>&nbsp;    }
+<i>102</i>&nbsp;  }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  /**
+<i>105</i>&nbsp;   * Indicates the valid characters by giving an regular expression pattern.
+<i>106</i>&nbsp;   * 
+<i>107</i>&nbsp;   * @param pattern
+<i>108</i>&nbsp;   *          The regular expression with which the matching is done.
+<i>109</i>&nbsp;   */
+<i>110</i>&nbsp;  public void setPattern(String pattern) {
+<b class="nc"><i>111</i>&nbsp;    Document d = this.getDocument();</b>
+<b class="nc"><i>112</i>&nbsp;    if (d instanceof GPlainDocument) {</b>
+<b class="nc"><i>113</i>&nbsp;      ((GPlainDocument) d).setPattern(pattern);</b>
+<i>114</i>&nbsp;    }
+<i>115</i>&nbsp;  }
+<i>116</i>&nbsp;}
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;/**
+<i>119</i>&nbsp; * &lt;p&gt;
+<i>120</i>&nbsp; * Title: CPlainDocument
+<i>121</i>&nbsp; * &lt;/p&gt;
+<i>122</i>&nbsp; * &lt;p&gt;
+<i>123</i>&nbsp; * Description: This class enables you to specify the valid characters for the
+<i>124</i>&nbsp; * document. If the pattern is set (i.e. not null) the valid characters refer to
+<i>125</i>&nbsp; * it, otherwise it refers to the valid characters string.
+<i>126</i>&nbsp; * &lt;/p&gt;
+<i>127</i>&nbsp; * 
+<i>128</i>&nbsp; * @author Benoit Baranne
+<i>129</i>&nbsp; */
+<i>130</i>&nbsp;class GPlainDocument extends PlainDocument {
+<i>131</i>&nbsp;  /**
+<i>132</i>&nbsp;   * String containing all the valid characters.
+<i>133</i>&nbsp;   */
+<i>134</i>&nbsp;  private String valid_characters = null;
+<i>135</i>&nbsp;
+<i>136</i>&nbsp;  /**
+<i>137</i>&nbsp;   * Regular expression pattern to use.
+<i>138</i>&nbsp;   */
+<i>139</i>&nbsp;  private Pattern pattern = null;
+<i>140</i>&nbsp;
+<i>141</i>&nbsp;  /**
+<i>142</i>&nbsp;   * Creates an instance of GPlainDocument with a valid character string.
+<i>143</i>&nbsp;   * 
+<i>144</i>&nbsp;   * @param validchars
+<i>145</i>&nbsp;   */
+<i>146</i>&nbsp;  public GPlainDocument(String validchars) {
+<i>147</i>&nbsp;    super();
+<i>148</i>&nbsp;    this.valid_characters = validchars;
+<i>149</i>&nbsp;  }
+<i>150</i>&nbsp;
+<i>151</i>&nbsp;  /**
+<i>152</i>&nbsp;   * Inserts the string &lt;code&gt;str&lt;/code&gt; into the document if it matches with
+<i>153</i>&nbsp;   * the valid characters.
+<i>154</i>&nbsp;   * 
+<i>155</i>&nbsp;   * @param offs
+<i>156</i>&nbsp;   *          Offset for the insertion.
+<i>157</i>&nbsp;   * @param str
+<i>158</i>&nbsp;   *          String to insert.
+<i>159</i>&nbsp;   * @param a
+<i>160</i>&nbsp;   *          AttibutSet.
+<i>161</i>&nbsp;   * @throws BadLocationException
+<i>162</i>&nbsp;   */
+<i>163</i>&nbsp;  @Override
+<i>164</i>&nbsp;  public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+<i>165</i>&nbsp;    if (this.pattern != null) {
+<i>166</i>&nbsp;      String s = this.getText(0, this.getLength());
+<i>167</i>&nbsp;      Matcher m = this.pattern.matcher(s + str);
+<i>168</i>&nbsp;
+<i>169</i>&nbsp;      if (m.matches())
+<i>170</i>&nbsp;        super.insertString(offs, str, a);
+<i>171</i>&nbsp;    } else {
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;      // //
+<i>174</i>&nbsp;      StringBuffer sb = new StringBuffer();
+<i>175</i>&nbsp;
+<i>176</i>&nbsp;      for (int i = 0; i &lt; str.length(); i++)
+<i>177</i>&nbsp;        if (this.valid_characters == null || this.valid_characters.indexOf(str.charAt(i)) != -1)
+<i>178</i>&nbsp;          sb.append(str.charAt(i));
+<i>179</i>&nbsp;        else
+<i>180</i>&nbsp;          Toolkit.getDefaultToolkit().beep();
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;      super.insertString(offs, sb.toString(), a);
+<i>183</i>&nbsp;    }
+<i>184</i>&nbsp;  }
+<i>185</i>&nbsp;
+<i>186</i>&nbsp;  /**
+<i>187</i>&nbsp;   * Sets the valid characters.
+<i>188</i>&nbsp;   * 
+<i>189</i>&nbsp;   * @param valid_chars
+<i>190</i>&nbsp;   *          The valid characters to set.
+<i>191</i>&nbsp;   */
+<i>192</i>&nbsp;  protected void setValidCharacters(String valid_chars) {
+<i>193</i>&nbsp;    this.valid_characters = valid_chars;
+<i>194</i>&nbsp;  }
+<i>195</i>&nbsp;
+<i>196</i>&nbsp;  /**
+<i>197</i>&nbsp;   * Sets the regular expression pattern.
+<i>198</i>&nbsp;   * 
+<i>199</i>&nbsp;   * @param pattern
+<i>200</i>&nbsp;   *          The regular expression pattern to set.
+<i>201</i>&nbsp;   */
+<i>202</i>&nbsp;  protected void setPattern(String pattern) {
+<i>203</i>&nbsp;    this.pattern = Pattern.compile(pattern);
+<i>204</i>&nbsp;  }
+<i>205</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

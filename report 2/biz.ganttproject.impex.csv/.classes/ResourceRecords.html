@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ResourceRecords</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.csv</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ResourceRecords (biz.ganttproject.impex.csv)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResourceRecords</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 35)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ResourceRecords$ResourceFields</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 41)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2014 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.impex.csv;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Preconditions;
+<i>22</i>&nbsp;import com.google.common.collect.ImmutableSet;
+<i>23</i>&nbsp;import com.google.common.collect.Sets;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.ResourceDefaultColumn;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResource;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceManager;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.roles.Role;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.roles.RoleManager;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import java.util.List;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;/**
+<i>34</i>&nbsp; * Class responsible for processing resource records in CSV import
+<i>35</i>&nbsp; *
+<i>36</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>37</i>&nbsp; */
+<b class="nc"><i>38</i>&nbsp;class ResourceRecords extends RecordGroup {</b>
+<i>39</i>&nbsp;
+<b class="nc"><i>40</i>&nbsp;  public enum ResourceFields {</b>
+<b class="nc"><i>41</i>&nbsp;    ID(&quot;tableColID&quot;), NAME(&quot;tableColResourceName&quot;), EMAIL(&quot;tableColResourceEMail&quot;), PHONE(&quot;tableColResourcePhone&quot;), ROLE(&quot;tableColResourceRole&quot;);</b>
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;    private final String text;
+<i>44</i>&nbsp;
+<b class="nc"><i>45</i>&nbsp;    private ResourceFields(final String text) {</b>
+<b class="nc"><i>46</i>&nbsp;      this.text = text;</b>
+<b class="nc"><i>47</i>&nbsp;    }</b>
+<i>48</i>&nbsp;
+<i>49</i>&nbsp;    @Override
+<i>50</i>&nbsp;    public String toString() {
+<i>51</i>&nbsp;      // Return translated field name
+<b class="nc"><i>52</i>&nbsp;      return GanttLanguage.getInstance().getText(text);</b>
+<i>53</i>&nbsp;    }
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  private final HumanResourceManager resourceManager;
+<i>57</i>&nbsp;  private final RoleManager myRoleManager;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  ResourceRecords(HumanResourceManager resourceManager, RoleManager roleManager) {
+<b class="nc"><i>60</i>&nbsp;    super(&quot;Resource group&quot;,</b>
+<b class="nc"><i>61</i>&nbsp;      Sets.union(</b>
+<b class="nc"><i>62</i>&nbsp;          Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),</b>
+<b class="nc"><i>63</i>&nbsp;          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())),</b>
+<b class="nc"><i>64</i>&nbsp;      Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME)));</b>
+<b class="nc"><i>65</i>&nbsp;    this.resourceManager = Preconditions.checkNotNull(resourceManager);</b>
+<b class="nc"><i>66</i>&nbsp;    myRoleManager = Preconditions.checkNotNull(roleManager);</b>
+<b class="nc"><i>67</i>&nbsp;  }</b>
+<i>68</i>&nbsp;  @Override
+<i>69</i>&nbsp;  public void setHeader(List&lt;String&gt; header) {
+<b class="nc"><i>70</i>&nbsp;    super.setHeader(header);</b>
+<b class="nc"><i>71</i>&nbsp;    GanttCSVOpen.createCustomProperties(getCustomFields(), resourceManager.getCustomPropertyManager());</b>
+<b class="nc"><i>72</i>&nbsp;  }</b>
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  @Override
+<i>75</i>&nbsp;  protected boolean doProcess(SpreadsheetRecord record) {
+<b class="nc"><i>76</i>&nbsp;    if (!super.doProcess(record)) {</b>
+<b class="nc"><i>77</i>&nbsp;      return false;</b>
+<i>78</i>&nbsp;    }
+<b class="nc"><i>79</i>&nbsp;    if (!hasMandatoryFields(record)) {</b>
+<b class="nc"><i>80</i>&nbsp;      return false;</b>
+<i>81</i>&nbsp;    }
+<b class="nc"><i>82</i>&nbsp;    assert record.size() &gt; 0;</b>
+<b class="nc"><i>83</i>&nbsp;    String role = getOrNull(record, ResourceFields.ROLE.toString());</b>
+<b class="nc"><i>84</i>&nbsp;    if (role != null &amp;&amp; myRoleManager.getRole(role) == null) {</b>
+<b class="nc"><i>85</i>&nbsp;      Role newRole = myRoleManager.getProjectRoleSet().createRole(role);</b>
+<b class="nc"><i>86</i>&nbsp;      role = newRole.getPersistentID();</b>
+<i>87</i>&nbsp;    }
+<i>88</i>&nbsp;
+<b class="nc"><i>89</i>&nbsp;    HumanResource hr = resourceManager.newResourceBuilder()</b>
+<b class="nc"><i>90</i>&nbsp;        .withName(getOrNull(record, ResourceFields.NAME.toString()))</b>
+<b class="nc"><i>91</i>&nbsp;        .withID(getOrNull(record, ResourceFields.ID.toString()))</b>
+<b class="nc"><i>92</i>&nbsp;        .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))</b>
+<b class="nc"><i>93</i>&nbsp;        .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))</b>
+<b class="nc"><i>94</i>&nbsp;        .withRole(role)</b>
+<b class="nc"><i>95</i>&nbsp;        .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))</b>
+<b class="nc"><i>96</i>&nbsp;        .build();</b>
+<b class="nc"><i>97</i>&nbsp;    for (String customField : getCustomFields()) {</b>
+<b class="nc"><i>98</i>&nbsp;      String value = getOrNull(record, customField);</b>
+<b class="nc"><i>99</i>&nbsp;      if (value != null) {</b>
+<b class="nc"><i>100</i>&nbsp;        hr.addCustomProperty(resourceManager.getCustomPropertyManager().getCustomPropertyDefinition(customField), value);</b>
+<i>101</i>&nbsp;      }
+<b class="nc"><i>102</i>&nbsp;    }</b>
+<b class="nc"><i>103</i>&nbsp;    return true;</b>
+<i>104</i>&nbsp;  }
+<i>105</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

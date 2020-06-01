@@ -1,0 +1,363 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CriticalPathAlgorithmImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.algorithm</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CriticalPathAlgorithmImpl (net.sourceforge.ganttproject.task.algorithm)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CriticalPathAlgorithmImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.4%
+  </span>
+  <span class="absValue">
+    (27/ 28)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">CriticalPathAlgorithmImpl$Node</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.1%
+  </span>
+  <span class="absValue">
+    (33/ 34)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">CriticalPathAlgorithmImpl$Processor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98.5%
+  </span>
+  <span class="absValue">
+    (65/ 66)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (19/ 19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.7%
+  </span>
+  <span class="absValue">
+    (125/ 128)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2009-2011 Dmitry Barashev, GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.algorithm;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.calendar.GPCalendarCalc;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Collision;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import java.util.*;
+<i>29</i>&nbsp;import java.util.logging.Logger;
+<i>30</i>&nbsp;
+<b class="fc"><i>31</i>&nbsp;public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {</b>
+<b class="fc"><i>32</i>&nbsp;  private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);</b>
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  private final TaskManager myTaskManager;
+<i>35</i>&nbsp;  private final GPCalendarCalc myCalendar;
+<i>36</i>&nbsp;
+<b class="fc"><i>37</i>&nbsp;  public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendarCalc calendar) {</b>
+<b class="fc"><i>38</i>&nbsp;    myTaskManager = taskManager;</b>
+<b class="fc"><i>39</i>&nbsp;    myCalendar = calendar;</b>
+<b class="fc"><i>40</i>&nbsp;  }</b>
+<i>41</i>&nbsp;
+<b class="fc"><i>42</i>&nbsp;  static class Node {</b>
+<i>43</i>&nbsp;    private final Task task;
+<b class="fc"><i>44</i>&nbsp;    private final List&lt;Task&gt; dependees = new ArrayList&lt;Task&gt;();</b>
+<i>45</i>&nbsp;    private int numDependants;
+<i>46</i>&nbsp;    private final Date est;
+<i>47</i>&nbsp;    private final Date eft;
+<i>48</i>&nbsp;    private Date lst;
+<i>49</i>&nbsp;    private Date lft;
+<b class="fc"><i>50</i>&nbsp;    private boolean lftFromSupertask = false;</b>
+<i>51</i>&nbsp;
+<b class="fc"><i>52</i>&nbsp;    public Node(Task t, Set&lt;Task&gt; taskScope) {</b>
+<b class="fc"><i>53</i>&nbsp;      assert t != null;</b>
+<b class="fc"><i>54</i>&nbsp;      task = t;</b>
+<b class="fc"><i>55</i>&nbsp;      est = t.getStart().getTime();</b>
+<b class="fc"><i>56</i>&nbsp;      eft = t.getEnd().getTime();</b>
+<b class="fc"><i>57</i>&nbsp;      lst = null;</b>
+<b class="fc"><i>58</i>&nbsp;      lft = null;</b>
+<b class="fc"><i>59</i>&nbsp;      numDependants = 0;</b>
+<b class="fc"><i>60</i>&nbsp;      TaskDependency[] deps = t.getDependenciesAsDependee().toArray();</b>
+<b class="fc"><i>61</i>&nbsp;      for (int i = 0; i &lt; deps.length; i++) {</b>
+<b class="fc"><i>62</i>&nbsp;        if (taskScope.contains(deps[i].getDependant())) {</b>
+<b class="fc"><i>63</i>&nbsp;          numDependants++;</b>
+<i>64</i>&nbsp;        }
+<i>65</i>&nbsp;      }
+<b class="fc"><i>66</i>&nbsp;      collectDependees(t, taskScope);</b>
+<b class="fc"><i>67</i>&nbsp;    }</b>
+<i>68</i>&nbsp;
+<b class="fc"><i>69</i>&nbsp;    public Node(Task t, Date est, Date eft, Date lst, Date lft, int numDependants, Set&lt;Task&gt; taskScope) {</b>
+<b class="fc"><i>70</i>&nbsp;      task = t;</b>
+<b class="fc"><i>71</i>&nbsp;      this.est = est;</b>
+<b class="fc"><i>72</i>&nbsp;      this.eft = eft;</b>
+<b class="fc"><i>73</i>&nbsp;      this.lst = lst;</b>
+<b class="fc"><i>74</i>&nbsp;      this.lft = lft;</b>
+<b class="fc"><i>75</i>&nbsp;      this.numDependants = numDependants;</b>
+<b class="fc"><i>76</i>&nbsp;      if (task != null) {</b>
+<b class="nc"><i>77</i>&nbsp;        collectDependees(task, taskScope);</b>
+<i>78</i>&nbsp;      }
+<b class="fc"><i>79</i>&nbsp;    }</b>
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;    void collectDependees(Task task, Set&lt;Task&gt; taskScope) {
+<b class="fc"><i>82</i>&nbsp;      TaskDependency[] deps = task.getDependenciesAsDependant().toArray();</b>
+<b class="fc"><i>83</i>&nbsp;      for (TaskDependency dep : deps) {</b>
+<b class="fc"><i>84</i>&nbsp;        if (taskScope.contains(dep.getDependee())) {</b>
+<b class="fc"><i>85</i>&nbsp;          dependees.add(dep.getDependee());</b>
+<i>86</i>&nbsp;        }
+<i>87</i>&nbsp;      }
+<b class="fc"><i>88</i>&nbsp;    }</b>
+<i>89</i>&nbsp;
+<i>90</i>&nbsp;    boolean isCritical() {
+<b class="fc"><i>91</i>&nbsp;      return est.equals(lst);</b>
+<i>92</i>&nbsp;    }
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;    @Override
+<i>95</i>&nbsp;    public String toString() {
+<b class="fc"><i>96</i>&nbsp;      return task == null ? &quot;[Deadline node &quot; + eft + &quot;]&quot; : task.toString();</b>
+<i>97</i>&nbsp;    }
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  @Override
+<i>101</i>&nbsp;  public Task[] getCriticalTasks() {
+<b class="fc"><i>102</i>&nbsp;    Date projectEnd = myTaskManager.getProjectEnd();</b>
+<b class="fc"><i>103</i>&nbsp;    Node fakeFinalNode = new Node(null, projectEnd, projectEnd, projectEnd, projectEnd, 0, null);</b>
+<b class="fc"><i>104</i>&nbsp;    Task[] tasks = myTaskManager.getTasks();</b>
+<b class="fc"><i>105</i>&nbsp;    if (tasks.length == 0) {</b>
+<b class="nc"><i>106</i>&nbsp;      return tasks;</b>
+<i>107</i>&nbsp;    }
+<b class="fc"><i>108</i>&nbsp;    Map&lt;Task, Node&gt; task_node = createTaskNodeMap(tasks, fakeFinalNode);</b>
+<b class="fc"><i>109</i>&nbsp;    for (Node curNode : task_node.values()) {</b>
+<b class="fc"><i>110</i>&nbsp;      curNode.numDependants += myTaskManager.getTaskHierarchy().getDepth(curNode.task) - 1;</b>
+<b class="fc"><i>111</i>&nbsp;    }</b>
+<b class="fc"><i>112</i>&nbsp;    assert fakeFinalNode.dependees.size() &gt; 0;</b>
+<i>113</i>&nbsp;
+<b class="fc"><i>114</i>&nbsp;    LinkedHashSet&lt;Task&gt; result = new LinkedHashSet&lt;Task&gt;();</b>
+<b class="fc"><i>115</i>&nbsp;    Processor p = new Processor(task_node, fakeFinalNode);</b>
+<b class="fc"><i>116</i>&nbsp;    result.addAll(p.run());</b>
+<b class="fc"><i>117</i>&nbsp;    return result.toArray(new Task[result.size()]);</b>
+<i>118</i>&nbsp;  }
+<i>119</i>&nbsp;
+<i>120</i>&nbsp;  private Map&lt;Task, Node&gt; createTaskNodeMap(Task[] tasks, Node deadlineNode) {
+<b class="fc"><i>121</i>&nbsp;    Set&lt;Task&gt; taskScope = new HashSet&lt;Task&gt;(Arrays.asList(tasks));</b>
+<b class="fc"><i>122</i>&nbsp;    Map&lt;Task, Node&gt; task_node = new HashMap&lt;Task, Node&gt;();</b>
+<b class="fc"><i>123</i>&nbsp;    for (Task task : tasks) {</b>
+<b class="fc"><i>124</i>&nbsp;      Node newNode = new Node(task, taskScope);</b>
+<b class="fc"><i>125</i>&nbsp;      deadlineNode.dependees.add(task);</b>
+<b class="fc"><i>126</i>&nbsp;      newNode.numDependants++;</b>
+<b class="fc"><i>127</i>&nbsp;      task_node.put(task, newNode);</b>
+<i>128</i>&nbsp;    }
+<b class="fc"><i>129</i>&nbsp;    return task_node;</b>
+<i>130</i>&nbsp;  }
+<i>131</i>&nbsp;
+<b class="fc"><i>132</i>&nbsp;  class Processor {</b>
+<i>133</i>&nbsp;    private final Map&lt;Task, Node&gt; myTask_Node;
+<b class="fc"><i>134</i>&nbsp;    private LinkedList&lt;Node&gt; myQueue = new LinkedList&lt;Node&gt;();</b>
+<b class="fc"><i>135</i>&nbsp;    private final ArrayList&lt;Task&gt; myResult = new ArrayList&lt;Task&gt;();</b>
+<i>136</i>&nbsp;    private final Node myDeadlineNode;
+<i>137</i>&nbsp;
+<b class="fc"><i>138</i>&nbsp;    Processor(Map&lt;Task, Node&gt; task_node, Node deadlineNode) {</b>
+<b class="fc"><i>139</i>&nbsp;      myDeadlineNode = deadlineNode;</b>
+<b class="fc"><i>140</i>&nbsp;      myTask_Node = task_node;</b>
+<b class="fc"><i>141</i>&nbsp;      myQueue.add(myDeadlineNode);</b>
+<b class="fc"><i>142</i>&nbsp;    }</b>
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;    boolean hasMoreInput() {
+<b class="fc"><i>145</i>&nbsp;      return !myQueue.isEmpty();</b>
+<i>146</i>&nbsp;    }
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;    List&lt;Task&gt; run() {
+<b class="fc"><i>149</i>&nbsp;      while (hasMoreInput()) {</b>
+<b class="fc"><i>150</i>&nbsp;        myQueue = processQueue();</b>
+<i>151</i>&nbsp;      }
+<b class="fc"><i>152</i>&nbsp;      return myResult;</b>
+<i>153</i>&nbsp;    }
+<i>154</i>&nbsp;
+<i>155</i>&nbsp;    private LinkedList&lt;Node&gt; processQueue() {
+<b class="fc"><i>156</i>&nbsp;      LinkedList&lt;Node&gt; newQueue = new LinkedList&lt;Node&gt;();</b>
+<b class="fc"><i>157</i>&nbsp;      for (Iterator&lt;Node&gt; nodes = myQueue.iterator(); nodes.hasNext();) {</b>
+<b class="fc"><i>158</i>&nbsp;        Node curNode = nodes.next();</b>
+<b class="fc"><i>159</i>&nbsp;        if (curNode.lft == null || curNode.lftFromSupertask) {</b>
+<b class="fc"><i>160</i>&nbsp;          calculateLatestDates(curNode);</b>
+<b class="fc"><i>161</i>&nbsp;          Task[] nestedTasks = myTaskManager.getTaskHierarchy().getNestedTasks(curNode.task);</b>
+<b class="fc"><i>162</i>&nbsp;          for (Task nestedTask : nestedTasks) {</b>
+<b class="fc"><i>163</i>&nbsp;            Node nested = myTask_Node.get(nestedTask);</b>
+<b class="fc"><i>164</i>&nbsp;            nested.numDependants -= (myTaskManager.getTaskHierarchy().getDepth(nested.task) - 1);</b>
+<b class="fc"><i>165</i>&nbsp;            assert nested.numDependants &gt;= 0;</b>
+<b class="fc"><i>166</i>&nbsp;            if (nested.numDependants == 0) {</b>
+<b class="fc"><i>167</i>&nbsp;              newQueue.add(nested);</b>
+<i>168</i>&nbsp;            }
+<b class="fc"><i>169</i>&nbsp;            if (curNode.isCritical()) {</b>
+<b class="fc"><i>170</i>&nbsp;              nested.lft = curNode.lft;</b>
+<b class="fc"><i>171</i>&nbsp;              nested.lftFromSupertask = true;</b>
+<i>172</i>&nbsp;            }
+<i>173</i>&nbsp;          }
+<i>174</i>&nbsp;
+<b class="fc"><i>175</i>&nbsp;          if (curNode.isCritical()) {</b>
+<b class="fc"><i>176</i>&nbsp;            ourLogger.fine(&quot;\n\nNode=&quot; + curNode + &quot; is critical\n\n&quot;);</b>
+<b class="fc"><i>177</i>&nbsp;            myResult.add(curNode.task);</b>
+<i>178</i>&nbsp;          }
+<b class="fc"><i>179</i>&nbsp;        } else {</b>
+<b class="fc"><i>180</i>&nbsp;          assert curNode.task == null || curNode.lftFromSupertask;</b>
+<i>181</i>&nbsp;        }
+<b class="fc"><i>182</i>&nbsp;        enqueueDependees(newQueue, curNode);</b>
+<b class="fc"><i>183</i>&nbsp;      }</b>
+<b class="fc"><i>184</i>&nbsp;      return newQueue;</b>
+<i>185</i>&nbsp;    }
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;    private void calculateLatestDates(Node curNode) {
+<b class="fc"><i>188</i>&nbsp;      ourLogger.fine(&quot;Calculating latest dates for:&quot; + curNode);</b>
+<b class="fc"><i>189</i>&nbsp;      curNode.lft = findLatestFinishTime(myTask_Node, curNode);</b>
+<b class="fc"><i>190</i>&nbsp;      curNode.lst = myCalendar.shiftDate(curNode.lft,</b>
+<b class="fc"><i>191</i>&nbsp;          myTaskManager.createLength(-curNode.task.getDuration().getLength()));</b>
+<b class="fc"><i>192</i>&nbsp;      ourLogger.fine(&quot;latest start date=&quot; + curNode.lst);</b>
+<b class="fc"><i>193</i>&nbsp;    }</b>
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;    private void enqueueDependees(LinkedList&lt;Node&gt; newQueue, Node curNode) {
+<b class="fc"><i>196</i>&nbsp;      for (int i = 0; i &lt; curNode.dependees.size(); i++) {</b>
+<b class="fc"><i>197</i>&nbsp;        Task dependeeTask = curNode.dependees.get(i);</b>
+<b class="fc"><i>198</i>&nbsp;        Node dependeeNode = myTask_Node.get(dependeeTask);</b>
+<b class="fc"><i>199</i>&nbsp;        assert dependeeNode.numDependants &gt; 0;</b>
+<b class="fc"><i>200</i>&nbsp;        if (--dependeeNode.numDependants == 0) {</b>
+<b class="fc"><i>201</i>&nbsp;          newQueue.add(dependeeNode);</b>
+<i>202</i>&nbsp;        }
+<i>203</i>&nbsp;      }
+<b class="fc"><i>204</i>&nbsp;    }</b>
+<i>205</i>&nbsp;
+<i>206</i>&nbsp;    private Date findLatestFinishTime(Map&lt;Task, Node&gt; task_node, Node curNode) {
+<b class="fc"><i>207</i>&nbsp;      Date result = curNode.lft;</b>
+<b class="fc"><i>208</i>&nbsp;      Node resultNode = null;</b>
+<b class="fc"><i>209</i>&nbsp;      TaskDependency[] deps = curNode.task.getDependenciesAsDependee().toArray();</b>
+<b class="fc"><i>210</i>&nbsp;      for (TaskDependency dep : deps) {</b>
+<b class="fc"><i>211</i>&nbsp;        Node depNode = task_node.get(dep.getDependant());</b>
+<b class="fc"><i>212</i>&nbsp;        if (depNode != null) {</b>
+<b class="fc"><i>213</i>&nbsp;          Date lft = findLatestFinishTime(curNode, depNode, dep);</b>
+<b class="fc"><i>214</i>&nbsp;          if (result == null || result.after(lft)) {</b>
+<b class="fc"><i>215</i>&nbsp;            result = lft;</b>
+<b class="fc"><i>216</i>&nbsp;            resultNode = depNode;</b>
+<i>217</i>&nbsp;          }
+<i>218</i>&nbsp;        }
+<i>219</i>&nbsp;      }
+<b class="fc"><i>220</i>&nbsp;      if (result == null || result.after(myDeadlineNode.lft)) {</b>
+<b class="fc"><i>221</i>&nbsp;        result = myDeadlineNode.lft;</b>
+<i>222</i>&nbsp;      }
+<b class="fc"><i>223</i>&nbsp;      ourLogger.fine(&quot;latest finish time=&quot; + result + &quot; (defined by:&quot; + resultNode + &quot;)&quot;);</b>
+<b class="fc"><i>224</i>&nbsp;      return result;</b>
+<i>225</i>&nbsp;    }
+<i>226</i>&nbsp;
+<i>227</i>&nbsp;    Date findLatestFinishTime(Node curNode, Node depNode, TaskDependency dep) {
+<b class="fc"><i>228</i>&nbsp;      Collision backwardCollision = dep.getConstraint().getBackwardCollision(depNode.lst);</b>
+<b class="fc"><i>229</i>&nbsp;      if (backwardCollision == null) {</b>
+<b class="nc"><i>230</i>&nbsp;        return depNode.lst;</b>
+<i>231</i>&nbsp;      }
+<b class="fc"><i>232</i>&nbsp;      return backwardCollision.getAcceptableStart().getTime();</b>
+<i>233</i>&nbsp;    }
+<i>234</i>&nbsp;  }
+<i>235</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

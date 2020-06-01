@@ -1,0 +1,150 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: EditMenu</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.edit</a> ]
+</div>
+
+<h1>Coverage Summary for Class: EditMenu (net.sourceforge.ganttproject.action.edit)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EditMenu</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (21/ 21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.edit;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.view.GPViewManager;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import javax.swing.*;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;public class EditMenu extends JMenu {
+<i>30</i>&nbsp;  private final UndoAction myUndoAction;
+<i>31</i>&nbsp;  private final RedoAction myRedoAction;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, Runnable searchUi, String key) {
+<b class="fc"><i>34</i>&nbsp;    super(GPAction.createVoidAction(key));</b>
+<b class="fc"><i>35</i>&nbsp;    final GPUndoManager undoManager = uiFacade.getUndoManager();</b>
+<b class="fc"><i>36</i>&nbsp;    myUndoAction = new UndoAction(undoManager);</b>
+<b class="fc"><i>37</i>&nbsp;    myRedoAction = new RedoAction(undoManager);</b>
+<i>38</i>&nbsp;
+<b class="fc"><i>39</i>&nbsp;    add(getUndoAction());</b>
+<b class="fc"><i>40</i>&nbsp;    add(getRedoAction());</b>
+<b class="fc"><i>41</i>&nbsp;    addSeparator();</b>
+<b class="fc"><i>42</i>&nbsp;    add(new RefreshViewAction(uiFacade));</b>
+<b class="fc"><i>43</i>&nbsp;    add(new SearchDialogAction(searchUi));</b>
+<b class="fc"><i>44</i>&nbsp;    addSeparator();</b>
+<b class="fc"><i>45</i>&nbsp;    add(viewManager.getCutAction());</b>
+<b class="fc"><i>46</i>&nbsp;    add(viewManager.getCopyAction());</b>
+<b class="fc"><i>47</i>&nbsp;    add(viewManager.getPasteAction());</b>
+<b class="fc"><i>48</i>&nbsp;    addSeparator();</b>
+<b class="fc"><i>49</i>&nbsp;    add(new SettingsDialogAction(project, uiFacade));</b>
+<b class="fc"><i>50</i>&nbsp;    setToolTipText(null);</b>
+<b class="fc"><i>51</i>&nbsp;  }</b>
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;  @Override
+<i>54</i>&nbsp;  public JMenuItem add(Action a) {
+<b class="fc"><i>55</i>&nbsp;    a.putValue(Action.SHORT_DESCRIPTION, null);</b>
+<b class="fc"><i>56</i>&nbsp;    return super.add(a);</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  public GPAction getUndoAction() {
+<b class="fc"><i>61</i>&nbsp;    return myUndoAction;</b>
+<i>62</i>&nbsp;  }
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  public GPAction getRedoAction() {
+<b class="fc"><i>65</i>&nbsp;    return myRedoAction;</b>
+<i>66</i>&nbsp;  }
+<i>67</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

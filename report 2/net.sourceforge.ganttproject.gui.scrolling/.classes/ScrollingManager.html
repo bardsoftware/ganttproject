@@ -1,0 +1,79 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ScrollingManager</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.scrolling</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ScrollingManager (net.sourceforge.ganttproject.gui.scrolling)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ScrollingManager</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 26.02.2005
+<i>3</i>&nbsp; */
+<i>4</i>&nbsp;package net.sourceforge.ganttproject.gui.scrolling;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;import java.util.Date;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;/**
+<i>12</i>&nbsp; * @author bard
+<i>13</i>&nbsp; */
+<i>14</i>&nbsp;public interface ScrollingManager {
+<i>15</i>&nbsp;  /**
+<i>16</i>&nbsp;   * Scrolls the view by a number of days
+<i>17</i>&nbsp;   * 
+<i>18</i>&nbsp;   * @param taskLength
+<i>19</i>&nbsp;   *          are the number of days to scroll. If days &lt; 0 it scrolls to the
+<i>20</i>&nbsp;   *          right otherwise to the left.
+<i>21</i>&nbsp;   */
+<i>22</i>&nbsp;  void scrollBy(TimeDuration taskLength);
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  void scrollBy(int pixels);
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;  /** Scrolls the view to the given Date */
+<i>27</i>&nbsp;  void scrollTo(Date date);
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  void addScrollingListener(ScrollingListener listener);
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;  void removeScrollingListener(ScrollingListener listener);
+<i>32</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

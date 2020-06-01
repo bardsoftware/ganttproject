@@ -1,0 +1,287 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: PopupSearchCallback</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.search</a> ]
+</div>
+
+<h1>Coverage Summary for Class: PopupSearchCallback (net.sourceforge.ganttproject.search)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PopupSearchCallback</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 32)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PopupSearchCallback$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PopupSearchCallback$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PopupSearchCallback$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PopupSearchCallback$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 45)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.search;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>24</i>&nbsp;import org.jdesktop.swingx.JXList;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import javax.swing.*;
+<i>27</i>&nbsp;import java.awt.*;
+<i>28</i>&nbsp;import java.awt.event.KeyAdapter;
+<i>29</i>&nbsp;import java.awt.event.KeyEvent;
+<i>30</i>&nbsp;import java.awt.event.MouseAdapter;
+<i>31</i>&nbsp;import java.awt.event.MouseEvent;
+<i>32</i>&nbsp;import java.util.Collections;
+<i>33</i>&nbsp;import java.util.List;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;/**
+<i>36</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>37</i>&nbsp; */
+<i>38</i>&nbsp;public class PopupSearchCallback implements SearchDialog.SearchCallback {
+<i>39</i>&nbsp;  private final Rectangle mySearchBoxPosition;
+<i>40</i>&nbsp;  private final JComponent myInvoker;
+<i>41</i>&nbsp;  private SearchDialog myDialog;
+<b class="nc"><i>42</i>&nbsp;  private JXList list = new JXList();</b>
+<i>43</i>&nbsp;  private Runnable onSelect;
+<i>44</i>&nbsp;  private Runnable onDismiss;
+<i>45</i>&nbsp;
+<b class="nc"><i>46</i>&nbsp;  public PopupSearchCallback(IGanttProject project, UIFacade uiFacade, JComponent invoker, Rectangle searchBoxPosition) {</b>
+<b class="nc"><i>47</i>&nbsp;    myDialog = new SearchDialog(project, uiFacade);</b>
+<b class="nc"><i>48</i>&nbsp;    myInvoker = invoker;</b>
+<b class="nc"><i>49</i>&nbsp;    mySearchBoxPosition = searchBoxPosition;</b>
+<b class="nc"><i>50</i>&nbsp;    list.setBorder(BorderFactory.createEmptyBorder());</b>
+<b class="nc"><i>51</i>&nbsp;    list.addKeyListener(new KeyAdapter() {</b>
+<i>52</i>&nbsp;      @Override
+<i>53</i>&nbsp;      public void keyPressed(KeyEvent e) {
+<b class="nc"><i>54</i>&nbsp;        switch (e.getKeyCode()) {</b>
+<i>55</i>&nbsp;          case KeyEvent.VK_ENTER:
+<b class="nc"><i>56</i>&nbsp;            e.consume();</b>
+<b class="nc"><i>57</i>&nbsp;            e.setKeyCode(0);</b>
+<b class="nc"><i>58</i>&nbsp;            onSelect.run();</b>
+<b class="nc"><i>59</i>&nbsp;            break;</b>
+<i>60</i>&nbsp;          case KeyEvent.VK_ESCAPE:
+<b class="nc"><i>61</i>&nbsp;            onDismiss.run();</b>
+<i>62</i>&nbsp;            break;
+<i>63</i>&nbsp;        }
+<i>64</i>&nbsp;      }
+<i>65</i>&nbsp;    });
+<b class="nc"><i>66</i>&nbsp;    list.addMouseListener(new MouseAdapter() {</b>
+<i>67</i>&nbsp;      @Override
+<i>68</i>&nbsp;      public void mouseClicked(MouseEvent e) {
+<b class="nc"><i>69</i>&nbsp;        onSelect.run();</b>
+<i>70</i>&nbsp;      }
+<i>71</i>&nbsp;    });
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  @Override
+<i>75</i>&nbsp;  public void accept(final List&lt;SearchResult&lt;?&gt;&gt; results) {
+<b class="nc"><i>76</i>&nbsp;    if (results.isEmpty()) {</b>
+<i>77</i>&nbsp;      return;
+<i>78</i>&nbsp;    }
+<b class="nc"><i>79</i>&nbsp;    SearchResult[] searchResults = results.toArray(new SearchResult[0]);</b>
+<b class="nc"><i>80</i>&nbsp;    list.setListData(searchResults);</b>
+<b class="nc"><i>81</i>&nbsp;    int searchResultLength = searchResults.length;</b>
+<b class="nc"><i>82</i>&nbsp;    if (searchResultLength &lt; 9) {</b>
+<b class="nc"><i>83</i>&nbsp;      list.setVisibleRowCount(searchResultLength);</b>
+<i>84</i>&nbsp;    } else {
+<b class="nc"><i>85</i>&nbsp;      list.setVisibleRowCount(10);</b>
+<i>86</i>&nbsp;    }
+<b class="nc"><i>87</i>&nbsp;    JScrollPane scrollPane = new JScrollPane(list);</b>
+<b class="nc"><i>88</i>&nbsp;    scrollPane.setBorder(BorderFactory.createEmptyBorder());</b>
+<b class="nc"><i>89</i>&nbsp;    final JPopupMenu popup = new JPopupMenu();</b>
+<b class="nc"><i>90</i>&nbsp;    popup.add(scrollPane);</b>
+<b class="nc"><i>91</i>&nbsp;    popup.setPopupSize(mySearchBoxPosition.width, 300);</b>
+<b class="nc"><i>92</i>&nbsp;    popup.show(myInvoker, mySearchBoxPosition.x, mySearchBoxPosition.y + mySearchBoxPosition.height);</b>
+<b class="nc"><i>93</i>&nbsp;    list.requestFocusInWindow();</b>
+<b class="nc"><i>94</i>&nbsp;    ListCellRenderer resultRenderer = new SearchResultCellRenderer();</b>
+<b class="nc"><i>95</i>&nbsp;    list.setCellRenderer(resultRenderer);</b>
+<b class="nc"><i>96</i>&nbsp;    list.setHighlighters(UIUtil.ZEBRA_HIGHLIGHTER);</b>
+<b class="nc"><i>97</i>&nbsp;    list.setSelectedIndex(0);</b>
+<b class="nc"><i>98</i>&nbsp;    onSelect = new Runnable() {</b>
+<i>99</i>&nbsp;      @Override
+<i>100</i>&nbsp;      public void run() {
+<b class="nc"><i>101</i>&nbsp;        onSelect(popup, results);</b>
+<i>102</i>&nbsp;      }
+<i>103</i>&nbsp;    };
+<b class="nc"><i>104</i>&nbsp;    onDismiss = new Runnable() {</b>
+<i>105</i>&nbsp;      @Override
+<i>106</i>&nbsp;      public void run() {
+<b class="nc"><i>107</i>&nbsp;        popup.setVisible(false);</b>
+<i>108</i>&nbsp;      }
+<i>109</i>&nbsp;    };
+<i>110</i>&nbsp;  }
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  private void onSelect(JPopupMenu popup, List&lt;SearchResult&lt;?&gt;&gt; results) {
+<b class="nc"><i>113</i>&nbsp;    popup.setVisible(false);</b>
+<b class="nc"><i>114</i>&nbsp;    SearchResult selectedValue = results.get(list.getSelectedIndex());</b>
+<b class="nc"><i>115</i>&nbsp;    selectedValue.getSearchService().select(Collections.singletonList(selectedValue));</b>
+<i>116</i>&nbsp;  }
+<i>117</i>&nbsp;
+<i>118</i>&nbsp;  public void runSearch(String query) {
+<b class="nc"><i>119</i>&nbsp;    myDialog.runSearch(query, this);</b>
+<i>120</i>&nbsp;  }
+<i>121</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

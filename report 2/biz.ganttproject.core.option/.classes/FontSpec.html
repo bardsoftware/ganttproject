@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: FontSpec</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.option</a> ]
+</div>
+
+<h1>Coverage Summary for Class: FontSpec (biz.ganttproject.core.option)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FontSpec</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (9/ 13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FontSpec$Size</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    72.7%
+  </span>
+  <span class="absValue">
+    (8/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.9%
+  </span>
+  <span class="absValue">
+    (15/ 19)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2014 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.core.option;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Objects;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import com.google.common.base.Strings;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;/**
+<i>26</i>&nbsp; * Font specification object, encapsulating font family and size.
+<i>27</i>&nbsp; * It is used in option infrastructure which is meant to be portable to other
+<i>28</i>&nbsp; * platforms, which is the reason why we don&#39;t use java.awt.Font objects. 
+<i>29</i>&nbsp; * 
+<i>30</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>31</i>&nbsp; */
+<i>32</i>&nbsp;public class FontSpec {
+<b class="fc"><i>33</i>&nbsp;  public static enum Size {</b>
+<b class="fc"><i>34</i>&nbsp;    SMALLER(0.75f), NORMAL(1.0f), LARGE(1.25f), LARGER(1.5f), HUGE(2.0f);</b>
+<i>35</i>&nbsp;    
+<i>36</i>&nbsp;    private final float myFactor;
+<i>37</i>&nbsp;
+<b class="fc"><i>38</i>&nbsp;    Size(float factor) {</b>
+<b class="fc"><i>39</i>&nbsp;      myFactor = factor;</b>
+<b class="fc"><i>40</i>&nbsp;    }</b>
+<i>41</i>&nbsp;    
+<i>42</i>&nbsp;    public float getFactor() {
+<b class="fc"><i>43</i>&nbsp;      return myFactor;</b>
+<i>44</i>&nbsp;    }
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;  private final String myFamily;
+<i>47</i>&nbsp;  private final Size mySize;
+<i>48</i>&nbsp;  
+<b class="fc"><i>49</i>&nbsp;  public FontSpec(String family, Size size) {</b>
+<b class="fc"><i>50</i>&nbsp;    myFamily = family;</b>
+<b class="fc"><i>51</i>&nbsp;    mySize = size;</b>
+<b class="fc"><i>52</i>&nbsp;  }</b>
+<i>53</i>&nbsp;  
+<i>54</i>&nbsp;  public String getFamily() {
+<b class="fc"><i>55</i>&nbsp;    return myFamily;</b>
+<i>56</i>&nbsp;  }
+<i>57</i>&nbsp;  
+<i>58</i>&nbsp;  public Size getSize() {
+<b class="fc"><i>59</i>&nbsp;    return mySize;</b>
+<i>60</i>&nbsp;  }
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  public String asString() {
+<b class="nc"><i>63</i>&nbsp;    return String.format(&quot;%s-%s&quot;, Strings.nullToEmpty(myFamily), mySize.toString());</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  @Override
+<i>67</i>&nbsp;  public boolean equals(Object obj) {
+<b class="fc"><i>68</i>&nbsp;    if (obj instanceof FontSpec == false) {</b>
+<b class="nc"><i>69</i>&nbsp;      return false;</b>
+<i>70</i>&nbsp;    }
+<b class="fc"><i>71</i>&nbsp;    FontSpec that = (FontSpec) obj;</b>
+<b class="fc"><i>72</i>&nbsp;    return Objects.equals(myFamily, that.myFamily) &amp;&amp; Objects.equals(mySize, that.mySize);</b>
+<i>73</i>&nbsp;  }
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  @Override
+<i>76</i>&nbsp;  public int hashCode() {
+<b class="nc"><i>77</i>&nbsp;    return myFamily.hashCode();</b>
+<i>78</i>&nbsp;  }
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  @Override
+<i>81</i>&nbsp;  public String toString() {
+<b class="nc"><i>82</i>&nbsp;    return asString();</b>
+<i>83</i>&nbsp;  }
+<i>84</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

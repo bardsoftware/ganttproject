@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectNamePage</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui.projectwizard</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectNamePage (net.sourceforge.ganttproject.gui.projectwizard)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectNamePage</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2002-2010 Alexandre Thomas, Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.gui.projectwizard;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Component;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.gui.options.ProjectSettingsPanel;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;public class ProjectNamePage implements WizardPage {
+<i>27</i>&nbsp;  private final I18N myI18N;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;  private final ProjectSettingsPanel myProjectSettingsPanel;
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;  public ProjectNamePage(IGanttProject project, I18N i18n) {</b>
+<b class="nc"><i>32</i>&nbsp;    myProjectSettingsPanel = new ProjectSettingsPanel(project);</b>
+<b class="nc"><i>33</i>&nbsp;    myProjectSettingsPanel.initialize();</b>
+<b class="nc"><i>34</i>&nbsp;    myI18N = i18n;</b>
+<i>35</i>&nbsp;  }
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;  @Override
+<i>38</i>&nbsp;  public String getTitle() {
+<b class="nc"><i>39</i>&nbsp;    return myI18N.getNewProjectWizardWindowTitle();</b>
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  @Override
+<i>43</i>&nbsp;  public Component getComponent() {
+<b class="nc"><i>44</i>&nbsp;    return myProjectSettingsPanel.getComponent();</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  @Override
+<i>48</i>&nbsp;  public void setActive(boolean active) {
+<b class="nc"><i>49</i>&nbsp;    if (!active) {</b>
+<b class="nc"><i>50</i>&nbsp;      myProjectSettingsPanel.applyChanges(false);</b>
+<i>51</i>&nbsp;    }
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

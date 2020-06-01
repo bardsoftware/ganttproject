@@ -1,0 +1,272 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: Document</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document</a> ]
+</div>
+
+<h1>Coverage Summary for Class: Document (net.sourceforge.ganttproject.document)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">Document$DocumentException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Document$ErrorCode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2003-2011 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import java.io.IOException;
+<i>24</i>&nbsp;import java.io.InputStream;
+<i>25</i>&nbsp;import java.io.OutputStream;
+<i>26</i>&nbsp;import java.net.URI;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * This interface abstracts the details of file access. Implementations of this
+<i>30</i>&nbsp; * interface provide methods to open streams to a project file, independent of
+<i>31</i>&nbsp; * storage location (filesystem / WebDAV).
+<i>32</i>&nbsp; *
+<i>33</i>&nbsp; * @author Michael Haeusler (michael at akatose.de)
+<i>34</i>&nbsp; */
+<i>35</i>&nbsp;public interface Document {
+<i>36</i>&nbsp;  String PLUGIN_ID = &quot;net.sourceforge.ganttproject&quot;;
+<i>37</i>&nbsp;
+<b class="nc"><i>38</i>&nbsp;  public enum ErrorCode {</b>
+<b class="nc"><i>39</i>&nbsp;    NOT_WRITABLE, IS_DIRECTORY, LOST_UPDATE, PARENT_IS_NOT_DIRECTORY, PARENT_IS_NOT_WRITABLE, GENERIC_NETWORK_ERROR,</b>
+<i>40</i>&nbsp;  }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  /**
+<i>43</i>&nbsp;   * @return the filename of the document (can be used forthe application&#39;s
+<i>44</i>&nbsp;   *         titlebar or the export dialog).
+<i>45</i>&nbsp;   */
+<i>46</i>&nbsp;  public String getFileName();
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  /**
+<i>49</i>&nbsp;   * Checks, whether the document is readable.
+<i>50</i>&nbsp;   *
+<i>51</i>&nbsp;   * @return readability
+<i>52</i>&nbsp;   */
+<i>53</i>&nbsp;  public boolean canRead();
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  /**
+<i>56</i>&nbsp;   * Checks, whether the document is writable.
+<i>57</i>&nbsp;   *
+<i>58</i>&nbsp;   * @return writability
+<i>59</i>&nbsp;   */
+<i>60</i>&nbsp;  public IStatus canWrite();
+<i>61</i>&nbsp;
+<i>62</i>&nbsp;  /**
+<i>63</i>&nbsp;   * Checks, whether the document should appear in the MRU (list of &lt;b&gt;m&lt;/b&gt;ost
+<i>64</i>&nbsp;   * &lt;b&gt;r&lt;/b&gt;ecently &lt;b&gt;u&lt;/b&gt;sed files).
+<i>65</i>&nbsp;   *
+<i>66</i>&nbsp;   * @return validity for MRU
+<i>67</i>&nbsp;   */
+<i>68</i>&nbsp;  public boolean isValidForMRU();
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  /**
+<i>71</i>&nbsp;   * Tries to acquire a lock. &lt;br&gt;
+<i>72</i>&nbsp;   * This method is optional. Storage containers, for which locking is
+<i>73</i>&nbsp;   * inappropriate, should always return true.
+<i>74</i>&nbsp;   *
+<i>75</i>&nbsp;   * @return whether a lock could be successfully acquired
+<i>76</i>&nbsp;   * @see #releaseLock()
+<i>77</i>&nbsp;   */
+<i>78</i>&nbsp;  public boolean acquireLock();
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  /**
+<i>81</i>&nbsp;   * Releases a previously acquired lock.
+<i>82</i>&nbsp;   *
+<i>83</i>&nbsp;   * @see #acquireLock()
+<i>84</i>&nbsp;   */
+<i>85</i>&nbsp;  public void releaseLock();
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  /**
+<i>88</i>&nbsp;   * Gets an InputStream, that allows to read from the document.
+<i>89</i>&nbsp;   *
+<i>90</i>&nbsp;   * @return InputStream to read from
+<i>91</i>&nbsp;   */
+<i>92</i>&nbsp;  public InputStream getInputStream() throws IOException;
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;  /**
+<i>95</i>&nbsp;   * Gets an OutputStream, that allows to write to the document.
+<i>96</i>&nbsp;   *
+<i>97</i>&nbsp;   * @return OutputStream to write to
+<i>98</i>&nbsp;   */
+<i>99</i>&nbsp;  public OutputStream getOutputStream() throws IOException;
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  /**
+<i>102</i>&nbsp;   * Gets the path to the document.
+<i>103</i>&nbsp;   *
+<i>104</i>&nbsp;   * @return the path to the document
+<i>105</i>&nbsp;   */
+<i>106</i>&nbsp;  public String getPath();
+<i>107</i>&nbsp;
+<i>108</i>&nbsp;  /**
+<i>109</i>&nbsp;   * Gets the path to the document, if it is a file on a local file system (can
+<i>110</i>&nbsp;   * be used to initialize a JFileChooser).
+<i>111</i>&nbsp;   *
+<i>112</i>&nbsp;   * @return the path, if the document is a local file; &lt;code&gt;null&lt;/code&gt;,
+<i>113</i>&nbsp;   *         otherwise.
+<i>114</i>&nbsp;   */
+<i>115</i>&nbsp;  public String getFilePath();
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  /**
+<i>118</i>&nbsp;   * Gets the username used to authenticate to the storage container
+<i>119</i>&nbsp;   *
+<i>120</i>&nbsp;   * @return username
+<i>121</i>&nbsp;   */
+<i>122</i>&nbsp;  public String getUsername();
+<i>123</i>&nbsp;
+<i>124</i>&nbsp;  /**
+<i>125</i>&nbsp;   * Gets the password used to authenticate to the storage container
+<i>126</i>&nbsp;   *
+<i>127</i>&nbsp;   * @return password
+<i>128</i>&nbsp;   */
+<i>129</i>&nbsp;  public String getPassword();
+<i>130</i>&nbsp;
+<i>131</i>&nbsp;  /**
+<i>132</i>&nbsp;   * Gets the last error
+<i>133</i>&nbsp;   *
+<i>134</i>&nbsp;   * @return errormessage
+<i>135</i>&nbsp;   */
+<i>136</i>&nbsp;  public String getLastError();
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;  public void read() throws IOException, DocumentException;
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;  public void write() throws IOException;
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  public URI getURI();
+<i>143</i>&nbsp;
+<i>144</i>&nbsp;  Portfolio getPortfolio();
+<i>145</i>&nbsp;
+<i>146</i>&nbsp;  boolean isLocal();
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;  /**
+<i>149</i>&nbsp;   * Used to generate useful exceptions for document saving and loading
+<i>150</i>&nbsp;   * (preventing bothersome errors for the end users when possible)
+<i>151</i>&nbsp;   */
+<i>152</i>&nbsp;  public class DocumentException extends Exception {
+<i>153</i>&nbsp;    public DocumentException(String msg) {
+<b class="nc"><i>154</i>&nbsp;      super(msg);</b>
+<b class="nc"><i>155</i>&nbsp;    }</b>
+<i>156</i>&nbsp;
+<i>157</i>&nbsp;    public DocumentException(String msg, Throwable cause) {
+<b class="nc"><i>158</i>&nbsp;      super(msg, cause);</b>
+<b class="nc"><i>159</i>&nbsp;    }</b>
+<i>160</i>&nbsp;  }
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  void setMirror(Document mirrorDocument);
+<i>163</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

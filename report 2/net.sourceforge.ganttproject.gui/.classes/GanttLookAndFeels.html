@@ -1,0 +1,164 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttLookAndFeels</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttLookAndFeels (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttLookAndFeels</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    89.7%
+  </span>
+  <span class="absValue">
+    (26/ 29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 17.01.2004
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; */
+<i>5</i>&nbsp;package net.sourceforge.ganttproject.gui;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;import java.util.HashMap;
+<i>8</i>&nbsp;import java.util.Map;
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;import javax.swing.UIManager;
+<i>11</i>&nbsp;import javax.swing.UIManager.LookAndFeelInfo;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;import com.jgoodies.looks.LookUtils;
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;/**
+<i>16</i>&nbsp; * @author Michael Haeusler (michael at akatose.de) This singleton class stores
+<i>17</i>&nbsp; *         info about the installed LookAndFeels.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;public class GanttLookAndFeels {
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;  protected Map&lt;String, GanttLookAndFeelInfo&gt; infoByClass;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;  protected Map&lt;String, GanttLookAndFeelInfo&gt; infoByName;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;  protected static GanttLookAndFeels singleton;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;  static {
+<b class="fc"><i>28</i>&nbsp;    UIManager.put(&quot;ClassLoader&quot;, LookUtils.class.getClassLoader());</b>
+<b class="fc"><i>29</i>&nbsp;    UIManager.installLookAndFeel(&quot;Plastic&quot;, &quot;com.jgoodies.looks.plastic.PlasticLookAndFeel&quot;);</b>
+<b class="fc"><i>30</i>&nbsp;  }</b>
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;  protected GanttLookAndFeels() {</b>
+<b class="fc"><i>33</i>&nbsp;    infoByClass = new HashMap&lt;String, GanttLookAndFeelInfo&gt;();</b>
+<b class="fc"><i>34</i>&nbsp;    infoByName = new HashMap&lt;String, GanttLookAndFeelInfo&gt;();</b>
+<b class="fc"><i>35</i>&nbsp;    LookAndFeelInfo[] lookAndFeels = UIManager.getInstalledLookAndFeels();</b>
+<b class="fc"><i>36</i>&nbsp;    for (int i = 0; i &lt; lookAndFeels.length; i++) {</b>
+<b class="fc"><i>37</i>&nbsp;      GanttLookAndFeelInfo info = new GanttLookAndFeelInfo(lookAndFeels[i]);</b>
+<b class="fc"><i>38</i>&nbsp;      addLookAndFeel(info);</b>
+<i>39</i>&nbsp;    }
+<b class="fc"><i>40</i>&nbsp;  }</b>
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  protected void addLookAndFeel(GanttLookAndFeelInfo info) {
+<b class="fc"><i>43</i>&nbsp;    if (info.getName().startsWith(&quot;Kunststoff&quot;) &amp;&amp; System.getProperty(&quot;os.name&quot;).startsWith(&quot;Mac&quot;)) {</b>
+<b class="nc"><i>44</i>&nbsp;      System.err.println(&quot;LookAndFeel not added (Kunststoff is ignored on MacOS).&quot;);</b>
+<i>45</i>&nbsp;    } else {
+<b class="fc"><i>46</i>&nbsp;      if (!infoByClass.containsKey(info.getClassName())) {</b>
+<b class="fc"><i>47</i>&nbsp;        infoByClass.put(info.getClassName(), info);</b>
+<b class="fc"><i>48</i>&nbsp;        infoByName.put(info.getName(), info);</b>
+<i>49</i>&nbsp;      } else {
+<b class="nc"><i>50</i>&nbsp;        System.err.println(&quot;LookAndFeel &quot; + info + &quot;(&quot; + info.getClassName() + &quot;) already installed.&quot;);</b>
+<i>51</i>&nbsp;      }
+<i>52</i>&nbsp;    }
+<b class="fc"><i>53</i>&nbsp;  }</b>
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public GanttLookAndFeelInfo getInfoByClass(String className) {
+<b class="fc"><i>56</i>&nbsp;    return infoByClass.get(className);</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public GanttLookAndFeelInfo getInfoByName(String name) {
+<b class="fc"><i>60</i>&nbsp;    return infoByName.get(name);</b>
+<i>61</i>&nbsp;  }
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  public GanttLookAndFeelInfo getDefaultInfo() {
+<b class="fc"><i>64</i>&nbsp;    GanttLookAndFeelInfo info = getInfoByClass(UIManager.getSystemLookAndFeelClassName());</b>
+<b class="fc"><i>65</i>&nbsp;    if (null == info)</b>
+<b class="nc"><i>66</i>&nbsp;      info = getInfoByClass(UIManager.getCrossPlatformLookAndFeelClassName());</b>
+<b class="fc"><i>67</i>&nbsp;    return info;</b>
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  public GanttLookAndFeelInfo[] getInstalledLookAndFeels() {
+<b class="fc"><i>71</i>&nbsp;    GanttLookAndFeelInfo[] lookAndFeels = new GanttLookAndFeelInfo[0];</b>
+<b class="fc"><i>72</i>&nbsp;    return infoByClass.values().toArray(lookAndFeels);</b>
+<i>73</i>&nbsp;  }
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  public static GanttLookAndFeels getGanttLookAndFeels() {
+<b class="fc"><i>76</i>&nbsp;    if (singleton == null) {</b>
+<b class="fc"><i>77</i>&nbsp;      singleton = new GanttLookAndFeels();</b>
+<i>78</i>&nbsp;    }
+<b class="fc"><i>79</i>&nbsp;    return singleton;</b>
+<i>80</i>&nbsp;  }
+<i>81</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

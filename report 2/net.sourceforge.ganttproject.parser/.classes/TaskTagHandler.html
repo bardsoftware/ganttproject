@@ -1,0 +1,299 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskTagHandler</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.parser</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskTagHandler (net.sourceforge.ganttproject.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskTagHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 100)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.parser;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.render.ShapePaint;
+<i>22</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>23</i>&nbsp;import com.google.common.base.Charsets;
+<i>24</i>&nbsp;import com.google.common.base.MoreObjects;
+<i>25</i>&nbsp;import com.google.common.collect.Lists;
+<i>26</i>&nbsp;import com.google.common.collect.Maps;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
+<i>32</i>&nbsp;import org.xml.sax.Attributes;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;import java.awt.*;
+<i>35</i>&nbsp;import java.io.UnsupportedEncodingException;
+<i>36</i>&nbsp;import java.math.BigDecimal;
+<i>37</i>&nbsp;import java.net.URLDecoder;
+<i>38</i>&nbsp;import java.util.List;
+<i>39</i>&nbsp;import java.util.Map;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
+<i>42</i>&nbsp;  private final ParsingContext myContext;
+<i>43</i>&nbsp;  private final TaskManager myManager;
+<i>44</i>&nbsp;  private final TaskTreeUIFacade myTreeFacade;
+<b class="nc"><i>45</i>&nbsp;  private final Map&lt;Integer, Boolean&gt; myTaskIdToExpansionState = Maps.newHashMap();</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
+<b class="nc"><i>48</i>&nbsp;    super(&quot;task&quot;);</b>
+<b class="nc"><i>49</i>&nbsp;    myManager = mgr;</b>
+<b class="nc"><i>50</i>&nbsp;    myContext = context;</b>
+<b class="nc"><i>51</i>&nbsp;    myTreeFacade = treeFacade;</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  @Override
+<i>55</i>&nbsp;  protected boolean onStartElement(Attributes attrs) {
+<b class="nc"><i>56</i>&nbsp;    loadTask(attrs);</b>
+<b class="nc"><i>57</i>&nbsp;    return true;</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public void endElement(String namespaceURI, String sName, String qName) {
+<b class="nc"><i>62</i>&nbsp;    if (isMyTag(qName) &amp;&amp; isTagStarted()) {</b>
+<b class="nc"><i>63</i>&nbsp;      myContext.popTask();</b>
+<b class="nc"><i>64</i>&nbsp;      if (myContext.isStackEmpty()) {</b>
+<b class="nc"><i>65</i>&nbsp;        setTagStarted(false);</b>
+<i>66</i>&nbsp;      }
+<i>67</i>&nbsp;    }
+<i>68</i>&nbsp;  }
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  private void loadTask(Attributes attrs) {
+<b class="nc"><i>71</i>&nbsp;    String taskIdAsString = attrs.getValue(&quot;id&quot;);</b>
+<i>72</i>&nbsp;    int taskId;
+<i>73</i>&nbsp;    try {
+<b class="nc"><i>74</i>&nbsp;      taskId = Integer.parseInt(taskIdAsString);</b>
+<b class="nc"><i>75</i>&nbsp;    } catch (NumberFormatException e) {</b>
+<b class="nc"><i>76</i>&nbsp;      throw new RuntimeException(</b>
+<i>77</i>&nbsp;          &quot;Failed to parse the value &#39;&quot; + taskIdAsString + &quot;&#39; of attribute &#39;id&#39; of tag &lt;task&gt;&quot;, e);
+<b class="nc"><i>78</i>&nbsp;    }</b>
+<b class="nc"><i>79</i>&nbsp;    TaskBuilder builder = getManager().newTaskBuilder().withId(taskId);</b>
+<i>80</i>&nbsp;
+<b class="nc"><i>81</i>&nbsp;    String taskName = attrs.getValue(&quot;name&quot;);</b>
+<b class="nc"><i>82</i>&nbsp;    if (taskName != null) {</b>
+<b class="nc"><i>83</i>&nbsp;      builder = builder.withName(taskName);</b>
+<i>84</i>&nbsp;    }
+<i>85</i>&nbsp;
+<b class="nc"><i>86</i>&nbsp;    String start = attrs.getValue(&quot;start&quot;);</b>
+<b class="nc"><i>87</i>&nbsp;    if (start != null) {</b>
+<b class="nc"><i>88</i>&nbsp;      builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).getTime());</b>
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;
+<b class="nc"><i>91</i>&nbsp;    String duration = attrs.getValue(&quot;duration&quot;);</b>
+<b class="nc"><i>92</i>&nbsp;    if (duration != null) {</b>
+<i>93</i>&nbsp;      try {
+<b class="nc"><i>94</i>&nbsp;        int length = Integer.parseInt(duration);</b>
+<b class="nc"><i>95</i>&nbsp;        builder = builder.withDuration(getManager().createLength(length));</b>
+<b class="nc"><i>96</i>&nbsp;      } catch (NumberFormatException e) {</b>
+<b class="nc"><i>97</i>&nbsp;        throw new RuntimeException(</b>
+<i>98</i>&nbsp;            &quot;Failed to parse the value &#39;&quot; + duration + &quot;&#39; of attribute &#39;duration&#39; of tag &lt;task&gt;&quot;, e);
+<b class="nc"><i>99</i>&nbsp;      }</b>
+<i>100</i>&nbsp;    }
+<i>101</i>&nbsp;
+<b class="nc"><i>102</i>&nbsp;    if (!myContext.isStackEmpty()) {</b>
+<b class="nc"><i>103</i>&nbsp;      builder = builder.withParent(myContext.peekTask());</b>
+<i>104</i>&nbsp;    }
+<b class="nc"><i>105</i>&nbsp;    String isExpanded = attrs.getValue(&quot;expand&quot;);</b>
+<b class="nc"><i>106</i>&nbsp;    if (isExpanded != null) {</b>
+<b class="nc"><i>107</i>&nbsp;      builder = builder.withExpansionState(Boolean.parseBoolean(isExpanded));</b>
+<i>108</i>&nbsp;    }
+<i>109</i>&nbsp;
+<b class="nc"><i>110</i>&nbsp;    String isLegacyMilestone = attrs.getValue(&quot;meeting&quot;);</b>
+<b class="nc"><i>111</i>&nbsp;    if (Boolean.parseBoolean(isLegacyMilestone)) {</b>
+<b class="nc"><i>112</i>&nbsp;      builder = builder.withLegacyMilestone();</b>
+<i>113</i>&nbsp;    }
+<b class="nc"><i>114</i>&nbsp;    Task task = builder.build();</b>
+<i>115</i>&nbsp;
+<b class="nc"><i>116</i>&nbsp;    myTaskIdToExpansionState.put(task.getTaskID(), task.getExpand());</b>
+<b class="nc"><i>117</i>&nbsp;    String project = attrs.getValue(&quot;project&quot;);</b>
+<b class="nc"><i>118</i>&nbsp;    if (project != null) {</b>
+<b class="nc"><i>119</i>&nbsp;      task.setProjectTask(true);</b>
+<i>120</i>&nbsp;    }
+<i>121</i>&nbsp;
+<b class="nc"><i>122</i>&nbsp;    String complete = attrs.getValue(&quot;complete&quot;);</b>
+<b class="nc"><i>123</i>&nbsp;    if (complete != null) {</b>
+<i>124</i>&nbsp;      try {
+<b class="nc"><i>125</i>&nbsp;        task.setCompletionPercentage(Integer.parseInt(complete));</b>
+<b class="nc"><i>126</i>&nbsp;      } catch (NumberFormatException e) {</b>
+<b class="nc"><i>127</i>&nbsp;        throw new RuntimeException(</b>
+<i>128</i>&nbsp;            &quot;Failed to parse the value &#39;&quot; + complete + &quot;&#39; of attribute &#39;complete&#39; of tag &lt;task&gt;&quot;, e);
+<b class="nc"><i>129</i>&nbsp;      }</b>
+<i>130</i>&nbsp;    }
+<i>131</i>&nbsp;
+<b class="nc"><i>132</i>&nbsp;    String priority = attrs.getValue(&quot;priority&quot;);</b>
+<b class="nc"><i>133</i>&nbsp;    if (priority != null) {</b>
+<b class="nc"><i>134</i>&nbsp;      task.setPriority(Task.Priority.fromPersistentValue(priority));</b>
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;
+<b class="nc"><i>137</i>&nbsp;    String color = attrs.getValue(&quot;color&quot;);</b>
+<b class="nc"><i>138</i>&nbsp;    if (color != null) {</b>
+<b class="nc"><i>139</i>&nbsp;      task.setColor(ColorValueParser.parseString(color));</b>
+<i>140</i>&nbsp;    }
+<i>141</i>&nbsp;
+<b class="nc"><i>142</i>&nbsp;    String fixedStart = attrs.getValue(&quot;fixed-start&quot;);</b>
+<b class="nc"><i>143</i>&nbsp;    if (&quot;true&quot;.equals(fixedStart)) {</b>
+<b class="nc"><i>144</i>&nbsp;      myContext.addTaskWithLegacyFixedStart(task);</b>
+<i>145</i>&nbsp;    }
+<i>146</i>&nbsp;
+<b class="nc"><i>147</i>&nbsp;    String third = attrs.getValue(&quot;thirdDate&quot;);</b>
+<b class="nc"><i>148</i>&nbsp;    if (third != null) {</b>
+<b class="nc"><i>149</i>&nbsp;      task.setThirdDate(GanttCalendar.parseXMLDate(third));</b>
+<i>150</i>&nbsp;    }
+<b class="nc"><i>151</i>&nbsp;    String thirdConstraint = attrs.getValue(&quot;thirdDate-constraint&quot;);</b>
+<b class="nc"><i>152</i>&nbsp;    if (thirdConstraint != null) {</b>
+<i>153</i>&nbsp;      try {
+<b class="nc"><i>154</i>&nbsp;        task.setThirdDateConstraint(Integer.parseInt(thirdConstraint));</b>
+<b class="nc"><i>155</i>&nbsp;      } catch (NumberFormatException e) {</b>
+<b class="nc"><i>156</i>&nbsp;        throw new RuntimeException(&quot;Failed to parse the value &#39;&quot; + thirdConstraint</b>
+<i>157</i>&nbsp;            + &quot;&#39; of attribute &#39;thirdDate-constraint&#39; of tag &lt;task&gt;&quot;, e);
+<b class="nc"><i>158</i>&nbsp;      }</b>
+<i>159</i>&nbsp;    }
+<i>160</i>&nbsp;
+<b class="nc"><i>161</i>&nbsp;    String webLink_enc = attrs.getValue(&quot;webLink&quot;);</b>
+<b class="nc"><i>162</i>&nbsp;    String webLink = webLink_enc;</b>
+<b class="nc"><i>163</i>&nbsp;    if (webLink_enc != null)</b>
+<i>164</i>&nbsp;      try {
+<b class="nc"><i>165</i>&nbsp;        webLink = URLDecoder.decode(webLink_enc, Charsets.UTF_8.name());</b>
+<b class="nc"><i>166</i>&nbsp;      } catch (UnsupportedEncodingException e) {</b>
+<b class="nc"><i>167</i>&nbsp;        if (!GPLogger.log(e)) {</b>
+<b class="nc"><i>168</i>&nbsp;          e.printStackTrace(System.err);</b>
+<i>169</i>&nbsp;        }
+<b class="nc"><i>170</i>&nbsp;      }</b>
+<b class="nc"><i>171</i>&nbsp;    if (webLink != null) {</b>
+<b class="nc"><i>172</i>&nbsp;      task.setWebLink(webLink);</b>
+<i>173</i>&nbsp;    }
+<i>174</i>&nbsp;
+<b class="nc"><i>175</i>&nbsp;    String shape = attrs.getValue(&quot;shape&quot;);</b>
+<b class="nc"><i>176</i>&nbsp;    if (shape != null) {</b>
+<b class="nc"><i>177</i>&nbsp;      java.util.StringTokenizer st1 = new java.util.StringTokenizer(shape, &quot;,&quot;);</b>
+<b class="nc"><i>178</i>&nbsp;      int[] array = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};</b>
+<b class="nc"><i>179</i>&nbsp;      String token = &quot;&quot;;</b>
+<b class="nc"><i>180</i>&nbsp;      int count = 0;</b>
+<b class="nc"><i>181</i>&nbsp;      while (st1.hasMoreTokens()) {</b>
+<b class="nc"><i>182</i>&nbsp;        token = st1.nextToken();</b>
+<b class="nc"><i>183</i>&nbsp;        array[count] = (new Integer(token)).intValue();</b>
+<b class="nc"><i>184</i>&nbsp;        count++;</b>
+<i>185</i>&nbsp;      }
+<b class="nc"><i>186</i>&nbsp;      task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));</b>
+<i>187</i>&nbsp;    }
+<i>188</i>&nbsp;
+<b class="nc"><i>189</i>&nbsp;    String costValue = attrs.getValue(&quot;cost-manual-value&quot;);</b>
+<b class="nc"><i>190</i>&nbsp;    String costCalculated = attrs.getValue(&quot;cost-calculated&quot;);</b>
+<b class="nc"><i>191</i>&nbsp;    if (costCalculated != null) {</b>
+<b class="nc"><i>192</i>&nbsp;      task.getCost().setCalculated(Boolean.valueOf(costCalculated));</b>
+<b class="nc"><i>193</i>&nbsp;      task.getCost().setValue(new BigDecimal(costValue));</b>
+<i>194</i>&nbsp;    } else {
+<b class="nc"><i>195</i>&nbsp;      task.getCost().setCalculated(true);</b>
+<i>196</i>&nbsp;    }
+<b class="nc"><i>197</i>&nbsp;    myContext.pushTask(task);</b>
+<i>198</i>&nbsp;  }
+<i>199</i>&nbsp;
+<i>200</i>&nbsp;  private TaskManager getManager() {
+<b class="nc"><i>201</i>&nbsp;    return myManager;</b>
+<i>202</i>&nbsp;  }
+<i>203</i>&nbsp;
+<i>204</i>&nbsp;  @Override
+<i>205</i>&nbsp;  public void parsingStarted() {
+<i>206</i>&nbsp;  }
+<i>207</i>&nbsp;
+<i>208</i>&nbsp;  @Override
+<i>209</i>&nbsp;  public void parsingFinished() {
+<b class="nc"><i>210</i>&nbsp;    List&lt;Task&gt; tasksBottomUp = Lists.reverse(myManager.getTaskHierarchy().breadthFirstSearch(null, false));</b>
+<i>211</i>&nbsp;
+<b class="nc"><i>212</i>&nbsp;    for (Task t : tasksBottomUp) {</b>
+<b class="nc"><i>213</i>&nbsp;      myTreeFacade.setExpanded(t, MoreObjects.firstNonNull(myTaskIdToExpansionState.get(t.getTaskID()), Boolean.TRUE));</b>
+<b class="nc"><i>214</i>&nbsp;    }</b>
+<i>215</i>&nbsp;  }
+<i>216</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

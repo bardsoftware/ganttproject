@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: HttpDocumentOutputStream</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.document.webdav</a> ]
+</div>
+
+<h1>Coverage Summary for Class: HttpDocumentOutputStream (net.sourceforge.ganttproject.document.webdav)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HttpDocumentOutputStream</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2003-2011 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.document.webdav;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.ByteArrayOutputStream;
+<i>22</i>&nbsp;import java.io.IOException;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;/**
+<i>28</i>&nbsp; * This class implements an OutputStream for documents on
+<i>29</i>&nbsp; * WebDAV-enabled-servers. It is a helper class for HttpDocument.
+<i>30</i>&nbsp; *
+<i>31</i>&nbsp; * @see HttpDocument
+<i>32</i>&nbsp; * @author Michael Haeusler (michael at akatose.de)
+<i>33</i>&nbsp; */
+<i>34</i>&nbsp;class HttpDocumentOutputStream extends ByteArrayOutputStream {
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  private final HttpDocument myDocument;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  HttpDocumentOutputStream(HttpDocument document) {
+<b class="nc"><i>39</i>&nbsp;    super();</b>
+<b class="nc"><i>40</i>&nbsp;    myDocument = document;</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  @Override
+<i>44</i>&nbsp;  public void close() throws IOException {
+<b class="nc"><i>45</i>&nbsp;    super.close();</b>
+<b class="nc"><i>46</i>&nbsp;    WebDavResource wr = myDocument.getWebdavResource();</b>
+<i>47</i>&nbsp;    try {
+<b class="nc"><i>48</i>&nbsp;      wr.write(toByteArray());</b>
+<b class="nc"><i>49</i>&nbsp;    } catch (WebDavException e) {</b>
+<b class="nc"><i>50</i>&nbsp;      throw new IOException(e);</b>
+<b class="nc"><i>51</i>&nbsp;    }</b>
+<i>52</i>&nbsp;  }
+<i>53</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

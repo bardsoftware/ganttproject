@@ -1,0 +1,308 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TreeTableCellEditorImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TreeTableCellEditorImpl (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TreeTableCellEditorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (10/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.5%
+  </span>
+  <span class="absValue">
+    (22/ 37)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TreeTableCellEditorImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TreeTableCellEditorImpl$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TreeTableCellEditorImpl$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/ 5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TreeTableCellEditorImpl$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    76.2%
+  </span>
+  <span class="absValue">
+    (16/ 21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66%
+  </span>
+  <span class="absValue">
+    (33/ 50)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.ValidationException;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import javax.swing.*;
+<i>25</i>&nbsp;import javax.swing.event.CellEditorListener;
+<i>26</i>&nbsp;import javax.swing.table.TableCellEditor;
+<i>27</i>&nbsp;import javax.swing.text.JTextComponent;
+<i>28</i>&nbsp;import java.awt.*;
+<i>29</i>&nbsp;import java.awt.event.FocusAdapter;
+<i>30</i>&nbsp;import java.awt.event.FocusEvent;
+<i>31</i>&nbsp;import java.awt.event.FocusListener;
+<i>32</i>&nbsp;import java.awt.event.MouseEvent;
+<i>33</i>&nbsp;import java.util.EventObject;
+<i>34</i>&nbsp;
+<b class="fc"><i>35</i>&nbsp;class TreeTableCellEditorImpl implements TableCellEditor {</b>
+<i>36</i>&nbsp;  private final DefaultCellEditor myProxiedEditor;
+<i>37</i>&nbsp;  private final JTable myTable;
+<i>38</i>&nbsp;
+<b class="fc"><i>39</i>&nbsp;  TreeTableCellEditorImpl(DefaultCellEditor proxiedEditor, JTable table) {</b>
+<b class="fc"><i>40</i>&nbsp;    assert proxiedEditor != null;</b>
+<b class="fc"><i>41</i>&nbsp;    myProxiedEditor = proxiedEditor;</b>
+<b class="fc"><i>42</i>&nbsp;    myTable = table;</b>
+<b class="fc"><i>43</i>&nbsp;  }</b>
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  @Override
+<i>46</i>&nbsp;  public Component getTableCellEditorComponent(JTable arg0, Object arg1, boolean arg2, int arg3, int arg4) {
+<b class="fc"><i>47</i>&nbsp;    final Component result = myProxiedEditor.getTableCellEditorComponent(arg0, arg1, arg2, arg3, arg4);</b>
+<b class="fc"><i>48</i>&nbsp;    if (result instanceof JTextComponent) {</b>
+<b class="fc"><i>49</i>&nbsp;      ((JTextComponent) result).selectAll();</b>
+<i>50</i>&nbsp;      //myFocusCommand = createSelectAllCommand((JTextComponent)result);
+<i>51</i>&nbsp;    }
+<b class="fc"><i>52</i>&nbsp;    return result;</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  @Override
+<i>56</i>&nbsp;  public Object getCellEditorValue() {
+<b class="fc"><i>57</i>&nbsp;    return myProxiedEditor.getCellEditorValue();</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public boolean isCellEditable(EventObject event) {
+<b class="fc"><i>62</i>&nbsp;    if (event instanceof MouseEvent) {</b>
+<b class="nc"><i>63</i>&nbsp;      MouseEvent mouseEvent = (MouseEvent) event;</b>
+<b class="nc"><i>64</i>&nbsp;      if (mouseEvent.getClickCount() == 2) {</b>
+<b class="nc"><i>65</i>&nbsp;        return false;</b>
+<i>66</i>&nbsp;      }
+<b class="nc"><i>67</i>&nbsp;      if (mouseEvent.getClickCount() == 1</b>
+<b class="nc"><i>68</i>&nbsp;          &amp;&amp; myTable.rowAtPoint(mouseEvent.getPoint()) == myTable.getSelectedRow()</b>
+<b class="nc"><i>69</i>&nbsp;          &amp;&amp; myTable.columnAtPoint(mouseEvent.getPoint()) == myTable.getSelectedColumn()) {</b>
+<b class="nc"><i>70</i>&nbsp;        return myProxiedEditor.isCellEditable(null);</b>
+<i>71</i>&nbsp;      }
+<i>72</i>&nbsp;    }
+<b class="fc"><i>73</i>&nbsp;    return myProxiedEditor.isCellEditable(event);</b>
+<i>74</i>&nbsp;  }
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  @Override
+<i>77</i>&nbsp;  public boolean shouldSelectCell(EventObject arg0) {
+<b class="nc"><i>78</i>&nbsp;    return myProxiedEditor.shouldSelectCell(arg0);</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  @Override
+<i>82</i>&nbsp;  public boolean stopCellEditing() {
+<i>83</i>&nbsp;    try {
+<b class="fc"><i>84</i>&nbsp;      return myProxiedEditor.stopCellEditing();</b>
+<b class="nc"><i>85</i>&nbsp;    } catch (ValidationException e) {</b>
+<b class="nc"><i>86</i>&nbsp;      GPLogger.log(e.getMessage());</b>
+<b class="nc"><i>87</i>&nbsp;      myProxiedEditor.getComponent().setBackground(UIUtil.INVALID_VALUE_BACKGROUND);</b>
+<b class="nc"><i>88</i>&nbsp;      return false;</b>
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  @Override
+<i>93</i>&nbsp;  public void cancelCellEditing() {
+<b class="nc"><i>94</i>&nbsp;    myProxiedEditor.cancelCellEditing();</b>
+<b class="nc"><i>95</i>&nbsp;  }</b>
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  @Override
+<i>98</i>&nbsp;  public void addCellEditorListener(CellEditorListener arg0) {
+<b class="fc"><i>99</i>&nbsp;    myProxiedEditor.addCellEditorListener(arg0);</b>
+<b class="fc"><i>100</i>&nbsp;  }</b>
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;  @Override
+<i>103</i>&nbsp;  public void removeCellEditorListener(CellEditorListener arg0) {
+<b class="fc"><i>104</i>&nbsp;    myProxiedEditor.removeCellEditorListener(arg0);</b>
+<b class="fc"><i>105</i>&nbsp;  }</b>
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  static Runnable createSelectAllCommand(final JTextComponent textComponent) {
+<b class="fc"><i>108</i>&nbsp;    return createOnFocusGained(textComponent, new Runnable() {</b>
+<i>109</i>&nbsp;      @Override
+<i>110</i>&nbsp;      public void run() {
+<b class="fc"><i>111</i>&nbsp;        textComponent.selectAll();</b>
+<b class="fc"><i>112</i>&nbsp;      }</b>
+<i>113</i>&nbsp;    });
+<i>114</i>&nbsp;  }
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;  public static Runnable createUnselectAllCommand(final JTextComponent textComponent) {
+<b class="nc"><i>117</i>&nbsp;    return createOnFocusGained(textComponent, new Runnable() {</b>
+<i>118</i>&nbsp;      @Override
+<i>119</i>&nbsp;      public void run() {
+<b class="nc"><i>120</i>&nbsp;        textComponent.select(Integer.MAX_VALUE, Integer.MAX_VALUE);</b>
+<i>121</i>&nbsp;      }
+<i>122</i>&nbsp;    });
+<i>123</i>&nbsp;  }
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;  private static Runnable createOnFocusGained(final JTextComponent textComponent, final Runnable onFocusGained) {
+<b class="fc"><i>126</i>&nbsp;    final FocusListener focusListener = new FocusAdapter() {</b>
+<i>127</i>&nbsp;      @Override
+<i>128</i>&nbsp;      public void focusGained(FocusEvent arg0) {
+<b class="fc"><i>129</i>&nbsp;        super.focusGained(arg0);</b>
+<b class="fc"><i>130</i>&nbsp;        SwingUtilities.invokeLater(onFocusGained);</b>
+<b class="fc"><i>131</i>&nbsp;        textComponent.removeFocusListener(this);</b>
+<b class="fc"><i>132</i>&nbsp;      }</b>
+<i>133</i>&nbsp;    };
+<b class="fc"><i>134</i>&nbsp;    textComponent.addFocusListener(focusListener);</b>
+<b class="fc"><i>135</i>&nbsp;    return new Runnable() {</b>
+<i>136</i>&nbsp;      @Override
+<i>137</i>&nbsp;      public void run() {
+<b class="fc"><i>138</i>&nbsp;        textComponent.requestFocus();</b>
+<b class="fc"><i>139</i>&nbsp;      }</b>
+<i>140</i>&nbsp;    };
+<i>141</i>&nbsp;  }
+<i>142</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

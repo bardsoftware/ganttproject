@@ -1,0 +1,358 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ExporterBase</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.export</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ExporterBase (net.sourceforge.ganttproject.export)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExporterBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 48)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ExporterBase$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExporterBase$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 22)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExporterBase$ExporterJob</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 76)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011-2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.export;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.io.File;
+<i>22</i>&nbsp;import java.util.ArrayList;
+<i>23</i>&nbsp;import java.util.Arrays;
+<i>24</i>&nbsp;import java.util.List;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import org.eclipse.core.runtime.IProgressMonitor;
+<i>27</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>28</i>&nbsp;import org.eclipse.core.runtime.Status;
+<i>29</i>&nbsp;import org.eclipse.core.runtime.jobs.IJobManager;
+<i>30</i>&nbsp;import org.eclipse.core.runtime.jobs.Job;
+<i>31</i>&nbsp;import org.osgi.service.prefs.Preferences;
+<i>32</i>&nbsp;import org.w3c.util.DateParser;
+<i>33</i>&nbsp;import org.w3c.util.InvalidDateException;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import biz.ganttproject.core.option.DefaultDateOption;
+<i>36</i>&nbsp;import biz.ganttproject.core.option.GPOption;
+<i>37</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.GPLogger;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.GanttExportSettings;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>46</i>&nbsp;
+<b class="nc"><i>47</i>&nbsp;public abstract class ExporterBase implements Exporter {</b>
+<i>48</i>&nbsp;  private IGanttProject myProject;
+<i>49</i>&nbsp;  private Chart myGanttChart;
+<i>50</i>&nbsp;  private Chart myResourceChart;
+<i>51</i>&nbsp;  private UIFacade myUIFacade;
+<i>52</i>&nbsp;  private Preferences myRootPreferences;
+<i>53</i>&nbsp;  private DefaultDateOption myExportRangeStart;
+<i>54</i>&nbsp;  private DefaultDateOption myExportRangeEnd;
+<i>55</i>&nbsp;
+<b class="nc"><i>56</i>&nbsp;  protected static final GanttLanguage language = GanttLanguage.getInstance();</b>
+<i>57</i>&nbsp;
+<b class="nc"><i>58</i>&nbsp;  static protected Object EXPORT_JOB_FAMILY = new String(&quot;Export job family&quot;);</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  @Override
+<i>61</i>&nbsp;  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
+<b class="nc"><i>62</i>&nbsp;    myGanttChart = uiFacade.getGanttChart();</b>
+<b class="nc"><i>63</i>&nbsp;    myResourceChart = uiFacade.getResourceChart();</b>
+<b class="nc"><i>64</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>65</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="nc"><i>66</i>&nbsp;    myRootPreferences = prefs;</b>
+<b class="nc"><i>67</i>&nbsp;    myExportRangeStart = new DefaultDateOption(&quot;export.range.start&quot;, myGanttChart.getStartDate());</b>
+<b class="nc"><i>68</i>&nbsp;    myExportRangeEnd = new DefaultDateOption(&quot;export.range.end&quot;, myGanttChart.getEndDate());</b>
+<i>69</i>&nbsp;  }
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;  protected DefaultDateOption getExportRangeStartOption() {
+<b class="nc"><i>72</i>&nbsp;    return myExportRangeStart;</b>
+<i>73</i>&nbsp;  }
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;  protected DefaultDateOption getExportRangeEndOption() {
+<b class="nc"><i>76</i>&nbsp;    return myExportRangeEnd;</b>
+<i>77</i>&nbsp;  }
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  protected GPOptionGroup createExportRangeOptionGroup() {
+<b class="nc"><i>80</i>&nbsp;    return new GPOptionGroup(&quot;export.range&quot;, new GPOption[] { getExportRangeStartOption(), getExportRangeEndOption() });</b>
+<i>81</i>&nbsp;  }
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  public UIFacade getUIFacade() {
+<b class="nc"><i>84</i>&nbsp;    return myUIFacade;</b>
+<i>85</i>&nbsp;  }
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  public IGanttProject getProject() {
+<b class="nc"><i>88</i>&nbsp;    return myProject;</b>
+<i>89</i>&nbsp;  }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;  protected Preferences getPreferences() {
+<b class="nc"><i>92</i>&nbsp;    return myRootPreferences;</b>
+<i>93</i>&nbsp;  }
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  protected Chart getGanttChart() {
+<b class="nc"><i>96</i>&nbsp;    return myGanttChart;</b>
+<i>97</i>&nbsp;  }
+<i>98</i>&nbsp;
+<i>99</i>&nbsp;  protected Chart getResourceChart() {
+<b class="nc"><i>100</i>&nbsp;    return myResourceChart;</b>
+<i>101</i>&nbsp;  }
+<i>102</i>&nbsp;
+<i>103</i>&nbsp;  @Override
+<i>104</i>&nbsp;  public String[] getCommandLineKeys() {
+<i>105</i>&nbsp;    // By default use the same
+<b class="nc"><i>106</i>&nbsp;    return getFileExtensions();</b>
+<i>107</i>&nbsp;  }
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  public GanttExportSettings createExportSettings() {
+<b class="nc"><i>110</i>&nbsp;    GanttExportSettings result = new GanttExportSettings();</b>
+<b class="nc"><i>111</i>&nbsp;    if (myRootPreferences != null) {</b>
+<b class="nc"><i>112</i>&nbsp;      int zoomLevel = myRootPreferences.getInt(&quot;zoom&quot;, -1);</b>
+<b class="nc"><i>113</i>&nbsp;      ZoomState zoomState = zoomLevel &lt; 0 ? myUIFacade.getZoomManager().getZoomState()</b>
+<b class="nc"><i>114</i>&nbsp;          : myUIFacade.getZoomManager().getZoomState(zoomLevel);</b>
+<b class="nc"><i>115</i>&nbsp;      result.setZoomLevel(zoomState);</b>
+<i>116</i>&nbsp;
+<b class="nc"><i>117</i>&nbsp;      String exportRange = myRootPreferences.get(&quot;exportRange&quot;, null);</b>
+<b class="nc"><i>118</i>&nbsp;      if (exportRange == null) {</b>
+<b class="nc"><i>119</i>&nbsp;        result.setStartDate(myExportRangeStart.getValue());</b>
+<b class="nc"><i>120</i>&nbsp;        result.setEndDate(myExportRangeEnd.getValue());</b>
+<i>121</i>&nbsp;      } else {
+<b class="nc"><i>122</i>&nbsp;        String[] rangeBounds = exportRange.split(&quot; &quot;);</b>
+<i>123</i>&nbsp;
+<i>124</i>&nbsp;        try {
+<b class="nc"><i>125</i>&nbsp;          result.setStartDate(DateParser.parse(rangeBounds[0]));</b>
+<b class="nc"><i>126</i>&nbsp;          result.setEndDate(DateParser.parse(rangeBounds[1]));</b>
+<b class="nc"><i>127</i>&nbsp;        } catch (InvalidDateException e) {</b>
+<b class="nc"><i>128</i>&nbsp;          GPLogger.log(e);</b>
+<b class="nc"><i>129</i>&nbsp;        }</b>
+<b class="nc"><i>130</i>&nbsp;        result.setWidth(-1);</b>
+<i>131</i>&nbsp;      }
+<b class="nc"><i>132</i>&nbsp;      result.setCommandLineMode(myRootPreferences.getBoolean(&quot;commandLine&quot;, false));</b>
+<b class="nc"><i>133</i>&nbsp;      if (myRootPreferences.getBoolean(&quot;expandResources&quot;, false)) {</b>
+<b class="nc"><i>134</i>&nbsp;        result.setExpandedResources(&quot;&quot;);</b>
+<i>135</i>&nbsp;      }
+<i>136</i>&nbsp;    }
+<b class="nc"><i>137</i>&nbsp;    return result;</b>
+<i>138</i>&nbsp;  }
+<i>139</i>&nbsp;
+<i>140</i>&nbsp;  @Override
+<i>141</i>&nbsp;  public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
+<b class="nc"><i>142</i>&nbsp;    final IJobManager jobManager = Job.getJobManager();</b>
+<b class="nc"><i>143</i>&nbsp;    final List&lt;File&gt; resultFiles = new ArrayList&lt;File&gt;();</b>
+<b class="nc"><i>144</i>&nbsp;    final List&lt;ExporterJob&gt; jobs = new ArrayList&lt;ExporterJob&gt;(Arrays.asList(createJobs(outputFile, resultFiles)));</b>
+<b class="nc"><i>145</i>&nbsp;    jobs.add(new ExporterJob(&quot;Finalizing&quot;) {</b>
+<i>146</i>&nbsp;      @Override
+<i>147</i>&nbsp;      protected IStatus run() {
+<b class="nc"><i>148</i>&nbsp;        finalizationJob.run(resultFiles.toArray(new File[0]));</b>
+<b class="nc"><i>149</i>&nbsp;        return Status.OK_STATUS;</b>
+<i>150</i>&nbsp;      }
+<i>151</i>&nbsp;    });
+<b class="nc"><i>152</i>&nbsp;    final IProgressMonitor monitor = jobManager.createProgressGroup();</b>
+<b class="nc"><i>153</i>&nbsp;    Job driverJob = new Job(&quot;Running export&quot;) {</b>
+<i>154</i>&nbsp;      @Override
+<i>155</i>&nbsp;      protected IStatus run(IProgressMonitor monitor) {
+<b class="nc"><i>156</i>&nbsp;        monitor.beginTask(&quot;Running export&quot;, jobs.size());</b>
+<b class="nc"><i>157</i>&nbsp;        for (ExporterJob job : jobs) {</b>
+<b class="nc"><i>158</i>&nbsp;          if (monitor.isCanceled()) {</b>
+<b class="nc"><i>159</i>&nbsp;            jobManager.cancel(EXPORT_JOB_FAMILY);</b>
+<b class="nc"><i>160</i>&nbsp;            return Status.CANCEL_STATUS;</b>
+<i>161</i>&nbsp;          }
+<b class="nc"><i>162</i>&nbsp;          monitor.subTask(job.getName());</b>
+<i>163</i>&nbsp;          final IStatus state;
+<i>164</i>&nbsp;          try {
+<b class="nc"><i>165</i>&nbsp;            state = job.run();</b>
+<b class="nc"><i>166</i>&nbsp;          } catch (Throwable e) {</b>
+<b class="nc"><i>167</i>&nbsp;            GPLogger.log(new RuntimeException(&quot;Export failure. Failed subtask: &quot; + job.getName(), e));</b>
+<b class="nc"><i>168</i>&nbsp;            monitor.setCanceled(true);</b>
+<b class="nc"><i>169</i>&nbsp;            continue;</b>
+<b class="nc"><i>170</i>&nbsp;          }</b>
+<i>171</i>&nbsp;
+<b class="nc"><i>172</i>&nbsp;          if (state.isOK() == false) {</b>
+<b class="nc"><i>173</i>&nbsp;            GPLogger.log(new RuntimeException(&quot;Export failure. Failed subtask: &quot; + job.getName(), state.getException()));</b>
+<b class="nc"><i>174</i>&nbsp;            monitor.setCanceled(true);</b>
+<b class="nc"><i>175</i>&nbsp;            continue;</b>
+<i>176</i>&nbsp;          }
+<i>177</i>&nbsp;          // Sub task for export is finished without problems
+<i>178</i>&nbsp;          // So, updated the total amount of work with the current
+<i>179</i>&nbsp;          // work performed
+<b class="nc"><i>180</i>&nbsp;          monitor.worked(1);</b>
+<i>181</i>&nbsp;          // and remove the sub task description
+<i>182</i>&nbsp;          // (convenient for debugging to know the sub task is
+<i>183</i>&nbsp;          // finished properly)
+<b class="nc"><i>184</i>&nbsp;          monitor.subTask(null);</b>
+<b class="nc"><i>185</i>&nbsp;        }</b>
+<b class="nc"><i>186</i>&nbsp;        monitor.done();</b>
+<b class="nc"><i>187</i>&nbsp;        return Status.OK_STATUS;</b>
+<i>188</i>&nbsp;      }
+<i>189</i>&nbsp;    };
+<b class="nc"><i>190</i>&nbsp;    driverJob.setProgressGroup(monitor, 0);</b>
+<b class="nc"><i>191</i>&nbsp;    driverJob.schedule();</b>
+<i>192</i>&nbsp;  }
+<i>193</i>&nbsp;
+<i>194</i>&nbsp;  /** @return a list with {@link ExporterJob}s required to actually export the current format */
+<i>195</i>&nbsp;  protected abstract ExporterJob[] createJobs(File outputFile, List&lt;File&gt; resultFiles);
+<i>196</i>&nbsp;
+<i>197</i>&nbsp;  public abstract static class ExporterJob {
+<i>198</i>&nbsp;    private final String myName;
+<i>199</i>&nbsp;
+<b class="nc"><i>200</i>&nbsp;    protected ExporterJob(String name) {</b>
+<b class="nc"><i>201</i>&nbsp;      myName = name;</b>
+<i>202</i>&nbsp;    }
+<i>203</i>&nbsp;
+<i>204</i>&nbsp;    String getName() {
+<b class="nc"><i>205</i>&nbsp;      return myName;</b>
+<i>206</i>&nbsp;    }
+<i>207</i>&nbsp;
+<i>208</i>&nbsp;    protected abstract IStatus run();
+<i>209</i>&nbsp;  }
+<i>210</i>&nbsp;
+<i>211</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

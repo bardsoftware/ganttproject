@@ -1,0 +1,539 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectOpenStrategy</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectOpenStrategy (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectOpenStrategy</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (2/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.9%
+  </span>
+  <span class="absValue">
+    (3/ 77)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProjectOpenStrategy$Companion</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ProjectOpenStrategy$ConvertMilestones</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    36.4%
+  </span>
+  <span class="absValue">
+    (4/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.3%
+  </span>
+  <span class="absValue">
+    (5/ 79)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2016 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This file is part of GanttProject.
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>8</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>9</i>&nbsp;the Free Software Foundation, either version 3 of the License, or
+<i>10</i>&nbsp;(at your option) any later version.
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>13</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>14</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>15</i>&nbsp;GNU General Public License for more details.
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>18</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>19</i>&nbsp;*/
+<i>20</i>&nbsp;package net.sourceforge.ganttproject.gui
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;import biz.ganttproject.app.OptionElementData
+<i>23</i>&nbsp;import biz.ganttproject.app.OptionPaneBuilder
+<i>24</i>&nbsp;import biz.ganttproject.app.RootLocalizer
+<i>25</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption
+<i>26</i>&nbsp;import biz.ganttproject.core.time.TimeDuration
+<i>27</i>&nbsp;import biz.ganttproject.storage.FetchResult
+<i>28</i>&nbsp;import biz.ganttproject.storage.asOnlineDocument
+<i>29</i>&nbsp;import biz.ganttproject.storage.checksum
+<i>30</i>&nbsp;import com.google.common.base.Preconditions
+<i>31</i>&nbsp;import com.google.common.collect.Lists
+<i>32</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+<i>33</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+<i>34</i>&nbsp;import javafx.beans.value.ChangeListener
+<i>35</i>&nbsp;import javafx.beans.value.ObservableValue
+<i>36</i>&nbsp;import kotlinx.coroutines.Dispatchers
+<i>37</i>&nbsp;import kotlinx.coroutines.GlobalScope
+<i>38</i>&nbsp;import kotlinx.coroutines.Runnable
+<i>39</i>&nbsp;import kotlinx.coroutines.channels.Channel
+<i>40</i>&nbsp;import kotlinx.coroutines.launch
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.GPLogger
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.action.OkAction
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.document.Document
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.task.TaskImpl
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection
+<i>50</i>&nbsp;import org.jdesktop.swingx.JXRadioGroup
+<i>51</i>&nbsp;import java.awt.BorderLayout
+<i>52</i>&nbsp;import java.awt.event.ActionEvent
+<i>53</i>&nbsp;import javax.swing.*
+<i>54</i>&nbsp;import kotlin.coroutines.Continuation
+<i>55</i>&nbsp;import kotlin.coroutines.resume
+<i>56</i>&nbsp;import kotlin.coroutines.suspendCoroutine
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;/**
+<i>59</i>&nbsp; * When we open a file, we need to complete a number of steps in order to be sure
+<i>60</i>&nbsp; * that should task dates change after the first scheduler run, user is informed about that.
+<i>61</i>&nbsp; *
+<i>62</i>&nbsp; * The steps are chained so that client can&#39;t invoke them in wrong order. Strategy is auto-closeable
+<i>63</i>&nbsp; * and should be closed after using.
+<i>64</i>&nbsp; *
+<i>65</i>&nbsp; * @author bard
+<i>66</i>&nbsp; */
+<b class="fc"><i>67</i>&nbsp;internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) : AutoCloseable {</b>
+<i>68</i>&nbsp;
+<b class="nc"><i>69</i>&nbsp;  private val myUiFacade: UIFacade = Preconditions.checkNotNull(uiFacade)</b>
+<b class="nc"><i>70</i>&nbsp;  private val myProject: IGanttProject = Preconditions.checkNotNull(project)</b>
+<i>71</i>&nbsp;  private val myDiagnostics: ProjectOpenDiagnosticImpl
+<b class="nc"><i>72</i>&nbsp;  private val myCloseables = Lists.newArrayList&lt;AutoCloseable&gt;()</b>
+<i>73</i>&nbsp;  private val myEnableAlgorithmsCmd: AutoCloseable
+<i>74</i>&nbsp;  private val myAlgs: AlgorithmCollection
+<b class="nc"><i>75</i>&nbsp;  private val myTasks = Lists.newArrayList&lt;Runnable&gt;()</b>
+<i>76</i>&nbsp;  private var myOldDuration: TimeDuration? = null
+<b class="nc"><i>77</i>&nbsp;  private val i18n = GanttLanguage.getInstance()</b>
+<b class="nc"><i>78</i>&nbsp;  private var myResetModifiedState = true</b>
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  enum class ConvertMilestones {
+<i>81</i>&nbsp;    UNKNOWN, TRUE, FALSE
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<b class="nc"><i>84</i>&nbsp;  init {</b>
+<b class="nc"><i>85</i>&nbsp;    myDiagnostics = ProjectOpenDiagnosticImpl(myUiFacade)</b>
+<b class="nc"><i>86</i>&nbsp;    myAlgs = myProject.taskManager.algorithmCollection</b>
+<b class="nc"><i>87</i>&nbsp;    myEnableAlgorithmsCmd = AutoCloseable {</b>
+<i>88</i>&nbsp;      myAlgs.scheduler.setEnabled(true)
+<i>89</i>&nbsp;      myAlgs.recalculateTaskScheduleAlgorithm.setEnabled(true)
+<i>90</i>&nbsp;      myAlgs.adjustTaskBoundsAlgorithm.setEnabled(true)
+<i>91</i>&nbsp;    }
+<b class="nc"><i>92</i>&nbsp;  }</b>
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;  override fun close() {
+<b class="nc"><i>95</i>&nbsp;    for (c in myCloseables) {</b>
+<b class="nc"><i>96</i>&nbsp;      try {</b>
+<b class="nc"><i>97</i>&nbsp;        c.close()</b>
+<b class="nc"><i>98</i>&nbsp;      } catch (e: Exception) {</b>
+<b class="nc"><i>99</i>&nbsp;        GPLogger.log(e)</b>
+<b class="nc"><i>100</i>&nbsp;      }</b>
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;    }
+<b class="nc"><i>103</i>&nbsp;  }</b>
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  suspend fun open(document: Document, successChannel: Channel&lt;Document&gt;) {
+<b class="nc"><i>106</i>&nbsp;    GlobalScope.launch(Dispatchers.IO) {</b>
+<i>107</i>&nbsp;      val online = document.asOnlineDocument()
+<i>108</i>&nbsp;      if (online == null) {
+<i>109</i>&nbsp;        successChannel.send(document)
+<i>110</i>&nbsp;      } else {
+<i>111</i>&nbsp;        try {
+<i>112</i>&nbsp;          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
+<i>113</i>&nbsp;          if (processFetchResult(currentFetch)) {
+<i>114</i>&nbsp;            successChannel.send(document)
+<i>115</i>&nbsp;          }
+<i>116</i>&nbsp;        } catch (ex: Exception) {
+<i>117</i>&nbsp;          successChannel.close(ex)
+<i>118</i>&nbsp;        }
+<i>119</i>&nbsp;      }
+<i>120</i>&nbsp;    }
+<b class="nc"><i>121</i>&nbsp;  }</b>
+<i>122</i>&nbsp;
+<b class="nc"><i>123</i>&nbsp;  private suspend fun processFetchResult(fetchResult: FetchResult): Boolean {</b>
+<b class="nc"><i>124</i>&nbsp;    val onlineDoc = fetchResult.onlineDocument</b>
+<b class="nc"><i>125</i>&nbsp;    val mirrorDoc = onlineDoc.offlineMirror</b>
+<b class="nc"><i>126</i>&nbsp;    val offlineChecksum = mirrorDoc?.checksum() ?: return true</b>
+<b class="nc"><i>127</i>&nbsp;    if (offlineChecksum == fetchResult.actualChecksum) {</b>
+<i>128</i>&nbsp;      // Offline mirror and actual file online are identical, only version could change
+<i>129</i>&nbsp;      // Just read the online
+<b class="nc"><i>130</i>&nbsp;      return true</b>
+<i>131</i>&nbsp;    }
+<b class="nc"><i>132</i>&nbsp;    if (fetchResult.syncVersion == fetchResult.actualVersion) {</b>
+<i>133</i>&nbsp;      // This is the case when we have local modifications not yet written online,
+<i>134</i>&nbsp;      // e.g. because we have been offline for a while and went online
+<i>135</i>&nbsp;      // when GP was closed.
+<b class="nc"><i>136</i>&nbsp;      return suspendCoroutine { continuation -&gt; showOfflineIsAheadDialog(continuation, fetchResult) }</b>
+<i>137</i>&nbsp;    } else {
+<i>138</i>&nbsp;      // Online is different from mirror, and we have to find out if we had
+<i>139</i>&nbsp;      // any offline modifications.
+<b class="nc"><i>140</i>&nbsp;      return if (offlineChecksum == fetchResult.syncChecksum) {</b>
+<i>141</i>&nbsp;        // No local modifications comparing to the last sync
+<b class="nc"><i>142</i>&nbsp;        true</b>
+<i>143</i>&nbsp;      } else {
+<i>144</i>&nbsp;        // Files modified both locally and online. Ask user which one wins
+<b class="nc"><i>145</i>&nbsp;        suspendCoroutine { continuation -&gt; showForkDialog(continuation, fetchResult) }</b>
+<i>146</i>&nbsp;      }
+<b class="nc"><i>147</i>&nbsp;    }</b>
+<i>148</i>&nbsp;
+<b class="nc"><i>149</i>&nbsp;  }</b>
+<i>150</i>&nbsp;
+<i>151</i>&nbsp;  enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;  private fun showOfflineIsAheadDialog(continuation: Continuation&lt;Boolean&gt;, fetchResult: FetchResult) {
+<b class="nc"><i>154</i>&nbsp;    OptionPaneBuilder&lt;OpenOnlineDocumentChoice&gt;().run {</b>
+<b class="nc"><i>155</i>&nbsp;      i18n = RootLocalizer.createWithRootKey(rootKey = &quot;cloud.openWhenOfflineIsAhead&quot;)</b>
+<b class="nc"><i>156</i>&nbsp;      styleClass = &quot;dlg-lock&quot;</b>
+<b class="nc"><i>157</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/cloud/GPCloudStorage.css&quot;)</b>
+<b class="nc"><i>158</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/StorageDialog.css&quot;)</b>
+<b class="nc"><i>159</i>&nbsp;      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)</b>
+<b class="nc"><i>160</i>&nbsp;      elements = listOf(</b>
+<b class="nc"><i>161</i>&nbsp;          OptionElementData(&quot;useOffline&quot;, OpenOnlineDocumentChoice.USE_OFFLINE, true),</b>
+<b class="nc"><i>162</i>&nbsp;          OptionElementData(&quot;useOnline&quot;, OpenOnlineDocumentChoice.USE_ONLINE),</b>
+<b class="nc"><i>163</i>&nbsp;          OptionElementData(&quot;cancel&quot;, OpenOnlineDocumentChoice.CANCEL)</b>
+<i>164</i>&nbsp;      )
+<i>165</i>&nbsp;
+<b class="nc"><i>166</i>&nbsp;      showDialog { choice -&gt;</b>
+<i>167</i>&nbsp;        when (choice) {
+<i>168</i>&nbsp;          OpenOnlineDocumentChoice.USE_OFFLINE -&gt; {
+<i>169</i>&nbsp;            fetchResult.useMirror = true
+<i>170</i>&nbsp;            continuation.resume(true)
+<i>171</i>&nbsp;          }
+<i>172</i>&nbsp;          OpenOnlineDocumentChoice.USE_ONLINE -&gt; {
+<i>173</i>&nbsp;            continuation.resume(true)
+<i>174</i>&nbsp;          }
+<i>175</i>&nbsp;          OpenOnlineDocumentChoice.CANCEL -&gt; {
+<i>176</i>&nbsp;            continuation.resume(false)
+<i>177</i>&nbsp;          }
+<i>178</i>&nbsp;        }
+<i>179</i>&nbsp;      }
+<b class="nc"><i>180</i>&nbsp;    }</b>
+<b class="nc"><i>181</i>&nbsp;  }</b>
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  private fun showForkDialog(continuation: Continuation&lt;Boolean&gt;, fetchResult: FetchResult) {
+<b class="nc"><i>184</i>&nbsp;    OptionPaneBuilder&lt;OpenOnlineDocumentChoice&gt;().run {</b>
+<b class="nc"><i>185</i>&nbsp;      i18n = RootLocalizer.createWithRootKey(rootKey = &quot;cloud.openWhenDiverged&quot;)</b>
+<b class="nc"><i>186</i>&nbsp;      styleClass = &quot;dlg-lock&quot;</b>
+<b class="nc"><i>187</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/cloud/GPCloudStorage.css&quot;)</b>
+<b class="nc"><i>188</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/StorageDialog.css&quot;)</b>
+<b class="nc"><i>189</i>&nbsp;      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)</b>
+<b class="nc"><i>190</i>&nbsp;      elements = listOf(</b>
+<b class="nc"><i>191</i>&nbsp;          OptionElementData(&quot;useOffline&quot;, OpenOnlineDocumentChoice.USE_OFFLINE, true),</b>
+<b class="nc"><i>192</i>&nbsp;          OptionElementData(&quot;useOnline&quot;, OpenOnlineDocumentChoice.USE_ONLINE),</b>
+<b class="nc"><i>193</i>&nbsp;          OptionElementData(&quot;cancel&quot;, OpenOnlineDocumentChoice.CANCEL)</b>
+<i>194</i>&nbsp;      )
+<i>195</i>&nbsp;
+<b class="nc"><i>196</i>&nbsp;      showDialog { choice -&gt;</b>
+<i>197</i>&nbsp;        when (choice) {
+<i>198</i>&nbsp;          OpenOnlineDocumentChoice.USE_OFFLINE -&gt; {
+<i>199</i>&nbsp;            fetchResult.useMirror = true
+<i>200</i>&nbsp;            continuation.resume(true)
+<i>201</i>&nbsp;          }
+<i>202</i>&nbsp;          OpenOnlineDocumentChoice.USE_ONLINE -&gt; {
+<i>203</i>&nbsp;            continuation.resume(true)
+<i>204</i>&nbsp;          }
+<i>205</i>&nbsp;          OpenOnlineDocumentChoice.CANCEL -&gt; {
+<i>206</i>&nbsp;            continuation.resume(false)
+<i>207</i>&nbsp;          }
+<i>208</i>&nbsp;        }
+<i>209</i>&nbsp;      }
+<b class="nc"><i>210</i>&nbsp;    }</b>
+<b class="nc"><i>211</i>&nbsp;  }</b>
+<i>212</i>&nbsp;
+<i>213</i>&nbsp;  private fun handleDocumentException(ex: Document.DocumentException) {
+<b class="nc"><i>214</i>&nbsp;    TODO(&quot;not implemented&quot;) //To change body of created functions use File | Settings | File Templates.</b>
+<i>215</i>&nbsp;  }
+<i>216</i>&nbsp;
+<i>217</i>&nbsp;
+<i>218</i>&nbsp;  // First we open file &quot;as is&quot;, that is, without running any algorithms which
+<i>219</i>&nbsp;  // change task dates.
+<i>220</i>&nbsp;  @Throws(Exception::class)
+<i>221</i>&nbsp;  fun openFileAsIs(document: Document): Step1 {
+<b class="nc"><i>222</i>&nbsp;    myCloseables.add(myEnableAlgorithmsCmd)</b>
+<b class="nc"><i>223</i>&nbsp;    myAlgs.scheduler.setEnabled(false)</b>
+<b class="nc"><i>224</i>&nbsp;    myAlgs.recalculateTaskScheduleAlgorithm.setEnabled(false)</b>
+<b class="nc"><i>225</i>&nbsp;    myAlgs.adjustTaskBoundsAlgorithm.setEnabled(false)</b>
+<b class="nc"><i>226</i>&nbsp;    myAlgs.scheduler.setDiagnostic(myDiagnostics)</b>
+<b class="nc"><i>227</i>&nbsp;    try {</b>
+<b class="nc"><i>228</i>&nbsp;      myProject.open(document)</b>
+<i>229</i>&nbsp;    } finally {
+<b class="nc"><i>230</i>&nbsp;      myAlgs.scheduler.setDiagnostic(null)</b>
+<b class="nc"><i>231</i>&nbsp;    }</b>
+<b class="nc"><i>232</i>&nbsp;    if (document.portfolio != null) {</b>
+<b class="nc"><i>233</i>&nbsp;      val defaultDocument = document.portfolio.defaultDocument</b>
+<b class="nc"><i>234</i>&nbsp;      myProject.open(defaultDocument)</b>
+<i>235</i>&nbsp;    }
+<b class="nc"><i>236</i>&nbsp;    myOldDuration = myProject.taskManager.projectLength</b>
+<b class="nc"><i>237</i>&nbsp;    return Step1()</b>
+<i>238</i>&nbsp;  }
+<i>239</i>&nbsp;
+<i>240</i>&nbsp;  // This step checks if there are legacy 1-day milestones in the project.
+<i>241</i>&nbsp;  // If there are legacy milestones, we ask the user what shall we do with them.
+<i>242</i>&nbsp;  // This involves interaction with Swing thread and later task of patching
+<i>243</i>&nbsp;  // milestones.
+<i>244</i>&nbsp;  internal inner class Step1 {
+<i>245</i>&nbsp;    fun checkLegacyMilestones(): Step2 {
+<i>246</i>&nbsp;      val taskManager = myProject.taskManager
+<i>247</i>&nbsp;      var hasLegacyMilestones = false
+<i>248</i>&nbsp;      for (t in taskManager.tasks) {
+<i>249</i>&nbsp;        if ((t as TaskImpl).isLegacyMilestone) {
+<i>250</i>&nbsp;          hasLegacyMilestones = true
+<i>251</i>&nbsp;          break
+<i>252</i>&nbsp;        }
+<i>253</i>&nbsp;      }
+<i>254</i>&nbsp;
+<i>255</i>&nbsp;      if (hasLegacyMilestones &amp;&amp; taskManager.isZeroMilestones == null) {
+<i>256</i>&nbsp;        val option = if (milestonesOption.selectedValue == null)
+<i>257</i>&nbsp;          ConvertMilestones.UNKNOWN
+<i>258</i>&nbsp;        else
+<i>259</i>&nbsp;          milestonesOption.selectedValue
+<i>260</i>&nbsp;        when (option) {
+<i>261</i>&nbsp;          ProjectOpenStrategy.ConvertMilestones.UNKNOWN -&gt; myTasks.add(Runnable {
+<i>262</i>&nbsp;            try {
+<i>263</i>&nbsp;              myProject.taskManager.algorithmCollection.scheduler.setDiagnostic(myDiagnostics)
+<i>264</i>&nbsp;              tryPatchMilestones(myProject, taskManager)
+<i>265</i>&nbsp;            } finally {
+<i>266</i>&nbsp;              myProject.taskManager.algorithmCollection.scheduler.setDiagnostic(null)
+<i>267</i>&nbsp;            }
+<i>268</i>&nbsp;          })
+<i>269</i>&nbsp;          ProjectOpenStrategy.ConvertMilestones.TRUE -&gt; {
+<i>270</i>&nbsp;            taskManager.isZeroMilestones = true
+<i>271</i>&nbsp;            myResetModifiedState = false
+<i>272</i>&nbsp;          }
+<i>273</i>&nbsp;          ProjectOpenStrategy.ConvertMilestones.FALSE -&gt; taskManager.isZeroMilestones = false
+<i>274</i>&nbsp;          else -&gt; taskManager.isZeroMilestones = false
+<i>275</i>&nbsp;        }
+<i>276</i>&nbsp;      }
+<i>277</i>&nbsp;      return Step2()
+<i>278</i>&nbsp;    }
+<i>279</i>&nbsp;
+<i>280</i>&nbsp;    // Asks user what shall we do with milestones and updates milestones if user
+<i>281</i>&nbsp;    // decides to convert them. This code is executed by Step3.runUiTasks
+<i>282</i>&nbsp;    private fun tryPatchMilestones(project: IGanttProject, taskManager: TaskManager) {
+<i>283</i>&nbsp;      val buttonConvert = JRadioButton(i18n.getText(&quot;legacyMilestones.choice.convert&quot;))
+<i>284</i>&nbsp;      val buttonKeep = JRadioButton(i18n.getText(&quot;legacyMilestones.choice.keep&quot;))
+<i>285</i>&nbsp;      buttonConvert.isSelected = true
+<i>286</i>&nbsp;      val group = JXRadioGroup.create(arrayOf(buttonConvert, buttonKeep))
+<i>287</i>&nbsp;      group.setLayoutAxis(BoxLayout.PAGE_AXIS)
+<i>288</i>&nbsp;      val remember = JCheckBox(i18n.getText(&quot;legacyMilestones.choice.remember&quot;))
+<i>289</i>&nbsp;
+<i>290</i>&nbsp;      val content = Box.createVerticalBox()
+<i>291</i>&nbsp;      val question = JLabel(i18n.getText(&quot;legacyMilestones.question&quot;), SwingConstants.LEADING)
+<i>292</i>&nbsp;      question.isOpaque = true
+<i>293</i>&nbsp;      question.alignmentX = 0.5f
+<i>294</i>&nbsp;      content.add(question)
+<i>295</i>&nbsp;      content.add(Box.createVerticalStrut(15))
+<i>296</i>&nbsp;      content.add(group)
+<i>297</i>&nbsp;      content.add(Box.createVerticalStrut(5))
+<i>298</i>&nbsp;      content.add(remember)
+<i>299</i>&nbsp;
+<i>300</i>&nbsp;      val icon = Box.createVerticalBox()
+<i>301</i>&nbsp;      icon.add(JLabel(GPAction.getIcon(&quot;64&quot;, &quot;dialog-question.png&quot;)))
+<i>302</i>&nbsp;      icon.add(Box.createVerticalGlue())
+<i>303</i>&nbsp;
+<i>304</i>&nbsp;      val result = JPanel(BorderLayout())
+<i>305</i>&nbsp;      result.add(content, BorderLayout.CENTER)
+<i>306</i>&nbsp;      result.add(icon, BorderLayout.WEST)
+<i>307</i>&nbsp;      result.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+<i>308</i>&nbsp;      myUiFacade.createDialog(result, arrayOf&lt;Action&gt;(object : OkAction() {
+<i>309</i>&nbsp;        override fun actionPerformed(e: ActionEvent) {
+<i>310</i>&nbsp;          taskManager.isZeroMilestones = buttonConvert.isSelected
+<i>311</i>&nbsp;          if (remember.isSelected) {
+<i>312</i>&nbsp;            milestonesOption.selectedValue = if (buttonConvert.isSelected) ConvertMilestones.TRUE else ConvertMilestones.FALSE
+<i>313</i>&nbsp;          }
+<i>314</i>&nbsp;          adjustTasks(taskManager)
+<i>315</i>&nbsp;          project.isModified = true
+<i>316</i>&nbsp;        }
+<i>317</i>&nbsp;      }), i18n.getText(&quot;legacyMilestones.title&quot;)).show()
+<i>318</i>&nbsp;    }
+<i>319</i>&nbsp;
+<i>320</i>&nbsp;    private fun adjustTasks(taskManager: TaskManager) {
+<i>321</i>&nbsp;      try {
+<i>322</i>&nbsp;        taskManager.algorithmCollection.scheduler.run()
+<i>323</i>&nbsp;      } catch (e: Exception) {
+<i>324</i>&nbsp;        GPLogger.logToLogger(e)
+<i>325</i>&nbsp;      }
+<i>326</i>&nbsp;
+<i>327</i>&nbsp;    }
+<i>328</i>&nbsp;  }
+<i>329</i>&nbsp;
+<i>330</i>&nbsp;  // This step runs the scheduler and checks if there are tasks with earliest start constraints
+<i>331</i>&nbsp;  // which changed their dates. Such tasks will be reported in the dialog.
+<i>332</i>&nbsp;  internal inner class Step2 {
+<i>333</i>&nbsp;    @Throws(Exception::class)
+<i>334</i>&nbsp;    fun checkEarliestStartConstraints(): Step3 {
+<i>335</i>&nbsp;      myAlgs.scheduler.setDiagnostic(myDiagnostics)
+<i>336</i>&nbsp;      // ==== Uncomment to see Scheduler Report in any project
+<i>337</i>&nbsp;      // myDiagnostics.info(&quot;Lorem ipsum dolor sit amet!&quot;)
+<i>338</i>&nbsp;      // myProject.taskManager.tasks.forEach { t -&gt; myDiagnostics.addModifiedTask(t, Date(), Date()) }
+<i>339</i>&nbsp;      // ====
+<i>340</i>&nbsp;      try {
+<i>341</i>&nbsp;        // This actually runs the scheduler by enabling it
+<i>342</i>&nbsp;        myEnableAlgorithmsCmd.close()
+<i>343</i>&nbsp;        // We enabled algoritmhs so we don&#39;t need to keep them in the list of closeables
+<i>344</i>&nbsp;        myCloseables.remove(myEnableAlgorithmsCmd)
+<i>345</i>&nbsp;      } finally {
+<i>346</i>&nbsp;        myAlgs.scheduler.setDiagnostic(null)
+<i>347</i>&nbsp;      }
+<i>348</i>&nbsp;      // Analyze earliest start dates
+<i>349</i>&nbsp;      for (t in myProject.taskManager.tasks) {
+<i>350</i>&nbsp;        if (t.third != null &amp;&amp; myDiagnostics.myModifiedTasks.containsKey(t)) {
+<i>351</i>&nbsp;          myDiagnostics.addReason(t, &quot;scheduler.warning.table.reason.earliestStart&quot;)
+<i>352</i>&nbsp;        }
+<i>353</i>&nbsp;      }
+<i>354</i>&nbsp;
+<i>355</i>&nbsp;      val newDuration = myProject.taskManager.projectLength
+<i>356</i>&nbsp;      if (!myDiagnostics.myModifiedTasks.isEmpty()) {
+<i>357</i>&nbsp;        // Some tasks have been modified, so let&#39;s add introduction text to the dialog
+<i>358</i>&nbsp;        myDiagnostics.info(i18n.getText(&quot;scheduler.warning.summary.item0&quot;))
+<i>359</i>&nbsp;        if (newDuration.length != myOldDuration!!.length) {
+<i>360</i>&nbsp;          myDiagnostics.info(i18n.formatText(&quot;scheduler.warning.summary.item1&quot;, myOldDuration, newDuration))
+<i>361</i>&nbsp;        }
+<i>362</i>&nbsp;      }
+<i>363</i>&nbsp;      return Step3()
+<i>364</i>&nbsp;    }
+<i>365</i>&nbsp;  }
+<i>366</i>&nbsp;
+<i>367</i>&nbsp;  // This step runs the collected UI tasks. First (optional) task is legacy milestones question;
+<i>368</i>&nbsp;  // the remaining are added here.
+<i>369</i>&nbsp;  internal inner class Step3 {
+<i>370</i>&nbsp;    fun runUiTasks(): Step4 {
+<i>371</i>&nbsp;      myTasks.add(Runnable {
+<i>372</i>&nbsp;        if (!myDiagnostics.myMessages.isEmpty()) {
+<i>373</i>&nbsp;          myDiagnostics.showDialog()
+<i>374</i>&nbsp;        }
+<i>375</i>&nbsp;      })
+<i>376</i>&nbsp;      if (myDiagnostics.myMessages.isEmpty() &amp;&amp; myResetModifiedState) {
+<i>377</i>&nbsp;        myTasks.add(Runnable { myProject.isModified = false })
+<i>378</i>&nbsp;      }
+<i>379</i>&nbsp;      myTasks.add(Runnable {
+<i>380</i>&nbsp;        try {
+<i>381</i>&nbsp;          this@ProjectOpenStrategy.close()
+<i>382</i>&nbsp;        } catch (e: Exception) {
+<i>383</i>&nbsp;          GPLogger.log(e)
+<i>384</i>&nbsp;        }
+<i>385</i>&nbsp;      })
+<i>386</i>&nbsp;      processTasks(myTasks)
+<i>387</i>&nbsp;      return Step4()
+<i>388</i>&nbsp;    }
+<i>389</i>&nbsp;
+<i>390</i>&nbsp;    private fun processTasks(tasks: MutableList&lt;Runnable&gt;) {
+<i>391</i>&nbsp;      if (tasks.isEmpty()) {
+<i>392</i>&nbsp;        return
+<i>393</i>&nbsp;      }
+<i>394</i>&nbsp;      val task = tasks.removeAt(0)
+<i>395</i>&nbsp;      val wrapper = Runnable {
+<i>396</i>&nbsp;        task.run()
+<i>397</i>&nbsp;        processTasks(tasks)
+<i>398</i>&nbsp;      }
+<i>399</i>&nbsp;      SwingUtilities.invokeLater(wrapper)
+<i>400</i>&nbsp;    }
+<i>401</i>&nbsp;  }
+<i>402</i>&nbsp;
+<i>403</i>&nbsp;  internal inner class Step4 {
+<i>404</i>&nbsp;    fun onFetchResultChange(document: Document, callback: () -&gt; Unit) {
+<i>405</i>&nbsp;      val onlineDocument = document.asOnlineDocument()
+<i>406</i>&nbsp;      if (onlineDocument != null) {
+<i>407</i>&nbsp;        val changeListener = object : ChangeListener&lt;FetchResult?&gt; {
+<i>408</i>&nbsp;          override fun changed(observable: ObservableValue&lt;out FetchResult?&gt;?, oldFetch: FetchResult?, newFetch: FetchResult?) {
+<i>409</i>&nbsp;            println(&quot;oldFetch=${oldFetch?.actualChecksum} newFetch=${newFetch?.actualChecksum}&quot;)
+<i>410</i>&nbsp;            if (oldFetch != null &amp;&amp; newFetch != null) {
+<i>411</i>&nbsp;              if (oldFetch.actualVersion != newFetch.actualVersion) {
+<i>412</i>&nbsp;                observable?.removeListener(this)
+<i>413</i>&nbsp;                callback()
+<i>414</i>&nbsp;              }
+<i>415</i>&nbsp;            }
+<i>416</i>&nbsp;          }
+<i>417</i>&nbsp;        }
+<i>418</i>&nbsp;        onlineDocument.fetchResultProperty.addListener(changeListener)
+<i>419</i>&nbsp;      }
+<i>420</i>&nbsp;
+<i>421</i>&nbsp;    }
+<i>422</i>&nbsp;  }
+<b class="fc"><i>423</i>&nbsp;  companion object {</b>
+<b class="fc"><i>424</i>&nbsp;    val milestonesOption = DefaultEnumerationOption(</b>
+<b class="fc"><i>425</i>&nbsp;        &quot;milestones_to_zero&quot;, ConvertMilestones.values())</b>
+<i>426</i>&nbsp;  }
+<i>427</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

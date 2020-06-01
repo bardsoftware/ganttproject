@@ -1,0 +1,257 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttChartTabContentPanel</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttChartTabContentPanel (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttChartTabContentPanel</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (39/ 39)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttChartTabContentPanel$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttChartTabContentPanel$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (11/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    95.3%
+  </span>
+  <span class="absValue">
+    (41/ 43)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.base.Function;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.BaselineDialogAction;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.chart.Chart;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.chart.overview.GPToolbar;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.gui.UIConfiguration;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.view.GPView;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import javax.annotation.Nullable;
+<i>32</i>&nbsp;import javax.swing.*;
+<i>33</i>&nbsp;import java.awt.*;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
+<i>36</i>&nbsp;  private final Container myTaskTree;
+<i>37</i>&nbsp;  private final JComponent myGanttChart;
+<i>38</i>&nbsp;  private final TreeTableContainer myTreeFacade;
+<i>39</i>&nbsp;  private final UIFacade myWorkbenchFacade;
+<i>40</i>&nbsp;  private final CalculateCriticalPathAction myCriticalPathAction;
+<i>41</i>&nbsp;  private final BaselineDialogAction myBaselineAction;
+<i>42</i>&nbsp;  private JComponent myComponent;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
+<i>45</i>&nbsp;      JComponent ganttChart, UIConfiguration uiConfiguration) {
+<b class="fc"><i>46</i>&nbsp;    super(project, workbenchFacade, workbenchFacade.getGanttChart());</b>
+<b class="fc"><i>47</i>&nbsp;    myWorkbenchFacade = workbenchFacade;</b>
+<b class="fc"><i>48</i>&nbsp;    myTreeFacade = treeFacade;</b>
+<b class="fc"><i>49</i>&nbsp;    myTaskTree = (Container) treeFacade.getTreeComponent();</b>
+<b class="fc"><i>50</i>&nbsp;    myGanttChart = ganttChart;</b>
+<i>51</i>&nbsp;    // FIXME KeyStrokes of these 2 actions are not working...
+<b class="fc"><i>52</i>&nbsp;    myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);</b>
+<b class="fc"><i>53</i>&nbsp;    myBaselineAction = new BaselineDialogAction(project, workbenchFacade);</b>
+<b class="fc"><i>54</i>&nbsp;    addChartPanel(createSchedulePanel());</b>
+<b class="fc"><i>55</i>&nbsp;    addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());</b>
+<b class="fc"><i>56</i>&nbsp;  }</b>
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  private Component createSchedulePanel() {
+<b class="fc"><i>59</i>&nbsp;    return new ToolbarBuilder()</b>
+<b class="fc"><i>60</i>&nbsp;        .withDpiOption(myWorkbenchFacade.getDpiOption())</b>
+<b class="fc"><i>61</i>&nbsp;        .withLafOption(getUiFacade().getLafOption(), new Function&lt;String, Float&gt;() {</b>
+<i>62</i>&nbsp;          @Override
+<i>63</i>&nbsp;          public Float apply(@Nullable String s) {
+<b class="nc"><i>64</i>&nbsp;            return (s.indexOf(&quot;nimbus&quot;) &gt;= 0) ? 2f : 1f;</b>
+<i>65</i>&nbsp;          }
+<i>66</i>&nbsp;        })
+<b class="fc"><i>67</i>&nbsp;        .withGapFactory(ToolbarBuilder.Gaps.VDASH)</b>
+<b class="fc"><i>68</i>&nbsp;        .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())</b>
+<b class="fc"><i>69</i>&nbsp;        .withHeight(24)</b>
+<b class="fc"><i>70</i>&nbsp;        .addButton(myCriticalPathAction)</b>
+<b class="fc"><i>71</i>&nbsp;        .addButton(myBaselineAction)</b>
+<b class="fc"><i>72</i>&nbsp;        .build()</b>
+<b class="fc"><i>73</i>&nbsp;        .getToolbar();</b>
+<i>74</i>&nbsp;  }
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;  JComponent getComponent() {
+<b class="fc"><i>77</i>&nbsp;    if (myComponent == null) {</b>
+<b class="fc"><i>78</i>&nbsp;      myComponent = createContentComponent();</b>
+<i>79</i>&nbsp;    }
+<b class="fc"><i>80</i>&nbsp;    return myComponent;</b>
+<i>81</i>&nbsp;  }
+<i>82</i>&nbsp;
+<i>83</i>&nbsp;  @Override
+<i>84</i>&nbsp;  protected Component createButtonPanel() {
+<b class="fc"><i>85</i>&nbsp;    ToolbarBuilder builder = new ToolbarBuilder()</b>
+<b class="fc"><i>86</i>&nbsp;        .withHeight(24)</b>
+<b class="fc"><i>87</i>&nbsp;        .withSquareButtons()</b>
+<b class="fc"><i>88</i>&nbsp;        .withDpiOption(myWorkbenchFacade.getDpiOption())</b>
+<b class="fc"><i>89</i>&nbsp;        .withLafOption(myWorkbenchFacade.getLafOption(), new Function&lt;String, Float&gt;() {</b>
+<i>90</i>&nbsp;          @Override
+<i>91</i>&nbsp;          public Float apply(@Nullable String s) {
+<b class="nc"><i>92</i>&nbsp;            return (s.indexOf(&quot;nimbus&quot;) &gt;= 0) ? 2f : 1f;</b>
+<i>93</i>&nbsp;          }
+<i>94</i>&nbsp;        });
+<b class="fc"><i>95</i>&nbsp;    myTreeFacade.addToolbarActions(builder);</b>
+<b class="fc"><i>96</i>&nbsp;    final GPToolbar toolbar = builder.build();</b>
+<b class="fc"><i>97</i>&nbsp;    return toolbar.getToolbar();</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  @Override
+<i>101</i>&nbsp;  protected Component getChartComponent() {
+<b class="fc"><i>102</i>&nbsp;    return myGanttChart;</b>
+<i>103</i>&nbsp;  }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  @Override
+<i>106</i>&nbsp;  protected Component getTreeComponent() {
+<b class="fc"><i>107</i>&nbsp;    return myTaskTree;</b>
+<i>108</i>&nbsp;  }
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;  // //////////////////////////////////////////////
+<i>111</i>&nbsp;  // GPView
+<i>112</i>&nbsp;  @Override
+<i>113</i>&nbsp;  public void setActive(boolean active) {
+<b class="fc"><i>114</i>&nbsp;    if (active) {</b>
+<b class="fc"><i>115</i>&nbsp;      myTaskTree.requestFocus();</b>
+<b class="fc"><i>116</i>&nbsp;      myTreeFacade.getNewAction().updateAction();</b>
+<i>117</i>&nbsp;    }
+<b class="fc"><i>118</i>&nbsp;  }</b>
+<i>119</i>&nbsp;
+<i>120</i>&nbsp;  @Override
+<i>121</i>&nbsp;  public Chart getChart() {
+<b class="fc"><i>122</i>&nbsp;    return myWorkbenchFacade.getGanttChart();</b>
+<i>123</i>&nbsp;  }
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;  @Override
+<i>126</i>&nbsp;  public Component getViewComponent() {
+<b class="fc"><i>127</i>&nbsp;    return getComponent();</b>
+<i>128</i>&nbsp;  }
+<i>129</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

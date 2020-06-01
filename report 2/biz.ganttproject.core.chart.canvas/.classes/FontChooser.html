@@ -1,0 +1,212 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: FontChooser</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.canvas</a> ]
+</div>
+
+<h1>Coverage Summary for Class: FontChooser (biz.ganttproject.core.chart.canvas)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FontChooser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.7%
+  </span>
+  <span class="absValue">
+    (49/ 54)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.chart.canvas;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;import java.awt.Font;
+<i>23</i>&nbsp;import java.util.Arrays;
+<i>24</i>&nbsp;import java.util.HashMap;
+<i>25</i>&nbsp;import java.util.Map;
+<i>26</i>&nbsp;import java.util.Properties;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import com.google.common.base.Joiner;
+<i>29</i>&nbsp;import com.google.common.base.Strings;
+<i>30</i>&nbsp;import com.google.common.base.Supplier;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;public class FontChooser {
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  private final Properties myProperties;
+<b class="fc"><i>35</i>&nbsp;  private Map&lt;String, Font&gt; myFonts = new HashMap&lt;String, Font&gt;();</b>
+<i>36</i>&nbsp;  private final TextMetrics myCalculator;
+<i>37</i>&nbsp;  private final Supplier&lt;Font&gt; myBaseFont;
+<i>38</i>&nbsp;
+<b class="fc"><i>39</i>&nbsp;  public FontChooser(Properties properties, TextMetrics calculator, Supplier&lt;Font&gt; chartBaseFont) {</b>
+<b class="fc"><i>40</i>&nbsp;    myProperties = properties;</b>
+<b class="fc"><i>41</i>&nbsp;    myCalculator = calculator;</b>
+<b class="fc"><i>42</i>&nbsp;    myBaseFont = chartBaseFont;</b>
+<b class="fc"><i>43</i>&nbsp;  }</b>
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;  public int decreaseBaseFontSize() {
+<b class="fc"><i>46</i>&nbsp;    Map&lt;String, Font&gt; newFonts = new HashMap&lt;String, Font&gt;();</b>
+<b class="fc"><i>47</i>&nbsp;    int minSize = Integer.MAX_VALUE;</b>
+<b class="fc"><i>48</i>&nbsp;    for (String style : myFonts.keySet()) {</b>
+<b class="fc"><i>49</i>&nbsp;      Font f = myFonts.get(style);</b>
+<b class="fc"><i>50</i>&nbsp;      float newSize = f.getSize() - 1f;</b>
+<b class="fc"><i>51</i>&nbsp;      f = f.deriveFont(newSize);</b>
+<b class="fc"><i>52</i>&nbsp;      newFonts.put(style, f);</b>
+<b class="fc"><i>53</i>&nbsp;      minSize = Math.min(minSize, (int)newSize);</b>
+<b class="fc"><i>54</i>&nbsp;    }</b>
+<b class="fc"><i>55</i>&nbsp;    myFonts = newFonts;</b>
+<b class="fc"><i>56</i>&nbsp;    return minSize;</b>
+<i>57</i>&nbsp;  }
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public int getMarginTop(String style) {
+<b class="fc"><i>60</i>&nbsp;    if (&quot;hidden&quot;.equalsIgnoreCase(myProperties.getProperty(style + &quot;.visibility&quot;))) {</b>
+<b class="nc"><i>61</i>&nbsp;      return 0;</b>
+<i>62</i>&nbsp;    }
+<b class="fc"><i>63</i>&nbsp;    return Integer.parseInt(myProperties.getProperty(style + &quot;.margin-top&quot;, &quot;0&quot;));</b>
+<i>64</i>&nbsp;  }
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  public int getTextHeight(String style) {
+<b class="fc"><i>67</i>&nbsp;    if (&quot;hidden&quot;.equalsIgnoreCase(myProperties.getProperty(style + &quot;.visibility&quot;))) {</b>
+<b class="nc"><i>68</i>&nbsp;      return 0;</b>
+<i>69</i>&nbsp;    }
+<b class="fc"><i>70</i>&nbsp;    Font f = getFont(style);</b>
+<b class="fc"><i>71</i>&nbsp;    return myCalculator.getTextHeight(f, &quot;A&quot;);</b>
+<i>72</i>&nbsp;  }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  public int getMarginBottom(String style) {
+<b class="fc"><i>75</i>&nbsp;    if (&quot;hidden&quot;.equalsIgnoreCase(myProperties.getProperty(style + &quot;.visibility&quot;))) {</b>
+<b class="nc"><i>76</i>&nbsp;      return 0;</b>
+<i>77</i>&nbsp;    }
+<b class="fc"><i>78</i>&nbsp;    return Integer.parseInt(myProperties.getProperty(style + &quot;.margin-bottom&quot;, &quot;0&quot;));</b>
+<i>79</i>&nbsp;  }
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  public Font getFont(String style) {
+<b class="fc"><i>82</i>&nbsp;    if (&quot;hidden&quot;.equalsIgnoreCase(myProperties.getProperty(style + &quot;.visibility&quot;))) {</b>
+<b class="nc"><i>83</i>&nbsp;      return null;</b>
+<i>84</i>&nbsp;    }
+<b class="fc"><i>85</i>&nbsp;    Font f = myFonts.get(style);</b>
+<b class="fc"><i>86</i>&nbsp;    if (f == null) {      </b>
+<b class="fc"><i>87</i>&nbsp;      String propValue = Strings.nullToEmpty(myProperties.getProperty(style + &quot;.font&quot;)).trim();</b>
+<b class="fc"><i>88</i>&nbsp;      if (propValue.isEmpty()) {</b>
+<i>89</i>&nbsp;        // If .font property is not set then we use the base font
+<b class="fc"><i>90</i>&nbsp;        f = myBaseFont.get();</b>
+<i>91</i>&nbsp;      } else {
+<b class="fc"><i>92</i>&nbsp;        String[] components = propValue.split(&quot;\\s+&quot;);</b>
+<b class="fc"><i>93</i>&nbsp;        String last = components[components.length - 1];</b>
+<b class="fc"><i>94</i>&nbsp;        String family = &quot;&quot;;</b>
+<i>95</i>&nbsp;        float absoluteSize;
+<i>96</i>&nbsp;        try {
+<i>97</i>&nbsp;          // If the last component of .font property is int/float then
+<i>98</i>&nbsp;          // we check whether it is a relative increment (it should be prefixed with sign)
+<i>99</i>&nbsp;          // or an absolute value
+<b class="fc"><i>100</i>&nbsp;          if (last.startsWith(&quot;+&quot;) || last.startsWith(&quot;-&quot;)) {            </b>
+<b class="fc"><i>101</i>&nbsp;            absoluteSize = Float.parseFloat(last) + myBaseFont.get().getSize();</b>
+<i>102</i>&nbsp;          } else {
+<b class="fc"><i>103</i>&nbsp;            absoluteSize = Float.parseFloat(last);</b>
+<i>104</i>&nbsp;          }
+<b class="fc"><i>105</i>&nbsp;          if (components.length &gt; 1) {</b>
+<b class="fc"><i>106</i>&nbsp;            family = Joiner.on(&#39; &#39;).join(Arrays.asList(components).subList(0, components.length - 1));</b>
+<i>107</i>&nbsp;          }
+<b class="fc"><i>108</i>&nbsp;          if (family.isEmpty()) {</b>
+<b class="fc"><i>109</i>&nbsp;            f = myBaseFont.get().deriveFont(absoluteSize);</b>
+<i>110</i>&nbsp;          } else {
+<b class="fc"><i>111</i>&nbsp;            f = Font.decode(family + &quot; 10&quot;);</b>
+<b class="fc"><i>112</i>&nbsp;            if (f == null) {</b>
+<b class="nc"><i>113</i>&nbsp;              f = myBaseFont.get();</b>
+<i>114</i>&nbsp;            }
+<b class="fc"><i>115</i>&nbsp;            f = f.deriveFont(absoluteSize);</b>
+<i>116</i>&nbsp;          }
+<b class="fc"><i>117</i>&nbsp;        } catch (NumberFormatException e) {</b>
+<b class="fc"><i>118</i>&nbsp;          f = Font.decode(propValue);</b>
+<b class="fc"><i>119</i>&nbsp;        }</b>
+<i>120</i>&nbsp;      }
+<b class="fc"><i>121</i>&nbsp;      myFonts.put(style, f);</b>
+<i>122</i>&nbsp;    } 
+<b class="fc"><i>123</i>&nbsp;    return f;</b>
+<i>124</i>&nbsp;  }
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;  public Color getColor(String style) {
+<b class="fc"><i>127</i>&nbsp;    return Color.decode(myProperties.getProperty(style + &quot;.color&quot;, &quot;#000&quot;));</b>
+<i>128</i>&nbsp;  }
+<i>129</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: Chart</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart</a> ]
+</div>
+
+<h1>Coverage Summary for Class: Chart (net.sourceforge.ganttproject.chart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Chart</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.option.FontOption;
+<i>22</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup;
+<i>23</i>&nbsp;import biz.ganttproject.core.option.IntegerOption;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.GanttExportSettings;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+<i>27</i>&nbsp;import org.eclipse.core.runtime.IAdaptable;
+<i>28</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import java.awt.image.RenderedImage;
+<i>31</i>&nbsp;import java.util.Date;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;public interface Chart extends IAdaptable {
+<i>34</i>&nbsp;  IGanttProject getProject();
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption);
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor);
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  public RenderedImage getRenderedImage(GanttExportSettings settings);
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  public Date getStartDate();
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  void setStartDate(Date startDate);
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  public Date getEndDate();
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  void setDimensions(int height, int width);
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  public String getName();
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  /** Repaints the chart */
+<i>53</i>&nbsp;  public void reset();
+<i>54</i>&nbsp;
+<i>55</i>&nbsp;  public GPOptionGroup[] getOptionGroups();
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;  public Chart createCopy();
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  public ChartSelection getSelection();
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  public IStatus canPaste(ChartSelection selection);
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  public void paste(ChartSelection selection);
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  public void addSelectionListener(ChartSelectionListener listener);
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  public void removeSelectionListener(ChartSelectionListener listener);
+<i>68</i>&nbsp;
+<i>69</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

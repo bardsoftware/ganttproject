@@ -1,0 +1,127 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: MutableTask</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: MutableTask (net.sourceforge.ganttproject.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">MutableTask</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2004-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.Color;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import biz.ganttproject.core.chart.render.ShapePaint;
+<i>24</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>25</i>&nbsp;import biz.ganttproject.core.time.TimeDuration;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * @author bard
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public interface MutableTask {
+<i>32</i>&nbsp;  void setName(String name);
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  void setMilestone(boolean isMilestone);
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;  void setPriority(Task.Priority priority);
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  void setStart(GanttCalendar start);
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;  void setEnd(GanttCalendar end);
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;  void setDuration(TimeDuration length);
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  void shift(TimeDuration shift);
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;  void setCompletionPercentage(int percentage);
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;  // void setStartFixed(boolean isFixed);
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;  // void setFinishFixed(boolean isFixed);
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  void setShape(ShapePaint shape);
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;  void setColor(Color color);
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  /** Sets the weblink for the task */
+<i>57</i>&nbsp;  void setWebLink(String webLink);
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  void setNotes(String notes);
+<i>60</i>&nbsp;
+<i>61</i>&nbsp;  void addNotes(String notes);
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  void setExpand(boolean expand);
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;  /**
+<i>66</i>&nbsp;   * Sets the task as critical or not. The method is used be TaskManager after
+<i>67</i>&nbsp;   * having run a CriticalPathAlgorithm to set the critical tasks. When painted,
+<i>68</i>&nbsp;   * the tasks are rendered as critical using Task.isCritical(). So, a task is
+<i>69</i>&nbsp;   * set as critical only if critical path is displayed.
+<i>70</i>&nbsp;   * 
+<i>71</i>&nbsp;   * @param critical
+<i>72</i>&nbsp;   *          &lt;code&gt;true&lt;/code&gt; if this is critical, &lt;code&gt;false&lt;/code&gt;
+<i>73</i>&nbsp;   *          otherwise.
+<i>74</i>&nbsp;   */
+<i>75</i>&nbsp;  void setCritical(boolean critical);
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;  void setTaskInfo(TaskInfo taskInfo);
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;  void setProjectTask(boolean projectTask);
+<i>80</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

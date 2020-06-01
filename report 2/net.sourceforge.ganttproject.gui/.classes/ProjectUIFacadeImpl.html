@@ -1,0 +1,418 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectUIFacadeImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.gui</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectUIFacadeImpl (net.sourceforge.ganttproject.gui)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectUIFacadeImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.8%
+  </span>
+  <span class="absValue">
+    (2/ 17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.3%
+  </span>
+  <span class="absValue">
+    (4/ 121)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2019 BarD Software s.r.o
+<i>3</i>&nbsp;Copyright 2005-2018 GanttProject team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>8</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>9</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>10</i>&nbsp; (at your option) any later version.
+<i>11</i>&nbsp;
+<i>12</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>13</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>14</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>15</i>&nbsp;GNU General Public License for more details.
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>18</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>19</i>&nbsp; */
+<i>20</i>&nbsp;package net.sourceforge.ganttproject.gui
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;import biz.ganttproject.app.OptionElementData
+<i>23</i>&nbsp;import biz.ganttproject.app.OptionPaneBuilder
+<i>24</i>&nbsp;import biz.ganttproject.app.RootLocalizer
+<i>25</i>&nbsp;import biz.ganttproject.app.dialog
+<i>26</i>&nbsp;import biz.ganttproject.core.option.GPOptionGroup
+<i>27</i>&nbsp;import biz.ganttproject.storage.ForbiddenException
+<i>28</i>&nbsp;import biz.ganttproject.storage.StorageDialogAction
+<i>29</i>&nbsp;import biz.ganttproject.storage.VersionMismatchException
+<i>30</i>&nbsp;import biz.ganttproject.storage.asOnlineDocument
+<i>31</i>&nbsp;import biz.ganttproject.storage.cloud.AuthTokenCallback
+<i>32</i>&nbsp;import biz.ganttproject.storage.cloud.GPCloudOptions
+<i>33</i>&nbsp;import biz.ganttproject.storage.cloud.SigninPane
+<i>34</i>&nbsp;import biz.ganttproject.storage.cloud.onAuthToken
+<i>35</i>&nbsp;import com.google.common.collect.Lists
+<i>36</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+<i>37</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+<i>38</i>&nbsp;import kotlinx.coroutines.Dispatchers
+<i>39</i>&nbsp;import kotlinx.coroutines.GlobalScope
+<i>40</i>&nbsp;import kotlinx.coroutines.channels.Channel
+<i>41</i>&nbsp;import kotlinx.coroutines.launch
+<i>42</i>&nbsp;import kotlinx.coroutines.runBlocking
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.GPLogger
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.action.CancelAction
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.document.Document
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.document.Document.DocumentException
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.document.DocumentManager
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage
+<i>54</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager
+<i>55</i>&nbsp;import org.eclipse.core.runtime.IStatus
+<i>56</i>&nbsp;import java.awt.event.ActionEvent
+<i>57</i>&nbsp;import java.io.File
+<i>58</i>&nbsp;import java.io.IOException
+<i>59</i>&nbsp;import java.text.MessageFormat
+<i>60</i>&nbsp;import java.util.*
+<i>61</i>&nbsp;import java.util.logging.Level
+<i>62</i>&nbsp;import javax.swing.Action
+<i>63</i>&nbsp;import javax.swing.JFileChooser
+<i>64</i>&nbsp;import javax.swing.JOptionPane
+<i>65</i>&nbsp;import javax.swing.SwingUtilities
+<i>66</i>&nbsp;
+<b class="fc"><i>67</i>&nbsp;class ProjectUIFacadeImpl(private val myWorkbenchFacade: UIFacade, private val documentManager: DocumentManager, private val undoManager: GPUndoManager) : ProjectUIFacade {</b>
+<b class="fc"><i>68</i>&nbsp;  private val i18n = GanttLanguage.getInstance()</b>
+<i>69</i>&nbsp;
+<b class="fc"><i>70</i>&nbsp;  private val myConverterGroup = GPOptionGroup(&quot;convert&quot;, ProjectOpenStrategy.milestonesOption)</b>
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  override fun saveProject(project: IGanttProject) {
+<b class="nc"><i>73</i>&nbsp;    if (project.document == null) {</b>
+<b class="nc"><i>74</i>&nbsp;      saveProjectAs(project)</b>
+<b class="nc"><i>75</i>&nbsp;      return</b>
+<i>76</i>&nbsp;    }
+<b class="nc"><i>77</i>&nbsp;    val document = project.document</b>
+<b class="nc"><i>78</i>&nbsp;    saveProjectTryWrite(project, document)</b>
+<b class="nc"><i>79</i>&nbsp;  }</b>
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;  private fun saveProjectTryWrite(project: IGanttProject, document: Document): Boolean {
+<b class="nc"><i>82</i>&nbsp;    val canWrite = document.canWrite()</b>
+<b class="nc"><i>83</i>&nbsp;    if (!canWrite.isOK) {</b>
+<b class="nc"><i>84</i>&nbsp;      GPLogger.getLogger(Document::class.java).log(Level.INFO, canWrite.message, canWrite.exception)</b>
+<b class="nc"><i>85</i>&nbsp;      val message = formatWriteStatusMessage(document, canWrite)</b>
+<b class="nc"><i>86</i>&nbsp;      val actions = ArrayList&lt;Action&gt;()</b>
+<b class="nc"><i>87</i>&nbsp;      actions.add(object : GPAction(&quot;project.saveas&quot;) {</b>
+<i>88</i>&nbsp;        override fun actionPerformed(e: ActionEvent) {
+<i>89</i>&nbsp;          saveProjectAs(project)
+<i>90</i>&nbsp;        }
+<i>91</i>&nbsp;      })
+<b class="nc"><i>92</i>&nbsp;      if (canWrite.code == Document.ErrorCode.LOST_UPDATE.ordinal) {</b>
+<b class="nc"><i>93</i>&nbsp;        actions.add(object : GPAction(&quot;document.overwrite&quot;) {</b>
+<i>94</i>&nbsp;          override fun actionPerformed(e: ActionEvent) {
+<i>95</i>&nbsp;            saveProjectTryLock(project, document)
+<i>96</i>&nbsp;          }
+<i>97</i>&nbsp;        })
+<i>98</i>&nbsp;      }
+<b class="nc"><i>99</i>&nbsp;      actions.add(CancelAction.EMPTY)</b>
+<b class="nc"><i>100</i>&nbsp;      myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toTypedArray())</b>
+<i>101</i>&nbsp;
+<b class="nc"><i>102</i>&nbsp;      return false</b>
+<i>103</i>&nbsp;    }
+<b class="nc"><i>104</i>&nbsp;    return saveProjectTryLock(project, document)</b>
+<i>105</i>&nbsp;  }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;  private fun saveProjectTryLock(project: IGanttProject, document: Document): Boolean {
+<b class="nc"><i>108</i>&nbsp;    return saveProjectTrySave(project, document)</b>
+<i>109</i>&nbsp;  }
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;  enum class VersionMismatchChoice { OVERWRITE, MAKE_COPY }
+<i>112</i>&nbsp;
+<i>113</i>&nbsp;  private fun saveProjectTrySave(project: IGanttProject, document: Document): Boolean {
+<b class="nc"><i>114</i>&nbsp;    val onlineDoc = document.asOnlineDocument()</b>
+<b class="nc"><i>115</i>&nbsp;    try {</b>
+<b class="nc"><i>116</i>&nbsp;      saveProject(document)</b>
+<b class="nc"><i>117</i>&nbsp;      afterSaveProject(project)</b>
+<b class="nc"><i>118</i>&nbsp;      return true</b>
+<b class="nc"><i>119</i>&nbsp;    } catch (e: VersionMismatchException) {</b>
+<b class="nc"><i>120</i>&nbsp;      if (onlineDoc != null) {</b>
+<b class="nc"><i>121</i>&nbsp;        OptionPaneBuilder&lt;VersionMismatchChoice&gt;().also {</b>
+<b class="nc"><i>122</i>&nbsp;          it.i18n = RootLocalizer.createWithRootKey(rootKey = &quot;cloud.versionMismatch&quot;)</b>
+<b class="nc"><i>123</i>&nbsp;          it.styleClass = &quot;dlg-lock&quot;</b>
+<b class="nc"><i>124</i>&nbsp;          it.styleSheets.add(&quot;/biz/ganttproject/storage/cloud/GPCloudStorage.css&quot;)</b>
+<b class="nc"><i>125</i>&nbsp;          it.styleSheets.add(&quot;/biz/ganttproject/storage/StorageDialog.css&quot;)</b>
+<b class="nc"><i>126</i>&nbsp;          it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, &quot;64&quot;).also {icon -&gt;</b>
+<b class="nc"><i>127</i>&nbsp;            icon.styleClass.add(&quot;img&quot;)</b>
+<b class="nc"><i>128</i>&nbsp;          }</b>
+<b class="nc"><i>129</i>&nbsp;          it.elements = Lists.newArrayList(</b>
+<b class="nc"><i>130</i>&nbsp;              OptionElementData(&quot;option.overwrite&quot;, VersionMismatchChoice.OVERWRITE, false),</b>
+<b class="nc"><i>131</i>&nbsp;              OptionElementData(&quot;option.makeCopy&quot;, VersionMismatchChoice.MAKE_COPY, true)</b>
+<i>132</i>&nbsp;          )
+<b class="nc"><i>133</i>&nbsp;          it.showDialog { choice -&gt;</b>
+<i>134</i>&nbsp;            SwingUtilities.invokeLater {
+<i>135</i>&nbsp;              when (choice) {
+<i>136</i>&nbsp;                VersionMismatchChoice.OVERWRITE -&gt; {
+<i>137</i>&nbsp;                  onlineDoc.write(force = true)
+<i>138</i>&nbsp;                  afterSaveProject(project)
+<i>139</i>&nbsp;                }
+<i>140</i>&nbsp;                VersionMismatchChoice.MAKE_COPY -&gt; {
+<i>141</i>&nbsp;                  saveProjectAs(project)
+<i>142</i>&nbsp;                }
+<i>143</i>&nbsp;              }
+<i>144</i>&nbsp;            }
+<i>145</i>&nbsp;          }
+<i>146</i>&nbsp;
+<b class="nc"><i>147</i>&nbsp;        }</b>
+<i>148</i>&nbsp;      }
+<b class="nc"><i>149</i>&nbsp;      return false</b>
+<b class="nc"><i>150</i>&nbsp;    } catch (e: ForbiddenException) {</b>
+<b class="nc"><i>151</i>&nbsp;      signin {</b>
+<i>152</i>&nbsp;        saveProjectTrySave(project, document)
+<i>153</i>&nbsp;      }
+<b class="nc"><i>154</i>&nbsp;      return false</b>
+<b class="nc"><i>155</i>&nbsp;    } catch (e: Throwable) {</b>
+<b class="nc"><i>156</i>&nbsp;      myWorkbenchFacade.showErrorDialog(e)</b>
+<b class="nc"><i>157</i>&nbsp;      return false</b>
+<i>158</i>&nbsp;    }
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;  }
+<i>161</i>&nbsp;
+<i>162</i>&nbsp;  private fun signin(onAuth: ()-&gt;Unit) {
+<b class="nc"><i>163</i>&nbsp;    dialog {</b>
+<i>164</i>&nbsp;      val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken -&gt;
+<i>165</i>&nbsp;        GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
+<i>166</i>&nbsp;        it.hide()
+<i>167</i>&nbsp;        onAuth()
+<i>168</i>&nbsp;      }
+<i>169</i>&nbsp;      it.addStyleClass(&quot;dlg-lock&quot;, &quot;dlg-cloud-file-options&quot;)
+<i>170</i>&nbsp;      it.addStyleSheet(&quot;/biz/ganttproject/storage/cloud/GPCloudStorage.css&quot;, &quot;/biz/ganttproject/storage/StorageDialog.css&quot;)
+<i>171</i>&nbsp;      val pane = SigninPane(onAuthToken)
+<i>172</i>&nbsp;      it.setContent(pane.createSigninPane())
+<i>173</i>&nbsp;    }
+<b class="nc"><i>174</i>&nbsp;  }</b>
+<i>175</i>&nbsp;  private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
+<b class="nc"><i>176</i>&nbsp;    assert(canWrite.code &gt;= 0 &amp;&amp; canWrite.code &lt; Document.ErrorCode.values().size)</b>
+<b class="nc"><i>177</i>&nbsp;    val errorCode = Document.ErrorCode.values()[canWrite.code]</b>
+<b class="nc"><i>178</i>&nbsp;    val key = &quot;document.error.write.&quot; + errorCode.name.toLowerCase()</b>
+<b class="nc"><i>179</i>&nbsp;    return MessageFormat.format(i18n.getText(key), doc.path, canWrite.message)</b>
+<i>180</i>&nbsp;  }
+<i>181</i>&nbsp;
+<i>182</i>&nbsp;  private fun afterSaveProject(project: IGanttProject) {
+<b class="nc"><i>183</i>&nbsp;    val document = project.document</b>
+<b class="nc"><i>184</i>&nbsp;    documentManager.addToRecentDocuments(document)</b>
+<b class="nc"><i>185</i>&nbsp;    val title = i18n.getText(&quot;appliTitle&quot;) + &quot; [&quot; + document.fileName + &quot;]&quot;</b>
+<b class="nc"><i>186</i>&nbsp;    myWorkbenchFacade.setWorkbenchTitle(title)</b>
+<b class="nc"><i>187</i>&nbsp;    if (document.isLocal) {</b>
+<b class="nc"><i>188</i>&nbsp;      val url = document.uri</b>
+<b class="nc"><i>189</i>&nbsp;      if (url != null) {</b>
+<b class="nc"><i>190</i>&nbsp;        val file = File(url)</b>
+<b class="nc"><i>191</i>&nbsp;        documentManager.changeWorkingDirectory(file.parentFile)</b>
+<i>192</i>&nbsp;      }
+<i>193</i>&nbsp;    }
+<b class="nc"><i>194</i>&nbsp;    project.isModified = false</b>
+<b class="nc"><i>195</i>&nbsp;  }</b>
+<i>196</i>&nbsp;
+<i>197</i>&nbsp;  @Throws(IOException::class)
+<i>198</i>&nbsp;  private fun saveProject(document: Document) {
+<b class="nc"><i>199</i>&nbsp;    myWorkbenchFacade.setStatusText(GanttLanguage.getInstance().getText(&quot;saving&quot;) + &quot; &quot; + document.path)</b>
+<b class="nc"><i>200</i>&nbsp;    document.write()</b>
+<b class="nc"><i>201</i>&nbsp;  }</b>
+<i>202</i>&nbsp;
+<i>203</i>&nbsp;  override fun saveProjectAs(project: IGanttProject) {
+<b class="nc"><i>204</i>&nbsp;    StorageDialogAction(project, this, project.documentManager,</b>
+<b class="nc"><i>205</i>&nbsp;        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption).actionPerformed(null)</b>
+<b class="nc"><i>206</i>&nbsp;  }</b>
+<i>207</i>&nbsp;
+<i>208</i>&nbsp;  /**
+<i>209</i>&nbsp;   * Check if the project has been modified, before creating or opening another
+<i>210</i>&nbsp;   * project
+<i>211</i>&nbsp;   *
+<i>212</i>&nbsp;   * @return true when the project is **not** modified or is allowed to be
+<i>213</i>&nbsp;   * discarded
+<i>214</i>&nbsp;   */
+<i>215</i>&nbsp;  override fun ensureProjectSaved(project: IGanttProject): Boolean {
+<b class="nc"><i>216</i>&nbsp;    if (project.isModified) {</b>
+<b class="nc"><i>217</i>&nbsp;      val saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText(&quot;msg1&quot;),</b>
+<b class="nc"><i>218</i>&nbsp;          i18n.getText(&quot;warning&quot;))</b>
+<b class="nc"><i>219</i>&nbsp;      if (UIFacade.Choice.CANCEL == saveChoice) {</b>
+<b class="nc"><i>220</i>&nbsp;        return false</b>
+<i>221</i>&nbsp;      }
+<b class="nc"><i>222</i>&nbsp;      if (UIFacade.Choice.YES == saveChoice) {</b>
+<b class="nc"><i>223</i>&nbsp;        return try {</b>
+<b class="nc"><i>224</i>&nbsp;          saveProject(project)</b>
+<i>225</i>&nbsp;          // If all those complex save procedures complete successfully and project gets saved
+<i>226</i>&nbsp;          // then its modified state becomes false
+<i>227</i>&nbsp;          // Otherwise it remains true which means we have not saved and can&#39;t continue
+<b class="nc"><i>228</i>&nbsp;          !project.isModified</b>
+<b class="nc"><i>229</i>&nbsp;        } catch (e: Exception) {</b>
+<b class="nc"><i>230</i>&nbsp;          myWorkbenchFacade.showErrorDialog(e)</b>
+<b class="nc"><i>231</i>&nbsp;          false</b>
+<i>232</i>&nbsp;        }
+<i>233</i>&nbsp;
+<i>234</i>&nbsp;      }
+<i>235</i>&nbsp;    }
+<b class="nc"><i>236</i>&nbsp;    return true</b>
+<i>237</i>&nbsp;  }
+<i>238</i>&nbsp;
+<i>239</i>&nbsp;  @Throws(IOException::class, DocumentException::class)
+<i>240</i>&nbsp;  override fun openProject(project: IGanttProject) {
+<b class="nc"><i>241</i>&nbsp;    if (!ensureProjectSaved(project)) {</b>
+<b class="nc"><i>242</i>&nbsp;      return</b>
+<i>243</i>&nbsp;    }
+<b class="nc"><i>244</i>&nbsp;    val fc = JFileChooser(documentManager.workingDirectory)</b>
+<b class="nc"><i>245</i>&nbsp;    val ganttFilter = GanttXMLFileFilter()</b>
+<i>246</i>&nbsp;
+<i>247</i>&nbsp;    // Remove the possibility to use a file filter for all files
+<b class="nc"><i>248</i>&nbsp;    val filefilters = fc.choosableFileFilters</b>
+<b class="nc"><i>249</i>&nbsp;    for (i in filefilters.indices) {</b>
+<b class="nc"><i>250</i>&nbsp;      fc.removeChoosableFileFilter(filefilters[i])</b>
+<i>251</i>&nbsp;    }
+<b class="nc"><i>252</i>&nbsp;    fc.addChoosableFileFilter(ganttFilter)</b>
+<i>253</i>&nbsp;
+<b class="nc"><i>254</i>&nbsp;    val returnVal = fc.showOpenDialog(myWorkbenchFacade.mainFrame)</b>
+<b class="nc"><i>255</i>&nbsp;    if (returnVal == JFileChooser.APPROVE_OPTION) {</b>
+<b class="nc"><i>256</i>&nbsp;      val document = documentManager.getDocument(fc.selectedFile.absolutePath)</b>
+<b class="nc"><i>257</i>&nbsp;      openProject(document, project)</b>
+<i>258</i>&nbsp;    }
+<b class="nc"><i>259</i>&nbsp;  }</b>
+<i>260</i>&nbsp;
+<i>261</i>&nbsp;  @Throws(IOException::class, DocumentException::class)
+<i>262</i>&nbsp;  override fun openProject(document: Document, project: IGanttProject) {
+<i>263</i>&nbsp;
+<i>264</i>&nbsp;
+<b class="nc"><i>265</i>&nbsp;    try {</b>
+<b class="nc"><i>266</i>&nbsp;      ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy -&gt;</b>
+<i>267</i>&nbsp;        // Run coroutine which fetches document and wait until it sends the result to the channel.
+<b class="nc"><i>268</i>&nbsp;        val job = GlobalScope.launch(Dispatchers.Main) {</b>
+<i>269</i>&nbsp;          val successChannel = Channel&lt;Document&gt;()
+<i>270</i>&nbsp;
+<i>271</i>&nbsp;          strategy.open(document, successChannel)
+<i>272</i>&nbsp;          try {
+<i>273</i>&nbsp;            val doc = successChannel.receive()
+<i>274</i>&nbsp;            // If document is obtained, we need to run further steps.
+<i>275</i>&nbsp;            // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
+<i>276</i>&nbsp;            SwingUtilities.invokeLater {
+<i>277</i>&nbsp;              beforeClose()
+<i>278</i>&nbsp;              project.close()
+<i>279</i>&nbsp;              strategy.openFileAsIs(doc)
+<i>280</i>&nbsp;                  .checkLegacyMilestones()
+<i>281</i>&nbsp;                  .checkEarliestStartConstraints()
+<i>282</i>&nbsp;                  .runUiTasks()
+<i>283</i>&nbsp;                  .onFetchResultChange(doc) {
+<i>284</i>&nbsp;                    SwingUtilities.invokeLater {
+<i>285</i>&nbsp;                      openProject(doc, project)
+<i>286</i>&nbsp;                    }
+<i>287</i>&nbsp;                  }
+<i>288</i>&nbsp;            }
+<i>289</i>&nbsp;          } catch (ex: Exception) {
+<i>290</i>&nbsp;            when (ex) {
+<i>291</i>&nbsp;              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
+<i>292</i>&nbsp;              is ForbiddenException -&gt; {
+<i>293</i>&nbsp;                signin {
+<i>294</i>&nbsp;                  openProject(document, project)
+<i>295</i>&nbsp;                }
+<i>296</i>&nbsp;              }
+<i>297</i>&nbsp;              else -&gt; {
+<i>298</i>&nbsp;                GPLogger.log(DocumentException(&quot;Can&#39;t open document $document&quot;, ex ))
+<i>299</i>&nbsp;              }
+<i>300</i>&nbsp;            }
+<i>301</i>&nbsp;          }
+<i>302</i>&nbsp;        }
+<b class="nc"><i>303</i>&nbsp;        runBlocking {</b>
+<i>304</i>&nbsp;          job.join()
+<i>305</i>&nbsp;        }
+<b class="nc"><i>306</i>&nbsp;      }</b>
+<b class="nc"><i>307</i>&nbsp;    } catch (e: Exception) {</b>
+<b class="nc"><i>308</i>&nbsp;      throw DocumentException(&quot;Can&#39;t open document $document&quot;, e)</b>
+<b class="nc"><i>309</i>&nbsp;    }</b>
+<b class="nc"><i>310</i>&nbsp;  }</b>
+<i>311</i>&nbsp;
+<i>312</i>&nbsp;  private fun beforeClose() {
+<b class="nc"><i>313</i>&nbsp;    myWorkbenchFacade.setWorkbenchTitle(i18n.getText(&quot;appliTitle&quot;))</b>
+<b class="nc"><i>314</i>&nbsp;    undoManager.die()</b>
+<b class="nc"><i>315</i>&nbsp;  }</b>
+<i>316</i>&nbsp;
+<i>317</i>&nbsp;  override fun createProject(project: IGanttProject) {
+<b class="nc"><i>318</i>&nbsp;    if (!ensureProjectSaved(project)) {</b>
+<b class="nc"><i>319</i>&nbsp;      return</b>
+<i>320</i>&nbsp;    }
+<b class="nc"><i>321</i>&nbsp;    beforeClose()</b>
+<b class="nc"><i>322</i>&nbsp;    project.close()</b>
+<b class="nc"><i>323</i>&nbsp;    myWorkbenchFacade.setStatusText(i18n.getText(&quot;project.new.description&quot;))</b>
+<b class="nc"><i>324</i>&nbsp;    showNewProjectWizard(project)</b>
+<b class="nc"><i>325</i>&nbsp;  }</b>
+<i>326</i>&nbsp;
+<i>327</i>&nbsp;  private fun showNewProjectWizard(project: IGanttProject) {
+<b class="nc"><i>328</i>&nbsp;    val wizard = NewProjectWizard()</b>
+<b class="nc"><i>329</i>&nbsp;    wizard.createNewProject(project, myWorkbenchFacade)</b>
+<b class="nc"><i>330</i>&nbsp;  }</b>
+<i>331</i>&nbsp;
+<i>332</i>&nbsp;  override fun getOptionGroups(): Array&lt;GPOptionGroup&gt; {
+<b class="fc"><i>333</i>&nbsp;    return arrayOf(myConverterGroup)</b>
+<i>334</i>&nbsp;  }
+<i>335</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

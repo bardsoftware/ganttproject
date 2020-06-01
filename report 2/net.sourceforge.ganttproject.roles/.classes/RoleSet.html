@@ -1,0 +1,83 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: RoleSet</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.roles</a> ]
+</div>
+
+<h1>Coverage Summary for Class: RoleSet (net.sourceforge.ganttproject.roles)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">RoleSet</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Created on 18.06.2004
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; */
+<i>5</i>&nbsp;package net.sourceforge.ganttproject.roles;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;/**
+<i>8</i>&nbsp; * @author bard
+<i>9</i>&nbsp; */
+<i>10</i>&nbsp;public interface RoleSet {
+<i>11</i>&nbsp;  String SOFTWARE_DEVELOPMENT = &quot;SoftwareDevelopment&quot;;
+<i>12</i>&nbsp;
+<i>13</i>&nbsp;  String DEFAULT = &quot;Default&quot;;
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;  String getName();
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;  Role[] getRoles();
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;  Role createRole(String name);
+<i>20</i>&nbsp;  Role createRole(String name, int persistentID);
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;  void deleteRole(Role role);
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;  void changeRole(String name, int roleID);
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;  Role findRole(int roleID);
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;  boolean isEnabled();
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;  void setEnabled(boolean isEnabled);
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;  boolean isEmpty();
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  void clear();
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TimeFormatters</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.core.chart.text</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TimeFormatters (biz.ganttproject.core.chart.text)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TimeFormatters</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (28/ 28)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TimeFormatters$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TimeFormatters$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TimeFormatters$LocaleApi</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.9%
+  </span>
+  <span class="absValue">
+    (30/ 33)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.core.chart.text;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.grid.Offset;
+<i>22</i>&nbsp;import biz.ganttproject.core.time.TimeUnit;
+<i>23</i>&nbsp;import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+<i>24</i>&nbsp;import com.google.common.collect.Iterables;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import java.text.DateFormat;
+<i>27</i>&nbsp;import java.util.Date;
+<i>28</i>&nbsp;import java.util.HashMap;
+<i>29</i>&nbsp;import java.util.Locale;
+<i>30</i>&nbsp;import java.util.Map;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;/**
+<i>33</i>&nbsp; * @author dbarashev (Dmitry Barashev)
+<i>34</i>&nbsp; */
+<i>35</i>&nbsp;public class TimeFormatters {
+<b class="fc"><i>36</i>&nbsp;  private final Map&lt;String, TimeFormatter&gt; ourUpperFormatters = new HashMap&lt;String, TimeFormatter&gt;();</b>
+<b class="fc"><i>37</i>&nbsp;  private final Map&lt;String, TimeFormatter&gt; ourLowerFormatters = new HashMap&lt;String, TimeFormatter&gt;();</b>
+<b class="fc"><i>38</i>&nbsp;  public static final TimeUnitText[] EMPTY_TEXT = new TimeUnitText[] { new TimeUnitText(&quot;&quot;) };</b>
+<b class="fc"><i>39</i>&nbsp;  private static final TimeFormatter DEFAULT_TIME_FORMATTER = new TimeFormatter() {</b>
+<i>40</i>&nbsp;    @Override
+<i>41</i>&nbsp;    public TimeUnitText[] format(Offset curOffset) {
+<b class="nc"><i>42</i>&nbsp;      return EMPTY_TEXT;</b>
+<i>43</i>&nbsp;    }
+<i>44</i>&nbsp;
+<i>45</i>&nbsp;    @Override
+<i>46</i>&nbsp;    public TimeUnitText[] format(TimeUnit timeUnit, Date baseDate) {
+<b class="nc"><i>47</i>&nbsp;      return EMPTY_TEXT;</b>
+<i>48</i>&nbsp;    }
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;    @Override
+<i>51</i>&nbsp;    public int getTextCount() {
+<b class="nc"><i>52</i>&nbsp;      return 1;</b>
+<i>53</i>&nbsp;    }
+<i>54</i>&nbsp;  };
+<i>55</i>&nbsp;
+<b class="fc"><i>56</i>&nbsp;  public TimeFormatters(LocaleApi localeApi) {</b>
+<b class="fc"><i>57</i>&nbsp;    Map&lt;String, TimeFormatter&gt; commonFormatters = new HashMap&lt;String, TimeFormatter&gt;();</b>
+<i>58</i>&nbsp;
+<b class="fc"><i>59</i>&nbsp;    commonFormatters.put(GPTimeUnitStack.DAY.getName(), new DayTextFormatter());</b>
+<b class="fc"><i>60</i>&nbsp;    commonFormatters.put(GPTimeUnitStack.QUARTER.getName(), new QuarterTextFormatter());</b>
+<b class="fc"><i>61</i>&nbsp;    commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());</b>
+<i>62</i>&nbsp;
+<b class="fc"><i>63</i>&nbsp;    ourUpperFormatters.putAll(commonFormatters);</b>
+<b class="fc"><i>64</i>&nbsp;    ourUpperFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, &quot;MMMM yyyy&quot;, &quot;MMM&#39;&#39;yyyy&quot;, &quot;MM&#39;&#39;yy&quot;));</b>
+<b class="fc"><i>65</i>&nbsp;    ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());</b>
+<i>66</i>&nbsp;
+<b class="fc"><i>67</i>&nbsp;    ourLowerFormatters.putAll(commonFormatters);</b>
+<b class="fc"><i>68</i>&nbsp;    ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, &quot;MMMM&quot;, &quot;MMM&quot;, &quot;MM&quot;));</b>
+<b class="fc"><i>69</i>&nbsp;    ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());</b>
+<b class="fc"><i>70</i>&nbsp;    setLocaleApi(localeApi);</b>
+<b class="fc"><i>71</i>&nbsp;  }</b>
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;  public TimeFormatter getFormatter(TimeUnit timeUnit, TimeUnitText.Position position) {
+<b class="fc"><i>74</i>&nbsp;    TimeFormatter result = DEFAULT_TIME_FORMATTER;</b>
+<b class="fc"><i>75</i>&nbsp;    switch (position) {</b>
+<i>76</i>&nbsp;    case UPPER_LINE:
+<b class="fc"><i>77</i>&nbsp;      result = ourUpperFormatters.get(timeUnit.getName());</b>
+<b class="fc"><i>78</i>&nbsp;      break;</b>
+<i>79</i>&nbsp;    case LOWER_LINE:
+<b class="fc"><i>80</i>&nbsp;      result = ourLowerFormatters.get(timeUnit.getName());</b>
+<i>81</i>&nbsp;      break;
+<i>82</i>&nbsp;    }
+<b class="fc"><i>83</i>&nbsp;    return result;</b>
+<i>84</i>&nbsp;  }
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  public static interface LocaleApi {
+<i>87</i>&nbsp;    DateFormat getShortDateFormat();
+<i>88</i>&nbsp;    DateFormat createDateFormat(String pattern);
+<i>89</i>&nbsp;    Locale getLocale();
+<i>90</i>&nbsp;    String i18n(String key);
+<i>91</i>&nbsp;  }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  public void setLocaleApi(LocaleApi localeApi) {
+<b class="fc"><i>94</i>&nbsp;    for (TimeFormatter tf : Iterables.concat(ourUpperFormatters.values(), ourLowerFormatters.values())) {</b>
+<b class="fc"><i>95</i>&nbsp;      if (tf instanceof CachingTextFormatter) {</b>
+<b class="fc"><i>96</i>&nbsp;        ((CachingTextFormatter)tf).setLocale(localeApi);</b>
+<i>97</i>&nbsp;      }
+<b class="fc"><i>98</i>&nbsp;    }</b>
+<b class="fc"><i>99</i>&nbsp;  }</b>
+<i>100</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

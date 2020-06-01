@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ProjectMenu</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.project</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ProjectMenu (net.sourceforge.ganttproject.action.project)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProjectMenu</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (30/ 32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2005-2012 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.project;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.storage.StorageDialogAction;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GanttProject;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import javax.swing.*;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;/**
+<i>29</i>&nbsp; * Collection of actions present in the project menu
+<i>30</i>&nbsp; */
+<i>31</i>&nbsp;public class ProjectMenu extends JMenu {
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  private final NewProjectAction myNewProjectAction;
+<i>34</i>&nbsp;  private final SaveProjectAction mySaveProjectAction;
+<i>35</i>&nbsp;  private final PrintAction myPrintAction;
+<i>36</i>&nbsp;  private OpenProjectAction myOpenProjectAction;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;  public ProjectMenu(final GanttProject project, JMenu mru, String key) {
+<b class="fc"><i>39</i>&nbsp;    super(GPAction.createVoidAction(key));</b>
+<b class="fc"><i>40</i>&nbsp;    myNewProjectAction = new NewProjectAction(project);</b>
+<b class="fc"><i>41</i>&nbsp;    mySaveProjectAction = new SaveProjectAction(project);</b>
+<b class="fc"><i>42</i>&nbsp;    myPrintAction = new PrintAction(project);</b>
+<i>43</i>&nbsp;
+<b class="fc"><i>44</i>&nbsp;    ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);</b>
+<b class="fc"><i>45</i>&nbsp;    myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());</b>
+<b class="fc"><i>46</i>&nbsp;    SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);</b>
+<i>47</i>&nbsp;//    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
+<i>48</i>&nbsp;//        project.getProjectUIFacade());
+<i>49</i>&nbsp;//    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
+<i>50</i>&nbsp;//        project.getProjectUIFacade());
+<b class="fc"><i>51</i>&nbsp;    ExitAction exitAction = new ExitAction(project);</b>
+<b class="fc"><i>52</i>&nbsp;    ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);</b>
+<b class="fc"><i>53</i>&nbsp;    ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project,</b>
+<b class="fc"><i>54</i>&nbsp;        project.getGanttOptions().getPluginPreferences());</b>
+<i>55</i>&nbsp;
+<b class="fc"><i>56</i>&nbsp;    WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();</b>
+<b class="fc"><i>57</i>&nbsp;    StorageDialogAction cloudDialogAction = new StorageDialogAction(</b>
+<b class="fc"><i>58</i>&nbsp;        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());</b>
+<b class="fc"><i>59</i>&nbsp;    add(cloudDialogAction);</b>
+<b class="fc"><i>60</i>&nbsp;    add(projectSettingsAction);</b>
+<b class="fc"><i>61</i>&nbsp;    add(myNewProjectAction);</b>
+<i>62</i>&nbsp;    //add(myOpenProjectAction);
+<i>63</i>&nbsp;    //add(mru);
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;    //addSeparator();
+<i>66</i>&nbsp;    //add(mySaveProjectAction);
+<i>67</i>&nbsp;    //add(saveProjectAsAction);
+<i>68</i>&nbsp;    //addSeparator();
+<i>69</i>&nbsp;
+<b class="fc"><i>70</i>&nbsp;    add(projectImportAction);</b>
+<b class="fc"><i>71</i>&nbsp;    add(projectExportAction);</b>
+<b class="fc"><i>72</i>&nbsp;    addSeparator();</b>
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;//    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction(&quot;webServer&quot;));
+<i>75</i>&nbsp;//    mServer.add(openURLAction);
+<i>76</i>&nbsp;//    mServer.add(saveURLAction);
+<i>77</i>&nbsp;//    add(mServer);
+<i>78</i>&nbsp;
+<b class="fc"><i>79</i>&nbsp;    add(myPrintAction);</b>
+<b class="fc"><i>80</i>&nbsp;    add(new ProjectPreviewAction(project));</b>
+<b class="fc"><i>81</i>&nbsp;    addSeparator();</b>
+<b class="fc"><i>82</i>&nbsp;    add(exitAction);</b>
+<b class="fc"><i>83</i>&nbsp;    setToolTipText(null);</b>
+<b class="fc"><i>84</i>&nbsp;  }</b>
+<i>85</i>&nbsp;
+<i>86</i>&nbsp;  @Override
+<i>87</i>&nbsp;  public JMenuItem add(Action a) {
+<b class="fc"><i>88</i>&nbsp;    a.putValue(Action.SHORT_DESCRIPTION, null);</b>
+<b class="fc"><i>89</i>&nbsp;    return super.add(a);</b>
+<i>90</i>&nbsp;  }
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;  public AbstractAction getNewProjectAction() {
+<b class="nc"><i>93</i>&nbsp;    return myNewProjectAction;</b>
+<i>94</i>&nbsp;  }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  public SaveProjectAction getSaveProjectAction() {
+<b class="fc"><i>97</i>&nbsp;    return mySaveProjectAction;</b>
+<i>98</i>&nbsp;  }
+<i>99</i>&nbsp;
+<i>100</i>&nbsp;  public AbstractAction getPrintAction() {
+<b class="nc"><i>101</i>&nbsp;    return myPrintAction;</b>
+<i>102</i>&nbsp;  }
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;  public OpenProjectAction getOpenProjectAction() {
+<b class="fc"><i>105</i>&nbsp;    return myOpenProjectAction;</b>
+<i>106</i>&nbsp;  }
+<i>107</i>&nbsp;
+<i>108</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

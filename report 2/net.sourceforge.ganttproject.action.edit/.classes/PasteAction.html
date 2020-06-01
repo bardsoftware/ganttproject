@@ -1,0 +1,268 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: PasteAction</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.edit</a> ]
+</div>
+
+<h1>Coverage Summary for Class: PasteAction (net.sourceforge.ganttproject.action.edit)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PasteAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22%
+  </span>
+  <span class="absValue">
+    (11/ 50)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PasteAction$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PasteAction$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/ 4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    36.4%
+  </span>
+  <span class="absValue">
+    (4/ 11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.6%
+  </span>
+  <span class="absValue">
+    (14/ 57)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2005-2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.edit;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import com.google.common.io.ByteStreams;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.GPTransferable;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartSelection;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.document.Document;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.gui.UIUtil;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.view.GPViewManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.importer.BufferProject;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.undo.GPUndoManager;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;import java.awt.*;
+<i>36</i>&nbsp;import java.awt.datatransfer.Clipboard;
+<i>37</i>&nbsp;import java.awt.event.ActionEvent;
+<i>38</i>&nbsp;import java.beans.PropertyChangeEvent;
+<i>39</i>&nbsp;import java.beans.PropertyChangeListener;
+<i>40</i>&nbsp;import java.io.File;
+<i>41</i>&nbsp;import java.io.InputStream;
+<i>42</i>&nbsp;import java.nio.file.Files;
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;//TODO Enable/Disable action depending on clipboard contents
+<i>45</i>&nbsp;public class PasteAction extends GPAction {
+<i>46</i>&nbsp;  private final GPViewManager myViewmanager;
+<i>47</i>&nbsp;  private final GPUndoManager myUndoManager;
+<i>48</i>&nbsp;  private final IGanttProject myProject;
+<i>49</i>&nbsp;  private final UIFacade myUiFacade;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;  public PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, GPUndoManager undoManager) {
+<b class="fc"><i>52</i>&nbsp;    super(&quot;paste&quot;);</b>
+<b class="fc"><i>53</i>&nbsp;    myViewmanager = viewManager;</b>
+<b class="fc"><i>54</i>&nbsp;    myUndoManager = undoManager;</b>
+<b class="fc"><i>55</i>&nbsp;    myProject = project;</b>
+<b class="fc"><i>56</i>&nbsp;    myUiFacade = uiFacade;</b>
+<b class="fc"><i>57</i>&nbsp;  }</b>
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;  private PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewmanager, IconSize size, GPUndoManager undoManager) {
+<b class="nc"><i>60</i>&nbsp;    super(&quot;paste&quot;, size);</b>
+<b class="nc"><i>61</i>&nbsp;    myViewmanager = viewmanager;</b>
+<b class="nc"><i>62</i>&nbsp;    myUndoManager = undoManager;</b>
+<b class="nc"><i>63</i>&nbsp;    myProject = project;</b>
+<b class="nc"><i>64</i>&nbsp;    myUiFacade = uiFacade;</b>
+<b class="nc"><i>65</i>&nbsp;  }</b>
+<i>66</i>&nbsp;
+<i>67</i>&nbsp;  @Override
+<i>68</i>&nbsp;  public GPAction withIcon(IconSize size) {
+<b class="nc"><i>69</i>&nbsp;    return new PasteAction(myProject, myUiFacade, myViewmanager, size, myUndoManager);</b>
+<i>70</i>&nbsp;  }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;  @Override
+<i>73</i>&nbsp;  public void actionPerformed(ActionEvent evt) {
+<b class="nc"><i>74</i>&nbsp;    if (calledFromAppleScreenMenu(evt)) {</b>
+<b class="nc"><i>75</i>&nbsp;      return;</b>
+<i>76</i>&nbsp;    }
+<b class="nc"><i>77</i>&nbsp;    ChartSelection selection = myViewmanager.getSelectedArtefacts();</b>
+<b class="nc"><i>78</i>&nbsp;    if (!selection.isEmpty()) {</b>
+<b class="nc"><i>79</i>&nbsp;      pasteInternalFlavor(selection);</b>
+<b class="nc"><i>80</i>&nbsp;      return;</b>
+<i>81</i>&nbsp;    }
+<b class="nc"><i>82</i>&nbsp;    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();</b>
+<b class="nc"><i>83</i>&nbsp;    if (clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)) {</b>
+<i>84</i>&nbsp;      try {
+<b class="nc"><i>85</i>&nbsp;        Object data = clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR);</b>
+<b class="nc"><i>86</i>&nbsp;        if (data instanceof InputStream == false) {</b>
+<b class="nc"><i>87</i>&nbsp;          return;</b>
+<i>88</i>&nbsp;        }
+<b class="nc"><i>89</i>&nbsp;        pasteExternalDocument((InputStream) data);</b>
+<b class="nc"><i>90</i>&nbsp;      } catch (Exception e) {</b>
+<b class="nc"><i>91</i>&nbsp;        e.printStackTrace();</b>
+<b class="nc"><i>92</i>&nbsp;      }</b>
+<i>93</i>&nbsp;    }
+<b class="nc"><i>94</i>&nbsp;  }</b>
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  private void pasteExternalDocument(InputStream data) {
+<i>97</i>&nbsp;    try {
+<b class="nc"><i>98</i>&nbsp;      byte[] bytes = ByteStreams.toByteArray(data);</b>
+<b class="nc"><i>99</i>&nbsp;      final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);</b>
+<b class="nc"><i>100</i>&nbsp;      File tmpFile = File.createTempFile(&quot;ganttPaste&quot;, &quot;&quot;);</b>
+<b class="nc"><i>101</i>&nbsp;      Files.write(tmpFile.toPath(), bytes);</b>
+<i>102</i>&nbsp;
+<b class="nc"><i>103</i>&nbsp;      Document document = bufferProject.getDocumentManager().getDocument(tmpFile.getAbsolutePath());</b>
+<b class="nc"><i>104</i>&nbsp;      document.read();</b>
+<b class="nc"><i>105</i>&nbsp;      tmpFile.delete();</b>
+<i>106</i>&nbsp;
+<b class="nc"><i>107</i>&nbsp;      HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();</b>
+<b class="nc"><i>108</i>&nbsp;      mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);</b>
+<b class="nc"><i>109</i>&nbsp;      ImporterFromGanttFile.importBufferProject(myProject, bufferProject, myUiFacade, mergeOption, null);</b>
+<b class="nc"><i>110</i>&nbsp;    } catch (Exception e) {</b>
+<b class="nc"><i>111</i>&nbsp;      e.printStackTrace();</b>
+<b class="nc"><i>112</i>&nbsp;    }</b>
+<b class="nc"><i>113</i>&nbsp;  }</b>
+<i>114</i>&nbsp;
+<i>115</i>&nbsp;  private void pasteInternalFlavor(final ChartSelection selection) {
+<b class="nc"><i>116</i>&nbsp;    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {</b>
+<i>117</i>&nbsp;      @Override
+<i>118</i>&nbsp;      public void run() {
+<b class="nc"><i>119</i>&nbsp;        myViewmanager.getActiveChart().paste(selection);</b>
+<b class="nc"><i>120</i>&nbsp;        selection.commitClipboardTransaction();</b>
+<i>121</i>&nbsp;      }
+<i>122</i>&nbsp;    });
+<b class="nc"><i>123</i>&nbsp;  }</b>
+<i>124</i>&nbsp;
+<i>125</i>&nbsp;  @Override
+<i>126</i>&nbsp;  public PasteAction asToolbarAction() {
+<b class="fc"><i>127</i>&nbsp;    final PasteAction result = new PasteAction(myProject, myUiFacade, myViewmanager, myUndoManager);</b>
+<b class="fc"><i>128</i>&nbsp;    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));</b>
+<b class="fc"><i>129</i>&nbsp;    this.addPropertyChangeListener(new PropertyChangeListener() {</b>
+<i>130</i>&nbsp;      @Override
+<i>131</i>&nbsp;      public void propertyChange(PropertyChangeEvent evt) {
+<b class="fc"><i>132</i>&nbsp;        if (&quot;enabled&quot;.equals(evt.getPropertyName())) {</b>
+<b class="nc"><i>133</i>&nbsp;          result.setEnabled((Boolean) evt.getNewValue());</b>
+<i>134</i>&nbsp;        }
+<b class="fc"><i>135</i>&nbsp;      }</b>
+<i>136</i>&nbsp;    });
+<b class="fc"><i>137</i>&nbsp;    result.setEnabled(this.isEnabled());</b>
+<b class="fc"><i>138</i>&nbsp;    return result;</b>
+<i>139</i>&nbsp;  }
+<i>140</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,227 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskDependencyConstraint</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.task.dependency</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskDependencyConstraint (net.sourceforge.ganttproject.task.dependency)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">TaskDependencyConstraint$Collision</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDependencyConstraint$DefaultCollision</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskDependencyConstraint$Type</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (7/ 10)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (8/ 10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (15/ 18)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.task.dependency;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Date;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;/**
+<i>26</i>&nbsp; * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 2:35:20 To change
+<i>27</i>&nbsp; * this template use File | Settings | File Templates.
+<i>28</i>&nbsp; */
+<i>29</i>&nbsp;public interface TaskDependencyConstraint extends Cloneable {
+<b class="fc"><i>30</i>&nbsp;  enum Type {</b>
+<b class="fc"><i>31</i>&nbsp;    startstart, finishstart, finishfinish, startfinish;</b>
+<b class="fc"><i>32</i>&nbsp;    private static final String[] PERSISTENT_VALUES = new String[] {</b>
+<i>33</i>&nbsp;      &quot;SS&quot;, &quot;FS&quot;, &quot;FF&quot;, &quot;SF&quot;
+<i>34</i>&nbsp;    };
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;    public String getPersistentValue() {
+<b class="nc"><i>37</i>&nbsp;      return String.valueOf(ordinal() + 1);</b>
+<i>38</i>&nbsp;    }
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;    public String getReadablePersistentValue() {
+<b class="fc"><i>41</i>&nbsp;      return PERSISTENT_VALUES[ordinal()];</b>
+<i>42</i>&nbsp;    }
+<i>43</i>&nbsp;    public static Type fromPersistentValue(String dependencyTypeAsString) {
+<b class="nc"><i>44</i>&nbsp;      return Type.values()[Integer.parseInt(dependencyTypeAsString) - 1];</b>
+<i>45</i>&nbsp;    }
+<i>46</i>&nbsp;    public static Type fromReadablePersistentValue(String str) {
+<b class="fc"><i>47</i>&nbsp;      for (int i = 0; i &lt; PERSISTENT_VALUES.length; i++) {</b>
+<b class="fc"><i>48</i>&nbsp;        if (PERSISTENT_VALUES[i].equals(str)) {</b>
+<b class="fc"><i>49</i>&nbsp;          return Type.values()[i];</b>
+<i>50</i>&nbsp;        }
+<i>51</i>&nbsp;      }
+<b class="nc"><i>52</i>&nbsp;      throw new IllegalArgumentException(&quot;Can&#39;t find constraint by persistent value=&quot; + str);</b>
+<i>53</i>&nbsp;    }
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  Type getType();
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;  void setTaskDependency(TaskDependency dependency);
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;  // boolean isFulfilled();
+<i>61</i>&nbsp;  // void fulfil();
+<i>62</i>&nbsp;  Collision getCollision();
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;  Collision getBackwardCollision(Date depedantStart);
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;  String getName();
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  TaskDependency.ActivityBinding getActivityBinding();
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;  interface Collision {
+<i>71</i>&nbsp;    GanttCalendar getAcceptableStart();
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;    int getVariation();
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;    int NO_VARIATION = 0;
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;    int START_EARLIER_VARIATION = -1;
+<i>78</i>&nbsp;
+<i>79</i>&nbsp;    int START_LATER_VARIATION = 1;
+<i>80</i>&nbsp;
+<i>81</i>&nbsp;    boolean isActive();
+<i>82</i>&nbsp;  }
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;  class DefaultCollision implements Collision {
+<i>85</i>&nbsp;    private final GanttCalendar myAcceptableStart;
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;    private final int myVariation;
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;    private final boolean isActive;
+<i>90</i>&nbsp;
+<b class="fc"><i>91</i>&nbsp;    public DefaultCollision(GanttCalendar myAcceptableStart, int myVariation, boolean isActive) {</b>
+<b class="fc"><i>92</i>&nbsp;      this.myAcceptableStart = myAcceptableStart;</b>
+<b class="fc"><i>93</i>&nbsp;      this.myVariation = myVariation;</b>
+<b class="fc"><i>94</i>&nbsp;      this.isActive = isActive;</b>
+<b class="fc"><i>95</i>&nbsp;    }</b>
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;    @Override
+<i>98</i>&nbsp;    public GanttCalendar getAcceptableStart() {
+<b class="fc"><i>99</i>&nbsp;      return myAcceptableStart;</b>
+<i>100</i>&nbsp;    }
+<i>101</i>&nbsp;
+<i>102</i>&nbsp;    @Override
+<i>103</i>&nbsp;    public int getVariation() {
+<b class="fc"><i>104</i>&nbsp;      return myVariation;</b>
+<i>105</i>&nbsp;    }
+<i>106</i>&nbsp;
+<i>107</i>&nbsp;    @Override
+<i>108</i>&nbsp;    public boolean isActive() {
+<b class="fc"><i>109</i>&nbsp;      return isActive;</b>
+<i>110</i>&nbsp;    }
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;  }
+<i>113</i>&nbsp;
+<i>114</i>&nbsp;  Object clone() throws CloneNotSupportedException;
+<i>115</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: LocaleOption</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.impex.msproject2</a> ]
+</div>
+
+<h1>Coverage Summary for Class: LocaleOption (biz.ganttproject.impex.msproject2)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocaleOption</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2010 Dmitry Barashev
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package biz.ganttproject.impex.msproject2;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.util.Arrays;
+<i>22</i>&nbsp;import java.util.Locale;
+<i>23</i>&nbsp;
+<i>24</i>&nbsp;import biz.ganttproject.core.option.DefaultEnumerationOption;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import net.sf.mpxj.mpx.MPXWriter;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;class LocaleOption extends DefaultEnumerationOption&lt;Object&gt; {
+<i>30</i>&nbsp;  private static final Locale[] LOCALES;
+<i>31</i>&nbsp;  private static final String[] LOCALE_DISPLAY_NAMES;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;  static {
+<b class="nc"><i>34</i>&nbsp;    MPXWriter writer = new MPXWriter();</b>
+<b class="nc"><i>35</i>&nbsp;    LOCALES = writer.getSupportedLocales();</b>
+<b class="nc"><i>36</i>&nbsp;    LOCALE_DISPLAY_NAMES = new String[LOCALES.length];</b>
+<b class="nc"><i>37</i>&nbsp;    for (int i = 0; i &lt; LOCALES.length; i++) {</b>
+<b class="nc"><i>38</i>&nbsp;      LOCALE_DISPLAY_NAMES[i] = LOCALES[i].getDisplayLanguage(GanttLanguage.getInstance().getLocale());</b>
+<i>39</i>&nbsp;    }
+<b class="nc"><i>40</i>&nbsp;    Arrays.sort(LOCALE_DISPLAY_NAMES);</b>
+<i>41</i>&nbsp;  }
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;  LocaleOption() {
+<b class="nc"><i>44</i>&nbsp;    super(&quot;impex.msproject.mpx.language&quot;, LOCALE_DISPLAY_NAMES);</b>
+<i>45</i>&nbsp;  }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  Locale getSelectedLocale() {
+<b class="nc"><i>48</i>&nbsp;    for (Locale l : LOCALES) {</b>
+<b class="nc"><i>49</i>&nbsp;      if (l.getDisplayLanguage(GanttLanguage.getInstance().getLocale()).equals(getValue())) {</b>
+<b class="nc"><i>50</i>&nbsp;        return l;</b>
+<i>51</i>&nbsp;      }
+<i>52</i>&nbsp;    }
+<b class="nc"><i>53</i>&nbsp;    return null;</b>
+<i>54</i>&nbsp;  }
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;  void setSelectedLocale(Locale locale) {
+<b class="nc"><i>57</i>&nbsp;    setValue(locale.getDisplayLanguage(GanttLanguage.getInstance().getLocale()));</b>
+<i>58</i>&nbsp;  }
+<i>59</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

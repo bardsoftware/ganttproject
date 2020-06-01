@@ -1,0 +1,448 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GPCloudStatusBar</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">biz.ganttproject.storage.cloud</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GPCloudStatusBar (biz.ganttproject.storage.cloud)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GPCloudStatusBar</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/ 9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22%
+  </span>
+  <span class="absValue">
+    (18/ 82)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GPCloudStatusBar$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPCloudStatusBar$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPCloudStatusBar$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GPCloudStatusBar$onDocumentChange$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (15/ 27)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (5/ 13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.8%
+  </span>
+  <span class="absValue">
+    (34/ 114)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2018 BarD Software s.r.o
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp;*/
+<i>19</i>&nbsp;package biz.ganttproject.storage.cloud
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.app.OptionElementData
+<i>22</i>&nbsp;import biz.ganttproject.app.OptionPaneBuilder
+<i>23</i>&nbsp;import biz.ganttproject.app.RootLocalizer
+<i>24</i>&nbsp;import biz.ganttproject.core.time.GanttCalendar
+<i>25</i>&nbsp;import biz.ganttproject.storage.*
+<i>26</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+<i>27</i>&nbsp;import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+<i>28</i>&nbsp;import javafx.application.Platform
+<i>29</i>&nbsp;import javafx.beans.value.ChangeListener
+<i>30</i>&nbsp;import javafx.beans.value.ObservableObjectValue
+<i>31</i>&nbsp;import javafx.event.ActionEvent
+<i>32</i>&nbsp;import javafx.geometry.Pos
+<i>33</i>&nbsp;import javafx.scene.Node
+<i>34</i>&nbsp;import javafx.scene.control.Button
+<i>35</i>&nbsp;import javafx.scene.control.Tooltip
+<i>36</i>&nbsp;import javafx.scene.layout.HBox
+<i>37</i>&nbsp;import javafx.scene.shape.Circle
+<i>38</i>&nbsp;import kotlinx.coroutines.Dispatchers
+<i>39</i>&nbsp;import kotlinx.coroutines.GlobalScope
+<i>40</i>&nbsp;import kotlinx.coroutines.launch
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.action.OkAction
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.document.Document
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.document.ProxyDocument
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.language.GanttLanguage
+<i>46</i>&nbsp;import org.controlsfx.control.decoration.Decorator
+<i>47</i>&nbsp;import org.controlsfx.control.decoration.GraphicDecoration
+<i>48</i>&nbsp;import java.util.*
+<i>49</i>&nbsp;import javax.swing.JOptionPane
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;private fun createWarningDecoration(): Node {
+<i>52</i>&nbsp;  return Circle(4.0).also {
+<i>53</i>&nbsp;    it.styleClass.add(&quot;decoration-warning&quot;)
+<i>54</i>&nbsp;    it.strokeWidth = 2.0
+<i>55</i>&nbsp;  }
+<i>56</i>&nbsp;}
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;/**
+<i>59</i>&nbsp; * @author dbarashev@bardsoftware.com
+<i>60</i>&nbsp; */
+<b class="fc"><i>61</i>&nbsp;class GPCloudStatusBar(private val observableDocument: ObservableObjectValue&lt;Document&gt;, private val uiFacade: UIFacade) {</b>
+<i>62</i>&nbsp;  private var onLatestVersionChange: ChangeListener&lt;LatestVersion&gt;? = null
+<b class="fc"><i>63</i>&nbsp;  private val btnLock = Button().also {</b>
+<b class="fc"><i>64</i>&nbsp;    it.isVisible = false</b>
+<b class="fc"><i>65</i>&nbsp;  }</b>
+<b class="fc"><i>66</i>&nbsp;  private val btnOffline = Button().also {</b>
+<b class="fc"><i>67</i>&nbsp;    it.isVisible = false</b>
+<b class="fc"><i>68</i>&nbsp;  }</b>
+<b class="fc"><i>69</i>&nbsp;  val lockPanel = HBox().also {</b>
+<b class="fc"><i>70</i>&nbsp;    it.styleClass.add(&quot;statusbar&quot;)</b>
+<b class="fc"><i>71</i>&nbsp;    it.children.addAll(btnOffline, btnLock)</b>
+<b class="fc"><i>72</i>&nbsp;  }</b>
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;  private lateinit var status: LockStatus
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;
+<b class="fc"><i>77</i>&nbsp;  init {</b>
+<b class="fc"><i>78</i>&nbsp;    observableDocument.addListener(this::onDocumentChange)</b>
+<b class="fc"><i>79</i>&nbsp;    btnOffline.addEventHandler(ActionEvent.ACTION) {</b>
+<b class="nc"><i>80</i>&nbsp;      showProperties()</b>
+<b class="nc"><i>81</i>&nbsp;    }</b>
+<b class="fc"><i>82</i>&nbsp;    btnLock.addEventHandler(ActionEvent.ACTION) {</b>
+<b class="nc"><i>83</i>&nbsp;      showProperties()</b>
+<b class="nc"><i>84</i>&nbsp;    }</b>
+<b class="fc"><i>85</i>&nbsp;  }</b>
+<i>86</i>&nbsp;
+<i>87</i>&nbsp;  private fun showProperties() {
+<b class="nc"><i>88</i>&nbsp;    this.observableDocument.get().apply {</b>
+<b class="nc"><i>89</i>&nbsp;      val onlineDocument = this.asOnlineDocument()</b>
+<b class="nc"><i>90</i>&nbsp;      if (onlineDocument is GPCloudDocument) {</b>
+<b class="nc"><i>91</i>&nbsp;        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument)</b>
+<i>92</i>&nbsp;      }
+<b class="nc"><i>93</i>&nbsp;    }</b>
+<b class="nc"><i>94</i>&nbsp;  }</b>
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;  private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
+<b class="fc"><i>97</i>&nbsp;    Platform.runLater {</b>
+<i>98</i>&nbsp;
+<b class="fc"><i>99</i>&nbsp;      val newDoc = if (newDocument is ProxyDocument) {</b>
+<b class="fc"><i>100</i>&nbsp;        newDocument.realDocument</b>
+<i>101</i>&nbsp;      } else {
+<b class="fc"><i>102</i>&nbsp;        newDocument</b>
+<i>103</i>&nbsp;      }
+<b class="fc"><i>104</i>&nbsp;      val oldDoc = if (oldDocument is ProxyDocument) {</b>
+<b class="fc"><i>105</i>&nbsp;        oldDocument.realDocument</b>
+<i>106</i>&nbsp;      } else {
+<b class="fc"><i>107</i>&nbsp;        oldDocument</b>
+<i>108</i>&nbsp;      }
+<i>109</i>&nbsp;
+<b class="fc"><i>110</i>&nbsp;      if (oldDoc is LockableDocument) {</b>
+<b class="nc"><i>111</i>&nbsp;        oldDoc.status.removeListener(this::onLockStatusChange)</b>
+<i>112</i>&nbsp;      }
+<b class="fc"><i>113</i>&nbsp;      if (oldDoc is OnlineDocument) {</b>
+<b class="nc"><i>114</i>&nbsp;        oldDoc.mode.removeListener(this::onOnlineModeChange)</b>
+<b class="nc"><i>115</i>&nbsp;        this.onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }</b>
+<b class="nc"><i>116</i>&nbsp;        this.onLatestVersionChange = null</b>
+<i>117</i>&nbsp;      }
+<i>118</i>&nbsp;
+<b class="fc"><i>119</i>&nbsp;      if (newDoc is LockableDocument) {</b>
+<b class="nc"><i>120</i>&nbsp;        newDoc.status.addListener(this::onLockStatusChange)</b>
+<b class="nc"><i>121</i>&nbsp;        this.btnLock.isVisible = true</b>
+<b class="nc"><i>122</i>&nbsp;        this.updateLockStatus(newDoc.status.value)</b>
+<i>123</i>&nbsp;      } else {
+<b class="fc"><i>124</i>&nbsp;        this.btnLock.isVisible = false</b>
+<b class="fc"><i>125</i>&nbsp;      }</b>
+<i>126</i>&nbsp;
+<b class="fc"><i>127</i>&nbsp;      if (newDoc is OnlineDocument) {</b>
+<b class="nc"><i>128</i>&nbsp;        newDoc.mode.addListener(this::onOnlineModeChange)</b>
+<b class="nc"><i>129</i>&nbsp;        this.btnOffline.isVisible = true</b>
+<b class="nc"><i>130</i>&nbsp;        this.updateOnlineMode(newDoc.mode.value)</b>
+<i>131</i>&nbsp;
+<b class="nc"><i>132</i>&nbsp;        this.onLatestVersionChange = ChangeListener { _, _, newValue -&gt;</b>
+<i>133</i>&nbsp;          handleLatestVersionChange(newDoc, newValue)
+<i>134</i>&nbsp;        }
+<b class="nc"><i>135</i>&nbsp;        newDoc.latestVersionProperty.addListener(this.onLatestVersionChange)</b>
+<i>136</i>&nbsp;      } else {
+<b class="fc"><i>137</i>&nbsp;        this.btnOffline.isVisible = false</b>
+<b class="fc"><i>138</i>&nbsp;      }</b>
+<b class="fc"><i>139</i>&nbsp;    }</b>
+<b class="fc"><i>140</i>&nbsp;  }</b>
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;  private fun onLockStatusChange(observable: Any, oldStatus: LockStatus, newStatus: LockStatus) {
+<b class="nc"><i>143</i>&nbsp;    Platform.runLater {</b>
+<i>144</i>&nbsp;      this.updateLockStatus(newStatus)
+<i>145</i>&nbsp;    }
+<b class="nc"><i>146</i>&nbsp;  }</b>
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;  private fun updateLockStatus(status: LockStatus) {
+<b class="nc"><i>149</i>&nbsp;    if (status.locked) {</b>
+<b class="nc"><i>150</i>&nbsp;      this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)</b>
+<b class="nc"><i>151</i>&nbsp;      val lockOwner = &quot;Locked by ${status.lockOwnerName}&quot;</b>
+<b class="nc"><i>152</i>&nbsp;      this.btnLock.text = if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) &quot;Locked&quot; else lockOwner</b>
+<b class="nc"><i>153</i>&nbsp;      this.btnLock.tooltip = Tooltip(lockOwner)</b>
+<i>154</i>&nbsp;    } else {
+<b class="nc"><i>155</i>&nbsp;      this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)</b>
+<b class="nc"><i>156</i>&nbsp;      this.btnLock.text = &quot;Not Locked&quot;</b>
+<b class="nc"><i>157</i>&nbsp;      this.btnLock.tooltip = Tooltip(&quot;Currently not locked&quot;)</b>
+<b class="nc"><i>158</i>&nbsp;    }</b>
+<i>159</i>&nbsp;
+<i>160</i>&nbsp;    //this.lockPanel.isDisable = status.locked &amp;&amp; status.lockOwnerId != GPCloudOptions.userId.value
+<b class="nc"><i>161</i>&nbsp;    this.status = status</b>
+<b class="nc"><i>162</i>&nbsp;  }</b>
+<i>163</i>&nbsp;
+<i>164</i>&nbsp;//  private fun onSwitchAction() {
+<i>165</i>&nbsp;//    if (this.isChangingSelected) {
+<i>166</i>&nbsp;//      return
+<i>167</i>&nbsp;//    }
+<i>168</i>&nbsp;//    val doc = this.observableDocument.get()
+<i>169</i>&nbsp;//    val realDoc = if (doc is ProxyDocument) {
+<i>170</i>&nbsp;//      doc.realDocument
+<i>171</i>&nbsp;//    } else {
+<i>172</i>&nbsp;//      doc
+<i>173</i>&nbsp;//    }
+<i>174</i>&nbsp;//    if (realDoc is LockableDocument) {
+<i>175</i>&nbsp;//      val progress = ProgressIndicator()
+<i>176</i>&nbsp;//      lockPanel.children.add(progress)
+<i>177</i>&nbsp;//      val isNowLocked = this.status.locked
+<i>178</i>&nbsp;//      val savedStatus = this.status
+<i>179</i>&nbsp;//      val future = realDoc.toggleLocked(duration = null)
+<i>180</i>&nbsp;//      future.thenAccept(this::updateLockStatus).handle { ok, ex -&gt;
+<i>181</i>&nbsp;//        lockPanel.children.remove(progress)
+<i>182</i>&nbsp;//        when {
+<i>183</i>&nbsp;//          ex != null -&gt; {
+<i>184</i>&nbsp;//            val msg = if (isNowLocked) {
+<i>185</i>&nbsp;//              &quot;Lock request failed&quot;
+<i>186</i>&nbsp;//            } else {
+<i>187</i>&nbsp;//              &quot;Unlock request failed&quot;
+<i>188</i>&nbsp;//            }
+<i>189</i>&nbsp;//            this.updateLockStatus(savedStatus)
+<i>190</i>&nbsp;//            GPLogger.log(Exception(msg, ex))
+<i>191</i>&nbsp;//          }
+<i>192</i>&nbsp;//          else -&gt; null
+<i>193</i>&nbsp;//        }
+<i>194</i>&nbsp;//      }
+<i>195</i>&nbsp;//    }
+<i>196</i>&nbsp;//  }
+<i>197</i>&nbsp;
+<i>198</i>&nbsp;//  private fun onMirrorToggle() {
+<i>199</i>&nbsp;//    val doc = this.observableDocument.get()
+<i>200</i>&nbsp;//    val realDoc = if (doc is ProxyDocument) {
+<i>201</i>&nbsp;//      doc.realDocument
+<i>202</i>&nbsp;//    } else {
+<i>203</i>&nbsp;//      doc
+<i>204</i>&nbsp;//    }
+<i>205</i>&nbsp;//    if (realDoc is OnlineDocument) {
+<i>206</i>&nbsp;//      when (realDoc.mode.value) {
+<i>207</i>&nbsp;//        OnlineDocumentMode.ONLINE_ONLY -&gt; realDoc.setMirrored(true)
+<i>208</i>&nbsp;//        OnlineDocumentMode.MIRROR -&gt; realDoc.setMirrored(false)
+<i>209</i>&nbsp;//      }
+<i>210</i>&nbsp;//    }
+<i>211</i>&nbsp;//  }
+<i>212</i>&nbsp;
+<i>213</i>&nbsp;  private fun onOnlineModeChange(observable: Any, oldValue: OnlineDocumentMode, newValue: OnlineDocumentMode) {
+<b class="nc"><i>214</i>&nbsp;    Platform.runLater {</b>
+<i>215</i>&nbsp;      this.updateOnlineMode(newValue)
+<i>216</i>&nbsp;    }
+<b class="nc"><i>217</i>&nbsp;  }</b>
+<i>218</i>&nbsp;
+<i>219</i>&nbsp;  private fun updateOnlineMode(mode: OnlineDocumentMode) {
+<b class="nc"><i>220</i>&nbsp;    when (mode) {</b>
+<i>221</i>&nbsp;      OnlineDocumentMode.ONLINE_ONLY -&gt; {
+<b class="nc"><i>222</i>&nbsp;        this.btnOffline.run {</b>
+<b class="nc"><i>223</i>&nbsp;          text = &quot;Online only&quot;</b>
+<b class="nc"><i>224</i>&nbsp;          graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)</b>
+<b class="nc"><i>225</i>&nbsp;          tooltip = Tooltip(&quot;Click to make offline mirror&quot;)</b>
+<b class="nc"><i>226</i>&nbsp;          Decorator.removeAllDecorations(this)</b>
+<b class="nc"><i>227</i>&nbsp;          isDisable = false</b>
+<b class="nc"><i>228</i>&nbsp;        }</b>
+<b class="nc"><i>229</i>&nbsp;        this.btnLock.isDisable = false</b>
+<i>230</i>&nbsp;      }
+<i>231</i>&nbsp;      OnlineDocumentMode.MIRROR -&gt; {
+<b class="nc"><i>232</i>&nbsp;        this.btnOffline.run {</b>
+<b class="nc"><i>233</i>&nbsp;          text = &quot;Available offline&quot;</b>
+<b class="nc"><i>234</i>&nbsp;          graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)</b>
+<b class="nc"><i>235</i>&nbsp;          tooltip = Tooltip(&quot;Available offline. Click to remove offline mirror&quot;)</b>
+<b class="nc"><i>236</i>&nbsp;          Decorator.removeAllDecorations(this)</b>
+<b class="nc"><i>237</i>&nbsp;          isDisable = false</b>
+<b class="nc"><i>238</i>&nbsp;        }</b>
+<b class="nc"><i>239</i>&nbsp;        this.btnLock.isDisable = false</b>
+<i>240</i>&nbsp;      }
+<i>241</i>&nbsp;      OnlineDocumentMode.OFFLINE_ONLY -&gt; {
+<b class="nc"><i>242</i>&nbsp;        this.btnOffline.run {</b>
+<b class="nc"><i>243</i>&nbsp;          text = &quot;Offline&quot;</b>
+<b class="nc"><i>244</i>&nbsp;          graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)</b>
+<b class="nc"><i>245</i>&nbsp;          tooltip = Tooltip(&quot;Offline only. Will try to sync when connected again&quot;)</b>
+<b class="nc"><i>246</i>&nbsp;          Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))</b>
+<b class="nc"><i>247</i>&nbsp;          isDisable = true</b>
+<b class="nc"><i>248</i>&nbsp;        }</b>
+<b class="nc"><i>249</i>&nbsp;        this.uiFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE, &quot;Connection lost and we&#39;re now working offline. We&#39;ll try to reconnect automatically.&quot;, arrayOf(OkAction.createVoidAction(&quot;ok&quot;)))</b>
+<b class="nc"><i>250</i>&nbsp;        this.btnLock.isDisable = true</b>
+<i>251</i>&nbsp;      }
+<b class="nc"><i>252</i>&nbsp;    }</b>
+<b class="nc"><i>253</i>&nbsp;  }</b>
+<i>254</i>&nbsp;
+<i>255</i>&nbsp;  private fun handleLatestVersionChange(doc: OnlineDocument, newValue: LatestVersion) {
+<b class="nc"><i>256</i>&nbsp;    OptionPaneBuilder&lt;Boolean&gt;().run {</b>
+<b class="nc"><i>257</i>&nbsp;      i18n = RootLocalizer.createWithRootKey(&quot;cloud.loadLatestVersion&quot;)</b>
+<b class="nc"><i>258</i>&nbsp;      styleClass = &quot;dlg-lock&quot;</b>
+<b class="nc"><i>259</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/cloud/GPCloudStorage.css&quot;)</b>
+<b class="nc"><i>260</i>&nbsp;      styleSheets.add(&quot;/biz/ganttproject/storage/StorageDialog.css&quot;)</b>
+<b class="nc"><i>261</i>&nbsp;      graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)</b>
+<b class="nc"><i>262</i>&nbsp;      elements = listOf(</b>
+<b class="nc"><i>263</i>&nbsp;          OptionElementData(&quot;reload&quot;, true, true),</b>
+<b class="nc"><i>264</i>&nbsp;          OptionElementData(&quot;ignore&quot;, false)</b>
+<i>265</i>&nbsp;      )
+<b class="nc"><i>266</i>&nbsp;      titleHelpString?.update(newValue.author, GanttLanguage.getInstance().formatDate(GanttCalendar.getInstance().apply {</b>
+<b class="nc"><i>267</i>&nbsp;        time = Date(newValue.timestamp)</b>
+<b class="nc"><i>268</i>&nbsp;      }))</b>
+<i>269</i>&nbsp;
+<b class="nc"><i>270</i>&nbsp;      showDialog { choice -&gt;</b>
+<i>271</i>&nbsp;        when (choice) {
+<i>272</i>&nbsp;          true -&gt; {
+<i>273</i>&nbsp;            GlobalScope.launch(Dispatchers.IO) {
+<i>274</i>&nbsp;              doc.fetch().update()
+<i>275</i>&nbsp;            }
+<i>276</i>&nbsp;          }
+<i>277</i>&nbsp;          false -&gt; {}
+<i>278</i>&nbsp;        }
+<i>279</i>&nbsp;      }
+<b class="nc"><i>280</i>&nbsp;    }</b>
+<b class="nc"><i>281</i>&nbsp;  }</b>
+<i>282</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

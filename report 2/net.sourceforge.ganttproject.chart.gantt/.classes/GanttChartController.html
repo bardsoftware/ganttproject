@@ -1,0 +1,398 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GanttChartController</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.chart.gantt</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GanttChartController (net.sourceforge.ganttproject.chart.gantt)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GanttChartController</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (8/ 20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.5%
+  </span>
+  <span class="absValue">
+    (32/ 81)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GanttChartController$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttChartController$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">GanttChartController$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    29.6%
+  </span>
+  <span class="absValue">
+    (8/ 27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.4%
+  </span>
+  <span class="absValue">
+    (32/ 93)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool. License: GPL3
+<i>3</i>&nbsp;Copyright (C) 2011 GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.chart.gantt;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+<i>22</i>&nbsp;import com.google.common.collect.Lists;
+<i>23</i>&nbsp;import net.java.balloontip.BalloonTip;
+<i>24</i>&nbsp;import net.java.balloontip.CustomBalloonTip;
+<i>25</i>&nbsp;import net.java.balloontip.styles.ToolTipBalloonStyle;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.AbstractChartImplementation;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.ChartComponentBase;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.ChartImplementation;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.GanttExportSettings;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.GanttGraphicArea;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.GanttTree2;
+<i>32</i>&nbsp;import net.sourceforge.ganttproject.IGanttProject;
+<i>33</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModel;
+<i>34</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelBase;
+<i>35</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartModelImpl;
+<i>36</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartSelection;
+<i>37</i>&nbsp;import net.sourceforge.ganttproject.chart.ChartViewState;
+<i>38</i>&nbsp;import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
+<i>39</i>&nbsp;import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
+<i>40</i>&nbsp;import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
+<i>41</i>&nbsp;import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
+<i>42</i>&nbsp;import net.sourceforge.ganttproject.chart.item.ChartItem;
+<i>43</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
+<i>44</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
+<i>45</i>&nbsp;import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
+<i>46</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
+<i>47</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
+<i>48</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
+<i>49</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
+<i>50</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
+<i>51</i>&nbsp;import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
+<i>52</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+<i>53</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>54</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>55</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>56</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>57</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+<i>58</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
+<i>59</i>&nbsp;import org.eclipse.core.runtime.IStatus;
+<i>60</i>&nbsp;import org.eclipse.core.runtime.Status;
+<i>61</i>&nbsp;import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;import javax.swing.*;
+<i>64</i>&nbsp;import java.awt.*;
+<i>65</i>&nbsp;import java.awt.event.MouseEvent;
+<i>66</i>&nbsp;import java.awt.event.MouseListener;
+<i>67</i>&nbsp;import java.awt.event.MouseMotionListener;
+<i>68</i>&nbsp;import java.util.List;
+<i>69</i>&nbsp;
+<b class="nc"><i>70</i>&nbsp;public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {</b>
+<i>71</i>&nbsp;  private final TaskManager myTaskManager;
+<i>72</i>&nbsp;  private final ChartModelImpl myChartModel;
+<i>73</i>&nbsp;  private final ChartViewState myChartViewState;
+<i>74</i>&nbsp;  private final GanttTree2 myTree;
+<i>75</i>&nbsp;  private final MouseListenerImpl myMouseListener;
+<i>76</i>&nbsp;  private final MouseMotionListenerImpl myMouseMotionListener;
+<i>77</i>&nbsp;  protected CustomBalloonTip myTooltip;
+<i>78</i>&nbsp;  private final TaskSelectionManager mySelectionManager;
+<i>79</i>&nbsp;
+<i>80</i>&nbsp;  public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
+<i>81</i>&nbsp;      ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState) {
+<b class="fc"><i>82</i>&nbsp;    super(project, uiFacade, chartModel, chartComponent);</b>
+<b class="fc"><i>83</i>&nbsp;    myTree = tree;</b>
+<b class="fc"><i>84</i>&nbsp;    myChartViewState = chartViewState;</b>
+<b class="fc"><i>85</i>&nbsp;    myTaskManager = project.getTaskManager();</b>
+<b class="fc"><i>86</i>&nbsp;    myChartModel = chartModel;</b>
+<b class="fc"><i>87</i>&nbsp;    myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);</b>
+<b class="fc"><i>88</i>&nbsp;    myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);</b>
+<b class="fc"><i>89</i>&nbsp;    mySelection = new GanttChartSelection(project, tree, myTaskManager);</b>
+<b class="fc"><i>90</i>&nbsp;    mySelectionManager = uiFacade.getTaskSelectionManager();</b>
+<b class="fc"><i>91</i>&nbsp;  }</b>
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;  private TaskManager getTaskManager() {
+<b class="nc"><i>94</i>&nbsp;    return myTaskManager;</b>
+<i>95</i>&nbsp;  }
+<i>96</i>&nbsp;
+<i>97</i>&nbsp;  private ChartViewState getViewState() {
+<b class="fc"><i>98</i>&nbsp;    return myChartViewState;</b>
+<i>99</i>&nbsp;  }
+<i>100</i>&nbsp;
+<i>101</i>&nbsp;  @Override
+<i>102</i>&nbsp;  public void beginChangeTaskEndInteraction(MouseEvent initiatingEvent, TaskBoundaryChartItem taskBoundary) {
+<b class="nc"><i>103</i>&nbsp;    setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(super.getChartModel(),</b>
+<b class="nc"><i>104</i>&nbsp;        getTaskManager()), getUIFacade(),</b>
+<b class="nc"><i>105</i>&nbsp;        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));</b>
+<b class="nc"><i>106</i>&nbsp;    setCursor(GanttGraphicArea.E_RESIZE_CURSOR);</b>
+<b class="nc"><i>107</i>&nbsp;  }</b>
+<i>108</i>&nbsp;
+<i>109</i>&nbsp;  @Override
+<i>110</i>&nbsp;  public void beginChangeTaskStartInteraction(MouseEvent e, TaskBoundaryChartItem taskBoundary) {
+<b class="nc"><i>111</i>&nbsp;    setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary, new TimelineFacadeImpl(getChartModel(),</b>
+<b class="nc"><i>112</i>&nbsp;        getTaskManager()), getUIFacade(),</b>
+<b class="nc"><i>113</i>&nbsp;        getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));</b>
+<b class="nc"><i>114</i>&nbsp;    setCursor(GanttGraphicArea.W_RESIZE_CURSOR);</b>
+<b class="nc"><i>115</i>&nbsp;  }</b>
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;  @Override
+<i>118</i>&nbsp;  public void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress) {
+<b class="nc"><i>119</i>&nbsp;    setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress, new TimelineFacadeImpl(getChartModel(),</b>
+<b class="nc"><i>120</i>&nbsp;        getTaskManager()), new TaskChartModelFacade() {</b>
+<i>121</i>&nbsp;      @Override
+<i>122</i>&nbsp;      public List&lt;Rectangle&gt; getTaskRectangles(Task t) {
+<b class="nc"><i>123</i>&nbsp;        return TaskRendererImpl2.getTaskRectangles(t, myChartModel);</b>
+<i>124</i>&nbsp;      }
+<b class="nc"><i>125</i>&nbsp;    }, getUIFacade()));</b>
+<b class="nc"><i>126</i>&nbsp;    setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);</b>
+<b class="nc"><i>127</i>&nbsp;  }</b>
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;  @Override
+<i>130</i>&nbsp;  public void beginDrawDependencyInteraction(MouseEvent initiatingEvent, TaskRegularAreaChartItem taskArea) {
+<b class="nc"><i>131</i>&nbsp;    setActiveInteraction(new DrawDependencyInteraction(initiatingEvent, taskArea, new TimelineFacadeImpl(</b>
+<b class="nc"><i>132</i>&nbsp;        getChartModel(), getTaskManager()), new DrawDependencyInteraction.ChartModelFacade() {</b>
+<i>133</i>&nbsp;      @Override
+<i>134</i>&nbsp;      public Task findTaskUnderMousePointer(int xpos, int ypos) {
+<b class="nc"><i>135</i>&nbsp;        ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);</b>
+<b class="nc"><i>136</i>&nbsp;        return chartItem == null ? null : chartItem.getTask();</b>
+<i>137</i>&nbsp;      }
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;      @Override
+<i>140</i>&nbsp;      public Hardness getDefaultHardness() {
+<b class="nc"><i>141</i>&nbsp;        return TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue());</b>
+<i>142</i>&nbsp;      }
+<b class="nc"><i>143</i>&nbsp;    }, getUIFacade(), getTaskManager().getDependencyCollection()));</b>
+<i>144</i>&nbsp;
+<b class="nc"><i>145</i>&nbsp;  }</b>
+<i>146</i>&nbsp;
+<i>147</i>&nbsp;  @Override
+<i>148</i>&nbsp;  public void beginMoveTaskInteractions(MouseEvent e, List&lt;Task&gt; tasks) {
+<b class="nc"><i>149</i>&nbsp;    setActiveInteraction(new MoveTaskInteractions(e, tasks, new TimelineFacadeImpl(getChartModel(), getTaskManager()),</b>
+<b class="nc"><i>150</i>&nbsp;        getUIFacade(), getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));</b>
+<b class="nc"><i>151</i>&nbsp;  }</b>
+<i>152</i>&nbsp;
+<i>153</i>&nbsp;  @Override
+<i>154</i>&nbsp;  public void paintChart(Graphics g) {
+<b class="fc"><i>155</i>&nbsp;    synchronized (ChartModelBase.STATIC_MUTEX) {</b>
+<i>156</i>&nbsp;      // GanttGraphicArea.super.paintComponent(g);
+<b class="fc"><i>157</i>&nbsp;      ChartModel model = myChartModel;</b>
+<b class="fc"><i>158</i>&nbsp;      model.setBottomUnitWidth(getViewState().getBottomUnitWidth());</b>
+<b class="fc"><i>159</i>&nbsp;      model.setRowHeight(myTree.getRowHeight());</b>
+<b class="fc"><i>160</i>&nbsp;      model.setTopTimeUnit(getViewState().getTopTimeUnit());</b>
+<b class="fc"><i>161</i>&nbsp;      model.setBottomTimeUnit(getViewState().getBottomTimeUnit());</b>
+<b class="fc"><i>162</i>&nbsp;      VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();</b>
+<b class="fc"><i>163</i>&nbsp;      List&lt;Task&gt; visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);</b>
+<b class="fc"><i>164</i>&nbsp;      model.setVisibleTasks(visibleTasks);</b>
+<b class="fc"><i>165</i>&nbsp;      myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());</b>
+<b class="fc"><i>166</i>&nbsp;      model.paint(g);</b>
+<b class="fc"><i>167</i>&nbsp;      if (getActiveInteraction() != null) {</b>
+<b class="nc"><i>168</i>&nbsp;        getActiveInteraction().paint(g);</b>
+<i>169</i>&nbsp;      }
+<b class="fc"><i>170</i>&nbsp;    }</b>
+<b class="fc"><i>171</i>&nbsp;  }</b>
+<i>172</i>&nbsp;
+<i>173</i>&nbsp;  @Override
+<i>174</i>&nbsp;  public MouseListener getMouseListener() {
+<b class="fc"><i>175</i>&nbsp;    return myMouseListener;</b>
+<i>176</i>&nbsp;  }
+<i>177</i>&nbsp;
+<i>178</i>&nbsp;  @Override
+<i>179</i>&nbsp;  public MouseMotionListener getMouseMotionListener() {
+<b class="fc"><i>180</i>&nbsp;    return myMouseMotionListener;</b>
+<i>181</i>&nbsp;  }
+<i>182</i>&nbsp;
+<i>183</i>&nbsp;  @Override
+<i>184</i>&nbsp;  public IStatus canPaste(ChartSelection selection) {
+<b class="nc"><i>185</i>&nbsp;    return Status.OK_STATUS;</b>
+<i>186</i>&nbsp;  }
+<i>187</i>&nbsp;
+<i>188</i>&nbsp;  private GanttChartSelection mySelection;
+<i>189</i>&nbsp;
+<i>190</i>&nbsp;  @Override
+<i>191</i>&nbsp;  public ChartSelection getSelection() {
+<b class="fc"><i>192</i>&nbsp;    return mySelection;</b>
+<i>193</i>&nbsp;  }
+<i>194</i>&nbsp;
+<i>195</i>&nbsp;  @Override
+<i>196</i>&nbsp;  public void paste(ChartSelection selection) {
+<b class="nc"><i>197</i>&nbsp;    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();</b>
+<b class="nc"><i>198</i>&nbsp;    if (selectedNodes.length &gt; 1) {</b>
+<b class="nc"><i>199</i>&nbsp;      return;</b>
+<i>200</i>&nbsp;    }
+<b class="nc"><i>201</i>&nbsp;    DefaultMutableTreeTableNode pasteRoot = selectedNodes.length == 0 ? myTree.getRoot() : selectedNodes[0];</b>
+<b class="nc"><i>202</i>&nbsp;    for (Task t : mySelection.paste((Task)pasteRoot.getUserObject())) {</b>
+<b class="nc"><i>203</i>&nbsp;      mySelectionManager.addTask(t);</b>
+<b class="nc"><i>204</i>&nbsp;    }</b>
+<b class="nc"><i>205</i>&nbsp;  }</b>
+<i>206</i>&nbsp;
+<i>207</i>&nbsp;  public Task findTaskUnderPointer(int xpos, int ypos) {
+<b class="nc"><i>208</i>&nbsp;    ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);</b>
+<b class="nc"><i>209</i>&nbsp;    return chartItem == null ? null : chartItem.getTask();</b>
+<i>210</i>&nbsp;  }
+<i>211</i>&nbsp;
+<i>212</i>&nbsp;  public ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
+<b class="fc"><i>213</i>&nbsp;    ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);</b>
+<b class="fc"><i>214</i>&nbsp;    return result;</b>
+<i>215</i>&nbsp;  }
+<i>216</i>&nbsp;
+<i>217</i>&nbsp;  @Override
+<i>218</i>&nbsp;  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
+<b class="nc"><i>219</i>&nbsp;    final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();</b>
+<b class="nc"><i>220</i>&nbsp;    List&lt;Task&gt; visibleTasks = Lists.newArrayList();</b>
+<b class="nc"><i>221</i>&nbsp;    for (Task t : getTaskManager().getTaskHierarchy().getDeepNestedTasks(getTaskManager().getRootTask())) {</b>
+<b class="nc"><i>222</i>&nbsp;      if (taskTree.isVisible(t)) {</b>
+<b class="nc"><i>223</i>&nbsp;        visibleTasks.add(t);</b>
+<i>224</i>&nbsp;      }
+<i>225</i>&nbsp;    }
+<b class="nc"><i>226</i>&nbsp;    settings.setVisibleTasks(visibleTasks);</b>
+<b class="nc"><i>227</i>&nbsp;    super.buildImage(settings, imageVisitor);</b>
+<b class="nc"><i>228</i>&nbsp;  }</b>
+<i>229</i>&nbsp;
+<i>230</i>&nbsp;  void showTooltip(final int x, final int y, final String text) {
+<b class="nc"><i>231</i>&nbsp;    if (myTooltip == null) {</b>
+<b class="nc"><i>232</i>&nbsp;      scheduleTask(new Runnable() {</b>
+<i>233</i>&nbsp;        @Override
+<i>234</i>&nbsp;        public void run() {
+<b class="nc"><i>235</i>&nbsp;          java.awt.Rectangle offset = new java.awt.Rectangle(x-30, y, 0, 0);</b>
+<b class="nc"><i>236</i>&nbsp;          myTooltip = new CustomBalloonTip(getChartComponent(), new JLabel(text), offset,</b>
+<b class="nc"><i>237</i>&nbsp;              new ToolTipBalloonStyle(Color.YELLOW, Color.YELLOW.darker()), BalloonTip.Orientation.LEFT_ABOVE, BalloonTip.AttachLocation.ALIGNED, 20, 20, true);</b>
+<b class="nc"><i>238</i>&nbsp;          myTooltip.setCloseButton(null);</b>
+<b class="nc"><i>239</i>&nbsp;          myTooltip.setVisible(true);</b>
+<i>240</i>&nbsp;        }
+<i>241</i>&nbsp;      });
+<i>242</i>&nbsp;    }
+<b class="nc"><i>243</i>&nbsp;  }</b>
+<i>244</i>&nbsp;
+<i>245</i>&nbsp;  public void hideTooltip() {
+<b class="fc"><i>246</i>&nbsp;    if (myTooltip != null) {</b>
+<b class="nc"><i>247</i>&nbsp;      myTooltip.setVisible(false);</b>
+<b class="nc"><i>248</i>&nbsp;      myTooltip = null;</b>
+<i>249</i>&nbsp;    }
+<b class="fc"><i>250</i>&nbsp;  }</b>
+<i>251</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

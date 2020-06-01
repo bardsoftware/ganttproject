@@ -1,0 +1,285 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TaskActionBase</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject.action.task</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TaskActionBase (net.sourceforge.ganttproject.action.task)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskActionBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.6%
+  </span>
+  <span class="absValue">
+    (11/ 14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.6%
+  </span>
+  <span class="absValue">
+    (31/ 38)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TaskActionBase$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/ 3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">TaskActionBase$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/ 6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    77.8%
+  </span>
+  <span class="absValue">
+    (14/ 18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.7%
+  </span>
+  <span class="absValue">
+    (37/ 47)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;GanttProject is an opensource project management tool.
+<i>3</i>&nbsp;Copyright (C) 2002-2011 Dmitry Barashev, GanttProject Team
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;This program is free software; you can redistribute it and/or
+<i>6</i>&nbsp;modify it under the terms of the GNU General Public License
+<i>7</i>&nbsp;as published by the Free Software Foundation; either version 3
+<i>8</i>&nbsp;of the License, or (at your option) any later version.
+<i>9</i>&nbsp;
+<i>10</i>&nbsp;This program is distributed in the hope that it will be useful,
+<i>11</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>12</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>13</i>&nbsp;GNU General Public License for more details.
+<i>14</i>&nbsp;
+<i>15</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>16</i>&nbsp;along with this program; if not, write to the Free Software
+<i>17</i>&nbsp;Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject.action.task;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import net.sourceforge.ganttproject.GanttTree2;
+<i>22</i>&nbsp;import net.sourceforge.ganttproject.action.ActionDelegate;
+<i>23</i>&nbsp;import net.sourceforge.ganttproject.action.ActionStateChangedListener;
+<i>24</i>&nbsp;import net.sourceforge.ganttproject.action.GPAction;
+<i>25</i>&nbsp;import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
+<i>26</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>27</i>&nbsp;import net.sourceforge.ganttproject.task.Task;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.task.TaskManager;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.task.TaskSelectionManager;
+<i>31</i>&nbsp;import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;import java.awt.event.ActionEvent;
+<i>34</i>&nbsp;import java.util.ArrayList;
+<i>35</i>&nbsp;import java.util.Collections;
+<i>36</i>&nbsp;import java.util.Comparator;
+<i>37</i>&nbsp;import java.util.List;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;public abstract class TaskActionBase extends GPAction implements TaskSelectionManager.Listener, ActionDelegate {
+<b class="fc"><i>40</i>&nbsp;  private final List&lt;ActionStateChangedListener&gt; myListeners = new ArrayList&lt;ActionStateChangedListener&gt;();</b>
+<i>41</i>&nbsp;  private final TaskManager myTaskManager;
+<i>42</i>&nbsp;  private final UIFacade myUIFacade;
+<i>43</i>&nbsp;  private final TaskSelectionManager mySelectionManager;
+<i>44</i>&nbsp;  private final GanttTree2 myTree;
+<i>45</i>&nbsp;  private List&lt;Task&gt; mySelection;
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;  protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+<i>48</i>&nbsp;      UIFacade uiFacade, GanttTree2 tree) {
+<b class="fc"><i>49</i>&nbsp;    this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);</b>
+<b class="fc"><i>50</i>&nbsp;  }</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;  protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
+<i>53</i>&nbsp;      UIFacade uiFacade, GanttTree2 tree, IconSize size) {
+<b class="fc"><i>54</i>&nbsp;    super(name, size);</b>
+<b class="fc"><i>55</i>&nbsp;    myTaskManager = taskManager;</b>
+<b class="fc"><i>56</i>&nbsp;    mySelectionManager = selectionManager;</b>
+<b class="fc"><i>57</i>&nbsp;    myUIFacade = uiFacade;</b>
+<b class="fc"><i>58</i>&nbsp;    myTree = tree;</b>
+<b class="fc"><i>59</i>&nbsp;    selectionManager.addSelectionListener(this);</b>
+<b class="fc"><i>60</i>&nbsp;    selectionChanged(selectionManager.getSelectedTasks());</b>
+<b class="fc"><i>61</i>&nbsp;  }</b>
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;  @Override
+<i>64</i>&nbsp;  public void addStateChangedListener(ActionStateChangedListener l) {
+<b class="nc"><i>65</i>&nbsp;    myListeners.add(l);</b>
+<b class="nc"><i>66</i>&nbsp;  }</b>
+<i>67</i>&nbsp;
+<i>68</i>&nbsp;  @Override
+<i>69</i>&nbsp;  public void actionPerformed(ActionEvent e) {
+<b class="fc"><i>70</i>&nbsp;    if (calledFromAppleScreenMenu(e)) {</b>
+<b class="nc"><i>71</i>&nbsp;      return;</b>
+<i>72</i>&nbsp;    }
+<b class="fc"><i>73</i>&nbsp;    final List&lt;Task&gt; selection = new ArrayList&lt;Task&gt;(mySelection);</b>
+<b class="fc"><i>74</i>&nbsp;    Collections.sort(selection, new Comparator&lt;Task&gt;() {</b>
+<b class="fc"><i>75</i>&nbsp;      private final TaskContainmentHierarchyFacade myTaskHierarchy = getTaskManager().getTaskHierarchy();</b>
+<i>76</i>&nbsp;      @Override
+<i>77</i>&nbsp;      public int compare(Task o1, Task o2) {
+<b class="nc"><i>78</i>&nbsp;        return myTaskHierarchy.compareDocumentOrder(o1, o2);</b>
+<i>79</i>&nbsp;      }
+<i>80</i>&nbsp;    });
+<b class="fc"><i>81</i>&nbsp;    if (isEnabled() &amp;&amp; askUserPermission(selection)) {</b>
+<b class="fc"><i>82</i>&nbsp;      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {</b>
+<i>83</i>&nbsp;        @Override
+<i>84</i>&nbsp;        public void run() {
+<i>85</i>&nbsp;          try {
+<b class="fc"><i>86</i>&nbsp;            TaskActionBase.this.run(selection);</b>
+<b class="nc"><i>87</i>&nbsp;          } catch (Exception e) {</b>
+<b class="nc"><i>88</i>&nbsp;            getUIFacade().showErrorDialog(e);</b>
+<b class="fc"><i>89</i>&nbsp;          }</b>
+<b class="fc"><i>90</i>&nbsp;        }</b>
+<i>91</i>&nbsp;      });
+<i>92</i>&nbsp;    }
+<b class="fc"><i>93</i>&nbsp;  }</b>
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;  /**
+<i>96</i>&nbsp;   * @param selection
+<i>97</i>&nbsp;   *          of tasks for which permission is required
+<i>98</i>&nbsp;   * @return true if the operation is accepted by the user
+<i>99</i>&nbsp;   */
+<i>100</i>&nbsp;  protected boolean askUserPermission(List&lt;Task&gt; selection) {
+<i>101</i>&nbsp;    // Accept operation by default
+<b class="nc"><i>102</i>&nbsp;    return true;</b>
+<i>103</i>&nbsp;  }
+<i>104</i>&nbsp;
+<i>105</i>&nbsp;  @Override
+<i>106</i>&nbsp;  public void selectionChanged(List&lt;Task&gt; currentSelection) {
+<b class="fc"><i>107</i>&nbsp;    setEnabled(isEnabled(currentSelection));</b>
+<b class="fc"><i>108</i>&nbsp;    mySelection = currentSelection;</b>
+<b class="fc"><i>109</i>&nbsp;  }</b>
+<i>110</i>&nbsp;
+<i>111</i>&nbsp;  @Override
+<i>112</i>&nbsp;  public void setEnabled(boolean newValue) {
+<b class="fc"><i>113</i>&nbsp;    super.setEnabled(newValue);</b>
+<b class="fc"><i>114</i>&nbsp;    for (ActionStateChangedListener l : myListeners) {</b>
+<b class="nc"><i>115</i>&nbsp;      l.actionStateChanged();</b>
+<b class="nc"><i>116</i>&nbsp;    }</b>
+<b class="fc"><i>117</i>&nbsp;  }</b>
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;  @Override
+<i>120</i>&nbsp;  public void userInputConsumerChanged(Object newConsumer) {
+<b class="fc"><i>121</i>&nbsp;  }</b>
+<i>122</i>&nbsp;
+<i>123</i>&nbsp;  protected TaskManager getTaskManager() {
+<b class="fc"><i>124</i>&nbsp;    return myTaskManager;</b>
+<i>125</i>&nbsp;  }
+<i>126</i>&nbsp;
+<i>127</i>&nbsp;  protected TaskSelectionManager getSelectionManager() {
+<b class="fc"><i>128</i>&nbsp;    return mySelectionManager;</b>
+<i>129</i>&nbsp;  }
+<i>130</i>&nbsp;
+<i>131</i>&nbsp;  protected UIFacade getUIFacade() {
+<b class="fc"><i>132</i>&nbsp;    return myUIFacade;</b>
+<i>133</i>&nbsp;  }
+<i>134</i>&nbsp;
+<i>135</i>&nbsp;  protected GanttTree2 getTree() {
+<b class="fc"><i>136</i>&nbsp;    return myTree;</b>
+<i>137</i>&nbsp;  }
+<i>138</i>&nbsp;
+<i>139</i>&nbsp;  protected TaskTreeUIFacade getTreeFacade() {
+<b class="nc"><i>140</i>&nbsp;    return myTree;</b>
+<i>141</i>&nbsp;  }
+<i>142</i>&nbsp;
+<i>143</i>&nbsp;  protected void forwardScheduling() throws TaskDependencyException {
+<i>144</i>&nbsp;    // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if
+<i>145</i>&nbsp;    // this indeed is the case
+<i>146</i>&nbsp;    // // TODO Find out which chart is opened and only reset that one (maybe add
+<i>147</i>&nbsp;    // a resetChart to UIFacade?)
+<i>148</i>&nbsp;    // myUIFacade.getGanttChart().reset();
+<i>149</i>&nbsp;    // myUIFacade.getResourceChart().reset();
+<b class="fc"><i>150</i>&nbsp;    myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();</b>
+<b class="fc"><i>151</i>&nbsp;    getUIFacade().getTaskTree().getTreeComponent().repaint();</b>
+<b class="fc"><i>152</i>&nbsp;  }</b>
+<i>153</i>&nbsp;
+<i>154</i>&nbsp;  protected abstract boolean isEnabled(List&lt;Task&gt; selection);
+<i>155</i>&nbsp;
+<i>156</i>&nbsp;  protected abstract void run(List&lt;Task&gt; selection) throws Exception;
+<i>157</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>

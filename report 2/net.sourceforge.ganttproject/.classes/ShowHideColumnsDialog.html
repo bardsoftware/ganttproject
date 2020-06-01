@@ -1,0 +1,163 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ShowHideColumnsDialog</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sourceforge.ganttproject</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ShowHideColumnsDialog (net.sourceforge.ganttproject)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShowHideColumnsDialog</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 8)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ShowHideColumnsDialog$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 10)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp;Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+<i>3</i>&nbsp;
+<i>4</i>&nbsp;This file is part of GanttProject, an opensource project management tool.
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;GanttProject is free software: you can redistribute it and/or modify 
+<i>7</i>&nbsp;it under the terms of the GNU General Public License as published by
+<i>8</i>&nbsp; the Free Software Foundation, either version 3 of the License, or
+<i>9</i>&nbsp; (at your option) any later version.
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;GanttProject is distributed in the hope that it will be useful,
+<i>12</i>&nbsp;but WITHOUT ANY WARRANTY; without even the implied warranty of
+<i>13</i>&nbsp;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<i>14</i>&nbsp;GNU General Public License for more details.
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;You should have received a copy of the GNU General Public License
+<i>17</i>&nbsp;along with GanttProject.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<i>18</i>&nbsp; */
+<i>19</i>&nbsp;package net.sourceforge.ganttproject;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.awt.event.ActionEvent;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;import javax.swing.Action;
+<i>24</i>&nbsp;import javax.swing.JComponent;
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;import biz.ganttproject.core.table.ColumnList;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;import net.sourceforge.ganttproject.action.OkAction;
+<i>29</i>&nbsp;import net.sourceforge.ganttproject.gui.UIFacade;
+<i>30</i>&nbsp;import net.sourceforge.ganttproject.gui.tableView.ColumnManagerPanel;
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;public class ShowHideColumnsDialog {
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;  private final UIFacade myUIfacade;
+<i>35</i>&nbsp;  private final CustomPropertyManager myManager;
+<i>36</i>&nbsp;  private final ColumnList myVisibleFields;
+<i>37</i>&nbsp;
+<b class="nc"><i>38</i>&nbsp;  public ShowHideColumnsDialog(UIFacade facade, ColumnList visibleFields, CustomPropertyManager manager) {</b>
+<b class="nc"><i>39</i>&nbsp;    myUIfacade = facade;</b>
+<b class="nc"><i>40</i>&nbsp;    myVisibleFields = visibleFields;</b>
+<b class="nc"><i>41</i>&nbsp;    myManager = manager;</b>
+<i>42</i>&nbsp;  }
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;  public void show() {
+<b class="nc"><i>45</i>&nbsp;    final ColumnManagerPanel panel = new ColumnManagerPanel(myManager, myVisibleFields);</b>
+<b class="nc"><i>46</i>&nbsp;    JComponent component = (JComponent) panel.createComponent();</b>
+<b class="nc"><i>47</i>&nbsp;    myUIfacade.createDialog(component, new Action[] { new OkAction() {</b>
+<i>48</i>&nbsp;      @Override
+<i>49</i>&nbsp;      public void actionPerformed(ActionEvent e) {
+<b class="nc"><i>50</i>&nbsp;        panel.commitCustomPropertyEdit();</b>
+<i>51</i>&nbsp;      }
+<b class="nc"><i>52</i>&nbsp;    } }, &quot;Custom Fields Manager&quot;).show();</b>
+<i>53</i>&nbsp;  }
+<i>54</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-06-01 19:39</div>
+</div>
+</body>
+</html>
