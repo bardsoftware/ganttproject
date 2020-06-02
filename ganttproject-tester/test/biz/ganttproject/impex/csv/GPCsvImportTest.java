@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv;
 
+import biz.ganttproject.app.DefaultLocalizer;
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -38,6 +40,8 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.ByteArrayInputStream;
@@ -100,6 +104,14 @@ public class GPCsvImportTest extends TestCase {
         return GanttLanguage.getInstance().getText(key);
       }
     });
+    InternationalizationKt.setRootLocalizer(new DefaultLocalizer() {
+      @Nullable
+      @Override
+      public String formatTextOrNull(@NotNull String key, @NotNull Object... args) {
+        return key;
+      }
+    });
+
     GanttLanguage.getInstance().setShortDateFormat(new SimpleDateFormat("dd/MM/yy"));
   }
 
@@ -139,12 +151,22 @@ public class GPCsvImportTest extends TestCase {
     HumanResourceManager resourceManager = builder.getResourceManager();
     RoleManager roleManager = new RoleManagerImpl();
 
-    String header1 = "Name,Begin date,End date,Assignments";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.ASSIGNMENTS);
     String data1 = "t1,23/07/12,25/07/12,1:100.00;2:50.00";
     String data2 = "t2,23/07/12,25/07/12,3:100.00";
     String data3 = "t3,23/07/12,25/07/12,";
 
-    String header2 = "Name,ID,e-mail,Phone,Default role";
+    String header2 = buildResourceHeader(
+        ResourceRecords.ResourceFields.NAME,
+        ResourceRecords.ResourceFields.ID,
+        ResourceRecords.ResourceFields.EMAIL,
+        ResourceRecords.ResourceFields.PHONE,
+        ResourceRecords.ResourceFields.ROLE
+    );
     String resources = "Joe,1,,,\nJohn,2,,,\nJack,3,,,";
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(
         Joiner.on('\n').join(header1, data1, data2, data3, "", header2, resources).getBytes(Charsets.UTF_8)),
@@ -193,7 +215,8 @@ public class GPCsvImportTest extends TestCase {
       HumanResourceManager resourceManager = builder.getResourceManager();
       doTestImportAssignments(pair.second(), pair.first(), builder, null, resourceManager, new RoleManagerImpl());
       Map<String, HumanResource> resourceMap = buildResourceMap(resourceManager);
-      assertEquals("project manager", resourceMap.get("Joe").getRole().getName());
+      // resProjectManager because we're using dummy localizer
+      assertEquals("resProjectManager", resourceMap.get("Joe").getRole().getName());
     }
   }
 
@@ -344,7 +367,13 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,Duration,End date";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.DURATION,
+        TaskRecords.TaskFields.END_DATE
+    );
     String data1 = "1,t1,23/07/12,,26/07/12";
 
     GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1).getBytes(Charsets.UTF_8)),
@@ -375,7 +404,14 @@ public class GPCsvImportTest extends TestCase {
     TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
     TaskManager taskManager = builder.build();
 
-    String header1 = "ID,Name,Begin date,End date,Task color";
+    //String header1 = "ID,Name,Begin date,End date,Task color";
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.COLOR
+    );
     String data1 = "1,t1,23/07/12,26/07/12,\"#ff0000\"";
     String data2 = "2,t2,23/07/12,26/07/12,\"#00ff00\"";
     String data3 = "3,t3,23/07/12,26/07/12,\"#2a2a2a\"";
