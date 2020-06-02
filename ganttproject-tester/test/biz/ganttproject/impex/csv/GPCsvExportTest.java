@@ -28,6 +28,7 @@ import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
 /**
  * @author dbarashev@bardsoftware.com
  */
+
 public class GPCsvExportTest extends TaskTestCase {
   @Override
   protected void setUp() throws Exception {
@@ -46,9 +47,10 @@ public class GPCsvExportTest extends TaskTestCase {
         CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
     CustomPropertyDefinition prop3 = hrManager.getCustomPropertyManager().createDefinition(
         CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
-    hrManager.add(new HumanResource("HR1", 1, hrManager));
-    hrManager.add(new HumanResource("HR2", 2, hrManager));
-    hrManager.add(new HumanResource("HR3", 3, hrManager));
+    hrManager.create("HR1", 1);
+    hrManager.create("HR2", 2);
+    hrManager.create("HR3", 3);
+
     hrManager.getById(1).addCustomProperty(prop3, "1");
     hrManager.getById(2).addCustomProperty(prop2, "2");
     hrManager.getById(3).addCustomProperty(prop1, "3");
@@ -60,7 +62,7 @@ public class GPCsvExportTest extends TaskTestCase {
     }
     String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
     assertEquals(7, lines.length);
-    assertEquals("ID,prop1,prop2,prop3", lines[3].trim());
+    assertEquals("tableColID,prop1,prop2,prop3", lines[3].trim());
     assertEquals("1,,,1", lines[4].trim());
     assertEquals("2,,2,", lines[5].trim());
     assertEquals("3,3,,", lines[6].trim());
