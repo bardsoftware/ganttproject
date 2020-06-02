@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.csv;
 
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
 import com.google.common.base.Joiner;
@@ -36,7 +37,6 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.io.CSVOptions;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
@@ -153,11 +153,7 @@ public class GanttCSVExport {
   }
 
   private String i18n(String key) {
-    String result = GanttLanguage.getInstance().getText(key);
-    if (result== null){
-      result = key;
-    }
-    return result;
+    return InternationalizationKt.getRootLocalizer().formatText(key);
   }
 
   private void writeTasks(SpreadsheetWriter writer) throws IOException {
@@ -234,7 +230,6 @@ public class GanttCSVExport {
   }
 
   private List<CustomPropertyDefinition> writeResourceHeaders(SpreadsheetWriter writer) throws IOException {
-    List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
     for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getResourceOptions().entrySet()) {
       ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
@@ -250,6 +245,7 @@ public class GanttCSVExport {
         writer.print(defaultColumn.getName());
       }
     }
+    List<CustomPropertyDefinition> customFieldDefs = myHumanResourceCustomPropertyManager.getDefinitions();
     for (CustomPropertyDefinition nextDef : customFieldDefs) {
       writer.print(nextDef.getName());
     }
