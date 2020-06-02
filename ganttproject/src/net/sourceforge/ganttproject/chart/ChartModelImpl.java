@@ -79,10 +79,6 @@ public class ChartModelImpl extends ChartModelBase {
     myVisibleTasks = visibleTasks;
   }
 
-  public void setExplicitlyHiddenTasks(Set<Task> hiddenTasks) {
-    myHiddenTasks = hiddenTasks;
-  }
-
   @Override
   public ChartItem getChartItemWithCoordinates(int x, int y) {
     ChartItem result = findTaskProgressItem(x, y);
@@ -184,9 +180,6 @@ public class ChartModelImpl extends ChartModelBase {
     return myVisibleTasks == null ? Collections.<Task> emptyList() : myVisibleTasks;
   }
 
-  TaskContainmentHierarchyFacade getTaskContainment() {
-    return myTaskManager.getTaskHierarchy();
-  }
 
   @Override
   public int calculateRowHeight() {
@@ -240,11 +233,4 @@ public class ChartModelImpl extends ChartModelBase {
     return result;
   }
 
-  public boolean isExplicitlyHidden(Task task) {
-    return myHiddenTasks == null ? false : myHiddenTasks.contains(task);
-  }
-
-  public EnumerationOption getDependencyHardnessOption() {
-    return getTaskManager().getDependencyHardnessOption();
-  }
 }
