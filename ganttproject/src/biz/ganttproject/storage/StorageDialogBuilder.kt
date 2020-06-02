@@ -65,6 +65,7 @@ class StorageDialogBuilder(
   private val myDialogUi = DialogUi(dialogBuildApi) { myNotificationPane!!}
 
   init {
+    // This will be called when user opens a project.
     myDocumentReceiver = Consumer { document: Document ->
       myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
@@ -82,6 +83,7 @@ class StorageDialogBuilder(
         }
       }
     }
+    // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->
       myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
@@ -90,6 +92,9 @@ class StorageDialogBuilder(
           myProject.document = documentManager.getProxyDocument(document)
         } else {
           myProject.document.setMirror(document)
+        }
+        if (document.isLocal) {
+          document.asLocalDocument()?.create()
         }
         projectUi.saveProject(myProject, onFinish)
         onFinish.receive()

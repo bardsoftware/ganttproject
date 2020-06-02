@@ -370,7 +370,7 @@ fun <T : FolderItem> connect(
      * - withEnter == true may open a folder or do something with file, depending on what is selected
      */
     selectItem: (withEnter: Boolean, withControl: Boolean) -> Unit,
-    onFilenameEnter: (withEnter: Boolean) -> Unit) {
+    onFilenameEnter: (withEnter: Boolean, withControl: Boolean) -> Unit) {
   listView.listView.onMouseClicked = EventHandler { evt ->
     val dblClick = evt.clickCount == 2
     selectItem(dblClick, dblClick)
@@ -408,10 +408,10 @@ fun <T : FolderItem> connect(
     when (keyEvent.code) {
       KeyCode.DOWN -> listView.requestFocus()
       KeyCode.ENTER -> {
-        onFilenameEnter(true)
+        onFilenameEnter(true, keyEvent.isControlDown || keyEvent.isMetaDown)
       }
       else -> {
-        onFilenameEnter(false)
+        onFilenameEnter(false, keyEvent.isControlDown || keyEvent.isMetaDown)
       }
     }
   }

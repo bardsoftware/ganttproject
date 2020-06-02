@@ -202,6 +202,9 @@ interface OnlineDocument {
 }
 
 fun (Document).asLocalDocument(): FileDocument? {
+  if (this is FileDocument) {
+    return this
+  }
   if (this is ProxyDocument) {
     if (this.realDocument is FileDocument) {
       return this.realDocument as FileDocument

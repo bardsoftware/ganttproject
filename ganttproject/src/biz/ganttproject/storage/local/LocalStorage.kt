@@ -150,6 +150,18 @@ class LocalStorage(
             ?: return
         myDocumentReceiver.invoke(doc)
       }
+
+      fun onNameTyped(filename: String, itemsMatched: List<FolderItem>, withEnter: Boolean, withControl: Boolean) {
+        this.button?.isDisable =
+            when (mode) {
+              StorageDialogBuilder.Mode.OPEN -> itemsMatched.isEmpty()
+              StorageDialogBuilder.Mode.SAVE -> filename.isBlank()
+            }
+        if (withEnter && withControl && mode == StorageDialogBuilder.Mode.SAVE) {
+          this.onAction()
+        }
+      }
+
     }
 
     val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.toLowerCase()}.listViewHint"))
@@ -171,7 +183,8 @@ class LocalStorage(
             if (it is FileAsFolderItem) {
               myDocumentReceiver(FileDocument(it.file))
             }
-          }
+          },
+          onNameTyped = actionButtonHandler::onNameTyped
       )
       withValidator(createLocalStorageValidator(
           Supplier { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
