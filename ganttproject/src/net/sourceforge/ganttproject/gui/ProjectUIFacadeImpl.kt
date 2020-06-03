@@ -214,7 +214,7 @@ class ProjectUIFacadeImpl(
 
   override fun saveProjectAs(project: IGanttProject) {
     StorageDialogAction(project, this, project.documentManager,
-        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption).actionPerformed(null)
+        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, StorageDialogBuilder.Mode.SAVE, "project.save").actionPerformed(null)
   }
 
   /**

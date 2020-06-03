@@ -1,108 +1,75 @@
 /*
-GanttProject is an opensource project management tool. License: GPL3
-Copyright (C) 2005-2012 GanttProject Team
+Copyright 2020 BarD Software s.r.o
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3
-of the License, or (at your option) any later version.
+This file is part of GanttProject, an open-source project management tool.
 
-This program is distributed in the hope that it will be useful,
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package net.sourceforge.ganttproject.action.project;
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// 2020-06-03 Translated to Kotlin from ProjectMenu.java
 
-import biz.ganttproject.storage.StorageDialogAction;
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl;
+package net.sourceforge.ganttproject.action.project
 
-import javax.swing.*;
+import biz.ganttproject.storage.StorageDialogAction
+import biz.ganttproject.storage.StorageDialogBuilder
+import net.sourceforge.ganttproject.GanttProject
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
+import java.util.*
+import javax.swing.AbstractAction
+import javax.swing.Action
+import javax.swing.JMenu
+import javax.swing.JMenuItem
 
 /**
  * Collection of actions present in the project menu
  */
-public class ProjectMenu extends JMenu {
+class ProjectMenu(project: GanttProject, key: String) : JMenu(GPAction.createVoidAction(key)) {
+  private val webdavStorage = project.documentManager.webDavStorageUi as WebDavStorageImpl
 
-  private final NewProjectAction myNewProjectAction;
-  private final SaveProjectAction mySaveProjectAction;
-  private final PrintAction myPrintAction;
-  private OpenProjectAction myOpenProjectAction;
+  private val newProjectAction = NewProjectAction(project)
+  val openProjectAction = StorageDialogAction(
+      project.project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
+      StorageDialogBuilder.Mode.OPEN, "project.open"
+  )
+  val saveProjectAction = SaveProjectAction(project, project.projectUIFacade)
 
-  public ProjectMenu(final GanttProject project, JMenu mru, String key) {
-    super(GPAction.createVoidAction(key));
-    myNewProjectAction = new NewProjectAction(project);
-    mySaveProjectAction = new SaveProjectAction(project.getProject(), project.getProjectUIFacade());
-    myPrintAction = new PrintAction(project);
+  private val saveAsProjectAction = StorageDialogAction(
+      project.project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
+      StorageDialogBuilder.Mode.SAVE, "project.saveas"
+  )
 
-    ProjectPropertiesAction projectSettingsAction = new ProjectPropertiesAction(project);
-    myOpenProjectAction = new OpenProjectAction(project.getProject(), project.getProjectUIFacade());
-    SaveProjectAsAction saveProjectAsAction = new SaveProjectAsAction(project);
-//    OpenURLAction openURLAction = new OpenURLAction(project.getProject(), project.getUIFacade(),
-//        project.getProjectUIFacade());
-//    SaveURLAction saveURLAction = new SaveURLAction(project.getProject(), project.getUIFacade(),
-//        project.getProjectUIFacade());
-    ExitAction exitAction = new ExitAction(project);
-    ProjectImportAction projectImportAction = new ProjectImportAction(project.getUIFacade(), project);
-    ProjectExportAction projectExportAction = new ProjectExportAction(project.getUIFacade(), project,
-        project.getGanttOptions().getPluginPreferences());
+  private val projectSettingsAction = ProjectPropertiesAction(project)
+  private val importAction = ProjectImportAction(project.uiFacade, project)
+  private val exportAction = ProjectExportAction(
+      project.uiFacade, project, project.ganttOptions.pluginPreferences)
+  private val printAction = PrintAction(project)
+  private val printPreviewAction = ProjectPreviewAction(project)
+  private val exitAction = ExitAction(project)
 
-    WebDavStorageImpl webdavStorage = (WebDavStorageImpl) project.getDocumentManager().getWebDavStorageUi();
-    StorageDialogAction cloudDialogAction = new StorageDialogAction(
-        project.getProject(), project.getProjectUIFacade(), project.getDocumentManager(), webdavStorage.getServersOption());
-    add(cloudDialogAction);
-    add(projectSettingsAction);
-    add(myNewProjectAction);
-    //add(myOpenProjectAction);
-    //add(mru);
-
-    //addSeparator();
-    //add(mySaveProjectAction);
-    //add(saveProjectAsAction);
-    //addSeparator();
-
-    add(projectImportAction);
-    add(projectExportAction);
-    addSeparator();
-
-//    JMenu mServer = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("webServer"));
-//    mServer.add(openURLAction);
-//    mServer.add(saveURLAction);
-//    add(mServer);
-
-    add(myPrintAction);
-    add(new ProjectPreviewAction(project));
-    addSeparator();
-    add(exitAction);
-    setToolTipText(null);
+  override fun add(a: Action): JMenuItem {
+    a.putValue(Action.SHORT_DESCRIPTION, null)
+    return super.add(a)
   }
 
-  @Override
-  public JMenuItem add(Action a) {
-    a.putValue(Action.SHORT_DESCRIPTION, null);
-    return super.add(a);
+  init {
+    listOf(
+        newProjectAction, openProjectAction, saveProjectAction, saveAsProjectAction, projectSettingsAction,
+        null,
+        importAction, exportAction, printAction, printPreviewAction,
+        null,
+        exitAction
+    ).forEach { if (it == null) addSeparator() else add(it) }
+    toolTipText = null
   }
-
-  public AbstractAction getNewProjectAction() {
-    return myNewProjectAction;
-  }
-
-  public SaveProjectAction getSaveProjectAction() {
-    return mySaveProjectAction;
-  }
-
-  public AbstractAction getPrintAction() {
-    return myPrintAction;
-  }
-
-  public OpenProjectAction getOpenProjectAction() {
-    return myOpenProjectAction;
-  }
-
 }

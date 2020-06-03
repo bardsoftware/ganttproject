@@ -44,7 +44,6 @@ import org.controlsfx.control.NotificationPane
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
-import javax.swing.SwingUtilities
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -104,7 +103,7 @@ class StorageDialogBuilder(
     }
   }
 
-  fun build() {
+  fun build(mode: Mode) {
     dialogBuildApi.addStyleClass("dlg-storage")
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
     dialogBuildApi.removeButtonBar()
@@ -152,7 +151,7 @@ class StorageDialogBuilder(
     titleBox.children.addAll(projectName, buttonBar)
     this.dialogBuildApi.setHeader(titleBox)
 
-    if (myProject.isModified) {
+    if (mode == Mode.SAVE) {
       btnSave.fire()
     } else {
       btnOpen.fire()

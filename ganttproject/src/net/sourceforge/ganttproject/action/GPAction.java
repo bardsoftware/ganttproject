@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import com.google.common.base.Strings;
+import javafx.event.EventHandler;
 import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -40,7 +41,7 @@ import java.util.Properties;
 /**
  * @author bard
  */
-public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener {
+public abstract class GPAction extends AbstractAction implements GanttLanguage.Listener, EventHandler<javafx.event.ActionEvent> {
   private final String myIconSize;
   private String myFontAwesomeLabel;
 
@@ -102,6 +103,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
   protected GPAction(String name, IconSize size) {
     this(name, size.asString());
+  }
+
+  @Override
+  public void handle(javafx.event.ActionEvent event) {
+    actionPerformed(null);
   }
 
   public GPAction withIcon(IconSize size) {
@@ -215,6 +221,9 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     }
   }
 
+  public String getName() {
+    return getValue(Action.NAME).toString();
+  }
   /**
    * Updates the action. Can be called when external influences resulted in
    * changed action name and/or description

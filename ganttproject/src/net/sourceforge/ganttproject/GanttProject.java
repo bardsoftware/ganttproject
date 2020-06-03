@@ -312,7 +312,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
     getDocumentManager().addListener(mruMenu);
 
-    myProjectMenu = new ProjectMenu(this, mruMenu, "project");
+    myProjectMenu = new ProjectMenu(this, "project");
     bar.add(myProjectMenu);
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");

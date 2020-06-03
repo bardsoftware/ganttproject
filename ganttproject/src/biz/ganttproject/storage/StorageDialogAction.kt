@@ -21,28 +21,36 @@ package biz.ganttproject.storage
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
-import javafx.application.Platform
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
+import net.sourceforge.ganttproject.gui.UIUtil
 import java.awt.event.ActionEvent
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class StorageDialogAction(
-    private val myProject: IGanttProject,
-    private val myProjectUiFacade: ProjectUIFacade,
-    private val myDocumentManager: DocumentManager,
-    private val myCloudStorageOptions: GPCloudStorageOptions) : GPAction("myProjects.action") {
+    private val project: IGanttProject,
+    private val projectUiFacade: ProjectUIFacade,
+    private val documentManager: DocumentManager,
+    private val cloudStorageOptions: GPCloudStorageOptions,
+    private val mode: StorageDialogBuilder.Mode,
+    private val actionId: String) : GPAction(actionId) {
 
   override fun actionPerformed(actionEvent: ActionEvent?) {
-    Platform.runLater {
-      dialog(RootLocalizer.create("myProjects.title")) { dialogBuildApi ->
-        val dialogBuilder = StorageDialogBuilder(myProject, myProjectUiFacade, myDocumentManager, myCloudStorageOptions, dialogBuildApi)
-        dialogBuilder.build()
-      }
+    dialog(RootLocalizer.create("myProjects.title")) { dialogBuildApi ->
+      val dialogBuilder = StorageDialogBuilder(
+          project, projectUiFacade, documentManager, cloudStorageOptions, dialogBuildApi
+      )
+      dialogBuilder.build(mode)
+    }
+  }
+
+  override fun asToolbarAction(): GPAction {
+    return StorageDialogAction(project, projectUiFacade, documentManager, cloudStorageOptions, mode, actionId).also {
+      it.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(it))
     }
   }
 }

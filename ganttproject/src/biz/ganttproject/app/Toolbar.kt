@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.scene.Node
@@ -59,9 +57,8 @@ private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
 private class ButtonVisitor(val action: GPAction) {
   fun visit(toolbar: FXToolbar) {
-    val faChar = action.fontawesomeLabel ?: return
-    val icon = FontAwesomeIcon.values().firstOrNull { it.unicode() == faChar } ?: return
-    val btn = Button("", FontAwesomeIconView(icon)).apply {
+    val icon = action.getGlyphIcon() ?: return
+    val btn = Button("", icon).apply {
       this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
       this.addEventHandler(ActionEvent.ACTION) {
         SwingUtilities.invokeLater {
