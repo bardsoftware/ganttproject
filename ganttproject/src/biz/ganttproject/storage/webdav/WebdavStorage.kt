@@ -61,7 +61,8 @@ class WebdavStorage(
     private val myMode: StorageDialogBuilder.Mode,
     private val myOpenDocument: (Document) -> Unit,
     private val myDialogUi: StorageDialogBuilder.DialogUi,
-    private val myOptions: GPCloudStorageOptions) : StorageDialogBuilder.Ui {
+    private val myOptions: GPCloudStorageOptions
+) : StorageDialogBuilder.Ui {
 
   private val myBorderPane = BorderPane()
 
@@ -87,7 +88,7 @@ class WebdavStorage(
   }
 
   private fun createPasswordUi(): Pane {
-    val passwordPane = WebdavPasswordPane(myServer, Consumer<WebDavServerDescriptor> { this.onPasswordEntered(it) })
+    val passwordPane = WebdavPasswordPane(myServer, Consumer { this.onPasswordEntered(it) })
     return passwordPane.createUi()
   }
 
@@ -141,28 +142,22 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
       withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
       withListView(
           onSelectionChange = { item ->
-            if (item is WebDavResourceAsFolderItem) {
-              if (item.isDirectory) {
-                myState.folder = item.myResource
-                myState.filename = null
-                myState.resource = null
-              } else {
-                myState.resource = item.myResource
-              }
+            if (item.isDirectory) {
+              myState.folder = item.myResource
+              myState.filename = null
+              myState.resource = null
+            } else {
+              myState.resource = item.myResource
             }
           },
           onLaunch = {
             myOpenDocument(createDocument(myState.server, createResource(myState)))
           },
           onDelete = { item ->
-            if (item is WebDavResourceAsFolderItem) {
-              deleteResource(item)
-            }
+            deleteResource(item)
           },
           onLock = { item ->
-            if (item is WebDavResourceAsFolderItem) {
-              toggleLockResource(item)
-            }
+            toggleLockResource(item)
           },
           canLock = isLockingSupported,
           canDelete = SimpleBooleanProperty(true)
@@ -205,24 +200,18 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
                          showMaskPane: Consumer<Boolean>,
                          setResult: Consumer<ObservableList<WebDavResource>>,
                          dialogUi: StorageDialogBuilder.DialogUi) {
-    var path = selectedPath
-    if (path.getNameCount() > 1) {
-      path = path.subpath(1, path.getNameCount())
-    } else {
-      path = path.getRoot()
-    }
-    myLoadService.setPath(path.toString())
+    myLoadService.setPath(selectedPath.toString())
     myState.folder = myLoadService.createRootResource()
     myLoadService.apply {
-      onSucceeded = EventHandler { _ ->
+      onSucceeded = EventHandler {
         setResult.accept(value)
         showMaskPane.accept(false)
       }
-      onFailed = EventHandler { _ ->
+      onFailed = EventHandler {
         showMaskPane.accept(false)
         dialogUi.error("WebdavService failed!")
       }
-      onCancelled = EventHandler { _ ->
+      onCancelled = EventHandler {
         showMaskPane.accept(false)
         GPLogger.log("WebdavService cancelled!")
       }
