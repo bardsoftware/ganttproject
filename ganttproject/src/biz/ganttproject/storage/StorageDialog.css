@@ -132,7 +132,7 @@ HBox.title-integrated {
 }
 
 HBox.title-integrated Label {
-    -fx-padding: 10 10 0 10;
+    -fx-padding: 10 10 10 10;
     -fx-text-fill: -gp-orange;
 }
 
