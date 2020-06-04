@@ -153,6 +153,12 @@ class WebdavServerUi(private val myServer: WebDavServerDescriptor,
           onLaunch = {
             myOpenDocument(createDocument(myState.server, createResource(myState)))
           },
+          onNameTyped = { filename, _, withEnter, withControl ->
+            myState.filename = filename
+            if (withEnter && withControl) {
+              myOpenDocument(createDocument(myState.server, createResource(myState)))
+            }
+          },
           onDelete = { item ->
             deleteResource(item)
           },
