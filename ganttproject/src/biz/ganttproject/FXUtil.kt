@@ -208,7 +208,10 @@ object FXUtil {
       fadeOut.play()
       fadeOut.setOnFinished {
         replacePane.run()
-        fadeIn.setOnFinished { resizer() }
+        fadeIn.setOnFinished {
+          borderPane.requestLayout()
+          resizer()
+        }
         fadeIn.play()
       }
     }

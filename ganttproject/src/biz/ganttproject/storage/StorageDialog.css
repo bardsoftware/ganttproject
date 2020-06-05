@@ -284,29 +284,11 @@ HBox.title-integrated Label {
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 3, 0.0, 0, 1);
 }
 
-.webdav-server-password {
-    -fx-alignment: center;
-    -fx-border-color: red;
-}
-
-.webdav-server-password HBox {
-    -fx-padding: 5px 10px 0px 10px;
-}
-
-.pane-service-contents.webdav-server-setup > PropertySheet {
-    -fx-background-color: white;
-}
-
-.pane-service-contents.webdav-server-setup .button-bar {
-    -fx-padding: 10px 0px;
-    -fx-alignment: top-left;
-}
-
 .pane-storage {
-    -fx-min-height: 600;
-    -fx-min-width: 600;
     -fx-padding: 0;
     -fx-border-insets: 0;
+    -fx-pref-height: 500;
+    -fx-pref-width: 500;
 }
 
 .pane-storage > * {
@@ -351,6 +333,21 @@ HBox.title-integrated Label {
     -fx-padding: 5px 0 0 0;
 }
 
+.property-sheet BorderPane {
+    -fx-background-color: white;
+}
+.property-sheet .scroll-pane .property-pane {
+    -fx-background-color: white;
+}
+
+.property-sheet .scroll-pane {
+    -fx-background-color: white;
+    -fx-fit-to-height: true;
+}
+
+.property-sheet .scroll-pane .accordion {
+    -fx-background-color: white;
+}}
 .space-section {
     -fx-padding: 10px 0 10px 0;
 }

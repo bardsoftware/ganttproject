@@ -82,6 +82,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 }
 
 class DialogControllerImpl(private val root: BorderPane) : DialogController {
+  override var beforeShow: () -> Unit = {}
   private lateinit var contentNode: Node
   private val buttonBar = ButtonBar().also {
     it.maxWidth = Double.MAX_VALUE
@@ -131,6 +132,10 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   }
 
   override fun toggleProgress(shown: Boolean) {
+  }
+
+  override fun resize() {
+
   }
 
   private fun createButton(buttonType: ButtonType): Button {

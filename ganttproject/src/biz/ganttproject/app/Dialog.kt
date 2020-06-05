@@ -91,18 +91,18 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
   }
 }
 
-fun dialog(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
+fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
   val jfxPanel = JFXPanel()
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
-    val dialogBuildApi = DialogControllerSwing { swingDialogController.get()}
-    contentBuilder(dialogBuildApi)
-    jfxPanel.scene = Scene(dialogBuildApi.build())
+    val dialogController = DialogControllerSwing { swingDialogController.get()}
+    contentBuilder(dialogController)
+    jfxPanel.scene = Scene(dialogController.build())
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
       dialogBuilder.createDialog(jfxPanel, arrayOf(), title?.value ?: "", null).also {
         swingDialogController.set(it)
-        it.show()
+        dialogController.setDialogFrame(it)
       }
     }
   }
@@ -118,9 +118,14 @@ interface DialogController {
   fun hide()
   fun removeButtonBar()
   fun toggleProgress(shown: Boolean)
+  fun resize()
+  var beforeShow: () -> Unit
 }
 
 class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) : DialogController {
+  override var beforeShow: () -> Unit = {}
+
+  private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
     it.vbox.styleClass.add("dlg")
     it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
@@ -180,6 +185,12 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     return this.paneBuilder.vbox
   }
 
+  internal fun setDialogFrame(dlgFrame: UIFacade.Dialog) {
+    this.dialogFrame = dlgFrame;
+    this.beforeShow()
+    this.dialogFrame.show()
+  }
+
   override fun setContent(content: Node) {
     this.content = content
   }
@@ -200,6 +211,12 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
         pane.center = Label("")
         pane.opacity = 0.5
       }
+    }
+  }
+
+  override fun resize() {
+    SwingUtilities.invokeLater {
+      this.dialogFrame.layout()
     }
   }
 
@@ -265,6 +282,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 }
 
 class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
+  override var beforeShow: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
@@ -290,6 +308,9 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
         pane.opacity = 0.5
       }
     }
+  }
+
+  override fun resize() {
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {

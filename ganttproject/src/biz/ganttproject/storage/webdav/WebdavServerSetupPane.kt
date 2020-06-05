@@ -1,153 +1,144 @@
-// Copyright (C) 2016 BarD Software
-package biz.ganttproject.storage.webdav;
+/*
+Copyright 2020 BarD Software s.r.o
 
-import biz.ganttproject.FXUtil;
-import biz.ganttproject.storage.StorageDialogBuilder;
-import javafx.beans.property.StringProperty;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.controlsfx.control.PropertySheet;
-import org.controlsfx.property.BeanProperty;
-import org.controlsfx.property.editor.AbstractPropertyEditor;
-import org.controlsfx.property.editor.PropertyEditor;
+This file is part of GanttProject, an opensource project management tool.
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.util.Optional;
-import java.util.function.Consumer;
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.storage.webdav
+
+import biz.ganttproject.lib.fx.vbox
+import biz.ganttproject.storage.StorageDialogBuilder.Ui
+import javafx.beans.property.StringProperty
+import javafx.event.ActionEvent
+import javafx.geometry.Pos
+import javafx.scene.control.Button
+import javafx.scene.control.PasswordField
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
+import net.sourceforge.ganttproject.language.GanttLanguage
+import org.controlsfx.control.PropertySheet
+import org.controlsfx.property.BeanProperty
+import org.controlsfx.property.editor.AbstractPropertyEditor
+import org.controlsfx.property.editor.PropertyEditor
+import java.beans.IntrospectionException
+import java.beans.PropertyDescriptor
+import java.util.*
+import java.util.function.Consumer
 
 /**
+ * This is a UI for editing WebDAV server properties.
+ *
  * @author dbarashev@bardsoftware.com
  */
-public class WebdavServerSetupPane implements StorageDialogBuilder.Ui {
-  private final WebDavServerDescriptor myWebdavServer;
-  private final Consumer<WebDavServerDescriptor> myValueConsumer;
-  private final boolean myHasDelete;
+class WebdavServerSetupPane(
+    webdavServer: WebDavServerDescriptor,
+    private val onDone: Consumer<WebDavServerDescriptor?>,
+    private val hasDelete: Boolean) : Ui {
+  private val myWebdavServer: WebDavServerDescriptor = webdavServer.clone()
 
-  public WebdavServerSetupPane(WebDavServerDescriptor webdavServer, Consumer<WebDavServerDescriptor> valueConsumer, boolean hasDelete) {
-    myWebdavServer = webdavServer.clone();
-    myValueConsumer = valueConsumer;
-    myHasDelete = hasDelete;
-  }
+  override val id: String
+    get() = "webdav-setup"
 
-  @Override
-  public String getId() {
-    return "webdav-setup";
-  }
+  override val category: String
+    get() = ""
+  override val name: String
+    get() = ""
 
-  @Override
-  public String getName() {
-    return null;
-  }
-
-  @Override
-  public String getCategory() {
-    return null;
-  }
-
-  @Override
-  public Pane createUi() {
-    try {
-      return doCreateUi();
-    } catch (IntrospectionException e) {
-      e.printStackTrace();
-      return new Pane();
+  override fun createUi(): Pane {
+    return try {
+      doCreateUi()
+    } catch (e: IntrospectionException) {
+      e.printStackTrace()
+      Pane()
     }
   }
 
-  private Pane doCreateUi() throws IntrospectionException {
-    VBox centerBox = new VBox();
-    PropertySheet propertySheet = new PropertySheet();
-    propertySheet.getStyleClass().addAll("property-sheet");
-    propertySheet.setModeSwitcherVisible(false);
-    propertySheet.setSearchBoxVisible(false);
-    propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("name", "webdav.serverName")));
-    propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("rootUrl", "option.webdav.server.url.label")));
-    propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("username", "option.webdav.server.username.label")));
-    propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("password", "option.webdav.server.password.label")) {
-      @Override
-      public Optional<Class<? extends PropertyEditor<?>>> getPropertyEditorClass() {
-        return Optional.of(PasswordPropertyEditor.class);
+  @Throws(IntrospectionException::class)
+  private fun doCreateUi() = vbox {
+    vbox.styleClass.add("pane-service-contents")
+    vbox.stylesheets.add("/biz/ganttproject/storage/StorageDialog.css")
+
+    addTitle(if (hasDelete) "webdav.ui.title.editServer" else "webdav.ui.title.newServer").also {
+      it.styleClass.add("title-integrated")
+    }
+
+    add(PropertySheet().apply {
+      styleClass.addAll("property-sheet")
+      isModeSwitcherVisible = false
+      isSearchBoxVisible = false
+      items.add(BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("name", "webdav.serverName")))
+      items.add(BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("rootUrl", "option.webdav.server.url.label")))
+      items.add(BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("username", "option.webdav.server.username.label")))
+      items.add(object : BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("password", "option.webdav.server.password.label")) {
+        override fun getPropertyEditorClass(): Optional<Class<out PropertyEditor<*>?>> {
+          return Optional.of(PasswordPropertyEditor::class.java)
+        }
+      })
+      items.add(BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")))
+
+    }, alignment = null, growth = Priority.ALWAYS)
+
+    add(HBox().apply {
+      styleClass.add("doclist-save-box")
+      if (hasDelete) {
+        children.add(Button(i18n.formatText("delete")).apply {
+          addEventHandler(ActionEvent.ACTION) { onDone.accept(null) }
+          isFocusTraversable = false
+        })
       }
-    });
-    propertySheet.getItems().add(new BeanProperty(
-        myWebdavServer, new WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")));
-    Button btnDone = new Button("Done");
-    btnDone.getStyleClass().add("btn-done");
-    FXUtil.INSTANCE.createBreathingButton(btnDone);
-    btnDone.addEventHandler(ActionEvent.ACTION, event -> onDone());
-    HBox bottomBox = new HBox();
-    bottomBox.getStyleClass().add("button-bar");
-
-
-    Pane spacerPane = new Pane();
-    HBox.setHgrow(spacerPane, Priority.ALWAYS);
-    bottomBox.getChildren().addAll(btnDone, spacerPane);
-    if (myHasDelete) {
-      Button btnDelete = new Button("Delete");
-      btnDelete.addEventHandler(ActionEvent.ACTION, event -> myValueConsumer.accept(null));
-      bottomBox.getChildren().add(btnDelete);
-    }
-    VBox.setVgrow(propertySheet, Priority.SOMETIMES);
-
-    centerBox.getChildren().addAll(propertySheet, bottomBox);
-
-    BorderPane result = new BorderPane();
-    result.getStyleClass().addAll("pane-service-contents", "webdav-server-setup");
-
-    HBox titleBox = new HBox();
-    titleBox.getStyleClass().add("title");
-    Label title = myHasDelete ? new Label("Edit WebDAV Server") : new Label("New WebDAV Server");
-    titleBox.getChildren().add(title);
-    result.setTop(titleBox);
-    result.setCenter(centerBox);
-
-    return result;
+      children.add(Pane().apply {
+        HBox.setHgrow(this, Priority.ALWAYS)
+      })
+      children.add(Button(i18n.formatText("apply")).apply {
+        styleClass.add("btn-attention")
+        addEventHandler(ActionEvent.ACTION) { onDone() }
+      })
+    }, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
   }
 
-  @Override
-  public Optional<Pane> createSettingsUi() {
-    return Optional.empty();
+  override fun createSettingsUi(): Optional<Pane> {
+    return Optional.empty()
   }
 
-  private void onDone() {
-    myValueConsumer.accept(myWebdavServer);
+  private fun onDone() {
+    onDone.accept(myWebdavServer)
   }
-
-  private static class WebDavPropertyDescriptor extends PropertyDescriptor {
-
-    public WebDavPropertyDescriptor(String propertyName, String i18nKey) throws IntrospectionException {
-      super(propertyName, WebDavServerDescriptor.class);
-      setDisplayName(GanttLanguage.getInstance().getText(i18nKey));
-    }
-  }
-
-  public static class PasswordPropertyEditor extends AbstractPropertyEditor<String, PasswordField> {
-
-    public PasswordPropertyEditor(PropertySheet.Item property) {
-      super(property, new PasswordField());
-    }
-
-    protected StringProperty getObservableValue() {
-      return this.getEditor().textProperty();
-    }
-
-    public void setValue(String value) {
-      this.getEditor().setText(value);
-    }
-  }
-
 }
+
+private class WebDavPropertyDescriptor(propertyName: String, i18nKey: String)
+  : PropertyDescriptor(propertyName, WebDavServerDescriptor::class.java) {
+  init {
+    displayName = GanttLanguage.getInstance().getText(i18nKey)
+  }
+}
+
+private class PasswordPropertyEditor(property: PropertySheet.Item)
+  : AbstractPropertyEditor<String, PasswordField>(property, PasswordField()) {
+  override fun getObservableValue(): StringProperty {
+    return this.editor!!.textProperty()
+  }
+
+  override fun setValue(value: String?) {
+    this.editor!!.text = value
+  }
+}
+

@@ -219,7 +219,11 @@ class StoragePane internal constructor(
 
   private fun onNewWebdavServer(borderPane: BorderPane) {
     val newServer = WebDavServerDescriptor()
-    val setupPane = WebdavServerSetupPane(newServer, Consumer<WebDavServerDescriptor> { cloudStorageOptions.addValue(it) }, false)
+    val setupPane = WebdavServerSetupPane(newServer, Consumer<WebDavServerDescriptor?> {
+      if (it != null) {
+        cloudStorageOptions.addValue(it)
+      }
+    }, false)
     FXUtil.transitionCenterPane(borderPane, setupPane.createUi()) { dialogUi.resize() }
   }
 }
