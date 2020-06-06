@@ -39,7 +39,8 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 
-data class TestResponse(override val body: ByteArray = byteArrayOf(),
+data class TestResponse(override val decodedBody: ByteArray = byteArrayOf(),
+                        override val rawBody: ByteArray = byteArrayOf(),
                         override val code: Int = 200,
                         override val reason: String = "",
                         val headers: Map<String, String> = mapOf()) : GPCloudHttpClient.Response {
@@ -70,7 +71,7 @@ class GPCloudDocumentTest {
   private fun prepareReadCall(doc: GPCloudDocument, body: ByteArray) {
     prepareReadCall(doc) {
       val checksum = body.checksum()
-      TestResponse(body = body, headers = mapOf(
+      TestResponse(decodedBody = body, headers = mapOf(
           "ETag" to "100500",
           "Digest" to "crc32c=$checksum"
       ))
@@ -146,10 +147,13 @@ class GPCloudDocumentTest {
         "fileContents" to Base64.getEncoder().encodeToString(BODY_566),
         "lockToken" to null,
         "oldVersion" to "100500"
-    ))).andReturn(TestResponse(headers = mapOf(
-        "ETag" to "146512",
-        "Digest" to "crc32c=${BODY_566.checksum()}"
-    )))
+    ))).andReturn(TestResponse(
+        headers = mapOf(
+          "ETag" to "146512",
+          "Digest" to "crc32c=${BODY_566.checksum()}"
+        ),
+        rawBody = JACKSON.writeValueAsBytes(ProjectWriteResponse(projectRefid = "prj1"))
+    ))
     EasyMock.replay(mockHttpClient)
     doc.outputStream.use {
       ByteStreams.copy(byteArrayOf(5, 6, 6).inputStream(), it)
@@ -292,10 +296,13 @@ class GPCloudDocumentTest {
         "fileContents" to Base64.getEncoder().encodeToString(BODY_566),
         "lockToken" to null,
         "oldVersion" to null
-    ))).andReturn(TestResponse(headers = mapOf(
-        "ETag" to "146512",
-        "Digest" to "crc32c=${BODY_566.checksum()}"
-    )))
+    ))).andReturn(TestResponse(
+        headers = mapOf(
+          "ETag" to "146512",
+          "Digest" to "crc32c=${BODY_566.checksum()}"
+        ),
+        rawBody = JACKSON.writeValueAsBytes(ProjectWriteResponse(projectRefid = "prj1"))
+    ))
     EasyMock.replay(mockHttpClient)
 
     retryCounter.await()
@@ -308,7 +315,7 @@ class GPCloudDocumentTest {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc) {
       val checksum = BODY_239.checksum()
-      TestResponse(body = BODY_239, headers = mapOf(
+      TestResponse(decodedBody = BODY_239, headers = mapOf(
           "ETag" to "1",
           "Digest" to "crc32c=$checksum"
       ))
@@ -317,7 +324,7 @@ class GPCloudDocumentTest {
 
     prepareReadCall(doc) {
       val checksum = BODY_566.checksum()
-      TestResponse(body = BODY_566, headers = mapOf(
+      TestResponse(decodedBody = BODY_566, headers = mapOf(
           "ETag" to "2",
           "Digest" to "crc32c=$checksum"
       ))
@@ -347,7 +354,7 @@ class GPCloudDocumentTest {
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     prepareReadCall(doc) {
       val checksum = BODY_239.checksum()
-      TestResponse(body = BODY_239, headers = mapOf(
+      TestResponse(decodedBody = BODY_239, headers = mapOf(
           "ETag" to "1",
           "Digest" to "crc32c=$checksum"
       ))
@@ -357,7 +364,7 @@ class GPCloudDocumentTest {
 
     prepareReadCall(doc) {
       val checksum = BODY_239.checksum()
-      TestResponse(body = BODY_239, headers = mapOf(
+      TestResponse(decodedBody = BODY_239, headers = mapOf(
           "ETag" to "1",
           "Digest" to "crc32c=$checksum"
       ))

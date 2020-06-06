@@ -18,30 +18,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 
 import java.awt.event.ActionEvent;
 
 public class SaveProjectAction extends GPAction implements ProjectEventListener {
-  private final GanttProject myMainFrame;
+  private final IGanttProject myProject;
+  private final ProjectUIFacade myProjectUiFacade;
 
-  SaveProjectAction(GanttProject mainFrame) {
-    this(mainFrame, IconSize.MENU);
+  SaveProjectAction(IGanttProject mainFrame, ProjectUIFacade projectFacade) {
+    this(mainFrame, projectFacade, IconSize.MENU);
   }
 
-  private SaveProjectAction(GanttProject mainFrame, IconSize size) {
+  private SaveProjectAction(IGanttProject mainFrame, ProjectUIFacade projectFacade, IconSize size) {
     super("project.save", size);
-    myMainFrame = mainFrame;
+    myProject = mainFrame;
+    myProjectUiFacade = projectFacade;
     mainFrame.addProjectEventListener(this);
     setEnabled(false);
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new SaveProjectAction(myMainFrame, size);
+    return new SaveProjectAction(myProject, myProjectUiFacade, size);
   }
 
   @Override
@@ -54,7 +57,7 @@ public class SaveProjectAction extends GPAction implements ProjectEventListener 
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    myMainFrame.saveProject();
+    myProjectUiFacade.saveProject(myProject, null);
   }
 
   @Override
@@ -83,7 +86,7 @@ public class SaveProjectAction extends GPAction implements ProjectEventListener 
   }
 
   public SaveProjectAction asToolbarAction() {
-    SaveProjectAction result = new SaveProjectAction(myMainFrame);
+    SaveProjectAction result = new SaveProjectAction(myProject, myProjectUiFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }

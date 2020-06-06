@@ -312,7 +312,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
     getDocumentManager().addListener(mruMenu);
 
-    myProjectMenu = new ProjectMenu(this, mruMenu, "project");
+    myProjectMenu = new ProjectMenu(this, "project");
     bar.add(myProjectMenu);
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
@@ -707,7 +707,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   public void newProject() {
     getProjectUIFacade().createProject(getProject());
-    fireProjectCreated();
+    try {
+      Document newDocument = getDocumentManager().newUntitledDocument();
+      getProject().setDocument(newDocument);
+      myObservableDocument.set(newDocument);
+      fireProjectCreated();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -731,7 +738,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     if (path != null) {
       final Document document = getDocumentManager().getDocument(path);
       try {
-        getProjectUIFacade().openProject(document, getProject());
+        getProjectUIFacade().openProject(document, getProject(), null);
       } catch (DocumentException e) {
         fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
         if (!tryImportDocument(document)) {
@@ -776,19 +783,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public boolean saveAsProject() {
     getProjectUIFacade().saveProjectAs(getProject());
     return true;
-  }
-
-  /**
-   * Save the project on a file
-   */
-  public void saveProject() {
-    getProjectUIFacade().saveProject(getProject());
-  }
-
-  public void changeWorkingDirectory(String newWorkDir) {
-    if (null != newWorkDir) {
-      options.setWorkingDirectory(newWorkDir);
-    }
   }
 
   /**

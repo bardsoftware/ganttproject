@@ -173,6 +173,17 @@ class GPCloudBrowserPane(
             ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
 
       }
+
+      fun onNameTyped(filename: String, itemsMatched: List<FolderItem>, withEnter: Boolean, withControl: Boolean) {
+        this.button?.isDisable =
+            when (this@GPCloudBrowserPane.mode) {
+              StorageDialogBuilder.Mode.OPEN -> itemsMatched.isEmpty()
+              StorageDialogBuilder.Mode.SAVE -> filename.isBlank()
+            }
+        if (withEnter && withControl && this@GPCloudBrowserPane.mode == StorageDialogBuilder.Mode.SAVE) {
+          this.onAction()
+        }
+      }
     }
 
     val listViewHint = SimpleStringProperty(i18n.formatText("open.listViewHint"))
@@ -193,15 +204,8 @@ class GPCloudBrowserPane(
             if (it is ProjectJsonAsFolderItem) {
               this@GPCloudBrowserPane.openDocument(it)
             }
-          }/*
-          onLock = Consumer {
-            if (it is ProjectJsonAsFolderItem) {
-              this@GPCloudBrowserPane.toggleProjectLock(it,
-                  Consumer { this@GPCloudBrowserPane.reload() },
-                  builder.busyIndicatorToggler
-              )
-            }
-          },*/
+          },
+          onNameTyped = actionButtonHandler::onNameTyped
       )
       withListViewHint(listViewHint)
 
@@ -228,19 +232,6 @@ class GPCloudBrowserPane(
       document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
       document.proxyDocumentFactory = this.documentManager::getProxyDocument
 
-//      if (item.isLocked && item.canChangeLock || true) {
-//      } else {
-//        if (!item.isLocked) {
-//          val propertiesUi = DocPropertiesUi(
-//              errorUi = dialogUi::error,
-//              busyUi = this.paneElements.busyIndicator::accept)
-//          this.sceneChanger(propertiesUi.createLockSuggestionPane(document) {
-//            lockNode -> openDocumentWithLock(document, lockNode)
-//          })
-//        } else {
-//          this.sceneChanger(this.createLockWarningPage(document))
-//        }
-//      }
       this.documentConsumer(document)
       document.listenEvents(webSocket)
     }

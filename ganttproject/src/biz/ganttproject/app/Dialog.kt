@@ -91,18 +91,18 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
   }
 }
 
-fun dialog(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
+fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
   val jfxPanel = JFXPanel()
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
-    val dialogBuildApi = DialogControllerSwing { swingDialogController.get()}
-    contentBuilder(dialogBuildApi)
-    jfxPanel.scene = Scene(dialogBuildApi.build())
+    val dialogController = DialogControllerSwing { swingDialogController.get()}
+    contentBuilder(dialogController)
+    jfxPanel.scene = Scene(dialogController.build())
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
       dialogBuilder.createDialog(jfxPanel, arrayOf(), title?.value ?: "", null).also {
         swingDialogController.set(it)
-        it.show()
+        dialogController.setDialogFrame(it)
       }
     }
   }
@@ -117,9 +117,15 @@ interface DialogController {
   fun setHeader(header: Node)
   fun hide()
   fun removeButtonBar()
+  fun toggleProgress(shown: Boolean)
+  fun resize()
+  var beforeShow: () -> Unit
 }
 
 class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) : DialogController {
+  override var beforeShow: () -> Unit = {}
+
+  private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
     it.vbox.styleClass.add("dlg")
     it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
@@ -179,6 +185,12 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     return this.paneBuilder.vbox
   }
 
+  internal fun setDialogFrame(dlgFrame: UIFacade.Dialog) {
+    this.dialogFrame = dlgFrame;
+    this.beforeShow()
+    this.dialogFrame.show()
+  }
+
   override fun setContent(content: Node) {
     this.content = content
   }
@@ -190,6 +202,21 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     buttons.add(type)
     this.buttonNodes[type]?.let {
       code(it)
+    }
+  }
+
+  override fun toggleProgress(shown: Boolean) {
+    Platform.runLater {
+      createOverlayPane(this.content, this.contentStack) {pane ->
+        pane.center = Label("")
+        pane.opacity = 0.5
+      }
+    }
+  }
+
+  override fun resize() {
+    SwingUtilities.invokeLater {
+      this.dialogFrame.layout()
     }
   }
 
@@ -255,6 +282,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 }
 
 class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
+  override var beforeShow: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
@@ -271,6 +299,18 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     if (btn is Button) {
       code(btn)
     }
+  }
+
+  override fun toggleProgress(shown: Boolean) {
+    Platform.runLater {
+      createOverlayPane(this.content, this.stackPane) {pane ->
+        pane.center = Label("")
+        pane.opacity = 0.5
+      }
+    }
+  }
+
+  override fun resize() {
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -301,26 +341,8 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 }
 
-fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
-  val notificationPane = BorderPane().also { pane ->
-    pane.styleClass.add("alert-glasspane")
-    val vboxBuilder = VBoxBuilder("alert-box")
-    vboxBuilder.addTitle(title).also { hbox ->
-      hbox.alignment = Pos.CENTER_LEFT
-      hbox.isFillHeight = true
-      hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
-      val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
-      hbox.children.add(btnClose)
-      btnClose.addEventHandler(ActionEvent.ACTION) {
-        stackPane.children.remove(pane)
-        underlayPane.effect = null
-      }
-
-    }
-    vboxBuilder.add(body, Pos.CENTER, Priority.ALWAYS)
-    pane.center = vboxBuilder.vbox
-    pane.opacity = 0.0
-  }
+fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) {
+  val notificationPane = BorderPane().also(overlayBuilder)
   stackPane.children.add(notificationPane)
   val fadeIn = FadeTransition(Duration.seconds(1.0), notificationPane)
   fadeIn.fromValue = 0.0
@@ -341,6 +363,28 @@ fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedSt
     }
   }
   ParallelTransition(fadeIn, washOut).play()
+}
+
+fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
+  createOverlayPane(underlayPane, stackPane) { pane ->
+    pane.styleClass.add("alert-glasspane")
+    val vboxBuilder = VBoxBuilder("alert-box")
+    vboxBuilder.addTitle(title).also { hbox ->
+      hbox.alignment = Pos.CENTER_LEFT
+      hbox.isFillHeight = true
+      hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
+      val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
+      hbox.children.add(btnClose)
+      btnClose.addEventHandler(ActionEvent.ACTION) {
+        stackPane.children.remove(pane)
+        underlayPane.effect = null
+      }
+
+    }
+    vboxBuilder.add(body, Pos.CENTER, Priority.ALWAYS)
+    pane.center = vboxBuilder.vbox
+    pane.opacity = 0.0
+  }
 }
 
 fun createAlertBody(message: String): Node =

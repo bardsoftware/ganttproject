@@ -18,16 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.help;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -42,6 +32,12 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * Collection of actions from Help menu.
@@ -158,7 +154,7 @@ public class HelpMenu {
 
     protected void recover(Document recoverDocument) {
       try {
-        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject);
+        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject, null);
       } catch (Throwable e) {
         GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
       }

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 BarD Software s.r.o
+Copyright 2019-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -30,6 +30,10 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -40,7 +44,6 @@ import org.controlsfx.control.NotificationPane
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
-import javax.swing.SwingUtilities
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -61,10 +64,17 @@ class StorageDialogBuilder(
   private val myDialogUi = DialogUi(dialogBuildApi) { myNotificationPane!!}
 
   init {
+    // This will be called when user opens a project.
     myDocumentReceiver = Consumer { document: Document ->
-      SwingUtilities.invokeLater {
+      myDialogUi.toggleProgress(true)
+      val onFinish = Channel<Boolean>()
+
+      GlobalScope.launch(Dispatchers.IO) {
         try {
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject)
+          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
+          onFinish.receive()
+          myDialogUi.toggleProgress(false)
+          myDialogUi.close()
         } catch (e: IOException) {
           e.printStackTrace()
         } catch (e: Document.DocumentException) {
@@ -72,19 +82,28 @@ class StorageDialogBuilder(
         }
       }
     }
+    // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->
-      SwingUtilities.invokeLater {
+      myDialogUi.toggleProgress(true)
+      val onFinish = Channel<Boolean>()
+      GlobalScope.launch(Dispatchers.IO) {
         if (myProject.document == null) {
           myProject.document = documentManager.getProxyDocument(document)
         } else {
           myProject.document.setMirror(document)
         }
-        projectUi.saveProject(myProject)
+        if (document.isLocal) {
+          document.asLocalDocument()?.create()
+        }
+        projectUi.saveProject(myProject, onFinish)
+        onFinish.receive()
+        myDialogUi.toggleProgress(false)
+        myDialogUi.close()
       }
     }
   }
 
-  fun build() {
+  fun build(mode: Mode) {
     dialogBuildApi.addStyleClass("dlg-storage")
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
     dialogBuildApi.removeButtonBar()
@@ -131,14 +150,16 @@ class StorageDialogBuilder(
 
     titleBox.children.addAll(projectName, buttonBar)
     this.dialogBuildApi.setHeader(titleBox)
-
-    if (myProject.isModified) {
-      btnSave.fire()
-    } else {
-      btnOpen.fire()
-    }
-
     this.dialogBuildApi.setContent(borderPane)
+    this.dialogBuildApi.beforeShow = {
+      if (mode == Mode.SAVE) {
+        btnSave.fire()
+        btnSave.requestFocus()
+      } else {
+        btnOpen.fire()
+        btnOpen.requestFocus()
+      }
+    }
   }
 
   private fun showOpenStorageUi(container: BorderPane) {
@@ -149,14 +170,14 @@ class StorageDialogBuilder(
           NotificationPane.STYLE_CLASS_DARK)
       myOpenStorage = myNotificationPane
     }
-    FXUtil.transitionCenterPane(container, myOpenStorage, myDialogUi::resize)
+    FXUtil.transitionCenterPane(container, myOpenStorage, {})
   }
 
   private fun showSaveStorageUi(container: BorderPane) {
     if (mySaveStorage == null) {
       mySaveStorage = buildStoragePane(Mode.SAVE)
     }
-    FXUtil.transitionCenterPane(container, mySaveStorage, myDialogUi::resize)
+    FXUtil.transitionCenterPane(container, mySaveStorage, {})
   }
 
   private fun buildStoragePane(mode: Mode): Pane {
@@ -172,13 +193,15 @@ class StorageDialogBuilder(
     OPEN, SAVE
   }
 
-  class DialogUi(private val dialogController: DialogController,
+  class DialogUi(internal val dialogController: DialogController,
                  private val notificationPane: () -> NotificationPane) {
     fun close() {
       dialogController.hide()
     }
 
-    fun resize() {}
+    fun resize() {
+      this.dialogController.resize()
+    }
 
     fun error(e: Throwable) {
       dialogController.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(e.message ?: ""))
@@ -195,6 +218,10 @@ class StorageDialogBuilder(
       notificationText.styleClass.add("info")
       this.notificationPane().graphic = notificationText
       this.notificationPane().show()
+    }
+
+    fun toggleProgress(isShown: Boolean) {
+      dialogController.toggleProgress(isShown)
     }
   }
 
