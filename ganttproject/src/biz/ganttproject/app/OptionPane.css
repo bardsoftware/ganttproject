@@ -1,5 +1,5 @@
 
-.content-pane {
+.option-pane {
     -fx-background-color: transparent;
     -fx-border-width: 0 0 3 0;
     -fx-border-color: transparent;
@@ -7,17 +7,17 @@
     -fx-padding: 1ex 1em;
 }
 
-.content-pane .btn-option {
-    -fx-padding: 1ex 0 0 0;
+.option-pane .btn-option {
+    -fx-padding: 2ex 0 0 0;
 }
 
-.header .glyph-icon {
+.option-pane .header .glyph-icon {
     -fx-padding: 30px 0 0 20px;
     -fx-fill: -gp-medium-gray;
     -glyph-size: 32px;
 }
 
-.header .help {
+.option-pane .header .help {
     -fx-font-size: 80%;
     -fx-padding: 0 0 0 0;
     -fx-pref-width: 400px;
@@ -25,12 +25,12 @@
     -fx-wrap-text: true;
 }
 
-.header .title {
+.option-pane .header .title {
     -fx-font-size: 130%;
     -fx-font-weight: bold;
 }
 
-.option-help {
+.option-pane .option-help {
     -fx-padding: 0 0 0 2em;
     -fx-font-size: 80%;
     -fx-wrap-text: true;

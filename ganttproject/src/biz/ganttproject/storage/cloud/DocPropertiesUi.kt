@@ -1,5 +1,5 @@
 /*
-Copyright 2019 BarD Software s.r.o
+Copyright 2019-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,12 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -40,6 +38,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
@@ -56,6 +55,9 @@ typealias LockDurationHandler = (Duration) -> Unit
 typealias MirrorOptionHandler = (OnlineDocumentMode) -> Unit
 
 /**
+ * This is a user interface for editing GP Cloud Document options, namely,
+ * offline mirroring and locking.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
@@ -259,14 +261,28 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
   }
 
-  data class LockOfflinePaneElements(val pane: Parent, val lockToggleGroup: ToggleGroup, val mirrorToggleGroup: ToggleGroup)
-  fun buildPane(document: GPCloudDocument, onLockDone: OnLockDone): LockOfflinePaneElements {
-    val lockToggleGroup = ToggleGroup()
+  data class LockOfflinePaneElements(
+    val pane: Parent,
+    val lockToggleGroup: ToggleGroup,
+    val mirrorToggleGroup: ToggleGroup,
+    val lockHandler: LockDurationHandler,
+    val mirrorHandler: MirrorOptionHandler
+  ) {
+    fun commitChanges() {
+      val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
+      mirrorHandler(selectedMode)
 
+      val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
+      lockHandler(selectedDuration)
+    }
+  }
+  fun buildPane(document: GPCloudDocument): LockOfflinePaneElements {
+    val lockToggleGroup = ToggleGroup()
     val mirrorToggleGroup = ToggleGroup()
 
-    val vboxBuilder = VBoxBuilder("tab-contents").apply {
+    val vboxBuilder = VBoxBuilder("tab-contents", "option-pane").apply {
       i18n = OFFLINE_MIRROR_LOCALIZER
+      vbox.stylesheets.add(OPTION_PANE_STYLESHEET)
       add(node = mirrorPaneBuilder(document).let {
         it.toggleGroup = mirrorToggleGroup
         it.styleClass = "section"
@@ -285,9 +301,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       add(node = lockNode)
     }
 
-    val lockingOffline = Tab("Locking and Offline", vboxBuilder.vbox)
+    val lockingOffline = Tab(RootLocalizer.formatText("cloud.lockAndOfflinePane.tab"), vboxBuilder.vbox)
     val historyPane = createHistoryPane()
-    val versions = Tab("History", historyPane.pane)
+    val versions = Tab(RootLocalizer.formatText("cloud.historyPane.tab"), historyPane.pane)
     val tabPane = TabPane(lockingOffline, versions).also {
       it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
 
@@ -299,14 +315,15 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         }
       }
     }
-    return LockOfflinePaneElements(tabPane, lockToggleGroup, mirrorToggleGroup)
-  }
-
-  fun showDialog(document: GPCloudDocument) {
     val lockDurationHandler = lockDurationHandler(document, {})
     val mirrorOptionHandler = mirrorOptionHandler(document)
+    return LockOfflinePaneElements(tabPane, lockToggleGroup, mirrorToggleGroup, lockDurationHandler, mirrorOptionHandler)
+  }
+
+
+  fun showDialog(document: GPCloudDocument) {
     dialog { dialogController ->
-      val paneElements = buildPane(document, {})
+      val paneElements = buildPane(document)
       dialogController.addStyleClass("dlg-lock")
       dialogController.addStyleClass("dlg-cloud-file-options")
       dialogController.addStyleSheet(
@@ -319,11 +336,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         btn.textProperty().bind(RootLocalizer.create("cloud.offlineMirrorOptionPane.btnApply"))
         btn.styleClass.add("btn-attention")
         btn.addEventHandler(ActionEvent.ACTION) {
-          val selectedMode = paneElements.mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
-          mirrorOptionHandler(selectedMode)
-
-          val selectedDuration = paneElements.lockToggleGroup.selectedToggle.userData as Duration
-          lockDurationHandler(selectedDuration)
+          paneElements.commitChanges()
         }
       }
     }
@@ -331,6 +344,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 }
 
 class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
+
+  private var paneElements: DocPropertiesUi.LockOfflinePaneElements? = null
+
   override fun getOptionGroups() = emptyArray<GPOptionGroup>()
   override fun hasCustomComponent() = true
 
@@ -338,23 +354,33 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     val jfxPanel = JFXPanel()
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
-    GlobalScope.launch(Dispatchers.Main) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
       jfxPanel.scene = buildScene()
     }
     return wrapper
   }
 
+  override fun commit() {
+    paneElements?.commitChanges()
+  }
+
   private fun buildScene(): Scene {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
-    if (onlineDocument is GPCloudDocument) {
-      val docPropertiesUi = DocPropertiesUi(errorUi = {}, busyUi = {})
-      val vboxBuilder = VBoxBuilder("dlg-lock").also {
-        it.add(docPropertiesUi.buildPane(onlineDocument, {}).pane, Pos.CENTER, Priority.ALWAYS)
-        it.vbox.stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+    return if (onlineDocument is GPCloudDocument) {
+      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument).let {
+        paneElements = it
+        Scene(vbox {
+          addClasses("dlg-lock", "dlg-cloud-file-options")
+          addStylesheets(
+            "/biz/ganttproject/app/TabPane.css",
+            "/biz/ganttproject/storage/cloud/DocPropertiesUi.css",
+            "/biz/ganttproject/storage/StorageDialog.css"
+          )
+          add(it.pane, Pos.CENTER, Priority.ALWAYS)
+        })
       }
-      return Scene(vboxBuilder.vbox)
     } else {
-      return buildNotOnlineDocumentScene()
+      buildNotOnlineDocumentScene()
     }
   }
 
@@ -366,4 +392,5 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 }
 
-private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
+private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
+        "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
