@@ -22,6 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.Spinner
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.isBrowseSupported
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -114,9 +115,15 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
       )
     }
     GlobalScope.launch(Dispatchers.IO) {
-      status = Status.WAITING_FOR_BROWSER
-      openInBrowser(uri.trim())
-      startBrowserTimeout(uri)
+      if (isBrowseSupported()) {
+        status = Status.WAITING_FOR_BROWSER
+        openInBrowser(uri.trim())
+        startBrowserTimeout(uri)
+      } else {
+        GlobalScope.launch(Dispatchers.JavaFx) {
+          FXUtil.transitionCenterPane(indicatorPane, createUrlPane(uri)) {}
+        }
+      }
     }
     return vboxBuilder.vbox
   }
