@@ -40,10 +40,6 @@ class DocumentUri(private val components: List<String>,
                   private val isAbsolute: Boolean = true,
                   private val root: String = "/") {
 
-  fun isAbsolute(): Boolean {
-    return this.isAbsolute
-  }
-
   fun getNameCount(): Int {
     return this.components.size
   }
@@ -124,10 +120,17 @@ class DocumentUri(private val components: List<String>,
     return result
   }
 
+  override fun toString(): String {
+    return components.joinToString(
+        separator = "/",
+        prefix = "/"
+    )
+  }
+
 
   companion object LocalDocument {
     fun toFile(path: DocumentUri): File {
-      val filePath = java.nio.file.Paths.get(path.root, *path.components.toTypedArray())
+      val filePath = Paths.get(path.root, *path.components.toTypedArray())
       return filePath.toFile()
     }
 
@@ -202,6 +205,9 @@ interface OnlineDocument {
 }
 
 fun (Document).asLocalDocument(): FileDocument? {
+  if (this is FileDocument) {
+    return this
+  }
   if (this is ProxyDocument) {
     if (this.realDocument is FileDocument) {
       return this.realDocument as FileDocument

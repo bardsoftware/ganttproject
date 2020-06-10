@@ -75,11 +75,15 @@ class ProjectUIFacadeImpl(
       if (project.document == null) {
         saveProjectAs(project)
         onFinish?.send(true)
+        return@launch
       }
+
       if (project.document.asLocalDocument()?.canRead() == false) {
         saveProjectAs(project)
         onFinish?.send(true)
+        return@launch
       }
+
       val document = project.document
       saveProjectTryWrite(project, document)
       onFinish?.send(true)
@@ -119,12 +123,12 @@ class ProjectUIFacadeImpl(
   enum class VersionMismatchChoice { OVERWRITE, MAKE_COPY }
 
   private fun saveProjectTrySave(project: IGanttProject, document: Document): Boolean {
-    val onlineDoc = document.asOnlineDocument()
     try {
       saveProject(document)
       afterSaveProject(project)
       return true
     } catch (e: VersionMismatchException) {
+      val onlineDoc = document.asOnlineDocument()
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
           it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch")
@@ -210,7 +214,7 @@ class ProjectUIFacadeImpl(
 
   override fun saveProjectAs(project: IGanttProject) {
     StorageDialogAction(project, this, project.documentManager,
-        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption).actionPerformed(null)
+        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, StorageDialogBuilder.Mode.SAVE, "project.save").actionPerformed(null)
   }
 
   /**

@@ -89,7 +89,7 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
   fun createSigninPane(): Pane {
     val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
 
-    val vboxBuilder = VBoxBuilder()
+    val vboxBuilder = VBoxBuilder("signin-pane", "pane-service-contents")
     vboxBuilder.addTitle(ourLocalizer.formatText("title")).also {
       it.styleClass += "title-integrated"
     }
@@ -106,7 +106,6 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
 
 
     vboxBuilder.vbox.let {
-      it.styleClass.addAll("signin-pane", "pane-service-contents")
       it.stylesheets.addAll(
           "/biz/ganttproject/app/Dialog.css",
           "/biz/ganttproject/app/Util.css",

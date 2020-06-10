@@ -21,7 +21,7 @@ ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
 //ant.properties.distMacWork = 'dist-mac'
 //ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
 ant.properties.version = "${rootProject.semver}"
-ant.properties.version_build = "2903"
+ant.properties.version_build = "${rootProject.version}"
 
 
 def devNull = new OutputStream() {

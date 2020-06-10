@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.document.webdav;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import io.milton.common.Path;
 import io.milton.http.exceptions.BadRequestException;
 import io.milton.http.exceptions.ConflictException;
@@ -306,7 +305,7 @@ public class MiltonResourceImpl implements WebDavResource {
   public boolean isWritable() {
     try {
       if (exists()) {
-        return canLock();
+        return doCanLock() != CanLockStatus.LOCK_UNAVAILABLE;
       }
       WebDavResource parent = getParent();
       return parent.exists() && parent.isWritable();
@@ -318,17 +317,27 @@ public class MiltonResourceImpl implements WebDavResource {
 
   @Override
   public boolean canLock() throws WebDavException {
-    assertExists();
-    if (myImpl.getSupportedLock() == null) {
-      return false;
-    }
-    if (!myImpl.getSupportedLock().exclusive) {
-      return false;
-    }
-    List<String> lockOwners = getLockOwners();
-    return lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(getUsername()));
+    return doCanLock() == CanLockStatus.LOCK_AVAILABLE;
   }
 
+  enum CanLockStatus {
+    LOCK_AVAILABLE, LOCK_UNSUPPORTED, LOCK_UNAVAILABLE
+  }
+  private CanLockStatus doCanLock() {
+    assertExists();
+    if (myImpl.getSupportedLock() == null) {
+      return CanLockStatus.LOCK_UNSUPPORTED;
+    }
+    if (!myImpl.getSupportedLock().exclusive) {
+      return CanLockStatus.LOCK_UNSUPPORTED;
+    }
+    List<String> lockOwners = getLockOwners();
+    if (lockOwners.isEmpty() || lockOwners.equals(ImmutableList.of(getUsername()))) {
+      return CanLockStatus.LOCK_AVAILABLE;
+    } else {
+      return CanLockStatus.LOCK_UNAVAILABLE;
+    }
+  }
   private String getUsername() {
     return myHost.user;
   }

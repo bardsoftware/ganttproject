@@ -95,7 +95,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
 
   private final RssFeedChecker myRssChecker;
-  private final ContentPaneBuilder myContentPaneBuilder;
+  protected final ContentPaneBuilder myContentPaneBuilder;
   private Updater myUpdater;
 
   protected GanttProjectBase() {

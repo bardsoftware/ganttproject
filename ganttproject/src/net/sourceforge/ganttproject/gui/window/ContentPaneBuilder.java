@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.window;
 
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.control.MenuBar;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
@@ -38,18 +41,29 @@ public class ContentPaneBuilder {
   private final GanttTabbedPane myTabbedPane;
   private final GanttStatusBar myStatusBar;
   private final AnimationHostImpl myAnimationHost = new AnimationHostImpl();
+  private final JFXPanel myMenuPanel;
 
   public ContentPaneBuilder(GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
     myTabbedPane = tabbedPane;
     myStatusBar = statusBar;
+    myMenuPanel = new JFXPanel();
   }
 
   public void build(Component toolbar, Container contentPane) {
     JPanel contentPanel = new JPanel(new BorderLayout());
-    contentPanel.add(toolbar, BorderLayout.NORTH);
+    JPanel topPanel = new JPanel(new BorderLayout());
+
+    topPanel.add(myMenuPanel, BorderLayout.NORTH);
+    topPanel.add(toolbar, BorderLayout.CENTER);
+    contentPanel.add(topPanel, BorderLayout.NORTH);
     contentPanel.add(myTabbedPane, BorderLayout.CENTER);
     contentPanel.add(myStatusBar, BorderLayout.SOUTH);
     contentPane.add(contentPanel);
+  }
+
+  public void setMenu(MenuBar menu) {
+    Scene menuBarScene = new Scene(menu, javafx.scene.paint.Color.TRANSPARENT);
+    myMenuPanel.setScene(menuBarScene);
   }
 
   public class AnimationHostImpl implements AnimationView {

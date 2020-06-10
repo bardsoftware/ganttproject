@@ -174,12 +174,15 @@ class GPCloudBrowserPane(
 
       }
 
-      fun onNameTyped(filename: String, itemsMatched: List<FolderItem>) {
+      fun onNameTyped(filename: String, itemsMatched: List<FolderItem>, withEnter: Boolean, withControl: Boolean) {
         this.button?.isDisable =
             when (this@GPCloudBrowserPane.mode) {
               StorageDialogBuilder.Mode.OPEN -> itemsMatched.isEmpty()
               StorageDialogBuilder.Mode.SAVE -> filename.isBlank()
             }
+        if (withEnter && withControl && this@GPCloudBrowserPane.mode == StorageDialogBuilder.Mode.SAVE) {
+          this.onAction()
+        }
       }
     }
 

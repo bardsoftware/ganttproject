@@ -655,6 +655,14 @@ public abstract class UIUtil {
     return value == null ? null : String.valueOf(value);
   }
 
+  public static String getFontawesomeIconset(GPAction action) {
+    if (action.getID() == null) {
+      return null;
+    }
+    Object value = FONTAWESOME_PROPERTIES.get(action.getID() + ".iconset");
+    return value == null ? "fontawesome" : String.valueOf(value);
+  }
+
   public static boolean isFontawesomeSizePreferred() {
     String laf = UIManager.getLookAndFeel().getName().toLowerCase();
     return laf.contains("macosx") || laf.contains("mac os x");
