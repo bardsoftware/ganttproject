@@ -20,21 +20,15 @@ package net.sourceforge.ganttproject;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import io.milton.resource.Resource;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -89,10 +83,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
     myResourceTreeModel.setSelectionModel(getTreeSelectionModel());
   }
 
-  private UIFacade getUiFacade() {
-    return myUiFacade;
-  }
-
   @Override
   public String getToolTipText(MouseEvent event) {
     int column = columnAtPoint(event.getPoint());
@@ -138,14 +128,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
     }
   }
 
-  private static class DescendingNameComparator implements Comparator<HumanResource> {
-    @Override
-    public int compare(HumanResource o1, HumanResource o2) {
-      return o2.getName().compareTo(o1.getName());
-    }
-  }
-
-
   /** Initialize the treetable. Addition of various listeners, tree's icons. */
   @Override
   protected void doInit() {
@@ -156,68 +138,38 @@ public class ResourceTreeTable extends GPTreeTableBase {
     getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
-        int index = getTable().columnAtPoint(mouseEvent.getPoint());
-        if (index == -1){
-          return;
-        }
 
-        if (mouseEvent.isPopupTrigger() || mouseEvent.getButton() != MouseEvent.BUTTON1){
-          return;
-        }
-
-        if (mouseEvent.isAltDown() || mouseEvent.isShiftDown() || mouseEvent.isControlDown()){
+        if (configureMouseListener(mouseEvent) == -1) {
           return;
         }
 
         final TableHeaderUiFacadeImpl tableHeader = getTableHeaderUiFacade();
-        final ColumnImpl column = tableHeader.findColumnByViewIndex(index);
+        final ColumnImpl column = tableHeader.findColumnByViewIndex(getTable().columnAtPoint(mouseEvent.getPoint()));
         final ResourceDefaultColumn resourceColumn = ResourceDefaultColumn.find(column.getID());
 
         getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
           @Override
           public void run() {
+            Comparator<?> comparator;
 
             if (resourceColumn == ResourceDefaultColumn.NAME) {
 
               if (column.getSort() == SortOrder.ASCENDING) {
                 column.setSort(SortOrder.DESCENDING);
-                resourceColumn.setSortComparator(new DescendingNameComparator());
+                comparator = new AscendingNameComparator().reversed();
               } else {
                 column.setSort(SortOrder.ASCENDING);
-                resourceColumn.setSortComparator(new AscendingNameComparator());
+                comparator = new AscendingNameComparator();
               }
 
-              ArrayList<HumanResource> sorted = new ArrayList<>();
-              getProject().getHumanResourceManager().getResources().forEach( h -> {
-                sorted.add(h);
-              });
-              sorted.sort((Comparator<HumanResource>) resourceColumn.getSortComparator());
-
-              for(int j = sorted.size()-1; j>=0; j--){
-                HumanResource h = sorted.get(j);
-                int idxo =  getProject().getHumanResourceManager().getResources().indexOf(h);
-                int idxs = sorted.indexOf(h);
-                int delta = idxs - idxo;
-                for(int i = 0; i < Math.abs(delta) ; i++){
-                  if (idxs < idxo) {
-                    myResourceTreeModel.moveUp(h);
-                  }  else {
-                    myResourceTreeModel.moveDown(h);
-                  }
-                }
-              };
+              List<HumanResource> sorted = new ArrayList<>(getProject().getHumanResourceManager().getResources());
+              sorted.sort((Comparator<? super HumanResource>) comparator);
+              myResourceTreeModel.updateResources(sorted);
             }
           }
         });
       }
     });
-  }
-
-  private class ModelListener implements TableModelListener {
-    @Override
-    public void tableChanged(TableModelEvent e) {
-      getUiFacade().getGanttChart().reset();
-    }
   }
 
   @Override

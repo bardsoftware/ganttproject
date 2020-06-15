@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -51,13 +52,7 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -124,6 +119,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   // a currently selected edit cell.
   // See comments in editCellAt method below.
   private final AtomicBoolean isEditingStartExpected = new AtomicBoolean(false);
+  protected final UIFacade getUiFacade() {
+    return myUiFacade;
+  }
   protected void setEditingStartExpected(boolean value) {
     this.isEditingStartExpected.set(value);
   }
@@ -1185,5 +1183,27 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     column.getTableColumnExt().setPreferredWidth(dimension.width);
     return dimension;
 
+  }
+
+  protected int configureMouseListener(MouseEvent mouseEvent){
+    int index = getTable().columnAtPoint(mouseEvent.getPoint());
+    int result = 0;
+    if (index == -1) {
+      result = -1;
+    }
+    if (mouseEvent.isPopupTrigger() || mouseEvent.getButton() != MouseEvent.BUTTON1) {
+      result = -1;
+    }
+    if (mouseEvent.isAltDown() || mouseEvent.isShiftDown() || mouseEvent.isControlDown()) {
+      result = -1;
+    }
+    return result;
+  }
+
+  protected class ModelListener implements TableModelListener {
+    @Override
+    public void tableChanged(TableModelEvent e) {
+      getUiFacade().getGanttChart().reset();
+    }
   }
 }
