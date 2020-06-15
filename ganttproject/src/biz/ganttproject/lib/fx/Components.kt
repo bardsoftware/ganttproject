@@ -127,6 +127,14 @@ class VBoxBuilder(vararg classes: String) {
     growth?.let { VBox.setVgrow(child, it) }
     return child
   }
+
+  fun addClasses(vararg classes: String) {
+    this.vbox.styleClass.addAll(classes)
+  }
+
+  fun addStylesheets(vararg stylesheets: String) {
+    this.vbox.stylesheets.addAll(stylesheets)
+  }
 }
 
 fun vbox(code: VBoxBuilder.() -> Unit) = VBoxBuilder().apply(code).vbox

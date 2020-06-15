@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.lib.fx.VBoxBuilder
-import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -30,6 +29,8 @@ interface I18N {
   fun formatText(key: String, args: Array<Any> = arrayOf()): String
   fun hasKey(key: String): Boolean
 }
+
+const val OPTION_PANE_STYLESHEET = "/biz/ganttproject/app/OptionPane.css"
 
 /**
  * Input data of a single option: its key for i18n purposes, user data for the handler and flag indicating if option
@@ -61,7 +62,7 @@ class OptionPaneBuilder<T> {
   /**
    * Stylesheet which is associated with the widget
    */
-  var styleSheets: MutableList<String> = mutableListOf("/biz/ganttproject/app/OptionPane.css")
+  var styleSheets: MutableList<String> = mutableListOf(OPTION_PANE_STYLESHEET)
 
   /**
    * Graphic node shown in the left side of the widget
@@ -135,7 +136,7 @@ class OptionPaneBuilder<T> {
       )
       // Dialog content is .content-pane
       it.setContent(buildPaneImpl(lockGroup).apply {
-        styleClass.add("content-pane")
+        styleClass.add("option-pane")
       })
       // The only available button is OK which is .btn-attention
       it.setupButton(ButtonType.OK) {btn ->

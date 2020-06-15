@@ -42,7 +42,7 @@ import java.util.function.Consumer
  */
 class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJsonAsFolderItem() {
   override val isLockable: Boolean = false
-  override val name: String = options.name
+  override val name: String = options.name.ifBlank { options.offlineMirror ?: "Untitled" }
   override val isDirectory: Boolean = false
   override val canChangeLock: Boolean = false
   override val isLocked: Boolean
