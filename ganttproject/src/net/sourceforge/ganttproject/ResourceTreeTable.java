@@ -23,12 +23,9 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -139,7 +136,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
 
-        if (configureMouseListener(mouseEvent) == -1) {
+        if (!mouseEventHandling(mouseEvent)) {
           return;
         }
 
@@ -150,9 +147,9 @@ public class ResourceTreeTable extends GPTreeTableBase {
         getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
           @Override
           public void run() {
-            Comparator<?> comparator;
 
             if (resourceColumn == ResourceDefaultColumn.NAME) {
+              Comparator<HumanResource> comparator;
 
               if (column.getSort() == SortOrder.ASCENDING) {
                 column.setSort(SortOrder.DESCENDING);
@@ -162,8 +159,8 @@ public class ResourceTreeTable extends GPTreeTableBase {
                 comparator = new AscendingNameComparator();
               }
 
-              List<HumanResource> sorted = new ArrayList<>(getProject().getHumanResourceManager().getResources());
-              sorted.sort((Comparator<? super HumanResource>) comparator);
+              List<HumanResource> sorted = new ArrayList<>(getProject().getHumanResourceManager().getResources());  
+              sorted.sort(comparator);
               myResourceTreeModel.updateResources(sorted);
             }
           }

@@ -29,8 +29,6 @@ import net.sourceforge.ganttproject.task.Task;
 
 import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
@@ -113,7 +111,7 @@ public class GanttTreeTable extends GPTreeTableBase {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
 
-        if (configureMouseListener(mouseEvent) == -1) {
+        if (!mouseEventHandling(mouseEvent)) {
           return;
         }
 
