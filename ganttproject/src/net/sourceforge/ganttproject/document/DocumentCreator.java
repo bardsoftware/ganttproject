@@ -191,7 +191,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newAutosaveDocument() throws IOException {
-    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan");
+    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan",getTempDir());
     return getDocument(tempFile.getAbsolutePath());
   }
 
@@ -257,7 +257,12 @@ public class DocumentCreator implements DocumentManager {
   }
 
   private static File getTempDir() {
-    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    File tempDir;
+    if (System.getProperty("os.name").toLowerCase().equals("linux")){
+      tempDir = new File("/var/tmp");
+    }else {
+      tempDir = new File(System.getProperty("java.io.tmpdir"));
+    }
     if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
       return tempDir;
     }
@@ -276,7 +281,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document getLastAutosaveDocument(Document priorTo) throws IOException {
-    File f = File.createTempFile("tmp", "");
+    File f = File.createTempFile("tmp", "",getTempDir());
     File directory = f.getParentFile();
     File files[] = directory.listFiles(new FilenameFilter() {
       @Override
