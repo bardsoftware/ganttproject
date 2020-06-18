@@ -21,3 +21,5 @@ fun openInBrowser(url: String) {
     }
   }
 }
+
+fun isBrowseSupported(): Boolean = Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
