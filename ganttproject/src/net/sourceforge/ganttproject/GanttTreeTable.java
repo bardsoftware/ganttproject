@@ -29,8 +29,6 @@ import net.sourceforge.ganttproject.task.Task;
 
 import javax.swing.*;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
@@ -78,10 +76,6 @@ public class GanttTreeTable extends GPTreeTableBase {
     });
   }
 
-  private UIFacade getUiFacade() {
-    return myUIfacade;
-  }
-
   @Override
   protected List<Column> getDefaultColumns() {
     return TaskDefaultColumn.getColumnStubs();
@@ -116,19 +110,13 @@ public class GanttTreeTable extends GPTreeTableBase {
     getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {
-        int index = getTable().columnAtPoint(mouseEvent.getPoint());
-        if (index == -1) {
+
+        if (!mouseEventHandling(mouseEvent)) {
           return;
         }
 
-        if (mouseEvent.isPopupTrigger() || mouseEvent.getButton() != MouseEvent.BUTTON1) {
-          return;
-        }
-        if (mouseEvent.isAltDown() || mouseEvent.isShiftDown() || mouseEvent.isControlDown()) {
-          return;
-        }
         final TableHeaderUiFacadeImpl tableHeader = getTableHeaderUiFacade();
-        final ColumnImpl column = tableHeader.findColumnByViewIndex(index);
+        final ColumnImpl column = tableHeader.findColumnByViewIndex(getTable().columnAtPoint(mouseEvent.getPoint()));
         final TaskDefaultColumn taskColumn = TaskDefaultColumn.find(column.getID());
 
         getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
@@ -169,13 +157,6 @@ public class GanttTreeTable extends GPTreeTableBase {
     Rectangle rect = getTable().getCellRect(row, col, true);
     getHorizontalScrollBar().scrollRectToVisible(rect);
     getScrollPane().getViewport().scrollRectToVisible(rect);
-  }
-
-  private class ModelListener implements TableModelListener {
-    @Override
-    public void tableChanged(TableModelEvent e) {
-      getUiFacade().getGanttChart().reset();
-    }
   }
 
   void editSelectedTask() {

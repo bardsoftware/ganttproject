@@ -18,16 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import javax.swing.Action;
-import javax.swing.DefaultCellEditor;
-import javax.swing.InputMap;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -87,16 +82,16 @@ public class ResourceTreeTable extends GPTreeTableBase {
 
   @Override
   public String getToolTipText(MouseEvent event) {
-      int column = columnAtPoint(event.getPoint());
-      if (column >= 0 && isHierarchical(column)) {
-          TreePath pathAtPoint = getTreeTable().getPathForLocation(event.getX(), event.getY());
-          TreeTableNode nodeAtPoint = pathAtPoint == null ? null : (TreeTableNode) pathAtPoint.getLastPathComponent();
-          if (nodeAtPoint instanceof AssignmentNode) {
-            Task task = ((AssignmentNode)nodeAtPoint).getTask();
-            return "<html><body>" + buildPath(task) + "</body></html>";
-          }
+    int column = columnAtPoint(event.getPoint());
+    if (column >= 0 && isHierarchical(column)) {
+      TreePath pathAtPoint = getTreeTable().getPathForLocation(event.getX(), event.getY());
+      TreeTableNode nodeAtPoint = pathAtPoint == null ? null : (TreeTableNode) pathAtPoint.getLastPathComponent();
+      if (nodeAtPoint instanceof AssignmentNode) {
+        Task task = ((AssignmentNode)nodeAtPoint).getTask();
+        return "<html><body>" + buildPath(task) + "</body></html>";
       }
-      return super.getToolTipText(event);
+    }
+    return super.getToolTipText(event);
   }
 
   private String buildPath(Task task) {
@@ -123,12 +118,55 @@ public class ResourceTreeTable extends GPTreeTableBase {
     return myUiFacade.getResourceChart();
   }
 
+  private static class AscendingNameComparator implements Comparator<HumanResource> {
+    @Override
+    public int compare(HumanResource o1, HumanResource o2) {
+      return o1.getName().compareTo(o2.getName());
+    }
+  }
+
   /** Initialize the treetable. Addition of various listeners, tree's icons. */
   @Override
   protected void doInit() {
     super.doInit();
     myResourceTreeModel.updateResources();
+    getTable().getModel().addTableModelListener(new ModelListener());
     getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(myUiFacade.getResourceChart(), false));
+    getTableHeader().addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent mouseEvent) {
+
+        if (!mouseEventHandling(mouseEvent)) {
+          return;
+        }
+
+        final TableHeaderUiFacadeImpl tableHeader = getTableHeaderUiFacade();
+        final ColumnImpl column = tableHeader.findColumnByViewIndex(getTable().columnAtPoint(mouseEvent.getPoint()));
+        final ResourceDefaultColumn resourceColumn = ResourceDefaultColumn.find(column.getID());
+
+        getUiFacade().getUndoManager().undoableEdit(GanttLanguage.getInstance().getText("task.sort"), new Runnable() {
+          @Override
+          public void run() {
+
+            if (resourceColumn == ResourceDefaultColumn.NAME) {
+              Comparator<HumanResource> comparator;
+
+              if (column.getSort() == SortOrder.ASCENDING) {
+                column.setSort(SortOrder.DESCENDING);
+                comparator = new AscendingNameComparator().reversed();
+              } else {
+                column.setSort(SortOrder.ASCENDING);
+                comparator = new AscendingNameComparator();
+              }
+
+              List<HumanResource> sorted = new ArrayList<>(getProject().getHumanResourceManager().getResources());  
+              sorted.sort(comparator);
+              myResourceTreeModel.updateResources(sorted);
+            }
+          }
+        });
+      }
+    });
   }
 
   @Override
