@@ -208,7 +208,7 @@ public class DocumentCreator implements DocumentManager {
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
       FileTime accessTime = attrs.lastAccessTime();
       FileTime modifyTime = attrs.lastModifiedTime();
-      long lastFileTime = Math.max(accessTime.toMillis(),modifyTime.toMillis());
+      long lastFileTime = Math.max(accessTime.toMillis(), modifyTime.toMillis());
       cutoff = Math.min(lastFileTime, now);
     } catch (IOException e) {
       GPLogger.log(e);
