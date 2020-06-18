@@ -191,7 +191,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newAutosaveDocument() throws IOException {
-    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan",getTempDir());
+    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan", getTempDir());
     return getDocument(tempFile.getAbsolutePath());
   }
 
