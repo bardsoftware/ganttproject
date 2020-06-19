@@ -12,6 +12,7 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.jgoodies.common.base.SystemUtils;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -258,11 +259,13 @@ public class DocumentCreator implements DocumentManager {
 
   private static File getTempDir() {
     File tempDir;
-    if (System.getProperty("os.name").toLowerCase().equals("linux")){
+    if (SystemUtils.IS_OS_LINUX ){
       tempDir = new File("/var/tmp");
-    }else {
-      tempDir = new File(System.getProperty("java.io.tmpdir"));
+      if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
+        return tempDir;
+      }
     }
+    tempDir = new File(System.getProperty("java.io.tmpdir"));
     if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
       return tempDir;
     }
