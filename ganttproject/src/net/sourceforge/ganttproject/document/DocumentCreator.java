@@ -12,6 +12,7 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.jgoodies.common.base.SystemUtils;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -191,7 +192,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newAutosaveDocument() throws IOException {
-    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan");
+    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan", getTempDir());
     return getDocument(tempFile.getAbsolutePath());
   }
 
@@ -207,7 +208,9 @@ public class DocumentCreator implements DocumentManager {
       GPLogger.log("Options file:" + optionsFile.getAbsolutePath());
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
       FileTime accessTime = attrs.lastAccessTime();
-      cutoff = Math.min(accessTime.toMillis(), now);
+      FileTime modifyTime = attrs.lastModifiedTime();
+      long lastFileTime = Math.max(accessTime.toMillis(), modifyTime.toMillis());
+      cutoff = Math.min(lastFileTime, now);
     } catch (IOException e) {
       GPLogger.log(e);
       return null;
@@ -255,7 +258,14 @@ public class DocumentCreator implements DocumentManager {
   }
 
   private static File getTempDir() {
-    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    File tempDir;
+    if (SystemUtils.IS_OS_LINUX ){
+      tempDir = new File("/var/tmp");
+      if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
+        return tempDir;
+      }
+    }
+    tempDir = new File(System.getProperty("java.io.tmpdir"));
     if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
       return tempDir;
     }
@@ -274,7 +284,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document getLastAutosaveDocument(Document priorTo) throws IOException {
-    File f = File.createTempFile("tmp", "");
+    File f = File.createTempFile("tmp", "",getTempDir());
     File directory = f.getParentFile();
     File files[] = directory.listFiles(new FilenameFilter() {
       @Override
