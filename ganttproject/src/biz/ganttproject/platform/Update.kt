@@ -55,7 +55,9 @@ import org.eclipse.core.runtime.Platform as Eclipsito
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
 
 fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
-  val latestShownUpdateMetadata = UpdateMetadata(UpdateOptions.latestShownVersion.value, null, null, null, 0)
+  val latestShownUpdateMetadata = UpdateMetadata(
+      UpdateOptions.latestShownVersion.value ?: Eclipsito.getUpdater().installedUpdateVersions.max()!!,
+      null, null, null, 0)
   val filteredUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
   if (filteredUpdates.isNotEmpty()) {

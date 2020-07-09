@@ -37,6 +37,7 @@ dependencies {
     exported 'de.jensd:fontawesomefx-materialicons:2.2.0-11'
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
+    exported group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
 
     exported 'org.apache.httpcomponents:httpclient:4.5.6'
     exported 'org.apache.httpcomponents:httpmime:4.5.6'
