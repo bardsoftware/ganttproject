@@ -194,7 +194,7 @@ public class RssFeedChecker {
         HttpClient httpClient = new DefaultHttpClient();
         String url = RSS_URL;
         HttpGet getRssUrl = new HttpGet(url);
-        getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.CURRENT);
+        getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.getCurrentVersionNumber());
         try {
           for (int i = 0; i < MAX_ATTEMPTS; i++) {
             HttpResponse result = httpClient.execute(getRssUrl);

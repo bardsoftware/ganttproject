@@ -52,7 +52,7 @@ public class AboutDialog2 extends AbstractPagesDialog {
     JPanel result = new JPanel(new BorderLayout());
     Box htmlBox = Box.createVerticalBox();
     {
-      JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.CURRENT));
+      JEditorPane html = createHtml(GanttLanguage.getInstance().formatText("about.summary", GPVersion.getCurrentVersionNumber()));
       html.setAlignmentX(0.5f);
       htmlBox.add(html);
       htmlBox.add(Box.createVerticalStrut(20));

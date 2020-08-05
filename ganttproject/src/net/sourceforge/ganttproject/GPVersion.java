@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import static org.eclipse.core.runtime.Platform.*;
+import static org.eclipse.core.runtime.Platform.getUpdater;
 
 public abstract class GPVersion {
   public static String BUILD = "2906"; // BUILD NUMBER
@@ -56,15 +56,19 @@ public abstract class GPVersion {
   public static String PILSEN_2_8_9 = String.format("2.8.9 Pilsen (build 2335)");
   public static String PILSEN_2_8_10 = String.format("2.8.10 Pilsen (build 2364)");
   public static String PILSEN_2_8_11 = String.format("2.8.11 Pilsen (build %s)", BUILD);
-  public static String DEV = getUpdater().getInstalledUpdateVersions().stream().max(String::compareTo)
-      .orElse(String.format("2.99.%s", BUILD));
-  public static String CURRENT = DEV;
+//  public static String DEV = getUpdater().getInstalledUpdateVersions().stream().max(String::compareTo)
+//      .orElse(String.format("2.99.%s", BUILD));
+//  public static String CURRENT = DEV;
 
   public static String getCurrentVersionNumber() {
-    return CURRENT;
+    var updater = getUpdater();
+    var version = updater == null
+        ? null : updater.getInstalledUpdateVersions().stream().max(String::compareTo)
+        .orElse(null);
+    return version == null ? String.format("2.99.%s", BUILD) : version;
   }
 
   public static String getCurrentBuildNumber() {
-    return CURRENT.split("\\.")[2];
+    return getCurrentVersionNumber().split("\\.")[2];
   }
 }

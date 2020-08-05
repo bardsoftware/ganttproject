@@ -188,7 +188,7 @@ public class GPLogger {
   public static void logSystemInformation() {
     try {
       StringBuilder result = new StringBuilder();
-      result.append("GanttProject " + GPVersion.CURRENT).append("\n");
+      result.append("GanttProject " + GPVersion.getCurrentVersionNumber()).append("\n");
       File optionsFile = GanttOptions.getOptionsFile();
       result.append("Settings file:\n");
       result.append("\tlocation: ").append(optionsFile.getAbsolutePath()).append("\n");

@@ -18,24 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-
-import javax.xml.transform.sax.TransformerHandler;
-
+import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.GPVersion;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.FileUtil;
-
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import biz.ganttproject.core.time.CalendarFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * HTML-specific serializer.
@@ -106,7 +102,7 @@ public class HtmlSerializer extends XmlSerializer {
       throw new ExportException("Failed to write tasks", e);
     }
 
-    addAttribute("version", "Ganttproject (" + GPVersion.CURRENT + ")", attrs);
+    addAttribute("version", "Ganttproject (" + GPVersion.getCurrentVersionNumber() + ")", attrs);
     Calendar c = CalendarFactory.newCalendar();
     String dateAndTime = GanttLanguage.getInstance().formatShortDate(c) + " - " + GanttLanguage.getInstance().formatTime(c);
 
