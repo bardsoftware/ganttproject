@@ -1,5 +1,4 @@
 buildscript {
-    ext.kotlin_version = '1.3.+'
     repositories {
         mavenCentral()
         maven {
@@ -20,15 +19,15 @@ configurations {
 
 dependencies {
     exported 'ch.qos.logback:logback-classic:1.2.+'
-    exported 'commons-codec:commons-codec:1.10'
-    exported 'commons-io:commons-io:2.4'
+    exported 'commons-codec:commons-codec:1.+'
+    exported 'commons-io:commons-io:2.+'
 
     exported 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
     exported 'com.evanlennick:retry4j:0.+'
-    exported 'com.fasterxml.jackson.core:jackson-core:2.9.+'
-    exported 'com.fasterxml.jackson.core:jackson-databind:2.9.+'
-    exported 'com.jgoodies:jgoodies-common:1.7.0'
-    exported 'com.jgoodies:jgoodies-looks:2.5.3'
+    exported 'com.fasterxml.jackson.core:jackson-core:2.11.+'
+    exported 'com.fasterxml.jackson.core:jackson-databind:2.11.+'
+    exported 'com.jgoodies:jgoodies-common:1.8.+'
+    exported 'com.jgoodies:jgoodies-looks:2.7.+'
     exported 'com.sandec:mdfx:0.+'
     exported 'com.squareup.okhttp3:okhttp:3.+'
 
@@ -37,11 +36,11 @@ dependencies {
     exported 'de.jensd:fontawesomefx-materialicons:2.2.0-11'
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
-    exported group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+    exported 'org.apache.commons:commons-lang3:3.+'
 
-    exported 'org.apache.httpcomponents:httpclient:4.5.6'
-    exported 'org.apache.httpcomponents:httpmime:4.5.6'
-    exported 'org.apache.poi:poi:3.17'
+    exported 'org.apache.httpcomponents:httpclient:4.5.+'
+    exported 'org.apache.httpcomponents:httpmime:4.5.+'
+    exported 'org.apache.poi:poi:4.+'
     exported 'org.controlsfx:controlsfx:11.+'
     exported 'org.nanohttpd:nanohttpd:2.3.+'
     exported 'org.jdom:jdom:1.+'

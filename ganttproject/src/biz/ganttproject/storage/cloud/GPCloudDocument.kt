@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.storage.*
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -351,7 +352,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  private val OBJECT_MAPPER = ObjectMapper()
+  private val OBJECT_MAPPER = ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   @Throws(NetworkUnavailableException::class, VersionMismatchException::class, ForbiddenException::class)
   private fun saveOnline(body: ByteArray) {
@@ -471,7 +472,7 @@ class GPCloudDocument(private val teamRefid: String?,
       val status = json2lockStatus(lockService.value)
       val projectNode = this.projectJson.node
       if (projectNode is ObjectNode) {
-        projectNode.set("lock", lockService.value)
+        projectNode.set<ObjectNode>("lock", lockService.value)
       }
       this.lock = lockService.value
       result.complete(status)

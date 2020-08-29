@@ -22,6 +22,7 @@ import biz.ganttproject.storage.LatestVersion
 import biz.ganttproject.storage.OnlineDocumentMode
 import biz.ganttproject.storage.checksum
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import com.google.common.util.concurrent.MoreExecutors
@@ -334,7 +335,7 @@ class GPCloudDocumentTest {
         put("teamRefid", "team1")
         put("projectRefid", "prj1")
         put("timestamp", 100500)
-        set("author", JACKSON.createObjectNode().apply {
+        set<ObjectNode>("author", JACKSON.createObjectNode().apply {
           put("id", "joedoe")
           put("name", "Joe Doe")
         })
@@ -374,7 +375,7 @@ class GPCloudDocumentTest {
         put("teamRefid", "team1")
         put("projectRefid", "prj1")
         put("timestamp", 100500)
-        set("author", JACKSON.createObjectNode().apply {
+        set<ObjectNode>("author", JACKSON.createObjectNode().apply {
           put("id", "joedoe")
           put("name", "Joe Doe")
         })

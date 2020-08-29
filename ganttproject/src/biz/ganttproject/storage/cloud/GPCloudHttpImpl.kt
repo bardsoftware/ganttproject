@@ -554,7 +554,8 @@ private val LOG = GPLogger.create("Cloud.Http")
 
 data class Lock(var uid: String = "",
                 var name: String = "",
-                var email: String = ""
+                var email: String = "",
+                var expirationEpochTs: Long = 0,
 )
 
 data class ProjectWriteResponse(

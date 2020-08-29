@@ -351,7 +351,7 @@ class ProjectFileImporter {
 
   private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
     myResourceCustomPropertyMapping = new HashMap<ResourceField, CustomPropertyDefinition>();
-    for (Resource r : pf.getAllResources()) {
+    for (Resource r : pf.getResources()) {
       HumanResource nativeResource = myNativeProject.getHumanResourceManager().newHumanResource();
       nativeResource.setId(r.getUniqueID());
       nativeResource.setName(r.getName());
@@ -682,7 +682,7 @@ class ProjectFileImporter {
   private void importDependencies(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask) {
     getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
     try {
-      for (Task t : pf.getAllTasks()) {
+      for (Task t : pf.getTasks()) {
         if (t.getPredecessors() == null) {
           continue;
         }
@@ -735,7 +735,7 @@ class ProjectFileImporter {
 
   private void importResourceAssignments(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask,
                                          Map<Integer, HumanResource> foreignId2nativeResource) {
-    for (ResourceAssignment ra : pf.getAllResourceAssignments()) {
+    for (ResourceAssignment ra : pf.getResourceAssignments()) {
       GanttTask nativeTask = foreignId2nativeTask.get(foreignId(ra.getTask()));
       if (nativeTask == null) {
         myErrors.add(Pair.create(Level.SEVERE, String.format(
