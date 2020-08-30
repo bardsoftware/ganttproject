@@ -1,6 +1,7 @@
 // Copyright (C) 2018 BarD Software
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.AboutKt;
 import biz.ganttproject.desktop.DesktopAdapter;
 import biz.ganttproject.desktop.GanttProjectApi;
 import biz.ganttproject.desktop.QuitResponse;
@@ -8,7 +9,6 @@ import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,7 @@ public class DesktopIntegration {
       DesktopAdapter.install(new GanttProjectApi() {
         @Override
         public void showAboutDialog() {
-          AboutDialog2 abd = new AboutDialog2(uiFacade);
-          abd.show();
+          AboutKt.showAboutDialog();
         }
 
         @Override

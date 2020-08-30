@@ -1,0 +1,130 @@
+
+
+.markdown-text {
+  -fx-font-size: 14;
+  -fx-fill: -mdfx-font-color;
+}
+
+.markdown-normal-flow {
+  -fx-line-spacing: 4;
+}
+
+.markdown-heading .markdown-text {
+  /*-fx-line-spacing: 100;*/
+  -fx-fill: -mdfx-font-color;
+}
+.markdown-heading-1 { -fx-padding: 14 0 14 0;}
+.markdown-heading-2 { -fx-padding: 10 0 10 0;}
+.markdown-heading-3 { -fx-padding: 8 0 8 0; }
+.markdown-heading-4 { -fx-padding: 6 0 6 0; }
+.markdown-heading-5 { -fx-padding: 4 0 4 0; }
+
+.markdown-heading-1 .markdown-text {
+  -fx-font-size: 26;
+}
+
+.markdown-heading-2 .markdown-text {
+  -fx-font-size: 24;
+}
+
+
+.markdown-heading-3 .markdown-text {
+  -fx-font-size: 22;
+}
+
+.markdown-heading-4 .markdown-text {
+  -fx-font-size: 20;
+}
+
+.markdown-heading-5 .markdown-text {
+  -fx-font-size: 18;
+}
+
+.markdown-link {
+  -fx-fill: blue;
+}
+.markdown-link-hover {
+  -fx-underline: true;
+}
+
+
+
+.markdown-paragraph-list {
+  -fx-spacing: 14;
+}
+.markdown-listitem-dot {
+  -fx-font-size: 14;
+  -fx-text-fill: -mdfx-font-color;
+}
+
+.markdown-codeblock-box,
+.markdown-code {
+  -fx-padding: 0 8 0 8;
+}
+.markdown-code {
+  /*-fx-max-width: 300*/
+}
+.markdown-code,
+.markdown-codeblock {
+  -fx-wrap-text: true;
+  -fx-font-size: 14;
+}
+.markdown-codeblock-box,
+.markdown-code-background {
+  -fx-padding: 8;
+  -fx-border-radius: 8;
+  -fx-border-color: -mdfx-border-color-1;
+  -fx-border-width: 0.5;
+  -fx-background-radius: 8;
+  -fx-background-color: #00000009; /*  -mdfx-bg-color-3*/
+}
+.markdown-code-background {
+  -fx-border-width: 0;
+  -fx-background-color: #0000AA10;  /*  -mdfx-bg-color-3*/
+}
+
+.markdown-code-anti-padding {
+  /*-fx-padding: -8;*/
+  -fx-border-color: red;
+  -fx-border-width: 1;
+}
+
+.markdown-table-table {
+  -fx-vgap: -1;
+  -fx-hgap: -1;
+}
+
+.markdown-table-cell {
+  -fx-padding: 8;
+  -fx-border-color: -mdfx-border-color-1;
+  -fx-border-width: 0;
+}
+
+.markdown-table-even {
+  -fx-background-color: -mdfx-bg-color-1;
+}
+.markdown-table-odd {
+  -fx-background-color: -mdfx-bg-color-2;
+}
+.markdown-table-cell-top {
+  -fx-background-color: -mdfx-bg-color-3;
+}
+.markdown-table-cell-top .markdown-normal-flow {
+  -fx-alignment: center;
+  -fx-text-alignment: center;
+}
+
+.markdown-hbox1 {
+  -fx-spacing: 0;
+  -fx-padding: 8;
+}
+
+/*
+.markdown-hbox1 {
+  -fx-background-color: red;
+}
+.markdown-vbox1 {
+  -fx-background-color: orange;
+}
+*/
+

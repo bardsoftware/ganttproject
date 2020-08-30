@@ -30,7 +30,6 @@ import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
-import net.sourceforge.ganttproject.gui.about.AboutDialog2;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
@@ -38,6 +37,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+
+import static biz.ganttproject.app.AboutKt.showAboutDialog;
 
 /**
  * Collection of actions from Help menu.
@@ -74,8 +75,7 @@ public class HelpMenu {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      AboutDialog2 agp = new AboutDialog2(myUiFacade);
-      agp.show();
+      showAboutDialog();
     }
   }
 
