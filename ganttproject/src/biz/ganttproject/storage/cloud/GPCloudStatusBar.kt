@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
@@ -56,6 +57,10 @@ private fun createWarningDecoration(): Node {
 }
 
 /**
+ * This status bar appears in the bottom-lef corner of the app window and shows
+ * document lock status and access mode. When clicked, it opens a dialog for changing
+ * lock status and access mode.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Document>, private val uiFacade: UIFacade) {
@@ -75,7 +80,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
 
   init {
-    observableDocument.addListener(this::onDocumentChange)
+    observableDocument.addListener { _, oldDocument: Document?, newDocument: Document? ->
+      onDocumentChange(oldDocument, newDocument)
+    }
     btnOffline.addEventHandler(ActionEvent.ACTION) {
       showProperties()
     }
@@ -94,7 +101,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   }
 
   // This is called whenever open document changes and handles different cases.
-  private fun onDocumentChange(observable: Any, oldDocument: Document?, newDocument: Document?) {
+  private fun onDocumentChange(oldDocument: Document?, newDocument: Document?) {
     Platform.runLater {
 
       // First we un-proxy old and new documents.
@@ -155,67 +162,19 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private fun updateLockStatus(status: LockStatus) {
     if (status.locked) {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      val lockOwner = "Locked by ${status.lockOwnerName}"
-      this.btnLock.text = if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) "Locked" else lockOwner
+      val lockOwner = i18n.formatText("lockedBy", status.lockOwnerName ?: "")
+      this.btnLock.text =
+          if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) i18n.formatText("locked")
+          else lockOwner
       this.btnLock.tooltip = Tooltip(lockOwner)
     } else {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      this.btnLock.text = "Not Locked"
-      this.btnLock.tooltip = Tooltip("Currently not locked")
+      this.btnLock.text = i18n.formatText("notLocked")
+      this.btnLock.tooltip = Tooltip(i18n.formatText("notLocked.tooltip"))
     }
 
-    //this.lockPanel.isDisable = status.locked && status.lockOwnerId != GPCloudOptions.userId.value
     this.status = status
   }
-
-//  private fun onSwitchAction() {
-//    if (this.isChangingSelected) {
-//      return
-//    }
-//    val doc = this.observableDocument.get()
-//    val realDoc = if (doc is ProxyDocument) {
-//      doc.realDocument
-//    } else {
-//      doc
-//    }
-//    if (realDoc is LockableDocument) {
-//      val progress = ProgressIndicator()
-//      lockPanel.children.add(progress)
-//      val isNowLocked = this.status.locked
-//      val savedStatus = this.status
-//      val future = realDoc.toggleLocked(duration = null)
-//      future.thenAccept(this::updateLockStatus).handle { ok, ex ->
-//        lockPanel.children.remove(progress)
-//        when {
-//          ex != null -> {
-//            val msg = if (isNowLocked) {
-//              "Lock request failed"
-//            } else {
-//              "Unlock request failed"
-//            }
-//            this.updateLockStatus(savedStatus)
-//            GPLogger.log(Exception(msg, ex))
-//          }
-//          else -> null
-//        }
-//      }
-//    }
-//  }
-
-//  private fun onMirrorToggle() {
-//    val doc = this.observableDocument.get()
-//    val realDoc = if (doc is ProxyDocument) {
-//      doc.realDocument
-//    } else {
-//      doc
-//    }
-//    if (realDoc is OnlineDocument) {
-//      when (realDoc.mode.value) {
-//        OnlineDocumentMode.ONLINE_ONLY -> realDoc.setMirrored(true)
-//        OnlineDocumentMode.MIRROR -> realDoc.setMirrored(false)
-//      }
-//    }
-//  }
 
   private fun onOnlineModeChange(observable: Any, oldValue: OnlineDocumentMode, newValue: OnlineDocumentMode) {
     Platform.runLater {
@@ -227,9 +186,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     when (mode) {
       OnlineDocumentMode.ONLINE_ONLY -> {
         this.btnOffline.run {
-          text = "Online only"
+          text = i18n.formatText("mode.onlineOnly")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
-          tooltip = Tooltip("Click to make offline mirror")
+          tooltip = Tooltip(i18n.formatText("mode.onlineOnly.tooltip"))
           Decorator.removeAllDecorations(this)
           isDisable = false
         }
@@ -237,9 +196,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }
       OnlineDocumentMode.MIRROR -> {
         this.btnOffline.run {
-          text = "Available offline"
+          text = i18n.formatText("mode.mirror")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
-          tooltip = Tooltip("Available offline. Click to remove offline mirror")
+          tooltip = Tooltip(i18n.formatText("mode.mirror.tooltip"))
           Decorator.removeAllDecorations(this)
           isDisable = false
         }
@@ -247,13 +206,17 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }
       OnlineDocumentMode.OFFLINE_ONLY -> {
         this.btnOffline.run {
-          text = "Offline"
+          text = i18n.formatText("mode.offline")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
-          tooltip = Tooltip("Offline only. Will try to sync when connected again")
+          tooltip = Tooltip(i18n.formatText("mode.offline.tooltip"))
           Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
           isDisable = true
         }
-        this.uiFacade.showOptionDialog(JOptionPane.WARNING_MESSAGE, "Connection lost and we're now working offline. We'll try to reconnect automatically.", arrayOf(OkAction.createVoidAction("ok")))
+        this.uiFacade.showOptionDialog(
+            JOptionPane.WARNING_MESSAGE,
+            i18n.formatText("mode.offline.warning"),
+            arrayOf(OkAction.createVoidAction("ok"))
+        )
         this.btnLock.isDisable = true
       }
     }
@@ -286,3 +249,5 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
   }
 }
+
+private val i18n = RootLocalizer.createWithRootKey("cloud.statusBar")
