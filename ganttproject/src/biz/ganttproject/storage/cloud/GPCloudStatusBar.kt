@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
@@ -162,15 +161,15 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private fun updateLockStatus(status: LockStatus) {
     if (status.locked) {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK)
-      val lockOwner = i18n.formatText("lockedBy", status.lockOwnerName ?: "")
+      val lockOwner = STATUS_BAR_LOCALIZER.formatText("lockedBy", status.lockOwnerName ?: "")
       this.btnLock.text =
-          if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) i18n.formatText("locked")
+          if (GPCloudOptions.userId.value?.equals(status.lockOwnerId) == true) STATUS_BAR_LOCALIZER.formatText("locked")
           else lockOwner
       this.btnLock.tooltip = Tooltip(lockOwner)
     } else {
       this.btnLock.graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      this.btnLock.text = i18n.formatText("notLocked")
-      this.btnLock.tooltip = Tooltip(i18n.formatText("notLocked.tooltip"))
+      this.btnLock.text = STATUS_BAR_LOCALIZER.formatText("notLocked")
+      this.btnLock.tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("notLocked.tooltip"))
     }
 
     this.status = status
@@ -186,9 +185,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     when (mode) {
       OnlineDocumentMode.ONLINE_ONLY -> {
         this.btnOffline.run {
-          text = i18n.formatText("mode.onlineOnly")
+          text = STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
-          tooltip = Tooltip(i18n.formatText("mode.onlineOnly.tooltip"))
+          tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly.tooltip"))
           Decorator.removeAllDecorations(this)
           isDisable = false
         }
@@ -196,9 +195,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }
       OnlineDocumentMode.MIRROR -> {
         this.btnOffline.run {
-          text = i18n.formatText("mode.mirror")
+          text = STATUS_BAR_LOCALIZER.formatText("mode.mirror")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
-          tooltip = Tooltip(i18n.formatText("mode.mirror.tooltip"))
+          tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.mirror.tooltip"))
           Decorator.removeAllDecorations(this)
           isDisable = false
         }
@@ -206,15 +205,15 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }
       OnlineDocumentMode.OFFLINE_ONLY -> {
         this.btnOffline.run {
-          text = i18n.formatText("mode.offline")
+          text = STATUS_BAR_LOCALIZER.formatText("mode.offline")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
-          tooltip = Tooltip(i18n.formatText("mode.offline.tooltip"))
+          tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.offline.tooltip"))
           Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
           isDisable = true
         }
         this.uiFacade.showOptionDialog(
             JOptionPane.WARNING_MESSAGE,
-            i18n.formatText("mode.offline.warning"),
+            STATUS_BAR_LOCALIZER.formatText("mode.offline.warning"),
             arrayOf(OkAction.createVoidAction("ok"))
         )
         this.btnLock.isDisable = true
@@ -250,4 +249,4 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   }
 }
 
-private val i18n = RootLocalizer.createWithRootKey("cloud.statusBar")
+val STATUS_BAR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.statusBar")

@@ -65,16 +65,14 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   // ------------------------------------------------------------------------------
   // Locking stuff
   private fun createLockWarningPage(document: GPCloudDocument): Pane {
-    val notify = CheckBox("Show notification when lock is released").also {
-      it.styleClass.add("mt-5")
+    val notify = CheckBox(LOCK_LOCALIZER.formatText("showNotification")).also {
       it.isSelected = true
     }
 
     return VBoxBuilder().apply {
-      i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
-      addTitle("title")
-      add(Label("Locked by ${document.status.value.lockOwnerName}").apply {
-        styleClass.add("help")
+      i18n = LOCK_LOCALIZER
+      add(Label(STATUS_BAR_LOCALIZER.formatText("lockedBy", document.status.value.lockOwnerName ?: "")).apply {
+        styleClass.add("locked-by")
       })
       add(notify)
     }.vbox
@@ -138,7 +136,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           busyIndicator(false)
         }
         .exceptionally { ex ->
-          errorUi("Failed to lock document")
+          errorUi(LOCK_LOCALIZER.formatText("error.lockFailed"))
           GPLogger.log(ex)
           busyIndicator(false)
           return@exceptionally null
@@ -263,23 +261,14 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   data class LockOfflinePaneElements(
     val pane: Parent,
-    val lockToggleGroup: ToggleGroup,
-    val mirrorToggleGroup: ToggleGroup,
-    val lockHandler: LockDurationHandler,
-    val mirrorHandler: MirrorOptionHandler
-  ) {
-    fun commitChanges() {
-      val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
-      mirrorHandler(selectedMode)
+    val commitChanges: () -> Unit
+  )
 
-      val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
-      lockHandler(selectedDuration)
-    }
-  }
   fun buildPane(document: GPCloudDocument): LockOfflinePaneElements {
     val lockToggleGroup = ToggleGroup()
     val mirrorToggleGroup = ToggleGroup()
 
+    val lockCommitter: () -> Unit
     val vboxBuilder = VBoxBuilder("tab-contents", "option-pane").apply {
       i18n = OFFLINE_MIRROR_LOCALIZER
       vbox.stylesheets.add(OPTION_PANE_STYLESHEET)
@@ -290,8 +279,13 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       })
 
       val lockNode = if (document.status.value.lockedBySomeone) {
+        lockCommitter = {}
         createLockWarningPage(document)
       } else {
+        lockCommitter = {
+          val selectedDuration = lockToggleGroup.selectedToggle.userData as Duration
+          lockDurationHandler(document, {})(selectedDuration)
+        }
         lockPaneBuilder(document.status.value).let {
           it.toggleGroup = lockToggleGroup
           it.styleClass = "section"
@@ -315,9 +309,15 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
         }
       }
     }
-    val lockDurationHandler = lockDurationHandler(document, {})
     val mirrorOptionHandler = mirrorOptionHandler(document)
-    return LockOfflinePaneElements(tabPane, lockToggleGroup, mirrorToggleGroup, lockDurationHandler, mirrorOptionHandler)
+
+    fun commitChanges() {
+      val selectedMode = mirrorToggleGroup.selectedToggle.userData as OnlineDocumentMode
+      mirrorOptionHandler(selectedMode)
+      lockCommitter()
+    }
+
+    return LockOfflinePaneElements(tabPane, ::commitChanges)
   }
 
 
@@ -361,7 +361,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 
   override fun commit() {
-    paneElements?.commitChanges()
+    paneElements?.commitChanges?.invoke()
   }
 
   private fun buildScene(): Scene {
@@ -394,3 +394,4 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
 
 private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
         "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
+private val LOCK_LOCALIZER = RootLocalizer.createWithRootKey("cloud.lockOptionPane")

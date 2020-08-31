@@ -7,3 +7,6 @@
     -fx-padding: 0 0 2ex 0;
 }
 
+.locked-by {
+    -fx-padding: 2ex 0 1ex 0;
+}
