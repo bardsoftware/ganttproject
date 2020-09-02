@@ -33,14 +33,14 @@ class LoggerImpl(name: String) : LoggerApi {
   private val delegate = LoggerFactory.getLogger(name)
 
   override fun error(msg: String, vararg params: Any, kv: Map<String, Any>, exception: Exception?) {
-    kv.mapValues { it.value?.toString() }.filterValues { it != null }
+    kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
     delegate.error(msg, params, exception)
     MDC.clear()
   }
 
   override fun debug(msg: String, vararg params: Any, kv: Map<String, Any>) {
-    kv.mapValues { it.value?.toString() }.filterValues { it != null }
+    kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
     delegate.debug(msg, params)
     MDC.clear()

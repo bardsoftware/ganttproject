@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
@@ -228,7 +229,10 @@ class GPCloudDocument(private val teamRefid: String?,
     return if (this.projectJson == null || !this.projectJson.isLocked || this.projectJson.canChangeLock) {
       Status.OK_STATUS
     } else {
-      Status(IStatus.ERROR, Document.PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal, "", null)
+      Status(IStatus.ERROR, Document.PLUGIN_ID,
+          Document.ErrorCode.NOT_WRITABLE.ordinal,
+          RootLocalizer.createWithRootKey("cloud.statusBar").formatText("lockedBy", this.projectJson.lockOwner ?: ""),
+          null)
     }
   }
 

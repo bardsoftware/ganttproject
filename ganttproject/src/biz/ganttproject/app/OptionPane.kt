@@ -47,11 +47,8 @@ data class OptionElementData<T>(val i18nKey: String, val userData: T, val isSele
  */
 class OptionPaneBuilder<T> {
   var i18n = RootLocalizer
-  private val titleString: LocalizedString
-      get() = i18n.create("title")
-
-  var titleHelpString: LocalizedString? = null
-  get() { if (field == null) { field = i18n.create("titleHelp") }; return field }
+  val titleString: LocalizedString by lazy { i18n.create("title") }
+  val titleHelpString: LocalizedString? by lazy { i18n.create("titleHelp") }
 
 
   /**
@@ -117,12 +114,12 @@ class OptionPaneBuilder<T> {
       }
       it.addStyleClass(this.styleClass)
 
-      // Dialog .header inludes .title and .help labels and .img graphic on the right side if specified
+      // Dialog .header includes .title and .help labels and .img graphic on the right side if specified
       it.setHeader(
           BorderPane().apply {
             styleClass.add("header")
             center = VBoxBuilder().apply {
-              addTitle(this@OptionPaneBuilder.titleString.update().value)
+              addTitle(this@OptionPaneBuilder.titleString.value)
               add(Label().apply {
                 this.textProperty().bind(this@OptionPaneBuilder.titleHelpString)
                 this.styleClass.add("help")

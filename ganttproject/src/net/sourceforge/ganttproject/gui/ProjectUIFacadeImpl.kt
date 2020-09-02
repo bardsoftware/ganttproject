@@ -90,27 +90,43 @@ class ProjectUIFacadeImpl(
     }
   }
 
+  enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
   private fun saveProjectTryWrite(project: IGanttProject, document: Document): Boolean {
     val canWrite = document.canWrite()
     if (!canWrite.isOK) {
       GPLogger.getLogger(Document::class.java).log(Level.INFO, canWrite.message, canWrite.exception)
-      val message = formatWriteStatusMessage(document, canWrite)
-      val actions = ArrayList<Action>()
-      actions.add(object : GPAction("project.saveas") {
-        override fun actionPerformed(e: ActionEvent) {
-          saveProjectAs(project)
+      OptionPaneBuilder<CantWriteChoice>().also {
+        it.i18n = RootLocalizer.createWithRootKey(
+            rootKey = "document.error.write.cantWrite",
+            baseLocalizer = RootLocalizer
+        )
+        it.styleClass = "dlg-lock"
+        it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+        it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+        it.titleString.update(document.fileName)
+        it.titleHelpString?.update(canWrite.message)
+        it.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK, "64").also { icon ->
+          icon.styleClass.add("img")
         }
-      })
-      if (canWrite.code == Document.ErrorCode.LOST_UPDATE.ordinal) {
-        actions.add(object : GPAction("document.overwrite") {
-          override fun actionPerformed(e: ActionEvent) {
-            saveProjectTryLock(project, document)
+        it.elements = listOf(
+            OptionElementData("document.option.makeCopy", CantWriteChoice.MAKE_COPY, true),
+            OptionElementData("cancel", CantWriteChoice.CANCEL, false),
+            OptionElementData("generic.retry", CantWriteChoice.RETRY, false),
+        )
+        it.showDialog { choice ->
+          SwingUtilities.invokeLater {
+            when (choice) {
+              CantWriteChoice.MAKE_COPY -> {
+                saveProjectAs(project)
+              }
+              CantWriteChoice.RETRY -> {
+                saveProjectTryWrite(project, document)
+              }
+              else -> {}
+            }
           }
-        })
+        }
       }
-      actions.add(CancelAction.EMPTY)
-      myWorkbenchFacade.showOptionDialog(JOptionPane.ERROR_MESSAGE, message, actions.toTypedArray())
-
       return false
     }
     return saveProjectTryLock(project, document)
@@ -131,7 +147,7 @@ class ProjectUIFacadeImpl(
       val onlineDoc = document.asOnlineDocument()
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch")
+          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch", baseLocalizer = RootLocalizer)
           it.styleClass = "dlg-lock"
           it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
           it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
@@ -140,7 +156,7 @@ class ProjectUIFacadeImpl(
           }
           it.elements = Lists.newArrayList(
               OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
-              OptionElementData("option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
+              OptionElementData("document.option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
           )
           it.showDialog { choice ->
             SwingUtilities.invokeLater {
@@ -186,9 +202,9 @@ class ProjectUIFacadeImpl(
   }
   private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
     assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
-    val errorCode = Document.ErrorCode.values()[canWrite.code]
-    val key = "document.error.write." + errorCode.name.toLowerCase()
-    return MessageFormat.format(i18n.getText(key), doc.path, canWrite.message)
+    return RootLocalizer.formatText(
+        key = "document.error.write.${Document.ErrorCode.values()[canWrite.code].name.toLowerCase()}",
+        doc.fileName, canWrite.message)
   }
 
   private fun afterSaveProject(project: IGanttProject) {

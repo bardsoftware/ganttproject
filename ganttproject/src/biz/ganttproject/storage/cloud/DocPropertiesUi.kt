@@ -97,8 +97,11 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     return OptionPaneBuilder<Duration>().apply {
       i18n = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
       if (lockStatus.lockExpiration >= 0) {
-        titleHelpString = i18n.create("titleHelp.locked").update(
-            GanttLanguage.getInstance().formatDateTime(Date(lockStatus.lockExpiration)))
+        titleHelpString?.update(i18n.formatText(
+            "titleHelp.locked",
+            GanttLanguage.getInstance().formatDateTime(Date(lockStatus.lockExpiration))))
+      } else {
+        titleHelpString?.update(i18n.formatText("titleHelp.unlocked"))
       }
       graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
       elements = listOf(
