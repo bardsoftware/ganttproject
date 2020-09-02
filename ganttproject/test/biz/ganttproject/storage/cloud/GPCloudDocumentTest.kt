@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.UnknownHostException
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
@@ -387,6 +388,46 @@ class GPCloudDocumentTest {
     }
   }
 
+  private fun ObjectNode.buildLock(user: String) {
+    put("uid", user)
+    put("expirationEpochTs", Instant.now().plusSeconds(3600).toEpochMilli())
+  }
+
+  @Test
+  fun `Lock data gets into lock status`() {
+    GPCloudOptions.userId.value = "MeMyself"
+    GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1",
+        projectJson = ProjectJsonAsFolderItem(JACKSON.createObjectNode().apply {
+          putObject("lock").also{ it.buildLock("User1") }
+          put("refid", "prj1")
+        })
+    ).also {
+      assertTrue(it.status.get().locked)
+      assertTrue(it.status.get().lockedBySomeone)
+    }
+
+    GPCloudOptions.userId.value = "MrLockHolder"
+    GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1",
+        projectJson = ProjectJsonAsFolderItem(JACKSON.createObjectNode().apply {
+          putObject("lock").also{ it.buildLock("MrLockHolder") }
+          put("refid", "prj1")
+        })
+    ).also {
+      assertTrue(it.status.get().locked)
+      assertFalse(it.status.get().lockedBySomeone)
+    }
+  }
+
+//  @Test
+//  fun `Unlock event changes lock status`() {
+//    GPCloudOptions.userId.value = "MeMyself"
+//    val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1",
+//        projectJson = ProjectJsonAsFolderItem(JACKSON.createObjectNode().apply {
+//          putObject("lock").also{ it.buildLock("User1") }
+//          put("refid", "prj1")
+//        })
+//    )
+//  }
 }
 
 private val JACKSON = ObjectMapper()
