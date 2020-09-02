@@ -70,7 +70,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
-  override val mode = SimpleObjectProperty<OnlineDocumentMode>(OnlineDocumentMode.ONLINE_ONLY)
+  override val mode = SimpleObjectProperty(OnlineDocumentMode.ONLINE_ONLY)
   override val fetchResultProperty = SimpleObjectProperty<FetchResult>()
   override val latestVersionProperty = SimpleObjectProperty<LatestVersion>(this, "")
 
@@ -84,7 +84,7 @@ class GPCloudDocument(private val teamRefid: String?,
   var offlineDocumentFactory: OfflineDocumentFactory = { null }
   var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
   var httpClientFactory: () -> GPCloudHttpClient = HttpClientBuilder::buildHttpClient
-  var isNetworkAvailable = Callable<Boolean> { isNetworkAvailable() }
+  var isNetworkAvailable = Callable { isNetworkAvailable() }
   var executor = ourExecutor
 
   var lock: JsonNode? = null
@@ -151,8 +151,7 @@ class GPCloudDocument(private val teamRefid: String?,
       if (value == this.mode.get()) {
         return
       }
-      val change = this.mode.value to value
-      when (change) {
+      when (this.mode.value to value) {
         OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.OFFLINE_ONLY -> {
           this.startReconnectPing()
         }
@@ -226,12 +225,13 @@ class GPCloudDocument(private val teamRefid: String?,
   override fun canRead(): Boolean = true
 
   override fun canWrite(): IStatus {
-    return if (this.projectJson == null || !this.projectJson.isLocked || this.projectJson.canChangeLock) {
+    val lockStatus = this.status.get()
+    return if (lockStatus == null || !lockStatus.locked || !lockStatus.lockedBySomeone) {
       Status.OK_STATUS
     } else {
       Status(IStatus.ERROR, Document.PLUGIN_ID,
           Document.ErrorCode.NOT_WRITABLE.ordinal,
-          RootLocalizer.createWithRootKey("cloud.statusBar").formatText("lockedBy", this.projectJson.lockOwner ?: ""),
+          RootLocalizer.createWithRootKey("cloud.statusBar").formatText("lockedBy", lockStatus.lockOwnerName ?: ""),
           null)
     }
   }
@@ -275,7 +275,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   override fun getInputStream(): InputStream {
-    var fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch().also { it.update() }}
+    val fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch().also { it.update() }}
     if (fetchResult.useMirror) {
       val mirrorBytes = this.offlineMirror!!.inputStream.readBytes()
       saveOnline(mirrorBytes)
