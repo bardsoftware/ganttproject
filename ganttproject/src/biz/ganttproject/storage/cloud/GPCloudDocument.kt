@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
+import biz.ganttproject.storage.cloud.http.IsLockedService
 import biz.ganttproject.storage.cloud.http.LockService
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
@@ -490,6 +491,23 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun reloadLockStatus(): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
+    if (this.projectJson == null) {
+      result.completeExceptionally(RuntimeException("Document is not initialized: projectJson is missing"))
+      return result
+    }
+    val service = IsLockedService(
+        errorUi = {errorMsg -> result.completeExceptionally(RuntimeException(errorMsg)) },
+        busyIndicator = {},
+        projectRefid = this.projectRefid!!
+    ) {value ->
+      val projectNode = this.projectJson.node
+      if (projectNode is ObjectNode) {
+        projectNode.set<ObjectNode>("lock", value)
+      }
+      this.lock = value
+      result.complete(this.status.get())
+    }
+    service.restart()
     return result
   }
 

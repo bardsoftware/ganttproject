@@ -42,9 +42,11 @@ import org.apache.http.HttpStatus
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
+import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.protocol.ClientContext
+import org.apache.http.client.utils.URIBuilder
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
 import org.apache.http.conn.ssl.SSLSocketFactory
@@ -56,6 +58,7 @@ import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.BasicAuthCache
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.conn.PoolingClientConnectionManager
+import org.apache.http.message.BasicNameValuePair
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.protocol.HttpContext
 import org.apache.http.util.EntityUtils
@@ -396,9 +399,9 @@ interface GPCloudHttpClient {
     fun header(name: String): String?
   }
   @Throws(IOException::class)
-  fun sendGet(uri: String): Response
+  fun sendGet(uri: String, args: Map<String, String?> = emptyMap()): Response
   @Throws(IOException::class)
-  fun sendPost(uri: String, parts: Map<String, String?>): Response
+  fun sendPost(uri: String, parts: Map<String, String?>, encoding: HttpPostEncoding = HttpPostEncoding.MULTIPART): Response
 }
 
 class HttpClientApache(
@@ -424,17 +427,31 @@ class HttpClientApache(
     }
   }
 
-  override fun sendGet(uri: String): GPCloudHttpClient.Response {
-    return ResponseImpl(this.client.execute(this.host, HttpGet(uri), this.context))
+  override fun sendGet(uri: String, args: Map<String, String?>): GPCloudHttpClient.Response {
+    val uriBuilder = URIBuilder(uri).also {
+      args.forEach { (key, value) -> it.addParameter(key, value) }
+    }
+    return ResponseImpl(this.client.execute(this.host, HttpGet(uriBuilder.build()), this.context))
   }
 
-  override fun sendPost(uri: String, parts: Map<String, String?>): GPCloudHttpClient.Response {
+  override fun sendPost(uri: String, parts: Map<String, String?>, encoding: HttpPostEncoding): GPCloudHttpClient.Response {
     val httpPost = HttpPost(uri)
-    val multipartBuilder = MultipartEntityBuilder.create()
-    parts.filterValues { it != null }.forEach { key, value ->
-      multipartBuilder.addPart(key, StringBody(value, ContentType.TEXT_PLAIN.withCharset(Charsets.UTF_8)))
+    when (encoding) {
+      HttpPostEncoding.MULTIPART -> {
+        val multipartBuilder = MultipartEntityBuilder.create()
+        parts.filterValues { it != null }.forEach { (key, value) ->
+          multipartBuilder.addPart(key, StringBody(value, ContentType.TEXT_PLAIN.withCharset(Charsets.UTF_8)))
+        }
+        httpPost.entity = multipartBuilder.build()
+      }
+      HttpPostEncoding.URLENCODED -> {
+        httpPost.entity = UrlEncodedFormEntity(
+            parts.filterValues { it != null }
+              .map { BasicNameValuePair(it.key, it.value) }
+              .toList()
+        )
+      }
     }
-    httpPost.entity = multipartBuilder.build()
     return ResponseImpl(this.client.execute(this.host, httpPost, this.context))
   }
 
@@ -486,6 +503,12 @@ fun isNetworkAvailable(): Boolean {
   }
 }
 
+enum class HttpMethod {
+  GET, POST
+}
+enum class HttpPostEncoding {
+  URLENCODED, MULTIPART
+}
 data class Lock(var uid: String = "",
                 var name: String = "",
                 var email: String = "",

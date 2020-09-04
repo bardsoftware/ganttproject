@@ -38,6 +38,7 @@ import javafx.scene.shape.Circle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
@@ -129,7 +130,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       if (newDoc is LockableDocument) {
         newDoc.status.addListener(this::onLockStatusChange)
         this.btnLock.isVisible = true
-        newDoc.reloadLockStatus()
+        newDoc.reloadLockStatus().handle { _, ex -> if (ex != null) GPLogger.log(ex) }
       } else {
         this.btnLock.isVisible = false
       }
