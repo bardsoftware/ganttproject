@@ -27,9 +27,9 @@ import com.fasterxml.jackson.databind.node.MissingNode
 import com.google.common.io.CharStreams
 import javafx.concurrent.Service
 import javafx.concurrent.Task
-import javafx.concurrent.WorkerStateEvent
 import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
+import org.apache.http.HttpResponse
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.message.BasicNameValuePair
@@ -58,6 +58,29 @@ class LockService(private val errorUi: ErrorUi) : Service<JsonNode>() {
   }
 }
 
+open class JsonTask(private val uri: String, private val kv: Map<String, String>,
+               private val busyIndicator: (Boolean) -> Unit,
+               private val onFailure: (HttpResponse) -> Unit) : Task<JsonNode>() {
+  override fun call(): JsonNode {
+    busyIndicator(true)
+    val resp = HttpPost(uri).let {httpPost ->
+      httpPost.entity = UrlEncodedFormEntity(kv.map { BasicNameValuePair(it.key, it.value) }.toList())
+      http.execute(httpPost)
+    }
+    if (resp.statusLine.statusCode == 200) {
+      val jsonBody = resp.entity.content.reader(Charsets.UTF_8).readText()
+      return if (jsonBody == "") {
+        MissingNode.getInstance()
+      } else {
+        OBJECT_MAPPER.readTree(jsonBody)
+      }
+    } else {
+      onFailure(resp)
+      throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
+    }
+  }
+
+}
 class LockTask(private val busyIndicator: Consumer<Boolean>,
                val project: ProjectJsonAsFolderItem,
                val requestLockToken: Boolean,
@@ -103,20 +126,14 @@ class IsLockedService(
     private val busyIndicator: (Boolean) -> Unit,
     private val projectRefid: String) : Service<JsonNode>() {
   override fun createTask(): Task<JsonNode> {
-    return IsLockedTask(busyIndicator, projectRefid).also {task ->
-      task.onFailed = EventHandler {
-        LOG.error("Lock task failed", kv = mapOf("project" to projectRefid), exception = task.exception)
-        val errorDetails = task.exception?.message ?: ""
-        this.errorUi("Failed to get lock status: \n$errorDetails")
-      }
-    }
-  }
-}
-
-class IsLockedTask(private val busyIndicator: (Boolean) -> Unit,
-                   private val projectRefid: String) : Task<JsonNode>() {
-  override fun call(): JsonNode {
-    TODO("Not yet implemented")
+    return JsonTask("/p/is-locked", kv = mapOf("projectRefid" to projectRefid), busyIndicator, {})
+//    return IsLockedTask(busyIndicator, projectRefid).also {task ->
+//      task.onFailed = EventHandler {
+//        LOG.error("Lock task failed", kv = mapOf("project" to projectRefid), exception = task.exception)
+//        val errorDetails = task.exception?.message ?: ""
+//        this.errorUi("Failed to get lock status: \n$errorDetails")
+//      }
+//    }
   }
 }
 

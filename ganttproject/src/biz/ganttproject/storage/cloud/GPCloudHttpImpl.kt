@@ -437,6 +437,10 @@ class HttpClientApache(
     httpPost.entity = multipartBuilder.build()
     return ResponseImpl(this.client.execute(this.host, httpPost, this.context))
   }
+
+  fun execute(httpPost: HttpPost): HttpResponse =
+    this.client.execute(this.host, httpPost, this.context)
+
 }
 
 object HttpClientBuilder {
