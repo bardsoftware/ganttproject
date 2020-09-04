@@ -129,7 +129,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       if (newDoc is LockableDocument) {
         newDoc.status.addListener(this::onLockStatusChange)
         this.btnLock.isVisible = true
-        this.updateLockStatus(newDoc.status.value)
+        newDoc.reloadLockStatus()
       } else {
         this.btnLock.isVisible = false
       }

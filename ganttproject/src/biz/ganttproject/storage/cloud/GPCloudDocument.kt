@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
+import biz.ganttproject.storage.cloud.http.LockService
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -484,6 +485,11 @@ class GPCloudDocument(private val teamRefid: String?,
     lockService.onFailed = EventHandler { result.completeExceptionally(RuntimeException("Failed")) }
     lockService.onCancelled = EventHandler { result.completeExceptionally(RuntimeException("Cancelled")) }
     lockService.restart()
+    return result
+  }
+
+  override fun reloadLockStatus(): CompletableFuture<LockStatus> {
+    val result = CompletableFuture<LockStatus>()
     return result
   }
 

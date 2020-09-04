@@ -166,6 +166,7 @@ data class LockStatus(val locked: Boolean,
 
 interface LockableDocument {
   fun toggleLocked(duration: Duration?): CompletableFuture<LockStatus>
+  fun reloadLockStatus(): CompletableFuture<LockStatus>
 
   val status: ObservableObjectValue<LockStatus>
 }

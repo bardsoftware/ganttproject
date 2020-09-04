@@ -25,14 +25,14 @@ import org.slf4j.MDC
  * @author dbarashev@bardsoftware.com
  */
 interface LoggerApi {
-  fun error(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap(), exception: Exception? = null)
+  fun error(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap(), exception: Throwable? = null)
   fun debug(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap())
 }
 
 class LoggerImpl(name: String) : LoggerApi {
   private val delegate = LoggerFactory.getLogger(name)
 
-  override fun error(msg: String, vararg params: Any, kv: Map<String, Any>, exception: Exception?) {
+  override fun error(msg: String, vararg params: Any, kv: Map<String, Any>, exception: Throwable?) {
     kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
     delegate.error(msg, params, exception)

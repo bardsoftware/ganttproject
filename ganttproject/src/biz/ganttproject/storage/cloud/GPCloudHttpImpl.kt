@@ -23,9 +23,7 @@ import biz.ganttproject.storage.Path
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.common.io.ByteStreams
 import com.google.common.io.CharStreams
 import com.google.common.io.Closer
 import fi.iki.elonen.NanoHTTPD
@@ -35,7 +33,6 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
 import javafx.concurrent.Task
-import javafx.event.EventHandler
 import net.sourceforge.ganttproject.GPLogger
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -45,7 +42,6 @@ import org.apache.http.HttpStatus
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.HttpClient
-import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.protocol.ClientContext
@@ -60,14 +56,12 @@ import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.BasicAuthCache
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.conn.PoolingClientConnectionManager
-import org.apache.http.message.BasicNameValuePair
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.protocol.HttpContext
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.Socket
-import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -184,69 +178,6 @@ class LoaderTask<T: CloudJsonAsFolderItem>(
 private val OBJECT_MAPPER = ObjectMapper()
 
 typealias ErrorUi = (String) -> Unit
-
-class LockService(private val errorUi: ErrorUi) : Service<JsonNode>() {
-  var busyIndicator: Consumer<Boolean> = Consumer {}
-  lateinit var project: ProjectJsonAsFolderItem
-  var requestLockToken: Boolean = false
-  lateinit var duration: Duration
-
-  override fun createTask(): Task<JsonNode> {
-    val task = LockTask(this.busyIndicator, project, requestLockToken, duration)
-    task.onFailed = EventHandler { _ ->
-      val errorDetails = if (task.exception != null) {
-        GPLogger.getLogger("GPCloud").log(Level.WARNING, "", task.exception)
-        "\n${task.exception.message}"
-      } else {
-        ""
-      }
-      this.errorUi("Failed to lock project: $errorDetails")
-    }
-    return task
-  }
-}
-
-class LockTask(private val busyIndicator: Consumer<Boolean>,
-               val project: ProjectJsonAsFolderItem,
-               val requestLockToken: Boolean,
-               val duration: Duration) : Task<JsonNode>() {
-  override fun call(): JsonNode {
-    busyIndicator.accept(true)
-    val log = GPLogger.getLogger("GPCloud")
-    val http = HttpClientBuilder.buildHttpClientApache()
-    val resp = if (project.isLocked) {
-      val projectUnlock = HttpPost("/p/unlock")
-      val params = listOf(
-          BasicNameValuePair("projectRefid", project.refid))
-      projectUnlock.entity = UrlEncodedFormEntity(params)
-      http.client.execute(http.host, projectUnlock, http.context)
-    } else {
-      val projectLock = HttpPost("/p/lock")
-      val params = listOf(
-          BasicNameValuePair("projectRefid", project.refid),
-          BasicNameValuePair("expirationPeriodSeconds", this.duration.seconds.toString()),
-          BasicNameValuePair("requestLockToken", requestLockToken.toString())
-      )
-      projectLock.entity = UrlEncodedFormEntity(params)
-
-      http.client.execute(http.host, projectLock, http.context)
-    }
-    if (resp.statusLine.statusCode == 200) {
-      val jsonBody = CharStreams.toString(InputStreamReader(resp.entity.content, Charsets.UTF_8))
-      return if (jsonBody == "") {
-        MissingNode.getInstance()
-      } else {
-        OBJECT_MAPPER.readTree(jsonBody)
-      }
-    } else {
-      with(log) {
-        warning(
-            "Failed to get lock project. Response code=${resp.statusLine.statusCode} reason=${resp.statusLine.reasonPhrase}")
-      }
-      throw IOException("Server responded with HTTP ${resp.statusLine.statusCode}")
-    }
-  }
-}
 
 
 // History service and tasks load project change history.
@@ -514,7 +445,7 @@ object HttpClientBuilder {
   }
 
   fun buildHttpClientApache(): HttpClientApache {
-    val httpClient = if (true || System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
+    val httpClient = if (System.getProperty("gp.ssl.trustAll")?.toBoolean() == true) {
       val trustAll = TrustStrategy { _, _ -> true }
       val sslSocketFactory = SSLSocketFactory(
           trustAll, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
@@ -526,7 +457,7 @@ object HttpClientBuilder {
       DefaultHttpClient()
     }
     val context = BasicHttpContext()
-    val httpHost = HttpHost(GPCLOUD_HOST, 443, "https")
+    val httpHost = HOST
     if (GPCloudOptions.authToken.value != "") {
       httpClient.credentialsProvider.setCredentials(
           AuthScope(httpHost), UsernamePasswordCredentials(GPCloudOptions.userId.value, GPCloudOptions.authToken.value))
@@ -550,7 +481,6 @@ fun isNetworkAvailable(): Boolean {
     false
   }
 }
-private val LOG = GPLogger.create("Cloud.Http")
 
 data class Lock(var uid: String = "",
                 var name: String = "",
@@ -562,3 +492,9 @@ data class ProjectWriteResponse(
     var projectRefid: String = "",
     var lock: Lock? = null
 )
+
+private val HOST =
+    if (GPCLOUD_HOST == "ganttproject.localhost") HttpHost.create("http://ganttproject.localhost:80")
+    else HttpHost.create("https://$GPCLOUD_HOST:443")
+
+private val LOG = GPLogger.create("Cloud.Http")
