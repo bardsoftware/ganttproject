@@ -81,8 +81,8 @@ public class RssFeedChecker {
       myCheckRssOption, myLastCheckOption);
   private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
   private GPTimeUnitStack myTimeUnitStack;
-  private static final String RSS_URL = "http://www.ganttproject.biz/my/feed";
-  public static final String UPDATE_URL = "http://dl.ganttproject.biz/updates/ganttproject-3.0.json";
+  private static final String RSS_URL = "https://www.ganttproject.biz/my/feed";
+  public static final String UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json";
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",
