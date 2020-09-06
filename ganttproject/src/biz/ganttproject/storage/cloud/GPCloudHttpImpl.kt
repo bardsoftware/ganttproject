@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.DocumentUri
 import biz.ganttproject.storage.Path
 import com.fasterxml.jackson.databind.JsonNode
@@ -82,7 +83,7 @@ class GPCloudException(val status: Int) : Exception()
 // Create LoadTask or CachedTask depending on whether we have cached response from GP Cloud or not
 class LoaderService<T: CloudJsonAsFolderItem> : Service<ObservableList<T>>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
-  var path: Path = DocumentUri(listOf(), true, "GanttProject Cloud")
+  var path: Path = DocumentUri(listOf(), true, RootLocalizer.formatText("cloud.officialTitle"))
   var jsonResult: SimpleObjectProperty<JsonNode> = SimpleObjectProperty()
 
   override fun createTask(): Task<ObservableList<T>> {

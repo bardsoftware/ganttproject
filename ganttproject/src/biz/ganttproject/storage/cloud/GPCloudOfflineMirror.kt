@@ -26,7 +26,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.Pane
@@ -42,7 +41,9 @@ import java.util.function.Consumer
  */
 class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJsonAsFolderItem() {
   override val isLockable: Boolean = false
-  override val name: String = options.name.ifBlank { options.offlineMirror ?: "Untitled" }
+  override val name: String = options.name.ifBlank {
+    options.offlineMirror ?: RootLocalizer.formatText("document.storage.untitledDocument", "")
+  }
   override val isDirectory: Boolean = false
   override val canChangeLock: Boolean = false
   override val isLocked: Boolean
@@ -69,23 +70,24 @@ class GPCloudOfflinePane(
   }
 
   private fun buildContentPane(): Pane {
-    val vbox = VBoxBuilder("content-pane")
-    vbox.addTitle("You seem to be offline")
-    vbox.add(Label("We couldn't contact $GPCLOUD_HOST by name nor by IP address").apply { styleClass.add("help") })
-
     val toggleGroup = ToggleGroup()
-
-    val btnOffline = RadioButton("Open offline project mirror").also {
+    val btnOffline = RadioButton(ourLocalizer.formatText("notification.btnOpenMirror")).also {
       it.styleClass.add("mt-5")
       it.isSelected = true
       it.styleClass.add("btn-lock-expire")
       it.toggleGroup = toggleGroup
-      vbox.add(it)
     }
-    val btnTryAgain = RadioButton("Try contacting GanttProject Cloud again").also {
+    val btnTryAgain = RadioButton(ourLocalizer.formatText("notification.btnTryAgain")).also {
       it.styleClass.add("btn-lock-expire")
       it.toggleGroup = toggleGroup
-      vbox.add(it)
+    }
+
+    val vbox = VBoxBuilder("content-pane").apply {
+      i18n = ourLocalizer
+      addTitle("notification.title")
+      add(Label(i18n.formatText("notification.titleHelp", GPCLOUD_HOST)).apply { styleClass.add("help") })
+      add(btnOffline)
+      add(btnTryAgain)
     }
 
     return DialogPane().apply {
@@ -98,9 +100,9 @@ class GPCloudOfflinePane(
       buttonTypes.addAll(ButtonType.OK)
       lookupButton(ButtonType.OK).apply {
         if (this is Button) {
-          text = "Continue"
+          text = RootLocalizer.formatText("generic.continue")
           styleClass.add("btn-attention")
-          addEventHandler(ActionEvent.ACTION) { evt ->
+          addEventHandler(ActionEvent.ACTION) {
             when {
               btnTryAgain.isSelected -> {
                 controller?.start()
@@ -139,17 +141,17 @@ class GPCloudOfflinePane(
   }
 
   private fun createBrowserPane(): Pane {
-    val builder = BrowserPaneBuilder<OfflineMirrorOptionsAsFolderItem>(this.mode, this.dialogUi::error) { path, success, loading ->
+    val builder = BrowserPaneBuilder<OfflineMirrorOptionsAsFolderItem>(this.mode, this.dialogUi::error) { _, success, _ ->
       loadOfflineMirrors(success)
     }
 
     val paneElements = builder.apply {
-      withI18N(RootLocalizer.createWithRootKey("storageService.cloudOffline", BROWSE_PANE_LOCALIZER))
-      withBreadcrumbs(DocumentUri(listOf(), true, "Offline Cloud Documents"))
+      withI18N(ourLocalizer)
+      withBreadcrumbs(DocumentUri(listOf(), true, ourLocalizer.formatText("breadcrumbs.root")))
       withActionButton {}
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
-          itemActionFactory = java.util.function.Function { Collections.emptyMap() }
+          itemActionFactory = { Collections.emptyMap() }
       )
       withActionButton { btn ->
         btn.addEventHandler(ActionEvent.ACTION) {
@@ -164,7 +166,7 @@ class GPCloudOfflinePane(
 }
 
 fun <T: CloudJsonAsFolderItem> loadOfflineMirrors(consumer: Consumer<ObservableList<T>>) {
-  val mirrors = GPCloudOptions.cloudFiles.files.entries.mapNotNull { (fp, options) ->
+  val mirrors = GPCloudOptions.cloudFiles.files.entries.mapNotNull { (_, options) ->
     options.offlineMirror?.let {
       OfflineMirrorOptionsAsFolderItem(options)
     }
@@ -172,3 +174,4 @@ fun <T: CloudJsonAsFolderItem> loadOfflineMirrors(consumer: Consumer<ObservableL
   consumer.accept(FXCollections.observableArrayList(mirrors) as ObservableList<T>)
 }
 
+private val ourLocalizer = RootLocalizer.createWithRootKey("storageService.cloudOffline", BROWSE_PANE_LOCALIZER)

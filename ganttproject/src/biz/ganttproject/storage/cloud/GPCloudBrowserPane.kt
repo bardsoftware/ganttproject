@@ -37,7 +37,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.HttpStatus
 import java.time.Instant
 import java.util.function.Consumer
-import java.util.logging.Level
 
 abstract class CloudJsonAsFolderItem : FolderItem {
   override val tags = listOf<String>()
@@ -127,7 +126,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   }
 }
 
-val ROOT_URI = DocumentUri(listOf(), true, "GanttProject Cloud")
+val ROOT_URI = DocumentUri(listOf(), true, RootLocalizer.formatText("cloud.officialTitle"))
 /**
  * This pane shows the contents of GanttProject Cloud storage
  * for a signed in user.
@@ -189,7 +188,7 @@ class GPCloudBrowserPane(
     val listViewHint = SimpleStringProperty(i18n.formatText("open.listViewHint"))
 
     this.paneElements = builder.apply {
-      withI18N(RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER))
+      withI18N(CLOUD_LOCALIZER)
       withBreadcrumbs(ROOT_URI)
       withActionButton { btn ->
         actionButtonHandler.button = btn
@@ -239,14 +238,6 @@ class GPCloudBrowserPane(
 
   enum class ActionOnLocked { OPEN, CANCEL }
 
-  private fun openDocumentWithLock(document: GPCloudDocument, jsonLock: JsonNode?) {
-    println("Lock node=$jsonLock")
-    if (jsonLock != null) {
-      document.lock = jsonLock
-    }
-    this@GPCloudBrowserPane.documentConsumer(document)
-  }
-
   private fun <T: CloudJsonAsFolderItem> loadTeams(path: Path, setResult: Consumer<ObservableList<T>>, showMaskPane: Consumer<Boolean>) {
     loaderService.apply {
       busyIndicator = showMaskPane
@@ -257,31 +248,29 @@ class GPCloudBrowserPane(
       }
       onFailed = EventHandler {
         showMaskPane.accept(false)
-        val ex = this.exception
-        when (ex) {
+        when (val ex = this.exception) {
           is GPCloudException -> {
             when (ex.status) {
               HttpStatus.SC_SERVICE_UNAVAILABLE -> loadOfflineMirrors(setResult)
               HttpStatus.SC_FORBIDDEN, HttpStatus.SC_UNAUTHORIZED -> {
                 this@GPCloudBrowserPane.controller!!.start()
               }
-              else -> dialogUi.error(ex.message ?: "")
+              else -> dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.http", ex.status, ex.message ?: ""))
             }
-
+            LOG.error("Failed to load teams due to HTTP error {}", ex.status, exception = ex, kv = mapOf(
+              "userId" to GPCloudOptions.userId.value
+            ))
           }
-          null -> dialogUi.error("Loading failed!")
+          null -> dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.other", ""))
           else -> {
-
-            GPLogger.getLogger("GPCloud").log(Level.WARNING, "", ex)
-            val errorDetails = ex.message
-            dialogUi.error("Failed to load data from GanttProject Cloud $errorDetails")
+            LOG.error(msg = "Failed to load teams", exception = ex)
+            dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.other", ex.message ?: ""))
           }
-
         }
       }
       onCancelled = EventHandler {
         showMaskPane.accept(false)
-        GPLogger.log("Loading cancelled!")
+        LOG.debug("Loading cancelled")
       }
       restart()
     }
@@ -299,3 +288,5 @@ class GPCloudBrowserPane(
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
+private val CLOUD_LOCALIZER = RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER)
+private val LOG = GPLogger.create("Cloud.Browser")

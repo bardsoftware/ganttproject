@@ -531,7 +531,6 @@ class GPCloudDocument(private val teamRefid: String?,
         .onSuccessListener {
           this.modeValue = OnlineDocumentMode.MIRROR
         }
-        .beforeNextTryListener { println("Next try") }
         .buildAsync(executor)
     executor.execute(callable)
   }
