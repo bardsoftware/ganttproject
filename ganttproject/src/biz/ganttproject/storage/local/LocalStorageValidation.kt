@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageMode
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.validation.ValidationResult
@@ -35,7 +37,7 @@ fun createLocalStorageValidator(
       return@Validator ValidationResult()
     }
     if (value.isBlank()) {
-      return@Validator ValidationResult.fromWarning(control, "Type file name")
+      return@Validator ValidationResult.fromWarning(control, i18n.formatText("validation.emptyFileName"))
     }
     try {
       state.trySetFile(value)
@@ -50,3 +52,4 @@ fun createLocalStorageValidator(
   }
 }
 
+private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)

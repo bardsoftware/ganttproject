@@ -51,10 +51,8 @@ class LocalStorageState(val currentDocument: Document,
     set(value) {
       if (value != null) {
         validationResult = value.validationResultProperty()
-        value.invalidProperty().addListener({ _, _, _ ->
-          validate()
-        })
-        confirmationReceived.addListener({ _, _, _ -> validate() })
+        value.invalidProperty().addListener { _, _, _ -> validate() }
+        confirmationReceived.addListener { _, _, _ -> validate() }
       }
     }
 

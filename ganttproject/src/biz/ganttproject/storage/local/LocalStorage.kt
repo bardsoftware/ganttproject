@@ -26,7 +26,6 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.layout.Pane
 import javafx.stage.FileChooser
@@ -36,7 +35,6 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Supplier
 
 /**
  * Adapter representing file in the browser UI
@@ -117,7 +115,7 @@ class LocalStorage(
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.state = LocalStorageState(currentDocument, myMode)
 
-    val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, loading ->
+    val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, _ ->
       loadFiles(path, success, state)
     }
     val actionButtonHandler = object {
@@ -180,14 +178,12 @@ class LocalStorage(
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           onLaunch = {
-            if (it is FileAsFolderItem) {
-              myDocumentReceiver(FileDocument(it.file))
-            }
+            myDocumentReceiver(FileDocument(it.file))
           },
           onNameTyped = actionButtonHandler::onNameTyped
       )
       withValidator(createLocalStorageValidator(
-          Supplier { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
+          { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
           state
       ))
       withListViewHint(listViewHint)
