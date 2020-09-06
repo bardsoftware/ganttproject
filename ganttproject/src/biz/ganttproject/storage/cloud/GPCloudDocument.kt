@@ -512,7 +512,7 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 
   private fun json2lockStatus(json: JsonNode?): LockStatus {
-    return if (json?.isMissingNode == false) {
+    return if (json?.isMissingNode == false && json["expirationEpochTs"]?.asLong() != -1L) {
       LockStatus(true,
           json["name"]?.textValue(), json["email"]?.textValue(), json["uid"]?.textValue(), json)
     } else {
