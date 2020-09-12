@@ -203,6 +203,12 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       if (nextHasNested || myTaskApi.isProjectTask(nextTask)) {
         String style = myTaskApi.isProjectTask(nextTask) ? "task.projectTask" : "task.supertask";
         nextRectangle.setStyle(style);
+        if (myTaskApi.isFirst(activity)) {
+          nextRectangle.addStyle("task.container.open");
+        }
+        if (myTaskApi.isLast(activity)) {
+          nextRectangle.addStyle("task.container.close");
+        }
         nextRectangle.setBackgroundColor(Color.BLACK);
         myStyleApplier.applyStyle(nextRectangle);
       } else {

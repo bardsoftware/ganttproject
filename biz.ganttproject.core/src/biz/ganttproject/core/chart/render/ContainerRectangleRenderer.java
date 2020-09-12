@@ -1,21 +1,3 @@
-/*
-Copyright 2012 GanttProject Team
-
-This file is part of GanttProject, an opensource project management tool.
-
-GanttProject is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
-GanttProject is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
 package biz.ganttproject.core.chart.render;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
@@ -56,15 +38,20 @@ public class ContainerRectangleRenderer {
       trianglesColor = Color.BLACK;
     }
     myGraphics.setColor(trianglesColor);
-    myGraphics.fillPolygon(
-            new int[] { rect.getLeftX(), rect.getLeftX() + rect.getHeight(), rect.getLeftX() },
-            new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
-            3
-    );
-    myGraphics.fillPolygon(
-            new int[] { rect.getRightX(), rect.getRightX() - rect.getHeight(), rect.getRightX() },
-            new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
-            3
-    );
+    if (rect.hasStyle("task.container.open")) {
+      myGraphics.fillPolygon(
+              new int[] { rect.getLeftX(), rect.getLeftX() + rect.getHeight(), rect.getLeftX() },
+              new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
+              3
+      );
+    }
+    if (rect.hasStyle("task.container.close")) {
+      myGraphics.fillPolygon(
+              new int[] { rect.getRightX(), rect.getRightX() - rect.getHeight(), rect.getRightX() },
+              new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
+              3
+      );
+    }
+
   }
 }
