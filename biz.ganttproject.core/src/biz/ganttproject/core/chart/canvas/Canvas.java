@@ -56,7 +56,7 @@ public class Canvas {
 
   private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
 
-  private final DummySpatialIndex<Polygon> myPolygonIndex = new DummySpatialIndex<Canvas.Polygon>();
+  private final DummySpatialIndex<Rhombus> myRhombusIndex = new DummySpatialIndex<>();
 
   /** Horizontal alignments for texts */
   public enum HAlignment {
@@ -242,6 +242,17 @@ public class Canvas {
 
     public void setBackgroundPaint(Paint paint) {
       myPaint = paint;
+    }
+  }
+
+  public static class Rhombus extends Polygon {
+    private Rhombus(int leftx, int topy, int hDiagLength, int vDiagLength) {
+      super(
+              leftx, topy + vDiagLength / 2,
+              leftx + hDiagLength / 2, topy,
+              leftx + hDiagLength, topy + vDiagLength / 2,
+              leftx + hDiagLength / 2, topy + vDiagLength
+      );
     }
   }
 
@@ -543,11 +554,10 @@ public class Canvas {
     // }
   }
 
-  public Polygon createPolygon(int... points) {
-    assert points.length % 2 == 0 : "The number of points must be even";
-    Polygon result = new Polygon(points);
-    myPolygonIndex.put(result, result.getLeftX(), result.getBottomY(), result.getWidth(), result.getHeight());
-    return result;
+  public Rhombus createRhombus(int leftx, int topy, int hDiagLength, int vDiagLength) {
+    Rhombus rhombus = new Rhombus(leftx, topy, hDiagLength, vDiagLength);
+    myRhombusIndex.put(rhombus, rhombus.getLeftX(), rhombus.getBottomY(), rhombus.getWidth(), rhombus.getHeight());
+    return rhombus;
   }
 
   public Rectangle createRectangle(int leftx, int topy, int width, int height) {
@@ -596,9 +606,9 @@ public class Canvas {
         painter.paint(next);
       }
     }
-    for (Polygon p : myPolygonIndex.values()) {
-      if (p.isVisible()) {
-        painter.paint(p);
+    for (Rhombus r : myRhombusIndex.values()) {
+      if (r.isVisible()) {
+        painter.paint(r);
       }
     }
     for (int i = 0; i < myLines.size(); i++) {
@@ -621,7 +631,7 @@ public class Canvas {
 
   public void clear() {
     myTextIndex.clear();
-    myPolygonIndex.clear();
+    myRhombusIndex.clear();
     myRectangles.clear();
     myLines.clear();
     myTexts.clear();
@@ -659,7 +669,7 @@ public class Canvas {
     if (result != null) {
       return result;
     }
-    result = myPolygonIndex.get(x, xThreshold, y, yThreshold);
+    result = myRhombusIndex.get(x, xThreshold, y, yThreshold);
     if (result != null) {
       return result;
     }

@@ -28,20 +28,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import biz.ganttproject.core.chart.render.*;
 import com.google.common.base.Supplier;
 
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
-import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Painter;
-import biz.ganttproject.core.chart.render.LineRenderer;
-import biz.ganttproject.core.chart.render.PolygonRenderer;
-import biz.ganttproject.core.chart.render.RectangleRenderer;
-import biz.ganttproject.core.chart.render.TextPainter;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 
@@ -74,6 +70,8 @@ public class StyledPainterImpl implements Painter {
 
   private final RectangleRenderer myRectangleRenderer;
 
+  private final ContainerRectangleRenderer myContainerRectangleRenderer;
+
   private final PolygonRenderer myPolygonRenderer;
 
   /** Default stroke used for the primitives */
@@ -85,6 +83,8 @@ public class StyledPainterImpl implements Painter {
 
     myStyle2painter.put("task.progress", new ColouredRectanglePainter(Color.BLACK));
     myStyle2painter.put("task.progress.end", new ColouredRectanglePainter(Color.BLACK));
+    myStyle2painter.put("task.projectTask", containerRectanglePainter);
+    myStyle2painter.put("task.supertask", containerRectanglePainter);
     myStyle2painter.put("load.normal", myResourceLoadPainter);
     myStyle2painter.put("load.normal.first", myResourceLoadPainter);
     myStyle2painter.put("load.normal.last", myResourceLoadPainter);
@@ -121,6 +121,7 @@ public class StyledPainterImpl implements Painter {
     });
     myLineRenderer = new LineRenderer(myProperties);
     myRectangleRenderer = new RectangleRenderer(myProperties);
+    myContainerRectangleRenderer = new ContainerRectangleRenderer(myProperties);
     myPolygonRenderer = new PolygonRenderer(myProperties);
   }
 
@@ -129,6 +130,7 @@ public class StyledPainterImpl implements Painter {
     myTextPainter.setGraphics(myGraphics);
     myLineRenderer.setGraphics(myGraphics);
     myRectangleRenderer.setGraphics(myGraphics);
+    myContainerRectangleRenderer.setGraphics(myGraphics);
     myPolygonRenderer.setGraphics(myGraphics);
   }
 
@@ -338,6 +340,13 @@ public class StyledPainterImpl implements Painter {
     }
   };
 
+  private final RectanglePainter containerRectanglePainter = new RectanglePainter() {
+    @Override
+    public void paint(Rectangle next) {
+      myContainerRectangleRenderer.render(next);
+    }
+  };
+
   private class ColouredRectanglePainter implements RectanglePainter {
     private Color myColor;
 
@@ -368,7 +377,7 @@ public class StyledPainterImpl implements Painter {
   }
 
   @Override
-  public void paint(Polygon p) {
-    myPolygonRenderer.render(p);
+  public void paint(Canvas.Rhombus rhombus) {
+    myPolygonRenderer.render(rhombus);
   }
 }

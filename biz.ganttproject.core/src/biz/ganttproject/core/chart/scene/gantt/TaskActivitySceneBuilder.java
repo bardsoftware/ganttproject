@@ -190,38 +190,21 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       int rectHeight = rect.getHeight();
       int rectHalf = rectHeight / 2;
       int middleX = rect.getLeftX() + 3; // This is important to draw dependencies to/from milestones properly
-      Canvas.Polygon p = container.createPolygon(
-          middleX - rectHalf, rect.getMiddleY(),
-          middleX, rect.getMiddleY() - rectHalf,
-          middleX + rectHalf, rect.getMiddleY(),
-          middleX, rect.getMiddleY() + rectHalf);
-      p.setStyle("task.milestone");
+      Canvas.Rhombus r = container.createRhombus(
+              middleX - rectHalf, rect.getMiddleY() - rectHalf,
+              rectHeight, rectHeight
+      );
+      r.setStyle("task.milestone");
       //container.bind(p, activity);
-      resultShape = p;
+      resultShape = r;
     } else {
       Canvas.Rectangle nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
       resultShape = nextRectangle;
       if (nextHasNested || myTaskApi.isProjectTask(nextTask)) {
-        String prefix = myTaskApi.isProjectTask(nextTask) ? "task.projectTask" : "task.supertask";
-        nextRectangle.setStyle(prefix);
-        if (myTaskApi.isFirst(activity)) {
-          Canvas.Polygon ending = container.createPolygon(nextRectangle.getLeftX(), nextRectangle.getTopY(),
-              nextRectangle.getLeftX() + nextRectangle.getHeight(), nextRectangle.getTopY(),
-              nextRectangle.getLeftX(), nextRectangle.getBottomY());
-          ending.setStyle(prefix + ".start");
-          ending.addStyle("task.ending");
-          myStyleApplier.applyStyle(ending);
-          polygons.add(ending);
-        }
-        if (myTaskApi.isLast(activity)) {
-          Canvas.Polygon ending = container.createPolygon(nextRectangle.getRightX(), nextRectangle.getTopY(),
-              nextRectangle.getRightX() - nextRectangle.getHeight(), nextRectangle.getTopY(),
-              nextRectangle.getRightX(), nextRectangle.getBottomY());
-          ending.setStyle(prefix + ".end");
-          ending.addStyle("task.ending");
-          myStyleApplier.applyStyle(ending);
-          polygons.add(ending);
-        }
+        String style = myTaskApi.isProjectTask(nextTask) ? "task.projectTask" : "task.supertask";
+        nextRectangle.setStyle(style);
+        nextRectangle.setBackgroundColor(Color.BLACK);
+        myStyleApplier.applyStyle(nextRectangle);
       } else {
         if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
           nextRectangle.setStyle("task.startend");
