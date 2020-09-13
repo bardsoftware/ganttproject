@@ -287,8 +287,6 @@ HBox.title-integrated Label {
 .pane-storage {
     -fx-padding: 0;
     -fx-border-insets: 0;
-    -fx-pref-height: 500;
-    -fx-pref-width: 500;
 }
 
 .pane-storage > * {

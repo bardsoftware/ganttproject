@@ -23,13 +23,13 @@ import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
-import com.google.common.base.Preconditions
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.*
+import javafx.stage.Screen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -44,24 +44,27 @@ import org.controlsfx.control.NotificationPane
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
+import kotlin.math.max
 
 /**
+ * This class builds the storage dialog. Storage dialog shows a list of available storages
+ * allows for switching between them and connects storage user interfaces with functions to open or save documents.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class StorageDialogBuilder(
     private val myProject: IGanttProject,
     projectUi: ProjectUIFacade,
     documentManager: DocumentManager,
-    cloudStorageOptions: GPCloudStorageOptions,
+    private val cloudStorageOptions: GPCloudStorageOptions,
     private val dialogBuildApi: DialogController) {
-  private val myCloudStorageOptions: GPCloudStorageOptions = Preconditions.checkNotNull(cloudStorageOptions)
   private val myDocumentReceiver: Consumer<Document>
   private val myDocumentUpdater: Consumer<Document>
   private var myNotificationPane: NotificationPane? = null
   private var myOpenStorage: Node? = null
   private var mySaveStorage: Pane? = null
 
-  private val myDialogUi = DialogUi(dialogBuildApi) { myNotificationPane!!}
+  private val myDialogUi = DialogUi(dialogBuildApi) { myNotificationPane!! }
 
   init {
     // This will be called when user opens a project.
@@ -108,14 +111,14 @@ class StorageDialogBuilder(
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
     dialogBuildApi.removeButtonBar()
 
-    val borderPane = BorderPane()
-    borderPane.styleClass.addAll("body", "pane-storage")
-    borderPane.center = Pane()
+    val contentPane = BorderPane()
+    contentPane.styleClass.addAll("body", "pane-storage")
+    contentPane.center = Pane()
     val btnSave = Button(GanttLanguage.getInstance().getText("myProjects.save"))
     val btnOpen = Button(GanttLanguage.getInstance().getText("myProjects.open"))
     btnSave.apply {
       addEventHandler(ActionEvent.ACTION) {
-        showSaveStorageUi(borderPane)
+        showSaveStorageUi(contentPane)
         btnOpen.styleClass.removeAll("selected")
         btnSave.styleClass.add("selected")
       }
@@ -124,7 +127,7 @@ class StorageDialogBuilder(
     }
     btnOpen.apply {
       addEventHandler(ActionEvent.ACTION) {
-        showOpenStorageUi(borderPane)
+        showOpenStorageUi(contentPane)
         btnSave.styleClass.removeAll("selected")
         btnOpen.styleClass.add("selected")
       }
@@ -150,7 +153,7 @@ class StorageDialogBuilder(
 
     titleBox.children.addAll(projectName, buttonBar)
     this.dialogBuildApi.setHeader(titleBox)
-    this.dialogBuildApi.setContent(borderPane)
+    this.dialogBuildApi.setContent(contentPane)
     this.dialogBuildApi.beforeShow = {
       if (mode == Mode.SAVE) {
         btnSave.fire()
@@ -158,6 +161,25 @@ class StorageDialogBuilder(
       } else {
         btnOpen.fire()
         btnOpen.requestFocus()
+      }
+    }
+    if (contentPaneWidth != 0.0 && contentPaneHeight != 0.0) {
+      contentPane.prefWidth = contentPaneWidth
+      contentPane.prefHeight = contentPaneHeight
+    } else {
+      contentPane.prefHeight = max(Screen.getPrimary().bounds.height / 2, 500.0)
+      contentPane.prefWidth = max(Screen.getPrimary().bounds.width / 2, 500.0)
+    }
+    contentPane.widthProperty().addListener { _, _, newValue ->
+      contentPaneWidth = newValue.toDouble()
+      if (contentPane.isVisible && contentPaneWidth > 0) {
+        contentPane.prefWidth = contentPaneWidth
+      }
+    }
+    contentPane.heightProperty().addListener { _, _, newValue ->
+      contentPaneHeight = newValue.toDouble()
+      if (contentPane.isVisible && contentPaneHeight > 0) {
+        contentPane.prefHeight = contentPaneHeight
       }
     }
   }
@@ -182,7 +204,7 @@ class StorageDialogBuilder(
 
   private fun buildStoragePane(mode: Mode): Pane {
     if (myProject.document != null) {
-      val storagePane = StoragePane(myCloudStorageOptions, myProject.documentManager, ReadOnlyProxyDocument(myProject.document), myDocumentReceiver, myDocumentUpdater, myDialogUi)
+      val storagePane = StoragePane(cloudStorageOptions, myProject.documentManager, ReadOnlyProxyDocument(myProject.document), myDocumentReceiver, myDocumentUpdater, myDialogUi)
       return storagePane.buildStoragePane(mode)
     } else {
       return Pane(Label("No document!"))
@@ -224,17 +246,27 @@ class StorageDialogBuilder(
       dialogController.toggleProgress(isShown)
     }
   }
-
-  interface Ui {
-    val category: String
-
-    val id: String
-      get() = category
-
-    val name: String
-
-    fun createUi(): Pane
-
-    fun createSettingsUi(): Optional<Pane>
-  }
 }
+
+/**
+ * Storages need to implement this interface to be shown in the storage dialog.
+ */
+interface StorageUi {
+  // Storage category is one of "cloud", "desktop" and "webdav"
+  val category: String
+
+  val id get() = category
+  // Display name to be shown in the list of storages
+  val name: String
+
+  // Creates this stage user interface
+  fun createUi(): Pane
+
+  // Creates this storage settings interface
+  fun createSettingsUi(): Optional<Pane>
+}
+
+// Saved dimensions of the content pane, so that the dialog size was preserved after closing and opening again
+private var contentPaneWidth = 0.0
+private var contentPaneHeight = 0.0
+

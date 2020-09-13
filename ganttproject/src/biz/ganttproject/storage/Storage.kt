@@ -100,7 +100,7 @@ class StoragePane internal constructor(
     private val dialogUi: StorageDialogBuilder.DialogUi) {
 
   private val storageUiMap = mutableMapOf<String, Supplier<Pane>>()
-  private val storageUiList = mutableListOf<StorageDialogBuilder.Ui>()
+  private val storageUiList = mutableListOf<StorageUi>()
   private val storageUiPane = BorderPane()
 
   private var activeStorageLabel: Node? = null

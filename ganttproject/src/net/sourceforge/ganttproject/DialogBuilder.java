@@ -79,7 +79,7 @@ public class DialogBuilder {
 
     @Override
     public void layout() {
-      myDlg.pack();
+      myDlg.validate();
     }
 
     @Override
