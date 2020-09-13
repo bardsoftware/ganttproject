@@ -246,12 +246,12 @@ public class Canvas {
   }
 
   public static class Rhombus extends Polygon {
-    private Rhombus(int leftx, int topy, int hDiagLength, int vDiagLength) {
+    private Rhombus(int leftx, int topy, int diagWidth, int diagHeight) {
       super(
-              leftx, topy + vDiagLength / 2,
-              leftx + hDiagLength / 2, topy,
-              leftx + hDiagLength, topy + vDiagLength / 2,
-              leftx + hDiagLength / 2, topy + vDiagLength
+          leftx, topy + diagHeight / 2,
+          leftx + diagWidth / 2, topy,
+          leftx + diagWidth, topy + diagHeight / 2,
+          leftx + diagWidth / 2, topy + diagHeight
       );
     }
   }

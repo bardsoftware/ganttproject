@@ -191,8 +191,8 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
       int rectHalf = rectHeight / 2;
       int middleX = rect.getLeftX() + 3; // This is important to draw dependencies to/from milestones properly
       Canvas.Rhombus r = container.createRhombus(
-              middleX - rectHalf, rect.getMiddleY() - rectHalf,
-              rectHeight, rectHeight
+          middleX - rectHalf, rect.getMiddleY() - rectHalf,
+          rectHeight, rectHeight
       );
       r.setStyle("task.milestone");
       //container.bind(p, activity);
@@ -209,7 +209,6 @@ public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
         if (myTaskApi.isLast(activity)) {
           nextRectangle.addStyle("task.container.close");
         }
-        nextRectangle.setBackgroundColor(Color.BLACK);
         myStyleApplier.applyStyle(nextRectangle);
       } else {
         if (myTaskApi.isFirst(activity) && myTaskApi.isLast(activity)) {
