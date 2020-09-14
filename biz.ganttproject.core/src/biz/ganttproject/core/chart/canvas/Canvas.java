@@ -554,8 +554,8 @@ public class Canvas {
     // }
   }
 
-  public Rhombus createRhombus(int leftx, int topy, int hDiagLength, int vDiagLength) {
-    Rhombus rhombus = new Rhombus(leftx, topy, hDiagLength, vDiagLength);
+  public Rhombus createRhombus(int leftx, int topy, int diagWidth, int diagHeight) {
+    Rhombus rhombus = new Rhombus(leftx, topy, diagWidth, diagHeight);
     myRhombusIndex.put(rhombus, rhombus.getLeftX(), rhombus.getBottomY(), rhombus.getWidth(), rhombus.getHeight());
     return rhombus;
   }

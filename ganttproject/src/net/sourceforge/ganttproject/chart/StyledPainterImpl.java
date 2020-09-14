@@ -70,7 +70,7 @@ public class StyledPainterImpl implements Painter {
 
   private final RectangleRenderer myRectangleRenderer;
 
-  private final ContainerRectangleRenderer myContainerRectangleRenderer;
+  private final SummaryTaskRenderer mySummaryTaskRenderer;
 
   private final PolygonRenderer myPolygonRenderer;
 
@@ -121,7 +121,7 @@ public class StyledPainterImpl implements Painter {
     });
     myLineRenderer = new LineRenderer(myProperties);
     myRectangleRenderer = new RectangleRenderer(myProperties);
-    myContainerRectangleRenderer = new ContainerRectangleRenderer(myProperties);
+    mySummaryTaskRenderer = new SummaryTaskRenderer(myProperties);
     myPolygonRenderer = new PolygonRenderer(myProperties);
   }
 
@@ -130,7 +130,7 @@ public class StyledPainterImpl implements Painter {
     myTextPainter.setGraphics(myGraphics);
     myLineRenderer.setGraphics(myGraphics);
     myRectangleRenderer.setGraphics(myGraphics);
-    myContainerRectangleRenderer.setGraphics(myGraphics);
+    mySummaryTaskRenderer.setGraphics(myGraphics);
     myPolygonRenderer.setGraphics(myGraphics);
   }
 
@@ -343,7 +343,7 @@ public class StyledPainterImpl implements Painter {
   private final RectanglePainter containerRectanglePainter = new RectanglePainter() {
     @Override
     public void paint(Rectangle next) {
-      myContainerRectangleRenderer.render(next);
+      mySummaryTaskRenderer.render(next);
     }
   };
 

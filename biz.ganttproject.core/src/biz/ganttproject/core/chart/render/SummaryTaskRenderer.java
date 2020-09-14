@@ -23,11 +23,11 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import java.awt.*;
 import java.util.Properties;
 
-public class ContainerRectangleRenderer {
+public class SummaryTaskRenderer {
   private final Properties myProperties;
   private Graphics2D myGraphics;
 
-  public ContainerRectangleRenderer(Properties props) {
+  public SummaryTaskRenderer(Properties props) {
     myProperties = props;
   }
   
@@ -47,14 +47,14 @@ public class ContainerRectangleRenderer {
     g.fillRect(rect.getLeftX() + padding.getLeft(), rect.getTopY() + padding.getTop(),
             rect.getWidth() - (padding.getLeft() + padding.getRight()), rect.getHeight() - (padding.getTop() + padding.getBottom()));
 
-    if (rect.hasStyle("task.container.open")) {
+    if (rect.hasStyle("task.summary.open")) {
       g.fillPolygon(
           new int[] { rect.getLeftX(), rect.getLeftX() + rect.getHeight(), rect.getLeftX() },
           new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
           3
       );
     }
-    if (rect.hasStyle("task.container.close")) {
+    if (rect.hasStyle("task.summary.close")) {
       g.fillPolygon(
           new int[] { rect.getRightX(), rect.getRightX() - rect.getHeight(), rect.getRightX() },
           new int[] { rect.getTopY(), rect.getTopY(), rect.getBottomY() },
