@@ -1,5 +1,5 @@
 /*
-Copyright 2019 BarD Software s.r.o
+Copyright 2019-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -24,11 +24,6 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-
-interface I18N {
-  fun formatText(key: String, args: Array<Any> = arrayOf()): String
-  fun hasKey(key: String): Boolean
-}
 
 const val OPTION_PANE_STYLESHEET = "/biz/ganttproject/app/OptionPane.css"
 
@@ -97,10 +92,25 @@ class OptionPaneBuilder<T> {
           this.styleClass.add("option-help")
         })
       }
-      it.customContent?.let { vbox.add(it) }
+      it.customContent?.let(vbox::add)
     }
     return vbox.vbox
   }
+
+  fun createHeader() = BorderPane().apply {
+      styleClass.add("header")
+      center = VBoxBuilder().apply {
+        addTitle(this@OptionPaneBuilder.titleString.value)
+        add(Label().apply {
+          this.textProperty().bind(this@OptionPaneBuilder.titleHelpString)
+          this.styleClass.add("help")
+        })
+      }.vbox
+      this@OptionPaneBuilder.graphic?.let {graphic ->
+        this.right = graphic
+        graphic.styleClass.add("img")
+      }
+    }
 
   /**
    * Shows option dialog. When dialog is closed, calls optionHandler with the selected value.
@@ -113,24 +123,10 @@ class OptionPaneBuilder<T> {
         it.addStyleSheet(styleSheet)
       }
       it.addStyleClass(this.styleClass)
+      it.addStyleClass("option-pane-padding")
 
       // Dialog .header includes .title and .help labels and .img graphic on the right side if specified
-      it.setHeader(
-          BorderPane().apply {
-            styleClass.add("header")
-            center = VBoxBuilder().apply {
-              addTitle(this@OptionPaneBuilder.titleString.value)
-              add(Label().apply {
-                this.textProperty().bind(this@OptionPaneBuilder.titleHelpString)
-                this.styleClass.add("help")
-              })
-            }.vbox
-            this@OptionPaneBuilder.graphic?.let {graphic ->
-              this.right = graphic
-              graphic.styleClass.add("img")
-            }
-          }
-      )
+      it.setHeader(createHeader())
       // Dialog content is .content-pane
       it.setContent(buildPaneImpl(lockGroup).apply {
         styleClass.add("option-pane")

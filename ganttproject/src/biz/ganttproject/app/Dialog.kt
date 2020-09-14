@@ -392,3 +392,6 @@ fun createAlertBody(message: String): Node =
       scroll.isFitToWidth = true
       scroll.isFitToHeight = true
     }
+
+val THEME_STYLESHEET = "/biz/ganttproject/app/Theme.css"
+val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
