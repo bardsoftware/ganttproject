@@ -1,5 +1,5 @@
 /*
-Copyright 2013 BarD Software s.r.o
+Copyright 2013-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.ical;
 
+import biz.ganttproject.LoggerApi;
+import biz.ganttproject.app.DefaultLocalizer;
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeDuration;
@@ -45,6 +48,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +58,8 @@ import java.util.List;
  * @author dbarashev
  */
 public class IcsFileImporter extends ImporterBase {
+  private static final LoggerApi LOGGER = GPLogger.create("Import.Ics");
+  private static DefaultLocalizer ourLocalizer = InternationalizationKt.getRootLocalizer();
   private final CalendarEditorPage myEditorPage;
 
   public IcsFileImporter() {
@@ -68,7 +74,7 @@ public class IcsFileImporter extends ImporterBase {
 
   @Override
   public void run() {
-    getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {
+    getUiFacade().getUndoManager().undoableEdit(ourLocalizer.formatText("importCalendar"), new Runnable() {
       @Override
       public void run() {
         List<CalendarEvent> events = myEditorPage.getEvents();
@@ -117,7 +123,7 @@ public class IcsFileImporter extends ImporterBase {
     }
 
     public String getTitle() {
-      return "Edit calendar";
+      return ourLocalizer.formatText("impex.ics.previewPage.title");
     }
     public JComponent getComponent() {
       return myPanel;
@@ -130,9 +136,13 @@ public class IcsFileImporter extends ImporterBase {
           if (myEvents != null) {
             myPanel.add(new CalendarEditorPanel(wizard.getUIFacade(), myEvents, null).createComponent());
             return;
+          } else {
+            LOGGER.error("No events found in file {}", new Object[]{myFile}, Collections.emptyMap(), null);
           }
+        } else {
+          LOGGER.error("File {} is NOT readable", new Object[]{myFile}, Collections.emptyMap(), null);
         }
-        myPanel.add(new JLabel(String.format("File %s is not readable", myFile.getAbsolutePath())));
+        myPanel.add(new JLabel(ourLocalizer.formatText("impex.ics.filePage.error.noEvents", myFile.getAbsolutePath())));
       }
     }
   }
@@ -151,12 +161,12 @@ public class IcsFileImporter extends ImporterBase {
         if (comp instanceof VEvent) {
           VEvent event = (VEvent) comp;
           if (event.getStartDate() == null) {
-            GPLogger.log("No start date found, ignoring. Event="+event);
+            LOGGER.debug("No start date found, ignoring. Event={}", new Object[] {event}, Collections.emptyMap());
             continue;
           }
           Date eventStartDate = event.getStartDate().getDate();
           if (event.getEndDate() == null) {
-            GPLogger.log("No end date found, using start date instead. Event="+event);
+            LOGGER.debug("No end date found, using start date instead. Event={}", new Object[] {event}, Collections.emptyMap());
           }
           Date eventEndDate = event.getEndDate() == null ? eventStartDate : event.getEndDate().getDate();
           TimeDuration oneDay = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, 1);
@@ -168,7 +178,7 @@ public class IcsFileImporter extends ImporterBase {
             if (recurrenceRule != null) {
               recursYearly = Recur.YEARLY.equals(recurrenceRule.getRecur().getFrequency()) && 1 == recurrenceRule.getRecur().getInterval();
             }
-            while (startDate.compareTo(endDate) <= 0) {
+            while (startDate.compareTo(endDate) < 0) {
               Summary summary = event.getSummary();
               gpEvents.add(CalendarEvent.newEvent(
                   startDate, recursYearly, CalendarEvent.Type.HOLIDAY,
