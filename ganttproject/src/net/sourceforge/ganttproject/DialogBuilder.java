@@ -72,6 +72,7 @@ public class DialogBuilder {
 
     @Override
     public void show() {
+      myDlg.pack();
       center(Centering.WINDOW);
       myDlg.setVisible(true);
     }
