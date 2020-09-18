@@ -308,9 +308,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Allocation of the menus
 
     // Project menu related sub menus and items
-    ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade(), "lastOpen");
-    mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
-    getDocumentManager().addListener(mruMenu);
+//    ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade(), "lastOpen");
+//    mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
+//    getDocumentManager().addListener(mruMenu);
 
     myProjectMenu = new ProjectMenu(this, "project");
     bar.add(myProjectMenu);

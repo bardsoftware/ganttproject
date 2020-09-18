@@ -41,11 +41,13 @@ import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
+import org.apache.http.client.utils.URLEncodedUtils
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
 import java.net.SocketException
 import java.net.URI
+import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -60,7 +62,7 @@ import java.util.function.Consumer
 typealias OfflineDocumentFactory = (path: String) -> Document?
 typealias ProxyDocumentFactory = (document: Document) -> Document
 
-private val ourExecutor = Executors.newSingleThreadExecutor()
+const val URL_SCHEME = "cloud:"
 
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
@@ -422,7 +424,7 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  override fun getPath(): String = """https://GanttProject Cloud/${this.teamName}/${this.projectName}?refid=${this.projectRefid}"""
+  override fun getPath(): String = """cloud://${this.projectRefid}/${this.teamName}/${this.projectName}"""
 
   override fun write() {
     error("Not implemented")
@@ -537,3 +539,5 @@ class GPCloudDocument(private val teamRefid: String?,
   }
 }
 
+private fun String.asUrlEncoded() = URLEncoder.encode(this, Charsets.UTF_8)
+private val ourExecutor = Executors.newSingleThreadExecutor()
