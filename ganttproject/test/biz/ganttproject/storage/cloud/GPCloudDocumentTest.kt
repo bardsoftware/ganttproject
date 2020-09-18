@@ -129,6 +129,7 @@ class GPCloudDocumentTest {
     assertEquals(100500L, GPCloudOptions.cloudFiles.files[doc.projectIdFingerprint]!!.lastOnlineVersion?.toLong())
     assertEquals(BODY_239.checksum(), GPCloudOptions.cloudFiles.files[doc.projectIdFingerprint]!!.lastOnlineChecksum)
     assertEquals(BODY_239.checksum(), doc.offlineMirror!!.checksum())
+    assertEquals("Project 1", GPCloudOptions.cloudFiles.files[doc.projectIdFingerprint]!!.name)
   }
 
   /**

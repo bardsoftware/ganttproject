@@ -254,6 +254,7 @@ class GPCloudDocument(private val teamRefid: String?,
         ByteStreams.copy(ByteArrayInputStream(fetch.body), it)
       }
       this.makeMirrorOptions().let {
+        it.name = fileName
         it.lastOnlineVersion = fetch.actualVersion.toString()
         it.lastOnlineChecksum = fetch.actualChecksum
         GPCloudOptions.cloudFiles.save()
