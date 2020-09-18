@@ -1,5 +1,5 @@
 /*
-Copyright 2018 BarD Software s.r.o
+Copyright 2018-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.base.Strings
 import com.google.common.hash.Hashing
-import com.google.common.io.ByteStreams
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -40,14 +39,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
-import org.apache.http.client.utils.URLEncodedUtils
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
 import java.net.SocketException
 import java.net.URI
-import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -64,13 +62,15 @@ typealias ProxyDocumentFactory = (document: Document) -> Document
 
 const val URL_SCHEME = "cloud:"
 
+/**
+ * This class represents a document stored on GanttProject Cloud.
+ */
 class GPCloudDocument(private val teamRefid: String?,
                       private val teamName: String,
                       internal var projectRefid: String?,
                       private val projectName: String,
-                      val projectJson: ProjectJsonAsFolderItem?)
+                      projectJson: ProjectJsonAsFolderItem?)
   : AbstractURLDocument(), LockableDocument, OnlineDocument {
-  private var lastOfflineContents: ByteArray? = null
 
   override val isMirrored = SimpleBooleanProperty()
   override val status = SimpleObjectProperty<LockStatus>()
@@ -81,15 +81,16 @@ class GPCloudDocument(private val teamRefid: String?,
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
 
-  val projectIdFingerprint get() = this.projectRefid?.let {
+  internal val projectIdFingerprint get() = this.projectRefid?.let {
     Hashing.farmHashFingerprint64().hashUnencodedChars(it).toString()
   } ?: ""
 
-  var offlineDocumentFactory: OfflineDocumentFactory = { null }
-  var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
-  var httpClientFactory: () -> GPCloudHttpClient = HttpClientBuilder::buildHttpClient
-  var isNetworkAvailable = Callable { isNetworkAvailable() }
-  var executor = ourExecutor
+  private var lastOfflineContents: ByteArray? = null
+  internal var offlineDocumentFactory: OfflineDocumentFactory = { null }
+  internal var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
+  internal var httpClientFactory: () -> GPCloudHttpClient = HttpClientBuilder::buildHttpClient
+  internal var isNetworkAvailable = Callable { isNetworkAvailable() }
+  internal var executor = ourExecutor
 
   var lock: JsonNode? = null
     set(value) {
@@ -253,7 +254,7 @@ class GPCloudDocument(private val teamRefid: String?,
       }
 
       document.outputStream.use {
-        ByteStreams.copy(ByteArrayInputStream(fetch.body), it)
+        it.write(fetch.body)
       }
       this.makeMirrorOptions().let {
         it.name = fileName
@@ -274,20 +275,20 @@ class GPCloudDocument(private val teamRefid: String?,
       }
 
       document.outputStream.use {
-        ByteStreams.copy(ByteArrayInputStream(body), it)
+        it.write(body)
       }
     }
   }
 
   override fun getInputStream(): InputStream {
     val fetchResult = this.fetchResultProperty.get() ?: runBlocking { fetch().also { it.update() }}
-    if (fetchResult.useMirror) {
+    return if (fetchResult.useMirror) {
       val mirrorBytes = this.offlineMirror!!.inputStream.readBytes()
       saveOnline(mirrorBytes)
-      return ByteArrayInputStream(mirrorBytes)
+      ByteArrayInputStream(mirrorBytes)
     } else {
       saveOfflineMirror(fetchResult)
-      return ByteArrayInputStream(fetchResult.body)
+      ByteArrayInputStream(fetchResult.body)
     }
   }
 
@@ -470,19 +471,14 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun toggleLocked(duration: Duration?): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
-    val lockService = LockService {
+    val lockService = LockService(this.projectRefid!!, this.status.get().locked) {
       result.completeExceptionally(RuntimeException(it))
     }
-    lockService.project = this.projectJson!!
     lockService.busyIndicator = Consumer {}
     lockService.requestLockToken = true
     lockService.duration = duration ?: Duration.ZERO
     lockService.onSucceeded = EventHandler {
       val status = json2lockStatus(lockService.value)
-      val projectNode = this.projectJson.node
-      if (projectNode is ObjectNode) {
-        projectNode.set<ObjectNode>("lock", lockService.value)
-      }
       this.lock = lockService.value
       result.complete(status)
     }
@@ -494,19 +490,11 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun reloadLockStatus(): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
-    if (this.projectJson == null) {
-      result.completeExceptionally(RuntimeException("Document is not initialized: projectJson is missing"))
-      return result
-    }
     val service = IsLockedService(
         errorUi = {errorMsg -> result.completeExceptionally(RuntimeException(errorMsg)) },
         busyIndicator = {},
         projectRefid = this.projectRefid!!
     ) {value ->
-      val projectNode = this.projectJson.node
-      if (projectNode is ObjectNode) {
-        projectNode.set<ObjectNode>("lock", value)
-      }
       this.lock = value
       result.complete(this.status.get())
     }
@@ -521,7 +509,6 @@ class GPCloudDocument(private val teamRefid: String?,
     } else {
       LockStatus(false)
     }
-
   }
 
   private fun startReconnectPing() {
@@ -537,7 +524,13 @@ class GPCloudDocument(private val teamRefid: String?,
         .buildAsync(executor)
     executor.execute(callable)
   }
+
 }
 
-private fun String.asUrlEncoded() = URLEncoder.encode(this, Charsets.UTF_8)
+fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSocketClient) {
+  this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
+  this.proxyDocumentFactory = documentManager::getProxyDocument
+  this.listenEvents(webSocket)
+}
+
 private val ourExecutor = Executors.newSingleThreadExecutor()

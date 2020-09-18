@@ -187,21 +187,21 @@ typealias ErrorUi = (String) -> Unit
 // History service and tasks load project change history.
 class HistoryService : Service<ObservableList<VersionJsonAsFolderItem>>() {
   var busyIndicator: (Boolean) -> Unit = {}
-  lateinit var projectNode: ProjectJsonAsFolderItem
+  lateinit var projectRefid: String
 
   override fun createTask(): Task<ObservableList<VersionJsonAsFolderItem>> {
-    return HistoryTask(busyIndicator, projectNode)
+    return HistoryTask(busyIndicator, projectRefid)
   }
 
 }
 
 class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
-                  private val project: ProjectJsonAsFolderItem) : Task<ObservableList<VersionJsonAsFolderItem>>() {
+                  private val projectRefid: String) : Task<ObservableList<VersionJsonAsFolderItem>>() {
   override fun call(): ObservableList<VersionJsonAsFolderItem> {
     this.busyIndicator(true)
     val log = GPLogger.getLogger("GPCloud")
     val http = HttpClientBuilder.buildHttpClientApache()
-    val teamList = HttpGet("/p/versions?projectRefid=${project.refid}")
+    val teamList = HttpGet("/p/versions?projectRefid=${projectRefid}")
 
     val jsonBody = let {
       val resp = http.client.execute(http.host, teamList, http.context)

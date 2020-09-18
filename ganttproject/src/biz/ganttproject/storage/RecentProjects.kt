@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Dmitry Barashev, BarD Software s.r.o
+Copyright 2017-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -20,6 +20,9 @@ package biz.ganttproject.storage
 
 //import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.onboard
+import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -76,7 +79,7 @@ class RecentProjects(
 
 
       fun onAction() {
-        // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
+        // TODO: This currently works for local and Cloud docs only. Make it working for WebDAV docs too.
         selectedItem?.let {
           it.asDocument()?.let(documentReceiver)
         }
@@ -89,7 +92,7 @@ class RecentProjects(
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           onLaunch = { actionButtonHandler.onAction() },
-          itemActionFactory = java.util.function.Function {
+          itemActionFactory = {
             Collections.emptyMap()
           },
           cellFactory = { createListCell() }
@@ -158,7 +161,7 @@ class RecentProjects(
     runBlocking {
       result.addAll(documentManager.recentDocuments.map { path ->
         try {
-          val doc = RecentDocAsFolderItem(path)
+          val doc = RecentDocAsFolderItem(path, documentManager)
           GlobalScope.async(Dispatchers.IO) {
             doc.updateMetadata()
             doc
@@ -167,13 +170,13 @@ class RecentProjects(
           println(ex)
           CompletableDeferred(null)
         }
-      }.awaitAll().filterNotNull())
+      }.awaitAll())
     }
     consumer.accept(result)
   }
 }
 
-class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(urlString: String, private val documentManager: DocumentManager) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
   init {
@@ -185,7 +188,7 @@ class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDo
       if (indexColon > 0 && indexSlash == indexColon + 1) {
         URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
       } else if (indexSlash == 0) {
-        URL("file:" + urlString) to "file"
+        URL("file:$urlString") to "file"
       } else {
         throw ex
       }
@@ -228,6 +231,15 @@ class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDo
   fun asDocument(): Document? =
     when (scheme) {
       "file" -> File(this.url.path).let { if (it.exists()) FileDocument(it) else null }
+      "cloud" -> GPCloudDocument(
+          teamRefid = null,
+          teamName = DocumentUri.createPath(this.fullPath).getParent().getFileName(),
+          projectRefid = this.url.host,
+          projectName = this.name,
+          projectJson = null
+      ).also {
+        it.onboard(documentManager, webSocket)
+      }
       else -> null
     }
 
