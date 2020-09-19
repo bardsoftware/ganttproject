@@ -59,7 +59,7 @@ public class Style {
    *
    * Example: text.foo.padding = 2 2 2 2
    */
-  static class Padding {
+  public static class Padding {
     private List<Integer> myValues;
 
     public Padding(Collection<Integer> values) {
@@ -141,7 +141,7 @@ public class Style {
    *
    * Example: text.foo.border = #000000
    */
-  static class Border {
+  public static class Border {
     private final BasicStroke myStroke;
     private final java.awt.Color myColor;
 
@@ -180,7 +180,7 @@ public class Style {
     }
   }
   
-  static class Borders {
+  public static class Borders {
     private Border myTop;
     private Border myLeft;
     private Border myRight;
@@ -233,7 +233,7 @@ public class Style {
     }
   }
 
-  static class Color {
+  public static class Color {
     private final java.awt.Color myColor;
 
     Color(java.awt.Color color) {
@@ -252,7 +252,7 @@ public class Style {
     }
   }
 
-  static class BackgroundImage {
+  public static class BackgroundImage {
     private static final String BITMAP_PREFIX = "bitmap(";
     private static final String URL_PREFIX = "url(";
     private final Paint myPaint;
@@ -308,7 +308,7 @@ public class Style {
       return null;
     }
   }
-  enum Visibility {
+  public enum Visibility {
     VISIBLE, HIDDEN
   }
   
