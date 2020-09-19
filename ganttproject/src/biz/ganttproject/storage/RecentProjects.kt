@@ -97,7 +97,7 @@ class RecentProjects(
     return paneElements.browserPane.also {
       it.stylesheets.addAll(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/RecentProjects.css"
+        "/biz/ganttproject/storage/FolderViewCells.css"
       )
       loadRecentDocs(builder.resultConsumer)
     }
@@ -204,7 +204,11 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
   override val name: String
     get() = DocumentUri.createPath(this.fullPath).getFileName()
   override val basePath: String
-    get() = DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+    get() = when (scheme) {
+      "file", "webdav" -> DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+      "cloud" -> DocumentUri.createPath(this.fullPath).getParent().getFileName()
+      else -> ""
+    }
 
   val fullPath: String = this.url.path
   override val isDirectory: Boolean = false

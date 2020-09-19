@@ -26,10 +26,13 @@ import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 
 /**
+ * Creates a list cell with the folder item name in bigger font, folder item base path above in smaller font
+ * and folder item tags in the bottom right corner.
+ *
  * @author dbarashev@bardsoftware.com
  */
-class FolderItemCell : ListCell<ListViewItem<RecentDocAsFolderItem>>() {
-  override fun updateItem(item: ListViewItem<RecentDocAsFolderItem>?, empty: Boolean) {
+class FolderItemCell<T: FolderItem> : ListCell<ListViewItem<T>>() {
+  override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
     if (item == null) {
       text = ""
       graphic = null

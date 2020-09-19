@@ -141,7 +141,8 @@ class GPCloudOfflinePane(
       withActionButton {}
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
-          itemActionFactory = { Collections.emptyMap() }
+          itemActionFactory = { Collections.emptyMap() },
+          cellFactory = { FolderItemCell() }
       )
       withActionButton { btn ->
         btn.addEventHandler(ActionEvent.ACTION) {
@@ -150,7 +151,10 @@ class GPCloudOfflinePane(
       }
 
     }.build()
-    paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    paneElements.browserPane.stylesheets.addAll(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/FolderViewCells.css"
+    )
     return paneElements.browserPane
   }
 }
