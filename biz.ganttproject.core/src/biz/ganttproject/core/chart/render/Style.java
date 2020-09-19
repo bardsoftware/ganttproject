@@ -240,7 +240,7 @@ public class Style {
       myColor = color;
     }
 
-    java.awt.Color get() {
+    public java.awt.Color get() {
       return myColor;
     }
 
