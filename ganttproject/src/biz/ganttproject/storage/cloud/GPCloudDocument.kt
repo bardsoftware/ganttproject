@@ -340,14 +340,15 @@ class GPCloudDocument(private val teamRefid: String?,
           this.offlineMirror?.let {mirror ->
             this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
             return FetchResult(
-                this@GPCloudDocument,
-                this.mirrorOptions?.lastOnlineChecksum ?: "",
-                this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
-                "",
-                -1,
-                mirror.inputStream.readBytes(),
-                fetchResultProperty::setValue
-            )
+                onlineDocument = this@GPCloudDocument,
+                syncChecksum = this.mirrorOptions?.lastOnlineChecksum ?: "",
+                syncVersion = this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+                // As if we just've synced this mirror with the cloud
+                actualChecksum = this.mirrorOptions?.lastOnlineChecksum ?: "",
+                actualVersion = this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+                body = ByteArray(0),
+                updateFxn = fetchResultProperty::setValue
+            ).also { it.useMirror = true }
           }
         }
         else -> {}
