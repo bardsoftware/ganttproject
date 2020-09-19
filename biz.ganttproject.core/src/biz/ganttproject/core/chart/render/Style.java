@@ -396,7 +396,7 @@ public class Style {
     return myBorders;
   }
   
-  static Style getStyle(Properties props, String styleName) {
+  public static Style getStyle(Properties props, String styleName) {
     Style result = ourCache.get(styleName);
     if (result == null) {
       result = new Style(props, styleName);
