@@ -211,10 +211,10 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
     val loader = { doc: GPCloudDocument ->
       folderView.document = doc
-      doc.projectJson?.also { projectJson ->
+      doc.projectRefid?.also { projectRefid ->
         this.historyService.apply {
           this.busyIndicator = this@DocPropertiesUi.busyUi
-          this.projectNode = projectJson
+          this.projectRefid = projectRefid
           onSucceeded = EventHandler {
             Platform.runLater { folderView.setResources(this.value) }
             this.busyIndicator(false)

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 BarD Software s.r.o
+Copyright 2018-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,11 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -62,62 +60,47 @@ class GPCloudOfflinePane(
   var controller: GPCloudStorage.Controller? = null
 
   fun createPane(): Pane {
-    val rootPane = VBoxBuilder("pane-service-contents", "cloud-storage")
-    rootPane.add(Pane(), Pos.CENTER, Priority.ALWAYS)
-    rootPane.add(buildContentPane(), Pos.CENTER, Priority.NEVER)
-    rootPane.add(Pane(), Pos.CENTER, Priority.ALWAYS)
-    return rootPane.vbox
+    return buildContentPane()
+  }
+
+  enum class OfflineChoice {
+    OPEN_MIRROR, TRY_AGAIN
   }
 
   private fun buildContentPane(): Pane {
-    val toggleGroup = ToggleGroup()
-    val btnOffline = RadioButton(ourLocalizer.formatText("notification.btnOpenMirror")).also {
-      it.styleClass.add("mt-5")
-      it.isSelected = true
-      it.styleClass.add("btn-lock-expire")
-      it.toggleGroup = toggleGroup
+    val offlineChoice = ToggleGroup()
+    val btnContinue = Button(RootLocalizer.formatText("generic.continue")).also {
+      it.styleClass.addAll("btn-attention")
     }
-    val btnTryAgain = RadioButton(ourLocalizer.formatText("notification.btnTryAgain")).also {
-      it.styleClass.add("btn-lock-expire")
-      it.toggleGroup = toggleGroup
-    }
+    val optionPaneBuilder = OptionPaneBuilder<OfflineChoice>().apply {
+      i18n = RootLocalizer.createWithRootKey("storageService.cloudOffline.notification", BROWSE_PANE_LOCALIZER)
 
-    val vbox = VBoxBuilder("content-pane").apply {
-      i18n = ourLocalizer
-      addTitle("notification.title")
-      add(Label(i18n.formatText("notification.titleHelp", GPCLOUD_HOST)).apply { styleClass.add("help") })
-      add(btnOffline)
-      add(btnTryAgain)
+      toggleGroup = offlineChoice
+
+      elements = listOf(
+          OptionElementData("btnOpenMirror", OfflineChoice.OPEN_MIRROR, isSelected = true),
+          OptionElementData("btnTryAgain", OfflineChoice.TRY_AGAIN),
+      )
+
+      titleHelpString?.update(RootLocalizer.formatText("cloud.officialTitle"))
     }
 
-    return DialogPane().apply {
-      styleClass.add("dlg-lock")
-      stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.SIGNAL)
-
-      content = vbox.vbox
-
-      buttonTypes.addAll(ButtonType.OK)
-      lookupButton(ButtonType.OK).apply {
-        if (this is Button) {
-          text = RootLocalizer.formatText("generic.continue")
-          styleClass.add("btn-attention")
-          addEventHandler(ActionEvent.ACTION) {
-            when {
-              btnTryAgain.isSelected -> {
-                controller?.start()
-              }
-              btnOffline.isSelected -> {
-                controller?.sceneChanger?.invoke(this@GPCloudOfflinePane.browser)
-              }
-              else -> {
-
-              }
-            }
-          }
+    btnContinue.addEventHandler(ActionEvent.ACTION) {
+      offlineChoice.selectedToggle.userData.let {
+        when (it) {
+          OfflineChoice.TRY_AGAIN -> controller?.start()
+          OfflineChoice.OPEN_MIRROR -> controller?.sceneChanger?.invoke(this@GPCloudOfflinePane.browser)
         }
       }
     }
+
+    return VBoxBuilder("option-pane", "option-pane-padding").apply {
+      i18n = ourLocalizer
+      addStylesheets(THEME_STYLESHEET, OPTION_PANE_STYLESHEET, DIALOG_STYLESHEET)
+      add(optionPaneBuilder.createHeader())
+      add(optionPaneBuilder.buildPane(), alignment = Pos.CENTER, growth = Priority.ALWAYS)
+      add(btnContinue, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
+    }.vbox
   }
 
   val browser: Pane by lazy(this::createBrowserPane)

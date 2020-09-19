@@ -4,7 +4,6 @@
     -fx-border-width: 0 0 3 0;
     -fx-border-color: transparent;
     -fx-border-radius: 0;
-    -fx-padding: 1ex 1em;
 }
 
 .option-pane .btn-option {
@@ -36,4 +35,7 @@
     -fx-wrap-text: true;
 }
 
+.option-pane-padding {
+    -fx-padding: 1ex 1em;
+}
 

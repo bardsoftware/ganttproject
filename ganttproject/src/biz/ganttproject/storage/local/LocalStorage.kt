@@ -70,7 +70,7 @@ class LocalStorage(
     private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val mode: StorageDialogBuilder.Mode,
     private val currentDocument: Document,
-    private val myDocumentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
+    private val myDocumentReceiver: (Document) -> Unit) : StorageUi {
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
   private lateinit var state: LocalStorageState

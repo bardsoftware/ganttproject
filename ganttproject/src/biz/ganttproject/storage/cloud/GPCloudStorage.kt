@@ -23,6 +23,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.Spinner
 import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageDialogBuilder
+import biz.ganttproject.storage.StorageUi
 import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
@@ -58,7 +59,7 @@ class GPCloudStorage(
     private val mode: StorageDialogBuilder.Mode,
     private val openDocument: (Document) -> Unit,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentManager: DocumentManager) : StorageDialogBuilder.Ui {
+    private val documentManager: DocumentManager) : StorageUi {
   private val myPane: BorderPane = BorderPane()
 
   override val name = i18n.formatText("listLabel")

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Dmitry Barashev, BarD Software s.r.o
+Copyright 2017-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -20,10 +20,12 @@ package biz.ganttproject.storage
 
 //import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.onboard
+import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
@@ -31,16 +33,14 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
-import java.nio.file.Path
-import java.nio.file.Paths
+import java.io.File
+import java.net.MalformedURLException
+import java.net.URL
 import java.util.*
 import java.util.function.Consumer
 
@@ -53,7 +53,7 @@ class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
     private val documentManager: DocumentManager,
     private val currentDocument: Document,
-    private val documentReceiver: (Document) -> Unit) : StorageDialogBuilder.Ui {
+    private val documentReceiver: (Document) -> Unit) : StorageUi {
 
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
@@ -79,12 +79,9 @@ class RecentProjects(
 
 
       fun onAction() {
-        // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
+        // TODO: This currently works for local and Cloud docs only. Make it working for WebDAV docs too.
         selectedItem?.let {
-          val file = it.docPath.toFile()
-          if (file.exists()) {
-            documentReceiver(FileDocument(file))
-          }
+          it.asDocument()?.let(documentReceiver)
         }
       }
     }
@@ -95,7 +92,7 @@ class RecentProjects(
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           onLaunch = { actionButtonHandler.onAction() },
-          itemActionFactory = java.util.function.Function {
+          itemActionFactory = {
             Collections.emptyMap()
           },
           cellFactory = { createListCell() }
@@ -133,12 +130,12 @@ class RecentProjects(
         pane.children.add(VBox().also { vbox ->
           vbox.isFillWidth = true
           vbox.children.add(
-              Label(item.resource.get().docPath.parent?.normalize()?.toString() ?: "").apply {
+              Label(item.resource.get().basePath).apply {
                 styleClass.add("list-item-path")
               }
           )
           vbox.children.add(
-              Label(item.resource.get().docPath.fileName.toString()).apply {
+              Label(item.resource.get().name).apply {
                 styleClass.add("list-item-filename")
               }
           )
@@ -163,38 +160,100 @@ class RecentProjects(
 
     runBlocking {
       result.addAll(documentManager.recentDocuments.map { path ->
-        GlobalScope.async {
-          // TODO: This currently works for local docs only. Make it working for GP Cloud/WebDAV docs too.
-          documentManager.newDocument(path)?.let {doc ->
-            when {
-              doc.isLocal && doc.canWrite().isOK -> RecentDocAsFolderItem(Paths.get(path), listOf(i18n.formatText("tag.local")))
-              doc.isLocal && doc.canRead() -> RecentDocAsFolderItem(Paths.get(path), listOf(
-                  i18n.formatText("tag.local"), i18n.formatText("tag.readonly")
-              ))
-              else -> null
-            }
+        try {
+          val doc = RecentDocAsFolderItem(path, documentManager)
+          GlobalScope.async(Dispatchers.IO) {
+            doc.updateMetadata()
+            doc
           }
+        } catch (ex: MalformedURLException) {
+          println(ex)
+          CompletableDeferred(null)
         }
-      }.awaitAll().filterNotNull())
+      }.awaitAll())
     }
     consumer.accept(result)
   }
 }
 
-class RecentDocAsFolderItem(val docPath: Path, override val tags: List<String>) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(urlString: String, private val documentManager: DocumentManager) : FolderItem, Comparable<RecentDocAsFolderItem> {
+  private val url: URL
+  private val scheme: String
+  init {
+    val (url, scheme) = try {
+      URL(urlString).let {it to it.protocol }
+    } catch (ex: MalformedURLException) {
+      val indexColon = urlString.indexOf(':')
+      val indexSlash = urlString.indexOf('/')
+      if (indexColon > 0 && indexSlash == indexColon + 1) {
+        URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
+      } else if (indexSlash == 0) {
+        URL("file:$urlString") to "file"
+      } else {
+        throw ex
+      }
+    }
+    this.url = url
+    this.scheme = scheme
+  }
+
   override fun compareTo(other: RecentDocAsFolderItem): Int {
     val result = this.isDirectory.compareTo(other.isDirectory)
     return if (result != 0) {
       -1 * result
     } else {
-      this.name.compareTo(other.name)
+      this.fullPath.compareTo(other.fullPath)
     }
   }
+
+  fun updateMetadata() {
+    when (scheme) {
+      "file" -> {
+        File(this.url.path).let {
+          when {
+            it.isFile && it.canWrite() -> this.tags.add(i18n.formatText("tag.local"))
+            it.isFile && it.canRead() -> this.tags.addAll(listOf(
+                i18n.formatText("tag.local"),
+                i18n.formatText("tag.readonly")
+            ))
+            else -> {}
+          }
+        }
+      }
+      "cloud" -> {
+        this.tags.add(i18n.formatText("tag.cloud"))
+      }
+      else -> {
+      }
+    }
+  }
+
+  fun asDocument(): Document? =
+    when (scheme) {
+      "file" -> File(this.url.path).let { if (it.exists()) FileDocument(it) else null }
+      "cloud" -> GPCloudDocument(
+          teamRefid = null,
+          teamName = DocumentUri.createPath(this.fullPath).getParent().getFileName(),
+          projectRefid = this.url.host,
+          projectName = this.name,
+          projectJson = null
+      ).also {
+        it.onboard(documentManager, webSocket)
+      }
+      else -> null
+    }
+
 
   override val isLocked: Boolean = false
   override val isLockable: Boolean = false
   override val canChangeLock: Boolean = false
-  override val name: String = this.docPath.toString()
+  override val tags: MutableList<String> = mutableListOf()
+  override val name: String
+    get() = DocumentUri.createPath(this.fullPath).getFileName()
+  val basePath: String
+    get() = DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+
+  val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
 }
 

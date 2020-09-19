@@ -220,19 +220,16 @@ class GPCloudBrowserPane(
       return
     }
     this.documentConsumer(GPCloudDocument(selectedTeam, text).also {
-      it.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
-      it.proxyDocumentFactory = this.documentManager::getProxyDocument
+      it.onboard(this.documentManager, webSocket)
     })
   }
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
-      val document = GPCloudDocument(item)
-      document.offlineDocumentFactory = { path -> this.documentManager.newDocument(path) }
-      document.proxyDocumentFactory = this.documentManager::getProxyDocument
-
-      this.documentConsumer(document)
-      document.listenEvents(webSocket)
+      GPCloudDocument(item).also {
+        it.onboard(this.documentManager, webSocket)
+        this.documentConsumer(it)
+      }
     }
   }
 

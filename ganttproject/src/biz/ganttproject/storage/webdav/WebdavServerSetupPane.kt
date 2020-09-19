@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.lib.fx.vbox
-import biz.ganttproject.storage.StorageDialogBuilder.Ui
+import biz.ganttproject.storage.StorageUi
 import javafx.beans.property.StringProperty
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
@@ -47,7 +47,7 @@ import java.util.function.Consumer
 class WebdavServerSetupPane(
     webdavServer: WebDavServerDescriptor,
     private val onDone: Consumer<WebDavServerDescriptor?>,
-    private val hasDelete: Boolean) : Ui {
+    private val hasDelete: Boolean) : StorageUi {
   private val myWebdavServer: WebDavServerDescriptor = webdavServer.clone()
 
   override val id: String

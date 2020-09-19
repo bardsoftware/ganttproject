@@ -8,8 +8,6 @@ import com.google.common.base.Strings
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.document.webdav.HttpDocument
-import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
 import java.util.*
 import java.util.function.Consumer
@@ -24,7 +22,7 @@ class WebdavStorage(
     private val myOpenDocument: (Document) -> Unit,
     private val myDialogUi: StorageDialogBuilder.DialogUi,
     private val myOptions: GPCloudStorageOptions
-) : StorageDialogBuilder.Ui {
+) : StorageUi {
 
   private val myBorderPane = BorderPane()
 

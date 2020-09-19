@@ -83,6 +83,7 @@ public class RssFeedChecker {
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "https://www.ganttproject.biz/my/feed";
   public static final String UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json";
+  //public static final String UPDATE_URL = "https://dl.ganttproject.biz/updates/ganttproject-test.json";
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",

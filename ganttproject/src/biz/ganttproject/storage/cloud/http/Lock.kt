@@ -20,7 +20,6 @@ package biz.ganttproject.storage.cloud.http
 
 import biz.ganttproject.storage.cloud.ErrorUi
 import biz.ganttproject.storage.cloud.HttpMethod
-import biz.ganttproject.storage.cloud.ProjectJsonAsFolderItem
 import com.fasterxml.jackson.databind.JsonNode
 import javafx.concurrent.Service
 import javafx.concurrent.Task
@@ -32,29 +31,32 @@ import java.util.function.Consumer
 /**
  * @author dbarashev@bardsoftware.com
  */
-class LockService(private val errorUi: ErrorUi) : Service<JsonNode>() {
+class LockService(
+    private val projectRefid: String,
+    private val isLockedNow: Boolean,
+    private val errorUi: ErrorUi) : Service<JsonNode>() {
   var busyIndicator: Consumer<Boolean> = Consumer {}
-  lateinit var project: ProjectJsonAsFolderItem
+
   var requestLockToken: Boolean = false
   lateinit var duration: Duration
 
   override fun createTask(): Task<JsonNode> {
-    return if (project.isLocked) {
-      JsonTask(HttpMethod.POST,"/p/unlock", mapOf("projectRefid" to project.refid), {}) { task, resp ->
+    return if (isLockedNow) {
+      JsonTask(HttpMethod.POST,"/p/unlock", mapOf("projectRefid" to projectRefid), {}) { task, resp ->
         LOG.error("Unlock task failed",
-            kv = mapOf("project" to project.refid, "status" to resp.code),
+            kv = mapOf("project" to projectRefid, "status" to resp.code),
             exception = task.exception)
         val errorDetails = task.exception?.message ?: resp.reason
         this.errorUi("Failed to unlock the project: \n$errorDetails")
       }
     } else {
       JsonTask(HttpMethod.POST,"/p/lock", mapOf(
-          "projectRefid" to project.refid,
+          "projectRefid" to projectRefid,
           "expirationPeriodSeconds" to this.duration.seconds.toString(),
           "requestLockToken" to requestLockToken.toString()
       ), {}) { task, resp ->
         LOG.error("Lock task failed",
-            kv = mapOf("project" to project.refid, "status" to resp.code),
+            kv = mapOf("project" to projectRefid, "status" to resp.code),
             exception = task.exception)
         val errorDetails = task.exception?.message ?: resp.reason
         this.errorUi("Failed to lock the project: \n$errorDetails")

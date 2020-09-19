@@ -100,7 +100,7 @@ class StoragePane internal constructor(
     private val dialogUi: StorageDialogBuilder.DialogUi) {
 
   private val storageUiMap = mutableMapOf<String, Supplier<Pane>>()
-  private val storageUiList = mutableListOf<StorageDialogBuilder.Ui>()
+  private val storageUiList = mutableListOf<StorageUi>()
   private val storageUiPane = BorderPane()
 
   private var activeStorageLabel: Node? = null
@@ -117,7 +117,7 @@ class StoragePane internal constructor(
     val storagePane = BorderPane().apply {
       styleClass.add("pane-service-buttons")
       center = storageButtons
-      top = HBox(Button("New Storage", FontAwesomeIconView(FontAwesomeIcon.PLUS)).apply {
+      top = HBox(Button(i18n.formatText("btnNewStorage"), FontAwesomeIconView(FontAwesomeIcon.PLUS)).apply {
         styleClass.add("btn-create")
         addEventHandler(ActionEvent.ACTION) { onNewWebdavServer(storageUiPane) }
       })
@@ -144,7 +144,6 @@ class StoragePane internal constructor(
     labelListPane.children.clear()
     storageUiList.clear()
     storageUiMap.clear()
-    val i18n = RootLocalizer
 
     val openDocument = { document: Document ->
       try {
@@ -172,8 +171,8 @@ class StoragePane internal constructor(
     storageUiList.forEach { storageUi ->
       storageUiMap[storageUi.id] = Suppliers.memoize { storageUi.createUi() }
 
-      val itemLabel = i18n.formatText("storageView.service.${storageUi.category}.label", storageUi.name)
-      val itemIcon = i18n.formatText("storageView.service.${storageUi.category}.icon")
+      val itemLabel = i18n.formatText("service.${storageUi.category}.label", storageUi.name)
+      val itemIcon = i18n.formatText("service.${storageUi.category}.icon")
 
       val listItemContent = buildFontAwesomeButton(
           itemIcon,
@@ -227,3 +226,5 @@ class StoragePane internal constructor(
     FXUtil.transitionCenterPane(borderPane, setupPane.createUi()) { dialogUi.resize() }
   }
 }
+
+private val i18n = RootLocalizer.createWithRootKey("storageView")
