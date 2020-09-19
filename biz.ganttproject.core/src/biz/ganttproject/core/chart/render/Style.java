@@ -334,7 +334,7 @@ public class Style {
   private BackgroundImage myBackgroundImage;
   private Borders myBorders;
 
-  Style(Properties props, String styleName) {
+  public Style(Properties props, String styleName) {
     myProperties = props;
     myStyleName = styleName;
     myPadding = Padding.parse(props.getProperty(styleName + ".padding"));
@@ -352,25 +352,25 @@ public class Style {
     myColor = Color.parse(props.getProperty(styleName + ".color"));
   }
 
-  Padding getPadding() {
+  public Padding getPadding() {
     return myPadding;
   }
 
-  Color getForegroundColor(Canvas.Shape shape) {
+  public Color getForegroundColor(Canvas.Shape shape) {
     if (shape.getForegroundColor() != null) {
       return new Color(shape.getForegroundColor());
     }
     return myColor;
   }
   
-  Color getBackgroundColor(Canvas.Shape primitive) {
+  public Color getBackgroundColor(Canvas.Shape primitive) {
     if (primitive.getBackgroundColor() != null) {
       return new Color(primitive.getBackgroundColor());
     }
     return myBackground;
   }
 
-  Paint getBackgroundPaint(Canvas.Rectangle rect) {
+  public Paint getBackgroundPaint(Canvas.Rectangle rect) {
     if (rect.getBackgroundPaint() != null) {
       return rect.getBackgroundPaint();
     }
@@ -381,7 +381,7 @@ public class Style {
     return myBackgroundImage == null ? null : myBackgroundImage.getPaint();
   }
   
-  Image getBackgroundImage() {
+  public Image getBackgroundImage() {
     if (myBackgroundImage != null) {
       return myBackgroundImage.myImage;
     }
@@ -389,7 +389,7 @@ public class Style {
     return myBackgroundImage == null ? null : myBackgroundImage.myImage;    
   }
   
-  Borders getBorder(Canvas.Shape shape) {
+  public Borders getBorder(Canvas.Shape shape) {
     if ((shape instanceof Canvas.Line || shape instanceof Canvas.Text) && shape.getForegroundColor() != null) {
       return myBorders == null ? new Borders(shape.getForegroundColor()) : myBorders.withColor(shape.getForegroundColor());
     }
@@ -405,7 +405,7 @@ public class Style {
     return result;
   }
   
-  Visibility getVisibility(Canvas.Shape shape) {
+  public Visibility getVisibility(Canvas.Shape shape) {
     if (!shape.isVisible()) {
       return Visibility.HIDDEN;
     }
@@ -421,7 +421,7 @@ public class Style {
     }
   }
   
-  Float getOpacity(Canvas.Shape shape) {
+  public Float getOpacity(Canvas.Shape shape) {
     Float result = shape.getOpacity();
     if (result != null) {
       return result;
