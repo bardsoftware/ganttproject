@@ -26,13 +26,8 @@ import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
-import javafx.scene.control.Label
 import javafx.scene.control.ListCell
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.StackPane
-import javafx.scene.layout.VBox
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -110,51 +105,9 @@ class RecentProjects(
   }
 
   private fun createListCell(): ListCell<ListViewItem<RecentDocAsFolderItem>> {
-    return object : ListCell<ListViewItem<RecentDocAsFolderItem>>() {
-      override fun updateItem(item: ListViewItem<RecentDocAsFolderItem>?, empty: Boolean) {
-        if (item == null) {
-          text = ""
-          graphic = null
-          return
-        }
-        super.updateItem(item, empty)
-        if (empty) {
-          text = ""
-          graphic = null
-          return
-        }
-        val pane = StackPane()
-        pane.minWidth = 0.0
-        pane.prefWidth = 1.0
-
-        pane.children.add(VBox().also { vbox ->
-          vbox.isFillWidth = true
-          vbox.children.add(
-              Label(item.resource.get().basePath).apply {
-                styleClass.add("list-item-path")
-              }
-          )
-          vbox.children.add(
-              Label(item.resource.get().name).apply {
-                styleClass.add("list-item-filename")
-              }
-          )
-          item.resource.value.tags.let {
-            if (it.isNotEmpty()) {
-              vbox.children.add(
-                  HBox(Label(it.joinToString(", "))).apply {
-                    styleClass.add("list-item-tags")
-                  }
-              )
-            }
-          }
-          StackPane.setAlignment(vbox, Pos.BOTTOM_LEFT)
-        })
-
-        graphic = pane
-      }
-    }
+    return FolderItemCell()
   }
+
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
 
@@ -250,7 +203,7 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
   override val tags: MutableList<String> = mutableListOf()
   override val name: String
     get() = DocumentUri.createPath(this.fullPath).getFileName()
-  val basePath: String
+  override val basePath: String
     get() = DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
 
   val fullPath: String = this.url.path

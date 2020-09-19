@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-import biz.ganttproject.app.DefaultLocalizer
-import biz.ganttproject.app.DummyLocalizer
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -32,8 +30,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
@@ -130,7 +126,7 @@ class BrowserPaneBuilder<T: FolderItem>(
       onOpenDirectory: OnItemAction<T> = {},
       onDelete: OnItemAction<T> = {},
       onLock: OnItemAction<T> = {},
-      onNameTyped: (filename: String, matchedItems: List<T>, withEnter: Boolean, withControl: Boolean) -> Unit = {_,_, _, _ ->},
+      onNameTyped: (filename: String, matchedItems: List<T>, withEnter: Boolean, withControl: Boolean) -> Unit = { _, _, _, _ ->},
       canLock: BooleanProperty = SimpleBooleanProperty(false),
       canDelete: ReadOnlyBooleanProperty = SimpleBooleanProperty(false),
       itemActionFactory: ItemActionFactory<T> = Function { Collections.emptyMap() },

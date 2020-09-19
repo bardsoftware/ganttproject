@@ -40,6 +40,7 @@ import java.util.function.Consumer
 
 abstract class CloudJsonAsFolderItem : FolderItem {
   override val tags = listOf<String>()
+  override val basePath = ""
 }
 /**
  * Wraps JSON node matching a team to FolderItem
@@ -111,6 +112,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLockable = false
   override val name: String
     get() = node["author"].toString().removeSurrounding("\"")
+  override val basePath = ""
   override val isDirectory = false
   override val canChangeLock = false
   override val tags = listOf<String>()

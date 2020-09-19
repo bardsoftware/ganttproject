@@ -259,6 +259,7 @@ class GPCloudDocument(private val teamRefid: String?,
       }
       this.makeMirrorOptions().let {
         it.name = fileName
+        it.teamName = teamName
         it.lastOnlineVersion = fetch.actualVersion.toString()
         it.lastOnlineChecksum = fetch.actualChecksum
         it.projectRefid = this.projectRefid!!

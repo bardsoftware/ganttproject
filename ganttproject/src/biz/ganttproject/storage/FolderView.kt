@@ -43,6 +43,8 @@ interface FolderItem {
   val isLockable: Boolean
   // Item name
   val name: String
+  // Base path is a folder where this document sits
+  val basePath: String
   // Is it a directory?
   val isDirectory: Boolean
   // Is it possible to change lock state: unlock if locked or lock if unlocked

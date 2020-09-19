@@ -42,6 +42,7 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
   override val name: String = options.name.ifBlank {
     options.offlineMirror ?: RootLocalizer.formatText("document.storage.untitledDocument", "")
   }
+  override val basePath = options.teamName
   override val isDirectory: Boolean = false
   override val canChangeLock: Boolean = false
   override val isLocked: Boolean
@@ -118,7 +119,7 @@ class GPCloudOfflinePane(
           it.options.offlineMirror?.let { path ->
             documentConsumer(GPCloudDocument(
                 teamRefid = null,
-                teamName = "",
+                teamName = it.options.teamName,
                 projectRefid = it.options.projectRefid,
                 projectName = it.name,
                 projectJson = null

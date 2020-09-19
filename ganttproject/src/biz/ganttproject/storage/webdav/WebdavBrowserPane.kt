@@ -175,6 +175,9 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
   override val name: String
     get() = myResource.name
 
+  override val basePath: String
+    get() = myResource.parent.absolutePath
+
   override val isDirectory: Boolean
     get() {
       try {

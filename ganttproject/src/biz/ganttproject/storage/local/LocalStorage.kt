@@ -53,6 +53,7 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val isLockable: Boolean = false
   override val canChangeLock: Boolean = false
   override val name: String = file.name
+  override val basePath = file.parentFile.absolutePath
   override val isDirectory: Boolean = file.isDirectory
   override val tags = listOf<String>()
 }
