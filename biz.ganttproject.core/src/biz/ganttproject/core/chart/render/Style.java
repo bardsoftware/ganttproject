@@ -49,7 +49,7 @@ import com.google.common.collect.Maps;
  *
  * @author Dmitry Barashev
  */
-class Style {
+public class Style {
   final static BasicStroke DEFAULT_STROKE = new BasicStroke();
   private static final Map<String, Style> ourCache = Maps.newHashMap();
   /**
@@ -59,7 +59,7 @@ class Style {
    *
    * Example: text.foo.padding = 2 2 2 2
    */
-  static class Padding {
+  public static class Padding {
     private List<Integer> myValues;
 
     public Padding(Collection<Integer> values) {
@@ -83,27 +83,27 @@ class Style {
       }));
     }
 
-    int getX() {
+    public int getX() {
       return getLeft() + getRight();
     }
 
-    int getY() {
+    public int getY() {
       return getTop() + getBottom();
     }
 
-    int getTop() {
+    public int getTop() {
       return myValues.get(0);
     }
 
-    int getRight() {
+    public int getRight() {
       return myValues.get(1);
     }
 
-    int getBottom() {
+    public int getBottom() {
       return myValues.get(2);
     }
 
-    int getLeft() {
+    public int getLeft() {
       return myValues.get(3);
     }
   }
@@ -141,7 +141,7 @@ class Style {
    *
    * Example: text.foo.border = #000000
    */
-  static class Border {
+  public static class Border {
     private final BasicStroke myStroke;
     private final java.awt.Color myColor;
 
@@ -155,11 +155,11 @@ class Style {
     }
 
 
-    java.awt.Color getColor() {
+    public java.awt.Color getColor() {
       return myColor;
     }
 
-    BasicStroke getStroke() {
+    public BasicStroke getStroke() {
       return myStroke;
     }
     
@@ -180,7 +180,7 @@ class Style {
     }
   }
   
-  static class Borders {
+  public static class Borders {
     private Border myTop;
     private Border myLeft;
     private Border myRight;
@@ -233,14 +233,14 @@ class Style {
     }
   }
 
-  static class Color {
+  public static class Color {
     private final java.awt.Color myColor;
 
     Color(java.awt.Color color) {
       myColor = color;
     }
 
-    java.awt.Color get() {
+    public java.awt.Color get() {
       return myColor;
     }
 
@@ -252,7 +252,7 @@ class Style {
     }
   }
 
-  static class BackgroundImage {
+  public static class BackgroundImage {
     private static final String BITMAP_PREFIX = "bitmap(";
     private static final String URL_PREFIX = "url(";
     private final Paint myPaint;
@@ -263,7 +263,7 @@ class Style {
       myImage = image;
     }
     
-    Paint getPaint() {
+    public Paint getPaint() {
       return myPaint;
     }
     
@@ -308,7 +308,7 @@ class Style {
       return null;
     }
   }
-  enum Visibility {
+  public enum Visibility {
     VISIBLE, HIDDEN
   }
   
@@ -334,7 +334,7 @@ class Style {
   private BackgroundImage myBackgroundImage;
   private Borders myBorders;
 
-  Style(Properties props, String styleName) {
+  public Style(Properties props, String styleName) {
     myProperties = props;
     myStyleName = styleName;
     myPadding = Padding.parse(props.getProperty(styleName + ".padding"));
@@ -352,25 +352,25 @@ class Style {
     myColor = Color.parse(props.getProperty(styleName + ".color"));
   }
 
-  Padding getPadding() {
+  public Padding getPadding() {
     return myPadding;
   }
 
-  Color getForegroundColor(Canvas.Shape shape) {
+  public Color getForegroundColor(Canvas.Shape shape) {
     if (shape.getForegroundColor() != null) {
       return new Color(shape.getForegroundColor());
     }
     return myColor;
   }
   
-  Color getBackgroundColor(Canvas.Shape primitive) {
+  public Color getBackgroundColor(Canvas.Shape primitive) {
     if (primitive.getBackgroundColor() != null) {
       return new Color(primitive.getBackgroundColor());
     }
     return myBackground;
   }
 
-  Paint getBackgroundPaint(Canvas.Rectangle rect) {
+  public Paint getBackgroundPaint(Canvas.Rectangle rect) {
     if (rect.getBackgroundPaint() != null) {
       return rect.getBackgroundPaint();
     }
@@ -381,7 +381,7 @@ class Style {
     return myBackgroundImage == null ? null : myBackgroundImage.getPaint();
   }
   
-  Image getBackgroundImage() {
+  public Image getBackgroundImage() {
     if (myBackgroundImage != null) {
       return myBackgroundImage.myImage;
     }
@@ -389,14 +389,14 @@ class Style {
     return myBackgroundImage == null ? null : myBackgroundImage.myImage;    
   }
   
-  Borders getBorder(Canvas.Shape shape) {
+  public Borders getBorder(Canvas.Shape shape) {
     if ((shape instanceof Canvas.Line || shape instanceof Canvas.Text) && shape.getForegroundColor() != null) {
       return myBorders == null ? new Borders(shape.getForegroundColor()) : myBorders.withColor(shape.getForegroundColor());
     }
     return myBorders;
   }
   
-  static Style getStyle(Properties props, String styleName) {
+  public static Style getStyle(Properties props, String styleName) {
     Style result = ourCache.get(styleName);
     if (result == null) {
       result = new Style(props, styleName);
@@ -405,7 +405,7 @@ class Style {
     return result;
   }
   
-  Visibility getVisibility(Canvas.Shape shape) {
+  public Visibility getVisibility(Canvas.Shape shape) {
     if (!shape.isVisible()) {
       return Visibility.HIDDEN;
     }
@@ -421,7 +421,7 @@ class Style {
     }
   }
   
-  Float getOpacity(Canvas.Shape shape) {
+  public Float getOpacity(Canvas.Shape shape) {
     Float result = shape.getOpacity();
     if (result != null) {
       return result;
