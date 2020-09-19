@@ -83,27 +83,27 @@ public class Style {
       }));
     }
 
-    int getX() {
+    public int getX() {
       return getLeft() + getRight();
     }
 
-    int getY() {
+    public int getY() {
       return getTop() + getBottom();
     }
 
-    int getTop() {
+    public int getTop() {
       return myValues.get(0);
     }
 
-    int getRight() {
+    public int getRight() {
       return myValues.get(1);
     }
 
-    int getBottom() {
+    public int getBottom() {
       return myValues.get(2);
     }
 
-    int getLeft() {
+    public int getLeft() {
       return myValues.get(3);
     }
   }
@@ -155,11 +155,11 @@ public class Style {
     }
 
 
-    java.awt.Color getColor() {
+    public java.awt.Color getColor() {
       return myColor;
     }
 
-    BasicStroke getStroke() {
+    public BasicStroke getStroke() {
       return myStroke;
     }
     
@@ -263,7 +263,7 @@ public class Style {
       myImage = image;
     }
     
-    Paint getPaint() {
+    public Paint getPaint() {
       return myPaint;
     }
     
