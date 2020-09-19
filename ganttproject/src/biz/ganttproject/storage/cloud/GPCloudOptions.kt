@@ -28,12 +28,14 @@ data class GPCloudFileOptions(
     var name: String = "",
     var offlineMirror: String? = null,
     var lastOnlineVersion: String? = null,
-    var lastOnlineChecksum: String? = null) {
+    var lastOnlineChecksum: String? = null,
+    var projectRefid: String = "") {
   fun clearOfflineMirror() {
     this.name = ""
     this.offlineMirror = null
     this.lastOnlineChecksum = null
     this.lastOnlineVersion = null
+    this.projectRefid = ""
   }
 }
 
@@ -55,6 +57,7 @@ class CloudFileOptions : KeyValueOption("files") {
         "sync.offlinePath" -> options.offlineMirror = v
         "sync.onlineVersion" -> options.lastOnlineVersion = v
         "sync.onlineChecksum" -> options.lastOnlineChecksum = v
+        "projectRefid" -> options.projectRefid = v
       }
     }
   }
@@ -89,8 +92,9 @@ class CloudFileOptions : KeyValueOption("files") {
           kv["${it.value.fingerprint}.sync.offlinePath"] = it.value.offlineMirror ?: ""
           kv["${it.value.fingerprint}.sync.onlineVersion"] = it.value.lastOnlineVersion ?: ""
           kv["${it.value.fingerprint}.sync.onlineChecksum"] = it.value.lastOnlineChecksum ?: ""
+          kv["${it.value.fingerprint}.projectRefid"] = it.value.projectRefid
 
-              kv.filterValues { value -> value != "" }
+          kv.filterValues { value -> value != "" }
         }.flatMap {
           it.value.entries
         }

@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.AbstractURLDocument
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -260,6 +261,7 @@ class GPCloudDocument(private val teamRefid: String?,
         it.name = fileName
         it.lastOnlineVersion = fetch.actualVersion.toString()
         it.lastOnlineChecksum = fetch.actualChecksum
+        it.projectRefid = this.projectRefid!!
         GPCloudOptions.cloudFiles.save()
       }
       this.mode.set(OnlineDocumentMode.MIRROR)
@@ -302,31 +304,55 @@ class GPCloudDocument(private val teamRefid: String?,
 
   @Throws(ForbiddenException::class)
   private fun callReadProject(version: Long = -1): FetchResult {
+    LOG.debug("Calling /p/read")
     val http = this.httpClientFactory()
-    val resp = if (version == -1L) http.sendGet("/p/read$queryArgs") else http.sendGet("/p/read$queryArgs&generation=$version")
-    when (resp.code) {
-      200 -> {
-        val etagValue = resp.header("ETag")
-        val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
+    try {
+      val resp = if (version == -1L) http.sendGet("/p/read$queryArgs") else http.sendGet("/p/read$queryArgs&generation=$version")
+      LOG.debug("Received HTTP {}", resp.code)
+      when (resp.code) {
+        200 -> {
+          val etagValue = resp.header("ETag")
+          val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
 
-        val documentBody = resp.decodedBody
+          val documentBody = resp.decodedBody
 
-        return FetchResult(
-            this@GPCloudDocument,
-            this.mirrorOptions?.lastOnlineChecksum ?: "",
-            this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
-            digestValue ?: "",
-            etagValue?.toLong() ?: -1,
-            documentBody,
-            fetchResultProperty::setValue
-        )
+          return FetchResult(
+              this@GPCloudDocument,
+              this.mirrorOptions?.lastOnlineChecksum ?: "",
+              this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+              digestValue ?: "",
+              etagValue?.toLong() ?: -1,
+              documentBody,
+              fetchResultProperty::setValue
+          )
+        }
+        403 -> {
+          throw ForbiddenException()
+        }
+        else -> {
+          throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
+        }
       }
-      403 -> {
-        throw ForbiddenException()
+    } catch (ex: Exception) {
+      when {
+        ex.isNetworkUnavailable() -> {
+          LOG.error("We seem to be offline", kv = mapOf("when" to "/p/read"), exception = ex)
+          this.offlineMirror?.let {mirror ->
+            this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
+            return FetchResult(
+                this@GPCloudDocument,
+                this.mirrorOptions?.lastOnlineChecksum ?: "",
+                this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+                "",
+                -1,
+                mirror.inputStream.readBytes(),
+                fetchResultProperty::setValue
+            )
+          }
+        }
+        else -> {}
       }
-      else -> {
-        throw IOException("Failed to read from GanttProject Cloud: got response ${resp.code} : ${resp.reason}")
-      }
+      throw ex
     }
   }
 
@@ -366,6 +392,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
   @Throws(NetworkUnavailableException::class, VersionMismatchException::class, ForbiddenException::class)
   private fun saveOnline(body: ByteArray) {
+    LOG.debug("Calling /p/write")
     val http = this.httpClientFactory()
     try {
       val resp = http.sendPost("/p/write", mapOf(
@@ -376,6 +403,7 @@ class GPCloudDocument(private val teamRefid: String?,
           "lockToken" to this.lock?.get("lockToken")?.textValue(),
           "oldVersion" to this.fetchResultProperty.get()?.actualVersion?.toString()
       ))
+      LOG.debug("Received HTTP {}", resp.code)
       when (resp.code) {
         200 -> {
           val etagValue = resp.header("ETag")
@@ -411,13 +439,13 @@ class GPCloudDocument(private val teamRefid: String?,
         }
         else -> {
           val respBody = resp.decodedBody.toString(com.google.common.base.Charsets.UTF_8)
-          println(respBody)
           throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.code}: ${resp.reason}")
         }
       }
     } catch (ex: Exception) {
       when {
         ex.isNetworkUnavailable() -> {
+          LOG.error("We seem to be offline", ex)
           this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
         }
         else -> throw ex
@@ -534,3 +562,4 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
 }
 
 private val ourExecutor = Executors.newSingleThreadExecutor()
+private val LOG = GPLogger.create("Cloud.Document")

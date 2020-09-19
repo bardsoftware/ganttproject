@@ -116,7 +116,13 @@ class GPCloudOfflinePane(
       selectedProject?.let {
         if (it is OfflineMirrorOptionsAsFolderItem) {
           it.options.offlineMirror?.let { path ->
-            documentConsumer(documentManager.newDocument(path))
+            documentConsumer(GPCloudDocument(
+                teamRefid = null,
+                teamName = "",
+                projectRefid = it.options.projectRefid,
+                projectName = it.name,
+                projectJson = null
+            ).also { doc -> doc.onboard(documentManager, webSocket) })
           }
         }
       }
