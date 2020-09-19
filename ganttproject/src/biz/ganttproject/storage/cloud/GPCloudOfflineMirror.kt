@@ -142,7 +142,7 @@ class GPCloudOfflinePane(
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           itemActionFactory = { Collections.emptyMap() },
-          cellFactory = { FolderItemCell() }
+          cellFactory = { CellWithBasePath() }
       )
       withActionButton { btn ->
         btn.addEventHandler(ActionEvent.ACTION) {

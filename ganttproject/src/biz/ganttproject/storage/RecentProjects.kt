@@ -26,7 +26,6 @@ import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.scene.control.ListCell
 import javafx.scene.layout.Pane
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
@@ -90,7 +89,7 @@ class RecentProjects(
           itemActionFactory = {
             Collections.emptyMap()
           },
-          cellFactory = { createListCell() }
+          cellFactory = { CellWithBasePath() }
       )
     }.build()
 
@@ -102,10 +101,6 @@ class RecentProjects(
       loadRecentDocs(builder.resultConsumer)
     }
 
-  }
-
-  private fun createListCell(): ListCell<ListViewItem<RecentDocAsFolderItem>> {
-    return FolderItemCell()
   }
 
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
