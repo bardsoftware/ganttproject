@@ -49,7 +49,7 @@ import com.google.common.collect.Maps;
  *
  * @author Dmitry Barashev
  */
-class Style {
+public class Style {
   final static BasicStroke DEFAULT_STROKE = new BasicStroke();
   private static final Map<String, Style> ourCache = Maps.newHashMap();
   /**
