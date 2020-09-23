@@ -99,7 +99,7 @@ public class ChartUIConfiguration {
     }
   }
 
-  ChartUIConfiguration(UIConfiguration projectConfig) {
+  public ChartUIConfiguration(UIConfiguration projectConfig) {
     mySpanningRowTextFont = Fonts.TOP_UNIT_FONT;
     mySpanningHeaderBackgroundColor = new Color(0.93f, 0.93f, 0.93f);
     myHeaderBorderColor = new Color(0.482f, 0.482f, 0.482f);
