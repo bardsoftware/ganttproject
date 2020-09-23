@@ -523,6 +523,14 @@ public class Canvas {
     public Color getColor(int i) {
       return myFontChooser.getColor(myLineStyles.get(i));
     }
+   
+    public String getStyle(int i) {
+      if (i >= myLineStyles.size()) {
+        return null;
+      } else {
+        return myLineStyles.get(i);
+      }
+    }
 
     public int getLeftX() {
       return myLeftX;
