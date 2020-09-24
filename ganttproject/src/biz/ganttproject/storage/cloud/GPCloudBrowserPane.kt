@@ -139,7 +139,8 @@ class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentManager: DocumentManager,
-    private val documentConsumer: (Document) -> Unit) {
+    private val documentConsumer: (Document) -> Unit,
+    private val currentDocument: Document) {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
   private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>
@@ -212,6 +213,9 @@ class GPCloudBrowserPane(
 
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    if (this.mode == StorageDialogBuilder.Mode.SAVE) {
+      paneElements.filenameInput.text = currentDocument.fileName ?: ""
+    }
 
     webSocket.onStructureChange { Platform.runLater { this.reload() } }
     return paneElements.browserPane

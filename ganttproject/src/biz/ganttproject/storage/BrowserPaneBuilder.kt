@@ -148,6 +148,7 @@ class BrowserPaneBuilder<T: FolderItem>(
           resultConsumer,
           busyIndicatorToggler
       )
+
     }
 
     this.breadcrumbView = BreadcrumbView(rootPath, onSelectCrumb)
@@ -183,21 +184,21 @@ class BrowserPaneBuilder<T: FolderItem>(
           errorLabel.styleClass.add("error")
           filename.styleClass.remove("warning")
           filename.styleClass.add("error")
-          btnSave.isDisable = true
+          //btnSave.isDisable = true
         } else if (validationResult.warnings.isNotEmpty()) {
           errorLabel.graphic = null
           errorLabel.styleClass.remove("error")
           errorLabel.styleClass.add("warning")
           filename.styleClass.remove("error")
           filename.styleClass.add("warning")
-          btnSave.isDisable = false
+          //btnSave.isDisable = false
         }
       } else {
         errorLabel.text = ""
         filename.styleClass.removeAll("error", "warning")
         errorLabel.styleClass.removeAll("error", "warning")
         errorLabel.styleClass.add("noerror")
-        btnSave.isDisable = false
+        //btnSave.isDisable = false
       }
     }
   }

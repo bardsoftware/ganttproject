@@ -9,6 +9,7 @@ package biz.ganttproject.storage
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.Observable
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -297,7 +298,10 @@ fun <T : FolderItem> connect(
         onFilenameEnter(true, keyEvent.isControlDown || keyEvent.isMetaDown)
       }
       else -> {
-        onFilenameEnter(false, keyEvent.isControlDown || keyEvent.isMetaDown)
+        // Key pressed event may arrive before the value of text field changes.
+        // We rely on the actual value of the text field down the stack,
+        // so we run the processing code later.
+        Platform.runLater { onFilenameEnter(false, false) }
       }
     }
   }

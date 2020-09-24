@@ -56,9 +56,10 @@ typealias SceneChanger = (Node) -> Unit
  * @author dbarashev@bardsoftware.com
  */
 class GPCloudStorage(
-    private val mode: StorageDialogBuilder.Mode,
-    private val openDocument: (Document) -> Unit,
     private val dialogUi: StorageDialogBuilder.DialogUi,
+    private val mode: StorageDialogBuilder.Mode,
+    private val currentDocument: Document,
+    private val openDocument: (Document) -> Unit,
     private val documentManager: DocumentManager) : StorageUi {
   private val myPane: BorderPane = BorderPane()
 
@@ -141,7 +142,7 @@ class GPCloudStorage(
         openDocument(doc)
       }
     }
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer)
+    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {

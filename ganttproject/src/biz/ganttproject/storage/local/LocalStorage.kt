@@ -113,7 +113,6 @@ class LocalStorage(
   }
 
   override fun createUi(): Pane {
-    val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.state = LocalStorageState(currentDocument, myMode)
 
     val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, _ ->
@@ -123,6 +122,15 @@ class LocalStorage(
       var selectedProject: FileAsFolderItem? = null
       var selectedDir: FileAsFolderItem? = null
       var button: Button? = null
+      set(btn) {
+        field = btn
+        btn?.let {
+          it.addEventHandler(ActionEvent.ACTION) {
+            onAction()
+          }
+          it.disableProperty().bind(state.canWrite.not())
+        }
+      }
 
       fun onSelectionChange(item: FolderItem) {
         if (item is FileAsFolderItem) {
@@ -131,13 +139,11 @@ class LocalStorage(
               selectedDir = item
               state.currentDir.set(item.file)
               state.setCurrentFile(null)
-              button?.isDisable = true
             }
             else -> {
               selectedProject = item
               state.currentDir.set(item.file.parentFile)
               state.setCurrentFile(item.file)
-              button?.isDisable = false
             }
           }
         }
@@ -151,19 +157,22 @@ class LocalStorage(
       }
 
       fun onNameTyped(filename: String, itemsMatched: List<FolderItem>, withEnter: Boolean, withControl: Boolean) {
-        this.button?.isDisable =
-            when (mode) {
-              StorageDialogBuilder.Mode.OPEN -> itemsMatched.isEmpty()
-              StorageDialogBuilder.Mode.SAVE -> filename.isBlank()
-            }
-        if (withEnter && withControl && mode == StorageDialogBuilder.Mode.SAVE) {
-          this.onAction()
+        try {
+          state.setCurrentFile(state.resolveFile(filename))
+          if (withEnter && withControl && mode == StorageDialogBuilder.Mode.SAVE) {
+            this.onAction()
+          }
+        } catch (ex: StorageMode.FileException) {
+          println("onNameTyped: $filename")
+          println(ex)
         }
       }
 
     }
 
     val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.toLowerCase()}.listViewHint"))
+
+    val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.paneElements = builder.apply {
       withI18N(i18n)
       withBreadcrumbs(
@@ -172,9 +181,6 @@ class LocalStorage(
       )
       withActionButton { btn ->
         actionButtonHandler.button = btn
-        btn.addEventHandler(ActionEvent.ACTION) {
-          actionButtonHandler.onAction()
-        }
       }
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
@@ -201,7 +207,9 @@ class LocalStorage(
         styleClass = "local-storage-browse"
     )
     this.paneElements.filenameInput.right = btnBrowse
-
+    if (this.mode == StorageDialogBuilder.Mode.SAVE) {
+      this.paneElements.filenameInput.text = currentDocument.fileName
+    }
     state.validationSupport = paneElements.validationSupport
 
 // TODO: restore overwrite confirmation?
