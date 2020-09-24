@@ -183,7 +183,7 @@ data class BreadcrumbNode(val path: Path, val label: String) {
 
 }
 
-class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path>) {
+class BreadcrumbView(private val initialPath: Path, private val onSelectCrumb: Consumer<Path>) {
   val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
   private val defaultCrumbFactory = breadcrumbs.crumbFactory
   var path: Path
@@ -217,8 +217,6 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
         }
       }
     }
-
-    path = initialPath
   }
 
   fun append(name: String) {
@@ -237,6 +235,9 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
     onSelectCrumb.accept(parent.value.path)
   }
 
+  fun show() {
+    path = initialPath
+  }
 }
 
 fun <T : FolderItem> connect(

@@ -282,7 +282,9 @@ class BrowserPaneBuilder<T: FolderItem>(
       add(listViewHint)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport)
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport).also {
+      breadcrumbView?.show()
+    }
   }
 }
 

@@ -107,7 +107,7 @@ class RecentProjects(
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
 
     runBlocking {
-      result.addAll(documentManager.recentDocuments.map { path ->
+      documentManager.recentDocuments.map { path ->
         try {
           val doc = RecentDocAsFolderItem(path, documentManager)
           GlobalScope.async(Dispatchers.IO) {
@@ -115,11 +115,11 @@ class RecentProjects(
             doc
           }
         } catch (ex: MalformedURLException) {
-          println(ex)
-          CompletableDeferred(null)
+          LOG.error("Can't parse this recent document record: {}", path)
+          CompletableDeferred(value = null)
         }
-      }.awaitAll())
-    }
+      }.awaitAll()
+    }.filterNotNullTo(result)
     consumer.accept(result)
   }
 }
@@ -131,14 +131,18 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
     val (url, scheme) = try {
       URL(urlString).let {it to it.protocol }
     } catch (ex: MalformedURLException) {
-      val indexColon = urlString.indexOf(':')
-      val indexSlash = urlString.indexOf('/')
-      if (indexColon > 0 && indexSlash == indexColon + 1) {
-        URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
-      } else if (indexSlash == 0) {
+      if (File(urlString).exists()) {
         URL("file:$urlString") to "file"
       } else {
-        throw ex
+        val indexColon = urlString.indexOf(':')
+        val indexSlash = urlString.indexOf('/')
+        if (indexColon > 0 && indexSlash == indexColon + 1) {
+          URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
+        } else if (indexSlash == 0) {
+          URL("file:$urlString") to "file"
+        } else {
+          throw ex
+        }
       }
     }
     this.url = url
@@ -210,3 +214,4 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.recent", BROWSE_PANE_LOCALIZER)
+private val LOG = GPLogger.create("RecentProjects")

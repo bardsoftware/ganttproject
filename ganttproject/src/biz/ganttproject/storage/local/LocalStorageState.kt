@@ -68,14 +68,11 @@ class LocalStorageState(val currentDocument: Document,
     submitOk.set((result.errors.size + result.warnings.size == 0) && !needsConfirmation)
   }
 
-  fun resolveFile(typedString: String): File {
-    val typedPath = Paths.get(typedString)
-    return if (typedPath.isAbsolute) {
-      typedPath.toFile()
-    } else {
-      File(this.currentDir.get(), typedString)
+  fun resolveFile(typedString: String): File =
+    File(typedString).let {
+      if (it.isAbsolute) { it } else File(this.currentDir.get(), typedString)
     }
-  }
+
 
   fun trySetFile(typedString: String) {
     val resolvedFile = resolveFile(typedString)
