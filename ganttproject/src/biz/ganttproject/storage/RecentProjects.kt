@@ -26,13 +26,7 @@ import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
-import javafx.scene.control.Label
-import javafx.scene.control.ListCell
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
-import javafx.scene.layout.StackPane
-import javafx.scene.layout.VBox
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
@@ -95,71 +89,25 @@ class RecentProjects(
           itemActionFactory = {
             Collections.emptyMap()
           },
-          cellFactory = { createListCell() }
+          cellFactory = { CellWithBasePath() }
       )
     }.build()
 
     return paneElements.browserPane.also {
       it.stylesheets.addAll(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/RecentProjects.css"
+        "/biz/ganttproject/storage/FolderViewCells.css"
       )
       loadRecentDocs(builder.resultConsumer)
     }
 
   }
 
-  private fun createListCell(): ListCell<ListViewItem<RecentDocAsFolderItem>> {
-    return object : ListCell<ListViewItem<RecentDocAsFolderItem>>() {
-      override fun updateItem(item: ListViewItem<RecentDocAsFolderItem>?, empty: Boolean) {
-        if (item == null) {
-          text = ""
-          graphic = null
-          return
-        }
-        super.updateItem(item, empty)
-        if (empty) {
-          text = ""
-          graphic = null
-          return
-        }
-        val pane = StackPane()
-        pane.minWidth = 0.0
-        pane.prefWidth = 1.0
-
-        pane.children.add(VBox().also { vbox ->
-          vbox.isFillWidth = true
-          vbox.children.add(
-              Label(item.resource.get().basePath).apply {
-                styleClass.add("list-item-path")
-              }
-          )
-          vbox.children.add(
-              Label(item.resource.get().name).apply {
-                styleClass.add("list-item-filename")
-              }
-          )
-          item.resource.value.tags.let {
-            if (it.isNotEmpty()) {
-              vbox.children.add(
-                  HBox(Label(it.joinToString(", "))).apply {
-                    styleClass.add("list-item-tags")
-                  }
-              )
-            }
-          }
-          StackPane.setAlignment(vbox, Pos.BOTTOM_LEFT)
-        })
-
-        graphic = pane
-      }
-    }
-  }
   private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
 
     runBlocking {
-      result.addAll(documentManager.recentDocuments.map { path ->
+      documentManager.recentDocuments.map { path ->
         try {
           val doc = RecentDocAsFolderItem(path, documentManager)
           GlobalScope.async(Dispatchers.IO) {
@@ -167,11 +115,11 @@ class RecentProjects(
             doc
           }
         } catch (ex: MalformedURLException) {
-          println(ex)
-          CompletableDeferred(null)
+          LOG.error("Can't parse this recent document record: {}", path)
+          CompletableDeferred(value = null)
         }
-      }.awaitAll())
-    }
+      }.awaitAll()
+    }.filterNotNullTo(result)
     consumer.accept(result)
   }
 }
@@ -183,14 +131,18 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
     val (url, scheme) = try {
       URL(urlString).let {it to it.protocol }
     } catch (ex: MalformedURLException) {
-      val indexColon = urlString.indexOf(':')
-      val indexSlash = urlString.indexOf('/')
-      if (indexColon > 0 && indexSlash == indexColon + 1) {
-        URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
-      } else if (indexSlash == 0) {
+      if (File(urlString).exists()) {
         URL("file:$urlString") to "file"
       } else {
-        throw ex
+        val indexColon = urlString.indexOf(':')
+        val indexSlash = urlString.indexOf('/')
+        if (indexColon > 0 && indexSlash == indexColon + 1) {
+          URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
+        } else if (indexSlash == 0) {
+          URL("file:$urlString") to "file"
+        } else {
+          throw ex
+        }
       }
     }
     this.url = url
@@ -250,11 +202,16 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
   override val tags: MutableList<String> = mutableListOf()
   override val name: String
     get() = DocumentUri.createPath(this.fullPath).getFileName()
-  val basePath: String
-    get() = DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+  override val basePath: String
+    get() = when (scheme) {
+      "file", "webdav" -> DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+      "cloud" -> DocumentUri.createPath(this.fullPath).getParent().getFileName()
+      else -> ""
+    }
 
   val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.recent", BROWSE_PANE_LOCALIZER)
+private val LOG = GPLogger.create("RecentProjects")

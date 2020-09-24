@@ -9,25 +9,20 @@ package biz.ganttproject.storage
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.Observable
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
-import javafx.scene.input.MouseEvent
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
 import javafx.util.Callback
-import net.sourceforge.ganttproject.document.webdav.WebDavResource
 import net.sourceforge.ganttproject.gui.UIUtil
 import org.controlsfx.control.BreadCrumbBar
-import org.controlsfx.control.textfield.TextFields
 import java.io.File
 import java.util.*
 import java.util.function.Consumer
@@ -43,6 +38,8 @@ interface FolderItem {
   val isLockable: Boolean
   // Item name
   val name: String
+  // Base path is a folder where this document sits
+  val basePath: String
   // Is it a directory?
   val isDirectory: Boolean
   // Is it possible to change lock state: unlock if locked or lock if unlocked
@@ -169,118 +166,7 @@ fun <T : FolderItem> createListCell(
     isLockingSupported: BooleanProperty,
     isDeleteSupported: ReadOnlyBooleanProperty,
     itemActionFactory: ItemActionFactory<T>): ListCell<ListViewItem<T>> {
-  return object : ListCell<ListViewItem<T>>() {
-    override fun updateItem(item: ListViewItem<T>?, empty: Boolean) {
-      try {
-        doUpdateItem(item, empty)
-      } catch (e: WebDavResource.WebDavException) {
-        exceptionUi(e)
-      } catch (e: Exception) {
-        println(e)
-      }
-
-    }
-
-    @Throws(WebDavResource.WebDavException::class)
-    private fun doUpdateItem(item: ListViewItem<T>?, empty: Boolean) {
-      if (item == null) {
-        text = ""
-        graphic = null
-        return
-      }
-      super.updateItem(item, empty)
-      if (empty) {
-        text = ""
-        graphic = null
-        return
-      }
-      val hbox = HBox()
-      hbox.styleClass.add("webdav-list-cell")
-      if (this.isSelected) {
-        hbox.styleClass.add("selected")
-      } else {
-        hbox.styleClass.remove("selected")
-      }
-      val isLockable = item.resource.value.isLockable
-      if (isLockable && !isLockingSupported.value) {
-        isLockingSupported.value = true
-      }
-
-      val icon = if (item.resource.value.isDirectory) {
-        FontAwesomeIconView(FontAwesomeIcon.FOLDER).also { it.styleClass.add("icon") }
-      } else {
-        null
-      }
-      val label = if (icon == null) Label(item.resource.value.name) else Label(item.resource.value.name, icon)
-      hbox.children.add(label)
-      hbox.children.add(buildLockButtons(item))
-      graphic = hbox
-    }
-
-    private fun buildLockButtons(item: ListViewItem<T>): Node {
-      val isLocked = item.resource.value.isLocked
-      val isLockable = item.resource.value.isLockable
-      val canChangeLock = item.resource.value.canChangeLock
-
-      val btnBox = HBox()
-      btnBox.styleClass.add("webdav-list-cell-button-pane")
-      if (item.isSelected.value && !item.resource.value.isDirectory) {
-        val btnDelete =
-            if (isDeleteSupported.get()) {
-              Button("", FontAwesomeIconView(FontAwesomeIcon.TRASH))
-            } else null
-
-        val btnLock =
-            when {
-              isLocked -> Label("unlock", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
-                //.also {
-                it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-                it.tooltip = Tooltip("Click to release lock")
-                it.styleClass.add("item-action")
-              }
-              isLockable -> Label("lock", FontAwesomeIconView(FontAwesomeIcon.UNLOCK)).also {
-                //.also {
-                it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-                it.tooltip = Tooltip("Click to lock ${item.resource.value.name}")
-                it.styleClass.add("item-action")
-              }
-              else -> null
-            }
-
-        if (btnLock != null) {
-          btnLock.addEventHandler(MouseEvent.MOUSE_CLICKED) { onToggleLockResource(item.resource.value) }
-          btnBox.children.add(btnLock)
-        }
-        if (btnDelete != null) {
-          btnDelete.addEventHandler(ActionEvent.ACTION) { onDeleteResource(item.resource.value) }
-          btnBox.children.add(btnDelete)
-        }
-        itemActionFactory.apply(item.resource.value).forEach { key, action ->
-          createButton(key).also {
-            it.addEventHandler(MouseEvent.MOUSE_CLICKED) { action(item.resource.value) }
-            btnBox.children.add(it)
-          }
-        }
-      } else {
-        if (isLocked) {
-          btnBox.children.add(Label("", FontAwesomeIconView(FontAwesomeIcon.LOCK)).also {
-            it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-            if (canChangeLock) {
-              it.disableProperty().set(true)
-              it.tooltip = Tooltip("Project ${item.resource.value.name} is locked. Click to release lock")
-            } else {
-              it.tooltip = Tooltip("Project ${item.resource.value.name} is locked.")
-              it.disableProperty().set(true)
-            }
-          })
-        }
-      }
-      if (!btnBox.children.isEmpty()) {
-        HBox.setHgrow(btnBox, Priority.ALWAYS)
-      }
-      return btnBox
-    }
-  }
+  return CellWithButtons(exceptionUi, onDeleteResource, onToggleLockResource, isLockingSupported, isDeleteSupported, itemActionFactory)
 }
 
 typealias Path = DocumentUri
@@ -298,7 +184,7 @@ data class BreadcrumbNode(val path: Path, val label: String) {
 
 }
 
-class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path>) {
+class BreadcrumbView(private val initialPath: Path, private val onSelectCrumb: Consumer<Path>) {
   val breadcrumbs = BreadCrumbBar<BreadcrumbNode>()
   private val defaultCrumbFactory = breadcrumbs.crumbFactory
   var path: Path
@@ -332,8 +218,6 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
         }
       }
     }
-
-    path = initialPath
   }
 
   fun append(name: String) {
@@ -352,6 +236,9 @@ class BreadcrumbView(initialPath: Path, private val onSelectCrumb: Consumer<Path
     onSelectCrumb.accept(parent.value.path)
   }
 
+  fun show() {
+    path = initialPath
+  }
 }
 
 fun <T : FolderItem> connect(
@@ -411,7 +298,10 @@ fun <T : FolderItem> connect(
         onFilenameEnter(true, keyEvent.isControlDown || keyEvent.isMetaDown)
       }
       else -> {
-        onFilenameEnter(false, keyEvent.isControlDown || keyEvent.isMetaDown)
+        // Key pressed event may arrive before the value of text field changes.
+        // We rely on the actual value of the text field down the stack,
+        // so we run the processing code later.
+        Platform.runLater { onFilenameEnter(false, false) }
       }
     }
   }

@@ -47,6 +47,8 @@ class LocalStorageState(val currentDocument: Document,
 
   val submitOk: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
+  val canWrite = SimpleBooleanProperty(false)
+
   var validationSupport: ValidationSupport? = null
     set(value) {
       if (value != null) {
@@ -60,6 +62,7 @@ class LocalStorageState(val currentDocument: Document,
 
   private fun validate() {
     val result = validationResult?.get()
+    println("validation result=$result")
     val needsConfirmation = confirmationRequired.get() && !confirmationReceived.get()
     if (result == null) {
       submitOk.set(!needsConfirmation)
@@ -68,21 +71,19 @@ class LocalStorageState(val currentDocument: Document,
     submitOk.set((result.errors.size + result.warnings.size == 0) && !needsConfirmation)
   }
 
-  fun resolveFile(typedString: String): File {
-    val typedPath = Paths.get(typedString)
-    return if (typedPath.isAbsolute) {
-      typedPath.toFile()
-    } else {
-      File(this.currentDir.get(), typedString)
+  fun resolveFile(typedString: String): File =
+    File(typedString).let {
+      if (it.isAbsolute) { it } else File(this.currentDir.get(), typedString)
     }
-  }
 
-  fun trySetFile(typedString: String) {
-    val resolvedFile = resolveFile(typedString)
-    mode.tryFile(resolvedFile)
-  }
+  @Throws(StorageMode.FileException::class)
+  fun trySetFile(typedString: String): File =
+    resolveFile(typedString).also {
+      mode.tryFile(it)
+    }
 
   fun setCurrentFile(file: File?) {
+    println("setCurrentFile=$file")
     if (mode is StorageMode.Save
         && file != null
         && file.exists()
@@ -93,11 +94,24 @@ class LocalStorageState(val currentDocument: Document,
     } else {
       confirmationRequired.set(false)
     }
-    println("setCurrentFile 1=" + file)
     this.currentFile.set(file)
-    println("setCurrentFile 2=" + this.currentFile.get())
     validationResult = null
     validate()
+    try {
+      println("Can write? file=$file")
+      if (file == null) {
+        canWrite.set(false)
+        println("no")
+      } else {
+        mode.tryFile(file).also {
+          canWrite.set(true)
+          println("yes")
+        }
+      }
+    } catch (ex: StorageMode.FileException) {
+      canWrite.set(false)
+      println("NO: ${ex.message}")
+    }
   }
 
 }

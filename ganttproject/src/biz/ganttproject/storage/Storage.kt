@@ -158,7 +158,7 @@ class StoragePane internal constructor(
         documentManager,
         currentDocument,
         openDocument).also{ storageUiList.add(it) }
-    storageUiList.add(GPCloudStorage(mode, openDocument, dialogUi, documentManager))
+    storageUiList.add(GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager))
     cloudStorageOptions.webdavServers.mapTo(storageUiList) {
       WebdavStorage(it, mode, openDocument, dialogUi, cloudStorageOptions)
     }

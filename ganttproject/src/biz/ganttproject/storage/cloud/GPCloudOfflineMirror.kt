@@ -42,6 +42,7 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
   override val name: String = options.name.ifBlank {
     options.offlineMirror ?: RootLocalizer.formatText("document.storage.untitledDocument", "")
   }
+  override val basePath = options.teamName
   override val isDirectory: Boolean = false
   override val canChangeLock: Boolean = false
   override val isLocked: Boolean
@@ -116,7 +117,13 @@ class GPCloudOfflinePane(
       selectedProject?.let {
         if (it is OfflineMirrorOptionsAsFolderItem) {
           it.options.offlineMirror?.let { path ->
-            documentConsumer(documentManager.newDocument(path))
+            documentConsumer(GPCloudDocument(
+                teamRefid = null,
+                teamName = it.options.teamName,
+                projectRefid = it.options.projectRefid,
+                projectName = it.name,
+                projectJson = null
+            ).also { doc -> doc.onboard(documentManager, webSocket) })
           }
         }
       }
@@ -134,7 +141,8 @@ class GPCloudOfflinePane(
       withActionButton {}
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
-          itemActionFactory = { Collections.emptyMap() }
+          itemActionFactory = { Collections.emptyMap() },
+          cellFactory = { CellWithBasePath() }
       )
       withActionButton { btn ->
         btn.addEventHandler(ActionEvent.ACTION) {
@@ -143,7 +151,10 @@ class GPCloudOfflinePane(
       }
 
     }.build()
-    paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    paneElements.browserPane.stylesheets.addAll(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/FolderViewCells.css"
+    )
     return paneElements.browserPane
   }
 }

@@ -40,6 +40,7 @@ import java.util.function.Consumer
 
 abstract class CloudJsonAsFolderItem : FolderItem {
   override val tags = listOf<String>()
+  override val basePath = ""
 }
 /**
  * Wraps JSON node matching a team to FolderItem
@@ -111,6 +112,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val isLockable = false
   override val name: String
     get() = node["author"].toString().removeSurrounding("\"")
+  override val basePath = ""
   override val isDirectory = false
   override val canChangeLock = false
   override val tags = listOf<String>()
@@ -137,7 +139,8 @@ class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentManager: DocumentManager,
-    private val documentConsumer: (Document) -> Unit) {
+    private val documentConsumer: (Document) -> Unit,
+    private val currentDocument: Document) {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
   private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>
@@ -210,6 +213,9 @@ class GPCloudBrowserPane(
 
     }.build()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+    if (this.mode == StorageDialogBuilder.Mode.SAVE) {
+      paneElements.filenameInput.text = currentDocument.fileName ?: ""
+    }
 
     webSocket.onStructureChange { Platform.runLater { this.reload() } }
     return paneElements.browserPane
