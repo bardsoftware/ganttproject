@@ -21,24 +21,21 @@ package biz.ganttproject.core.chart.render;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
+import biz.ganttproject.core.chart.canvas.TextMetrics;
 import com.google.common.base.Supplier;
 
-import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
-import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 
 /**
  * Paints text labels.
  * @author Dmitry Barashev
  */
-public class TextPainter {
+public class TextPainter extends AbstractTextPainter {
   private Graphics2D myGraphics;
 
   private final Properties myProperties;
@@ -48,6 +45,7 @@ public class TextPainter {
   private final Supplier<Font> myBaseFont;
 
   public TextPainter(Properties props, Supplier<Font> baseFont) {
+    super(props, baseFont);
     myProperties = props;
     myTextLengthCalculator = new TextLengthCalculatorImpl(null);
     myBaseFont = baseFont;
@@ -58,6 +56,7 @@ public class TextPainter {
     myTextLengthCalculator.setGraphics(myGraphics);
   }
 
+  @Override
   public void paint(Text next) {
     Color foreColor = next.getForegroundColor();
     if (foreColor == null) {
@@ -124,47 +123,27 @@ public class TextPainter {
     myGraphics.drawString(label.text, xleft, ybottom);
   }
 
-  public void paint(TextGroup textGroup) {
-    TextLengthCalculatorImpl calculator = new TextLengthCalculatorImpl((Graphics2D) myGraphics.create());
-    FontChooser fontChooser = new FontChooser(myProperties, calculator, myBaseFont);
-    textGroup.setFonts(fontChooser);
-    for (int i = 0; i < textGroup.getLineCount(); i++) {
-      paintTextLine(textGroup, i);
-    }
-  }
-
-  private void paintTextLine(TextGroup textGroup, int lineNum) {
-    List<Text> line = textGroup.getLine(lineNum);
+  @Override
+  protected void paintWith(Font font, Color color, Runnable painter) {
     Font savedFont = myGraphics.getFont();
     Color savedColor = myGraphics.getColor();
 
-    if (textGroup.getFont(lineNum) == null) {
-      return;
-    }
-    myGraphics.setFont(textGroup.getFont(lineNum));
-    myGraphics.setColor(textGroup.getColor(lineNum));
-
-    List<Label[]> labelList = new ArrayList<Label[]>();
-    int maxIndex = Integer.MAX_VALUE;
-    for (Text t : line) {
-      Label[] labels = t.getLabels(myTextLengthCalculator);
-      maxIndex = Math.min(maxIndex, labels.length);
-      if (maxIndex == 0) {
-        return;
-      }
-      labelList.add(labels);
-    }
-
-    for (int i = 0; i < labelList.size(); i++) {
-      Label longest = labelList.get(i)[maxIndex - 1];
-      Text t = line.get(i);
-      Style style = new Style(myProperties, t.getStyle());
-      paint(textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), t.getHAlignment(), t.getVAlignment(),
-          t, longest, style);
-    }
+    myGraphics.setFont(font);
+    myGraphics.setColor(color);
+    painter.run();
 
     myGraphics.setFont(savedFont);
     myGraphics.setColor(savedColor);
   }
 
+  @Override
+  protected TextMetrics getTextMetrics() {
+    return myTextLengthCalculator;
+  }
+
+  @Override
+  protected void paint(Text t, Label label, int x, int y) {
+    Style style = new Style(myProperties, t.getStyle());
+    paint(x, y, t.getHAlignment(), t.getVAlignment(), t, label, style);
+  }
 }
