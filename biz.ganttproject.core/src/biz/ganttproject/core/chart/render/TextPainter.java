@@ -37,18 +37,11 @@ import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
  */
 public class TextPainter extends AbstractTextPainter {
   private Graphics2D myGraphics;
-
-  private final Properties myProperties;
-
   private final TextLengthCalculatorImpl myTextLengthCalculator;
-
-  private final Supplier<Font> myBaseFont;
 
   public TextPainter(Properties props, Supplier<Font> baseFont) {
     super(props, baseFont);
-    myProperties = props;
     myTextLengthCalculator = new TextLengthCalculatorImpl(null);
-    myBaseFont = baseFont;
   }
 
   public void setGraphics(Graphics2D graphics) {
