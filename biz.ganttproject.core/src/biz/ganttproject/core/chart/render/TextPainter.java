@@ -21,6 +21,7 @@ package biz.ganttproject.core.chart.render;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.Map;
 import java.util.Properties;
 
 import biz.ganttproject.core.chart.canvas.TextMetrics;
@@ -117,16 +118,8 @@ public class TextPainter extends AbstractTextPainter {
   }
 
   @Override
-  protected void paintWith(Font font, Color color, Runnable painter) {
-    Font savedFont = myGraphics.getFont();
-    Color savedColor = myGraphics.getColor();
-
-    myGraphics.setFont(font);
-    myGraphics.setColor(color);
-    painter.run();
-
-    myGraphics.setFont(savedFont);
-    myGraphics.setColor(savedColor);
+  protected Map<String, Object> getFontStyles(Font font, Color color) {
+    return Map.of("font", font, "color", color);
   }
 
   @Override
@@ -135,8 +128,16 @@ public class TextPainter extends AbstractTextPainter {
   }
 
   @Override
-  protected void paint(Text t, Label label, int x, int y) {
+  protected void paint(Text t, Label label, int x, int y, Map<String, Object> styles) {
+    Font savedFont = myGraphics.getFont();
+    Color savedColor = myGraphics.getColor();
+
+    myGraphics.setFont((Font) styles.get("font"));
+    myGraphics.setColor((Color) styles.get("color"));
     Style style = new Style(myProperties, t.getStyle());
     paint(x, y, t.getHAlignment(), t.getVAlignment(), t, label, style);
+
+    myGraphics.setFont(savedFont);
+    myGraphics.setColor(savedColor);
   }
 }
