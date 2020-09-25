@@ -28,6 +28,7 @@ import com.google.common.base.Supplier;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public abstract class AbstractTextPainter {
@@ -48,12 +49,13 @@ public abstract class AbstractTextPainter {
       final int lineNumber = i;
       Font font = textGroup.getFont(lineNumber);
       if (font != null) {
-        paintWith(font, textGroup.getColor(lineNumber), () -> paintTextLine(textGroup, lineNumber));
+        Map<String, Object> styles = getFontStyles(font, textGroup.getColor(lineNumber));
+        paintTextLine(textGroup, lineNumber, styles);
       }
     }
   }
 
-  private void paintTextLine(TextGroup textGroup, int lineNum) {
+  private void paintTextLine(TextGroup textGroup, int lineNum, Map<String, Object> styles) {
     List<Text> line = textGroup.getLine(lineNum);
     List<Label[]> labelList = new ArrayList<Label[]>();
     int maxIndex = Integer.MAX_VALUE;
@@ -69,13 +71,13 @@ public abstract class AbstractTextPainter {
     for (int i = 0; i < labelList.size(); i++) {
       Label longest = labelList.get(i)[maxIndex - 1];
       Text t = line.get(i);
-      paint(t, longest, textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum));
+      paint(t, longest, textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
     }
   }
 
-  abstract protected void paintWith(Font font, Color color, Runnable painter);
+  abstract protected Map<String, Object> getFontStyles(Font font, Color color);
   
   abstract protected TextMetrics getTextMetrics();
 
-  abstract protected void paint(Text t, Label label, int x, int y);
+  abstract protected void paint(Text t, Label label, int x, int y, Map<String, Object> styles);
 }
