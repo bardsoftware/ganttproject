@@ -150,8 +150,8 @@ HBox.title-integrated Label {
 }
 
 .hint {
-    -fx-padding: 0.25ex 0 0 0;
-    -fx-text-fill: -gp-medium-gray;
+    -fx-padding: 0.5ex 0 0 0;
+    -fx-text-fill: -gp-orange;
 }
 
 .hint .glyph-icon {

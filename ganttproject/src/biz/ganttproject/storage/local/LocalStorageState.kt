@@ -83,7 +83,6 @@ class LocalStorageState(val currentDocument: Document,
     }
 
   fun setCurrentFile(file: File?) {
-    println("setCurrentFile=$file")
     if (mode is StorageMode.Save
         && file != null
         && file.exists()

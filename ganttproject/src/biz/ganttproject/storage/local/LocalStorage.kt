@@ -209,6 +209,7 @@ class LocalStorage(
     this.paneElements.filenameInput.right = btnBrowse
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       this.paneElements.filenameInput.text = currentDocument.fileName
+      this.state.resolveFile(currentDocument.fileName).also(this.state::setCurrentFile)
     }
     state.validationSupport = paneElements.validationSupport
 
