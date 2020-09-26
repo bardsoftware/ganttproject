@@ -1,0 +1,35 @@
+buildscript {
+    ext.kotlin_version = '1.4.+'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+
+dependencies {
+    providedCompile project(':biz.ganttproject.core')
+    providedCompile project(':ganttproject')
+
+    direct 'com.github.vlsi.mxgraph:jgraphx:4.1.+'
+
+    compile configurations.providedCompile
+}
+
+jar {
+    manifest {
+        attributes('Class-Path': configurations.direct.files.collect {"$it.name"}.join(' '))
+    }
+    from {
+        configurations.direct.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
