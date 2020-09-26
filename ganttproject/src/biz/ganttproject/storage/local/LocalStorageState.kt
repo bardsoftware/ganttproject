@@ -82,6 +82,7 @@ class LocalStorageState(val currentDocument: Document,
       mode.tryFile(it)
     }
 
+  fun setCurrentFile(filename: String) = resolveFile(filename).also { this.setCurrentFile(it) }
   fun setCurrentFile(file: File?) {
     if (mode is StorageMode.Save
         && file != null

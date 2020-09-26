@@ -92,7 +92,7 @@ class RecentProjects(
           cellFactory = { CellWithBasePath() }
       )
     }.build()
-
+    paneElements.breadcrumbView?.show()
     return paneElements.browserPane.also {
       it.stylesheets.addAll(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",

@@ -149,26 +149,46 @@ HBox.title-integrated Label {
     visibility: hidden;
 }
 
-.hint {
-    -fx-padding: 0.5ex 0 0 0;
-    -fx-text-fill: -gp-orange;
+.hint-validation {
+    -fx-padding: 3 2 3 0;
+    -fx-text-fill: -gp-dark-gray;
+}
+
+.hint-validation-pane {
+    -fx-border-insets: 3 0 3 0;
+    -fx-background-color: -gp-orange;
+    -fx-background-radius: 3;
+    -fx-background-insets: 3 0 3 0;
+    /*-fx-border-color: -gp-orange;*/
+    -fx-border-radius: 3;
+    -fx-border-width: 5;
+    -fx-pref-width: 100%;
+    -fx-min-width: 400;
+    -fx-border-color: -gp-orange;
+    visibility: visible;
+}
+.hint-validation-pane.noerror {
+    /*visibility: hidden;*/
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 .hint .glyph-icon {
-    -fx-fill: -gp-medium-gray;
+    -fx-fill: -gp-dark-gray;
+    -fx-padding: 3 3 3 3;
 }
 
-.hint.error {
-    visibility: visible;
-}
+/*.hint.error {*/
+/*    visibility: visible;*/
+/*}*/
 
-.hint.warning {
-    visibility: visible;
-}
+/*.hint.warning {*/
+/*    visibility: visible;*/
+/*}*/
 
-.hint.noerror {
-    visibility: hidden;
-}
+/*.hint.noerror {*/
+/*    visibility: hidden;*/
+/*}*/
 
 .notification {
     -fx-padding: 5px 10px 0px 10px;

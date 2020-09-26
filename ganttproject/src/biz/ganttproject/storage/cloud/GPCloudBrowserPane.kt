@@ -212,6 +212,7 @@ class GPCloudBrowserPane(
       withListViewHint(listViewHint)
 
     }.build()
+    paneElements.breadcrumbView?.show()
     paneElements.browserPane.stylesheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       paneElements.filenameInput.text = currentDocument.fileName ?: ""

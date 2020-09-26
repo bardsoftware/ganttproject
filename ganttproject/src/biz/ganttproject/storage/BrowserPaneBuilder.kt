@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -65,13 +66,52 @@ typealias OnItemAction<T> = (T) -> Unit
 
 typealias ItemActionFactory<T> = Function<FolderItem, Map<String, OnItemAction<T>>>
 
-data class BrowserPaneElements<T: FolderItem>(val breadcrumbView: BreadcrumbView?,
-                               val listView: FolderView<T>,
-                               val filenameInput: CustomTextField,
-                               val browserPane: Pane,
-                               val busyIndicator: Consumer<Boolean>,
-                               val errorLabel: Label,
-                               val validationSupport: ValidationSupport)
+data class BrowserPaneElements<T: FolderItem>(
+    val breadcrumbView: BreadcrumbView?,
+    val listView: FolderView<T>,
+    val filenameInput: CustomTextField,
+    val browserPane: Pane,
+    val busyIndicator: Consumer<Boolean>,
+    val errorLabel: Label,
+    val validationSupport: ValidationSupport
+) {
+  init {
+    validationSupport.validationResultProperty().addListener { _, _, validationResult ->
+      setValidationResult(validationResult)
+    }
+  }
+
+  fun setValidationResult(validationResult: ValidationResult) {
+    if (validationResult.errors.size + validationResult.warnings.size > 0) {
+      errorLabel.text = formatError(validationResult)
+      println("validation result: ${errorLabel.text}")
+      errorLabel.parent.styleClass.remove("noerror")
+      if (validationResult.errors.isNotEmpty()) {
+        errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
+        errorLabel.parent.styleClass.remove("warning")
+        errorLabel.parent.styleClass.add("error")
+        filenameInput.styleClass.remove("warning")
+        filenameInput.styleClass.add("error")
+        //btnSave.isDisable = true
+      } else if (validationResult.warnings.isNotEmpty()) {
+        errorLabel.graphic = null
+        errorLabel.parent.styleClass.remove("error")
+        errorLabel.parent.styleClass.add("warning")
+        filenameInput.styleClass.remove("error")
+        filenameInput.styleClass.add("warning")
+        //btnSave.isDisable = false
+      }
+    } else {
+      println("validation is ok")
+      errorLabel.text = ""
+      filenameInput.styleClass.removeAll("error", "warning")
+      errorLabel.parent.styleClass.removeAll("error", "warning")
+      errorLabel.parent.styleClass.add("noerror")
+      //btnSave.isDisable = false
+    }
+  }
+
+}
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -90,9 +130,7 @@ class BrowserPaneBuilder<T: FolderItem>(
     text = ""
     HBox.setHgrow(this, Priority.ALWAYS)
   }
-  private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)).apply {
-    styleClass.addAll("hint", "noerror")
-  }
+  private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
   private val filename = CustomTextField()
   private val listViewHint = Label().also {
     it.styleClass.addAll("hint", "folder-view-hint", "noerror")
@@ -168,38 +206,10 @@ class BrowserPaneBuilder<T: FolderItem>(
   }
 
   fun withValidator(validator: Validator<String>) {
-    errorLabel.styleClass.addAll("hint", "noerror")
+    errorLabel.styleClass.addAll("hint", "hint-validation", "noerror")
     this.validationSupport.apply {
       registerValidator(filename, validator)
       validationDecorator = StyleClassValidationDecoration("error", "warning")
-    }
-
-    validationSupport.validationResultProperty().addListener { _, _, validationResult ->
-      if (validationResult.errors.size + validationResult.warnings.size > 0) {
-        errorLabel.text = formatError(validationResult)
-        errorLabel.styleClass.remove("noerror")
-        if (validationResult.errors.isNotEmpty()) {
-          errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
-          errorLabel.styleClass.remove("warning")
-          errorLabel.styleClass.add("error")
-          filename.styleClass.remove("warning")
-          filename.styleClass.add("error")
-          //btnSave.isDisable = true
-        } else if (validationResult.warnings.isNotEmpty()) {
-          errorLabel.graphic = null
-          errorLabel.styleClass.remove("error")
-          errorLabel.styleClass.add("warning")
-          filename.styleClass.remove("error")
-          filename.styleClass.add("warning")
-          //btnSave.isDisable = false
-        }
-      } else {
-        errorLabel.text = ""
-        filename.styleClass.removeAll("error", "warning")
-        errorLabel.styleClass.removeAll("error", "warning")
-        errorLabel.styleClass.add("noerror")
-        //btnSave.isDisable = false
-      }
     }
   }
 
@@ -271,21 +281,20 @@ class BrowserPaneBuilder<T: FolderItem>(
       addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
-      add(VBox().also {vbox ->
-        vbox.styleClass.add("nav-search")
-        breadcrumbView?.let { vbox.children.add(it.breadcrumbs) }
-        vbox.children.addAll(
-            filename,
-            errorLabel
-        )
+      add(vbox {
+        addClasses("nav-search")
+        breadcrumbView?.let { add(it.breadcrumbs) }
+        add(filename)
+        add(HBox().also {
+          it.styleClass.add("hint-validation-pane")
+          it.children.add(errorLabel)
+        })
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(listViewHint)
       add(saveBox)
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport).also {
-      breadcrumbView?.show()
-    }
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport)
   }
 }
 
