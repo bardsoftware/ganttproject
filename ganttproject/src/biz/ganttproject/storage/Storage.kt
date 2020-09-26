@@ -70,6 +70,9 @@ sealed class StorageMode(val name: String) {
 
   class Save : StorageMode("save") {
     override fun tryFile(file: File) {
+      if (file.isDirectory) {
+        throw FileException("document.storage.error.write.isDirectory", file)
+      }
       if (file.exists() && !file.canWrite()) {
         throw FileException("document.storage.error.write.cantOverwrite", file)
       }
