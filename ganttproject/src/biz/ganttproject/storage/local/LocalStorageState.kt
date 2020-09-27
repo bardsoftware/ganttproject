@@ -18,16 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.local
 
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.DocumentUri
 import biz.ganttproject.storage.StorageMode
 import biz.ganttproject.storage.createPath
-import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import org.controlsfx.validation.ValidationResult
-import org.controlsfx.validation.ValidationSupport
 import java.io.File
 import java.nio.file.Paths
 
@@ -35,7 +36,9 @@ class LocalStorageState(val currentDocument: Document,
                         val mode: StorageMode) {
   private val currentFilePath = createPath(Paths.get(currentDocument.filePath ?: "/").toFile())
 
-  var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false)
+  var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false).also {
+    it.addListener { _, _, _ -> validate() }
+  }
 
   val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
       DocumentUri.toFile(absolutePrefix(currentFilePath, currentFilePath.getNameCount() - 1))
@@ -45,30 +48,31 @@ class LocalStorageState(val currentDocument: Document,
 
   val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
-  val submitOk: SimpleBooleanProperty = SimpleBooleanProperty(false)
-
   val canWrite = SimpleBooleanProperty(false)
 
-  var validationSupport: ValidationSupport? = null
-    set(value) {
-      if (value != null) {
-        validationResult = value.validationResultProperty()
-        value.invalidProperty().addListener { _, _, _ -> validate() }
-        confirmationReceived.addListener { _, _, _ -> validate() }
-      }
-    }
-
-  var validationResult: ReadOnlyObjectProperty<ValidationResult>? = null
+  var validation = SimpleObjectProperty(ValidationResult())
 
   private fun validate() {
-    val result = validationResult?.get()
-    println("validation result=$result")
-    val needsConfirmation = confirmationRequired.get() && !confirmationReceived.get()
-    if (result == null) {
-      submitOk.set(!needsConfirmation)
+    LOG.debug(">>> validate: currentFile={} dir={}", currentFile.get()?.name ?: "<no file>", currentDir.get().name)
+    val file = this.currentFile.get()
+    if (file == null) {
+      canWrite.set(false)
+      validation.value = ValidationResult.fromWarning(null, i18n.formatText("validation.emptyFileName"))
+      LOG.debug("<<< validate")
       return
     }
-    submitOk.set((result.errors.size + result.warnings.size == 0) && !needsConfirmation)
+    try {
+      LOG.debug("trying file with mode={}", mode.name)
+      mode.tryFile(file)
+      LOG.debug("try is ok. confirmation required={} received={}", confirmationRequired.value, confirmationReceived.value)
+      validation.value = ValidationResult()
+      canWrite.value = !confirmationRequired.value || confirmationReceived.value
+    } catch (ex: StorageMode.FileException) {
+      canWrite.set(false)
+      LOG.debug("bad luck: error={}", ex.message ?: "")
+      validation.value = ValidationResult.fromError(null, RootLocalizer.formatText(ex.message!!, *ex.args))
+    }
+    LOG.debug("<<< validate")
   }
 
   fun resolveFile(typedString: String): File =
@@ -82,7 +86,15 @@ class LocalStorageState(val currentDocument: Document,
       mode.tryFile(it)
     }
 
-  fun setCurrentFile(filename: String) = resolveFile(filename).also { this.setCurrentFile(it) }
+  fun setCurrentFile(filename: String?)  {
+    if (filename.isNullOrBlank()) {
+      this.currentFile.set(null)
+      validate()
+    } else {
+      resolveFile(filename).also { this.setCurrentFile(it) }
+    }
+  }
+
   fun setCurrentFile(file: File?) {
     if (mode is StorageMode.Save
         && file != null
@@ -95,23 +107,9 @@ class LocalStorageState(val currentDocument: Document,
       confirmationRequired.set(false)
     }
     this.currentFile.set(file)
-    validationResult = null
     validate()
-    try {
-      println("Can write? file=$file")
-      if (file == null) {
-        canWrite.set(false)
-        println("no")
-      } else {
-        mode.tryFile(file).also {
-          canWrite.set(true)
-          println("yes")
-        }
-      }
-    } catch (ex: StorageMode.FileException) {
-      canWrite.set(false)
-      println("NO: ${ex.message}")
-    }
   }
-
 }
+
+private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
+private val LOG = GPLogger.create("LocalStorage")
