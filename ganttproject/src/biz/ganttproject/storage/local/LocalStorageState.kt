@@ -1,5 +1,5 @@
 /*
-Copyright 2019 BarD Software s.r.o
+Copyright 2019-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -19,10 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.local
 
 import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
-import biz.ganttproject.storage.DocumentUri
-import biz.ganttproject.storage.StorageMode
-import biz.ganttproject.storage.createPath
+import biz.ganttproject.storage.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import net.sourceforge.ganttproject.GPLogger
@@ -30,26 +27,41 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import org.controlsfx.validation.ValidationResult
 import java.io.File
-import java.nio.file.Paths
 
+/**
+ * The local storage state object keeps currently selected directory and file, decides if action on file can be invoked
+ * (e.g. if we can't save a file when it is read-only), if user confirmation is required (e.g. when we save to some
+ * other existing file) and if it was received.
+ *
+ * @author Dmitry Barashev (dbarashev@bardsoftware.com)
+ */
 class LocalStorageState(val currentDocument: Document,
-                        val mode: StorageMode) {
-  private val currentFilePath = createPath(Paths.get(currentDocument.filePath ?: "/").toFile())
+                        val mode: StorageMode,
+                        private val defaultLocalFolder: File) {
+  // This property indicates if the user must confirm the action on the current file. This may be needed if
+  // we're saving a document and currentFile exists.
+  val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
 
+  // This property indicates if the user has confirmed his decision to take the action on the current file.
   var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false).also {
     it.addListener { _, _, _ -> validate() }
   }
 
-  val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(
-      DocumentUri.toFile(absolutePrefix(currentFilePath, currentFilePath.getNameCount() - 1))
-  )
+  // The target directory.
+  val currentDir: SimpleObjectProperty<File> = SimpleObjectProperty(currentDocument.asFile().parentFile)
 
-  val currentFile: SimpleObjectProperty<File> = SimpleObjectProperty(DocumentUri.toFile(absolutePrefix(currentFilePath)))
+  // The target file which will be read or written when the user decides to invoke the action.
+  // It is nullable. Null value means that the user did not select a file nor typed any file name. That is,
+  // just a directory is selected.
+  // It may also point to not-existing file.
+  val currentFile: SimpleObjectProperty<File?> = SimpleObjectProperty(currentDocument.asFile())
 
-  val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
-
+  // This property indicates if the action is possible. E.g. if the action is SAVE and currentFile is read-only,
+  // this property value will be false.
   val canWrite = SimpleBooleanProperty(false)
 
+  // The result of validation of the action against the currentFile. It provides human-readable error or warning
+  // messages which are supposed to be shown in the UI.
   var validation = SimpleObjectProperty(ValidationResult())
 
   private fun validate() {
@@ -75,18 +87,18 @@ class LocalStorageState(val currentDocument: Document,
     LOG.debug("<<< validate")
   }
 
-  fun resolveFile(typedString: String): File =
+  internal fun resolveFile(typedString: String): File =
     File(typedString).let {
       if (it.isAbsolute) { it } else File(this.currentDir.get(), typedString)
     }
 
   @Throws(StorageMode.FileException::class)
-  fun trySetFile(typedString: String): File =
+  internal fun trySetFile(typedString: String): File =
     resolveFile(typedString).also {
       mode.tryFile(it)
     }
 
-  fun setCurrentFile(filename: String?)  {
+  internal fun setCurrentFile(filename: String?)  {
     if (filename.isNullOrBlank()) {
       this.currentFile.set(null)
       validate()
@@ -95,7 +107,7 @@ class LocalStorageState(val currentDocument: Document,
     }
   }
 
-  fun setCurrentFile(file: File?) {
+  internal fun setCurrentFile(file: File?) {
     if (mode is StorageMode.Save
         && file != null
         && file.exists()
@@ -109,6 +121,9 @@ class LocalStorageState(val currentDocument: Document,
     this.currentFile.set(file)
     validate()
   }
+
+  private fun Document.asFile() =
+      this.asLocalDocument()?.file ?: defaultLocalFolder.resolve(this.fileName)
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)

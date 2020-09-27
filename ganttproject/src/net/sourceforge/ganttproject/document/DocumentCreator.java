@@ -10,6 +10,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.storage.DocumentKt;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.SystemUtils;
@@ -81,21 +82,7 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getWebDavReleaseLockOption(),
         myWebDavStorage.getProxyOption()
     });
-    File userHome = new File(System.getProperty("user.home"));
-    File documents = new File(userHome, "Documents");
-    File docsFolder;
-    if (!documents.exists() || !documents.canRead()) {
-      docsFolder = userHome;
-    } else {
-      File ganttProjectDocs = new File(documents, "GanttProject");
-      if (ganttProjectDocs.exists()) {
-        docsFolder =  ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;
-      } else {
-        ganttProjectDocs.mkdirs();
-        docsFolder = ganttProjectDocs.exists() && ganttProjectDocs.canWrite() ? ganttProjectDocs : documents;
-      }
-    }
-    myDocumentsFolder = docsFolder;
+    myDocumentsFolder = DocumentKt.getDefaultLocalFolder();
   }
 
   /**

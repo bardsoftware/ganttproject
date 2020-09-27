@@ -75,7 +75,7 @@ class LocalStorage(
     private val myDocumentReceiver: (Document) -> Unit) : StorageUi {
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
-  private val state: LocalStorageState = LocalStorageState(currentDocument, myMode)
+  private val state: LocalStorageState = LocalStorageState(currentDocument, myMode, getDefaultLocalFolder())
   private val validator = createLocalStorageValidator(
       { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
       state
@@ -88,11 +88,9 @@ class LocalStorage(
   private fun loadFiles(path: Path, success: Consumer<ObservableList<FileAsFolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FileAsFolderItem>()
-    dir.listFiles()
-        ?.filter { !it.name.startsWith(".") }
-        ?.map { f -> FileAsFolderItem(f) }
-        ?.sorted()
-        ?.forEach { result.add(it) }
+    dir.listFiles()?.let {files ->
+      files.filter { !it.name.startsWith(".") }.map { f -> FileAsFolderItem(f) }.sorted().toCollection(result)
+    }
     success.accept(result)
     val currentFilename = paneElements.filenameInput.text
     state.currentDir.set(dir)
@@ -191,7 +189,7 @@ class LocalStorage(
       )
       withValidator(validator)
       withListViewHint(listViewHint)
-      withConfirmation(i18n.create("overwrite"), state.confirmationRequired)
+      withConfirmation(RootLocalizer.create("document.overwrite"), state.confirmationRequired)
     }.build()
     paneElements.browserPane.stylesheets.addAll(
         "biz/ganttproject/storage/StorageDialog.css",
