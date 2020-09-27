@@ -53,7 +53,7 @@ class CapacityHeatmapSceneBuilder(
         ypos = buildLoadDetails(resource.loads, ypos)
       }
       ypos += input.rowHeight
-      val nextLine = canvas.createLine(0, ypos, input.width, ypos)
+      val nextLine = canvas.createLine(0, ypos, input.chartWidth, ypos)
       nextLine.foregroundColor = Color.GRAY
     }
   }
@@ -174,7 +174,7 @@ class CapacityHeatmapSceneBuilder(
   interface InputApi {
     val yCanvasOffset: Int
     val rowHeight: Int
-    val width: Int
+    val chartWidth: Int
     val chartStartDate: Date
     val chartEndDate: Date
     val offsets: List<Offset>

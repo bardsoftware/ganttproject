@@ -76,7 +76,7 @@ class ResourceLoadRenderer extends ChartRendererBase {
       }
 
       @Override
-      public int getWidth() {
+      public int getChartWidth() {
         return (int) getChartModel().getBounds().getWidth();
       }
 
@@ -98,13 +98,14 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
     for (HumanResource humanResource : humanResources) {
       List<CapacityHeatmapSceneBuilder.Load> loads = new ArrayList<>();
+      // TODO: check if getLoads() and getDaysOff() can be removed from LoadDistribution now
       List<Load> tasksLoads = humanResource.getLoadDistribution().getTasksLoads();
       for (Load taskLoad : tasksLoads) {
         Integer taskId = null;
         if (taskLoad.refTask != null) {
           taskId = taskLoad.refTask.getTaskID();
         }
-        CapacityHeatmapSceneBuilder.Load load = new CapacityHeatmapSceneBuilder.Load(toTs(taskLoad.startDate), toTs(taskLoad.endDate), taskLoad.load, taskId);
+        CapacityHeatmapSceneBuilder.Load load = new CapacityHeatmapSceneBuilder.Load(taskLoad.startDate.getTime(), taskLoad.endDate.getTime(), taskLoad.load, taskId);
         loads.add(load);
       }
       boolean isExpanded = myResourcechart.isExpanded(humanResource);
@@ -113,9 +114,5 @@ class ResourceLoadRenderer extends ChartRendererBase {
     }
 
     return resources;
-  }
-
-  private long toTs(Date date) {
-    return date.toInstant().toEpochMilli();
   }
 }
