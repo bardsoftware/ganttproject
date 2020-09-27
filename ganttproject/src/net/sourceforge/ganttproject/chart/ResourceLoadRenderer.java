@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.chart.scene.CapacityHeatmapSceneBuilder;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.LoadDistribution.Load;
 import org.jetbrains.annotations.NotNull;
