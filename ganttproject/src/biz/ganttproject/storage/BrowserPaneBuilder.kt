@@ -138,7 +138,6 @@ class BrowserPaneBuilder<T: FolderItem>(
   private lateinit var btnSave: Button
 
   private var breadcrumbView: BreadcrumbView? = null
-  private lateinit var saveBox: HBox
   private lateinit var onSelectionChange: OnItemAction<T>
   private lateinit var onLaunch: OnItemAction<T>
   private lateinit var onOpenDirectory: OnItemAction<T>
@@ -199,16 +198,6 @@ class BrowserPaneBuilder<T: FolderItem>(
     }
     btnSave.styleClass.add("btn-attention")
 
-    this.saveBox = HBox().apply {
-      children.addAll(
-          Pane().also {
-            it.children.add(confirmationCheckBox)
-            HBox.setHgrow(it, Priority.ALWAYS)
-          },
-          btnSave
-      )
-      styleClass.add("doclist-save-box")
-    }
     btnSetup(btnSave)
   }
 
@@ -308,8 +297,22 @@ class BrowserPaneBuilder<T: FolderItem>(
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(listViewHint)
-      add(saveBox)
+      HBox().apply {
+        children.addAll(
+            Pane().also {
+              if (hasConfirmation) {
+                it.children.add(confirmationCheckBox)
+              }
+              HBox.setHgrow(it, Priority.ALWAYS)
+            },
+            btnSave
+        )
+        styleClass.add("doclist-save-box")
+      }.also {
+        add(it)
+      }
     }
+
     return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport,
         if (hasConfirmation) confirmationCheckBox else null
     )
