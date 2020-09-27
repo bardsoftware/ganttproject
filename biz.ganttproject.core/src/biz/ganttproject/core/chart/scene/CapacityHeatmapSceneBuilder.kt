@@ -123,7 +123,7 @@ class CapacityHeatmapSceneBuilder(
       val loadStr = "$loadInt%"
       val emsLength = textLengthCalculator.getTextLength(loadStr)
       val displayLoad = loadInt != 100 && emsLength <= rect.width
-      if (displayLoad) arrayOf(loadLabel.createLabel(loadStr, rect.width)) else arrayOfNulls(0)
+      if (displayLoad) arrayOf(loadLabel.createLabel(loadStr, rect.width)) else emptyArray()
     }
     loadLabel.setAlignment(HAlignment.CENTER, VAlignment.CENTER)
     loadLabel.style = "text.resource.load"
