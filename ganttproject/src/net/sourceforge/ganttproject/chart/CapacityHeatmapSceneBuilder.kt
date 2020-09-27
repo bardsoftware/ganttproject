@@ -21,9 +21,8 @@ package net.sourceforge.ganttproject.chart
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment
+import biz.ganttproject.core.chart.grid.Offset
 import biz.ganttproject.core.chart.grid.OffsetLookup
-import com.bardsoftware.ganttproject.cloudlib.analytics.ProjectAnalyticsServiceOuterClass.Load
-import com.bardsoftware.ganttproject.cloudlib.analytics.ProjectAnalyticsServiceOuterClass.Resource
 import java.awt.Color
 import java.time.Instant
 import java.util.*
@@ -32,30 +31,29 @@ import kotlin.math.roundToInt
 /**
  * Builds resource heatmaps.
  */
-class CapacityHeatmapSceneBuilder(private val input: LoadsGraphConfig, private val resources: List<Resource>) {
-  val canvas = Canvas()
-
+class CapacityHeatmapSceneBuilder(
+        private val input: InputApi,
+        private val resources: List<Resource>,
+        val canvas: Canvas = Canvas()
+) {
   /**
    * Builds per-resource heatmaps one by one, from top of the chart downwards
    * If some resource is expanded, calls rendering of the load details
    */
   fun build() {
     canvas.clear()
-    canvas.setOffset(0, input.timelineHeight)
+    canvas.setOffset(0, input.yCanvasOffset)
     var ypos = 0
-    resources.map { it.loadsList }.forEach { loads ->
+    resources.forEach { resource ->
       // Draw working time loads
-      buildLoads(calcLoadDistribution(loads.filter { it.load != -1f }), ypos)
+      buildLoads(calcLoadDistribution(resource.loads.filter { it.load != -1f }), ypos)
       // Draw day off loads
-      buildLoads(calcLoadDistribution(loads.filter { it.load == -1f }), ypos)
-      /* TODO: expandable
-      if (myResourcechart.isExpanded(it.resource)) {
-        buildLoadDetails(it, ypos)
-        ypos += it.resource.assignments.size * input.rowHeight()
+      buildLoads(calcLoadDistribution(resource.loads.filter { it.load == -1f }), ypos)
+      if (resource.isExpanded) {
+        ypos = buildLoadDetails(resource.loads, ypos)
       }
-      */
       ypos += input.rowHeight
-      val nextLine = canvas.createLine(0, ypos, input.viewportWidth, ypos)
+      val nextLine = canvas.createLine(0, ypos, input.width, ypos)
       nextLine.foregroundColor = Color.GRAY
     }
   }
@@ -64,20 +62,16 @@ class CapacityHeatmapSceneBuilder(private val input: LoadsGraphConfig, private v
    * Builds resource load details, that is, tasks where the resource is
    * assigned to, with that resource load percentage
    */
-  /* TODO: expandable
-  private fun buildLoadDetails(distribution: LoadDistribution, ypos: Int) {
+  private fun buildLoadDetails(loads: List<Load>, ypos: Int): Int {
     var yPos2 = ypos
-    val task2loads = distribution.separatedTaskLoads
-    val assignments = distribution.resource.assignments
-    assignments.forEach {
-      val nextLoads = task2loads[it.task]
-      yPos2 += input.rowHeight
-      if (nextLoads != null) {
-        buildTasksLoadsRectangles(nextLoads, yPos2)
+    loads.groupBy { it.taskId }.forEach {
+      if (it.key != null) {
+        yPos2 += input.rowHeight
+        buildTasksLoadsRectangles(it.value, yPos2)
       }
     }
+    return yPos2
   }
-  */
 
   /**
    * Builds the list of loads in a single chart row
@@ -111,19 +105,19 @@ class CapacityHeatmapSceneBuilder(private val input: LoadsGraphConfig, private v
    * Builds a list of loads in a single chart row
    * Precondition: loads belong to the same pair (resource, task) and are ordered by their time values
    */
-//  private fun buildTasksLoadsRectangles(partition: List<Load>, ypos: Int) {
-//    partition.forEach {
-//      val nextRect = createRectangle(it.startTs.toDate(), it.endTs.toDate(), ypos)
-//      if (nextRect != null) {
-//        nextRect.style = it.load.getStyle() + ".first.last"
-//        nextRect.modelObject = it.load
-//        createLoadText(nextRect, it.load)
-//      }
-//    }
-//  }
+  private fun buildTasksLoadsRectangles(partition: List<Load>, ypos: Int) {
+    partition.forEach {
+      val nextRect = createRectangle(it.startTs.toDate(), it.endTs.toDate(), ypos)
+      if (nextRect != null) {
+        nextRect.style = it.load.getStyle() + ".first.last"
+        nextRect.modelObject = it.load
+        createLoadText(nextRect, it.load)
+      }
+    }
+  }
 
   private fun createLoadText(rect: Canvas.Rectangle, load: Float) {
-    val loadLabel = canvas.createText(rect.middleX, rect.middleY - input.timelineHeight, "")
+    val loadLabel = canvas.createText(rect.middleX, rect.middleY - input.yCanvasOffset, "")
     loadLabel.setSelector { textLengthCalculator ->
       val loadInt = load.roundToInt()
       val loadStr = "$loadInt%"
@@ -136,11 +130,11 @@ class CapacityHeatmapSceneBuilder(private val input: LoadsGraphConfig, private v
   }
 
   private fun createRectangle(start: Date, end: Date, ypos: Int): Canvas.Rectangle? {
-    if (start.after(input.endDate) || end <= input.viewportStartDate) {
+    if (start.after(input.chartEndDate) || end <= input.chartStartDate) {
       return null
     }
     val offsetLookup = OffsetLookup()
-    val bounds = offsetLookup.getBounds(start, end, input.bottomUnitOffsets)
+    val bounds = offsetLookup.getBounds(start, end, input.offsets)
     return canvas.createRectangle(bounds[0], ypos, bounds[1] - bounds[0], input.rowHeight)
   }
 
@@ -172,6 +166,18 @@ class CapacityHeatmapSceneBuilder(private val input: LoadsGraphConfig, private v
         .runningReduce { accumulatedLoad, nextLoad ->
           LoadBorder(nextLoad.ts, accumulatedLoad.load + nextLoad.load)
         }
+  }
+
+  class Resource(val loads: List<Load>, val isExpanded: Boolean = false)
+  class Load(val startTs: Long, val endTs: Long, val load: Float, val taskId: Int? = null)
+
+  interface InputApi {
+    val yCanvasOffset: Int
+    val rowHeight: Int
+    val width: Int
+    val chartStartDate: Date
+    val chartEndDate: Date
+    val offsets: List<Offset>
   }
 }
 
