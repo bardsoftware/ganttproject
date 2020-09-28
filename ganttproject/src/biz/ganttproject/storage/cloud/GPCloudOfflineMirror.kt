@@ -151,6 +151,7 @@ class GPCloudOfflinePane(
       }
 
     }.build()
+    paneElements.breadcrumbView?.show()
     paneElements.browserPane.stylesheets.addAll(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"

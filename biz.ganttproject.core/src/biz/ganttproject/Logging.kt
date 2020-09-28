@@ -35,14 +35,14 @@ class LoggerImpl(name: String) : LoggerApi {
   override fun error(msg: String, vararg params: Any, kv: Map<String, Any>, exception: Throwable?) {
     kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
-    delegate.error(msg, params, exception)
+    delegate.error(msg, *params, exception)
     MDC.clear()
   }
 
   override fun debug(msg: String, vararg params: Any, kv: Map<String, Any>) {
     kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
-    delegate.debug(msg, params)
+    delegate.debug(msg, *params)
     MDC.clear()
   }
 

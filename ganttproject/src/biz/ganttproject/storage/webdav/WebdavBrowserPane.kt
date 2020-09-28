@@ -102,6 +102,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
       }
     }
     val browserPaneElements = builder.build()
+    browserPaneElements.breadcrumbView?.show()
     return browserPaneElements.browserPane
   }
 

@@ -95,8 +95,10 @@ class FolderView<T : FolderItem>(
     myContents = folderContents
     reloadItems(folderContents)
     if (selectedItem != null) {
-      val newSelection = listView.items.find { it.resource.value.name == selectedItem.resource.value.name }
-      listView.selectionModel.select(newSelection)
+      val newSelection = listView.items.find { it.resource.value == selectedItem.resource.value }
+      if (newSelection != null) {
+        listView.selectionModel.select(newSelection)
+      }
     }
   }
 
@@ -262,9 +264,19 @@ fun <T : FolderItem> connect(
     val dblClick = evt.clickCount == 2
     selectItem(dblClick, dblClick)
   }
-  listView.listView.selectionModel.selectedIndices.addListener(
-      ListChangeListener { selectItem(false, false) }
-  )
+  listView.listView.selectionModel.selectedIndices.addListener(ListChangeListener {
+    // Until selection changes completes, which apparently happens after event processing, the list selection model
+    // returns an old selected item. This builds the following scenario:
+    // 1. Click on some ancestor folder in the breadcrumb
+    // 2. Get "setCurrentFile" call, validate, everything is okay
+    // 3. Load the contents of the new folder. It happens in the background worker.
+    // 4. Set the new contents to the list view. It clears the view and the selection, and sends out the events
+    // 5. Catch the selection event here and get old item as the selected one. Validate it and get wrong validation results
+    //
+    // Running "selectItem" later lets us complete with the selection change and when execution gets into "selectItem" we
+    // already have correct selection in the model.
+    Platform.runLater { selectItem(false, false) }
+  })
   listView.listView.onKeyPressed = EventHandler { keyEvent ->
     when (keyEvent.code) {
       KeyCode.ENTER -> {

@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -31,12 +32,9 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.control.Button
+import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
-import javafx.scene.layout.VBox
-import org.controlsfx.control.StatusBar
+import javafx.scene.layout.*
 import org.controlsfx.control.textfield.CustomTextField
 import org.controlsfx.validation.ValidationResult
 import org.controlsfx.validation.ValidationSupport
@@ -65,13 +63,52 @@ typealias OnItemAction<T> = (T) -> Unit
 
 typealias ItemActionFactory<T> = Function<FolderItem, Map<String, OnItemAction<T>>>
 
-data class BrowserPaneElements<T: FolderItem>(val breadcrumbView: BreadcrumbView?,
-                               val listView: FolderView<T>,
-                               val filenameInput: CustomTextField,
-                               val browserPane: Pane,
-                               val busyIndicator: Consumer<Boolean>,
-                               val errorLabel: Label,
-                               val validationSupport: ValidationSupport)
+data class BrowserPaneElements<T: FolderItem>(
+    val breadcrumbView: BreadcrumbView?,
+    val listView: FolderView<T>,
+    val filenameInput: CustomTextField,
+    val browserPane: Pane,
+    val busyIndicator: Consumer<Boolean>,
+    val errorLabel: Label,
+    val validationSupport: ValidationSupport,
+    val confirmationCheckBox: CheckBox?
+) {
+  init {
+    validationSupport.validationResultProperty().addListener { _, _, validationResult ->
+      setValidationResult(validationResult)
+    }
+  }
+
+  fun setValidationResult(validationResult: ValidationResult) {
+    if (validationResult.errors.size + validationResult.warnings.size > 0) {
+      errorLabel.text = formatError(validationResult)
+      errorLabel.parent.styleClass.removeAll("noerror")
+      if (validationResult.errors.isNotEmpty()) {
+        errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
+        errorLabel.parent.styleClass.removeAll("warning")
+        errorLabel.parent.styleClass.add("error")
+        filenameInput.styleClass.removeAll("warning")
+        filenameInput.styleClass.add("error")
+        //btnSave.isDisable = true
+      } else if (validationResult.warnings.isNotEmpty()) {
+        errorLabel.graphic = null
+        errorLabel.parent.styleClass.removeAll("error")
+        errorLabel.parent.styleClass.add("warning")
+        filenameInput.styleClass.removeAll("error")
+        filenameInput.styleClass.add("warning")
+        //btnSave.isDisable = false
+      }
+    } else {
+      println("validation is ok")
+      errorLabel.text = ""
+      filenameInput.styleClass.removeAll("error", "warning")
+      errorLabel.parent.styleClass.removeAll("error", "warning")
+      errorLabel.parent.styleClass.add("noerror")
+      //btnSave.isDisable = false
+    }
+  }
+
+}
 
 /**
  * Builds browser pane UI from elements: breadcrumbs, list view, action button
@@ -86,30 +123,31 @@ class BrowserPaneBuilder<T: FolderItem>(
   private val rootPane = VBoxBuilder("pane-service-contents")
 
   private lateinit var listView: FolderView<T>
-  private val busyIndicator = StatusBar().apply {
-    text = ""
-    HBox.setHgrow(this, Priority.ALWAYS)
-  }
-  private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)).apply {
-    styleClass.addAll("hint", "noerror")
-  }
+//  private val busyIndicator = StatusBar().apply {
+//    text = ""
+//    HBox.setHgrow(this, Priority.ALWAYS)
+//  }
+  private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
   private val filename = CustomTextField()
   private val listViewHint = Label().also {
     it.styleClass.addAll("hint", "folder-view-hint", "noerror")
   }
+  private val confirmationCheckBox = CheckBox()
+  private var hasConfirmation = false
+
   private lateinit var btnSave: Button
 
   private var breadcrumbView: BreadcrumbView? = null
-  private lateinit var saveBox: HBox
   private lateinit var onSelectionChange: OnItemAction<T>
   private lateinit var onLaunch: OnItemAction<T>
   private lateinit var onOpenDirectory: OnItemAction<T>
   private lateinit var onNameTyped: (filename: String, matchedItems: List<T>, withEnter: Boolean, withControl: Boolean) -> Unit
   private var validationSupport: ValidationSupport = ValidationSupport()
   private lateinit var i18n: Localizer
+  private var hasValidator = false
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { Platform.runLater { busyIndicator.progress = if (it) -1.0 else 0.0 } }
+    get() = Consumer { Platform.runLater { /*busyIndicator.progress = if (it) -1.0 else 0.0*/ } }
 
   val resultConsumer: Consumer<ObservableList<T>>
     get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
@@ -160,51 +198,26 @@ class BrowserPaneBuilder<T: FolderItem>(
     }
     btnSave.styleClass.add("btn-attention")
 
-    this.saveBox = HBox().apply {
-      children.addAll(busyIndicator, btnSave)
-      styleClass.add("doclist-save-box")
-    }
     btnSetup(btnSave)
   }
 
   fun withValidator(validator: Validator<String>) {
-    errorLabel.styleClass.addAll("hint", "noerror")
+    hasValidator = true
+    errorLabel.styleClass.addAll("hint", "hint-validation", "noerror")
     this.validationSupport.apply {
       registerValidator(filename, validator)
       validationDecorator = StyleClassValidationDecoration("error", "warning")
-    }
-
-    validationSupport.validationResultProperty().addListener { _, _, validationResult ->
-      if (validationResult.errors.size + validationResult.warnings.size > 0) {
-        errorLabel.text = formatError(validationResult)
-        errorLabel.styleClass.remove("noerror")
-        if (validationResult.errors.isNotEmpty()) {
-          errorLabel.graphic = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE)
-          errorLabel.styleClass.remove("warning")
-          errorLabel.styleClass.add("error")
-          filename.styleClass.remove("warning")
-          filename.styleClass.add("error")
-          //btnSave.isDisable = true
-        } else if (validationResult.warnings.isNotEmpty()) {
-          errorLabel.graphic = null
-          errorLabel.styleClass.remove("error")
-          errorLabel.styleClass.add("warning")
-          filename.styleClass.remove("error")
-          filename.styleClass.add("warning")
-          //btnSave.isDisable = false
-        }
-      } else {
-        errorLabel.text = ""
-        filename.styleClass.removeAll("error", "warning")
-        errorLabel.styleClass.removeAll("error", "warning")
-        errorLabel.styleClass.add("noerror")
-        //btnSave.isDisable = false
-      }
     }
   }
 
   fun withListViewHint(value: ObservableValue<String>) {
     this.listViewHint.textProperty().bind(value)
+  }
+
+  fun withConfirmation(label: ObservableValue<String>, isRequired: ObservableValue<Boolean>) {
+    this.confirmationCheckBox.textProperty().bind(label)
+    this.confirmationCheckBox.visibleProperty().bind(isRequired)
+    this.hasConfirmation = true
   }
 
   private fun installEventHandlers() {
@@ -271,21 +284,38 @@ class BrowserPaneBuilder<T: FolderItem>(
       addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
-      add(VBox().also {vbox ->
-        vbox.styleClass.add("nav-search")
-        breadcrumbView?.let { vbox.children.add(it.breadcrumbs) }
-        vbox.children.addAll(
-            filename,
-            errorLabel
-        )
+      add(vbox {
+        addClasses("nav-search")
+        breadcrumbView?.let { add(it.breadcrumbs) }
+        add(filename)
+        if (hasValidator) {
+          add(HBox().also {
+            it.styleClass.add("hint-validation-pane")
+            it.children.add(errorLabel)
+          })
+        }
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(listViewHint)
-      add(saveBox)
+      HBox().apply {
+        children.addAll(
+            Pane().also {
+              if (hasConfirmation) {
+                it.children.add(confirmationCheckBox)
+              }
+              HBox.setHgrow(it, Priority.ALWAYS)
+            },
+            btnSave
+        )
+        styleClass.add("doclist-save-box")
+      }.also {
+        add(it)
+      }
     }
-    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport).also {
-      breadcrumbView?.show()
-    }
+
+    return BrowserPaneElements(breadcrumbView, listView, filename, rootPane.vbox, busyIndicatorToggler, errorLabel, validationSupport,
+        if (hasConfirmation) confirmationCheckBox else null
+    )
   }
 }
 

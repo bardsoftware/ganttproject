@@ -22,6 +22,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.storage.*
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -74,7 +75,11 @@ class LocalStorage(
     private val myDocumentReceiver: (Document) -> Unit) : StorageUi {
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
-  private lateinit var state: LocalStorageState
+  private val state: LocalStorageState = LocalStorageState(currentDocument, myMode, getDefaultLocalFolder())
+  private val validator = createLocalStorageValidator(
+      { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
+      state
+  )
 
 
   override val name = i18n.formatText("listLabel")
@@ -83,13 +88,13 @@ class LocalStorage(
   private fun loadFiles(path: Path, success: Consumer<ObservableList<FileAsFolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FileAsFolderItem>()
-    dir.listFiles()
-        ?.filter { !it.name.startsWith(".") }
-        ?.map { f -> FileAsFolderItem(f) }
-        ?.sorted()
-        ?.forEach { result.add(it) }
+    dir.listFiles()?.let {files ->
+      files.filter { !it.name.startsWith(".") }.map { f -> FileAsFolderItem(f) }.sorted().toCollection(result)
+    }
     success.accept(result)
+    val currentFilename = paneElements.filenameInput.text
     state.currentDir.set(dir)
+    state.setCurrentFile(currentFilename)
   }
 
   private fun onBrowse() {
@@ -113,11 +118,10 @@ class LocalStorage(
   }
 
   override fun createUi(): Pane {
-    this.state = LocalStorageState(currentDocument, myMode)
-
     val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, _ ->
       loadFiles(path, success, state)
     }
+
     val actionButtonHandler = object {
       var selectedProject: FileAsFolderItem? = null
       var selectedDir: FileAsFolderItem? = null
@@ -138,7 +142,7 @@ class LocalStorage(
             item.isDirectory -> {
               selectedDir = item
               state.currentDir.set(item.file)
-              state.setCurrentFile(null)
+              state.setCurrentFile("")
             }
             else -> {
               selectedProject = item
@@ -157,17 +161,11 @@ class LocalStorage(
       }
 
       fun onNameTyped(filename: String, itemsMatched: List<FolderItem>, withEnter: Boolean, withControl: Boolean) {
-        try {
-          state.setCurrentFile(state.resolveFile(filename))
-          if (withEnter && withControl && mode == StorageDialogBuilder.Mode.SAVE) {
-            this.onAction()
-          }
-        } catch (ex: StorageMode.FileException) {
-          println("onNameTyped: $filename")
-          println(ex)
+        state.setCurrentFile(filename)
+        if (withEnter && withControl && mode == StorageDialogBuilder.Mode.SAVE) {
+          this.onAction()
         }
       }
-
     }
 
     val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.toLowerCase()}.listViewHint"))
@@ -189,16 +187,15 @@ class LocalStorage(
           },
           onNameTyped = actionButtonHandler::onNameTyped
       )
-      withValidator(createLocalStorageValidator(
-          { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
-          state
-      ))
+      withValidator(validator)
       withListViewHint(listViewHint)
+      withConfirmation(RootLocalizer.create("document.overwrite"), state.confirmationRequired)
     }.build()
     paneElements.browserPane.stylesheets.addAll(
         "biz/ganttproject/storage/StorageDialog.css",
         "biz/ganttproject/storage/local/LocalStorage.css"
     )
+    paneElements.breadcrumbView?.show()
 
     val btnBrowse = buildFontAwesomeButton(
         iconName = FontAwesomeIcon.SEARCH.name,
@@ -209,29 +206,17 @@ class LocalStorage(
     this.paneElements.filenameInput.right = btnBrowse
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       this.paneElements.filenameInput.text = currentDocument.fileName
-      this.state.resolveFile(currentDocument.fileName).also(this.state::setCurrentFile)
+      this.state.setCurrentFile(currentDocument.fileName)
+      this.state.currentFile.addListener { _, _, newValue ->
+        Platform.runLater { paneElements.confirmationCheckBox?.isSelected = false }
+      }
+      this.paneElements.confirmationCheckBox?.selectedProperty()?.addListener { _, _, newValue ->
+        state.confirmationReceived.value = newValue
+      }
     }
-    state.validationSupport = paneElements.validationSupport
-
-// TODO: restore overwrite confirmation?
-//    if (myMode is StorageMode.Save) {
-//      val confirmation = CheckBox("Overwrite")
-//      confirmation.visibleProperty().set(false)
-//      fun updateConfirmation() {
-//        if (state.confirmationRequired.get()) {
-//          confirmation.visibleProperty().set(true)
-//          confirmation.text = "Overwrite file " + state.currentFile.get().name
-//          confirmation.selectedProperty().set(false)
-//        } else {
-//          confirmation.visibleProperty().set(false)
-//        }
-//      }
-//      state.confirmationRequired.addListener({ _, _, _ -> updateConfirmation() })
-//      state.currentFile.addListener({ _, _, _ -> updateConfirmation() })
-//
-//      confirmation.selectedProperty().addListener({ _, _, newValue -> state.confirmationReceived.set(newValue) })
-//      rootPane.add(confirmation)
-//    }
+    this.state.validation.addListener { _, _, newValue ->
+      paneElements.setValidationResult(newValue)
+    }
     return paneElements.browserPane
   }
 

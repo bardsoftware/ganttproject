@@ -21,12 +21,13 @@ package biz.ganttproject.storage.local
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageMode
-import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.validation.ValidationResult
 import org.controlsfx.validation.Validator
 import java.util.function.Supplier
 
 /**
+ * Creates a validator of the typed file names.
+ *
  * @author dbarashev@bardsoftware.com
  */
 fun createLocalStorageValidator(
@@ -45,8 +46,8 @@ fun createLocalStorageValidator(
     } catch (e: StorageMode.FileException) {
       when {
         "document.storage.error.read.notExists" == e.message && !isListEmpty.get() ->
-          return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
-        else -> return@Validator ValidationResult.fromError(control, GanttLanguage.getInstance().formatText(e.message, e.args))
+          return@Validator ValidationResult.fromError(control, RootLocalizer.formatText(e.message, *e.args))
+        else -> return@Validator ValidationResult.fromError(control, RootLocalizer.formatText(e.message!!, *e.args))
       }
     }
   }

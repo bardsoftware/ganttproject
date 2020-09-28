@@ -59,10 +59,10 @@ sealed class StorageMode(val name: String) {
   class Open : StorageMode("open") {
     override fun tryFile(file: File) {
       if (!file.exists()) {
-        throw FileException("document.storage.error.read.notExists", file)
+        throw FileException("document.storage.error.read.notExists", file.name)
       }
       if (file.exists() && !file.canRead()) {
-        throw FileException("document.storage.error.read.cantRead", file)
+        throw FileException("document.storage.error.read.cantRead", file.name)
       }
     }
 
@@ -71,16 +71,16 @@ sealed class StorageMode(val name: String) {
   class Save : StorageMode("save") {
     override fun tryFile(file: File) {
       if (file.isDirectory) {
-        throw FileException("document.storage.error.write.isDirectory", file)
+        throw FileException("document.storage.error.write.isDirectory", file.name)
       }
       if (file.exists() && !file.canWrite()) {
-        throw FileException("document.storage.error.write.cantOverwrite", file)
+        throw FileException("document.storage.error.write.cantOverwrite", file.name)
       }
       if (!file.exists() && !file.parentFile.exists()) {
-        throw FileException("document.storage.error.write.parentNotExists", file, file.parentFile)
+        throw FileException("document.storage.error.write.parentNotExists", file.parentFile.name)
       }
       if (!file.exists() && file.parentFile.exists() && !file.parentFile.canWrite()) {
-        throw FileException("document.storage.error.write.parentNotWritable", file, file.parentFile)
+        throw FileException("document.storage.error.write.parentNotWritable", file.parentFile.name)
       }
     }
 

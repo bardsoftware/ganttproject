@@ -185,7 +185,7 @@ data class FetchResult(val onlineDocument: OnlineDocument,
                        val actualChecksum: String,
                        val actualVersion: Long,
                        val body: ByteArray,
-                       val updateFxn: (FetchResult)->Unit = {}) {
+                       val updateFxn: (FetchResult) -> Unit = {}) {
   var useMirror: Boolean = false
   fun update() = updateFxn(this)
 }
@@ -232,5 +232,21 @@ fun (Document).checksum(): String {
 
 fun (ByteArray).checksum(): String {
   return Hashing.crc32c().hashBytes(this).toString()
+}
+
+fun getDefaultLocalFolder(): File {
+  val userHome = File(System.getProperty("user.home"))
+  val documents = File(userHome, "Documents")
+  return if (!documents.exists() || !documents.canRead()) {
+    userHome
+  } else {
+    val ganttProjectDocs = File(documents, "GanttProject")
+    if (ganttProjectDocs.exists()) {
+      if (ganttProjectDocs.canWrite()) ganttProjectDocs else documents
+    } else {
+      ganttProjectDocs.mkdirs()
+      if (ganttProjectDocs.exists() && ganttProjectDocs.canWrite()) ganttProjectDocs else documents
+    }
+  }
 }
 
