@@ -140,34 +140,6 @@ class CapacityHeatmapSceneBuilder(
 
   private fun Long.toDate() = Date.from(Instant.ofEpochMilli(this))
 
-  private fun calcLoadDistribution(loads: List<Load>): List<LoadBorder> {
-    // This is the list of moments where resource load grows or decreases.
-    return loads.filter { it.load != 0f }.flatMap {
-      listOf(
-          LoadBorder(it.startTs, it.load),
-          LoadBorder(it.endTs, -it.load)
-      )
-    }
-        // Zero load starting from the Jurassic period
-        .plus(LoadBorder(Long.MIN_VALUE, 0f))
-        // Now we accumulate the load changes which happen at the same moment.
-        // For instance, when we have two tasks which are assigned to some resource
-        // and starting at the same day, their load change is summed.
-        .groupBy(LoadBorder::ts, LoadBorder::load)
-        .mapValues { it.value.sum() }
-        // Sort the result by the timestamp. Now we have the ordered list of load changes
-        // where all change moments are unique.
-        .toSortedMap()
-        .map { LoadBorder(it.key, it.value) }
-        // Now let's accumulate the load change values from the beginning to the end.
-        // If we have e.g. load change +50 at ts=100, then load change +50 at ts=200,
-        // then load change -50 at ts=250 and finally the load change -50 at ts=300
-        // then we'll have: [(100, 50), (200, 100), (250, 50), (300, 0)
-        .runningReduce { accumulatedLoad, nextLoad ->
-          LoadBorder(nextLoad.ts, accumulatedLoad.load + nextLoad.load)
-        }
-  }
-
   class Resource(val loads: List<Load>, val isExpanded: Boolean = false)
   class Load(val startTs: Long, val endTs: Long, val load: Float, val taskId: Int? = null)
 
@@ -181,7 +153,35 @@ class CapacityHeatmapSceneBuilder(
   }
 }
 
-private class LoadBorder(val ts: Long, var load: Float)
+data class LoadBorder(val ts: Long, var load: Float)
+
+fun calcLoadDistribution(loads: List<CapacityHeatmapSceneBuilder.Load>): List<LoadBorder> {
+  // This is the list of moments where resource load grows or decreases.
+  return loads.filter { it.load != 0f }.flatMap {
+    listOf(
+            LoadBorder(it.startTs, it.load),
+            LoadBorder(it.endTs, -it.load)
+    )
+  }
+          // Zero load starting from the Jurassic period
+          .plus(LoadBorder(Long.MIN_VALUE, 0f))
+          // Now we accumulate the load changes which happen at the same moment.
+          // For instance, when we have two tasks which are assigned to some resource
+          // and starting at the same day, their load change is summed.
+          .groupBy(LoadBorder::ts, LoadBorder::load)
+          .mapValues { it.value.sum() }
+          // Sort the result by the timestamp. Now we have the ordered list of load changes
+          // where all change moments are unique.
+          .toSortedMap()
+          .map { LoadBorder(it.key, it.value) }
+          // Now let's accumulate the load change values from the beginning to the end.
+          // If we have e.g. load change +50 at ts=100, then load change +50 at ts=200,
+          // then load change -50 at ts=250 and finally the load change -50 at ts=300
+          // then we'll have: [(100, 50), (200, 100), (250, 50), (300, 0)
+          .runningReduce { accumulatedLoad, nextLoad ->
+            LoadBorder(nextLoad.ts, accumulatedLoad.load + nextLoad.load)
+          }
+}
 
 private fun Float.getStyle() = when {
   this == -1f -> "dayoff"

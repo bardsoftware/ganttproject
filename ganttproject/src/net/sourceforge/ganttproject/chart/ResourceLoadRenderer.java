@@ -98,7 +98,6 @@ class ResourceLoadRenderer extends ChartRendererBase {
 
     for (HumanResource humanResource : humanResources) {
       List<CapacityHeatmapSceneBuilder.Load> loads = new ArrayList<>();
-      // TODO: check if getLoads() and getDaysOff() can be removed from LoadDistribution now
       List<Load> tasksLoads = humanResource.getLoadDistribution().getTasksLoads();
       for (Load taskLoad : tasksLoads) {
         Integer taskId = null;
