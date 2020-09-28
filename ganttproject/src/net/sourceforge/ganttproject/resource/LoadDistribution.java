@@ -8,7 +8,6 @@ package net.sourceforge.ganttproject.resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,21 +48,15 @@ public class LoadDistribution {
     public final Date endDate;
   }
 
-  private final List<Load> myDaysOff = new LinkedList<Load>();
-
-  private final List<Load> myLoads = new ArrayList<Load>();
-
   private final List<Load> myTasksLoads = new ArrayList<Load>();
 
   private final HumanResource myResource;
 
   public LoadDistribution(HumanResource resource) {
-    myLoads.add(new Load(null, null, 0, null));
-    myDaysOff.add(new Load(null, null, 0, null));
     myResource = resource;
     ResourceAssignment[] assignments = myResource.getAssignments();
-    for (int j = 0; j < assignments.length; j++) {
-      processAssignment(assignments[j]);
+    for (ResourceAssignment assignment : assignments) {
+      processAssignment(assignment);
     }
     processDaysOff(myResource);
   }
@@ -72,94 +65,25 @@ public class LoadDistribution {
     DefaultListModel daysOff = resource.getDaysOff();
     if (daysOff != null) {
       for (int l = 0; l < daysOff.size(); l++) {
-        processDayOff((GanttDaysOff) daysOff.get(l));
+        GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(l);
+        Date dayOffStart = dayOff.getStart().getTime();
+        Date dayOffEnd = dayOff.getFinish().getTime();
+        myTasksLoads.add(new Load(dayOffStart, dayOffEnd, -1, null));
       }
     }
-
-  }
-
-  private void processDayOff(GanttDaysOff dayOff) {
-    Date dayOffEnd = dayOff.getFinish().getTime();
-    addLoad(dayOff.getStart().getTime(), dayOffEnd, -1, myDaysOff, null);
   }
 
   private void processAssignment(ResourceAssignment assignment) {
     Task task = assignment.getTask();
     for (TaskActivity ta : task.getActivities()) {
-      processActivity(ta, assignment.getLoad());
-    }
-  }
-
-  private void processActivity(TaskActivity activity, float load) {
-    if (activity.getIntensity() == 0) {
-      return;
-    }
-    addLoad(activity.getStart(), activity.getEnd(), load, myLoads, activity.getOwner());
-  }
-
-  private void addLoad(Date startDate, Date endDate, float load, List<Load> loads, Task t) {
-    Load taskLoad = new Load(startDate, endDate, load, t);
-
-    myTasksLoads.add(taskLoad);
-
-    int idxStart = -1;
-    float currentLoad = 0;
-    if (startDate == null) {
-      idxStart = 0;
-    } else {
-      for (int i = 1; i < loads.size(); i++) {
-        Load nextLoad = loads.get(i);
-        if (startDate.compareTo(nextLoad.startDate) >= 0) {
-          currentLoad = loads.get(i).load;
-        }
-        if (startDate.compareTo(nextLoad.startDate) > 0) {
-          continue;
-        }
-        idxStart = i;
-        if (startDate.compareTo(nextLoad.startDate) < 0) {
-          loads.add(i, new Load(startDate, null, currentLoad, null));
-        }
-        break;
+      if (ta.getIntensity() != 0) {
+        myTasksLoads.add(new Load(ta.getStart(), ta.getEnd(), assignment.getLoad(), task));
       }
-    }
-    if (idxStart == -1) {
-      idxStart = loads.size();
-      loads.add(new Load(startDate, null, 0, t));
-    }
-    int idxEnd = -1;
-    if (endDate == null) {
-      idxEnd = loads.size() - 1;
-    } else {
-      for (int i = idxStart; i < loads.size(); i++) {
-        Load nextLoad = loads.get(i);
-        if (endDate.compareTo(nextLoad.startDate) > 0) {
-          nextLoad.load += load;
-          continue;
-        }
-        idxEnd = i;
-        if (endDate.compareTo(nextLoad.startDate) < 0) {
-          Load prevLoad = loads.get(i - 1);
-          loads.add(i, new Load(endDate, null, prevLoad.load - load, null));
-        }
-        break;
-      }
-    }
-    if (idxEnd == -1) {
-      idxEnd = loads.size();
-      loads.add(new Load(endDate, null, 0, t));
     }
   }
 
   public HumanResource getResource() {
     return myResource;
-  }
-
-  public List<Load> getLoads() {
-    return myLoads;
-  }
-
-  public List<Load> getDaysOff() {
-    return myDaysOff;
   }
 
   /**

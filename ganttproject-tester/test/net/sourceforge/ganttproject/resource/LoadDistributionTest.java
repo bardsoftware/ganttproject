@@ -32,19 +32,6 @@ import java.util.Map;
  * @author dbarashev@bardsoftware.com
  */
 public class LoadDistributionTest extends TaskTestCase {
-  public void testEmptyLoadDistribution() {
-    HumanResourceManager resourceManager = new HumanResourceManager(null, new CustomColumnsManager());
-    HumanResource humanResource = new HumanResource("Foo", 1, resourceManager);
-    resourceManager.add(humanResource);
-
-    LoadDistribution ld = new LoadDistribution(humanResource);
-    List<LoadDistribution.Load> loads = ld.getLoads();
-    assertEquals(1, loads.size());
-    assertEquals(0.0f, loads.get(0).load);
-    assertNull(loads.get(0).startDate);
-    assertNull(loads.get(0).endDate);
-  }
-
   public void testSingleTaskNoWeekendDistribution() {
     HumanResourceManager resourceManager = new HumanResourceManager(null, new CustomColumnsManager());
     HumanResource humanResource = new HumanResource("Foo", 1, resourceManager);
@@ -57,20 +44,6 @@ public class LoadDistributionTest extends TaskTestCase {
     mutableAssignments.commit();
 
     LoadDistribution ld = new LoadDistribution(humanResource);
-    List<LoadDistribution.Load> loads = ld.getLoads();
-    assertEquals(3, loads.size());
-    assertEquals(0.0f, loads.get(0).load);
-    assertNull(loads.get(0).startDate);
-    assertEquals(null, loads.get(0).endDate);
-
-    assertEquals(100.0f, loads.get(1).load);
-    assertEquals(TestSetupHelper.newMonday().getTime(), loads.get(1).startDate);
-    assertNull(loads.get(1).endDate);
-
-    assertEquals(0.0f, loads.get(2).load);
-    assertEquals(TestSetupHelper.newTuesday().getTime(), loads.get(2).startDate);
-    assertNull(loads.get(2).endDate);
-
     Map<Task, List<LoadDistribution.Load>> task2loads = ld.getSeparatedTaskLoads();
     assertEquals(1, task2loads.size());
     List<LoadDistribution.Load> taskLoads = task2loads.get(task);
