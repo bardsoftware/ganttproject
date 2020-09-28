@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -358,10 +359,10 @@ public class GanttCSVExport {
     return res.toString();
   }
 
-  private String buildAssignmentSpec(Task task) {
+  static String buildAssignmentSpec(Task task) {
     List<String> loads = Lists.newArrayList();
     for (ResourceAssignment ra : task.getAssignments()) {
-      loads.add(String.format("%d:%.2f", ra.getResource().getId(), ra.getLoad()));
+      loads.add(String.format(Locale.ROOT, "%d:%.2f", ra.getResource().getId(), ra.getLoad()));
     }
     return Joiner.on(';').join(loads);
   }
