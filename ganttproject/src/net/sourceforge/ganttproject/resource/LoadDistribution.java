@@ -7,9 +7,7 @@ package net.sourceforge.ganttproject.resource;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.DefaultListModel;
 
@@ -50,15 +48,12 @@ public class LoadDistribution {
 
   private final List<Load> myTasksLoads = new ArrayList<Load>();
 
-  private final HumanResource myResource;
-
   public LoadDistribution(HumanResource resource) {
-    myResource = resource;
-    ResourceAssignment[] assignments = myResource.getAssignments();
+    ResourceAssignment[] assignments = resource.getAssignments();
     for (ResourceAssignment assignment : assignments) {
       processAssignment(assignment);
     }
-    processDaysOff(myResource);
+    processDaysOff(resource);
   }
 
   private void processDaysOff(HumanResource resource) {
@@ -82,31 +77,11 @@ public class LoadDistribution {
     }
   }
 
-  public HumanResource getResource() {
-    return myResource;
-  }
-
   /**
    * @return a list of lists of <code>Load</code> instances. Each list contains
    *         a set of <code>Load</code>
    */
   public List<Load> getTasksLoads() {
     return myTasksLoads;
-  }
-
-  public Map<Task, List<Load>> getSeparatedTaskLoads() {
-    HashMap<Task, List<Load>> result = new HashMap<Task, List<Load>>();
-    List<Load> taskLoads = getTasksLoads();
-    for (int i = 0; i < taskLoads.size(); i++) {
-      Load nextLoad = taskLoads.get(i);
-      Task nextTask = nextLoad.refTask;
-      List<Load> partition = result.get(nextTask);
-      if (partition == null) {
-        partition = new ArrayList<Load>();
-        result.put(nextTask, partition);
-      }
-      partition.add(nextLoad);
-    }
-    return result;
   }
 }
