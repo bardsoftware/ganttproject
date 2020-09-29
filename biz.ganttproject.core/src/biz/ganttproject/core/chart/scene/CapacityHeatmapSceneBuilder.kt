@@ -94,7 +94,9 @@ class CapacityHeatmapSceneBuilder(
    */
   private fun buildLoads(prevLoad: LoadBorder, curLoad: LoadBorder, ypos: Int, suffix: String) {
     val nextRect = createRectangle(prevLoad.ts.toDate(), curLoad.ts.toDate(), ypos) ?: return
-    nextRect.style = prevLoad.load.getStyle() + suffix + if (curLoad.load == 0f) ".last" else ""
+    nextRect.style = if (prevLoad.load == -1f) "dayoff"
+    else
+      prevLoad.load.getStyle() + suffix + if (curLoad.load == 0f) ".last" else ""
     nextRect.modelObject = prevLoad.load
     if (prevLoad.load != -1f) {
       createLoadText(nextRect, prevLoad.load)
@@ -184,7 +186,6 @@ fun calcLoadDistribution(loads: List<CapacityHeatmapSceneBuilder.Load>): List<Lo
 }
 
 private fun Float.getStyle() = when {
-  this == -1f -> "dayoff"
   this < 100f -> "load.underload"
   this > 100f -> "load.overload"
   else -> "load.normal"
