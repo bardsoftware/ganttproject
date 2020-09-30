@@ -25,6 +25,7 @@ import com.mxgraph.util.mxConstants
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.font.Fonts
 import net.sourceforge.ganttproject.util.PropertiesUtil
+import java.awt.Color
 import java.util.*
 
 /**
@@ -85,8 +86,8 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
 
     val chartStyle = Style.getStyle(chartProperties, rectangle.style)
     val mxStyle = mapOf(
-        mxConstants.STYLE_FILLCOLOR to chartStyle.hexBackgroundColor(rectangle),
-        mxConstants.STYLE_STROKECOLOR to chartStyle.hexBordersColor(rectangle),
+        mxConstants.STYLE_FILLCOLOR to (chartStyle.hexBackgroundColor(rectangle) ?: mxConstants.NONE),
+        mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_OPACITY to (rectangle.opacity ?: 1f) * 100
     )
     mxPainter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle)
@@ -97,7 +98,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
     val style = mapOf(
         mxConstants.STYLE_ENDARROW to
             if (line.arrow.length == 0 && line.arrow.width == 0) mxConstants.NONE else mxConstants.ARROW_CLASSIC,
-        mxConstants.STYLE_STROKECOLOR to chartStyle.hexStrokeColor(line),
+        mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(line) ?: Color.BLACK.toHexString()),
         mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100
     )
     mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style)
