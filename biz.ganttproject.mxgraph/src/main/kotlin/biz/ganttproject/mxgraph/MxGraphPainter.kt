@@ -123,8 +123,3 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
     fun paint(rectangle: Rectangle)
   }
 }
-
-fun main() {
-  val painter = MxGraphPainter(ChartUIConfiguration(UIConfiguration(/*unused*/Color.BLACK, false)))
-  println(painter.chartProperties["task.end.visibility"])
-}
