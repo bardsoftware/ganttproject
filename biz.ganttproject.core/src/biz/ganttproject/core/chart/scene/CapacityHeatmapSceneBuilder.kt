@@ -45,10 +45,10 @@ class CapacityHeatmapSceneBuilder(
     canvas.setOffset(0, input.yCanvasOffset)
     var ypos = 0
     resources.forEach { resource ->
-      // Draw working time loads
-      buildLoads(calcLoadDistribution(resource.loads.filter { it.load != -1f }), ypos)
       // Draw day off loads
       buildLoads(calcLoadDistribution(resource.loads.filter { it.load == -1f }), ypos)
+      // Draw working time loads
+      buildLoads(calcLoadDistribution(resource.loads.filter { it.load != -1f }), ypos)
       if (resource.isExpanded) {
         ypos = buildLoadDetails(resource.loads, ypos)
       }
