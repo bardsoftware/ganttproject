@@ -39,7 +39,7 @@ class ResourcesColumnSceneBuilder(
       if (isOddRow) {
         rectangle.style = "resource.odd-row"
       }
-      val text = canvas.createText(5, rectangle.middleY, it)
+      val text = canvas.createText(OFFSET, rectangle.middleY, it)
       text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
       y += input.rowHeight
       isOddRow = !isOddRow
