@@ -40,7 +40,7 @@ class ResourcesColumnSceneBuilder(
     resources.forEach {
       val rectangle = canvas.createRectangle(0, y, width, input.rowHeight)
       rectangle.backgroundColor = if (isOddRow) ODD_ROW_COLOR else EVEN_ROW_COLOR
-      val text = canvas.createText(5, rectangle.middleY, it)
+      val text = canvas.createText(OFFSET, rectangle.middleY, it)
       text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
       y += input.rowHeight
       isOddRow = !isOddRow
