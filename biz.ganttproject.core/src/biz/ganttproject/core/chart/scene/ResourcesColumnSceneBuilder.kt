@@ -20,11 +20,8 @@ package biz.ganttproject.core.chart.scene
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
-import java.awt.Color
 
 private const val OFFSET = 5
-private val ODD_ROW_COLOR = Color(0.933f, 0.933f, 0.933f)
-private val EVEN_ROW_COLOR = null
 
 class ResourcesColumnSceneBuilder(
     private val resources: List<String>,
@@ -39,7 +36,9 @@ class ResourcesColumnSceneBuilder(
     var isOddRow = false
     resources.forEach {
       val rectangle = canvas.createRectangle(0, y, width, input.rowHeight)
-      rectangle.backgroundColor = if (isOddRow) ODD_ROW_COLOR else EVEN_ROW_COLOR
+      if (isOddRow) {
+        rectangle.style = "resource.odd-row"
+      }
       val text = canvas.createText(5, rectangle.middleY, it)
       text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
       y += input.rowHeight
