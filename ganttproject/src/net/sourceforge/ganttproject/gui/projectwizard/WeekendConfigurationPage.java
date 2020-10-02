@@ -19,13 +19,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
-import biz.ganttproject.core.calendar.*;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
+import biz.ganttproject.core.calendar.CalendarEvent;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,9 +39,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -216,30 +216,19 @@ public class WeekendConfigurationPage implements WizardPage {
   }
 
   private List<JCheckBox> createWeekendCheckBoxes(final GPCalendar calendar, String[] names) {
-    Supplier<Integer> counter = new Supplier<Integer>() {
-      @Override
-      public Integer get() {
-        int count = 0;
-        for (int i = 1; i <= 7; i++) {
-          if (calendar.getWeekDayType(i) == DayType.WEEKEND) {
-            count++;
-          }
-        }
-        return count;
-      }
-    };
-    List<JCheckBox> result = Lists.newArrayListWithExpectedSize(7);
-    int day = Calendar.MONDAY;
-    for (int i = 0; i < 7; i++) {
-      JCheckBox nextCheckBox = new JCheckBox();
-      nextCheckBox.setSelected(calendar.getWeekDayType(day) == GPCalendar.DayType.WEEKEND);
-      nextCheckBox.setAction(new CheckBoxAction(calendar, day, names[day - 1], nextCheckBox.getModel(), counter));
-      result.add(nextCheckBox);
-      if (++day >= 8) {
-        day = 1;
-      }
-    }
-    return result;
+//    Supplier<Integer> counter = new Supplier<Integer>() {
+//      @Override
+//      public Integer get() {
+//        int count = 0;
+//        for (int i = 1; i <= 7; i++) {
+//          if (calendar.getWeekDayType(i) == DayType.WEEKEND) {
+//            count++;
+//          }
+//        }
+//        return count;
+//      }
+//    };
+    return WeekendDayKt.createWeekendCheckBoxes(calendar, names);
   }
 
   @Override
@@ -264,30 +253,4 @@ public class WeekendConfigurationPage implements WizardPage {
     return true;
   }
 
-  private static class CheckBoxAction extends AbstractAction {
-    private final int myDay;
-    private final ButtonModel myModelButton;
-    private final GPCalendar myCalendar;
-    private final Supplier<Integer> myCounter;
-
-    CheckBoxAction(GPCalendar calendar, int day, String dayName, ButtonModel model, Supplier<Integer> checkedDaysCounter) {
-      super(dayName);
-      myCalendar = calendar;
-      myDay = day;
-      myModelButton = model;
-      myCounter = checkedDaysCounter;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      if (myCounter.get() == 7) {
-        // If all days of the week are marked as weekend unmark selected the
-        // last.
-        myModelButton.setSelected(false);
-      } else {
-        myCalendar.setWeekDayType(myDay, myModelButton.isSelected() ? GPCalendar.DayType.WEEKEND
-            : GPCalendar.DayType.WORKING);
-      }
-    }
-  }
 }
