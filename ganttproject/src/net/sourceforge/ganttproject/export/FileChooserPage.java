@@ -18,28 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
-import java.io.File;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.List;
-
-import javax.swing.filechooser.FileFilter;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.osgi.service.prefs.Preferences;
-
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.storage.DocumentKt;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl.State;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 import net.sourceforge.ganttproject.gui.FileChooserPageBase;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.util.FileUtil;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.osgi.service.prefs.Preferences;
+
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.io.File;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.List;
 
 class FileChooserPage extends FileChooserPageBase {
 
@@ -150,17 +151,19 @@ class FileChooserPage extends FileChooserPageBase {
     File result = null;
     Document projectDocument = project.getDocument();
     if (projectDocument != null) {
-      File localFile = new File(projectDocument.getFilePath());
-      if (localFile.exists()) {
-        String name = localFile.getAbsolutePath();
-        int lastDot = name.lastIndexOf('.');
-        name = name.substring(0, lastDot) + "." + proposedExtension;
-        result = new File(name);
-      } else {
-        File directory = localFile.getParentFile();
-        if (directory.exists()) {
-          result = new File(directory, project.getProjectName() + "." + proposedExtension);
+      FileDocument localDocument = DocumentKt.asLocalDocument(projectDocument);
+      if (localDocument != null) {
+        File localFile = localDocument.getFile();
+        if (localFile.exists()) {
+          result = FileUtil.replaceExtension(localFile, proposedExtension);
+        } else {
+          File directory = localFile.getParentFile();
+          if (directory.exists()) {
+            result = new File(directory, project.getProjectName() + "." + proposedExtension);
+          }
         }
+      } else {
+        result = new File(DocumentKt.getDefaultLocalFolder(), FileUtil.replaceExtension(projectDocument.getFileName(), proposedExtension));
       }
     }
     if (result == null) {

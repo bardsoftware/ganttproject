@@ -29,12 +29,12 @@ internal class DayoffPainter(
 ) : MxGraphPainter.RectanglePainter {
 
   override fun paint(rectangle: Canvas.Rectangle) {
-
     val margin = uiConfig.margin - 3
     val color = uiConfig.dayOffColor
     val mxStyle = mapOf(
-        mxConstants.STYLE_FILLCOLOR to Color(color.red, color.green, color.blue, 100).toHexString(),
-        mxConstants.STYLE_STROKECOLOR to Color.BLACK.toHexString()
+        mxConstants.STYLE_FILLCOLOR to color.toHexString(),
+        mxConstants.STYLE_STROKECOLOR to Color.BLACK.toHexString(),
+        mxConstants.STYLE_OPACITY to 40
     )
     mxPainterImpl.paintRectangle(
         rectangle.leftX, rectangle.topY + margin, rectangle.width, rectangle.height - 2 * margin,

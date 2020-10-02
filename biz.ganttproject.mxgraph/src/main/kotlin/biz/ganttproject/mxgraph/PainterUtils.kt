@@ -29,8 +29,7 @@ internal fun Canvas.Shape.hexForegroundColor() = foregroundColor?.toHexString() 
 
 internal fun Style.hexBackgroundColor(shape: Canvas.Shape) = getBackgroundColor(shape)?.get()?.toHexString()
 
-internal fun Style.hexStrokeColor(line: Canvas.Line) =
-    getForegroundColor(line)?.get()?.toHexString() ?: hexBordersColor(line) ?: Color.BLACK.toHexString()
+internal fun Style.hexStrokeColor(shape: Canvas.Shape) = getForegroundColor(shape)?.get()?.toHexString() ?: hexBordersColor(shape)
 
 internal fun Style.hexBordersColor(shape: Canvas.Shape) = getBorder(shape)?.top?.color?.toHexString()
 
@@ -52,8 +51,8 @@ internal fun Canvas.VAlignment.toMxAlignment() = when(this) {
  * We can't calculate any precise text metrics when rendering SVG on the server side,
  * so we provide some stubs here.
  */
-internal object TextMetricsStub : TextMetrics {
-  override fun getTextLength(text: String) = 0
+object TextMetricsStub : TextMetrics {
+  override fun getTextLength(text: String) = text.length * 7
 
   override fun getTextHeight(text: String) = 10
 
