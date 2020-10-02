@@ -105,7 +105,7 @@ public class StyledPainterImpl implements Painter {
     myStyle2painter.put("previousStateTask", myPreviousStateTaskRectanglePainter);
 
     myProperties = new Properties();
-    PropertiesUtil.loadProperties(myProperties, "/chart.properties");
+    PropertiesUtil.loadProperties(myProperties, "/resources/chart.properties");
     config.getChartStylesOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {

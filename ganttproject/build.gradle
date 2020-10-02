@@ -64,8 +64,8 @@ sourceSets {
             srcDir 'src'
         }
         resources {
-            srcDirs = ["src"]
-            include "**/*.css"
+            srcDirs = ["src", "data"]
+            include "**/*.css", "**/*.properties"
         }
     }
 
