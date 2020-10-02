@@ -1,5 +1,5 @@
 /*
-Copyright 2018 BarD Software s.r.o
+Copyright 2018-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -23,6 +23,9 @@ import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.*
+import com.evanlennick.retry4j.AsyncCallExecutor
+import com.evanlennick.retry4j.CallExecutorBuilder
+import com.evanlennick.retry4j.config.RetryConfigBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -32,6 +35,7 @@ import javafx.event.ActionEvent
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.control.Tooltip
 import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
@@ -46,8 +50,17 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.decoration.Decorator
 import org.controlsfx.control.decoration.GraphicDecoration
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import javax.swing.JOptionPane
+import kotlin.math.pow
+import kotlin.math.roundToLong
+import kotlin.random.Random
 
 private fun createWarningDecoration(): Node {
   return Circle(4.0).also {
@@ -71,9 +84,11 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private val btnOffline = Button().also {
     it.isVisible = false
   }
+  private val reconnectLabel = Label()
+  private val reconnectStatus = ReconnectStatus(reconnectLabel)
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(btnOffline, btnLock)
+    it.children.addAll(btnOffline, btnLock, reconnectLabel)
   }
 
   private lateinit var status: LockStatus
@@ -126,6 +141,8 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
         this.onLatestVersionChange = null
       }
 
+      // If we had a reconnect ping, we'll stop it.
+      reconnectStatus.stopReconnectPing()
       // If new document is lockable, we'll add listeners and show the icon.
       if (newDoc is LockableDocument) {
         newDoc.status.addListener(this::onLockStatusChange)
@@ -214,6 +231,12 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
           Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
           isDisable = true
         }
+
+        observableDocument.value.asOnlineDocument()?.let {
+          if (it is GPCloudDocument) {
+            reconnectStatus.startReconnectPing(it)
+          }
+        }
         this.uiFacade.showOptionDialog(
             JOptionPane.WARNING_MESSAGE,
             STATUS_BAR_LOCALIZER.formatText("mode.offline.warning"),
@@ -231,8 +254,8 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
       graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)
       elements = listOf(
-          OptionElementData("reload", true, true),
-          OptionElementData("ignore", false)
+          OptionElementData("reload", userData = true,  isSelected = true),
+          OptionElementData("ignore", userData = false)
       )
       titleHelpString?.update(newValue.author, GanttLanguage.getInstance().formatDate(GanttCalendar.getInstance().apply {
         time = Date(newValue.timestamp)
@@ -252,4 +275,66 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   }
 }
 
+/**
+ * Schedules reconnect pings with some backoff and updates the status bar with the information
+ * about the next reconnect attempt.
+ */
+private class ReconnectStatus(private val label: Label) {
+  private var statusUpdateFuture: ScheduledFuture<*>? = null
+  private val statusUpdateExecutor = Executors.newSingleThreadScheduledExecutor()
+  private var reconnectExecutor: AsyncCallExecutor<Boolean>? = null
+  private val reconnectText = STATUS_BAR_LOCALIZER.create("reconnect")
+
+  init {
+    label.isVisible = false
+    label.textProperty().bind(reconnectText)
+  }
+
+  fun startReconnectPing(document: GPCloudDocument) {
+    val retryConfig = RetryConfigBuilder()
+        .retryOnReturnValue(false)
+        .retryOnAnyException()
+        .withMaxNumberOfTries(1000)
+        .withBackoffStrategy { numberOfTriesFailed, delayBetweenAttempts ->
+          if (numberOfTriesFailed < 7) {
+            delayBetweenAttempts.multipliedBy(2.0.pow(numberOfTriesFailed.toDouble()).roundToLong())
+          } else {
+            Duration.ofSeconds(120L + Random.nextInt(-20, 20))
+          }.also(this::updateStatus)
+        }
+        .withDelayBetweenTries(1, ChronoUnit.SECONDS)
+        .build()
+    CallExecutorBuilder<Boolean>().config(retryConfig)
+        .onSuccessListener {
+          document.modeValue = OnlineDocumentMode.MIRROR
+          cancelStatusUpdate()
+        }
+        .buildAsync(Executors.newSingleThreadExecutor())
+        .also {
+          it.execute { isNetworkAvailable() }
+          reconnectExecutor = it as AsyncCallExecutor<Boolean>
+        }
+  }
+
+  private fun updateStatus(nextTry: Duration) {
+    this.label.isVisible = true
+    val remainingSeconds = AtomicLong(nextTry.seconds)
+    this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
+      if (remainingSeconds.get() > 0) {
+        Platform.runLater { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
+      }
+    }, 0, 1, TimeUnit.SECONDS)
+  }
+
+  fun stopReconnectPing() {
+    reconnectExecutor?.executorService?.shutdown()
+    reconnectExecutor = null
+    cancelStatusUpdate()
+  }
+
+  private fun cancelStatusUpdate() {
+    statusUpdateFuture?.cancel(true)
+    label.isVisible = false
+  }
+}
 val STATUS_BAR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.statusBar")
