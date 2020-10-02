@@ -1,7 +1,5 @@
 // This installs dependencyUpdates plugin
 // Run gradle dependencyUpdates to get the report
-apply plugin: 'java'
-apply plugin: 'eclipse'
 
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
@@ -11,8 +9,8 @@ ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 ext.buildNum = getBuildNum()
 
-archivesBaseName = 'ganttproject'
 version = "${semver}-r${getBuildNum()}"
+
 
 def getBuildNum() {
     return "2910"
@@ -43,7 +41,6 @@ allprojects {
 
     }
     apply plugin: 'java'
-    apply plugin: 'eclipse'
     ext {
         libDir = 'lib'
         mvnDir = 'lib/mvn'
