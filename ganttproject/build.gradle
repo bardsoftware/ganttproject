@@ -14,6 +14,7 @@ buildscript {
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
 
 
 ext {
@@ -134,3 +135,12 @@ test {
     }
 }
 
+addPublishing(project)
+publishing {
+    publications {
+        core(MavenPublication) {
+            artifactId = 'ganttproject'
+            artifact jar
+        }
+    }
+}

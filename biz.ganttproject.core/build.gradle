@@ -76,33 +76,12 @@ task copyPlugin(dependsOn: assemble) {
 
 }
 
-group 'biz.ganttproject'
-version = new Date().format("yy.MM.dd")
-
-AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) project.components.java
-javaComponent.addVariantsFromConfiguration(configurations.cloud) {
-}
-javaComponent.withVariantsFromConfiguration(configurations.apiElements) {
-    skip()
-}
-javaComponent.withVariantsFromConfiguration(configurations.runtimeElements) {
-    skip()
-}
-
+addPublishing(project)
 publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bardsoftware/ganttproject")
-            credentials {
-                username = project.findProperty("github.user") ?: System.getenv("GITHUB_USER")
-                password = project.findProperty("github.key") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
     publications {
-        gpr(MavenPublication) {
-            from(components.java)
+        core(MavenPublication) {
+            artifactId = 'biz.ganttproject.core'
+            artifact jar
         }
     }
 }

@@ -53,7 +53,22 @@ allprojects {
     }
 }
 
+subprojects {
+    group 'biz.ganttproject'
+    version = new Date().format("yy.MM.dd")
+}
 
+
+def addPublishing(project) {
+    project.publishing {
+        repositories {
+            maven {
+                name "ganttproject-maven-repository-internal"
+                url "gcs://ganttproject-maven-repository/internal"
+            }
+        }
+    }
+}
 //
 //runtime {
 //    distDir = rootProject.distBinDir
