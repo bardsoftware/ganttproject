@@ -28,7 +28,6 @@ import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableObjectValue
 import javafx.event.ActionEvent
@@ -41,6 +40,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.action.OkAction
@@ -50,6 +50,7 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.decoration.Decorator
 import org.controlsfx.control.decoration.GraphicDecoration
+import java.lang.RuntimeException
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -91,6 +92,12 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     it.children.addAll(btnOffline, btnLock, reconnectLabel)
   }
 
+  private val modeChangeListener = ChangeListener<OnlineDocumentMode> {
+    _, _, newValue -> this.onOnlineModeChange(newValue)
+  }
+  private val lockChangeListener = ChangeListener<LockStatus> {
+    _, _, newValue -> this.onLockStatusChange(newValue)
+  }
   private lateinit var status: LockStatus
 
 
@@ -117,7 +124,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
   // This is called whenever open document changes and handles different cases.
   private fun onDocumentChange(oldDocument: Document?, newDocument: Document?) {
-    Platform.runLater {
+    GlobalScope.launch(Dispatchers.JavaFx) {
 
       // First we un-proxy old and new documents.
       val newDoc = if (newDocument is ProxyDocument) {
@@ -133,48 +140,48 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
       // Then we remove listeners from the old document
       if (oldDoc is LockableDocument) {
-        oldDoc.status.removeListener(this::onLockStatusChange)
+        oldDoc.status.removeListener(lockChangeListener)
       }
       if (oldDoc is OnlineDocument) {
-        oldDoc.mode.removeListener(this::onOnlineModeChange)
-        this.onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }
-        this.onLatestVersionChange = null
+        oldDoc.mode.removeListener(modeChangeListener)
+        onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }
+        onLatestVersionChange = null
       }
 
       // If we had a reconnect ping, we'll stop it.
       reconnectStatus.stopReconnectPing()
       // If new document is lockable, we'll add listeners and show the icon.
       if (newDoc is LockableDocument) {
-        newDoc.status.addListener(this::onLockStatusChange)
-        this.btnLock.isVisible = true
+        newDoc.status.addListener(lockChangeListener)
+        btnLock.isVisible = true
         newDoc.reloadLockStatus().handle { lockStatus, ex -> if (ex != null) GPLogger.log(ex) else {
           updateLockStatus(lockStatus)
         }}
       } else {
-        this.btnLock.isVisible = false
+        btnLock.isVisible = false
       }
 
       // If new document is online, we'll add some listeners too.
       if (newDoc is OnlineDocument) {
         // Listen to online mode changes: online only/mirrored/offline only
-        newDoc.mode.addListener(this::onOnlineModeChange)
-        this.btnOffline.isVisible = true
-        this.updateOnlineMode(newDoc.mode.value)
+        newDoc.mode.addListener(modeChangeListener)
+        btnOffline.isVisible = true
+        updateOnlineMode(newDoc.mode.value)
 
         // Listen to the version updates
-        this.onLatestVersionChange = ChangeListener { _, _, newValue ->
+        onLatestVersionChange = ChangeListener { _, _, newValue ->
           handleLatestVersionChange(newDoc, newValue)
         }
-        newDoc.latestVersionProperty.addListener(this.onLatestVersionChange)
+        newDoc.latestVersionProperty.addListener(onLatestVersionChange)
       } else {
-        this.btnOffline.isVisible = false
+        btnOffline.isVisible = false
       }
     }
   }
 
-  private fun onLockStatusChange(observable: Any, oldStatus: LockStatus, newStatus: LockStatus) {
-    Platform.runLater {
-      this.updateLockStatus(newStatus)
+  private fun onLockStatusChange(newStatus: LockStatus) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      updateLockStatus(newStatus)
     }
   }
 
@@ -195,9 +202,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     this.status = status
   }
 
-  private fun onOnlineModeChange(observable: Any, oldValue: OnlineDocumentMode, newValue: OnlineDocumentMode) {
-    Platform.runLater {
-      this.updateOnlineMode(newValue)
+  private fun onOnlineModeChange(newValue: OnlineDocumentMode) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      updateOnlineMode(newValue)
     }
   }
 
@@ -307,7 +314,7 @@ private class ReconnectStatus(private val label: Label) {
     CallExecutorBuilder<Boolean>().config(retryConfig)
         .onSuccessListener {
           document.modeValue = OnlineDocumentMode.MIRROR
-          cancelStatusUpdate()
+          stopReconnectPing()
         }
         .buildAsync(Executors.newSingleThreadExecutor())
         .also {
@@ -321,7 +328,9 @@ private class ReconnectStatus(private val label: Label) {
     val remainingSeconds = AtomicLong(nextTry.seconds)
     this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
       if (remainingSeconds.get() > 0) {
-        Platform.runLater { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
+        GlobalScope.launch(Dispatchers.JavaFx) { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
+      } else {
+        throw RuntimeException("Cancelling this status update")
       }
     }, 0, 1, TimeUnit.SECONDS)
   }
