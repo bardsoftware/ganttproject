@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar id="ca_es" name="Festes laborals de Catalunya" type="country">
+
+<!-- Data source:
+	https://web.gencat.cat/ca/actualitat/reportatges/calendarilaboral/calendari-laboral-2020/index.html
+-->
+
+	<date year="" month="01" date="01"><![CDATA[Cap d'any]]></date>
+	<date year="" month="01" date="06"><![CDATA[Reis]]></date>
+	<date year="" month="05" date="01"><![CDATA[Festa del Treball]]></date>
+	<date year="" month="06" date="24"><![CDATA[Sant Joan]]></date>
+	<date year="" month="08" date="15"><![CDATA[l'Assumpció]]></date>
+	<date year="" month="09" date="11"><![CDATA[Diada Nacional de Catalunya]]></date>
+	<date year="" month="10" date="12"><![CDATA[Festa Nacional d'Espanya]]></date>
+	<date year="" month="11" date="01"><![CDATA[Tots Sants]]></date>
+	<date year="" month="12" date="06"><![CDATA[Dia de la Constitució]]></date>
+	<date year="" month="12" date="08"><![CDATA[Immaculada Concepció]]></date>
+	<date year="" month="12" date="25"><![CDATA[Nadal]]></date>
+	<date year="" month="12" date="26"><![CDATA[Sant Esteve]]></date>
+
+	<date year="2020" month="04" date="10"><![CDATA[Divendres Sant]]></date>
+	<date year="2020" month="04" date="13"><![CDATA[Pasqua Florida]]></date>
+
+
+<!-- Data source:
+	http://sac.gencat.cat/sacgencat/AppJava/servei_fitxa.jsp?codi=14669
+-->
+	<date year="2021" month="04" date="2"><![CDATA[Divendres Sant]]></date>
+	<date year="2021" month="04" date="5"><![CDATA[Pasqua Florida]]></date>
+
+</calendar>
