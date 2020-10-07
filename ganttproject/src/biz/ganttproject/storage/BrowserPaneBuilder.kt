@@ -239,7 +239,6 @@ class BrowserPaneBuilder<T: FolderItem>(
           breadcrumbView?.append(item.name)
           this.onSelectionChange(item)
           this.onOpenDirectory(item)
-          filename.text = ""
         }
         withEnter && !item.isDirectory -> {
           this.onSelectionChange(item)

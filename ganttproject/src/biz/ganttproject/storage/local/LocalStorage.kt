@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Dmitry Barashev, BarD Software s.r.o
+Copyright 2017-2020 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -141,8 +141,9 @@ class LocalStorage(
           when {
             item.isDirectory -> {
               selectedDir = item
+              val currentFilename = paneElements.filenameInput.text
               state.currentDir.set(item.file)
-              state.setCurrentFile("")
+              state.setCurrentFile(currentFilename)
             }
             else -> {
               selectedProject = item
