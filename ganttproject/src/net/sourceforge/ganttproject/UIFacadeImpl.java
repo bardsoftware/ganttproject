@@ -45,18 +45,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
-import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationItem;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.ViewLogDialog;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
@@ -247,6 +236,23 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myOptions.setTitled(false);
 
     myLogoOption = new DefaultFileOption("ui.logo");
+    myLogoOption.addChangeValueListener(new ChangeValueListener(){
+      @Override
+      public void changeValue(ChangeValueEvent event) {
+
+        if (event.getOldValue()!=null && event.getOldValue().equals(event.getNewValue())){
+          Image newLogo =getLogo();
+
+
+          ((GanttTree2)myFallbackDelegate.getTaskTree()).
+                  getMyProject()
+                  .getGanttChartTabContent().
+                  replaceImagePanel(newLogo);
+        }
+
+      }
+    });
+    
     myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
     addOptions(myOptions);

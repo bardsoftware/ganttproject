@@ -174,6 +174,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
             myIndentAction, myUnindentAction, newAction, myProject.getCutAction(), myProject.getCopyAction(),
             myProject.getPasteAction(), propertiesAction, deleteAction);
   }
+  public GanttProject getMyProject() {
+    return myProject;
+  }
 
   @Override
   protected void init() {

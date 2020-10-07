@@ -183,6 +183,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
+  public GanttChartTabContentPanel getGanttChartTabContent() {
+    return myGanttChartTabContent;
+  }
+
   public GanttProject(boolean isOnlyViewer) {
     System.err.println("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);
