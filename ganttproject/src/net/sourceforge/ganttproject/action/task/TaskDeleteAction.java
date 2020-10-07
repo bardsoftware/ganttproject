@@ -23,7 +23,6 @@ import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -56,12 +55,6 @@ public class TaskDeleteAction extends TaskActionBase {
   @Override
   protected boolean isEnabled(List<Task> selection) {
     return !selection.isEmpty();
-  }
-
-  @Override
-  protected boolean askUserPermission(List<Task> selection) {
-    Choice choice = getUIFacade().showConfirmationDialog(getI18n("msg19"), getI18n("question"));
-    return choice == Choice.YES;
   }
 
   @Override
