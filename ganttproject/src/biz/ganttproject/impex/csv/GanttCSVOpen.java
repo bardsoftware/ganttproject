@@ -142,7 +142,7 @@ public class GanttCSVOpen {
       numGroup++;
     }
 
-    for (Iterator<SpreadsheetRecord> it = reader.iterator(); it.hasNext(); ) {
+    for (Iterator<SpreadsheetRecord> it = reader.iterator(); it.hasNext();) {
       SpreadsheetRecord record = it.next();
       lineCounter++;
       if (linesToSkip-- > 0) {
@@ -173,7 +173,7 @@ public class GanttCSVOpen {
           }
         }
       }
-      if (currentGroup.doProcess(record)) {
+      if (currentGroup.process(record)) {
         searchHeader = false;
       } else {
         mySkippedLine++;

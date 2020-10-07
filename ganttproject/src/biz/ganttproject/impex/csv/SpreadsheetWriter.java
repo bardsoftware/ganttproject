@@ -20,6 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 /**
  * @author akurutin on 04.04.2017.
@@ -27,6 +28,18 @@ import java.io.IOException;
 public interface SpreadsheetWriter extends AutoCloseable {
   void print(String value) throws IOException;
 
+  void print(Double value) throws IOException;
+
+  void print(Integer value) throws IOException;
+
+  void print(BigDecimal value) throws IOException;
+
+  void print(java.util.Calendar value) throws IOException;
+
   void println() throws IOException;
+
+  void newSheet() throws IOException;
+
+  void newSheet(String name) throws IOException;
 
 }
