@@ -64,6 +64,7 @@ public abstract class AbstractFileChooserPage implements WizardPage {
       return true;
     }
   };
+  private final File myDefaulFolder ;
 
   private JPanel myComponent;
   private TextFieldAndFileChooserComponent myChooser;
@@ -81,13 +82,14 @@ public abstract class AbstractFileChooserPage implements WizardPage {
   private final String myTitle;
   private AbstractWizard myWizard;
 
-  protected AbstractFileChooserPage(UIFacade uiFacade, Preferences prefs, String title, FileFilter fileFilter, GPOptionGroup[] options, boolean enableUrlChooser) {
+  protected AbstractFileChooserPage(UIFacade uiFacade, Preferences prefs, String title, FileFilter fileFilter, GPOptionGroup[] options, boolean enableUrlChooser, File defaultFolder) {
     myUiFacade = uiFacade;
     myPreferences = prefs;
     myTitle = title;
     myFileFilter = MoreObjects.firstNonNull(fileFilter, ACCEPT_ALL);
     myOptions = MoreObjects.firstNonNull(options, new GPOptionGroup[0]);
     isUrlChooserEnabled = enableUrlChooser;
+    myDefaulFolder = defaultFolder;
     myOptionsBuilder = new OptionsPageBuilder();
     mySecondaryOptionsComponent = new JPanel(new BorderLayout());
     mySecondaryOptionsComponent.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -104,6 +106,11 @@ public abstract class AbstractFileChooserPage implements WizardPage {
       @Override
       protected void onFileChosen(File file) {
         AbstractFileChooserPage.this.onSelectedFileChange(file);
+      }
+
+      @Override
+      protected File getWorkingDir() {
+        return myDefaulFolder;
       }
     };
     myChooser.setFileSelectionMode(getFileChooserSelectionMode());

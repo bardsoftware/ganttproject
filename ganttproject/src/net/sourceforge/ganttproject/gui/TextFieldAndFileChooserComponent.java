@@ -272,7 +272,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
     myUiFacade.createDialog(fc, dialogActions, "").show();
   }
 
-  private File getWorkingDir() {
+  protected File getWorkingDir() {
     return new File(System.getProperty("user.dir"));
   }
 

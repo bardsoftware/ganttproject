@@ -44,7 +44,7 @@ public class ImportFileWizardImpl extends AbstractWizard {
 
   public ImportFileWizardImpl(UIFacade uiFacade, IGanttProject project, GanttOptions options) {
     super(uiFacade, i18n.getText("importWizard.dialog.title"),
-        new ImporterChooserPage(ourImporters, uiFacade, options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/import")));
+        new ImporterChooserPage(ourImporters, uiFacade, project, options.getPluginPreferences().node("/instance/net.sourceforge.ganttproject/import")));
     for (Importer importer : ourImporters) {
       importer.setContext(project, uiFacade, options.getPluginPreferences());
     }
