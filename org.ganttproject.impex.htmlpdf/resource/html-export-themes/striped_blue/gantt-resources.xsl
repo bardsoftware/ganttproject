@@ -36,7 +36,7 @@
 		<td valign="top"><b><xsl:value-of select="name"/></b></td><td width="1" bgcolor="#002000"/>
 		<td valign="top"><xsl:value-of select="role"/></td><td width="1" bgcolor="#002000"/>
 		<td valign="top"><a><xsl:attribute name="href">mailto:<xsl:value-of select="mail"/></xsl:attribute><xsl:value-of select="mail"/></a></td><td width="1" bgcolor="#002000"/>
-		<td valign="top"><xsl:value-of select="phone"/></td>
+		<td valign="top"><a><xsl:attribute name="href">tel:<xsl:value-of select="translate(phone, ' ','')"/></xsl:attribute><xsl:value-of select="phone"/></a></td><td width="1" bgcolor="#002000"/>
 	</tr>
   </xsl:for-each>
 </table>
