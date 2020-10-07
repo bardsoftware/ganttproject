@@ -32,20 +32,23 @@ import biz.ganttproject.core.time.TimeUnit;
  * @author bard
  */
 abstract class GPCalendarBase implements GPCalendarCalc {
+
+  static final int MAX_WEEKEND_DAYS = 7;
+
   private final List<GPCalendarListener> myListeners = Lists.newArrayList();
   private String myName;
   private String myId;
-  
+
   @Override
   public String getID() {
     return myId == null ? myName : myId;
   }
-  
+
   @Override
   public String getName() {
     return myName;
   }
-  
+
   @Override
   public void setName(String name) {
     myName = name;
@@ -94,39 +97,47 @@ abstract class GPCalendarBase implements GPCalendarCalc {
   }
 
   public Date findClosest(Date time, TimeUnit timeUnit, MoveDirection direction, DayType dayType, Date limit) {
-    return doFindClosest(time, timeUnit, direction, dayType, limit);
+    return doFindClosest(time, timeUnit, direction, dayType, limit, MAX_WEEKEND_DAYS);
   }
-  
-  protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
+
+  protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType findDayType, Date dateLimit, int maxWeekendDays) {
+    if (maxWeekendDays == 0) {
+      throw new UnsupportedOperationException("Error: all days are configured as 'weekend day'. That's not meaningful. Please, configure at least one day as non-weekend.");
+    }
     Date nextUnitStart = direction == GPCalendarCalc.MoveDirection.FORWARD ? framer.adjustRight(time)
         : framer.jumpLeft(time);
     int nextUnitMask = getDayMask(nextUnitStart);
-    switch (dayType) {
-    case WORKING:
-      if ((nextUnitMask & DayMask.WORKING) == DayMask.WORKING) {
-        return nextUnitStart;
-      }
-      break;
-    case WEEKEND:
-    case HOLIDAY:
-    case NON_WORKING:
-      if ((nextUnitMask & DayMask.WORKING) == 0) {
-        return nextUnitStart;
-      }
-      break;
-    default:
-      assert false : "Should not be here";
+    if ((nextUnitMask & DayMask.WEEKEND) == DayMask.WEEKEND) {
+      maxWeekendDays--;
+    } else {
+      maxWeekendDays = MAX_WEEKEND_DAYS;
     }
-    if (limit != null) {
-      if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
-          || direction == MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
+    switch (findDayType) {
+      case WORKING:
+        if ((nextUnitMask & DayMask.WORKING) == DayMask.WORKING) {
+          return nextUnitStart;
+        }
+        break;
+      case WEEKEND:
+      case HOLIDAY:
+      case NON_WORKING:
+        if ((nextUnitMask & DayMask.WORKING) == 0) {
+          return nextUnitStart;
+        }
+        break;
+      default:
+        assert false : "Should not be here";
+    }
+    if (dateLimit != null) {
+      if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(dateLimit) >= 0
+          || direction == MoveDirection.BACKWARD && nextUnitStart.compareTo(dateLimit) <= 0) {
         return null;
       }
     }
-    return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
+    return doFindClosest(nextUnitStart, framer, direction, findDayType, dateLimit, maxWeekendDays);
   }
 
-  
+
   @Override
   public void addListener(GPCalendarListener listener) {
     myListeners.add(listener);
@@ -141,5 +152,6 @@ abstract class GPCalendarBase implements GPCalendarCalc {
       }
     }
   }
+
   public abstract int getDayMask(Date date);
 }
