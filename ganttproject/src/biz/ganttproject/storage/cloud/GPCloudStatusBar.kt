@@ -63,13 +63,6 @@ import kotlin.math.pow
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
-private fun createWarningDecoration(): Node {
-  return Circle(4.0).also {
-    it.styleClass.add("decoration-warning")
-    it.strokeWidth = 2.0
-  }
-}
-
 /**
  * This status bar appears in the bottom-lef corner of the app window and shows
  * document lock status and access mode. When clicked, it opens a dialog for changing
@@ -269,16 +262,20 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       }))
 
       showDialog { choice ->
-        when (choice) {
-          true -> {
-            GlobalScope.launch(Dispatchers.IO) {
-              doc.fetch().update()
-            }
+        if (choice) {
+          GlobalScope.launch(Dispatchers.IO) {
+            doc.fetch().update()
           }
-          false -> {}
         }
       }
     }
+  }
+}
+
+private fun createWarningDecoration(): Node {
+  return Circle(4.0).also {
+    it.styleClass.add("decoration-warning")
+    it.strokeWidth = 2.0
   }
 }
 
@@ -303,11 +300,14 @@ private class ReconnectStatus(private val label: Label) {
         .retryOnAnyException()
         .withMaxNumberOfTries(1000)
         .withBackoffStrategy { numberOfTriesFailed, delayBetweenAttempts ->
+          // We will exponentially increase duration until it reaches 128 seconds, and after that
+          // we will send ping every ~2 min
           if (numberOfTriesFailed < 7) {
             delayBetweenAttempts.multipliedBy(2.0.pow(numberOfTriesFailed.toDouble()).roundToLong())
           } else {
             Duration.ofSeconds(120L + Random.nextInt(-20, 20))
-          }.also(this::updateStatus)
+            // This is the only place in retry4j where we know the duration until the next try.
+          }.also(this::startCountdown)
         }
         .withDelayBetweenTries(1, ChronoUnit.SECONDS)
         .build()
@@ -323,7 +323,7 @@ private class ReconnectStatus(private val label: Label) {
         }
   }
 
-  private fun updateStatus(nextTry: Duration) {
+  private fun startCountdown(nextTry: Duration) {
     this.label.isVisible = true
     val remainingSeconds = AtomicLong(nextTry.seconds)
     this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
