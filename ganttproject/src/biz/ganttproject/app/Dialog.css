@@ -121,11 +121,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg .alert-box ScrollPane {
-    -fx-background-color: #ff7777;
+    -fx-background-color: white;
 }
 
 .dlg .alert-box ScrollPane MDFXNode {
-    -fx-background-color: #ff7777;
+    -fx-background-color: white;
+    -fx-padding: 20;
 }
 
 .dlg .alert-box Button {
