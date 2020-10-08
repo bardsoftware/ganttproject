@@ -540,6 +540,7 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
   this.listenEvents(webSocket)
+  this.modeValue = OnlineDocumentMode.MIRROR
 }
 
 private val ourExecutor = Executors.newSingleThreadExecutor()

@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
 import org.xml.sax.SAXException
 import java.io.File
+import java.io.FileNotFoundException
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -229,8 +230,12 @@ fun (Document).asOnlineDocument(): OnlineDocument? {
   return null
 }
 
-fun (Document).checksum(): String {
-  return Hashing.crc32c().hashBytes(ByteStreams.toByteArray(this.inputStream)).toString()
+fun (Document).checksum(): String? {
+  return try {
+    Hashing.crc32c().hashBytes(ByteStreams.toByteArray(this.inputStream)).toString()
+  } catch (ex: FileNotFoundException) {
+    null
+  }
 }
 
 fun (ByteArray).checksum(): String {
