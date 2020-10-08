@@ -124,7 +124,6 @@ class LocalStorage(
 
     val actionButtonHandler = object {
       var selectedProject: FileAsFolderItem? = null
-      var selectedDir: FileAsFolderItem? = null
       var button: Button? = null
       set(btn) {
         field = btn
@@ -136,14 +135,20 @@ class LocalStorage(
         }
       }
 
+      fun onOpenDirectory(item: FolderItem) {
+        if (item is FileAsFolderItem) {
+          if (item.isDirectory) {
+            val currentFilename = paneElements.filenameInput.text
+            state.currentDir.set(item.file)
+            state.setCurrentFile(currentFilename)
+          }
+        }
+      }
+
       fun onSelectionChange(item: FolderItem) {
         if (item is FileAsFolderItem) {
           when {
             item.isDirectory -> {
-              selectedDir = item
-              val currentFilename = paneElements.filenameInput.text
-              state.currentDir.set(item.file)
-              state.setCurrentFile(currentFilename)
             }
             else -> {
               selectedProject = item
@@ -183,6 +188,7 @@ class LocalStorage(
       }
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
+          onOpenDirectory = actionButtonHandler::onOpenDirectory,
           onLaunch = {
             myDocumentReceiver(FileDocument(it.file))
           },

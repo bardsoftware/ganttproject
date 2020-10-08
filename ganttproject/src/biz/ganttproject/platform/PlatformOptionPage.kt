@@ -130,7 +130,8 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   override fun removeButtonBar() {
   }
 
-  override fun toggleProgress(shown: Boolean) {
+  override fun toggleProgress(shown: Boolean): () -> Unit {
+    return {}
   }
 
   override fun resize() {

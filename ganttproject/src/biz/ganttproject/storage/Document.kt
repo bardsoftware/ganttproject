@@ -28,10 +28,13 @@ import javafx.beans.value.ObservableObjectValue
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
+import org.xml.sax.SAXException
 import java.io.File
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import javax.xml.parsers.DocumentBuilderFactory
+
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -250,3 +253,14 @@ fun getDefaultLocalFolder(): File {
   }
 }
 
+private val domParser = DocumentBuilderFactory.newInstance().also {
+  it.isValidating = false
+  it.isNamespaceAware = false
+}
+
+@Throws(SAXException::class)
+fun (Document).checkWellFormed() {
+  this.inputStream.use {
+    domParser.newDocumentBuilder().parse(it)
+  }
+}

@@ -36,30 +36,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.action.CancelAction
-import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
-import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.eclipse.core.runtime.IStatus
-import java.awt.event.ActionEvent
+import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
-import java.text.MessageFormat
-import java.util.*
 import java.util.logging.Level
-import javax.swing.Action
 import javax.swing.JFileChooser
-import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 class ProjectUIFacadeImpl(
@@ -296,7 +288,17 @@ class ProjectUIFacadeImpl(
 
           strategy.open(document, successChannel)
           try {
-            val doc = successChannel.receive()
+            val doc = try {
+              successChannel.receive().also {
+                it.checkWellFormed()
+              }
+            } catch (ex: SAXException) {
+              onFinish?.close(DocumentException(
+                  RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex)
+              )
+              return@launch
+            }
+
             onFinish?.send(true)
             // If document is obtained, we need to run further steps.
             // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
@@ -358,3 +360,4 @@ class ProjectUIFacadeImpl(
     return arrayOf(myConverterGroup)
   }
 }
+
