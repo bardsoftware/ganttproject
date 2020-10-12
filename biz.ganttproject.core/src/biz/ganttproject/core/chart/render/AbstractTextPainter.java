@@ -26,10 +26,8 @@ import biz.ganttproject.core.chart.canvas.TextMetrics;
 import com.google.common.base.Supplier;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 public abstract class AbstractTextPainter {
   protected final Properties myProperties;
@@ -57,9 +55,25 @@ public abstract class AbstractTextPainter {
 
   private void paintTextLine(TextGroup textGroup, int lineNum, Map<String, Object> styles) {
     List<Text> line = textGroup.getLine(lineNum);
-    for (Text t : line) {
+    if (line.isEmpty()) {
+      return;
+    }
+    List<Text> lineTail = line.subList(1, line.size());
+    OptionalInt minLabel = lineTail.stream().mapToInt(t -> t.getLabels(getTextMetrics()).length).min();
+
+    Text first = line.get(0);
+    Label[] firstTextLabels = first.getLabels(getTextMetrics());
+    if (minLabel.isEmpty() || firstTextLabels.length >= minLabel.getAsInt()) {
+      int index = (minLabel.isEmpty() ? firstTextLabels.length : minLabel.getAsInt()) - 1;
+      paint(first, firstTextLabels[index], textGroup.getLeftX() + first.getLeftX(), textGroup.getBottomY(lineNum), styles);
+    }
+
+    if (minLabel.isEmpty()) {
+      return;
+    }
+    for (Text t : lineTail) {
       Label[] labels = t.getLabels(getTextMetrics());
-      paint(t, labels[labels.length - 1], textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
+      paint(t, labels[minLabel.getAsInt() - 1], textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
     }
   }
 
