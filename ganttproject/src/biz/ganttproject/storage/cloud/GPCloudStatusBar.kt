@@ -1,5 +1,5 @@
 /*
-Copyright 2018 BarD Software s.r.o
+Copyright 2018-2020 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -23,20 +23,24 @@ import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.*
+import com.evanlennick.retry4j.AsyncCallExecutor
+import com.evanlennick.retry4j.CallExecutorBuilder
+import com.evanlennick.retry4j.config.RetryConfigBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableObjectValue
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.control.Tooltip
 import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.action.OkAction
@@ -46,15 +50,18 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.decoration.Decorator
 import org.controlsfx.control.decoration.GraphicDecoration
+import java.lang.RuntimeException
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import javax.swing.JOptionPane
-
-private fun createWarningDecoration(): Node {
-  return Circle(4.0).also {
-    it.styleClass.add("decoration-warning")
-    it.strokeWidth = 2.0
-  }
-}
+import kotlin.math.pow
+import kotlin.math.roundToLong
+import kotlin.random.Random
 
 /**
  * This status bar appears in the bottom-lef corner of the app window and shows
@@ -71,11 +78,19 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private val btnOffline = Button().also {
     it.isVisible = false
   }
+  private val reconnectLabel = Label()
+  private val reconnectStatus = ReconnectStatus(reconnectLabel)
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(btnOffline, btnLock)
+    it.children.addAll(btnOffline, btnLock, reconnectLabel)
   }
 
+  private val modeChangeListener = ChangeListener<OnlineDocumentMode> {
+    _, _, newValue -> this.onOnlineModeChange(newValue)
+  }
+  private val lockChangeListener = ChangeListener<LockStatus> {
+    _, _, newValue -> this.onLockStatusChange(newValue)
+  }
   private lateinit var status: LockStatus
 
 
@@ -102,7 +117,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
   // This is called whenever open document changes and handles different cases.
   private fun onDocumentChange(oldDocument: Document?, newDocument: Document?) {
-    Platform.runLater {
+    GlobalScope.launch(Dispatchers.JavaFx) {
 
       // First we un-proxy old and new documents.
       val newDoc = if (newDocument is ProxyDocument) {
@@ -118,46 +133,48 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
       // Then we remove listeners from the old document
       if (oldDoc is LockableDocument) {
-        oldDoc.status.removeListener(this::onLockStatusChange)
+        oldDoc.status.removeListener(lockChangeListener)
       }
       if (oldDoc is OnlineDocument) {
-        oldDoc.mode.removeListener(this::onOnlineModeChange)
-        this.onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }
-        this.onLatestVersionChange = null
+        oldDoc.mode.removeListener(modeChangeListener)
+        onLatestVersionChange?.let { oldDoc.latestVersionProperty.removeListener(it) }
+        onLatestVersionChange = null
       }
 
+      // If we had a reconnect ping, we'll stop it.
+      reconnectStatus.stopReconnectPing()
       // If new document is lockable, we'll add listeners and show the icon.
       if (newDoc is LockableDocument) {
-        newDoc.status.addListener(this::onLockStatusChange)
-        this.btnLock.isVisible = true
+        newDoc.status.addListener(lockChangeListener)
+        btnLock.isVisible = true
         newDoc.reloadLockStatus().handle { lockStatus, ex -> if (ex != null) GPLogger.log(ex) else {
           updateLockStatus(lockStatus)
         }}
       } else {
-        this.btnLock.isVisible = false
+        btnLock.isVisible = false
       }
 
       // If new document is online, we'll add some listeners too.
       if (newDoc is OnlineDocument) {
         // Listen to online mode changes: online only/mirrored/offline only
-        newDoc.mode.addListener(this::onOnlineModeChange)
-        this.btnOffline.isVisible = true
-        this.updateOnlineMode(newDoc.mode.value)
+        newDoc.mode.addListener(modeChangeListener)
+        btnOffline.isVisible = true
+        updateOnlineMode(newDoc.mode.value)
 
         // Listen to the version updates
-        this.onLatestVersionChange = ChangeListener { _, _, newValue ->
+        onLatestVersionChange = ChangeListener { _, _, newValue ->
           handleLatestVersionChange(newDoc, newValue)
         }
-        newDoc.latestVersionProperty.addListener(this.onLatestVersionChange)
+        newDoc.latestVersionProperty.addListener(onLatestVersionChange)
       } else {
-        this.btnOffline.isVisible = false
+        btnOffline.isVisible = false
       }
     }
   }
 
-  private fun onLockStatusChange(observable: Any, oldStatus: LockStatus, newStatus: LockStatus) {
-    Platform.runLater {
-      this.updateLockStatus(newStatus)
+  private fun onLockStatusChange(newStatus: LockStatus) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      updateLockStatus(newStatus)
     }
   }
 
@@ -178,9 +195,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     this.status = status
   }
 
-  private fun onOnlineModeChange(observable: Any, oldValue: OnlineDocumentMode, newValue: OnlineDocumentMode) {
-    Platform.runLater {
-      this.updateOnlineMode(newValue)
+  private fun onOnlineModeChange(newValue: OnlineDocumentMode) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      updateOnlineMode(newValue)
     }
   }
 
@@ -214,6 +231,12 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
           Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
           isDisable = true
         }
+
+        observableDocument.value.asOnlineDocument()?.let {
+          if (it is GPCloudDocument) {
+            reconnectStatus.startReconnectPing(it)
+          }
+        }
         this.uiFacade.showOptionDialog(
             JOptionPane.WARNING_MESSAGE,
             STATUS_BAR_LOCALIZER.formatText("mode.offline.warning"),
@@ -231,25 +254,96 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
       graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)
       elements = listOf(
-          OptionElementData("reload", true, true),
-          OptionElementData("ignore", false)
+          OptionElementData("reload", userData = true,  isSelected = true),
+          OptionElementData("ignore", userData = false)
       )
       titleHelpString?.update(newValue.author, GanttLanguage.getInstance().formatDate(GanttCalendar.getInstance().apply {
         time = Date(newValue.timestamp)
       }))
 
       showDialog { choice ->
-        when (choice) {
-          true -> {
-            GlobalScope.launch(Dispatchers.IO) {
-              doc.fetch().update()
-            }
+        if (choice) {
+          GlobalScope.launch(Dispatchers.IO) {
+            doc.fetch().update()
           }
-          false -> {}
         }
       }
     }
   }
 }
 
+private fun createWarningDecoration(): Node {
+  return Circle(4.0).also {
+    it.styleClass.add("decoration-warning")
+    it.strokeWidth = 2.0
+  }
+}
+
+/**
+ * Schedules reconnect pings with some backoff and updates the status bar with the information
+ * about the next reconnect attempt.
+ */
+private class ReconnectStatus(private val label: Label) {
+  private var statusUpdateFuture: ScheduledFuture<*>? = null
+  private val statusUpdateExecutor = Executors.newSingleThreadScheduledExecutor()
+  private var reconnectExecutor: AsyncCallExecutor<Boolean>? = null
+  private val reconnectText = STATUS_BAR_LOCALIZER.create("reconnect")
+
+  init {
+    label.isVisible = false
+    label.textProperty().bind(reconnectText)
+  }
+
+  fun startReconnectPing(document: GPCloudDocument) {
+    val retryConfig = RetryConfigBuilder()
+        .retryOnReturnValue(false)
+        .retryOnAnyException()
+        .withMaxNumberOfTries(1000)
+        .withBackoffStrategy { numberOfTriesFailed, delayBetweenAttempts ->
+          // We will exponentially increase duration until it reaches 128 seconds, and after that
+          // we will send ping every ~2 min
+          if (numberOfTriesFailed < 7) {
+            delayBetweenAttempts.multipliedBy(2.0.pow(numberOfTriesFailed.toDouble()).roundToLong())
+          } else {
+            Duration.ofSeconds(120L + Random.nextInt(-20, 20))
+            // This is the only place in retry4j where we know the duration until the next try.
+          }.also(this::startCountdown)
+        }
+        .withDelayBetweenTries(1, ChronoUnit.SECONDS)
+        .build()
+    CallExecutorBuilder<Boolean>().config(retryConfig)
+        .onSuccessListener {
+          document.modeValue = OnlineDocumentMode.MIRROR
+          stopReconnectPing()
+        }
+        .buildAsync(Executors.newSingleThreadExecutor())
+        .also {
+          it.execute { isNetworkAvailable() }
+          reconnectExecutor = it as AsyncCallExecutor<Boolean>
+        }
+  }
+
+  private fun startCountdown(nextTry: Duration) {
+    this.label.isVisible = true
+    val remainingSeconds = AtomicLong(nextTry.seconds)
+    this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
+      if (remainingSeconds.get() > 0) {
+        GlobalScope.launch(Dispatchers.JavaFx) { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
+      } else {
+        throw RuntimeException("Cancelling this status update")
+      }
+    }, 0, 1, TimeUnit.SECONDS)
+  }
+
+  fun stopReconnectPing() {
+    reconnectExecutor?.executorService?.shutdown()
+    reconnectExecutor = null
+    cancelStatusUpdate()
+  }
+
+  private fun cancelStatusUpdate() {
+    statusUpdateFuture?.cancel(true)
+    label.isVisible = false
+  }
+}
 val STATUS_BAR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.statusBar")

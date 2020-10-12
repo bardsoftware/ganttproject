@@ -42,6 +42,10 @@ import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.*
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.DialogBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
@@ -117,7 +121,7 @@ interface DialogController {
   fun setHeader(header: Node)
   fun hide()
   fun removeButtonBar()
-  fun toggleProgress(shown: Boolean)
+  fun toggleProgress(shown: Boolean): () -> Unit
   fun resize()
   var beforeShow: () -> Unit
 }
@@ -205,11 +209,19 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
     }
   }
 
-  override fun toggleProgress(shown: Boolean) {
-    Platform.runLater {
-      createOverlayPane(this.content, this.contentStack) {pane ->
+  override fun toggleProgress(shown: Boolean): () -> Unit {
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      createOverlayPane(this@DialogControllerSwing.content, this@DialogControllerSwing.contentStack) {pane ->
         pane.center = Label("")
         pane.opacity = 0.5
+        pane.styleClass.add("overlay")
+      }
+    }
+    return {
+      GlobalScope.launch(Dispatchers.JavaFx) {
+        this@DialogControllerSwing.contentStack.children.removeIf {
+          it.styleClass.contains("overlay")
+        }
       }
     }
   }
@@ -301,12 +313,15 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     }
   }
 
-  override fun toggleProgress(shown: Boolean) {
+  override fun toggleProgress(shown: Boolean): () -> Unit {
     Platform.runLater {
       createOverlayPane(this.content, this.stackPane) {pane ->
         pane.center = Label("")
         pane.opacity = 0.5
       }
+    }
+    return {
+      this.stackPane.children.removeIf { it.styleClass.contains("overlay") }
     }
   }
 

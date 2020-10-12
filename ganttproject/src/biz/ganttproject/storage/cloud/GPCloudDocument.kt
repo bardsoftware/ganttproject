@@ -22,8 +22,6 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.http.IsLockedService
 import biz.ganttproject.storage.cloud.http.LockService
-import com.evanlennick.retry4j.CallExecutorBuilder
-import com.evanlennick.retry4j.config.RetryConfigBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -51,7 +49,6 @@ import java.net.UnknownHostException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
@@ -149,7 +146,7 @@ class GPCloudDocument(private val teamRefid: String?,
       }
     }
 
-  private var modeValue: OnlineDocumentMode
+  internal var modeValue: OnlineDocumentMode
     get() {
       return this.mode.get()
     }
@@ -159,11 +156,9 @@ class GPCloudDocument(private val teamRefid: String?,
       }
       when (this.mode.value to value) {
         OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.OFFLINE_ONLY -> {
-          this.startReconnectPing()
         }
         OnlineDocumentMode.MIRROR      to OnlineDocumentMode.OFFLINE_ONLY -> {
           this.lastOfflineContents?.let { this.saveOfflineBody(it) }
-          this.startReconnectPing()
         }
         OnlineDocumentMode.OFFLINE_ONLY to OnlineDocumentMode.MIRROR -> {
           // This will throw exception if network is unavailable
@@ -338,7 +333,7 @@ class GPCloudDocument(private val teamRefid: String?,
       when {
         ex.isNetworkUnavailable() -> {
           LOG.error("We seem to be offline", kv = mapOf("when" to "/p/read"), exception = ex)
-          this.offlineMirror?.let {mirror ->
+          this.offlineMirror?.let { _ ->
             this.modeValue = OnlineDocumentMode.OFFLINE_ONLY
             return FetchResult(
                 onlineDocument = this@GPCloudDocument,
@@ -440,7 +435,6 @@ class GPCloudDocument(private val teamRefid: String?,
           }
         }
         else -> {
-          val respBody = resp.decodedBody.toString(com.google.common.base.Charsets.UTF_8)
           throw IOException("Failed to write to GanttProject Cloud. Got HTTP ${resp.code}: ${resp.reason}")
         }
       }
@@ -540,27 +534,13 @@ class GPCloudDocument(private val teamRefid: String?,
       LockStatus(false)
     }
   }
-
-  private fun startReconnectPing() {
-    val callable = this.isNetworkAvailable
-    val retryConfig = RetryConfigBuilder()
-        .retryOnReturnValue(false)
-        .retryOnAnyException()
-        .withMaxNumberOfTries(10).withRandomExponentialBackoff().withDelayBetweenTries(1, ChronoUnit.SECONDS).build()
-    val executor = CallExecutorBuilder<Boolean>().config(retryConfig)
-        .onSuccessListener {
-          this.modeValue = OnlineDocumentMode.MIRROR
-        }
-        .buildAsync(executor)
-    executor.execute(callable)
-  }
-
 }
 
 fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSocketClient) {
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
   this.listenEvents(webSocket)
+  this.modeValue = OnlineDocumentMode.MIRROR
 }
 
 private val ourExecutor = Executors.newSingleThreadExecutor()

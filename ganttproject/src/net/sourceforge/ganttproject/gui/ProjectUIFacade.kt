@@ -33,7 +33,7 @@ interface ProjectUIFacade {
   fun openProject(project: IGanttProject)
 
   @Throws(IOException::class, Document.DocumentException::class)
-  fun openProject(document: Document, project: IGanttProject, successChannel: Channel<Boolean>?)
+  fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?)
   fun createProject(project: IGanttProject)
   fun getOptionGroups(): Array<GPOptionGroup>
 }

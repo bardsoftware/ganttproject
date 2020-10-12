@@ -33,7 +33,6 @@ import javafx.scene.control.ButtonType
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.client.RssFeedChecker.UPDATE_URL
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import java.awt.BorderLayout
 import java.awt.Component
@@ -131,7 +130,8 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   override fun removeButtonBar() {
   }
 
-  override fun toggleProgress(shown: Boolean) {
+  override fun toggleProgress(shown: Boolean): () -> Unit {
+    return {}
   }
 
   override fun resize() {

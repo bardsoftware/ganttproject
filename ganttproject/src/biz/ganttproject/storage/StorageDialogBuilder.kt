@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -69,39 +70,48 @@ class StorageDialogBuilder(
   init {
     // This will be called when user opens a project.
     myDocumentReceiver = Consumer { document: Document ->
-      myDialogUi.toggleProgress(true)
+      val killProgress = myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
 
       GlobalScope.launch(Dispatchers.IO) {
         try {
           projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
           onFinish.receive()
-          myDialogUi.toggleProgress(false)
           myDialogUi.close()
         } catch (e: IOException) {
-          e.printStackTrace()
+          killProgress()
+          myDialogUi.error(e.message ?: "")
+          LOG.error("Failed to open document {}", document.uri, exception = e)
         } catch (e: Document.DocumentException) {
-          e.printStackTrace()
+          killProgress()
+          myDialogUi.error(e.message ?: "")
+          LOG.error("Failed to open document {}", document.uri, exception = e)
         }
       }
     }
     // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->
-      myDialogUi.toggleProgress(true)
+      val killProgress = myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
       GlobalScope.launch(Dispatchers.IO) {
-        if (myProject.document == null) {
-          myProject.document = documentManager.getProxyDocument(document)
-        } else {
-          myProject.document.setMirror(document)
+        try {
+          if (myProject.document == null) {
+            myProject.document = documentManager.getProxyDocument(document)
+          } else {
+            myProject.document.setMirror(document)
+          }
+          if (document.isLocal) {
+            document.asLocalDocument()?.create()
+          }
+          projectUi.saveProject(myProject, onFinish)
+          onFinish.receive()
+          myDialogUi.toggleProgress(false)
+          myDialogUi.close()
+        } catch (e: Exception) {
+          killProgress()
+          myDialogUi.error(e.message ?: "")
+          LOG.error("Failed to save document {}", document.uri, exception = e)
         }
-        if (document.isLocal) {
-          document.asLocalDocument()?.create()
-        }
-        projectUi.saveProject(myProject, onFinish)
-        onFinish.receive()
-        myDialogUi.toggleProgress(false)
-        myDialogUi.close()
       }
     }
   }
@@ -242,8 +252,8 @@ class StorageDialogBuilder(
       this.notificationPane().show()
     }
 
-    fun toggleProgress(isShown: Boolean) {
-      dialogController.toggleProgress(isShown)
+    fun toggleProgress(isShown: Boolean): () -> Unit {
+      return dialogController.toggleProgress(isShown)
     }
   }
 }
@@ -270,3 +280,4 @@ interface StorageUi {
 private var contentPaneWidth = 0.0
 private var contentPaneHeight = 0.0
 
+private val LOG = GPLogger.create("FileDialog")

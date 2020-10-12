@@ -18,14 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade.Choice;
 import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.util.StringUtils;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Action that deletes the assignment of a task to a resource
@@ -45,17 +43,10 @@ public class AssignmentDeleteAction extends GPAction {
   public void actionPerformed(ActionEvent e) {
     final ResourceAssignment[] context = myContext.getResourceAssignments();
     if (context != null && context.length > 0) {
-      Choice choice = myUIFacade.showConfirmationDialog(getI18n("msg23") + " " + StringUtils.getDisplayNames(context)
-          + "?", getI18n("warning"));
-      if (choice == Choice.YES) {
-        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-          @Override
-          public void run() {
-            deleteAssignments(context);
-            myUIFacade.refresh();
-          }
-        });
-      }
+      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), () -> {
+        deleteAssignments(context);
+        myUIFacade.refresh();
+      });
     }
   }
 

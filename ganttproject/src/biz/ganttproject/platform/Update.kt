@@ -29,6 +29,7 @@ import biz.ganttproject.lib.fx.ToggleSwitchSkin
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
 import com.bardsoftware.eclipsito.update.UpdateMetadata
+import com.bardsoftware.eclipsito.update.Updater
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
 import javafx.application.Platform
@@ -53,8 +54,22 @@ import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
+//const val UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"
+//const val UPDATE_URL = "https://dl.ganttproject.biz/updates/ganttproject-test.json";
+const val UPDATE_URL = "http://localhost:8099"
 
-fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
+fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
+  updater.getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
+    if (updateMetadata.isNotEmpty()) {
+      showUpdateDialog(updateMetadata, uiFacade, false);
+    }
+  }.exceptionally { ex ->
+    LOG.error(msg = "Failed to fetch updates from {}", UPDATE_URL, exception = ex)
+    null
+  }
+}
+
+private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
   val latestShownUpdateMetadata = UpdateMetadata(
       UpdateOptions.latestShownVersion.value ?: Eclipsito.getUpdater().installedUpdateVersions.max()!!,
       null, null, null, 0)
@@ -89,7 +104,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
     val props = GridPane().also { it.styleClass.add("props") }
     props.add(Label(ourLocalizer.formatText("installedVersion")).also {
       GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-    },0, 0)
+    }, 0, 0)
     props.add(Label(bean.version).also {
       GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
     }, 1, 0)
@@ -284,6 +299,7 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   }
 }
 
+private val LOG = GPLogger.create("App.Update")
 private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
 
 object UpdateOptions {

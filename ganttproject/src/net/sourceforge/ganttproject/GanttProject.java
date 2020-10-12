@@ -29,6 +29,7 @@ import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
@@ -58,7 +59,6 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.ProjectMRUMenu;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -662,8 +662,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     DesktopIntegration.setup(GanttProject.this);
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
-    getRssFeedChecker().setUpdater(getUpdater());
     getRssFeedChecker().run();
+
+    UpdateKt.checkAvailableUpdates(getUpdater(), getUIFacade());
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
 

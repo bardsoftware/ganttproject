@@ -71,7 +71,14 @@ public abstract class FileUtil {
 
   /** @return the filename of f without extension */
   public static String getFilenameWithoutExtension(File f) {
-    String filename = f.getName();
+    return getFilenameWithoutExtension(f.getName());
+  }
+
+  public static String replaceExtension(String filename, String newExtension) {
+    return getFilenameWithoutExtension(filename) + FILE_EXTENSION_SEPARATOR + newExtension;
+  }
+
+  private static String getFilenameWithoutExtension(String filename) {
     int i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR);
     return i >= 0 ? filename.substring(0, i) : filename;
   }

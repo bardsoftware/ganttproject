@@ -272,9 +272,11 @@ class GPCloudDocumentTest {
   }
 
   /**
-   * Test that we reconnect automatically in a while after going OFFLINE_ONLY
+   * Test that we reconnect automatically in a while after going OFFLINE_ONLY.
+   *
+   * TODO: make this test great again. Currently it is ignored because of move of reconnecting feature
+   * from GPCloudDocument into GPCloudStatusBar.
    */
-  @Test
   fun testOfflineGoesOnlineOnReconnect() {
     val retryCounter = CountDownLatch(2)
     val executor = Executors.newSingleThreadExecutor()

@@ -26,7 +26,6 @@ import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import biz.ganttproject.platform.UpdateKt;
 import com.bardsoftware.eclipsito.update.Updater;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
@@ -82,8 +81,6 @@ public class RssFeedChecker {
   private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
   private GPTimeUnitStack myTimeUnitStack;
   private static final String RSS_URL = "https://www.ganttproject.biz/my/feed";
-  public static final String UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json";
-  //public static final String UPDATE_URL = "https://dl.ganttproject.biz/updates/ganttproject-test.json";
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
   private final NotificationItem myRssProposalNotification = new NotificationItem("",
@@ -134,15 +131,6 @@ public class RssFeedChecker {
   }
 
   public void run() {
-    myUpdater.getUpdateMetadata(UPDATE_URL).thenAccept(updateMetadata -> {
-      if (!updateMetadata.isEmpty()) {
-        UpdateKt.showUpdateDialog(updateMetadata, myUiFacade, false);
-      }
-    }).exceptionally(ex -> {
-      GPLogger.log(ex);
-      return null;
-    });
-
     Runnable command = null;
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
