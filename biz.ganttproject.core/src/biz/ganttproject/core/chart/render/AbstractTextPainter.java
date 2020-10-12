@@ -55,25 +55,53 @@ public abstract class AbstractTextPainter {
 
   private void paintTextLine(TextGroup textGroup, int lineNum, Map<String, Object> styles) {
     List<Text> line = textGroup.getLine(lineNum);
+    int leftX = textGroup.getLeftX();
+    int bottomY = textGroup.getBottomY(lineNum);
+
     if (line.isEmpty()) {
       return;
-    }
-    List<Text> lineTail = line.subList(1, line.size());
-    OptionalInt minLabel = lineTail.stream().mapToInt(t -> t.getLabels(getTextMetrics()).length).min();
+    } else if (line.size() == 1) {
+      paintWithMinLabel(line, leftX, bottomY, styles);
+    } else if (line.size() == 2) {
+      Text first = line.get(0);
+      Label[] fistTextLabels = first.getLabels(getTextMetrics());
+      Text last = line.get(line.size() - 1);
+      Label[] lastTextLabels = last.getLabels(getTextMetrics());
+      if (fistTextLabels.length > lastTextLabels.length) {
+        paint(first, fistTextLabels[fistTextLabels.length - 1], leftX + first.getLeftX(), bottomY, styles);
+      } else if (fistTextLabels.length < lastTextLabels.length) {
+        paint(last, lastTextLabels[lastTextLabels.length - 1], leftX + last.getLeftX(), bottomY, styles);
+      } else {
+        paint(first, fistTextLabels[fistTextLabels.length - 1], leftX + first.getLeftX(), bottomY, styles);
+        paint(last, lastTextLabels[lastTextLabels.length - 1], leftX + last.getLeftX(), bottomY, styles);
+      }
+    } else {
+      List<Text> middle = line.subList(1, line.size() - 1);
+      OptionalInt minLabel = paintWithMinLabel(middle, leftX, bottomY, styles);
 
-    Text first = line.get(0);
-    Label[] firstTextLabels = first.getLabels(getTextMetrics());
-    if (minLabel.isEmpty() || firstTextLabels.length >= minLabel.getAsInt()) {
-      int index = (minLabel.isEmpty() ? firstTextLabels.length : minLabel.getAsInt()) - 1;
-      paint(first, firstTextLabels[index], textGroup.getLeftX() + first.getLeftX(), textGroup.getBottomY(lineNum), styles);
+      Text first = line.get(0);
+      paintBorderLabel(first, minLabel, leftX, bottomY, styles);
+      Text last = line.get(line.size() - 1);
+      if (first != last) {
+        paintBorderLabel(last, minLabel, leftX, bottomY, styles);
+      }
     }
+  }
 
-    if (minLabel.isEmpty()) {
-      return;
-    }
-    for (Text t : lineTail) {
+  private OptionalInt paintWithMinLabel(List<Text> texts, int leftX, int bottomY, Map<String, Object> styles) {
+    OptionalInt minLabel = texts.stream().mapToInt(t -> t.getLabels(getTextMetrics()).length).min();
+    for (Text t : texts) {
       Label[] labels = t.getLabels(getTextMetrics());
-      paint(t, labels[minLabel.getAsInt() - 1], textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
+      paint(t, labels[minLabel.getAsInt() - 1], leftX + t.getLeftX(), bottomY, styles);
+    }
+    return minLabel;
+  }
+
+  private void paintBorderLabel(Text text, OptionalInt minLabel, int leftX, int bottomY, Map<String, Object> styles) {
+    Label[] labels = text.getLabels(getTextMetrics());
+    if (minLabel.isEmpty() || labels.length >= minLabel.getAsInt()) {
+      int index = (minLabel.isEmpty() ? labels.length : minLabel.getAsInt()) - 1;
+      paint(text, labels[index], leftX + text.getLeftX(), bottomY, styles);
     }
   }
 
