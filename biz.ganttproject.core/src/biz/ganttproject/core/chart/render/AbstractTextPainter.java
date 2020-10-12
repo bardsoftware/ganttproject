@@ -57,21 +57,9 @@ public abstract class AbstractTextPainter {
 
   private void paintTextLine(TextGroup textGroup, int lineNum, Map<String, Object> styles) {
     List<Text> line = textGroup.getLine(lineNum);
-    List<Label[]> labelList = new ArrayList<Label[]>();
-    int maxIndex = Integer.MAX_VALUE;
     for (Text t : line) {
       Label[] labels = t.getLabels(getTextMetrics());
-      maxIndex = Math.min(maxIndex, labels.length);
-      if (maxIndex == 0) {
-        return;
-      }
-      labelList.add(labels);
-    }
-
-    for (int i = 0; i < labelList.size(); i++) {
-      Label longest = labelList.get(i)[maxIndex - 1];
-      Text t = line.get(i);
-      paint(t, longest, textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
+      paint(t, labels[labels.length - 1], textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
     }
   }
 
