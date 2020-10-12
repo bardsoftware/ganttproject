@@ -55,8 +55,9 @@ public abstract class AbstractTextPainter {
 
   private void paintTextLine(TextGroup textGroup, int lineNum, Map<String, Object> styles) {
     List<Text> line = textGroup.getLine(lineNum);
+    TextMetrics textMetrics = getTextMetrics(styles);
     for (Text t : line) {
-      Label[] labels = t.getLabels(getTextMetrics());
+      Label[] labels = t.getLabels(textMetrics);
       paint(t, labels[labels.length - 1], textGroup.getLeftX() + t.getLeftX(), textGroup.getBottomY(lineNum), styles);
     }
   }
@@ -64,6 +65,8 @@ public abstract class AbstractTextPainter {
   abstract protected Map<String, Object> getFontStyles(Font font, Color color);
   
   abstract protected TextMetrics getTextMetrics();
+
+  abstract protected TextMetrics getTextMetrics(Map<String, Object> styles);
 
   abstract protected void paint(Text t, Label label, int x, int y, Map<String, Object> styles);
 }

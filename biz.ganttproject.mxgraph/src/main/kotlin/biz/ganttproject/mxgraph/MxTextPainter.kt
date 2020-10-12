@@ -63,4 +63,5 @@ internal class MxTextPainter(
   )
 
   override fun getTextMetrics(): TextMetrics = TextMetricsStub
+  override fun getTextMetrics(styles: Map<String, Any>) = TextMetricsStub
 }
