@@ -71,9 +71,7 @@ public abstract class AbstractTextPainter {
       Text first = line.get(0);
       paintBorderLabel(first, minLabel, leftX, bottomY, styles);
       Text last = line.get(line.size() - 1);
-      if (first != last) {
-        paintBorderLabel(last, minLabel, leftX, bottomY, styles);
-      }
+      paintBorderLabel(last, minLabel, leftX, bottomY, styles);
     }
   }
 
