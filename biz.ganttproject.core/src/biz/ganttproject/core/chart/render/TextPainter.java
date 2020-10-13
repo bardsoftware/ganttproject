@@ -128,6 +128,14 @@ public class TextPainter extends AbstractTextPainter {
   }
 
   @Override
+  protected TextMetrics getTextMetrics(Map<String, Object> styles) {
+    Graphics2D graphics = (Graphics2D) myGraphics.create();
+    graphics.setFont((Font) styles.get("font"));
+    graphics.setColor((Color) styles.get("color"));
+    return new TextLengthCalculatorImpl(graphics);
+  }
+
+  @Override
   protected void paint(Text t, Label label, int x, int y, Map<String, Object> styles) {
     Font savedFont = myGraphics.getFont();
     Color savedColor = myGraphics.getColor();
