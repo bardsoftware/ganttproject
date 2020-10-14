@@ -8,17 +8,6 @@ dependencies {
     compile configurations.providedCompile
 }
 
-
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-        }
-    }
-}
-
 task copyPlugin(dependsOn: assemble) {
     doLast {
         println ">>> Installing $project.name"
@@ -26,7 +15,9 @@ task copyPlugin(dependsOn: assemble) {
             into(new File(rootProject.pluginsDir, project.name))
             from(fileTree(".")) {
                 include "plugin.xml"
-                include "resource/**"
+            }
+            from(fileTree("src/main")) {
+                include "resources/**"
             }
         }
         copy {
