@@ -43,7 +43,6 @@ dependencies {
     compile configurations.providedCompile
     compile configurations.exportedLibs
     compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile files('data/resources')
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
@@ -59,27 +58,11 @@ compileKotlin {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDirs = ["src", "data"]
-            include "**/*.css", "**/*.properties"
-        }
-    }
-
-    main.kotlin.srcDirs += 'src'
-    test.kotlin.srcDirs += 'test'
-}
-
-
 task updateVersion {
     doFirst {
         def gpVersionFile = new File("${projectDir}/src/net/sourceforge/ganttproject/GPVersion.java")
         def gpversion = gpVersionFile.getText('UTF-8')
-                .replaceAll('.*BUILD.NUMBER.*', "  public static String BUILD = \"${rootProject.buildNum}\"; // BUILD NUMBER")
+            .replaceAll('.*BUILD.NUMBER.*', "  public static String BUILD = \"${rootProject.buildNum}\"; // BUILD NUMBER")
         gpVersionFile.write(gpversion, 'UTF-8')
     }
 }
@@ -92,13 +75,15 @@ task copyPluginFiles(dependsOn: jar) {
             into(new File(rootProject.pluginsDir, project.name))
             from(fileTree(".")) {
                 include "plugin.xml"
-                include "data/resources/**.ttf"
-                include "data/resources/**.properties"
-                include "data/resources/calendar/**"
-                include "data/resources/icons/**"
-                include "data/resources/language/**"
-                include "data/resources/xslfo/**"
-                include "data/resources/xslt/**"
+            }
+            from(fileTree("src/main/resources")) {
+                include "resources/**.ttf"
+                include "resources/**.properties"
+                include "resources/calendar/**"
+                include "resources/icons/**"
+                include "resources/language/**"
+                include "resources/xslfo/**"
+                include "resources/xslt/**"
             }
         }
         copy {
@@ -126,7 +111,7 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
     }
 }
 
-mainClassName="net.sourceforge.ganttproject.AppKt"
+mainClassName = "net.sourceforge.ganttproject.AppKt"
 
 test {
     useJUnitPlatform()

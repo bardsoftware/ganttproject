@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<calendar name="Austria (Österreich)" type="country">
+<!-- File created by Friedrich Lobenstock <fl AT fl.priv.at> -->
+<!-- http://www.feiertage-oesterreich.at/ -->
+<!-- http://www.officeholidays.com/countries/austria/ -->
+
+	<date year="" month="01" date="01" color="#00cc66"><![CDATA[Neujahr (New Year)]]></date>
+	<date year="" month="01" date="06" color="#00cc66"><![CDATA[Heilige Drei Könige (Epiphany)]]></date>
+
+	<date year="2014" month="04" date="18" color="#00cc66"><![CDATA[Karfreitag (Good Friday): nur Protestanten]]></date>
+	<date year="2015" month="04" date="03" color="#00cc66"><![CDATA[Karfreitag (Good Friday): nur Protestanten]]></date>
+	<date year="2016" month="03" date="25" color="#00cc66"><![CDATA[Karfreitag (Good Friday): nur Protestanten]]></date>
+	<date year="2017" month="04" date="14" color="#00cc66"><![CDATA[Karfreitag (Good Friday): nur Protestanten]]></date>
+
+	<date year="2014" month="04" date="21" color="#00cc66"><![CDATA[Ostermontag (Easter Monday)]]></date>
+	<date year="2015" month="04" date="06" color="#00cc66"><![CDATA[Ostermontag (Easter Monday)]]></date>
+	<date year="2016" month="03" date="26" color="#00cc66"><![CDATA[Ostermontag (Easter Monday)]]></date>
+	<date year="2017" month="04" date="17" color="#00cc66"><![CDATA[Ostermontag (Easter Monday)]]></date>
+
+	<date year="" month="05" date="01" color="#00cc66"><![CDATA[Tag der Arbeit (Labour day)]]></date>
+
+	<date year="2014" month="05" date="29" color="#00cc66"><![CDATA[Christi Himmelfahrt (Ascension)]]></date>
+	<date year="2015" month="05" date="14" color="#00cc66"><![CDATA[Christi Himmelfahrt (Ascension)]]></date>
+	<date year="2016" month="05" date="05" color="#00cc66"><![CDATA[Christi Himmelfahrt (Ascension)]]></date>
+	<date year="2017" month="05" date="25" color="#00cc66"><![CDATA[Christi Himmelfahrt (Ascension)]]></date>
+	
+	<date year="2014" month="06" date="09" color="#00cc66"><![CDATA[Pfingstmontag (Whitmonday)]]></date>
+	<date year="2015" month="05" date="25" color="#00cc66"><![CDATA[Pfingstmontag (Whitmonday)]]></date>
+	<date year="2016" month="05" date="16" color="#00cc66"><![CDATA[Pfingstmontag (Whitmonday)]]></date>
+	<date year="2017" month="06" date="05" color="#00cc66"><![CDATA[Pfingstmontag (Whitmonday)]]></date>
+	
+	<date year="2014" month="06" date="19" color="#00cc66"><![CDATA[Fronleichnam (Corpus Christi)]]></date>
+	<date year="2015" month="06" date="04" color="#00cc66"><![CDATA[Fronleichnam (Corpus Christi)]]></date>
+	<date year="2016" month="05" date="26" color="#00cc66"><![CDATA[Fronleichnam (Corpus Christi)]]></date>
+	<date year="2017" month="06" date="15" color="#00cc66"><![CDATA[Fronleichnam (Corpus Christi)]]></date>
+	
+	<date year="" month="08" date="15" color="#00cc66"><![CDATA[Mariä Himmelfahrt (Assumption)]]></date>
+
+	<date year="" month="10" date="26" color="#00cc66"><![CDATA[Nationalfeiertag (National Day)]]></date>
+	<date year="" month="11" date="01" color="#00cc66"><![CDATA[Allerheiligen (All Saints)]]></date>
+	<date year="" month="12" date="08" color="#00cc66"><![CDATA[Mariä Empfängnis (Immaculate Conception Day)]]></date>
+	<date year="" month="12" date="24" color="#00cc66"><![CDATA[Heiliger Abend (Christmas Eve)]]></date>
+	<date year="" month="12" date="25" color="#00cc66"><![CDATA[Weihnachten (Christmas)]]></date>
+	<date year="" month="12" date="26" color="#00cc66"><![CDATA[Stefanitag (St.Stephens)]]></date>
+	<date year="" month="12" date="31" color="#00cc66"><![CDATA[Silvester (New Year's Eve)]]></date>
+
+</calendar >
