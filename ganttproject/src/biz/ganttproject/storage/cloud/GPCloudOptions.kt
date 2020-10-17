@@ -30,7 +30,8 @@ data class GPCloudFileOptions(
     var lastOnlineVersion: String? = null,
     var lastOnlineChecksum: String? = null,
     var projectRefid: String = "",
-    var teamName: String = "") {
+    var teamName: String = "",
+    var onlineOnly: String = "") {
   fun clearOfflineMirror() {
     this.name = ""
     this.offlineMirror = null
@@ -38,6 +39,7 @@ data class GPCloudFileOptions(
     this.lastOnlineVersion = null
     this.projectRefid = ""
     this.teamName = ""
+    this.onlineOnly = "true"
   }
 }
 
@@ -56,6 +58,7 @@ class CloudFileOptions : KeyValueOption("files") {
         "lockToken" -> options.lockToken = v
         "lockExpiration" -> options.lockExpiration = v
         "name" -> options.name = v
+        "onlineOnly" -> options.onlineOnly = v
         "sync.offlinePath" -> options.offlineMirror = v
         "sync.onlineVersion" -> options.lastOnlineVersion = v
         "sync.onlineChecksum" -> options.lastOnlineChecksum = v
@@ -97,6 +100,7 @@ class CloudFileOptions : KeyValueOption("files") {
           kv["${it.value.fingerprint}.sync.onlineChecksum"] = it.value.lastOnlineChecksum ?: ""
           kv["${it.value.fingerprint}.projectRefid"] = it.value.projectRefid
           kv["${it.value.fingerprint}.teamName"] = it.value.teamName
+          kv["${it.value.fingerprint}.onlineOnly"] = it.value.onlineOnly
 
           kv.filterValues { value -> value != "" }
         }.flatMap {
@@ -122,6 +126,7 @@ object GPCloudOptions {
       }
     }
   }
+  val defaultOfflineMode = DefaultBooleanOption("defaultOfflineMode", true)
   val validity: StringOption = DefaultStringOption("validity", "")
   val userId: StringOption = object : DefaultStringOption("userId") {
     override fun getPersistentValue(): String? {
@@ -140,6 +145,6 @@ object GPCloudOptions {
 
   var websocketToken: String? = null
   val cloudFiles = CloudFileOptions()
-  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, validity, userId, cloudFiles)
+  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, defaultOfflineMode, validity, userId, cloudFiles)
 }
 

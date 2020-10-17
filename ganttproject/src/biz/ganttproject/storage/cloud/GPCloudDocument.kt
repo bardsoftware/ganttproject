@@ -135,8 +135,9 @@ class GPCloudDocument(private val teamRefid: String?,
       return (field ?: {
         val fp = this.projectIdFingerprint
         val fileOptions = GPCloudOptions.cloudFiles.getFileOptions(fp)
+        val onlineOnly = fileOptions.onlineOnly.toBoolean()
         val offlineMirrorPath = fileOptions.offlineMirror
-        if (offlineMirrorPath != null && Files.exists(Paths.get(offlineMirrorPath))) {
+        if (!onlineOnly && offlineMirrorPath != null && Files.exists(Paths.get(offlineMirrorPath))) {
           this.offlineDocumentFactory(offlineMirrorPath)
         } else {
           null
@@ -171,6 +172,9 @@ class GPCloudDocument(private val teamRefid: String?,
           this.fetchResultProperty.get()?.let {
             this.saveOfflineMirror(it)
           }
+        }
+        OnlineDocumentMode.OFFLINE_ONLY to OnlineDocumentMode.ONLINE_ONLY -> {
+          this.offlineMirror = null
         }
         OnlineDocumentMode.MIRROR to OnlineDocumentMode.ONLINE_ONLY -> {
           this.offlineMirror = null
@@ -258,6 +262,7 @@ class GPCloudDocument(private val teamRefid: String?,
         it.lastOnlineVersion = fetch.actualVersion.toString()
         it.lastOnlineChecksum = fetch.actualChecksum
         it.projectRefid = this.projectRefid!!
+        it.onlineOnly = ""
         GPCloudOptions.cloudFiles.save()
       }
       this.mode.set(OnlineDocumentMode.MIRROR)
@@ -540,7 +545,9 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
   this.listenEvents(webSocket)
-  this.modeValue = OnlineDocumentMode.MIRROR
+  if (GPCloudOptions.defaultOfflineMode.value && !GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint).onlineOnly.toBoolean()) {
+    this.modeValue = OnlineDocumentMode.MIRROR
+  }
 }
 
 private val ourExecutor = Executors.newSingleThreadExecutor()
