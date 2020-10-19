@@ -22,10 +22,8 @@ import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.Scene
-import javafx.scene.control.Button
-import javafx.scene.control.ContentDisplay
-import javafx.scene.control.Separator
-import javafx.scene.control.ToolBar
+import javafx.scene.control.*
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -45,10 +43,23 @@ class FXToolbar {
     }
   }
 
+  internal val progressBar:ProgressBar by lazy {
+    ProgressBar()
+  }
+
+  internal val toolbarPane: BorderPane by lazy {
+    BorderPane().also {
+      it.center = toolbar
+      // it.bottom = progressBar
+    }
+  }
+
+
   internal fun init(initializer: (FXToolbar) -> Unit) {
     val scene = Scene(toolbar, Color.TRANSPARENT)
     scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
     initializer(this)
+
     component.scene = scene
   }
 }
