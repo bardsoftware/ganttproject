@@ -16,78 +16,70 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action.project;
+package net.sourceforge.ganttproject.action.project
 
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.ProjectEventListener;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.ProjectUIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.gui.ProjectUIFacade
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.gui.UIUtil
+import java.awt.event.ActionEvent
 
-import java.awt.event.ActionEvent;
+class SaveProjectAction private constructor(
+    private val myProject: IGanttProject,
+    private val myProjectUiFacade: ProjectUIFacade,
+    size: IconSize) : GPAction("project.save", size), ProjectEventListener {
+  internal constructor(mainFrame: IGanttProject, projectFacade: ProjectUIFacade) : this(mainFrame, projectFacade, IconSize.MENU)
 
-public class SaveProjectAction extends GPAction implements ProjectEventListener {
-  private final IGanttProject myProject;
-  private final ProjectUIFacade myProjectUiFacade;
-
-  SaveProjectAction(IGanttProject mainFrame, ProjectUIFacade projectFacade) {
-    this(mainFrame, projectFacade, IconSize.MENU);
+  init {
+    myProject.addProjectEventListener(this)
+    isEnabled = false
   }
 
-  private SaveProjectAction(IGanttProject mainFrame, ProjectUIFacade projectFacade, IconSize size) {
-    super("project.save", size);
-    myProject = mainFrame;
-    myProjectUiFacade = projectFacade;
-    mainFrame.addProjectEventListener(this);
-    setEnabled(false);
+  override fun withIcon(size: IconSize): GPAction {
+    return SaveProjectAction(myProject, myProjectUiFacade, size)
   }
 
-  @Override
-  public GPAction withIcon(IconSize size) {
-    return new SaveProjectAction(myProject, myProjectUiFacade, size);
+  override fun getIconFilePrefix(): String {
+    return "save_"
   }
 
-  @Override
-  protected String getIconFilePrefix() {
-    return "save_";
-  }
-
-  @Override
-  public void actionPerformed(ActionEvent e) {
+  override fun actionPerformed(e: ActionEvent?) {
     if (calledFromAppleScreenMenu(e)) {
-      return;
+      return
     }
-    myProjectUiFacade.saveProject(myProject, null);
+    this.isEnabled = false
+    GlobalScope.launch(Dispatchers.IO) {
+      myProjectUiFacade.saveProject(myProject, null)
+    }
   }
 
-  @Override
-  public void projectModified() {
-    setEnabled(true);
+  override fun projectModified() {
+    isEnabled = true
   }
 
-  @Override
-  public void projectSaved() {
-    setEnabled(false);
+  override fun projectSaved() {
+    isEnabled = false
   }
 
-  @Override
-  public void projectClosed() {
-    setEnabled(false);
+  override fun projectClosed() {
+    isEnabled = false
   }
 
-  @Override
-  public void projectCreated() {
-    setEnabled(false);
+  override fun projectCreated() {
+    isEnabled = false
   }
 
-  @Override
-  public void projectOpened() {
-    setEnabled(false);
+  override fun projectOpened() {
+    isEnabled = false
   }
 
-  public SaveProjectAction asToolbarAction() {
-    SaveProjectAction result = new SaveProjectAction(myProject, myProjectUiFacade);
-    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
-    return result;
+  override fun asToolbarAction(): SaveProjectAction {
+    val result = SaveProjectAction(myProject, myProjectUiFacade)
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result))
+    return result
   }
 }

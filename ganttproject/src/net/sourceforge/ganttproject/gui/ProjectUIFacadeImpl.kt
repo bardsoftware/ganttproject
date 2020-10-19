@@ -61,24 +61,33 @@ class ProjectUIFacadeImpl(
   private val i18n = GanttLanguage.getInstance()
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
+  private var isSaving = false
 
   override fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?) {
+    if (isSaving) {
+      GPLogger.logToLogger("We're saving the project now. This save request was rejected")
+    }
+    isSaving = true
     GlobalScope.launch {
-      if (project.document == null) {
-        saveProjectAs(project)
-        onFinish?.send(true)
-        return@launch
-      }
+      try {
+        if (project.document == null) {
+          saveProjectAs(project)
+          onFinish?.send(true)
+          return@launch
+        }
 
-      if (project.document.asLocalDocument()?.canRead() == false) {
-        saveProjectAs(project)
-        onFinish?.send(true)
-        return@launch
-      }
+        if (project.document.asLocalDocument()?.canRead() == false) {
+          saveProjectAs(project)
+          onFinish?.send(true)
+          return@launch
+        }
 
-      val document = project.document
-      saveProjectTryWrite(project, document)
-      onFinish?.send(true)
+        val document = project.document
+        saveProjectTryWrite(project, document)
+        onFinish?.send(true)
+      } finally {
+        isSaving = false
+      }
     }
   }
 
