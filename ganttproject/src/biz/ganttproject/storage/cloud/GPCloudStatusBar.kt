@@ -295,6 +295,7 @@ private class ReconnectStatus(private val label: Label) {
   }
 
   fun startReconnectPing(document: GPCloudDocument) {
+    LOG.debug("Starting reconnect ping.")
     val retryConfig = RetryConfigBuilder()
         .retryOnReturnValue(false)
         .retryOnAnyException()
@@ -302,12 +303,13 @@ private class ReconnectStatus(private val label: Label) {
         .withBackoffStrategy { numberOfTriesFailed, delayBetweenAttempts ->
           // We will exponentially increase duration until it reaches 128 seconds, and after that
           // we will send ping every ~2 min
-          if (numberOfTriesFailed < 7) {
+          val result = if (numberOfTriesFailed < 7) {
             delayBetweenAttempts.multipliedBy(2.0.pow(numberOfTriesFailed.toDouble()).roundToLong())
           } else {
             Duration.ofSeconds(120L + Random.nextInt(-20, 20))
             // This is the only place in retry4j where we know the duration until the next try.
-          }.also(this::startCountdown)
+          }
+          result.also(this::startCountdown)
         }
         .withDelayBetweenTries(1, ChronoUnit.SECONDS)
         .build()
@@ -324,9 +326,11 @@ private class ReconnectStatus(private val label: Label) {
   }
 
   private fun startCountdown(nextTry: Duration) {
-    this.label.isVisible = true
+    LOG.debug("The next ping is in {}. Starting countdown", nextTry)
+    GlobalScope.launch(Dispatchers.JavaFx) { this@ReconnectStatus.label.isVisible = true }
     val remainingSeconds = AtomicLong(nextTry.seconds)
     this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
+      LOG.debug("... {} seconds", remainingSeconds.get())
       if (remainingSeconds.get() > 0) {
         GlobalScope.launch(Dispatchers.JavaFx) { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
       } else {
@@ -336,6 +340,7 @@ private class ReconnectStatus(private val label: Label) {
   }
 
   fun stopReconnectPing() {
+    LOG.debug("Cancelling reconnect ping.")
     reconnectExecutor?.executorService?.shutdown()
     reconnectExecutor = null
     cancelStatusUpdate()
@@ -347,3 +352,4 @@ private class ReconnectStatus(private val label: Label) {
   }
 }
 val STATUS_BAR_LOCALIZER = RootLocalizer.createWithRootKey("cloud.statusBar")
+private val LOG = GPLogger.create("Cloud.StatusBar")

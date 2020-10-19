@@ -134,10 +134,9 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
   }
 
   private fun callAuthCheck(onSuccess: Consumer<String>, onUnauthenticated: Consumer<String>) {
-    val http = HttpClientBuilder.buildHttpClientApache()
-    val accessTokenCheck = HttpGet("/access-token/check")
-    val resp = http.client.execute(http.host, accessTokenCheck, http.context)
-    when (resp.statusLine.statusCode) {
+    val http = HttpClientBuilder.buildHttpClient()
+    val resp = http.sendGet("/access-token/check")
+    when (resp.code) {
       200 -> onSuccess.accept("")
       401 -> onUnauthenticated.accept("INVALID")
       else -> {

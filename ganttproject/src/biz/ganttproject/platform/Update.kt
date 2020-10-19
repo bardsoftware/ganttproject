@@ -54,9 +54,9 @@ import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
-//const val UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"
+const val UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"
 //const val UPDATE_URL = "https://dl.ganttproject.biz/updates/ganttproject-test.json";
-const val UPDATE_URL = "http://localhost:8099"
+//const val UPDATE_URL = "http://localhost:8099"
 
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
   updater.getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->

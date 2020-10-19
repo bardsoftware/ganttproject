@@ -58,5 +58,5 @@ class JsonTask(
   }
 }
 
-private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClientApache()
+private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()

@@ -43,9 +43,7 @@ import net.sourceforge.ganttproject.document.FileDocument
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.*
-import java.net.SocketException
-import java.net.URI
-import java.net.UnknownHostException
+import java.net.*
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
@@ -86,7 +84,7 @@ class GPCloudDocument(private val teamRefid: String?,
   private var lastOfflineContents: ByteArray? = null
   internal var offlineDocumentFactory: OfflineDocumentFactory = { null }
   internal var proxyDocumentFactory: ProxyDocumentFactory = { doc -> doc }
-  internal var httpClientFactory: () -> GPCloudHttpClient = HttpClientBuilder::buildHttpClient
+  internal var httpClientFactory: () -> GPCloudHttpClient = { HttpClientBuilder.buildHttpClient() }
   internal var isNetworkAvailable = Callable { isNetworkAvailable() }
   internal var executor = ourExecutor
 
@@ -360,6 +358,12 @@ class GPCloudDocument(private val teamRefid: String?,
 
   private fun (Exception).isNetworkUnavailable(): Boolean {
     if (this is SocketException && this.message?.contains("network is unreachable", true) != false) {
+      return true
+    }
+    if (this is SocketTimeoutException) {
+      return true
+    }
+    if (this is ConnectException) {
       return true
     }
     if (this is UnknownHostException) {
