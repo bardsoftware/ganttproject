@@ -7,17 +7,6 @@ dependencies {
     compile configurations.providedCompile
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDir 'resources'
-        }
-    }
-}
-
 task copyPlugin(dependsOn: assemble) {
     doLast {
         println ">>> Installing $project.name"

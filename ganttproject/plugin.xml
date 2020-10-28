@@ -9,7 +9,7 @@
         <library name="lib/*">
             <export name="*"/>
         </library>
-        <library name="data/resources/">
+        <library name="resources/">
             <export name="*"/>
         </library>
     </runtime>
