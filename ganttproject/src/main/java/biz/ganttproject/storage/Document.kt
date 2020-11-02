@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudOptions
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.hash.Hashing
@@ -225,6 +226,10 @@ fun (Document).asOnlineDocument(): OnlineDocument? {
   if (this is ProxyDocument) {
     if (this.realDocument is OnlineDocument) {
       return this.realDocument as OnlineDocument
+    }
+  } else {
+    if (this is GPCloudDocument) {
+      return this
     }
   }
   return null

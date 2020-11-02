@@ -226,15 +226,12 @@ class GPCloudBrowserPane(
     if (selectedTeam == null) {
       return
     }
-    this.documentConsumer(GPCloudDocument(selectedTeam, text).also {
-      it.onboard(this.documentManager, webSocket)
-    })
+    this.documentConsumer(GPCloudDocument(selectedTeam, text))
   }
 
   private fun openDocument(item: ProjectJsonAsFolderItem) {
     if (item.node is ObjectNode) {
       GPCloudDocument(item).also {
-        it.onboard(this.documentManager, webSocket)
         this.documentConsumer(it)
       }
     }

@@ -30,13 +30,8 @@ import java.util.Map;
  * @author dbarashev@bardsoftware.com
  */
 public abstract class KeyValueOption extends GPAbstractOption<Map.Entry<String, String>> implements ListOption<Map.Entry<String, String>> {
-  private static final Function<Map.Entry<String, String>, String> ENTRY_TO_KEY_VALUE = new Function<Map.Entry<String, String>, String>() {
-    @Override
-    public String apply(Map.Entry<String, String> entry) {
-      return String.format("%s = %s", entry.getKey(), entry.getValue());
-    }
-  };
-  private Map<String, String> myMap = Maps.newHashMap();
+  private static final Function<Map.Entry<String, String>, String> ENTRY_TO_KEY_VALUE = entry -> String.format("%s = %s", entry.getKey(), entry.getValue());
+  private Map<String, String> myMap = Maps.newTreeMap();
 
   public KeyValueOption(String id) {
     super(id);
@@ -49,30 +44,38 @@ public abstract class KeyValueOption extends GPAbstractOption<Map.Entry<String, 
 
   @Override
   public void loadPersistentValue(String value) {
-    myMap.clear();
+    Map newMap = Maps.newTreeMap();
     for (String line : value.split("\n")) {
       String[] keyValue = line.split("=");
       if (keyValue.length < 2) {
         continue;
       }
-      myMap.put(keyValue[0].trim(), keyValue[1].trim());
+      newMap.put(keyValue[0].trim(), keyValue[1].trim());
+    }
+    synchronized (myMap) {
+      myMap = newMap;
     }
     fireChangeValueEvent(new ChangeValueEvent(getID(), null, null, this));
   }
 
   @Override
   public void setValues(Iterable<Map.Entry<String, String>> values) {
-    Map oldValue = Maps.newHashMap(myMap);
-    myMap.clear();
+    Map newMap = Maps.newTreeMap();
     for (Map.Entry<String, String> e : values) {
-      myMap.put(e.getKey(), e.getValue());
+      newMap.put(e.getKey(), e.getValue());
     }
-    fireChangeValueEvent(new ChangeValueEvent(getID(), oldValue, myMap, this));
+    synchronized (myMap) {
+      Map oldValue = ImmutableMap.copyOf(myMap);
+      myMap = newMap;
+      fireChangeValueEvent(new ChangeValueEvent(getID(), oldValue, myMap, this));
+    }
   }
 
   @Override
   public Iterable<Map.Entry<String, String>> getValues() {
-    return myMap.entrySet();
+    synchronized (myMap) {
+      return ImmutableMap.copyOf(myMap).entrySet();
+    }
   }
 
   public Map<String, String> getKeyValueMap() {

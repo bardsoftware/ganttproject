@@ -189,9 +189,7 @@ class RecentDocAsFolderItem(urlString: String, private val documentManager: Docu
           projectRefid = this.url.host,
           projectName = this.name,
           projectJson = null
-      ).also {
-        it.onboard(documentManager, webSocket)
-      }
+      )
       else -> null
     }
 

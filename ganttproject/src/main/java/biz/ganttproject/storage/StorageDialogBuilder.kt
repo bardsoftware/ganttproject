@@ -22,7 +22,10 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
+import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
+import biz.ganttproject.storage.cloud.onboard
+import biz.ganttproject.storage.cloud.webSocket
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -70,6 +73,11 @@ class StorageDialogBuilder(
   init {
     // This will be called when user opens a project.
     myDocumentReceiver = Consumer { document: Document ->
+      document.asOnlineDocument()?.let {
+        if (it is GPCloudDocument) {
+          it.onboard(documentManager, webSocket)
+        }
+      }
       val killProgress = myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
 
@@ -95,16 +103,21 @@ class StorageDialogBuilder(
       val onFinish = Channel<Boolean>()
       GlobalScope.launch(Dispatchers.IO) {
         try {
-          if (myProject.document == null) {
-            myProject.document = documentManager.getProxyDocument(document)
-          } else {
-            myProject.document.setMirror(document)
-          }
+          myProject.document = documentManager.getProxyDocument(document)
+//          if (myProject.document == null) {
+//          } else {
+//            myProject.document.setMirror(document)
+//          }
           if (document.isLocal) {
             document.asLocalDocument()?.create()
           }
           projectUi.saveProject(myProject, onFinish)
           onFinish.receive()
+          document.asOnlineDocument()?.let {
+            if (it is GPCloudDocument) {
+              it.onboard(documentManager, webSocket)
+            }
+          }
           myDialogUi.toggleProgress(false)
           myDialogUi.close()
         } catch (e: Exception) {

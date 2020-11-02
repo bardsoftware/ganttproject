@@ -166,9 +166,12 @@ class GPCloudDocument(private val teamRefid: String?,
           }
         }
         OnlineDocumentMode.ONLINE_ONLY to OnlineDocumentMode.MIRROR -> {
-          this.offlineMirror = this.offlineMirror ?: this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
-          this.fetchResultProperty.get()?.let {
-            this.saveOfflineMirror(it)
+          if (this.projectRefid != null) {
+            this.offlineMirror = this.offlineMirror
+                ?: this.offlineDocumentFactory(".CloudOfflineMirrors/${this.projectIdFingerprint}")
+            this.fetchResultProperty.get()?.let {
+              this.saveOfflineMirror(it)
+            }
           }
         }
         OnlineDocumentMode.OFFLINE_ONLY to OnlineDocumentMode.ONLINE_ONLY -> {
@@ -416,7 +419,6 @@ class GPCloudDocument(private val teamRefid: String?,
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
 
           val response = OBJECT_MAPPER.readValue(resp.rawBody, ProjectWriteResponse::class.java)
-          println(response)
           this.projectRefid = response.projectRefid
           val fetch = FetchResult(
               this@GPCloudDocument,
@@ -523,15 +525,17 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun reloadLockStatus(): CompletableFuture<LockStatus> {
     val result = CompletableFuture<LockStatus>()
-    val service = IsLockedService(
-        errorUi = {errorMsg -> result.completeExceptionally(RuntimeException(errorMsg)) },
-        busyIndicator = {},
-        projectRefid = this.projectRefid!!
-    ) {value ->
-      this.lock = value
-      result.complete(this.status.get())
-    }
-    service.restart()
+    this.projectRefid?.let {
+      val service = IsLockedService(
+          errorUi = {errorMsg -> result.completeExceptionally(RuntimeException(errorMsg)) },
+          busyIndicator = {},
+          projectRefid = this.projectRefid!!
+      ) {value ->
+        this.lock = value
+        result.complete(this.status.get())
+      }
+      service.restart()
+    } ?: result.complete(LockStatus(locked = false))
     return result
   }
 

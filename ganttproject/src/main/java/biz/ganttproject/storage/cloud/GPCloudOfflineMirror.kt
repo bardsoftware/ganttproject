@@ -123,7 +123,7 @@ class GPCloudOfflinePane(
                 projectRefid = it.options.projectRefid,
                 projectName = it.name,
                 projectJson = null
-            ).also { doc -> doc.onboard(documentManager, webSocket) })
+            ))
           }
         }
       }
