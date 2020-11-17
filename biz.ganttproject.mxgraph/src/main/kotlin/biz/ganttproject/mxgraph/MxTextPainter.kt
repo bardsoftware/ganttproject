@@ -53,7 +53,8 @@ internal class MxTextPainter(
         mxConstants.STYLE_SPACING_LEFT to chartStyle.padding.left,
         mxConstants.STYLE_SPACING_RIGHT to chartStyle.padding.right
     )
-    mxPainterImpl.paintText(x, y, label.text, styles + style)
+    text.attributes["text"] = label.text
+    mxPainterImpl.paintText(x, y, text.attributes, styles + style)
   }
 
   override fun getFontStyles(font: Font, color: Color) = mapOf(

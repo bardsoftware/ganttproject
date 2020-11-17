@@ -21,15 +21,7 @@ package biz.ganttproject.core.chart.canvas;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-
+import java.util.*;
 
 /**
  * Stores the available primitives and their information (used for painting) and
@@ -82,6 +74,8 @@ public class Canvas {
     private LinkedHashSet<String> myStyles;
 
     private Float myOpacity = null;
+
+    private final Map<String, String> attributes = new HashMap<>();
 
     private LinkedHashSet<String> getStyles() {
       if (myStyles == null) {
@@ -144,6 +138,10 @@ public class Canvas {
 
     public void setOpacity(float opacity) {
       myOpacity = opacity;
+    }
+
+    public Map<String, String> getAttributes() {
+      return attributes;
     }
   }
 

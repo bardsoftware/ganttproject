@@ -32,9 +32,9 @@ import kotlin.math.roundToInt
  * Builds resource heatmaps.
  */
 class CapacityHeatmapSceneBuilder(
-        private val input: InputApi,
-        private val resources: List<Resource>,
-        val canvas: Canvas = Canvas()
+  private val input: InputApi,
+  private val resources: List<Resource>,
+  val canvas: Canvas = Canvas()
 ) {
   /**
    * Builds per-resource heatmaps one by one, from top of the chart downwards
