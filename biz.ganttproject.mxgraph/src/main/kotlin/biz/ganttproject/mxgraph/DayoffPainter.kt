@@ -38,7 +38,7 @@ internal class DayoffPainter(
     )
     mxPainterImpl.paintRectangle(
         rectangle.leftX, rectangle.topY + margin, rectangle.width, rectangle.height - 2 * margin,
-        mxStyle
+        mxStyle, rectangle.attributes
     )
   }
 

@@ -24,7 +24,6 @@ import biz.ganttproject.core.chart.render.Style
 import com.mxgraph.util.mxConstants
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.font.Fonts
-import net.sourceforge.ganttproject.gui.UIConfiguration
 import net.sourceforge.ganttproject.util.PropertiesUtil
 import java.awt.Color
 import java.util.*
@@ -91,7 +90,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_OPACITY to (rectangle.opacity ?: 1f) * 100
     )
-    mxPainter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle)
+    mxPainter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
   }
 
   override fun paint(line: Line) {
@@ -102,7 +101,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(line) ?: Color.BLACK.toHexString()),
         mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100
     )
-    mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style)
+    mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
   }
 
   override fun paint(text: Text) = textPainter.paint(text)
@@ -116,7 +115,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_STROKECOLOR to chartStyle.hexBordersColor(rhombus),
         mxConstants.STYLE_OPACITY to (rhombus.opacity ?: 1f) * 100
     )
-    mxPainter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style)
+    mxPainter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
   }
 
   internal interface RectanglePainter {

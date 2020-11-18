@@ -26,6 +26,7 @@ import com.mxgraph.util.mxPoint
 import com.mxgraph.util.mxXmlUtils
 import com.mxgraph.view.mxGraph
 import com.mxgraph.view.mxPerimeter
+import org.w3c.dom.Element
 
 /**
  * This is low-level mxGraph interaction code which actually calls mxGraph API
@@ -39,28 +40,28 @@ internal class MxPainterImpl {
     return mxXmlUtils.getXml(codec.encode(graph.model))
   }
 
-  fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>) {
+  fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
     val shapeStyle = mapOf(
         mxConstants.STYLE_SHAPE to mxConstants.SHAPE_RECTANGLE,
         mxConstants.STYLE_PERIMETER to mxPerimeter.RectanglePerimeter
     )
     graph.insertVertex(
-        parent, null, null,
+        parent, null, attributes.toUserObject(),
         leftX.toDouble(), topY.toDouble(),
         width.toDouble(), height.toDouble(),
         (style + shapeStyle).toStyleString()
     )
   }
 
-  fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>) {
-    val edge = graph.createEdge(parent, null, null, null, null, style.toStyleString()) as mxCell
+  fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
+    val edge = graph.createEdge(parent, null, attributes.toUserObject(), null, null, style.toStyleString()) as mxCell
     edge.geometry = mxGeometry()
     edge.geometry.sourcePoint = mxPoint(startX.toDouble(), startY.toDouble())
     edge.geometry.targetPoint = mxPoint(finishX.toDouble(), finishY.toDouble())
     graph.addEdge(edge, null, null, null, null)
   }
 
-  fun paintText(leftX: Int, bottomY: Int, value: String, style: Map<String, Any?>) {
+  fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) {
     val textStyle = mapOf(
         mxConstants.STYLE_SPACING to 0,
         mxConstants.STYLE_FILLCOLOR to mxConstants.NONE,
@@ -69,19 +70,19 @@ internal class MxPainterImpl {
         mxConstants.STYLE_VERTICAL_LABEL_POSITION to mxConstants.ALIGN_TOP
     )
     graph.insertVertex(
-        parent, null, value,
+        parent, null, attributes.toUserObject(),
         leftX.toDouble(), bottomY.toDouble(), 0.0, 0.0,
         "text;" + (style + textStyle).toStyleString()
     )
   }
 
-  fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>) {
+  fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
     val shapeStyle = mapOf(
         mxConstants.STYLE_SHAPE to mxConstants.SHAPE_RHOMBUS,
         mxConstants.STYLE_PERIMETER to mxPerimeter.RhombusPerimeter
     )
     graph.insertVertex(
-        parent, null, null,
+        parent, null, attributes.toUserObject(),
         leftX.toDouble(), topY.toDouble(),
         width.toDouble(), height.toDouble(),
         (style + shapeStyle).toStyleString()
@@ -99,7 +100,14 @@ internal class MxPainterImpl {
   fun endUpdate() {
     graph.model.endUpdate()
   }
+
+  private fun Map<String, String>.toUserObject(): Element {
+    val element = codec.document.createElement("Object")
+    entries.forEach {
+      element.setAttribute(it.key, it.value)
+    }
+    return element
+  }
 }
 
 private fun <K, V> Map<K, V>.toStyleString() = entries.joinToString(";") { "${it.key}=${it.value}" }
-

@@ -37,7 +37,7 @@ internal class ResourceLoadPainter(
     mxPainterImpl.paintRectangle(
         rectangle.leftX, rectangle.topY + uiConfig.margin,
         rectangle.width, rectangle.height - 2 * uiConfig.margin,
-        mapOf(mxConstants.STYLE_FILLCOLOR to color)
+        mapOf(mxConstants.STYLE_FILLCOLOR to color), rectangle.attributes
     )
 
     val mxLineStyle = mapOf(
@@ -48,26 +48,26 @@ internal class ResourceLoadPainter(
       mxPainterImpl.paintLine(
           rectangle.leftX, rectangle.topY + uiConfig.margin,
           rectangle.leftX, rectangle.bottomY - uiConfig.margin,
-          mxLineStyle
+          mxLineStyle, rectangle.attributes
       )
     }
     if (rectangle.style.indexOf(".last") > 0) {
       mxPainterImpl.paintLine(
           rectangle.rightX, rectangle.topY + uiConfig.margin,
           rectangle.rightX, rectangle.bottomY - uiConfig.margin,
-          mxLineStyle
+          mxLineStyle, rectangle.attributes
       )
     }
 
     mxPainterImpl.paintLine(
         rectangle.leftX, rectangle.topY + uiConfig.margin,
         rectangle.rightX, rectangle.topY + uiConfig.margin,
-        mxLineStyle
+        mxLineStyle, rectangle.attributes
     )
     mxPainterImpl.paintLine(
         rectangle.leftX, rectangle.bottomY - uiConfig.margin,
         rectangle.rightX, rectangle.bottomY - uiConfig.margin,
-        mxLineStyle
+        mxLineStyle, rectangle.attributes
     )
   }
 }

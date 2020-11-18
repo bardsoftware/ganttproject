@@ -24,11 +24,11 @@ import biz.ganttproject.core.chart.canvas.TextMetrics
 private const val OFFSET = 5
 
 class ResourcesColumnSceneBuilder(
-    private val resources: List<String>,
+    private val resources: List<Resource>,
     private val input: InputApi,
     val canvas: Canvas = Canvas()
 ) {
-  val width = resources.map { input.textMetrics.getTextLength(it) }.maxOrNull() ?: 0 + OFFSET * 2
+  val width = resources.map { input.textMetrics.getTextLength(it.name) }.maxOrNull() ?: 0 + OFFSET * 2
 
   fun build() {
     canvas.clear()
@@ -36,15 +36,19 @@ class ResourcesColumnSceneBuilder(
     var isOddRow = false
     resources.forEach {
       val rectangle = canvas.createRectangle(0, y, width, input.rowHeight)
+      rectangle.attributes["email"] = it.email
       if (isOddRow) {
         rectangle.style = "resource.odd-row"
       }
-      val text = canvas.createText(OFFSET, rectangle.middleY, it)
+      val text = canvas.createText(OFFSET, rectangle.middleY, it.name)
       text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
+      text.attributes["email"] = it.email
       y += input.rowHeight
       isOddRow = !isOddRow
     }
   }
+
+  data class Resource(val name: String, val email: String)
 
   interface InputApi {
     val textMetrics: TextMetrics
