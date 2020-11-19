@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
+import javafx.application.Platform
 import javax.swing.SwingUtilities
 
 
@@ -61,7 +62,7 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
 
   val splashCloser = showAsync()
 
-
+  Platform.setImplicitExit(false)
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)

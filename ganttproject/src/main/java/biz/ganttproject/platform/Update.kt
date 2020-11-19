@@ -78,7 +78,8 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
   if (filteredUpdates.isNotEmpty()) {
     val dlg = UpdateDialog(filteredUpdates) {
       SwingUtilities.invokeLater {
-        uiFacade.mainFrame.dispatchEvent(WindowEvent(uiFacade.mainFrame, WindowEvent.WINDOW_CLOSING))
+        uiFacade.quitApplication(false)
+        org.eclipse.core.runtime.Platform.restart()
       }
     }
     dialog(

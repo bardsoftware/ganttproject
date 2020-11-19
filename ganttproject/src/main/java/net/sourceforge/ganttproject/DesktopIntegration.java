@@ -40,7 +40,7 @@ public class DesktopIntegration {
 
         @Override
         public void maybeQuit(QuitResponse quitResponse) {
-          if (app.quitApplication()) {
+          if (app.quitApplication(true)) {
             quitResponse.performQuit();
           } else {
             quitResponse.cancelQuit();

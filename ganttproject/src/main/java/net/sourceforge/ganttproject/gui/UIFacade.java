@@ -155,4 +155,6 @@ public interface UIFacade {
   GPOptionGroup[] getOptions();
 
   void addOnUpdateComponentTreeUi(Runnable callback);
+
+  boolean quitApplication(boolean withSystemExit);
 }

@@ -105,6 +105,7 @@ import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
@@ -179,7 +180,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private RoleManager myRoleManager;
 
-  private static Runnable ourQuitCallback;
+  private static Consumer<Boolean> ourQuitCallback;
 
   private FXSearchUi mySearchUi;
 
@@ -393,7 +394,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent windowEvent) {
-        quitApplication();
+        quitApplication(true);
       }
 
       @Override
@@ -799,7 +800,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * Quit the application
    */
-  public boolean quitApplication() {
+  @Override
+  public boolean quitApplication(boolean withSystemExit) {
     if (myQuitEntered) {
       return false;
     }
@@ -814,7 +816,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         setVisible(false);
         dispose();
         if (ourQuitCallback != null) {
-          ourQuitCallback.run();
+          ourQuitCallback.accept(withSystemExit);
         }
         return true;
       } else {
@@ -1195,7 +1197,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
   }
 
-  public static void setApplicationQuitCallback(Runnable callback) {
+  public static void setApplicationQuitCallback(Consumer<Boolean> callback) {
     ourQuitCallback = callback;
   }
 

@@ -255,4 +255,14 @@ public class ConsoleUIFacade implements UIFacade {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public boolean quitApplication(boolean withSystemExit) {
+    if (withSystemExit) {
+      System.exit(0);
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
