@@ -21,6 +21,10 @@ package net.sourceforge.ganttproject
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.SingleTranslationLocalizer
 import biz.ganttproject.app.showAsync
+import com.bardsoftware.eclipsito.update.UpdateIntegrityChecker
+import com.bardsoftware.eclipsito.update.UpdateMetadata
+import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
+import com.bardsoftware.eclipsito.update.Updater
 import com.beust.jcommander.JCommander
 import net.sourceforge.ganttproject.document.DocumentCreator
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -34,6 +38,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javafx.application.Platform
+import java.io.File
 import javax.swing.SwingUtilities
 
 
@@ -44,10 +49,15 @@ fun main(args: Array<String>) {
   RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
   PluginManager.setCharts(listOf())
   GanttLanguage.getInstance()
-  startUiApp(mainArgs) {
-    it.setUpdater {
-      CompletableFuture.completedFuture(listOf())
+  // This is a dummy updater just to make gradle run working
+  val updater = object : Updater {
+    override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
+    override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
+      TODO("Not yet implemented")
     }
+  }
+  startUiApp(mainArgs) {
+    it.updater = updater
   }
 }
 
