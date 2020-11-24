@@ -34,7 +34,7 @@ import org.eclipse.core.runtime.Platform as Eclipsito
  * Utilities for the verification of artifacts downloaded by the update system.
  *
  * The main entrance point for the updater is verifyFile. It expects the public key, and if the public key
- * is not provided, it is searched in the root classpath resources as /bardsoftware.asc.
+ * is not provided, it is searched in the root classpath resources as /ganttproject-3.0.pub.asc.
  * The default location may be overridden with the system property eclipsito.update.public_key
  *
  * @author dbarashev (Dmitry Barashev)
@@ -44,7 +44,7 @@ object PgpUtil {
   private val FP_CALC: KeyFingerPrintCalculator = BcKeyFingerprintCalculator()
 
   private val ourPublicKey by lazy {
-    val publicKeyResource = System.getProperty("app.update.public_key", "/bardsoftware.asc")
+    val publicKeyResource = System.getProperty("app.update.public_key", "/ganttproject-3.0.pub.asc")
     val publicKeyStream = Eclipsito::class.java.getResourceAsStream(publicKeyResource) ?:
       throw RuntimeException(
         "Failed to read the public key from $publicKeyResource. This resource is missing.".also { LOG.error(it) }
