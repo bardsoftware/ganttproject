@@ -9,6 +9,7 @@ buildscript {
 }
 
 apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
 
 dependencies {
     providedCompile project(':biz.ganttproject.core')
@@ -32,5 +33,15 @@ jar {
 compileKotlin {
     kotlinOptions {
         jvmTarget = "11"
+    }
+}
+
+addPublishing(project)
+publishing {
+    publications {
+        core(MavenPublication) {
+            artifactId = 'biz.ganttproject.mxgraph'
+            artifact jar
+        }
     }
 }
