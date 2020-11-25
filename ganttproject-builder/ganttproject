@@ -22,17 +22,25 @@ find_ganttproject_home() {
 
   pwd
 }
-
 GP_HOME="$(find_ganttproject_home)"
-USE_BUNDLED_RUNTIME=1
+if [ -z "$GP_HOME" ]; then
+  echo "GanttProject home directory is not set. Please point GP_HOME environment variable to the directory with GanttProject files."
+  exit 1
+fi
 
+# Parse the command line arguments. In this script we parse only those arguments which
+# are related to the Java VM launching. The remaining application-specific arguments
+# are passed as-is to the Java process.
 PARSED_ARGS=$(getopt -o d::j:: --long debug:: --long java-home:: -- "$@")
 eval set -- "$PARSED_ARGS"
 
+USE_BUNDLED_RUNTIME=1
 DEBUG_ARGS=""
 while true; do
   case "$1" in
-    -d|--debug )
+    # Debug will switch on some debugging output and will allow for connecting to Java
+    # process with a debugger
+    -d|--debug)
       case "$2" in
         "")
           DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
@@ -44,7 +52,8 @@ while true; do
           ;;
       esac
       ;;
-    -j|--java-home )
+    # This allows for specifying the path to Java Runtime instead of the default bundled Java Runtime
+    -j|--java-home)
       USE_BUNDLED_RUNTIME=0
       case "$2" in
         "")
@@ -88,42 +97,84 @@ if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
   exit 1
 fi
 
+LOG_TEXT=""
+echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"
+
+log() {
+  if [ ! -z "$LOG_TEXT" ]; then
+    LOG_TEXT="$LOG_TEXT\n$1";
+  else
+    echo $1 >> /tmp/ganttproject-launcher.log
+  fi
+  [ -z "$DEBUG_ARGS" ] || echo $1
+}
+
+# This function checks if the passed argument is a good java command.
+# It is expected to be executable and expected to return version 11+ when launched with -version
+# argument.
+check_java() {
+  JAVA_COMMAND=$1
+  log  "Searching for Java in $JAVA_COMMAND"
+
+  if [ ! -x "$JAVA_COMMAND" ]; then
+    log "...missing or not executable"
+    JAVA_COMMAND=""
+    return 1
+  fi
+
+  VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
+  log "...found $VERSION"
+  [[ "$VERSION" =~ "11." ]] && return 0;
+  [[ "$VERSION" =~ "12." ]] && return 0;
+  [[ "$VERSION" =~ "13." ]] && return 0;
+  [[ "$VERSION" =~ "14." ]] && return 0;
+  [[ "$VERSION" =~ "15." ]] && return 0;
+  log "...this seems to be an old Java Runtime";
+  JAVA_COMMAND=""
+  return 1
+}
+
+# We search for Java Runtime in the following sequence:
+# 1. Try using the bundled runtime in $GP_HOME, unless -j argument is passed
+# 2. Try using JAVA_HOME value (this is also set by -j option)
+# 3. Try using java command from the classpath
+find_java() {
+  if [ $USE_BUNDLED_RUNTIME == 1 ]; then
+    check_java "$GP_HOME/runtime/bin/java" && return 0;
+  fi
+  if [ ! -z "$JAVA_HOME" ]; then
+    check_java "$JAVA_HOME/bin/java" && return 0;
+  fi
+  JAVA_COMMAND=$(which java)
+  if [ "0" = "$?" ]; then
+    check_java "$JAVA_COMMAND" && return 0;
+  fi
+
+  report_java_not_found && exit 1;
+}
+
+report_java_not_found() {
+  log "JavaVM executable not found.
+  You may want to set the path to the root of your Java Runtime installation
+  in JAVA_HOME environment variable or pass it to ganttproject in --java-home argument";
+  if [ -z "$LOG_TEXT" ]; then
+    LOG_TEXT="$(cat /tmp/ganttproject-launcher.log)"
+  fi
+
+  LOG_TEXT=$(echo "$LOG_TEXT" | sed s/\"/\\\\\"/g)
+  echo "$LOG_TEXT"
+}
+
 # Create updates directory if not exists
 USER_UPDATES_DIR="$HOME/.ganttproject.d/updates"
 mkdir -p "$USER_UPDATES_DIR"
 
-if [ $USE_BUNDLED_RUNTIME == 1 ]; then
-  JAVA_HOME="$GP_HOME/runtime"
-fi
+find_java
 
-# Find usable java executable
-if [ -z "$JAVA_HOME" ]; then
-  JAVA_COMMAND=$(which java)
-  if [ "1" = "$?" ]; then
-    echo "No executable java found. Please set JAVA_HOME variable" >&2
-    exit 1
-  fi
-else
-  JAVA_COMMAND=$JAVA_HOME/bin/java
-fi
-if [ ! -e "$JAVA_COMMAND" ]; then
-  echo "$JAVA_COMMAND does not exist" >&2
-  exit 1
-fi
-if [ ! -x "$JAVA_COMMAND" ]; then
-  echo "$JAVA_COMMAND is not executable" >&2
-  exit 1
-fi
-
-if [ -z "$GP_HOME" ]; then
-  echo "GanttProject home directory is not set. Please point GP_HOME environment variable to the directory with GanttProject files."
-  exit 1
-fi
-
-echo "JAVA_HOME=$JAVA_HOME"
-echo "JAVA_COMMAND=$JAVA_COMMAND"
-echo "GP_HOME=$GP_HOME"
-echo "user.dir=$(pwd)"
+log "JAVA_HOME=$JAVA_HOME"
+log "JAVA_COMMAND=$JAVA_COMMAND"
+log "GP_HOME=$GP_HOME"
+log "user.dir=$(pwd)"
 
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar"
 export CLASSPATH
