@@ -18,32 +18,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.calendar;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.eclipse.core.runtime.Platform;
-import org.xml.sax.Attributes;
-
-import com.beust.jcommander.internal.Lists;
+import biz.ganttproject.core.calendar.GPCalendar;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import com.google.common.collect.ImmutableList;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.io.XmlParser;
 import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
-import net.sourceforge.ganttproject.util.FileUtil;
-import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import org.xml.sax.Attributes;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Reads calendars in XML format from GanttProject's installation directory.
@@ -77,7 +70,7 @@ public class GPCalendarProvider {
 
   private static GPCalendarProvider ourInstance;
 
-  private static GPCalendar readCalendar(File resource) {
+  static GPCalendar readCalendar(File resource) {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
 
     HolidayTagHandler holidayHandler = new HolidayTagHandler(calendar);
@@ -95,33 +88,7 @@ public class GPCalendarProvider {
   }
 
   private static List<GPCalendar> readCalendars() {
-    try {
-      URL resolved = Platform.resolve(GPCalendarProvider.class.getResource("/calendar"));
-      if (resolved == null) {
-        return Collections.emptyList();
-      }
-      File dir = new File(resolved.getFile());
-      if (dir.exists() && dir.isDirectory() && dir.canRead()) {
-        List<GPCalendar> calendars = Lists.newArrayList();
-        for (File f : dir.listFiles()) {
-          if ("calendar".equalsIgnoreCase(FileUtil.getExtension(f))) {
-            try {
-              GPCalendar calendar = readCalendar(f);
-              if (calendar != null) {
-                calendars.add(calendar);
-              }
-            } catch (Throwable e) {
-              GPLogger.logToLogger(String.format("Failure when reading calendar file %s", f.getAbsolutePath()));
-              GPLogger.logToLogger(e);
-            }
-          }
-        }
-        return calendars;
-      }
-    } catch (IOException e) {
-      GPLogger.logToLogger(e);
-    }
-    return Collections.emptyList();
+    return HolidayCalendarKt.loadCalendars();
   }
 
   public static synchronized GPCalendarProvider getInstance() {

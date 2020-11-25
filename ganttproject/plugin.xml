@@ -18,6 +18,7 @@
         <import plugin="biz.ganttproject.core"/>
         <import plugin="biz.ganttproject.app.libs"/>
     </requires>
+    <extension-point id="calendar" name="HolidayCalendar"/>
     <extension-point id="l10n" name="LocalizationBundle"/>
     <extension-point id="exporter" name="Exporter"/>
     <extension-point id="importer" name="Importer"/>

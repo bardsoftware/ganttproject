@@ -28,6 +28,7 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.ToggleSwitchSkin
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
+import biz.ganttproject.platform.PgpUtil.verifyFile
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.bardsoftware.eclipsito.update.Updater
 import com.google.common.base.Strings
@@ -47,21 +48,19 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
 import org.controlsfx.control.ToggleSwitch
-import java.awt.event.WindowEvent
 import java.io.File
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
-const val UPDATE_URL = "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"
-//const val UPDATE_URL = "https://dl.ganttproject.biz/updates/ganttproject-test.json";
-//const val UPDATE_URL = "http://localhost:8099"
+val UPDATE_URL = System.getProperty("app.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json")
 
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
   updater.getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
     if (updateMetadata.isNotEmpty()) {
-      showUpdateDialog(updateMetadata, uiFacade, false);
+      showUpdateDialog(updateMetadata, uiFacade, false)
     }
   }.exceptionally { ex ->
     LOG.error(msg = "Failed to fetch updates from {}", UPDATE_URL, exception = ex)
@@ -71,14 +70,15 @@ fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
 
 private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
   val latestShownUpdateMetadata = UpdateMetadata(
-      UpdateOptions.latestShownVersion.value ?: Eclipsito.getUpdater().installedUpdateVersions.max()!!,
-      null, null, null, 0)
+      UpdateOptions.latestShownVersion.value ?: Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900",
+      null, null, null, 0, "")
   val filteredUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
   if (filteredUpdates.isNotEmpty()) {
     val dlg = UpdateDialog(filteredUpdates) {
       SwingUtilities.invokeLater {
-        uiFacade.mainFrame.dispatchEvent(WindowEvent(uiFacade.mainFrame, WindowEvent.WINDOW_CLOSING))
+        uiFacade.quitApplication(false)
+        org.eclipse.core.runtime.Platform.restart()
       }
     }
     dialog(
@@ -154,7 +154,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
   }
 
   fun addContent(dialogApi: DialogController) {
-    val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.max()!!
+    val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
     val bean = PlatformBean(true, installedVersion)
     this.dialogApi = dialogApi
     dialogApi.addStyleClass("dlg-platform-update")
@@ -245,8 +245,13 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
 }
 
 private fun (UpdateMetadata).install(monitor: (Int) -> Unit): CompletableFuture<File> {
-  return Eclipsito.getUpdater().installUpdate(this) { percents ->
-    monitor(percents)
+  return Eclipsito.getUpdater().installUpdate(this, monitor) { dataFile ->
+    if (this.signatureBody.isNullOrBlank()) {
+      true
+    } else {
+      verifyFile(dataFile, Base64.getDecoder().wrap(this.signatureBody.byteInputStream()))
+      true
+    }
   }
 }
 

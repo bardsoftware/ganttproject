@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import java.awt.event.ActionEvent;
-
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
+
+import java.awt.event.ActionEvent;
 
 class ExitAction extends GPAction {
   private final GanttProject myMainFrame;
@@ -38,6 +38,6 @@ class ExitAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    myMainFrame.quitApplication();
+    myMainFrame.quitApplication(true);
   }
 }

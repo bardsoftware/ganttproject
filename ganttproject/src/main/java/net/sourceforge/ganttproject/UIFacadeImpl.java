@@ -502,6 +502,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myMainFrame;
   }
 
+  public boolean quitApplication(boolean withSystemExit) {
+    return myFallbackDelegate.quitApplication(withSystemExit);
+  }
   private static GanttLanguage getLanguage() {
     return GanttLanguage.getInstance();
   }

@@ -5,6 +5,8 @@ package net.sourceforge.ganttproject.application;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
@@ -15,7 +17,7 @@ import org.eclipse.core.runtime.IPlatformRunnable;
  * @author bard
  */
 public class MainApplication implements IPlatformRunnable {
-  private Object myLock = new Object();
+  private AtomicBoolean myLock = new AtomicBoolean(true);
 
   // The hack with waiting is necessary because when you
   // launch Runtime Workbench in Eclipse, it exists as soon as
@@ -26,9 +28,10 @@ public class MainApplication implements IPlatformRunnable {
   public Object run(Object args) throws Exception {
     Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
     String[] cmdLine = (String[]) args;
-    Runnable onApplicationQuit = new Runnable() {
-      public void run() {
+    Consumer<Boolean> onApplicationQuit = new Consumer<Boolean>() {
+      public void accept(Boolean withSystemExit) {
         synchronized(myLock) {
+          myLock.set(withSystemExit);
           myLock.notify();
         }
       }
@@ -43,7 +46,9 @@ public class MainApplication implements IPlatformRunnable {
     }
     GPLogger.log("Program terminated");
     GPLogger.close();
-    System.exit(0);
+    if (myLock.get()) {
+      System.exit(0);
+    }
     return null;
   }
 
