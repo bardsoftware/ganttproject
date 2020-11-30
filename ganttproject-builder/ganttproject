@@ -90,13 +90,17 @@ if [ ! -d $GP_LOG_DIR ]; then
   fi
 fi
 
-# Create unique name for log file
+# Create unique name for the application log file
 LOG_FILE="$GP_LOG_DIR/.ganttproject-"$(date +%Y%m%d%H%M%S)".log"
 if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
   echo "Log file $LOG_FILE is not writable" >2
   exit 1
 fi
 
+# If we can write to /tmp/ganttproject-launcher.log then LOG_TEXT
+# will be empty, and we'll write the launcher logs to the file
+# Otherwise it will be not empty and will accumulate the
+# logged information in memory.
 LOG_TEXT=""
 echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"
 
