@@ -3,7 +3,7 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.3.1'
+    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.+'
 
     compile configurations.providedCompile
 }
