@@ -65,6 +65,7 @@ public class DocumentCreator implements DocumentManager {
   /** List containing the Most Recent Used documents */
   private final DocumentsMRU myMRU = new DocumentsMRU(5);
   private final File myDocumentsFolder;
+  private final File myUserDir;
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
@@ -83,6 +84,7 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getProxyOption()
     });
     myDocumentsFolder = DocumentKt.getDefaultLocalFolder();
+    myUserDir = DocumentKt.getUserDir();
   }
 
   /**
@@ -94,7 +96,7 @@ public class DocumentCreator implements DocumentManager {
    * @return an implementation of the interface Document
    */
   private Document createDocument(String path) {
-    return createDocument(path, null, null);
+    return createDocument(path, myUserDir, null, null);
   }
 
   /**
@@ -110,7 +112,7 @@ public class DocumentCreator implements DocumentManager {
    * @return an implementation of the interface Document
    * @throws Exception when the specified protocol is not supported
    */
-  private Document createDocument(String path, String user, String pass) {
+  private Document createDocument(String path, File relativePathRoot, String user, String pass) {
     assert path != null;
     path = path.trim();
     String lowerPath = path.toLowerCase();
@@ -141,7 +143,7 @@ public class DocumentCreator implements DocumentManager {
     if (file.toPath().isAbsolute()) {
       return new FileDocument(file);
     }
-    File relativeFile = new File(myDocumentsFolder, path);
+    File relativeFile = new File(relativePathRoot, path);
     return new FileDocument(relativeFile);
   }
 
@@ -174,7 +176,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newDocument(String path) throws IOException {
-    return createDocument(path);
+    return createDocument(path, myDocumentsFolder, null, null);
   }
 
   @Override
