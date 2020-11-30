@@ -229,13 +229,16 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   void showTooltip(final int x, final int y, final String text) {
     if (myTooltip == null) {
-      scheduleTask(new Runnable() {
-        @Override
-        public void run() {
-          java.awt.Rectangle offset = new java.awt.Rectangle(x-30, y, 0, 0);
-          myTooltip = new CustomBalloonTip(getChartComponent(), new JLabel(text), offset,
-              new ToolTipBalloonStyle(Color.YELLOW, Color.YELLOW.darker()), BalloonTip.Orientation.LEFT_ABOVE, BalloonTip.AttachLocation.ALIGNED, 20, 20, true);
-          myTooltip.setCloseButton(null);
+      scheduleTask(() -> {
+        if (myTooltip == null) {
+          java.awt.Rectangle offset = new java.awt.Rectangle(x - 30, y, 0, 0);
+          myTooltip = new CustomBalloonTip(
+            getChartComponent(),
+            new JLabel(text), offset,
+            new ToolTipBalloonStyle(Color.YELLOW, Color.YELLOW.darker()),
+            BalloonTip.Orientation.LEFT_ABOVE,
+            BalloonTip.AttachLocation.ALIGNED,
+            20, 20, false);
           myTooltip.setVisible(true);
         }
       });
@@ -244,8 +247,12 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   public void hideTooltip() {
     if (myTooltip != null) {
-      myTooltip.setVisible(false);
-      myTooltip = null;
+      SwingUtilities.invokeLater(() -> {
+        if (myTooltip != null) {
+          myTooltip.setVisible(false);
+          myTooltip = null;
+        }
+      });
     }
   }
 }
