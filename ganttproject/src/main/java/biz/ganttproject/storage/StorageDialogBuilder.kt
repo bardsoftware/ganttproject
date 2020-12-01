@@ -287,6 +287,8 @@ interface StorageUi {
 
   // Creates this storage settings interface
   fun createSettingsUi(): Optional<Pane>
+
+  fun focus() {}
 }
 
 // Saved dimensions of the content pane, so that the dialog size was preserved after closing and opening again

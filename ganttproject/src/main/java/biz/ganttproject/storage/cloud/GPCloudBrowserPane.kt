@@ -286,6 +286,10 @@ class GPCloudBrowserPane(
     this.loaderService.restart()
     this.paneElements.breadcrumbView?.path = ROOT_URI
   }
+
+  fun focus() {
+    this.paneElements.filenameInput.requestFocus()
+  }
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)

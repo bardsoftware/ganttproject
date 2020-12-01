@@ -29,7 +29,6 @@ import javafx.scene.control.*
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -56,7 +55,6 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
 class GPCloudOfflinePane(
     val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentManager: DocumentManager,
     private val documentConsumer: (Document) -> Unit) {
   var controller: GPCloudStorage.Controller? = null
 
@@ -90,7 +88,7 @@ class GPCloudOfflinePane(
       offlineChoice.selectedToggle.userData.let {
         when (it) {
           OfflineChoice.TRY_AGAIN -> controller?.start()
-          OfflineChoice.OPEN_MIRROR -> controller?.sceneChanger?.invoke(this@GPCloudOfflinePane.browser)
+          OfflineChoice.OPEN_MIRROR -> controller?.sceneChanger?.invoke(this@GPCloudOfflinePane.browser, SceneId.OFFLINE_BROWSER)
         }
       }
     }

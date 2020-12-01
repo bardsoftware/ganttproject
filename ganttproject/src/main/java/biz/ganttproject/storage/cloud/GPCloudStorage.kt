@@ -50,7 +50,8 @@ const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
 const val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
 const val GPCLOUD_WEBSOCKET_URL = "wss://ws.$GPCLOUD_HOST"
-typealias SceneChanger = (Node) -> Unit
+enum class SceneId { BROWSER, SIGNUP, SIGNIN, OFFLINE, SPINNER, TOKEN_SPINNER, OFFLINE_BROWSER }
+typealias SceneChanger = (Node, SceneId) -> Unit
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -61,6 +62,7 @@ class GPCloudStorage(
     private val currentDocument: Document,
     private val openDocument: (Document) -> Unit,
     private val documentManager: DocumentManager) : StorageUi {
+  private lateinit var browserPane: GPCloudBrowserPane
   private val myPane: BorderPane = BorderPane()
 
   override val name = i18n.formatText("listLabel")
@@ -100,7 +102,7 @@ class GPCloudStorage(
           success = Consumer {
             webSocket.start()
             GlobalScope.launch(Dispatchers.Main) {
-              sceneChanger(storageUi)
+              sceneChanger(storageUi, SceneId.BROWSER)
               browserPane.reset()
             }
           },
@@ -108,21 +110,21 @@ class GPCloudStorage(
             when (it) {
               "NO_ACCESS_TOKEN" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupUi)
+                  sceneChanger(signupUi, SceneId.SIGNUP)
                 }
               }
               "ACCESS_TOKEN_EXPIRED" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signinUi)
+                  sceneChanger(signinUi, SceneId.SIGNIN)
                 }
               }
               "INVALID" -> {
                 GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupUi)
+                  sceneChanger(signupUi, SceneId.SIGNUP)
                 }
               }
               "OFFLINE" -> {
-                sceneChanger(offlineUi)
+                sceneChanger(offlineUi, SceneId.OFFLINE)
               }
               else -> {
               }
@@ -136,32 +138,38 @@ class GPCloudStorage(
     val documentConsumer: (Document) -> Unit = {doc ->
       GlobalScope.async(Dispatchers.JavaFx) {
         val spinner = Spinner().also { it.state = Spinner.State.WAITING }
-        nextPage(spinner.pane)
+        nextPage(spinner.pane, SceneId.SPINNER)
       }
       GlobalScope.launch {
         openDocument(doc)
       }
     }
-    val browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
+    browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
     val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
       GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
       Platform.runLater {
-        nextPage(browserPane.createStorageUi())
+        nextPage(browserPane.createStorageUi(), SceneId.BROWSER)
       }
     }
 
-    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi, this.documentManager, documentConsumer)
+    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi, documentConsumer)
     val signinPane = SigninPane(onTokenCallback)
-    val signupPane = GPCloudSignupPane(signinPane, ::nextPage)
+    val signupPane = GPCloudSignupPane(signinPane) { node, sceneId -> nextPage(node, sceneId) }
     Controller(signupPane, signinPane, offlinePane, browserPane, this::nextPage).start()
     return myPane
   }
 
-  private fun nextPage(newPage: Node) {
+  private fun nextPage(newPage: Node, sceneId: SceneId) {
     Platform.runLater {
-      FXUtil.transitionCenterPane(myPane, newPage) { dialogUi.resize() }
+      FXUtil.transitionCenterPane(myPane, newPage) {
+        dialogUi.resize()
+        if (sceneId == SceneId.BROWSER) {
+          browserPane.focus()
+        }
+      }
     }
   }
+
 }
 
 fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {

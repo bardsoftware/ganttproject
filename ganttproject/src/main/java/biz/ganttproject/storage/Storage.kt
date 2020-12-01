@@ -155,13 +155,14 @@ class StoragePane internal constructor(
         dialogUi.error(e)
       }
     }
-    val localStorage = LocalStorage(dialogUi, mode, currentDocument, openDocument).also{ storageUiList.add(it) }
+    val localStorage = LocalStorage(dialogUi, mode, currentDocument, openDocument)
     val recentProjects = RecentProjects(
         mode,
         documentManager,
         currentDocument,
-        openDocument).also{ storageUiList.add(it) }
-    storageUiList.add(GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager))
+        openDocument)
+    val cloudStorage = GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager)
+    storageUiList.addAll(listOf(localStorage, recentProjects, cloudStorage))
     cloudStorageOptions.webdavServers.mapTo(storageUiList) {
       WebdavStorage(it, mode, openDocument, dialogUi, cloudStorageOptions)
     }
@@ -216,7 +217,10 @@ class StoragePane internal constructor(
 
   private fun onStorageChange(borderPane: BorderPane, storageId: String) {
     val ui = storageUiMap[storageId]?.get() ?: return
-    FXUtil.transitionCenterPane(borderPane, ui) { dialogUi.resize() }
+    FXUtil.transitionCenterPane(borderPane, ui) {
+      dialogUi.resize()
+      storageUiList.find { it.id == storageId }?.focus()
+    }
   }
 
   private fun onNewWebdavServer(borderPane: BorderPane) {

@@ -80,7 +80,7 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
     }
     val btnSignIn = Button(i18n.formatText("generic.signIn")).also {
       it.addEventFilter(ActionEvent.ACTION) {
-        this@GPCloudSignupPane.pageSwitcher(signinPane.createSigninPane())
+        this@GPCloudSignupPane.pageSwitcher(signinPane.createSigninPane(), SceneId.SIGNIN)
       }
       it.styleClass.addAll("btn-attention", "secondary")
     }
@@ -113,7 +113,7 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
       return
     }
 
-    pageSwitcher(tokenVerificationUi)
+    pageSwitcher(tokenVerificationUi, SceneId.TOKEN_SPINNER)
 
     GlobalScope.launch {
       try {
