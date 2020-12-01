@@ -77,7 +77,7 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
     try {
       val ganttFrame = GanttProject(false)
       configure(ganttFrame)
-      System.err.println("Main frame created")
+      APP_LOGGER.debug("Main frame created")
       mainWindow.set(ganttFrame)
       ganttFrame.addWindowListener(object : WindowAdapter() {
         override fun windowOpened(e: WindowEvent) {

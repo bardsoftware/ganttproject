@@ -622,6 +622,15 @@ public abstract class UIUtil {
       this.maxVisibleArea = maxVisibleArea;
       this.argmaxVisibleArea = argmaxVisibleArea;
     }
+
+    @Override
+    public String toString() {
+      final StringBuffer sb = new StringBuffer("MultiscreenFitResult{");
+      sb.append("totalVisibleArea=").append(totalVisibleArea);
+      sb.append(", maxVisibleArea=").append(maxVisibleArea);
+      sb.append('}');
+      return sb.toString();
+    }
   }
 
   public static MultiscreenFitResult multiscreenFit(Rectangle bounds)  {
