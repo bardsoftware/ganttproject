@@ -31,8 +31,11 @@ import com.google.common.base.Supplier
 import com.google.common.base.Suppliers
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
+import javafx.beans.value.ChangeListener
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
+import javafx.event.EventType
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
@@ -40,12 +43,15 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
+import kotlinx.coroutines.channels.ticker
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
 import java.io.File
+import java.util.*
 import java.util.function.Consumer
+import kotlin.concurrent.schedule
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -206,7 +212,9 @@ class StoragePane internal constructor(
         }
       }
     }
-    onStorageChange(storageUiPane, initialStorageId)
+    Timer().schedule(1000L) {
+      Platform.runLater { onStorageChange(storageUiPane, initialStorageId) }
+    }
   }
 
   private fun setSelected(pane: Parent) {
