@@ -115,7 +115,7 @@ public class GPLogger {
     return logger;
   }
 
-  public static LoggerApi create(String name) { return new LoggerImpl(name); }
+  public static LoggerApi<org.slf4j.Logger> create(String name) { return new LoggerImpl(name); }
   public static Logger getLogger(Class<?> clazz) {
     return getLogger(clazz.getName());
   }

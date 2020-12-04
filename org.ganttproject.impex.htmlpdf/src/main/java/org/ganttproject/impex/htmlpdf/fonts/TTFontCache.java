@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 /**
  * This class collects True Type fonts from .ttf files in the registered
@@ -50,6 +49,7 @@ import java.util.logging.Level;
  * @author dbarashev
  */
 public class TTFontCache {
+  private static final org.slf4j.Logger ourLogger = GPLogger.create("Export.Pdf.Fonts").delegate();
   private static String FALLBACK_FONT_PATH = "/fonts/LiberationSans-Regular.ttf";
   private Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<String, AwtFontSupplier>();
   private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<FontKey, com.itextpdf.text.Font>();
@@ -78,8 +78,10 @@ public class TTFontCache {
 
   private void registerFonts(File dir) {
     final File[] files = dir.listFiles();
+    ourLogger.info("registerFonts: dir={] |files|={}", dir.getAbsolutePath(), files.length);
     for (File f : files) {
       if (!f.canRead()) {
+        ourLogger.warn("Can't read the file={}", f.getName());
         continue;
       }
       if (f.isDirectory()) {
@@ -88,12 +90,13 @@ public class TTFontCache {
       }
       String filename = f.getName().toLowerCase().trim();
       if (!filename.endsWith(".ttf") && !filename.endsWith(".ttc")) {
+        ourLogger.warn("Skipping file={} because of its extension", f.getName());
         continue;
       }
       try {
         registerFontFile(f);
       } catch (Throwable e) {
-        GPLogger.getLogger(TTFontCache.class).log(Level.FINE, "Failed to register font from " + f.getAbsolutePath(), e);
+        ourLogger.error("Failed to register font={}", f.getAbsolutePath(), e);
       }
     }
   }
@@ -106,8 +109,12 @@ public class TTFontCache {
 
   private static class AwtFontSupplier implements Supplier<Font> {
     private final List<File> myFiles = Lists.newArrayList();
+    private final String family;
     private Font myFont;
 
+    private AwtFontSupplier(String family) {
+      this.family = family;
+    }
     void addFile(File f) {
       myFiles.add(f);
     }
@@ -116,6 +123,7 @@ public class TTFontCache {
     public Font get() {
       if (myFont == null) {
         myFont = createFont();
+        ourLogger.info("Created AWT font={} for family={}", myFont==null ? "null" : myFont.toString(), family);
       }
       return myFont;
     }
@@ -147,16 +155,16 @@ public class TTFontCache {
       IOException {
     // FontFactory.register(fontFile.getAbsolutePath());
     Font awtFont = createAwtFont(fontFile);
-    GPLogger.getLogger(getClass()).fine("Trying font file: " + fontFile.getAbsolutePath());
 
     final String family = awtFont.getFontName().toLowerCase();
+    ourLogger.info("Registering font: file={} family={}", fontFile.getName(), family);
     AwtFontSupplier awtSupplier = myMap_Family_RegularFont.get(family);
 
     try {
       myMap_Family_ItextFont.put(family, createFontSupplier(fontFile, BaseFont.EMBEDDED));
     } catch (DocumentException e) {
       if (e.getMessage().indexOf("cannot be embedded") < 0) {
-        GPLogger.logToLogger(e);
+        ourLogger.error("This font can't be embedded so we skip it", e);
         return;
       }
     }
@@ -166,9 +174,8 @@ public class TTFontCache {
       GPLogger.logToLogger(e);
       return;
     }
-    GPLogger.getLogger(getClass()).fine("registering font: " + family);
     if (awtSupplier == null) {
-      awtSupplier = new AwtFontSupplier();
+      awtSupplier = new AwtFontSupplier(family);
       myMap_Family_RegularFont.put(family, awtSupplier);
     }
     awtSupplier.addFile(fontFile);
@@ -183,6 +190,7 @@ public class TTFontCache {
           || !e.getMessage().contains(GanttLanguage.getInstance().getCharSet())) {
         throw e;
       }
+      ourLogger.error("Failure when creating font supplier fr iText. font={}", fontFile.getName(), e);
     } finally {
       BaseFontPublicMorozov.clearCache();
     }
