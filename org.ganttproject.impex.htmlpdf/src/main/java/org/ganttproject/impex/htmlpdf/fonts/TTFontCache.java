@@ -78,7 +78,7 @@ public class TTFontCache {
 
   private void registerFonts(File dir) {
     final File[] files = dir.listFiles();
-    ourLogger.info("registerFonts: dir={] |files|={}", dir.getAbsolutePath(), files.length);
+    ourLogger.info("registerFonts: dir={} |files|={}", dir.getAbsolutePath(), files.length);
     for (File f : files) {
       if (!f.canRead()) {
         ourLogger.warn("Can't read the file={}", f.getName());
@@ -287,14 +287,18 @@ public class TTFontCache {
 
       @Override
       public BaseFont awtToPdf(Font awtFont) {
+        ourLogger.info("Searching for BaseFont for awtFont={} charset={}", awtFont, charset);
         if (myFontCache.containsKey(awtFont)) {
+          ourLogger.info("Found in cache.");
           return myFontCache.get(awtFont);
         }
 
         String family = awtFont.getFamily().toLowerCase();
         Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
+        ourLogger.info("Searching for supplier: family={} supplier={}", family, f);
         if (f != null) {
           BaseFont result = f.apply(charset);
+          ourLogger.info("created base font={}", result);
           myFontCache.put(awtFont, result);
           return result;
         }
@@ -303,17 +307,21 @@ public class TTFontCache {
         if (myProperties.containsKey("font." + family)) {
           family = String.valueOf(myProperties.get("font." + family));
         }
+        ourLogger.info("Searching for substitution. Family={}", family);
         FontSubstitution substitution = substitutions.getSubstitution(family);
         if (substitution != null) {
           family = substitution.getSubstitutionFamily();
         }
         f = myMap_Family_ItextFont.get(family);
+        ourLogger.info("substitution family={} supplier={}", family, f);
         if (f != null) {
           BaseFont result = f.apply(charset);
+          ourLogger.info("created base font={}", result);
           myFontCache.put(awtFont, result);
           return result;
         }
         BaseFont result = getFallbackFont(charset);
+        ourLogger.info("so, trying fallback font={}", result);
         if (result == null) {
           GPLogger.log(new RuntimeException("Font with family=" + awtFont.getFamily()
               + " not found. Also tried family=" + family + " and fallback font"));
