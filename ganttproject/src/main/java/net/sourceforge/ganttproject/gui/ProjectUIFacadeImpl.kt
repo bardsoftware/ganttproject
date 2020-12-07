@@ -329,7 +329,7 @@ class ProjectUIFacadeImpl(
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
               is ForbiddenException -> {
                 signin {
-                  openProject(document, project, null)
+                  openProject(document, project, onFinish)
                 }
               }
               else -> {
