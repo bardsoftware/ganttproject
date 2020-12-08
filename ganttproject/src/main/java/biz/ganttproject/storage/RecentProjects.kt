@@ -74,7 +74,6 @@ class RecentProjects(
 
 
       fun onAction() {
-        // TODO: This currently works for local and Cloud docs only. Make it working for WebDAV docs too.
         selectedItem?.let {
           it.asDocument()?.let(documentReceiver)
         }

@@ -41,14 +41,14 @@ import java.util.*
 import java.util.function.Consumer
 
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
+const val GPCLOUD_SCHEME = "https"
 const val GPCLOUD_IP = "216.239.32.21"
 //const val GPCLOUD_HOST = "ganttproject.localhost"
 const val GPCLOUD_HOST = "ganttproject.cloud"
-const val GPCLOUD_ORIGIN = "https://$GPCLOUD_HOST"
-const val GPCLOUD_LANDING_URL = "https://$GPCLOUD_HOST"
+const val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST"
 const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
-const val GPCLOUD_SIGNIN_URL = "https://$GPCLOUD_HOST/__/auth/desktop"
-const val GPCLOUD_SIGNUP_URL = "https://$GPCLOUD_HOST/__/auth/handler"
+const val GPCLOUD_SIGNIN_URL = "$GPCLOUD_ORIGIN/__/auth/desktop"
+const val GPCLOUD_SIGNUP_URL = "$GPCLOUD_ORIGIN/__/auth/handler"
 const val GPCLOUD_WEBSOCKET_URL = "wss://ws.$GPCLOUD_HOST"
 enum class SceneId { BROWSER, SIGNUP, SIGNIN, OFFLINE, SPINNER, TOKEN_SPINNER, OFFLINE_BROWSER }
 typealias SceneChanger = (Node, SceneId) -> Unit
