@@ -18,30 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IStatus;
@@ -54,7 +38,19 @@ import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
-import biz.ganttproject.core.option.GPOptionGroup;
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 
 public class ITextEngine extends AbstractEngine {
   private ITextStylesheet myStylesheet;
@@ -213,15 +209,14 @@ public class ITextEngine extends AbstractEngine {
       @Override
       protected IStatus run() {
         assert myStylesheet != null;
-        OutputStream out = null;
-        try {
-          out = new FileOutputStream(outputFile);
+        try(OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))) {
           ((ThemeImpl) myStylesheet).run(getProject(), getUiFacade(), out);
         } catch (ExportException e) {
           throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
-        } finally {
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
         return Status.OK_STATUS;
       }
