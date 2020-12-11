@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -53,10 +54,10 @@ import java.util.stream.Collectors;
  */
 public class TTFontCache {
   private static final org.slf4j.Logger ourLogger = GPLogger.create("Export.Pdf.Fonts").delegate();
-  private static String FALLBACK_FONT_PATH = "/fonts/wqy-microhei.ttc";
-  private Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<String, AwtFontSupplier>();
-  private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<FontKey, com.itextpdf.text.Font>();
-  private Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<String, Function<String, BaseFont>>();
+  private static final String FALLBACK_FONT_PATH = "/fonts/wqy-microhei.ttc";
+  private final Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<>();
+  private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<>();
+  private final Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<>();
   private Properties myProperties;
   private Function<String, BaseFont> myFallbackFont;
 
@@ -86,7 +87,7 @@ public class TTFontCache {
   }
 
   public List<String> getRegisteredFamilies() {
-    return new ArrayList<String>(myMap_Family_RegularFont.keySet());
+    return new ArrayList<>(myMap_Family_RegularFont.keySet());
   }
 
   public Font getAwtFont(String family) {
@@ -163,9 +164,7 @@ public class TTFontCache {
     private Font createFont(File fontFile) {
       try {
         return createAwtFont(fontFile);
-      } catch (IOException e) {
-        GPLogger.log(e);
-      } catch (FontFormatException e) {
+      } catch (IOException | FontFormatException e) {
         GPLogger.log(e);
       }
       return null;
@@ -194,7 +193,7 @@ public class TTFontCache {
   }
 
   private Function<String, BaseFont> createFontSupplier(final File fontFile, final boolean isEmbedded)
-      throws DocumentException, IOException {
+      throws DocumentException {
     Function<String, BaseFont> result = charset -> {
       try {
         if (fontFile.getName().toLowerCase().endsWith(".ttc")) {
@@ -202,10 +201,7 @@ public class TTFontCache {
         } else {
           return BaseFont.createFont(fontFile.getAbsolutePath(), charset, isEmbedded);
         }
-      } catch (DocumentException e) {
-        ourLogger.error("Failure when creating PDF font from file={} for charset={}",
-          fontFile.getName(), GanttLanguage.getInstance().getCharSet(), e);
-      } catch (IOException e) {
+      } catch (DocumentException | IOException e) {
         ourLogger.error("Failure when creating PDF font from file={} for charset={}",
           fontFile.getName(), GanttLanguage.getInstance().getCharSet(), e);
       }
@@ -225,10 +221,10 @@ public class TTFontCache {
   }
 
   private static class FontKey {
-    private String family;
-    private int style;
-    private float size;
-    private String charset;
+    private final String family;
+    private final int style;
+    private final float size;
+    private final String charset;
 
     FontKey(String family, String charset, int style, float size) {
       this.family = family;
@@ -294,7 +290,7 @@ public class TTFontCache {
 
   public FontMapper getFontMapper(final FontSubstitutionModel substitutions, final String charset) {
     return new FontMapper() {
-      private Map<Font, BaseFont> myFontCache = new HashMap<Font, BaseFont>();
+      private final Map<Font, BaseFont> myFontCache = new HashMap<>();
 
       @Override
       public BaseFont awtToPdf(Font awtFont) {
@@ -374,7 +370,7 @@ public class TTFontCache {
 
   private static String getInfo(BaseFont font) {
     return Arrays.stream(font.getFullFontName())
-      .filter(record -> record != null)
+      .filter(Objects::nonNull)
       .map(record -> String.join(", ", record))
       .collect(Collectors.toList()).toString();
   }
