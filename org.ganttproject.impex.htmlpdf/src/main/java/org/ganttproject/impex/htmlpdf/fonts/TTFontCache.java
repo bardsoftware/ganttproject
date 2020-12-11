@@ -26,7 +26,6 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.BaseFont;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.eclipse.core.runtime.Platform;
 import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel;
 import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstitution;
 
@@ -59,13 +58,18 @@ public class TTFontCache {
   private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<FontKey, com.itextpdf.text.Font>();
   private Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<String, Function<String, BaseFont>>();
   private Properties myProperties;
-  private BaseFont myFallbackFont;
+  private Function<String, BaseFont> myFallbackFont;
 
   public TTFontCache() {
     try {
       Path tempFallbackFile = Files.createTempFile("ganttproject_fallback_font", ".ttc");
       Files.write(tempFallbackFile, getClass().getResource(FALLBACK_FONT_PATH).openStream().readAllBytes());
-      myFallbackFont = createFontSupplier(tempFallbackFile.toFile(), true).apply(GanttLanguage.getInstance().getCharSet());
+      myFallbackFont = createFontSupplier(tempFallbackFile.toFile(), true);
+
+      var fallbackAwtFonts = Font.createFonts(tempFallbackFile.toFile());
+      ourLogger.info("Registering fallback font {} in AWT", fallbackAwtFonts[0]);
+      GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fallbackAwtFonts[0]);
+      registerFontFile(tempFallbackFile.toFile());
     } catch (Exception e) {
       ourLogger.error("Failed to create fallback font", e);
     }
@@ -92,6 +96,9 @@ public class TTFontCache {
 
   private void registerFonts(File dir) {
     final File[] files = dir.listFiles();
+    if (files == null) {
+      return;
+    }
     ourLogger.info("registerFonts: dir={} |files|={}", dir.getAbsolutePath(), files.length);
     for (File f : files) {
       if (!f.canRead()) {
@@ -346,7 +353,7 @@ public class TTFontCache {
   }
 
   protected BaseFont getFallbackFont(String charset) {
-    return myFallbackFont;
+    return myFallbackFont.apply(charset);
   }
 
   public void setProperties(Properties properties) {
