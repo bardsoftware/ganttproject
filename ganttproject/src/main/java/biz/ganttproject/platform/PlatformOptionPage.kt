@@ -53,7 +53,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     val jfxPanel = JFXPanel()
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
-    Eclipsito.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
+    Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
         Platform.runLater {
           jfxPanel.scene = createScene(updateMetadata)
         }

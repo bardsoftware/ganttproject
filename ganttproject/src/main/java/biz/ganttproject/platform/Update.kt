@@ -55,15 +55,14 @@ import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
-val UPDATE_URL = System.getProperty("app.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json")
 
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
-  updater.getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
+  updater.getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
     if (updateMetadata.isNotEmpty()) {
       showUpdateDialog(updateMetadata, uiFacade, false)
     }
   }.exceptionally { ex ->
-    LOG.error(msg = "Failed to fetch updates from {}", UPDATE_URL, exception = ex)
+    LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
     null
   }
 }
@@ -310,6 +309,7 @@ private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
   val latestShownVersion = DefaultStringOption("latestShownVersion")
-  val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion)
+  val updateUrl = DefaultStringOption("url", System.getProperty("platform.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"))
+  val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion, updateUrl)
 
 }
