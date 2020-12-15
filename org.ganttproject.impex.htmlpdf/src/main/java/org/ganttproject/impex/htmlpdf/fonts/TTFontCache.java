@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
  */
 public class TTFontCache {
   private static final org.slf4j.Logger ourLogger = GPLogger.create("Export.Pdf.Fonts").delegate();
-  private static final String FALLBACK_FONT_PATH = "/fonts/wqy-microhei.ttc";
+  private static final String FALLBACK_FONT_PATH = "/fonts/DroidSansFallbackFull.ttc";
   private final Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<>();
   private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<>();
   private final Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<>();
