@@ -9,9 +9,11 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
+
+    <logger name="Export.Pdf.Fonts" level="DEBUG"/>
 
 </configuration>
 

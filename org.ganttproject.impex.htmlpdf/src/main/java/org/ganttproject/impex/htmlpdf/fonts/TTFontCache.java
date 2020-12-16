@@ -68,7 +68,7 @@ public class TTFontCache {
       myFallbackFont = createFontSupplier(tempFallbackFile.toFile(), true);
 
       var fallbackAwtFonts = Font.createFonts(tempFallbackFile.toFile());
-      ourLogger.info("Registering fallback font {} in AWT", fallbackAwtFonts[0]);
+      ourLogger.debug("Registering fallback font {} in AWT", fallbackAwtFonts[0]);
       GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fallbackAwtFonts[0]);
       registerFontFile(tempFallbackFile.toFile());
     } catch (Exception e) {
@@ -100,10 +100,10 @@ public class TTFontCache {
     if (files == null) {
       return;
     }
-    ourLogger.info("registerFonts: dir={} |files|={}", dir.getAbsolutePath(), files.length);
+    ourLogger.debug("registerFonts: dir={} |files|={}", dir.getAbsolutePath(), files.length);
     for (File f : files) {
       if (!f.canRead()) {
-        ourLogger.warn("Can't read the file={}", f.getName());
+        ourLogger.warn("Can't read the font file={}", f.getAbsolutePath());
         continue;
       }
       if (f.isDirectory()) {
@@ -112,7 +112,7 @@ public class TTFontCache {
       }
       String filename = f.getName().toLowerCase().trim();
       if (!filename.endsWith(".ttf") && !filename.endsWith(".ttc")) {
-        ourLogger.warn("Skipping file={} because of its extension", f.getName());
+        ourLogger.warn("Skipping file={} because of its extension", f.getAbsolutePath());
         continue;
       }
       try {
@@ -145,7 +145,7 @@ public class TTFontCache {
     public Font get() {
       if (myFont == null) {
         myFont = createFont();
-        ourLogger.info("Created AWT font={} for family={}", myFont==null ? "null" : myFont.toString(), family);
+        ourLogger.debug("Created AWT font={} for family={}", myFont==null ? "null" : myFont.toString(), family);
       }
       return myFont;
     }
@@ -173,11 +173,10 @@ public class TTFontCache {
 
   private void registerFontFile(final File fontFile) throws FontFormatException,
       IOException {
-    // FontFactory.register(fontFile.getAbsolutePath());
     Font awtFont = createAwtFont(fontFile);
 
     final String family = awtFont.getFontName().toLowerCase();
-    ourLogger.info("Registering font: file={} family={}", fontFile.getName(), family);
+    ourLogger.debug("Registering font: file={} family={}", fontFile.getName(), family);
     AwtFontSupplier awtSupplier = myMap_Family_RegularFont.get(family);
     if (awtSupplier == null) {
       awtSupplier = new AwtFontSupplier(family);
@@ -186,9 +185,14 @@ public class TTFontCache {
     awtSupplier.addFile(fontFile);
 
     try {
-      myMap_Family_ItextFont.put(family, createFontSupplier(fontFile, BaseFont.EMBEDDED));
+      var fontSupplier = createFontSupplier(fontFile, BaseFont.EMBEDDED);
+      if (fontSupplier != null) {
+        myMap_Family_ItextFont.put(family, fontSupplier);
+      } else {
+        ourLogger.error("Failed to create PDF font supplier for the fallback font={} file={}", family, fontFile.getAbsolutePath());
+      }
     } catch (DocumentException e) {
-      ourLogger.error("Failed to create ", e);
+      ourLogger.error("Failed to create PDF font supplier for the fallback font={} file={}", family, fontFile.getAbsolutePath(), e);
     }
   }
 
@@ -203,12 +207,12 @@ public class TTFontCache {
         }
       } catch (DocumentException | IOException e) {
         ourLogger.error("Failure when creating PDF font from file={} for charset={}",
-          fontFile.getName(), GanttLanguage.getInstance().getCharSet(), e);
+          fontFile.getAbsolutePath(), charset, e);
       }
       return null;
     };
     try {
-      // This is just a test if we can create the PDF font or not. In caaseof success we return the supplier which returns
+      // This is just a test if we can create the PDF font or not. In case of success we return the supplier which returns
       // the font, otherwise we return null and clear the caches to reduce memory footprint.
       BaseFont baseFont = result.apply(GanttLanguage.getInstance().getCharSet());
       return baseFont == null ? null : result;
@@ -294,21 +298,21 @@ public class TTFontCache {
 
       @Override
       public BaseFont awtToPdf(Font awtFont) {
-        ourLogger.info("Searching for BaseFont for awtFont={} charset={} cache={}", awtFont, charset, myFontCache);
+        ourLogger.debug("Searching for BaseFont for awtFont={} charset={} cache={}", awtFont, charset, myFontCache);
         if (myFontCache.containsKey(awtFont)) {
-          ourLogger.info("Found in cache.");
+          ourLogger.debug("Found in cache.");
           return myFontCache.get(awtFont);
         }
 
         String family = awtFont.getFamily().toLowerCase();
         Function<String, BaseFont> f = myMap_Family_ItextFont.get(family);
-        ourLogger.info("Searching for supplier: family={} size={}", family, awtFont.getSize());
+        ourLogger.debug("Searching for supplier: family={} size={}", family, awtFont.getSize());
         if (f != null) {
           BaseFont result = f.apply(charset);
           if (result == null) {
-            ourLogger.warn("... failed to find the base font for this");
+            ourLogger.warn("... failed to find the base font for family={} charset={}", family, charset);
           } else {
-            ourLogger.info("... created BaseFont: {}", getInfo(result));
+            ourLogger.debug("... created BaseFont: {}", getInfo(result));
             myFontCache.put(awtFont, result);
           }
           return result;
@@ -318,21 +322,21 @@ public class TTFontCache {
         if (myProperties.containsKey("font." + family)) {
           family = String.valueOf(myProperties.get("font." + family));
         }
-        ourLogger.info("Searching for substitution. Family={}", family);
+        ourLogger.debug("Searching for substitution. Family={}", family);
         FontSubstitution substitution = substitutions.getSubstitution(family);
         if (substitution != null) {
           family = substitution.getSubstitutionFamily();
         }
         f = myMap_Family_ItextFont.get(family);
-        ourLogger.info("substitution family={} supplier={}", family, f);
+        ourLogger.debug("substitution family={} supplier={}", family, f);
         if (f != null) {
           BaseFont result = f.apply(charset);
-          ourLogger.info("created base font={}", result);
+          ourLogger.debug("created base font={}", result);
           myFontCache.put(awtFont, result);
           return result;
         }
         BaseFont result = getFallbackFont(charset);
-        ourLogger.info("so, trying fallback font={}", result);
+        ourLogger.debug("so, trying fallback font={}", result);
         if (result == null) {
           GPLogger.log(new RuntimeException("Font with family=" + awtFont.getFamily()
               + " not found. Also tried family=" + family + " and fallback font"));

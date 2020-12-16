@@ -891,6 +891,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public static class Args {
+    @Parameter(names = "-logback-config", description = "Path to logback configuration file", arity = 1)
+    public String logbackConfig = "logback.xml";
+
     @Parameter(names = "-log", description = "Enable logging", arity = 1)
     public boolean log = true;
 
@@ -911,11 +914,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * The main
    */
   public static boolean main(String[] arg) throws InvocationTargetException, InterruptedException {
-    GPLogger.init();
     CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
     final Args mainArgs = new Args();
     try {
       JCommander cmdLineParser = new JCommander(new Object[]{mainArgs, cmdlineApplication.getArguments()}, arg);
+      GPLogger.init(mainArgs.logbackConfig);
       if (mainArgs.help) {
         cmdLineParser.usage();
         System.exit(0);
