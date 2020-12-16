@@ -45,7 +45,7 @@ import javax.swing.SwingUtilities
 fun main(args: Array<String>) {
   val mainArgs = GanttProject.Args()
   JCommander(arrayOf<Any>(mainArgs), *args)
-  GPLogger.init()
+  GPLogger.init(mainArgs.logbackConfig)
   RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
   PluginManager.setCharts(listOf())
   GanttLanguage.getInstance()

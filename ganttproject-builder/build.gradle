@@ -54,6 +54,7 @@ task distBin(dependsOn: [
                 include "ganttproject.exe"
                 include "HouseBuildingSample.gan"
                 include "LICENSE"
+                include "logback.xml"
                 include "logging.properties"
             }
         }
