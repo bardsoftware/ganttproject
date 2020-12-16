@@ -68,8 +68,10 @@ fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
 }
 
 private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, showSkipped: Boolean = false) {
+  val runningVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
+  val cutoffVersion = listOf(UpdateOptions.latestShownVersion.value ?: runningVersion, runningVersion).maxOrNull()
   val latestShownUpdateMetadata = UpdateMetadata(
-      UpdateOptions.latestShownVersion.value ?: Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900",
+      cutoffVersion,
       null, null, null, 0, "")
   val filteredUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
