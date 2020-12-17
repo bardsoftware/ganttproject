@@ -20,13 +20,8 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.LoggerImpl;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.util.ContextInitializer;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.spi.AppenderAttachable;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,8 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -52,7 +45,6 @@ public class GPLogger {
   private static UIFacade ourUIFacade;
   private static Map<String, Logger> ourLoggers = Maps.newHashMap();
   private static String ourLogFileName;
-  private static FileAppender ourLogbackAppender;
 
   static {
     ourHandler = new ConsoleHandler();
@@ -62,7 +54,7 @@ public class GPLogger {
   }
 
   public static void init(String logbackFilePath) {
-    System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
+    //System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
     URL logConfig = GanttProject.class.getResource("/logging.properties");
     if (logConfig != null) {
       try {
@@ -124,14 +116,9 @@ public class GPLogger {
     return logger;
   }
 
-  private static List<LoggerImpl> ourPendingLoggers = new ArrayList<>();
   public static LoggerApi<org.slf4j.Logger> create(String name) {
     var result = new LoggerImpl(name);
-    if (ourLogbackAppender != null) {
-      ((AppenderAttachable<ILoggingEvent>) result.delegate()).addAppender(ourLogbackAppender);
-    } else {
-      ourPendingLoggers.add(result);
-    }
+    getLogger(name); // To initialize handlers
     return result;
   }
 
@@ -151,6 +138,7 @@ public class GPLogger {
 
   public static void setLogFile(String logFileName) {
     try {
+      ourLogger.info(String.format("Writing log to file %s", logFileName));
       Handler fileHandler = new FileHandler(logFileName, true);
       fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
       ourLogger.removeHandler(ourHandler);
@@ -158,13 +146,13 @@ public class GPLogger {
       ourHandler = fileHandler;
       ourLogFileName = logFileName;
 
-      ourLogbackAppender = new FileAppender();
-      ourLogbackAppender.setFile(logFileName);
-
-      ((AppenderAttachable<ILoggingEvent>) LoggerFactory.getLogger("ROOT")).addAppender(ourLogbackAppender);
-      for (LoggerImpl pendingLogger : ourPendingLoggers) {
-        ((AppenderAttachable<ILoggingEvent>) pendingLogger.delegate()).addAppender(ourLogbackAppender);
-      }
+//      ourLogbackAppender = new FileAppender();
+//      ourLogbackAppender.setFile(logFileName);
+//
+//      ((AppenderAttachable<ILoggingEvent>) LoggerFactory.getLogger("ROOT")).addAppender(ourLogbackAppender);
+//      for (LoggerImpl pendingLogger : ourPendingLoggers) {
+//        ((AppenderAttachable<ILoggingEvent>) pendingLogger.delegate()).addAppender(ourLogbackAppender);
+//      }
     } catch (SecurityException e) {
       e.printStackTrace();
     } catch (IOException e) {

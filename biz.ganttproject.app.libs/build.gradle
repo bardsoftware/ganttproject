@@ -18,7 +18,9 @@ configurations {
 }
 
 dependencies {
-    exported 'ch.qos.logback:logback-classic:1.2.+'
+    exported 'org.slf4j:slf4j-api:1.7.30'
+    compile 'org.slf4j:slf4j-jdk14:1.7.30'
+
     exported 'commons-codec:commons-codec:1.+'
     exported 'commons-io:commons-io:2.+'
 

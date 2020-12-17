@@ -194,7 +194,6 @@ public class DocumentCreator implements DocumentManager {
       if (!optionsFile.exists()) {
         return null;
       }
-      GPLogger.log("Options file:" + optionsFile.getAbsolutePath());
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
       FileTime accessTime = attrs.lastAccessTime();
       FileTime modifyTime = attrs.lastModifiedTime();

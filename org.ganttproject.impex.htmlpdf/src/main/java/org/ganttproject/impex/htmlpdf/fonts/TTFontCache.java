@@ -77,12 +77,11 @@ public class TTFontCache {
   }
 
   public void registerDirectory(String path) {
-    GPLogger.getLogger(getClass()).info("scanning directory=" + path);
     File dir = new File(path);
     if (dir.exists() && dir.isDirectory()) {
       registerFonts(dir);
     } else {
-      GPLogger.getLogger(getClass()).info("directory " + path + " is not readable");
+      ourLogger.info("Skipping directory {}", path);
     }
   }
 
@@ -165,7 +164,7 @@ public class TTFontCache {
       try {
         return createAwtFont(fontFile);
       } catch (IOException | FontFormatException e) {
-        GPLogger.log(e);
+        ourLogger.error("Failed when creating AWT font from file {}", fontFile, e);
       }
       return null;
     }
@@ -189,7 +188,8 @@ public class TTFontCache {
       if (fontSupplier != null) {
         myMap_Family_ItextFont.put(family, fontSupplier);
       } else {
-        ourLogger.error("Failed to create PDF font supplier for the fallback font={} file={}", family, fontFile.getAbsolutePath());
+        ourLogger.error("Failed to create PDF font supplier for the fallback font={} file={}",
+            family, fontFile.getAbsolutePath());
       }
     } catch (DocumentException e) {
       ourLogger.error("Failed to create PDF font supplier for the fallback font={} file={}", family, fontFile.getAbsolutePath(), e);
@@ -212,12 +212,13 @@ public class TTFontCache {
       return null;
     };
     try {
-      // This is just a test if we can create the PDF font or not. In case of success we return the supplier which returns
-      // the font, otherwise we return null and clear the caches to reduce memory footprint.
+      // This is just a test if we can create the PDF font or not. In case of success we return the supplier
+      // which returns the font, otherwise we return null and clear the caches to reduce memory footprint.
       BaseFont baseFont = result.apply(GanttLanguage.getInstance().getCharSet());
       return baseFont == null ? null : result;
     } catch (Exception e) {
-      ourLogger.error("Failure when creating PDF font from file={} for charset={}", fontFile.getName(), GanttLanguage.getInstance().getCharSet(), e);
+      ourLogger.error("Failure when creating PDF font from file={} for charset={}",
+          fontFile.getName(), GanttLanguage.getInstance().getCharSet(), e);
       return null;
     } finally {
       BaseFontPublicMorozov.clearCache();
@@ -285,7 +286,7 @@ public class TTFontCache {
         result = new com.itextpdf.text.Font(bf, size, style);
         myFontCache.put(key, result);
       } else {
-        GPLogger.log(new RuntimeException("Font with family=" + family + " not found. Also tried fallback font"));
+        ourLogger.error("Can't find a PDF font corresponding to AWT family={} charset={}", family, charset);
       }
     }
     return result;
@@ -338,8 +339,8 @@ public class TTFontCache {
         BaseFont result = getFallbackFont(charset);
         ourLogger.debug("so, trying fallback font={}", result);
         if (result == null) {
-          GPLogger.log(new RuntimeException("Font with family=" + awtFont.getFamily()
-              + " not found. Also tried family=" + family + " and fallback font"));
+          ourLogger.error("Can't find a PDF font corresponding to AWT font with family={}. " +
+              "Also tried substitution family={} and fallback font. Charset={}", awtFont.getFamily(), family, charset);
         }
         return result;
       }

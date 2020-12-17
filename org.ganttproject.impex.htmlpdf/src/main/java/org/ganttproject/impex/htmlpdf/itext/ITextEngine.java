@@ -132,6 +132,7 @@ public class ITextEngine extends AbstractEngine {
     Thread fontReadingThread = new Thread(new Runnable() {
       @Override
       public void run() {
+        var logger = GPLogger.create("Export.Pdf.Fonts");
         try {
           // Random waiting seems silly, depending on the available
           // resources (CPU speed, number of processes running etc)
@@ -139,7 +140,7 @@ public class ITextEngine extends AbstractEngine {
           // FIXME Add some better way of determining whether the fonts can be
           // read already
           Thread.sleep(10000);
-          GPLogger.getLogger(TTFontCache.class).info("Scanning font directories...");
+          logger.debug("Scanning font directories...");
         } catch (InterruptedException e) {
           // TODO Auto-generated catch block
           GPLogger.logToLogger(e);
@@ -149,7 +150,7 @@ public class ITextEngine extends AbstractEngine {
           myFontsReady = true;
           myFontsMutex.notifyAll();
         }
-        GPLogger.getLogger(TTFontCache.class).info("Scanning font directories completed");
+        logger.debug("Scanning font directories completed");
       }
     });
     fontReadingThread.setPriority(Thread.MIN_PRIORITY);
