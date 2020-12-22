@@ -5,11 +5,11 @@
   <jar>eclipsito.jar</jar>
   <outfile>ganttproject.exe</outfile>
   <errTitle></errTitle>
-  <cmdLine>--verbosity 4 --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject</cmdLine>
+  <cmdLine>--verbosity 1 --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>http://docs.ganttproject.biz/user/troubleshoot-installation</downloadUrl>
-  <supportUrl>http://docs.ganttproject.biz/user/troubleshoot-installation</supportUrl>
+  <downloadUrl>https://bell-sw.com/pages/downloads/#/java-11-lts</downloadUrl>
+  <supportUrl>https://help.ganttproject.biz</supportUrl>
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
@@ -30,11 +30,11 @@
     <maxHeapSize>1024</maxHeapSize>
   </jre>
   <messages>
-    <startupErr>GanttProject failed to start. Visit https://help.ganttproject.biz to get support.</startupErr>
+    <startupErr>GanttProject failed to start. Please visit https://help.ganttproject.biz to get support.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
         </bundledJreErr>
-    <jreVersionErr>GanttProject needs Java 7 or higher. Visit http://docs.ganttproject.biz to learn more.</jreVersionErr>
-    <launcherErr>Java Runtime not found or is corrupted. Visit http://docs.ganttproject.biz to learn more.
+    <jreVersionErr>GanttProject needs Java 11 or higher. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
+    <launcherErr>Java Runtime not found or is corrupted. Please visit https://help.ganttproject.biz to get support.
         </launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
   </messages>

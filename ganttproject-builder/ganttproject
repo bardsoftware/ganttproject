@@ -182,7 +182,7 @@ log "user.dir=$(pwd)"
 
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar"
 export CLASSPATH
-ECLIPSITO_ARGS="--verbosity 4 --version-dirs $GP_HOME/plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
+ECLIPSITO_ARGS="--verbosity 1 --version-dirs $GP_HOME/plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
 JAVA_ARGS="-Xmx1024m -Duser.dir=$(pwd) $DEBUG_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"

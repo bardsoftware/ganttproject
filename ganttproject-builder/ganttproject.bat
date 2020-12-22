@@ -7,7 +7,7 @@ IF "%JAVA_HOME%"=="" SET JAVA_COMMAND=java
 
 SET LOCAL_CLASSPATH=%GP_HOME%\eclipsito.jar;%GP_HOME%
 SET JVM_ARGS=-Xmx512m  -ea -Dsun.java2d.d3d=false
-SET "ECLIPSITO_ARGS=--verbosity 4  --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
+SET "ECLIPSITO_ARGS=--verbosity 1  --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 
 SET BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
