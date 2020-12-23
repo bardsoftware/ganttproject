@@ -153,6 +153,11 @@ find_java() {
   if [ "0" = "$?" ]; then
     check_java "$JAVA_COMMAND" && return 0;
   fi
+  if [ -d /usr/lib/jvm ]; then
+    for d in /usr/lib/jvm/*; do
+      check_java "$d/bin/java" && return 0;
+    done;
+  fi
 
   report_java_not_found && exit 1;
 }
