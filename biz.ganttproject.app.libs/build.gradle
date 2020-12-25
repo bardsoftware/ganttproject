@@ -68,6 +68,15 @@ task copyPluginFiles(dependsOn: jar) {
                 exclude "javafx*.jar"
             }
         }
+        if (project.hasProperty("withJavafx")) {
+            copy {
+                into(new File(rootProject.pluginsDir, "${project.name}/lib"))
+                from(fileTree("javafx")) {
+                    include "*"
+                }
+            }
+        }
+
         println "<<< $project.name"
     }
 }

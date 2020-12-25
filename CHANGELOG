@@ -1,12 +1,16 @@
 ganttproject (3.0.2914-1) unstable; urgency=low
   * This is a release candidate build of GanttProject 3.0.
   * GanttProject 3.0 adds a number of major features:
-    - Integration with GanttProject Cloud, online project storage and collaboration service.
-    - Self-sufficient distribution packages for all supported platforms with the bundled Java Runtime.
+    - Integration with GanttProject Cloud, online project storage
+      and collaboration service.
+    - Self-sufficient distribution packages for all supported platforms
+      with the bundled Java Runtime.
     - Built-in Update Manager which helps to deliver and install updates faster.
     - Native Export and import from Excel files.
-    - Reworked user interface of the project file storage which integrates local files, recent files, WebDAV storages and GanttProject Cloud
+    - Reworked user interface of the project file storage which integrates
+      local files, recent files, WebDAV storages and GanttProject Cloud
 
-    The list of closed issues is available at https://github.com/bardsoftware/ganttproject/milestone/16
+    The list of closed issues is available at
+    https://github.com/bardsoftware/ganttproject/milestone/16
 
  -- Dmitry Barashev <contact@ganttproject.biz>  Wed, 23 Dec 2020 12:00:00 +0000

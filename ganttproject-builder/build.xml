@@ -39,24 +39,24 @@
         >
             <genericname value="GanttProject"/>
         </desktopEntry>
-        <copy file="ganttproject-128.1" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+        <copy file="ganttproject-128.svg" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
         </copy>
         <!-- Some docs go into /usr/share/doc/ganttproject -->
-        <mkdir dir="${distDebWork}/usr/share/doc/${package.name}"/>
-        <copy todir="${distDebWork}/usr/share/doc/${package.name}">
-            <fileset dir=".">
-                <include name="LICENSE"/>
-                <include name="README"/>
-                <include name="AUTHORS"/>
-            </fileset>
-        </copy>
+<!--        <mkdir dir="${distDebWork}/usr/share/doc/${package.name}"/>-->
+<!--        <copy todir="${distDebWork}/usr/share/doc/${package.name}">-->
+<!--            <fileset dir=".">-->
+<!--                <include name="LICENSE"/>-->
+<!--                <include name="README"/>-->
+<!--                <include name="AUTHORS"/>-->
+<!--            </fileset>-->
+<!--        </copy>-->
         <deb todir="${distDebPackage}"
              package="${package.name}"
              version="${version}"
              homepage="https://www.ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="openjdk-11-jre | openjdk-11-jdk | java11-runtime, openjfx | libopenjfx-java"
+             depends="openjdk-11-jre | openjdk-11-jdk | java11-runtime"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"

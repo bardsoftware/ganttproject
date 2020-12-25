@@ -78,7 +78,7 @@ task distBin(dependsOn: [
             }
         }
         delete fileTree(rootProject.distBinDir).matching {
-            include "**/javafx**.jar*"
+            include "**/javafx**.jar.lib"
         }
     }
 }
@@ -139,18 +139,23 @@ task distWin(dependsOn: distBin) {
 }
 
 task distDebPre {
-    doLast {
+    doFirst {
         copy {
-            into('deb/usr/share/doc/ganttproject')
-            from(fileTree(".")) {
+            into 'deb/usr/share/doc/ganttproject'
+            from(rootProject.projectDir) {
                 include "AUTHORS"
                 include "CHANGELOG"
-                include "LICENSE"
                 include "README"
             }
         }
-        "gzip --best deb/usr/share/doc/ganttproject/CHANGELOG".execute()
-        "mv deb/usr/share/doc/ganttproject/CHANGELOG.gz deb/usr/share/doc/ganttproject/changelog.Debian.gz".execute()
+        exec {
+            commandLine "gzip"
+            args "-n", "-f", "deb/usr/share/doc/ganttproject/CHANGELOG"
+        }
+        exec {
+            commandLine "mv"
+            args "deb/usr/share/doc/ganttproject/CHANGELOG.gz", "deb/usr/share/doc/ganttproject/changelog.Debian.gz"
+        }
     }
 }
 
