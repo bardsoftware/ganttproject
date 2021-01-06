@@ -163,6 +163,24 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
           return false;
         }
       } else if (me.getClickCount() == 1 && me.getButton() == MouseEvent.BUTTON1) {
+        // Clicks in boolean columns are special: they don't need the editor, and we can toggle the value
+        // at the same time with changing the selection.
+        var columnClass = getColumnClass(column);
+        if (Boolean.class.isAssignableFrom(columnClass)) {
+          var columnImpl = getTableHeaderUiFacade().findColumnByViewIndex(column);
+          var columnIdx = columnImpl == null ? -1 : getTableHeaderUiFacade().getModelIndex(columnImpl);
+          if (columnIdx >= 0) {
+            // So if it is a boolean column, we just toggle the value.
+            SwingUtilities.invokeLater(() -> {
+              var currentValue = getTable().getModel().getValueAt(row, columnIdx);
+              currentValue = currentValue == null ? Boolean.FALSE : currentValue;
+              if (currentValue instanceof Boolean) {
+                getTable().getModel().setValueAt(!((Boolean) currentValue).booleanValue(), row, columnIdx);
+              }
+            });
+          }
+          return false;
+        }
         // If we click a column which is not selected, we should not start editing
         if (getTable().getSelectedColumn() != column || getTable().getSelectedRow() != row) {
           return false;
@@ -562,6 +580,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return UIUtil.getHeaderDimension(myTable, myTableColumn);
     }
 
+    @Override
+    public String toString() {
+      final StringBuffer sb = new StringBuffer("ColumnImpl{");
+      sb.append("stub=").append(myStub);
+      sb.append("name=").append(getName());
+      sb.append('}');
+      return sb.toString();
+    }
   }
 
   protected IGanttProject getProject() {

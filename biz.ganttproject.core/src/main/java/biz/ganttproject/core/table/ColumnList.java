@@ -122,7 +122,7 @@ public interface ColumnList {
 
     @Override
     public String toString() {
-      return myID;
+      return String.format("id=%s name=%s visible=%b", myID, myName, isVisible);
     }
 
   }
