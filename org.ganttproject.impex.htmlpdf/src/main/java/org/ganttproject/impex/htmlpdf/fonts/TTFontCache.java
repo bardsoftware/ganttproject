@@ -32,7 +32,6 @@ import org.ganttproject.impex.htmlpdf.itext.FontSubstitutionModel.FontSubstituti
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,9 +95,10 @@ public class TTFontCache {
   }
 
   private void registerFonts(File dir) {
-    final File[] files = dir.listFiles((dir1, name) ->
-      name.toLowerCase().endsWith(".ttf") || name.toLowerCase().endsWith(".ttc")
-    );
+    final File[] files = dir.listFiles(pathname -> {
+      var name = pathname.getName();
+      return pathname.isDirectory() || name.toLowerCase().endsWith(".ttf") || name.toLowerCase().endsWith(".ttc");
+    });
     if (files == null) {
       return;
     }
