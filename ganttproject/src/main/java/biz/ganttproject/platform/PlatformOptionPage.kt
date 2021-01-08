@@ -37,6 +37,7 @@ import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 /**
@@ -53,7 +54,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     val jfxPanel = JFXPanel()
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
-    Eclipsito.getUpdater().getUpdateMetadata(UPDATE_URL).thenAccept { updateMetadata ->
+    Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
         Platform.runLater {
           jfxPanel.scene = createScene(updateMetadata)
         }
@@ -73,7 +74,12 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
       it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
     }
     val dialogBuildApi = DialogControllerImpl(group)
-    val updateUi = UpdateDialog(updateMetadata) {}
+    val updateUi = UpdateDialog(updateMetadata) {
+      SwingUtilities.invokeLater {
+        uiFacade.quitApplication(false)
+        org.eclipse.core.runtime.Platform.restart()
+      }
+    }
     updateUi.addContent(dialogBuildApi)
     return Scene(group)
   }

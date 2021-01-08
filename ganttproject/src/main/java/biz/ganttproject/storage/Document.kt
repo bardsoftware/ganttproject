@@ -263,6 +263,8 @@ fun getDefaultLocalFolder(): File {
   }
 }
 
+fun getUserDir() = File(System.getProperty("user.dir"))
+
 private val domParser = DocumentBuilderFactory.newInstance().also {
   it.isValidating = false
   it.isNamespaceAware = false

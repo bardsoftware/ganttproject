@@ -53,7 +53,8 @@ public class GPLogger {
     ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
   }
 
-  public static void init() {
+  public static void init(String logbackFilePath) {
+    //System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
     URL logConfig = GanttProject.class.getResource("/logging.properties");
     if (logConfig != null) {
       try {
@@ -115,7 +116,12 @@ public class GPLogger {
     return logger;
   }
 
-  public static LoggerApi create(String name) { return new LoggerImpl(name); }
+  public static LoggerApi<org.slf4j.Logger> create(String name) {
+    var result = new LoggerImpl(name);
+    getLogger(name); // To initialize handlers
+    return result;
+  }
+
   public static Logger getLogger(Class<?> clazz) {
     return getLogger(clazz.getName());
   }
@@ -132,12 +138,21 @@ public class GPLogger {
 
   public static void setLogFile(String logFileName) {
     try {
+      ourLogger.info(String.format("Writing log to file %s", logFileName));
       Handler fileHandler = new FileHandler(logFileName, true);
       fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
       ourLogger.removeHandler(ourHandler);
       ourLogger.addHandler(fileHandler);
       ourHandler = fileHandler;
       ourLogFileName = logFileName;
+
+//      ourLogbackAppender = new FileAppender();
+//      ourLogbackAppender.setFile(logFileName);
+//
+//      ((AppenderAttachable<ILoggingEvent>) LoggerFactory.getLogger("ROOT")).addAppender(ourLogbackAppender);
+//      for (LoggerImpl pendingLogger : ourPendingLoggers) {
+//        ((AppenderAttachable<ILoggingEvent>) pendingLogger.delegate()).addAppender(ourLogbackAppender);
+//      }
     } catch (SecurityException e) {
       e.printStackTrace();
     } catch (IOException e) {

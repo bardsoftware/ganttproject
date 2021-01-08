@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -27,6 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -52,7 +52,15 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -155,6 +163,24 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
           return false;
         }
       } else if (me.getClickCount() == 1 && me.getButton() == MouseEvent.BUTTON1) {
+        // Clicks in boolean columns are special: they don't need the editor, and we can toggle the value
+        // at the same time with changing the selection.
+        var columnClass = getColumnClass(column);
+        if (Boolean.class.isAssignableFrom(columnClass)) {
+          var columnImpl = getTableHeaderUiFacade().findColumnByViewIndex(column);
+          var columnIdx = columnImpl == null ? -1 : getTableHeaderUiFacade().getModelIndex(columnImpl);
+          if (columnIdx >= 0) {
+            // So if it is a boolean column, we just toggle the value.
+            SwingUtilities.invokeLater(() -> {
+              var currentValue = getTable().getModel().getValueAt(row, columnIdx);
+              currentValue = currentValue == null ? Boolean.FALSE : currentValue;
+              if (currentValue instanceof Boolean) {
+                getTable().getModel().setValueAt(!((Boolean) currentValue).booleanValue(), row, columnIdx);
+              }
+            });
+          }
+          return false;
+        }
         // If we click a column which is not selected, we should not start editing
         if (getTable().getSelectedColumn() != column || getTable().getSelectedRow() != row) {
           return false;
@@ -554,6 +580,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       return UIUtil.getHeaderDimension(myTable, myTableColumn);
     }
 
+    @Override
+    public String toString() {
+      final StringBuffer sb = new StringBuffer("ColumnImpl{");
+      sb.append("stub=").append(myStub);
+      sb.append("name=").append(getName());
+      sb.append('}');
+      return sb.toString();
+    }
   }
 
   protected IGanttProject getProject() {
@@ -929,7 +963,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     if (editor != null) {
       result.setCellEditor(editor);
     } else {
-      System.err.println("no editor for column=" + modelIndex + " class=" + columnClass);
+      GPLogger.create("Window.Table.Base").debug(
+          "no editor for column={} class={}", new Object[] {modelIndex, columnClass}, ImmutableMap.of());
     }
     return result;
   }

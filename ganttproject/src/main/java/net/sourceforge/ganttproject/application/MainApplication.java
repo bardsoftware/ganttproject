@@ -3,21 +3,20 @@
  */
 package net.sourceforge.ganttproject.application;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
+import biz.ganttproject.LoggerApi;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
-
 import org.eclipse.core.runtime.IPlatformRunnable;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * @author bard
  */
 public class MainApplication implements IPlatformRunnable {
   private AtomicBoolean myLock = new AtomicBoolean(true);
+  private final LoggerApi logger = GPLogger.create("Window");
 
   // The hack with waiting is necessary because when you
   // launch Runtime Workbench in Eclipse, it exists as soon as
@@ -39,12 +38,12 @@ public class MainApplication implements IPlatformRunnable {
     GanttProject.setApplicationQuitCallback(onApplicationQuit);
     if (GanttProject.main(cmdLine)) {
       synchronized (myLock) {
-        GPLogger.log("Waiting until main window closes");
+        logger.debug("Waiting until main window closes");
         myLock.wait();
-        GPLogger.log("Main window has closed");
+        logger.debug("Main window has closed");
       }
     }
-    GPLogger.log("Program terminated");
+    logger.debug("Program terminated");
     GPLogger.close();
     if (myLock.get()) {
       System.exit(0);

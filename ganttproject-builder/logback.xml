@@ -1,0 +1,21 @@
+<configuration>
+    <!-- This will take the value of %X (which is MDC), insert it into [] and replace it
+    with empty string if it turns out to be exactly [] (that is, MDC was empty) -->
+    <variable scope="context" name="mdcValues" value="%replace([%X]){'\\[\\]', ''}"/>
+    <property name="STDOUT_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] [%level{5}] [%logger{50}] %msg %n${mdcValues}%n" />
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${STDOUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <logger name="Export.Pdf.Fonts" level="DEBUG"/>
+
+</configuration>
+
+
+

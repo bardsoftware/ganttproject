@@ -5,23 +5,29 @@
 
 SCRIPT_FILE="$0"
 
-WORKING_DIR="$(pwd)"
-# We want to find the directory where the real script file resides.
-# If real file is symlinked (possibly many times) then we need to follow
-# symlinks until we reach the real script
-# After that we run pwd to get directory path
-cd "$(dirname "$SCRIPT_FILE")"
-SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
-
-while [ -L "$SCRIPT_FILE" ]; do
-  SCRIPT_FILE="$(readlink "$SCRIPT_FILE")"
+find_ganttproject_home() {
+  WORKING_DIR="$(pwd)"
+  # We want to find the directory where the real script file resides.
+  # If real file is symlinked (possibly many times) then we need to follow
+  # symlinks until we reach the real script
+  # After that we run pwd to get directory path
   cd "$(dirname "$SCRIPT_FILE")"
   SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
-done
 
-GP_HOME="$(pwd)"
+  while [ -L "$SCRIPT_FILE" ]; do
+    SCRIPT_FILE="$(readlink "$SCRIPT_FILE")"
+    cd "$(dirname "$SCRIPT_FILE")"
+    SCRIPT_FILE="$(basename "$SCRIPT_FILE")"
+  done
 
-cd "$WORKING_DIR"
+  pwd
+}
+GP_HOME="$(find_ganttproject_home)"
+if [ -z "$GP_HOME" ]; then
+  echo "GanttProject home directory is not set. Please point GP_HOME environment variable to the directory with GanttProject files."
+  exit 1
+fi
+
 
 # Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d"
@@ -67,14 +73,11 @@ check_java() {
 
   VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
   log "...found $VERSION"
-  [[ "$VERSION" =~ "1.7" ]] && return 0;
-  [[ "$VERSION" =~ "1.8" ]] && return 0;
-  [[ "$VERSION" =~ "9." ]] && return 0;
-  [[ "$VERSION" =~ "10." ]] && return 0;
   [[ "$VERSION" =~ "11." ]] && return 0;
   [[ "$VERSION" =~ "12." ]] && return 0;
   [[ "$VERSION" =~ "13." ]] && return 0;
   [[ "$VERSION" =~ "14." ]] && return 0;
+  [[ "$VERSION" =~ "15." ]] && return 0;
   log "... this seems to be an old Java Runtime";
   JAVA_COMMAND=""
   return 1

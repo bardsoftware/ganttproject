@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: GanttProject
+Upstream-Contact: Dmitry Barashev <contact@ganttproject.biz>
+Source: https://www.ganttproject.biz
+
+Files: *
+Copyright: 2003-2020 Dmitry Barashev, Alexandre Thomas, BarD Software s.r.o., GanttProject Contributors
+License: GPL-3+

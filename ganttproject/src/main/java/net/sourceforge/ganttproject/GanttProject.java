@@ -18,11 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -35,6 +35,7 @@ import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -113,6 +114,8 @@ import java.util.regex.Pattern;
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
+  private final LoggerApi boundsLogger = GPLogger.create("Window.Bounds");
+  private final LoggerApi startupLogger = GPLogger.create("Window.Startup");
   /**
    * The JTree part.
    */
@@ -185,16 +188,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private FXSearchUi mySearchUi;
 
   public GanttProject(boolean isOnlyViewer) {
-    System.err.println("Creating main frame...");
+    startupLogger.debug("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
-    myCalendar.addListener(new GPCalendarListener() {
-      @Override
-      public void onCalendarChange() {
-        GanttProject.this.setModified();
-      }
-    });
+    myCalendar.addListener(() -> GanttProject.this.setModified());
     Mediator.registerTaskSelectionManager(getTaskSelectionManager());
 
     this.isOnlyViewer = isOnlyViewer;
@@ -204,7 +202,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       setTitle("GanttViewer");
     }
     setFocusable(true);
-    System.err.println("1. loading look'n'feels");
+    startupLogger.debug("1. loading look'n'feels");
     options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
@@ -280,7 +278,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptions(getRssFeedChecker().getOptions());
     options.addOptions(UpdateOptions.INSTANCE.getOptionGroup());
 
-    System.err.println("2. loading options");
+    startupLogger.debug("2. loading options");
     initOptions();
     // Not a joke. This takes value from the option and applies it to the UI.
     getTree().setGraphicArea(area);
@@ -301,7 +299,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     scrollingManager.addScrollingListener(area.getViewState());
     scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
 
-    System.err.println("3. creating menus...");
+    startupLogger.debug("3. creating menus...");
     myResourceActions = getResourcePanel().getResourceActionSet();
     myZoomActions = new ZoomActionSet(getZoomManager());
     JMenuBar bar = new JMenuBar();
@@ -341,7 +339,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
     bar.add(helpMenu.createMenu());
 
-    System.err.println("4. creating views...");
+    startupLogger.debug("4. creating views...");
     myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTree(), area.getJComponent(),
         getUIConfiguration());
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
@@ -367,7 +365,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         });
       }
     });
-    System.err.println("5. calculating size and packing...");
+    startupLogger.debug("5. calculating size and packing...");
 
     FXToolbar fxToolbar = createToolbar();
     Platform.runLater(() -> {
@@ -383,13 +381,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Chart tabs
     getTabs().setSelectedIndex(0);
 
-    System.err.println("6. changing language ...");
+    startupLogger.debug("6. changing language ...");
     languageChanged(null);
     // Add Listener after language update (to be sure that it is not updated
     // twice)
     language.addListener(this);
 
-    System.err.println("7. first attempt to restore bounds");
+    startupLogger.debug("7. first attempt to restore bounds");
     restoreBounds();
     addWindowListener(new WindowAdapter() {
       @Override
@@ -399,30 +397,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
       @Override
       public void windowOpened(WindowEvent e) {
-        System.err.println("Resizing window...");
-        GPLogger.log(String.format("Bounds after opening: %s", GanttProject.this.getBounds()));
+        boundsLogger.debug("Resizing window...");
+        boundsLogger.debug("Bounds after opening: {}", new Object[]{GanttProject.this.getBounds()}, ImmutableMap.of());
         restoreBounds();
         // It is important to run aligners after look and feel is set and font sizes
         // in the UI manager updated.
-        SwingUtilities.invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            for (RowHeightAligner aligner : myRowHeightAligners) {
-              aligner.optionsChanged();
-            }
+        SwingUtilities.invokeLater(() -> {
+          for (RowHeightAligner aligner : myRowHeightAligners) {
+            aligner.optionsChanged();
           }
         });
-        getUiFacadeImpl().getDpiOption().addChangeValueListener(new ChangeValueListener() {
-          @Override
-          public void changeValue(ChangeValueEvent event) {
-            SwingUtilities.invokeLater(new Runnable() {
-              @Override
-              public void run() {
-                getContentPane().doLayout();
-              }
-            });
-          }
-        });
+        getUiFacadeImpl().getDpiOption()
+            .addChangeValueListener(event -> SwingUtilities.invokeLater(() -> getContentPane().doLayout()));
         getGanttChart().reset();
         getResourceChart().reset();
         // This will clear any modifications which might be caused by
@@ -431,7 +417,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
 
-    System.err.println("8. finalizing...");
+    startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
     myTaskManager.addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
@@ -458,7 +444,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
       }
       Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
-      GPLogger.log(String.format("Bounds stored in the  options: %s", bounds));
+      boundsLogger.debug("Bounds stored in the  options: {}", new Object[]{bounds}, ImmutableMap.of());
 
       UIUtil.MultiscreenFitResult fit = UIUtil.multiscreenFit(bounds);
       // If more than 1/4 of the rectangle is visible on screen devices then leave it where it is
@@ -472,7 +458,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
             // If there are no devices where rectangle is visible, fit it on the current device
             bounds = fitBounds(currentFit.argmaxVisibleArea, bounds);
           } else {
-            GPLogger.log(String.format("We have not found the display corresponding to bounds %s. Leaving the window where it is", bounds));
+            boundsLogger.debug(
+                "We have not found the display corresponding to bounds {}. Leaving the window where it is",
+                new Object[]{bounds}, ImmutableMap.of()
+            );
             return;
           }
         }
@@ -659,7 +648,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   void doShow() {
     setVisible(true);
-    GPLogger.log(String.format("Bounds after setVisible: %s", getBounds()));
+    boundsLogger.debug("Bounds after setVisible: {}", new Object[]{getBounds()}, ImmutableMap.of());
     DesktopIntegration.setup(GanttProject.this);
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
@@ -891,6 +880,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public static class Args {
+    @Parameter(names = "-logback-config", description = "Path to logback configuration file", arity = 1)
+    public String logbackConfig = "logback.xml";
+
     @Parameter(names = "-log", description = "Enable logging", arity = 1)
     public boolean log = true;
 
@@ -911,11 +903,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * The main
    */
   public static boolean main(String[] arg) throws InvocationTargetException, InterruptedException {
-    GPLogger.init();
     CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
     final Args mainArgs = new Args();
     try {
       JCommander cmdLineParser = new JCommander(new Object[]{mainArgs, cmdlineApplication.getArguments()}, arg);
+      GPLogger.init(mainArgs.logbackConfig);
       if (mainArgs.help) {
         cmdLineParser.usage();
         System.exit(0);
@@ -936,7 +928,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         GPLogger.setLogFile(mainArgs.logFile);
         File logFile = new File(mainArgs.logFile);
         System.setErr(new PrintStream(new FileOutputStream(logFile)));
-        System.out.println("Writing log to " + logFile.getAbsolutePath());
+
       } catch (IOException e) {
         System.err.println("Failed to write log to file: " + e.getMessage());
         e.printStackTrace();

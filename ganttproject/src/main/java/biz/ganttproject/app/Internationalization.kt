@@ -155,7 +155,6 @@ var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = { o
 private var ourCurrentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
 fun setLocale(locale: Locale) {
   ourCurrentTranslation = getResourceBundle(locale, true)
-  println("Current translation =${ourCurrentTranslation?.locale}")
 }
 
 private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {

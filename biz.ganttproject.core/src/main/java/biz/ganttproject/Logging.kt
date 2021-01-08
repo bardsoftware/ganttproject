@@ -18,18 +18,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import java.util.logging.FileHandler
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-interface LoggerApi {
+interface LoggerApi<T> {
   fun error(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap(), exception: Throwable? = null)
   fun debug(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap())
+  fun delegate(): T
+  fun debug(msg: String) {
+    debug(msg, params = arrayOf())
+  }
 }
 
-class LoggerImpl(name: String) : LoggerApi {
+class LoggerImpl(name: String) : LoggerApi<Logger> {
   private val delegate = LoggerFactory.getLogger(name)
 
   override fun error(msg: String, vararg params: Any, kv: Map<String, Any>, exception: Throwable?) {
@@ -45,5 +51,7 @@ class LoggerImpl(name: String) : LoggerApi {
     delegate.debug(msg, *params)
     MDC.clear()
   }
+
+  override fun delegate() = delegate
 
 }

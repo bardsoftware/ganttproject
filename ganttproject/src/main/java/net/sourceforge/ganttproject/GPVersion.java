@@ -65,7 +65,7 @@ public abstract class GPVersion {
     var version = updater == null
         ? null : updater.getInstalledUpdateVersions().stream().max(String::compareTo)
         .orElse(null);
-    return version == null ? String.format("2.99.%s", BUILD) : version;
+    return version == null ? String.format("3.0.%s", BUILD) : version;
   }
 
   public static String getCurrentBuildNumber() {

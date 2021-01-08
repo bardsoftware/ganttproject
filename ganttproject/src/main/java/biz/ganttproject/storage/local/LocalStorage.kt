@@ -59,14 +59,8 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val tags = listOf<String>()
 }
 
-fun absolutePrefix(path: Path, end: Int = path.getNameCount()): Path {
-  return path.getRoot().resolve(path.subpath(0, end))
-}
-
 /**
- * This class build user interface of local file storage (aka "This Computer") in the projects pane.
- *
- * @author dbarashev@bardsoftware.com
+ * This class builds the user interface of the local file storage (aka "This Computer") in the projects pane.
  */
 class LocalStorage(
     private val myDialogUi: StorageDialogBuilder.DialogUi,
@@ -88,9 +82,11 @@ class LocalStorage(
   private fun loadFiles(path: Path, success: Consumer<ObservableList<FileAsFolderItem>>, state: LocalStorageState) {
     val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FileAsFolderItem>()
-    dir.listFiles()?.let {files ->
-      files.filter { !it.name.startsWith(".") }.map { f -> FileAsFolderItem(f) }.sorted().toCollection(result)
-    }
+    dir.listFiles()
+        ?.filter { !it.name.startsWith(".") }
+        ?.map { f -> FileAsFolderItem(f) }
+        ?.sorted()
+        ?.toCollection(result)
     success.accept(result)
     val currentFilename = paneElements.filenameInput.text
     state.currentDir.set(dir)
@@ -112,7 +108,8 @@ class LocalStorage(
     val chosenFile = fileChooser.showOpenDialog(null)
     if (chosenFile != null) {
       state.setCurrentFile(chosenFile)
-      state.currentDir.set(chosenFile.parentFile)
+      //state.currentDir.set(chosenFile.parentFile)
+      paneElements.breadcrumbView?.path = createPath(chosenFile.parentFile)
       this.paneElements.filenameInput.text = chosenFile.name
     }
   }
@@ -229,6 +226,10 @@ class LocalStorage(
 
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
+  }
+
+  override fun focus() {
+    this.paneElements.filenameInput.requestFocus()
   }
 }
 

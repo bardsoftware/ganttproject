@@ -31,8 +31,11 @@ import com.google.common.base.Supplier
 import com.google.common.base.Suppliers
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
+import javafx.beans.value.ChangeListener
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
+import javafx.event.EventType
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
@@ -40,12 +43,15 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
+import kotlinx.coroutines.channels.ticker
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
 import java.io.File
+import java.util.*
 import java.util.function.Consumer
+import kotlin.concurrent.schedule
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -155,13 +161,14 @@ class StoragePane internal constructor(
         dialogUi.error(e)
       }
     }
-    val localStorage = LocalStorage(dialogUi, mode, currentDocument, openDocument).also{ storageUiList.add(it) }
+    val localStorage = LocalStorage(dialogUi, mode, currentDocument, openDocument)
     val recentProjects = RecentProjects(
         mode,
         documentManager,
         currentDocument,
-        openDocument).also{ storageUiList.add(it) }
-    storageUiList.add(GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager))
+        openDocument)
+    val cloudStorage = GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager)
+    storageUiList.addAll(listOf(localStorage, recentProjects, cloudStorage))
     cloudStorageOptions.webdavServers.mapTo(storageUiList) {
       WebdavStorage(it, mode, openDocument, dialogUi, cloudStorageOptions)
     }
@@ -205,7 +212,9 @@ class StoragePane internal constructor(
         }
       }
     }
-    onStorageChange(storageUiPane, initialStorageId)
+    Timer().schedule(1000L) {
+      Platform.runLater { onStorageChange(storageUiPane, initialStorageId) }
+    }
   }
 
   private fun setSelected(pane: Parent) {
@@ -216,7 +225,10 @@ class StoragePane internal constructor(
 
   private fun onStorageChange(borderPane: BorderPane, storageId: String) {
     val ui = storageUiMap[storageId]?.get() ?: return
-    FXUtil.transitionCenterPane(borderPane, ui) { dialogUi.resize() }
+    FXUtil.transitionCenterPane(borderPane, ui) {
+      dialogUi.resize()
+      storageUiList.find { it.id == storageId }?.focus()
+    }
   }
 
   private fun onNewWebdavServer(borderPane: BorderPane) {

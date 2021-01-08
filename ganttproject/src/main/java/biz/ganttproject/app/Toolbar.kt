@@ -32,10 +32,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import javax.swing.SwingUtilities
 
 class FXToolbar {
-  val component = JFXPanel()
+  val component = JFXPanel().also {
+    it.addKeyListener(object : KeyAdapter() {
+      override fun keyPressed(e: KeyEvent) {
+        // Otherwise key events will be propagated and may trigger unwanted actions,
+        // e.g. hitting DELETE or INSERT in the search box will delete the selected
+        // task or insert a new one.
+        // See issue #1803: https://github.com/bardsoftware/ganttproject/issues/1803
+        e.consume()
+      }
+    })
+  }
 
   internal val toolbar: ToolBar by lazy {
     ToolBar().also {

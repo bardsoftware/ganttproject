@@ -1,7 +1,7 @@
-!define VERSION "2.99"
-!define VERSION_BUILD "2906"
-; The name of the installer
-!include "MUI.nsh"
+Unicode True
+!define VERSION "3.0"
+!define VERSION_BUILD "2914"
+!include "MUI2.nsh"
 !include "LogicLib.nsh"
 
 Name "GanttProject"
@@ -13,16 +13,19 @@ Icon "ganttproject.ico"
 OutFile ganttproject-${VERSION_BUILD}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-2.99
+InstallDir $PROGRAMFILES\GanttProject-3.0
 
 
 !define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_RUN_TEXT "Launch GanttProject"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\ganttproject.exe"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -168,3 +171,4 @@ Section "Uninstall"
   RMDir "$INSTDIR"
 
 SectionEnd
+

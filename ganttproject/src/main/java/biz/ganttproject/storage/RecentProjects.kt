@@ -49,6 +49,7 @@ class RecentProjects(
     private val currentDocument: Document,
     private val documentReceiver: (Document) -> Unit) : StorageUi {
 
+  private lateinit var paneElements: BrowserPaneElements<RecentDocAsFolderItem>
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
   override val id = "recent"
@@ -73,14 +74,13 @@ class RecentProjects(
 
 
       fun onAction() {
-        // TODO: This currently works for local and Cloud docs only. Make it working for WebDAV docs too.
         selectedItem?.let {
           it.asDocument()?.let(documentReceiver)
         }
       }
     }
 
-    val paneElements = builder.apply {
+    this.paneElements = builder.apply {
       withI18N(i18n)
       withActionButton { btn -> btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }}
       withListView(
@@ -109,7 +109,7 @@ class RecentProjects(
     runBlocking {
       documentManager.recentDocuments.map { path ->
         try {
-          val doc = RecentDocAsFolderItem(path, documentManager)
+          val doc = RecentDocAsFolderItem(path)
           GlobalScope.async(Dispatchers.IO) {
             doc.updateMetadata()
             doc
@@ -122,9 +122,13 @@ class RecentProjects(
     }.filterNotNullTo(result)
     consumer.accept(result)
   }
+
+  override fun focus() {
+    this.paneElements.filenameInput.requestFocus()
+  }
 }
 
-class RecentDocAsFolderItem(urlString: String, private val documentManager: DocumentManager) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
   init {

@@ -208,8 +208,6 @@ class BreadcrumbView(private val initialPath: Path, private val onSelectCrumb: C
     breadcrumbs.styleClass.add("breadcrumb")
     breadcrumbs.onCrumbAction = EventHandler { event ->
       event.selectedCrumb.children.clear()
-      val idx = event.selectedCrumb.value.path.getNameCount()
-      val selectedButton = breadcrumbs.childrenUnmodifiable[idx]
       breadcrumbs.childrenUnmodifiable.forEach { it.styleClass.add("crumb-selected") }
       onSelectCrumb.accept(event.selectedCrumb.value.path)
     }

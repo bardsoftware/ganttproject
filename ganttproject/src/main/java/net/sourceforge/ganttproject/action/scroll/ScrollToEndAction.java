@@ -18,15 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.scroll;
 
-import java.awt.event.ActionEvent;
-import java.util.Date;
-
 import biz.ganttproject.core.time.TimeDuration;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.awt.event.ActionEvent;
+import java.util.Date;
 
 public class ScrollToEndAction extends GPAction {
   private final TimelineChart myChart;
@@ -47,9 +46,9 @@ public class ScrollToEndAction extends GPAction {
     Date projectEnd = myTaskManager.getProjectEnd();
     // TODO Add (and use) setEndDate to TimelineChart class
     myChart.setStartDate(projectEnd);
-    while (projectEnd.before(myChart.getEndDate())) {
-      myChart.scrollBy(myCorrectionIntervalNeg);
-    }
-    myChart.scrollBy(myCorrectionInterval);
+//    while (projectEnd.before(myChart.getEndDate())) {
+//      myChart.scrollBy(myCorrectionIntervalNeg);
+//    }
+//    myChart.scrollBy(myCorrectionInterval);
   }
 }

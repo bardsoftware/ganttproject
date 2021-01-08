@@ -4,7 +4,7 @@ set -e
 
 OUTPUT=${1:-/workspace}
 INPUT=${2:-"./ganttproject-builder/dist-bin"}
-VERSION=${3:-"2.99"}
+VERSION=${3:-"3.0"}
 RUNTIME_ARG=${4:-"--runtime"}
 
 
@@ -51,7 +51,9 @@ jpackage --type app-image \
                     -Xmx1024m 
                     -Dfile.encoding=UTF-8
                     -Duser.dir=$APPDIR' \
-    --arguments '--verbosity 4 --version-dirs plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject' \
+    --arguments '--verbosity 4' \
+    --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \
+    --arguments '--app net.sourceforge.ganttproject.GanttProject' \
     --copyright 'Copyright (C) 2020 BarD Software s.r.o.' \
     --app-version ${VERSION} \
     --runtime-image ${OUTPUT}/runtime \

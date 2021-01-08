@@ -31,32 +31,32 @@
         <desktopEntry
                 toFile="${distDebWork}/usr/share/applications/ganttproject.desktop"
                 name="GanttProject"
-                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
-                exec="/usr/bin/ganttproject -j %U"
+                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject."
+                exec="/usr/bin/ganttproject %U"
                 mimetype="application/x-ganttproject;"
                 categories="Office;"
                 onlyshowin="GNOME;KDE;Unity;LXDE;MATE;Cinnamon;"
         >
             <genericname value="GanttProject"/>
         </desktopEntry>
-        <copy file="ganttproject.svg" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
+        <copy file="ganttproject-128.svg" tofile="${distDebWork}/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg">
         </copy>
         <!-- Some docs go into /usr/share/doc/ganttproject -->
-        <mkdir dir="${distDebWork}/usr/share/doc/${package.name}"/>
-        <copy todir="${distDebWork}/usr/share/doc/${package.name}">
-            <fileset dir=".">
-                <include name="LICENSE"/>
-                <include name="README"/>
-                <include name="AUTHORS"/>
-            </fileset>
-        </copy>
+<!--        <mkdir dir="${distDebWork}/usr/share/doc/${package.name}"/>-->
+<!--        <copy todir="${distDebWork}/usr/share/doc/${package.name}">-->
+<!--            <fileset dir=".">-->
+<!--                <include name="LICENSE"/>-->
+<!--                <include name="README"/>-->
+<!--                <include name="AUTHORS"/>-->
+<!--            </fileset>-->
+<!--        </copy>-->
         <deb todir="${distDebPackage}"
              package="${package.name}"
              version="${version}"
              homepage="https://www.ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="openjdk-7-jre | openjdk-8-jre | openjdk-9-jre | openjdk-10-jre | openjdk-11-jre | openjdk-7-jdk | openjdk-8-jdk | openjdk-9-jdk | openjdk-10-jdk | openjdk-11-jdk | oracle-java7-jre | oracle-java8-jre | oracle-java9-jre | oracle-java7-jdk | oracle-java8-jdk | oracle-java9-jdk | java7-runtime | java8-runtime | java9-runtime | java10-runtime | java11-runtime"
+             depends="openjdk-11-jre | openjdk-11-jdk | java11-runtime | bellsoft-java11-runtime | zulu-11 | java-11-amazon-corretto-jdk | adoptopenjdk-11-hotspot-jre"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"
@@ -80,8 +80,8 @@
             <!-- Icons, mime types, docs and other stuff -->
             <tarfileset dir="${distDebWork}/usr" prefix="usr"/>
         </deb>
-        <rename src="${distDebPackage}/${package.name}_${version}-1_all.deb"
-               dest="${distDebPackage}/${package.name}_${version_build}-1_all.deb"/>
+<!--        <rename src="${distDebPackage}/${package.name}.${version}-1_all.deb"-->
+<!--               dest="${distDebPackage}/${package.name}.${version_build}-1_all.deb"/>-->
     </target>
 
 </project>

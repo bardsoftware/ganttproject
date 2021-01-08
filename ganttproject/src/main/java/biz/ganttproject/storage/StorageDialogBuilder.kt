@@ -183,7 +183,6 @@ class StorageDialogBuilder(
         btnSave.requestFocus()
       } else {
         btnOpen.fire()
-        btnOpen.requestFocus()
       }
     }
     if (contentPaneWidth != 0.0 && contentPaneHeight != 0.0) {
@@ -210,27 +209,27 @@ class StorageDialogBuilder(
   private fun showOpenStorageUi(container: BorderPane) {
     if (myOpenStorage == null) {
       val storagePane = buildStoragePane(Mode.OPEN)
-      myNotificationPane = NotificationPane(storagePane)
-      myNotificationPane!!.styleClass.addAll(
-          NotificationPane.STYLE_CLASS_DARK)
+      myNotificationPane = NotificationPane(storagePane).also {
+        it.styleClass.addAll(NotificationPane.STYLE_CLASS_DARK)
+      }
       myOpenStorage = myNotificationPane
     }
-    FXUtil.transitionCenterPane(container, myOpenStorage, {})
+    FXUtil.transitionCenterPane(container, myOpenStorage) {}
   }
 
   private fun showSaveStorageUi(container: BorderPane) {
     if (mySaveStorage == null) {
       mySaveStorage = buildStoragePane(Mode.SAVE)
     }
-    FXUtil.transitionCenterPane(container, mySaveStorage, {})
+    FXUtil.transitionCenterPane(container, mySaveStorage) {}
   }
 
   private fun buildStoragePane(mode: Mode): Pane {
-    if (myProject.document != null) {
+    return if (myProject.document != null) {
       val storagePane = StoragePane(cloudStorageOptions, myProject.documentManager, ReadOnlyProxyDocument(myProject.document), myDocumentReceiver, myDocumentUpdater, myDialogUi)
-      return storagePane.buildStoragePane(mode)
+      storagePane.buildStoragePane(mode)
     } else {
-      return Pane(Label("No document!"))
+      Pane(Label("No document!"))
     }
   }
 
@@ -238,7 +237,7 @@ class StorageDialogBuilder(
     OPEN, SAVE
   }
 
-  class DialogUi(internal val dialogController: DialogController,
+  class DialogUi(private val dialogController: DialogController,
                  private val notificationPane: () -> NotificationPane) {
     fun close() {
       dialogController.hide()
@@ -287,6 +286,9 @@ interface StorageUi {
 
   // Creates this storage settings interface
   fun createSettingsUi(): Optional<Pane>
+
+  // Initializes keyboard focus when the UI pane becomes visible
+  fun focus() {}
 }
 
 // Saved dimensions of the content pane, so that the dialog size was preserved after closing and opening again
