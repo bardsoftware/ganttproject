@@ -125,8 +125,11 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
       it.styleClass.add("helpline")
       it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
     }, 1, 2)
-    props.add(Label(ourLocalizer.formatText("availableUpdates")).also { GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0)) },
-        0, 3)
+    props.add(
+      Label(if (this.hasUpdates) ourLocalizer.formatText("availableUpdates") else ourLocalizer.formatText("noUpdates.title")).also {
+        GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0))
+      },
+      0, 3)
     bodyBuilder.add(props)
 
     if (this.hasUpdates) {
