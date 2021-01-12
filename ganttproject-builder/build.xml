@@ -31,7 +31,7 @@
         <desktopEntry
                 toFile="${distDebWork}/usr/share/applications/ganttproject.desktop"
                 name="GanttProject"
-                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject."
+                icon="/usr/share/icons/gnome/scalable/mimetypes/application-x-ganttproject.svg"
                 exec="/usr/bin/ganttproject %U"
                 mimetype="application/x-ganttproject;"
                 categories="Office;"
