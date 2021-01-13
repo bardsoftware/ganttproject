@@ -3,7 +3,6 @@ package biz.ganttproject.core.chart.scene
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 import java.awt.Color
-import java.awt.Font
 import java.lang.Integer.max
 
 class TaskTableSceneBuilder(
@@ -89,14 +88,4 @@ class TaskTableSceneBuilder(
   private inner class PaintState(var x: Int = 0, val y: Int = 0, val rowNumber: Int) {
     fun toNextRow(dx: Int = 0): PaintState = PaintState(x + dx, y + input.rowHeight, rowNumber + 1)
   }
-}
-
-object TextMetricsStub : TextMetrics {
-  override fun getTextLength(text: String) = text.length * 7
-
-  override fun getTextHeight(text: String) = 10
-
-  override fun getTextHeight(font: Font, text: String) = font.size
-
-  override fun getState() = Object()
 }
