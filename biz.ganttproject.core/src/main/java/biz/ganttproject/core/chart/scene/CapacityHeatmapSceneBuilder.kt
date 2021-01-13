@@ -155,7 +155,7 @@ class CapacityHeatmapSceneBuilder(
   }
 }
 
-data class LoadBorder(val ts: Long, var load: Float)
+data class LoadBorder(val ts: Long, val load: Float)
 
 fun calcLoadDistribution(loads: List<CapacityHeatmapSceneBuilder.Load>): List<LoadBorder> {
   // This is the list of moments where resource load grows or decreases.
