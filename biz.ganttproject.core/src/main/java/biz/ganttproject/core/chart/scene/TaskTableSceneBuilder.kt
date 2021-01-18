@@ -1,79 +1,53 @@
+/*
+Copyright 2021 BarD Software s.r.o, Dmitry Kazakov
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.core.chart.scene
 
+import biz.ganttproject.core.chart.scene.TableSceneBuilder.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
-import java.awt.Color
-import java.lang.Integer.max
 
 class TaskTableSceneBuilder(
-  private val rows: List<RowContent>,
-  private val input: InputApi,
-  val canvas: Canvas = Canvas()
+  private val input: InputApi
 ) {
-  private val dimensions = calculateDimensions()
+  private val tableSceneBuilder = TableSceneBuilder(object : TableSceneBuilder.InputApi {
+    override val rowHeight = input.rowHeight
+    override val horizontalOffset = input.horizontalOffset
+  })
 
-  fun build() {
-    canvas.clear()
-    val rectangle = canvas.createRectangle(0, 0, dimensions.width, dimensions.height)
-    rectangle.backgroundColor = Color.WHITE
-    paintTasks(rows, PaintState(input.horizontalOffset, 0, 0))
+  fun build(tasks: List<Task>): Canvas {
+    return tableSceneBuilder.build(toRows(tasks))
   }
 
-  private fun calculateDimensions(rows: List<RowContent>? = null): Dimension {
-    var height = 0
-    var width = 0
-
-    (rows ?: this.rows).forEach {
-      height += input.rowHeight
-      width = max(width, it.getWidth(input.textMetrics))
-      if (it is Task) {
-        val subtasksDimensions = calculateDimensions(it.subrows)
-        height += subtasksDimensions.height
-        width = max(width, subtasksDimensions.width + input.depthIndent)
-      }
+  private fun toRows(tasks: List<Task>, indent: Int = 0): List<Row> {
+    return tasks.flatMap {
+      listOf(Row(
+        input.textMetrics.getTextLength(it.name),
+        it.name,
+        indent
+      )) + toRows(it.subtasks, indent + input.depthIndent)
     }
+  }
 
-    if (rows == null) {
-      width += 2 * input.horizontalOffset
+  class Task(val name: String, val subtasks: List<Task> = emptyList()) {
+    companion object {
+      val EMPTY = Task("")
     }
-    return Dimension(height, width)
-  }
-
-  private fun paintTasks(rows: List<RowContent>, initState: PaintState): PaintState {
-    var state = initState
-    rows.forEach {
-      val rectangle = canvas.createRectangle(
-        0, state.y, dimensions.width, input.rowHeight
-      )
-      if (state.rowNumber % 2 == 1) {
-        rectangle.style = "odd-row"
-      }
-
-      if (it is Task) {
-        paintTask(it, state.x, rectangle.middleY)
-        val subtasksState = paintTasks(it.subrows, state.toNextRow(input.depthIndent))
-        subtasksState.x = state.x
-        state = subtasksState
-      } else {
-        state = state.toNextRow(0)
-      }
-    }
-    return state
-  }
-
-  private fun paintTask(task: Task, x: Int, y: Int) {
-    val text = canvas.createText(x, y, task.name)
-    text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
-  }
-
-  interface RowContent {
-    fun getWidth(metrics: TextMetrics): Int
-  }
-  class BlankRow : RowContent {
-    override fun getWidth(metrics: TextMetrics) = 0
-  }
-  class Task(val name: String, val subrows: List<RowContent> = emptyList()) : RowContent {
-    override fun getWidth(metrics: TextMetrics) = metrics.getTextLength(name)
   }
 
   interface InputApi {
@@ -81,11 +55,5 @@ class TaskTableSceneBuilder(
     val rowHeight: Int
     val depthIndent: Int
     val horizontalOffset: Int
-  }
-
-  private data class Dimension(val height: Int, val width: Int)
-
-  private inner class PaintState(var x: Int = 0, val y: Int = 0, val rowNumber: Int) {
-    fun toNextRow(dx: Int = 0): PaintState = PaintState(x + dx, y + input.rowHeight, rowNumber + 1)
   }
 }
