@@ -25,13 +25,10 @@ import biz.ganttproject.core.chart.canvas.TextMetrics
 class TaskTableSceneBuilder(
   private val input: InputApi
 ) {
-  private val tableSceneBuilder = TableSceneBuilder(object : TableSceneBuilder.InputApi {
-    override val rowHeight = input.rowHeight
-    override val horizontalOffset = input.horizontalOffset
-  })
+  private val tableSceneBuilder = TableSceneBuilder(Config(input.rowHeight, input.horizontalOffset))
 
-  fun build(tasks: List<Task>): Canvas {
-    return tableSceneBuilder.build(toRows(tasks))
+  fun build(tasks: List<Task>, canvas: Canvas = Canvas()): Canvas {
+    return tableSceneBuilder.build(toRows(tasks), canvas)
   }
 
   private fun toRows(tasks: List<Task>, indent: Int = 0): List<Row> {

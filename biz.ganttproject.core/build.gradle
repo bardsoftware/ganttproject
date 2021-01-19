@@ -29,6 +29,15 @@ artifacts {
     cloud jar
 }
 dependencies {
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     direct fileTree(dir: project.ext.libDir, include: ['*.jar'])
     direct "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -38,6 +47,8 @@ dependencies {
     compile configurations.providedCompile
 
     cloud configurations.direct
+
+    testCompile 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.+'
 }
 
 task copyPlugin(dependsOn: assemble) {

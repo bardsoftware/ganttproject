@@ -20,22 +20,19 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 
-class TableSceneBuilder(private val input: InputApi) {
-  private lateinit var canvas: Canvas
-
-  fun build(rows: List<Row>): Canvas {
-    canvas = Canvas()
+class TableSceneBuilder(private val config: Config) {
+  fun build(rows: List<Row>, canvas: Canvas = Canvas()): Canvas {
     val dimensions = calculateDimensions(rows)
-    val state = PaintState()
+    val state = PaintState(config.rowHeight)
 
     rows.forEach {
       val rectangle = canvas.createRectangle(
-        0, state.y, dimensions.width, input.rowHeight
+        0, state.y, dimensions.width, config.rowHeight
       )
       if (state.rowNumber % 2 == 1) {
         rectangle.style = "odd-row"
       }
-      paintRow(it, rectangle.middleY)
+      paintRow(it, rectangle.middleY, canvas)
       state.toNextRow()
     }
 
@@ -43,33 +40,30 @@ class TableSceneBuilder(private val input: InputApi) {
   }
 
   private fun calculateDimensions(rows: List<Row>): Dimension {
-    val height = input.rowHeight * rows.size
-    val width = rows.map { it.width + it.indent + 2 * input.horizontalOffset }.maxOrNull() ?: 0
+    val height = config.rowHeight * rows.size
+    val width = rows.map { it.width + it.indent + 2 * config.horizontalOffset }.maxOrNull() ?: 0
     return Dimension(height, width)
   }
 
-  private fun paintRow(row: Row, y: Int) {
-    val text = canvas.createText(row.indent + input.horizontalOffset, y, row.text)
+  private fun paintRow(row: Row, y: Int, canvas: Canvas) {
+    val text = canvas.createText(row.indent + config.horizontalOffset, y, row.text)
     text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
   }
 
   data class Row(val width: Int, val text: String, val indent: Int)
 
-  interface InputApi {
-    val rowHeight: Int
-    val horizontalOffset: Int
-  }
+  data class Config(val rowHeight: Int, val horizontalOffset: Int)
 
   private data class Dimension(val height: Int, val width: Int)
 
-  private inner class PaintState {
+  private class PaintState(private val rowHeight: Int) {
     var y = 0
       private set
     var rowNumber = 0
       private set
 
     fun toNextRow() {
-      y += input.rowHeight
+      y += rowHeight
       rowNumber++
     }
   }
