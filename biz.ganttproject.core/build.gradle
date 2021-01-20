@@ -38,6 +38,18 @@ dependencies {
     compile configurations.providedCompile
 
     cloud configurations.direct
+
+    testImplementation(
+        'org.junit.jupiter:junit-jupiter-api:5.+',
+        'com.nhaarman.mockitokotlin2:mockito-kotlin:2.+'
+    )
+    testRuntimeOnly(
+        'org.junit.jupiter:junit-jupiter-engine:5.+'
+    )
+}
+
+test {
+    useJUnitPlatform()
 }
 
 task copyPlugin(dependsOn: assemble) {
