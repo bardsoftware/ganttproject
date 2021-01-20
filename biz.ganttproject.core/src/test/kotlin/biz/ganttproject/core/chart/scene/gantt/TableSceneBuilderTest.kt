@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene.gantt
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 
 import biz.ganttproject.core.chart.canvas.Canvas
@@ -51,7 +51,7 @@ class TableSceneBuilderTest {
     sceneBuilder.build(rows, canvas)
     val expectedWidth = rows.map { it.indent + it.width + 2 * horizontalOffset }.maxOrNull() ?: 0
 
-    rows.forEachIndexed { i, row ->
+    for (i in 0..rows.lastIndex) {
       verify(canvas).createRectangle(0, i * rowHeight, expectedWidth, rowHeight)
     }
   }

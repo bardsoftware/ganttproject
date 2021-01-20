@@ -22,7 +22,7 @@ import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 import biz.ganttproject.core.chart.scene.gantt.TaskTableSceneBuilder.*
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.awt.Font
 
