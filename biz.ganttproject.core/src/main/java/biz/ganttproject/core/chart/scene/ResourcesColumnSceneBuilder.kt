@@ -38,7 +38,7 @@ class ResourcesColumnSceneBuilder(
       val rectangle = canvas.createRectangle(0, y, width, input.rowHeight)
       rectangle.attributes["email"] = it.email
       if (isOddRow) {
-        rectangle.style = "resource.odd-row"
+        rectangle.style = "odd-row"
       }
       val text = canvas.createText(OFFSET, rectangle.middleY, it.name)
       text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
