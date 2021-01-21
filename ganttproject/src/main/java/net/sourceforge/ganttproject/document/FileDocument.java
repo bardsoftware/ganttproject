@@ -63,13 +63,24 @@ public class FileDocument extends AbstractDocument {
 
   private IStatus canOverwrite() {
     if (file.isDirectory()) {
-      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.IS_DIRECTORY.ordinal(), "", null);
+      return new Status(IStatus.ERROR, PLUGIN_ID,
+        Document.ErrorCode.IS_DIRECTORY.ordinal(),
+        "It is a directory",
+        null
+      );
     }
     if (!file.canWrite()) {
-      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.NOT_WRITABLE.ordinal(), "", null);
+      return new Status(IStatus.ERROR, PLUGIN_ID,
+        Document.ErrorCode.NOT_WRITABLE.ordinal(),
+        "File is reported as not writeable",
+        null
+      );
     }
     if (getLastAccessTimestamp() != 0 && file.lastModified() > getLastAccessTimestamp()) {
-      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.LOST_UPDATE.ordinal(), "", null);
+      return new Status(IStatus.ERROR, PLUGIN_ID, Document.ErrorCode.LOST_UPDATE.ordinal(),
+        String.format("Lost update: file modification time=%d > the time of the last access by GanttProject=%d", getLastAccessTimestamp(), file.lastModified()),
+        null
+      );
     }
     return Status.OK_STATUS;
   }
