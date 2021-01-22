@@ -94,23 +94,23 @@ class LocalStorage(
   }
 
   private fun onBrowse() {
-    val fileChooser = FileChooser()
     var initialDir: File? = this.state.resolveFile(this.paneElements.filenameInput.text)
     while (initialDir != null && (!initialDir.exists() || !initialDir.isDirectory)) {
       initialDir = initialDir.parentFile
     }
-    if (initialDir != null) {
-      fileChooser.initialDirectory = initialDir
-    }
-    fileChooser.title = i18n.formatText("storageService.local.${myMode.name.toLowerCase()}.fileChooser.title")
-    fileChooser.extensionFilters.addAll(
-        FileChooser.ExtensionFilter(RootLocalizer.formatText("ganttprojectFiles"), "*.gan"))
-    val chosenFile = fileChooser.showOpenDialog(null)
+    val chosenFile = myMode.openFileChooser(initialDir)
     if (chosenFile != null) {
-      state.setCurrentFile(chosenFile)
-      //state.currentDir.set(chosenFile.parentFile)
-      paneElements.breadcrumbView?.path = createPath(chosenFile.parentFile)
-      this.paneElements.filenameInput.text = chosenFile.name
+      when (myMode) {
+        is StorageMode.Save -> {
+          state.currentDir.set(chosenFile)
+          paneElements.breadcrumbView?.path = createPath(chosenFile)
+        }
+        is StorageMode.Open -> {
+          state.setCurrentFile(chosenFile)
+          paneElements.breadcrumbView?.path = createPath(chosenFile.parentFile)
+          this.paneElements.filenameInput.text = chosenFile.name
+        }
+      }
     }
   }
 

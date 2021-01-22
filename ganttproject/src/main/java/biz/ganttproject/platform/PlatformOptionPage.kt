@@ -69,12 +69,18 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
 
   private fun createScene(updateMetadata: List<UpdateMetadata>): Scene {
+    val runningVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
+    val runningUpdateMetadata = UpdateMetadata(
+      runningVersion,
+      null, null, null, 0, "")
+    val filteredUpdates = updateMetadata.filter { it > runningUpdateMetadata }
+
     val group = BorderPane().also {
       it.styleClass.addAll("dlg-information", "dlg", "dialog-pane", "border-etched")
       it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
     }
     val dialogBuildApi = DialogControllerImpl(group)
-    val updateUi = UpdateDialog(updateMetadata) {
+    val updateUi = UpdateDialog(filteredUpdates) {
       SwingUtilities.invokeLater {
         uiFacade.quitApplication(false)
         org.eclipse.core.runtime.Platform.restart()

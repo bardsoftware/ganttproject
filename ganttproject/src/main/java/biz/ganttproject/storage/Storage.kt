@@ -32,10 +32,8 @@ import com.google.common.base.Suppliers
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
-import javafx.beans.value.ChangeListener
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
-import javafx.event.EventType
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
@@ -43,7 +41,8 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
-import kotlinx.coroutines.channels.ticker
+import javafx.stage.DirectoryChooser
+import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
@@ -61,6 +60,7 @@ sealed class StorageMode(val name: String) {
   class FileException(message: String, vararg val args: Any) : Exception(message)
 
   abstract fun tryFile(file: File)
+  abstract fun openFileChooser(initialDirectory: File?): File?
 
   class Open : StorageMode("open") {
     override fun tryFile(file: File) {
@@ -72,6 +72,19 @@ sealed class StorageMode(val name: String) {
       }
     }
 
+    override fun openFileChooser(initialDirectory: File?): File? {
+      FileChooser().let {
+        if (initialDirectory != null) {
+          it.initialDirectory = initialDirectory
+        }
+        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        it.extensionFilters.addAll(FileChooser.ExtensionFilter(
+          fileChooserLocalizer.formatText("ganttprojectFiles"),
+          "*.gan"
+        ))
+        return it.showOpenDialog(null)
+      }
+    }
   }
 
   class Save : StorageMode("save") {
@@ -90,6 +103,15 @@ sealed class StorageMode(val name: String) {
       }
     }
 
+    override fun openFileChooser(initialDirectory: File?): File? {
+      DirectoryChooser().let {
+        if (initialDirectory != null) {
+          it.initialDirectory = initialDirectory
+        }
+        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        return it.showDialog(null)
+      }
+    }
   }
 
 }
@@ -243,3 +265,4 @@ class StoragePane internal constructor(
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageView")
+private val fileChooserLocalizer = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
