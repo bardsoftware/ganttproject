@@ -37,23 +37,25 @@ class TaskTableSceneBuilderTest {
     }
     val sceneBuilder = TaskTableSceneBuilder(input)
     val tasks = listOf(
-      Task("1"),
-      Task("2", listOf(
-        Task("3"), Task("4", listOf(Task("5")))
+      Task("1", "", "", ""),
+      Task("2", "", "", "", listOf(
+        Task("3", "", "", ""),
+        Task("4", "", "", "", listOf(Task("5", "", "", "")))
       ))
     )
     val canvas = spy(Canvas())
     sceneBuilder.build(tasks, canvas)
 
-    verify(canvas).createText(input.horizontalOffset, 5, "1")
-    verify(canvas).createText(input.horizontalOffset, 15, "2")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 25, "3")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 35, "4")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent * 2, 45, "5")
+    val halfRowHeight = input.rowHeight / 2
+    verify(canvas).createText(input.horizontalOffset, input.rowHeight + halfRowHeight, "1")
+    verify(canvas).createText(input.horizontalOffset, 2 * input.rowHeight + halfRowHeight, "2")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 3 * input.rowHeight + halfRowHeight, "3")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 4 * input.rowHeight + halfRowHeight, "4")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent * 2, 5 * input.rowHeight + halfRowHeight, "5")
   }
 }
 
-private object TextMetricsStub : TextMetrics {
+object TextMetricsStub : TextMetrics {
   override fun getTextLength(text: String) = text.length * 7
 
   override fun getTextHeight(text: String) = 10

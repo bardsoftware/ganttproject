@@ -19,31 +19,45 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 
 class TaskTableSceneBuilder(
   private val input: InputApi
 ) {
-  private val tableSceneBuilder = TableSceneBuilder(Config(input.rowHeight, input.horizontalOffset))
+  private val tableSceneBuilder = TableSceneBuilder(Config(input.rowHeight, input.horizontalOffset, input.textMetrics))
+  private val cols = listOf(Column("Name"), Column("Begin date"), Column("End date"), Column("Cost"))
 
   fun build(tasks: List<Task>, canvas: Canvas = Canvas()): Canvas {
-    return tableSceneBuilder.build(toRows(tasks), canvas)
+    return tableSceneBuilder.build(toTable(tasks), canvas)
   }
 
-  private fun toRows(tasks: List<Task>, indent: Int = 0): List<Row> {
+  private fun toTable(tasks: List<Task>): Table {
+    val rows = toRow(tasks)
+    return Table(cols, rows)
+  }
+
+  private fun toRow(tasks: List<Task>, indent: Int = 0): List<Row> {
     return tasks.flatMap {
       listOf(Row(
-        input.textMetrics.getTextLength(it.name),
-        it.name,
+        mapOf(
+          cols[0] to it.name, cols[1] to it.beginDate, cols[2] to it.endDate, cols[3] to it.cost
+        ),
         indent
-      )) + toRows(it.subtasks, indent + input.depthIndent)
+      )) + toRow(it.subtasks, indent + input.depthIndent)
     }
   }
 
-  class Task(val name: String, val subtasks: List<Task> = emptyList()) {
+  class Task(
+    val name: String,
+    val beginDate: String,
+    val endDate: String,
+    val cost: String,
+    val subtasks: List<Task> = emptyList()
+  ) {
     companion object {
-      val EMPTY = Task("")
+      val EMPTY = Task("", "", "", "")
     }
   }
 
