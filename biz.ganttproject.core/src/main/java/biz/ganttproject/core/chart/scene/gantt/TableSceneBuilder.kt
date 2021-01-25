@@ -60,7 +60,7 @@ class TableSceneBuilder(private val config: Config) {
         val colNameWidth = config.textMetrics.getTextLength(col.name)
         val colContentWidth = table.rows.map {
           val indent = if (isFirst) it.indent else 0
-          indent + (it.values[col]?.run { config.textMetrics.getTextLength(this) } ?: 0)
+          indent + (it.values[col]?.let(config.textMetrics::getTextLength) ?: 0)
         }.maxOrNull() ?: 0
         max(colNameWidth, colContentWidth)
       }
