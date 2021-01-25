@@ -23,30 +23,30 @@ import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 
-class TaskTableSceneBuilder(
+class TreeTableSceneBuilder(
   private val input: InputApi
 ) {
   private val tableSceneConfig = Config(input.rowHeight, input.horizontalOffset, input.textMetrics)
 
-  fun build(columns: List<Column>, tasks: List<Task>, canvas: Canvas = Canvas()): Canvas {
-    val rows = toRow(tasks)
+  fun build(columns: List<Column>, items: List<Item>, canvas: Canvas = Canvas()): Canvas {
+    val rows = toRow(items)
     val table = Table(columns, rows)
     val tableSceneBuilder = TableSceneBuilder(tableSceneConfig, table, canvas)
     return tableSceneBuilder.build()
   }
 
-  private fun toRow(tasks: List<Task>, indent: Int = 0): List<Row> {
-    return tasks.flatMap {
-      listOf(Row(it.values, indent)) + toRow(it.subtasks, indent + input.depthIndent)
+  private fun toRow(items: List<Item>, indent: Int = 0): List<Row> {
+    return items.flatMap {
+      listOf(Row(it.values, indent)) + toRow(it.subitems, indent + input.depthIndent)
     }
   }
 
-  class Task(
+  class Item(
     val values: Map<Column, String>,
-    val subtasks: List<Task> = emptyList()
+    val subitems: List<Item> = emptyList()
   ) {
     companion object {
-      val EMPTY = Task(emptyMap())
+      val EMPTY = Item(emptyMap())
     }
   }
 

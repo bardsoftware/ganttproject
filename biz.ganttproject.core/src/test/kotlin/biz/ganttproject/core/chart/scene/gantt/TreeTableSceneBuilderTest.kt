@@ -20,14 +20,14 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
-import biz.ganttproject.core.chart.scene.gantt.TaskTableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TreeTableSceneBuilder.*
 import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.awt.Font
 
-class TaskTableSceneBuilderTest {
+class TreeTableSceneBuilderTest {
   @Test
   fun `test indents`() {
     val input = object : InputApi {
@@ -36,13 +36,13 @@ class TaskTableSceneBuilderTest {
       override val depthIndent = 15
       override val horizontalOffset = 2
     }
-    val sceneBuilder = TaskTableSceneBuilder(input)
+    val sceneBuilder = TreeTableSceneBuilder(input)
     val column = Column("")
     val tasks = listOf(
-      Task(mapOf(column to "1")),
-      Task(mapOf(column to "2"), listOf(
-        Task(mapOf(column to "3")),
-        Task(mapOf(column to "4"), listOf(Task(mapOf(column to "5"))))
+      Item(mapOf(column to "1")),
+      Item(mapOf(column to "2"), listOf(
+        Item(mapOf(column to "3")),
+        Item(mapOf(column to "4"), listOf(Item(mapOf(column to "5"))))
       ))
     )
     val canvas = spy(Canvas())
