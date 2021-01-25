@@ -87,7 +87,7 @@ public class TimelineLabelRendererImpl extends ChartRendererBase {
   private Text createTimelineLabel(int leftX, final Task task) {
     final Text text = myLabelsLayer.createText(leftX, myChartModel.getTimelineTopLineHeight(), "");
     text.setSelector(new LabelTextSelector(task, text));
-    text.setStyle("myText.timeline.label");
+    text.setStyle("text.timeline.label");
     myLabelsLayer.bind(text, task);
     return text;
   }
