@@ -22,17 +22,15 @@ import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 import java.lang.Integer.max
 
-class TableSceneBuilder(private val config: Config) {
-  private lateinit var table: Table
-  private lateinit var canvas: Canvas
-  private lateinit var colsWidth: Map<Table.Column, Int>
-  private lateinit var dimensions: Dimension
+class TableSceneBuilder(
+  private val config: Config,
+  private val table: Table,
+  private val canvas: Canvas = Canvas()
+) {
+  private val colsWidth = calculateColsWidth()
+  private val dimensions = calculateDimensions()
 
-  fun build(table: Table, canvas: Canvas = Canvas()): Canvas {
-    this.table = table
-    this.canvas = canvas
-    colsWidth = calculateColsWidth(table)
-    dimensions = calculateDimensions(table, colsWidth)
+  fun build(): Canvas {
     val state = PaintState(config.rowHeight)
 
     paintHeader(state)
@@ -50,7 +48,7 @@ class TableSceneBuilder(private val config: Config) {
     return canvas
   }
 
-  private fun calculateColsWidth(table: Table): Map<Table.Column, Int> {
+  private fun calculateColsWidth(): Map<Table.Column, Int> {
     val widths = mutableMapOf<Table.Column, Int>()
     table.columns.forEach { col ->
       val isFirst = col == table.columns.first()
@@ -68,7 +66,7 @@ class TableSceneBuilder(private val config: Config) {
     return widths
   }
 
-  private fun calculateDimensions(table: Table, colsWidth: Map<Table.Column, Int>): Dimension {
+  private fun calculateDimensions(): Dimension {
     val height = config.rowHeight * table.rows.size
     val width = table.columns.sumBy { colsWidth[it]!! } + 2 * config.horizontalOffset
     return Dimension(height, width)
