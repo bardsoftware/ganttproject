@@ -19,40 +19,102 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
+import biz.ganttproject.core.chart.canvas.TextMetrics
+import java.lang.Integer.max
 
-class TableSceneBuilder(private val config: Config) {
-  fun build(rows: List<Row>, canvas: Canvas = Canvas()): Canvas {
-    val dimensions = calculateDimensions(rows)
+class TableSceneBuilder(
+  private val config: Config,
+  private val table: Table,
+  private val canvas: Canvas = Canvas()
+) {
+  private val colsWidth = calculateColsWidth()
+  private val dimensions = calculateDimensions()
+
+  fun build(): Canvas {
     val state = PaintState(config.rowHeight)
 
-    rows.forEach {
+    paintHeader(state)
+    table.rows.forEach {
       val rectangle = canvas.createRectangle(
         0, state.y, dimensions.width, config.rowHeight
       )
       if (state.rowNumber % 2 == 1) {
         rectangle.style = "odd-row"
       }
-      paintRow(it, rectangle.middleY, canvas)
+      paintRow(it, rectangle.middleY)
       state.toNextRow()
     }
 
     return canvas
   }
 
-  private fun calculateDimensions(rows: List<Row>): Dimension {
-    val height = config.rowHeight * rows.size
-    val width = rows.map { it.width + it.indent + 2 * config.horizontalOffset }.maxOrNull() ?: 0
+  private fun calculateColsWidth(): Map<Table.Column, Int> {
+    val widths = mutableMapOf<Table.Column, Int>()
+    table.columns.forEach { col ->
+      val isFirst = col == table.columns.first()
+      widths[col] = if (col.width != null) {
+        col.width
+      } else {
+        val colNameWidth = config.textMetrics.getTextLength(col.name)
+        val colContentWidth = table.rows.map {
+          val indent = if (isFirst) it.indent else 0
+          indent + (it.values[col]?.let(config.textMetrics::getTextLength) ?: 0)
+        }.maxOrNull() ?: 0
+        max(colNameWidth, colContentWidth)
+      }
+    }
+    return widths
+  }
+
+  private fun calculateDimensions(): Dimension {
+    val height = config.rowHeight * table.rows.size
+    val width = table.columns.sumBy { colsWidth[it]!! } + 2 * config.horizontalOffset
     return Dimension(height, width)
   }
 
-  private fun paintRow(row: Row, y: Int, canvas: Canvas) {
-    val text = canvas.createText(row.indent + config.horizontalOffset, y, row.text)
+  private fun paintHeader(state: PaintState) {
+    var x = config.horizontalOffset
+    table.columns.forEach {
+      val rectangle = canvas.createRectangle(
+        x, state.y, colsWidth[it]!!, config.rowHeight
+      )
+      // TODO: add rectangle borders and color?
+      paintString(it.name, x, rectangle.middleY, colsWidth[it]!!)
+      x += colsWidth[it]!!
+    }
+    state.toNextRow()
+  }
+
+  private fun paintRow(row: Table.Row, y: Int) {
+    var x = config.horizontalOffset + row.indent
+    table.columns.forEach { col ->
+      row.values[col]?.also {
+        paintString(it, x, y, colsWidth[col]!!)
+      }
+      x += colsWidth[col]!!
+    }
+  }
+
+  private fun paintString(string: String, x: Int, y: Int, widthLimit: Int) {
+    var fitString = string
+    if (config.textMetrics.getTextLength(fitString) > widthLimit) {
+      val letterWidth = config.textMetrics.getTextLength("m")
+      val dots = "... "
+      val lettersNumber = max(0, (widthLimit - config.textMetrics.getTextLength(dots)) / letterWidth)
+      fitString = fitString.substring(0, lettersNumber)
+      fitString += dots
+    }
+    val text = canvas.createText(x, y, fitString)
     text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
   }
 
-  data class Row(val width: Int, val text: String, val indent: Int)
+  data class Config(val rowHeight: Int, val horizontalOffset: Int, val textMetrics: TextMetrics)
 
-  data class Config(val rowHeight: Int, val horizontalOffset: Int)
+  class Table(val columns: List<Column>, val rows: List<Row>) {
+    class Column(val name: String, val width: Int? = null)
+
+    class Row(val values: Map<Column, String>, val indent: Int)
+  }
 
   private data class Dimension(val height: Int, val width: Int)
 
