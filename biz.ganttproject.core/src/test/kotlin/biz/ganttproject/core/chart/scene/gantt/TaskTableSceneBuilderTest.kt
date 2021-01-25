@@ -21,6 +21,7 @@ package biz.ganttproject.core.chart.scene.gantt
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 import biz.ganttproject.core.chart.scene.gantt.TaskTableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -36,15 +37,16 @@ class TaskTableSceneBuilderTest {
       override val horizontalOffset = 2
     }
     val sceneBuilder = TaskTableSceneBuilder(input)
+    val column = Column("")
     val tasks = listOf(
-      Task("1", "", "", ""),
-      Task("2", "", "", "", listOf(
-        Task("3", "", "", ""),
-        Task("4", "", "", "", listOf(Task("5", "", "", "")))
+      Task(mapOf(column to "1")),
+      Task(mapOf(column to "2"), listOf(
+        Task(mapOf(column to "3")),
+        Task(mapOf(column to "4"), listOf(Task(mapOf(column to "5"))))
       ))
     )
     val canvas = spy(Canvas())
-    sceneBuilder.build(tasks, canvas)
+    sceneBuilder.build(listOf(column), tasks, canvas)
 
     val halfRowHeight = input.rowHeight / 2
     verify(canvas).createText(input.horizontalOffset, input.rowHeight + halfRowHeight, "1")
