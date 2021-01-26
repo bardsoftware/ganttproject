@@ -147,28 +147,38 @@ class GPCloudBrowserPane(
   var controller: GPCloudStorage.Controller? = null
 
   fun createStorageUi(): Pane {
-    val builder = BrowserPaneBuilder<CloudJsonAsFolderItem>(this.mode, this.dialogUi::error) { path, success, loading ->
-      loadTeams(path, success, loading)
-    }
-
+    val listViewHint = SimpleStringProperty("")
     val actionButtonHandler = object {
       var button: Button? = null
       var selectedProject: ProjectJsonAsFolderItem? = null
       var selectedTeam: TeamJsonAsFolderItem? = null
 
-      fun onSelectionChange(item: FolderItem) {
+      fun onSelectionChange(item: FolderItem?) {
         // We just remember the selection and update action button state.
         // We can "open" files but we can't "open" directories.
-        selectedProject = null
-        selectedTeam = null
         when (item) {
           is ProjectJsonAsFolderItem -> selectedProject = item
-          is TeamJsonAsFolderItem -> selectedTeam = item
+          is TeamJsonAsFolderItem -> {
+            selectedTeam = item
+            selectedProject = null
+          }
           else -> {
+            selectedProject = null
+            selectedTeam = null
           }
         }
-        button?.isDisable = selectedTeam != null;
+        button?.isDisable = !isActionEnabled()
       }
+
+      private fun isActionEnabled() =
+        when (mode) {
+          StorageDialogBuilder.Mode.OPEN -> {
+            selectedTeam != null && (selectedProject != null || !paneElements.filenameInput.text.isNullOrBlank())
+          }
+          StorageDialogBuilder.Mode.SAVE -> {
+            selectedTeam != null
+          }
+        }
 
       fun onAction() {
         selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
@@ -188,7 +198,33 @@ class GPCloudBrowserPane(
       }
     }
 
-    val listViewHint = SimpleStringProperty(i18n.formatText("open.listViewHint"))
+    val builder = BrowserPaneBuilder<CloudJsonAsFolderItem>(this.mode, this.dialogUi::error) { path, success, loading ->
+      // This is triggered when navigating in the breadcrumbs and in particular on
+      // the first load of the pane.
+      val onSuccess = Consumer<ObservableList<CloudJsonAsFolderItem>> {
+        if (path.getNameCount() == 0) {
+          if (it.isEmpty()) {
+            // We are in the root "GP Cloud" and the list of teams is empty
+            listViewHint.set(i18n.formatText("listViewHint.createTeam"))
+          } else {
+            // We are in the root "GP Cloud" and there are some teams
+            listViewHint.set(i18n.formatText("listViewHint.openTeam"))
+          }
+        } else {
+          // We are not in the root
+          if (it.isEmpty()) {
+            listViewHint.set(i18n.formatText("listViewHint.emptyProjects"))
+          } else {
+            listViewHint.set(i18n.formatText("${this.mode.name.toLowerCase()}.listViewHint"))
+          }
+        }
+        success.accept(it)
+      }
+      loadTeams(path, onSuccess, loading)
+      if (path.getNameCount() == 0) {
+        actionButtonHandler.onSelectionChange(null)
+      }
+    }
 
     this.paneElements = builder.apply {
       withI18N(CLOUD_LOCALIZER)
