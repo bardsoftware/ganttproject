@@ -99,7 +99,6 @@ data class BrowserPaneElements<T: FolderItem>(
         //btnSave.isDisable = false
       }
     } else {
-      println("validation is ok")
       errorLabel.text = ""
       filenameInput.styleClass.removeAll("error", "warning")
       errorLabel.parent.styleClass.removeAll("error", "warning")
