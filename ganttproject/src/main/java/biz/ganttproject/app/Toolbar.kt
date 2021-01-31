@@ -44,7 +44,9 @@ class FXToolbar {
         // e.g. hitting DELETE or INSERT in the search box will delete the selected
         // task or insert a new one.
         // See issue #1803: https://github.com/bardsoftware/ganttproject/issues/1803
-        e.consume()
+        if (e.keyCode == KeyEvent.VK_INSERT || e.keyCode == KeyEvent.VK_DELETE) {
+          e.consume()
+        }
       }
     })
   }
@@ -107,6 +109,8 @@ fun addSeparator(toolbar: FXToolbar) {
  */
 class FXToolbarBuilder {
 
+  private lateinit var deleteAction: GPAction
+  private lateinit var insertAction: GPAction
   private val visitors = mutableListOf<ToolbarVisitor>()
 
   fun addButton(action: GPAction): FXToolbarBuilder {
@@ -132,6 +136,16 @@ class FXToolbarBuilder {
     GlobalScope.launch(Dispatchers.Main) {
       toolbar.init { toolbar ->
         visitors.forEach { it(toolbar) }
+        toolbar.toolbar.let {
+          it.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED) {evt ->
+            if (!evt.isConsumed) {
+              when (evt.code.code) {
+                insertAction.keyStroke.keyCode -> SwingUtilities.invokeLater { insertAction.actionPerformed(null) }
+                deleteAction.keyStroke.keyCode -> SwingUtilities.invokeLater { deleteAction.actionPerformed(null) }
+              }
+            }
+          }
+        }
       }
     }
     return toolbar
@@ -142,5 +156,10 @@ class FXToolbarBuilder {
       toolbar.toolbar.items.add(searchUi.node)
       searchUi.swingToolbar = { toolbar.component }
     }
+  }
+
+  fun setArtefactActions(insertAction: GPAction, deleteAction: GPAction) {
+    this.insertAction = insertAction
+    this.deleteAction = deleteAction
   }
 }

@@ -19,31 +19,34 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 
-class TaskTableSceneBuilder(
+class TreeTableSceneBuilder(
   private val input: InputApi
 ) {
-  private val tableSceneBuilder = TableSceneBuilder(Config(input.rowHeight, input.horizontalOffset))
+  private val tableSceneConfig = Config(input.rowHeight, input.horizontalOffset, input.textMetrics)
 
-  fun build(tasks: List<Task>, canvas: Canvas = Canvas()): Canvas {
-    return tableSceneBuilder.build(toRows(tasks), canvas)
+  fun build(columns: List<Column>, items: List<Item>, canvas: Canvas = Canvas()): Canvas {
+    val rows = toRow(items)
+    val table = Table(columns, rows)
+    val tableSceneBuilder = TableSceneBuilder(tableSceneConfig, table, canvas)
+    return tableSceneBuilder.build()
   }
 
-  private fun toRows(tasks: List<Task>, indent: Int = 0): List<Row> {
-    return tasks.flatMap {
-      listOf(Row(
-        input.textMetrics.getTextLength(it.name),
-        it.name,
-        indent
-      )) + toRows(it.subtasks, indent + input.depthIndent)
+  private fun toRow(items: List<Item>, indent: Int = 0): List<Row> {
+    return items.flatMap {
+      listOf(Row(it.values, indent)) + toRow(it.subitems, indent + input.depthIndent)
     }
   }
 
-  class Task(val name: String, val subtasks: List<Task> = emptyList()) {
+  class Item(
+    val values: Map<Column, String>,
+    val subitems: List<Item> = emptyList()
+  ) {
     companion object {
-      val EMPTY = Task("")
+      val EMPTY = Item(emptyMap())
     }
   }
 

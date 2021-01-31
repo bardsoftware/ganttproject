@@ -20,13 +20,14 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
-import biz.ganttproject.core.chart.scene.gantt.TaskTableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TreeTableSceneBuilder.*
+import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.awt.Font
 
-class TaskTableSceneBuilderTest {
+class TreeTableSceneBuilderTest {
   @Test
   fun `test indents`() {
     val input = object : InputApi {
@@ -35,25 +36,28 @@ class TaskTableSceneBuilderTest {
       override val depthIndent = 15
       override val horizontalOffset = 2
     }
-    val sceneBuilder = TaskTableSceneBuilder(input)
+    val sceneBuilder = TreeTableSceneBuilder(input)
+    val column = Column("")
     val tasks = listOf(
-      Task("1"),
-      Task("2", listOf(
-        Task("3"), Task("4", listOf(Task("5")))
+      Item(mapOf(column to "1")),
+      Item(mapOf(column to "2"), listOf(
+        Item(mapOf(column to "3")),
+        Item(mapOf(column to "4"), listOf(Item(mapOf(column to "5"))))
       ))
     )
     val canvas = spy(Canvas())
-    sceneBuilder.build(tasks, canvas)
+    sceneBuilder.build(listOf(column), tasks, canvas)
 
-    verify(canvas).createText(input.horizontalOffset, 5, "1")
-    verify(canvas).createText(input.horizontalOffset, 15, "2")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 25, "3")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 35, "4")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent * 2, 45, "5")
+    val halfRowHeight = input.rowHeight / 2
+    verify(canvas).createText(input.horizontalOffset, input.rowHeight + halfRowHeight, "1")
+    verify(canvas).createText(input.horizontalOffset, 2 * input.rowHeight + halfRowHeight, "2")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 3 * input.rowHeight + halfRowHeight, "3")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 4 * input.rowHeight + halfRowHeight, "4")
+    verify(canvas).createText(input.horizontalOffset + input.depthIndent * 2, 5 * input.rowHeight + halfRowHeight, "5")
   }
 }
 
-private object TextMetricsStub : TextMetrics {
+object TextMetricsStub : TextMetrics {
   override fun getTextLength(text: String) = text.length * 7
 
   override fun getTextHeight(text: String) = 10
