@@ -1,0 +1,9 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+org.jetbrains.kotlin:kotlin-stdlib-common:1.4.0
+org.jetbrains.kotlin:kotlin-stdlib:1.4.0
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.4.2
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2
+org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.4.2
+org.jetbrains:annotations:13.0
