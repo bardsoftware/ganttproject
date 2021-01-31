@@ -26,7 +26,7 @@ def getBuildNum() {
 }
 
 // Config for all projects: deps come from Maven repository,
-// compile using Java 8, libs normally sit in lib
+// compile using Java 11, libs normally sit in lib
 allprojects {
     configurations {
         direct
@@ -56,6 +56,9 @@ allprojects {
 subprojects {
     group 'biz.ganttproject'
     version = new Date().format("yy.MM.dd")
+    dependencyLocking {
+        lockAllConfigurations()
+    }
 }
 
 
