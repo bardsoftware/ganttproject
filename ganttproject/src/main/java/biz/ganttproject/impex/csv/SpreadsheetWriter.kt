@@ -16,17 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package biz.ganttproject.impex.csv
 
-package biz.ganttproject.impex.csv;
-
-import java.io.IOException;
+import biz.ganttproject.core.time.GanttCalendar
+import java.lang.AutoCloseable
+import java.io.IOException
+import java.math.BigDecimal
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public interface SpreadsheetWriter extends AutoCloseable {
-  void print(String value) throws IOException;
+interface SpreadsheetWriter : AutoCloseable {
+  @Throws(IOException::class)
+  fun print(value: String?)
 
-  void println() throws IOException;
+  fun print(value: Int?)
+  fun print(value: Double?)
+  fun print(value: BigDecimal?)
+  fun print(value: GanttCalendar?)
 
+  @Throws(IOException::class)
+  fun println()
 }

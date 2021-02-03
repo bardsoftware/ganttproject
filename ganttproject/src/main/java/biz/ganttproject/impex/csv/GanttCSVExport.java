@@ -177,22 +177,22 @@ public class GanttCSVExport {
         } else {
           switch (defaultColumn) {
             case ID:
-              writer.print(String.valueOf(task.getTaskID()));
+              writer.print(task.getTaskID());
               break;
             case NAME:
               writer.print(getName(task));
               break;
             case BEGIN_DATE:
-              writer.print(task.getStart().toString());
+              writer.print(task.getStart());
               break;
             case END_DATE:
-              writer.print(task.getDisplayEnd().toString());
+              writer.print(task.getDisplayEnd());
               break;
             case DURATION:
-              writer.print(String.valueOf(task.getDuration().getLength()));
+              writer.print(task.getDuration().getLength());
               break;
             case COMPLETION:
-              writer.print(String.valueOf(task.getCompletionPercentage()));
+              writer.print(task.getCompletionPercentage());
               break;
             case OUTLINE_NUMBER:
               List<Integer> outlinePath = task.getManager().getTaskHierarchy().getOutlinePath(task);
@@ -210,7 +210,7 @@ public class GanttCSVExport {
               writer.print(buildAssignmentSpec(task));
               break;
             case COST:
-              writer.print(task.getCost().getValue().toPlainString());
+              writer.print(task.getCost().getValue());
               break;
             case COLOR:
               if (!Objects.equal(task.getColor(), task.getManager().getTaskDefaultColorOption().getValue())) {
@@ -266,7 +266,7 @@ public class GanttCSVExport {
         ResourceDefaultColumn defaultColumn = ResourceDefaultColumn.find(entry.getKey());
         if (defaultColumn == null) {
           if ("id".equals(entry.getKey())) {
-            writer.print(String.valueOf(p.getId()));
+            writer.print(p.getId());
             continue;
           }
         } else {
@@ -296,13 +296,13 @@ public class GanttCSVExport {
               writer.print("");
               break;
             case STANDARD_RATE:
-              writer.print(p.getStandardPayRate().toPlainString());
+              writer.print(p.getStandardPayRate());
               break;
             case TOTAL_COST:
-              writer.print(p.getTotalCost().toPlainString());
+              writer.print(p.getTotalCost());
               break;
             case TOTAL_LOAD:
-              writer.print(String.valueOf(p.getTotalLoad()));
+              writer.print(p.getTotalLoad());
               break;
           }
         }
