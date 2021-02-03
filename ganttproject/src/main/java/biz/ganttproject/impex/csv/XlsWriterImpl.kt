@@ -16,65 +16,90 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package biz.ganttproject.impex.csv
 
-package biz.ganttproject.impex.csv;
-
-import com.google.common.base.Preconditions;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import biz.ganttproject.core.time.GanttCalendar
+import org.apache.poi.ss.usermodel.Workbook
+import java.io.IOException
+import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.Sheet
+import java.io.OutputStream
+import java.math.BigDecimal
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public class XlsWriterImpl implements SpreadsheetWriter {
-  private final Workbook myWorkbook;
-  private final Sheet mySheet;
-  private final OutputStream myStream;
+class XlsWriterImpl internal constructor(private val myStream: OutputStream) : SpreadsheetWriter {
+  private val myWorkbook: Workbook
+  private val mySheet: Sheet
+  private var myCurrentRow: Row
+  private var myNextRowInd = 0
+  private var myNextCellInd = 0
 
-
-  private Row myCurrentRow = null;
-  private int myNextRowInd = 0;
-  private int myNextCellInd = 0;
-
-
-  XlsWriterImpl(OutputStream stream) {
-    myStream = Preconditions.checkNotNull(stream);
-    myWorkbook = new HSSFWorkbook();
-    mySheet = myWorkbook.createSheet();
+  init {
+    myWorkbook = HSSFWorkbook()
+    mySheet = myWorkbook.createSheet()
+    myCurrentRow = createNewRow()
   }
 
-  @Override
-  public void print(String value) throws IOException {
-    if (myCurrentRow == null) {
-      createNewRow();
-    }
-
-    Cell cell = myCurrentRow.createCell(myNextCellInd++);
-    if (value != null) {
-      cell.setCellValue(value);
+  @Throws(IOException::class)
+  override fun print(value: String?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value)
+      }
     }
   }
 
-  @Override
-  public void println() throws IOException {
-    createNewRow();
-    myNextCellInd = 0;
+  override fun print(value: Int?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value.toDouble())
+      }
+    }
   }
 
-  @Override
-  public void close() throws IOException {
-    myWorkbook.write(myStream);
-    myWorkbook.close();
-    myStream.close();
+  override fun print(value: Double?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value)
+      }
+    }
   }
 
-  private void createNewRow() {
-    myCurrentRow = mySheet.createRow(myNextRowInd++);
+  override fun print(value: BigDecimal?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value.toDouble())
+      }
+    }
   }
+
+  override fun print(value: GanttCalendar?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value.time)
+      }
+    }
+  }
+
+  @Throws(IOException::class)
+  override fun println() {
+    createNewRow()
+    myNextCellInd = 0
+  }
+
+  @Throws(IOException::class)
+  override fun close() {
+    myWorkbook.write(myStream)
+    myWorkbook.close()
+    myStream.close()
+  }
+
+  private fun createNewRow() =
+    mySheet.createRow(myNextRowInd++).also { myCurrentRow = it }
+
+  private fun createCell() = myCurrentRow.createCell(myNextCellInd++)
+
 }

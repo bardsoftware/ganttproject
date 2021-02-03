@@ -16,48 +16,60 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package biz.ganttproject.impex.csv
 
-package biz.ganttproject.impex.csv;
-
-import com.google.common.base.Charsets;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import biz.ganttproject.core.time.GanttCalendar
+import org.apache.commons.csv.CSVFormat
+import com.google.common.base.Charsets
+import org.apache.commons.csv.CSVPrinter
+import java.io.IOException
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.math.BigDecimal
 
 /**
  * @author akurutin on 04.04.2017.
  */
-public class CsvWriterImpl implements SpreadsheetWriter {
-  private final CSVPrinter myCsvPrinter;
-
-  CsvWriterImpl(OutputStream stream, CSVFormat format) throws IOException {
-    this(stream, format, false);
+class CsvWriterImpl @JvmOverloads internal constructor(
+  stream: OutputStream, format: CSVFormat, addBom: Boolean = false) : SpreadsheetWriter {
+  private val myCsvPrinter: CSVPrinter
+  @Throws(IOException::class)
+  override fun print(value: String?) {
+    myCsvPrinter.print(value)
   }
-  
-  CsvWriterImpl(OutputStream stream, CSVFormat format, boolean addBom) throws IOException {
-    OutputStreamWriter writer = new OutputStreamWriter(stream, Charsets.UTF_8);
+
+  override fun print(value: Int?) {
+    print(value?.toString())
+  }
+
+  override fun print(value: Double?) {
+    print(value?.toString())
+  }
+
+  override fun print(value: BigDecimal?) {
+    print(value?.toString())
+  }
+
+  override fun print(value: GanttCalendar?) {
+    print(value?.toString())
+  }
+
+  @Throws(IOException::class)
+  override fun println() {
+    myCsvPrinter.println()
+  }
+
+  @Throws(IOException::class)
+  override fun close() {
+    myCsvPrinter.flush()
+    myCsvPrinter.close()
+  }
+
+  init {
+    val writer = OutputStreamWriter(stream, Charsets.UTF_8)
     if (addBom) {
-      writer.write('\ufeff');
+      writer.write('\ufeff'.toInt())
     }
-    myCsvPrinter = new CSVPrinter(writer, format);
-  }
-
-  @Override
-  public void print(String value) throws IOException {
-    myCsvPrinter.print(value);
-  }
-
-  @Override
-  public void println() throws IOException {
-    myCsvPrinter.println();
-  }
-
-  @Override
-  public void close() throws IOException {
-    myCsvPrinter.flush();
-    myCsvPrinter.close();
+    myCsvPrinter = CSVPrinter(writer, format)
   }
 }
