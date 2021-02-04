@@ -56,6 +56,11 @@ public class HumanResourceManager {
       return this;
     }
 
+    public ResourceBuilder withID(Integer id) {
+      myID = id;
+      return this;
+    }
+
     public ResourceBuilder withEmail(String email) {
       myEmail = email;
       return this;
@@ -79,6 +84,11 @@ public class HumanResourceManager {
           myStandardRate = null;
         }
       }
+      return this;
+    }
+
+    public ResourceBuilder withStandardRate(BigDecimal rate) {
+      myStandardRate = rate;
       return this;
     }
 

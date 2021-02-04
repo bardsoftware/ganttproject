@@ -84,7 +84,7 @@ class TaskRecords(
   private val myAssignmentMap: MutableMap<Task, AssignmentSpec?> = Maps.newHashMap()
   private val myPredecessorMap: MutableMap<Task, String?> = Maps.newHashMap()
   private val myWbsMap: SortedMap<String, Task> = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR)
-  private val myTaskIdMap: MutableMap<String?, Task> = Maps.newHashMap()
+  private val myTaskIdMap: MutableMap<Int, Task> = Maps.newHashMap()
   override fun setHeader(header: List<String>) {
     super.setHeader(header)
     GanttCSVOpen.createCustomProperties(customFields, taskManager.customPropertyManager)
@@ -98,8 +98,7 @@ class TaskRecords(
       return false
     }
 
-    val startDate = record.getDate(TaskFields.BEGIN_DATE.toString())
-      ?: parseDateOrError(record[TaskFields.BEGIN_DATE.toString()], this::addError)
+    val startDate = record.digDate(TaskFields.BEGIN_DATE.toString(), this::addError)
 
       // Create the task
     var builder = taskManager.newTaskBuilder()
@@ -107,71 +106,80 @@ class TaskRecords(
       .withStartDate(startDate)
       .withWebLink(record[TaskFields.WEB_LINK.toString()])
       .withNotes(record[TaskFields.NOTES.toString()])
+
     val duration =
-      if (record.isSet(TaskDefaultColumn.DURATION.getName())) record[TaskDefaultColumn.DURATION.getName()]!!
-        .trim { it <= ' ' } else ""
-      if (!duration.isEmpty()) {
-        builder = builder.withDuration(taskManager.createLength(duration))
-      }
-      if (record.isSet(TaskFields.END_DATE.toString())) {
-        if (!duration.isEmpty()) {
-          if (Objects.equal(record[TaskFields.BEGIN_DATE.toString()], record[TaskFields.END_DATE.toString()])
-            && "0" == duration
-          ) {
-            builder = builder.withLegacyMilestone()
-          }
-        } else {
-          val endDate = parseDateOrError(getOrNull(record, TaskFields.END_DATE.toString()), this::addError)
-          if (endDate != null) {
-            builder = builder.withEndDate(myTimeUnitStack.defaultTimeUnit.adjustRight(endDate))
-          }
+      if (record.isSet(TaskDefaultColumn.DURATION.getName())) {
+        record.getInt(TaskDefaultColumn.DURATION.getName())?.toString()
+          ?: record[TaskDefaultColumn.DURATION.getName()]?.trim { it <= ' ' }
+      } else ""
+
+    if (!duration.isNullOrBlank()) {
+      builder = builder.withDuration(taskManager.createLength(duration))
+    }
+
+    if (record.isSet(TaskFields.END_DATE.toString())) {
+      if (!duration.isNullOrBlank()) {
+        if (record.digDate(TaskFields.BEGIN_DATE.toString(), this::addError) == record.digDate(TaskFields.END_DATE.toString(), this::addError)
+          && "0" == duration
+        ) {
+          builder = builder.withLegacyMilestone()
+        }
+      } else {
+        val endDate = record.digDate(TaskFields.END_DATE.toString(), this::addError)
+        if (endDate != null) {
+          builder = builder.withEndDate(myTimeUnitStack.defaultTimeUnit.adjustRight(endDate))
         }
       }
-      if (record.isSet(TaskFields.COMPLETION.toString())) {
-        val completion = record[TaskFields.COMPLETION.toString()]
-        if (!Strings.isNullOrEmpty(completion)) {
-          builder = builder.withCompletion(completion!!.toInt())
+    }
+
+    if (record.isSet(TaskFields.COMPLETION.toString())) {
+      record.getInt(TaskFields.COMPLETION.toString())?.let {
+        builder = builder.withCompletion(it)
+      }
+    }
+
+    if (record.isSet(TaskFields.COLOR.toString())) {
+      val taskColorAsString = getOrNull(record, TaskFields.COLOR.toString())
+      if (ColorOption.Util.isValidColor(taskColorAsString)) {
+        builder.withColor(ColorConvertion.determineColor(taskColorAsString))
+      } else if (taskManager.taskDefaultColorOption.value != null) {
+        builder.withColor(taskManager.taskDefaultColorOption.value)
+      }
+    }
+
+    if (record.isSet(TaskDefaultColumn.COST.getName())) {
+      try {
+        record.getBigDecimal(TaskDefaultColumn.COST.getName())?.let {
+          builder = builder.withCost(it)
         }
+      } catch (e: NumberFormatException) {
+        GPLogger.logToLogger(e)
+        GPLogger.log(String.format("Failed to parse %s as cost value", record[TaskDefaultColumn.COST.getName()]))
       }
-      if (record.isSet(TaskFields.COLOR.toString())) {
-        val taskColorAsString = getOrNull(record, TaskFields.COLOR.toString())
-        if (ColorOption.Util.isValidColor(taskColorAsString)) {
-          builder.withColor(ColorConvertion.determineColor(taskColorAsString))
-        } else if (taskManager.taskDefaultColorOption.value != null) {
-          builder.withColor(taskManager.taskDefaultColorOption.value)
-        }
+    }
+
+    val task = builder.build()
+    if (record.isSet(TaskDefaultColumn.ID.getName())) {
+      record.getInt(TaskDefaultColumn.ID.getName())?.let {
+        myTaskIdMap[it] = task
       }
-      if (record.isSet(TaskDefaultColumn.COST.getName())) {
-        try {
-          val cost = record[TaskDefaultColumn.COST.getName()]
-          if (!Strings.isNullOrEmpty(cost)) {
-            builder = builder.withCost(BigDecimal(cost))
-          }
-        } catch (e: NumberFormatException) {
-          GPLogger.logToLogger(e)
-          GPLogger.log(String.format("Failed to parse %s as cost value", record[TaskDefaultColumn.COST.getName()]))
-        }
+    }
+    myAssignmentMap[task] = parseAssignmentSpec(record)
+    myPredecessorMap[task] = getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName())
+    val outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())
+    if (outlineNumber != null) {
+      myWbsMap[outlineNumber] = task
+    }
+    for (customField in customFields) {
+      val value = getOrNull(record, customField) ?: continue
+      val def = taskManager.customPropertyManager.getCustomPropertyDefinition(customField)
+      if (def == null) {
+        GPLogger.logToLogger("Can't find custom field with name=$customField value=$value")
+        continue
       }
-      val task = builder.build()
-      if (record.isSet(TaskDefaultColumn.ID.getName())) {
-        myTaskIdMap[record[TaskDefaultColumn.ID.getName()]] = task
-      }
-      myAssignmentMap[task] = parseAssignmentSpec(record)
-      myPredecessorMap[task] = getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName())
-      val outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())
-      if (outlineNumber != null) {
-        myWbsMap[outlineNumber] = task
-      }
-      for (customField in customFields) {
-        val value = getOrNull(record, customField) ?: continue
-        val def = taskManager.customPropertyManager.getCustomPropertyDefinition(customField)
-        if (def == null) {
-          GPLogger.logToLogger("Can't find custom field with name=$customField value=$value")
-          continue
-        }
-        task.customValues.addCustomProperty(def, value)
-      }
-      return true
+      task.customValues.addCustomProperty(def, value)
+    }
+    return true
   }
 
 
@@ -206,19 +214,17 @@ class TaskRecords(
         value.apply(key, resourceManager)
       }
     }
-    val taskIndex: Function<Int, Task> = object : Function<Int, Task> {
-      override fun apply(id: Int?): Task {
-        return myTaskIdMap[id.toString()]!!
-      }
+    val taskIndex = Function<Int, Task?> {
+      myTaskIdMap[it]
     }
     for ((successor, value) in myPredecessorMap) {
       if (value == null) {
         continue
       }
-      val depSpecs = value.split(";").toTypedArray()
+      val depSpecs = value.split(";")
       try {
         val constructors = TaskProperties.parseDependencies(
-          Arrays.asList(*depSpecs), successor, taskIndex
+          depSpecs, successor, taskIndex
         )
         for (constructor in constructors.values) {
           constructor.get()
@@ -347,3 +353,7 @@ val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
     }
   }
 }
+
+fun SpreadsheetRecord.digDate(column: String, addError: (Level, String) -> Unit): Date? =
+  this.getDate(column) ?: parseDateOrError(this[column], addError)
+
