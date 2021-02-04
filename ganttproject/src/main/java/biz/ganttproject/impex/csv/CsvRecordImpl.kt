@@ -21,6 +21,7 @@ package biz.ganttproject.impex.csv
 import biz.ganttproject.core.time.GanttCalendar
 import org.apache.commons.csv.CSVRecord
 import biz.ganttproject.impex.csv.SpreadsheetRecord
+import net.sourceforge.ganttproject.CustomPropertyClass
 import java.math.BigDecimal
 import java.util.*
 
@@ -28,6 +29,8 @@ import java.util.*
  * @author torkhov
  */
 internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecord {
+  override fun getType(name: String) = if (isMapped(name)) CustomPropertyClass.TEXT else null
+
   override fun get(name: String): String? {
     return if (isMapped(name)) myRecord[name] else null
   }
@@ -39,6 +42,7 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
   }
   override fun getInt(name: String): Int? = get(name)?.toIntOrNull()
   override fun getBigDecimal(name: String): BigDecimal? = get(name)?.toBigDecimalOrNull()
+  override fun getBoolean(name: String): Boolean? = get(name)?.toBoolean()
 
   override fun isEmpty(): Boolean = myRecord.all { it.isBlank() }
 

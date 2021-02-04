@@ -19,27 +19,27 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.time.GanttCalendar
-import org.apache.poi.ss.usermodel.Workbook
-import java.io.IOException
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
+import org.apache.poi.ss.usermodel.Workbook
+import java.io.IOException
 import java.io.OutputStream
 import java.math.BigDecimal
+
 
 /**
  * @author akurutin on 04.04.2017.
  */
 class XlsWriterImpl internal constructor(private val myStream: OutputStream) : SpreadsheetWriter {
-  private val myWorkbook: Workbook
-  private val mySheet: Sheet
+  private val myWorkbook: Workbook = HSSFWorkbook()
+  private val mySheet: Sheet = myWorkbook.createSheet()
+  private val dateFormat = myWorkbook.creationHelper.createDataFormat().getFormat("m/d/yy")
   private var myCurrentRow: Row
   private var myNextRowInd = 0
   private var myNextCellInd = 0
 
   init {
-    myWorkbook = HSSFWorkbook()
-    mySheet = myWorkbook.createSheet()
     myCurrentRow = createNewRow()
   }
 
@@ -80,6 +80,15 @@ class XlsWriterImpl internal constructor(private val myStream: OutputStream) : S
     createCell().let {
       if (value != null) {
         it.setCellValue(value.time)
+        it.cellStyle = myWorkbook.createCellStyle().also { it.dataFormat = dateFormat }
+      }
+    }
+  }
+
+  override fun print(value: Boolean?) {
+    createCell().let {
+      if (value != null) {
+        it.setCellValue(value)
       }
     }
   }

@@ -18,28 +18,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.resource.HumanResourceManager
-import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.core.model.task.TaskDefaultColumn
-import net.sourceforge.ganttproject.language.GanttLanguage
 import biz.ganttproject.core.option.ColorOption
+import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.impex.csv.RecordGroup.addError
-import net.sourceforge.ganttproject.util.ColorConvertion
-import java.math.BigDecimal
-import java.lang.NumberFormatException
-import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.resource.HumanResource
 import com.google.common.base.Function
 import com.google.common.base.Joiner
-import com.google.common.base.Objects
 import com.google.common.base.Strings
 import com.google.common.collect.Maps
 import com.google.common.collect.Sets
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.resource.HumanResource
+import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskProperties
-import java.lang.IllegalArgumentException
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
+import net.sourceforge.ganttproject.util.ColorConvertion
 import net.sourceforge.ganttproject.util.collect.Pair
 import java.util.*
 import java.util.logging.Level
@@ -87,7 +83,7 @@ class TaskRecords(
   private val myTaskIdMap: MutableMap<Int, Task> = Maps.newHashMap()
   override fun setHeader(header: List<String>) {
     super.setHeader(header)
-    GanttCSVOpen.createCustomProperties(customFields, taskManager.customPropertyManager)
+    //GanttCSVOpen.createCustomProperties(customFields, taskManager.customPropertyManager)
   }
 
   override fun doProcess(record: SpreadsheetRecord): Boolean {
@@ -171,18 +167,21 @@ class TaskRecords(
       myWbsMap[outlineNumber] = task
     }
     for (customField in customFields) {
-      val value = getOrNull(record, customField) ?: continue
-      val def = taskManager.customPropertyManager.getCustomPropertyDefinition(customField)
+      val def = taskManager.customPropertyManager.let {
+        it.getCustomPropertyDefinition(customField)
+          ?: record.getType(customField)?.let { type ->
+            it.createDefinition(customField, type.id, customField, null)
+          }
+      }
       if (def == null) {
-        GPLogger.logToLogger("Can't find custom field with name=$customField value=$value")
+        GPLogger.logToLogger("Can't find custom field with name=$customField value=${getOrNull(record, customField)}")
         continue
       }
-      task.customValues.addCustomProperty(def, value)
+
+      task.customValues.addCustomProperty(def, record[customField])
     }
     return true
   }
-
-
 
   private fun parseAssignmentSpec(record: SpreadsheetRecord): AssignmentSpec {
     val assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString())

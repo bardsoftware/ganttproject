@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
+import net.sourceforge.ganttproject.CustomPropertyClass
+import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import java.lang.IllegalArgumentException
@@ -31,12 +33,32 @@ internal class XlsRecordImpl(
     private val myValues: List<Cell>,
     private val myMapping: Map<String, Int> = mapOf()) : SpreadsheetRecord {
 
+  override fun getType(name: String) = if (isMapped(name)) {
+    myValues[idx(name)]?.let {
+      when (it.cellType) {
+        CellType.STRING -> CustomPropertyClass.TEXT
+        CellType.NUMERIC -> {
+          if (it.cellStyle.dataFormat == it.sheet.workbook.creationHelper.createDataFormat().getFormat("m/d/yy")) CustomPropertyClass.DATE
+          else CustomPropertyClass.DOUBLE
+        }
+        CellType.BOOLEAN -> CustomPropertyClass.BOOLEAN
+        else -> null
+      }
+    }
+  } else null
+
   override fun get(name: String): String? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> it.stringCellValue
-          CellType.NUMERIC -> it.numericCellValue.toString()
+      myValues[idx(name)]?.let { cell ->
+        when (cell.cellType) {
+          CellType.STRING -> cell.stringCellValue
+          CellType.NUMERIC -> {
+            if (cell.cellStyle.dataFormat == cell.sheet.workbook.creationHelper.createDataFormat().getFormat("m/d/yy")) cell.dateCellValue.let {
+              GanttLanguage.getInstance().shortDateFormat.format(it)
+            }
+            else cell.numericCellValue.toString()
+          }
+          CellType.BOOLEAN -> cell.booleanCellValue.toString()
           else -> null
         }
       }
@@ -92,6 +114,17 @@ internal class XlsRecordImpl(
       }
     } else null
 
+  override fun getBoolean(name: String): Boolean? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> it.stringCellValue.toBoolean()
+          CellType.BOOLEAN -> it.booleanCellValue
+          else -> null
+        }
+      }
+    } else null
+
   override fun isEmpty(): Boolean = myValues.all {
     it.cellType == CellType.BLANK || it.cellType == CellType.STRING && it.stringCellValue.isBlank()
   }
@@ -113,3 +146,4 @@ internal class XlsRecordImpl(
     return myValues.size
   }
 }
+

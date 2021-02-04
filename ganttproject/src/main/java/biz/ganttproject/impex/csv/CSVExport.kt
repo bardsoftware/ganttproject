@@ -50,7 +50,7 @@ fun writeCustomPropertyValues(
           writer.print(value.value as GanttCalendar)
         }
         CustomPropertyClass.BOOLEAN -> {
-          writer.print(value.valueAsString)
+          writer.print(value.valueAsString.toBoolean())
         }
       }
     }
