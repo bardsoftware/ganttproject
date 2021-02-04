@@ -88,11 +88,11 @@ class ResourceRecords extends RecordGroup {
 
     HumanResource hr = resourceManager.newResourceBuilder()
         .withName(getOrNull(record, ResourceFields.NAME.toString()))
-        .withID(getOrNull(record, ResourceFields.ID.toString()))
+        .withID(record.getInt(ResourceFields.ID.toString()))
         .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
         .withRole(role)
-        .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))
+        .withStandardRate(record.getBigDecimal(ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build();
     for (String customField : getCustomFields()) {
       String value = getOrNull(record, customField);
