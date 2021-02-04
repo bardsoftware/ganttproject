@@ -25,12 +25,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
@@ -226,7 +223,7 @@ public class GanttCSVExport {
           }
         }
       }
-      writeCustomPropertyValues(writer, customFields, task.getCustomValues().getCustomProperties());
+      CSVExportKt.writeCustomPropertyValues(writer, customFields, task.getCustomValues().getCustomProperties());
     }
   }
 
@@ -307,24 +304,10 @@ public class GanttCSVExport {
           }
         }
       }
-      writeCustomPropertyValues(writer, customPropDefs, p.getCustomProperties());
+      CSVExportKt.writeCustomPropertyValues(writer, customPropDefs, p.getCustomProperties());
     }
   }
 
-  private void writeCustomPropertyValues(SpreadsheetWriter writer,
-                                         List<CustomPropertyDefinition> defs, List<CustomProperty> values) throws IOException {
-    Map<String, CustomProperty> definedProps = Maps.newHashMap();
-    for (CustomProperty prop : values) {
-      definedProps.put(prop.getDefinition().getID(), prop);
-    }
-    for (CustomPropertyDefinition def : defs) {
-      CustomProperty value = definedProps.get(def.getID());
-      String valueAsString = value == null ? null : Strings.nullToEmpty(value.getValueAsString());
-      writer.print(valueAsString);
-    }
-    writer.println();
-
-  }
 
   /**
    * @return the name of task with the correct level.
