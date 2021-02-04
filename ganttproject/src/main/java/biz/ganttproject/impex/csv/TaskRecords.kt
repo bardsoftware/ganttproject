@@ -16,376 +16,334 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.time.TimeUnitStack;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.util.ColorConvertion;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.SortedMap;
-import java.util.logging.Level;
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import biz.ganttproject.core.time.TimeUnitStack
+import biz.ganttproject.core.model.task.TaskDefaultColumn
+import net.sourceforge.ganttproject.language.GanttLanguage
+import biz.ganttproject.core.option.ColorOption
+import biz.ganttproject.impex.csv.RecordGroup.addError
+import net.sourceforge.ganttproject.util.ColorConvertion
+import java.math.BigDecimal
+import java.lang.NumberFormatException
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.resource.HumanResource
+import com.google.common.base.Function
+import com.google.common.base.Joiner
+import com.google.common.base.Objects
+import com.google.common.base.Strings
+import com.google.common.collect.Maps
+import com.google.common.collect.Sets
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskProperties
+import java.lang.IllegalArgumentException
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
+import net.sourceforge.ganttproject.util.collect.Pair
+import java.util.*
+import java.util.logging.Level
 
 /**
  * Class responsible for processing task records in CSV import
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class TaskRecords extends RecordGroup {
-  static final Comparator<String> OUTLINE_NUMBER_COMPARATOR = new Comparator<String>() {
-    @Override
-    public int compare(String s1, String s2) {
-      try (Scanner sc1 = new Scanner(s1).useDelimiter("\\.");
-           Scanner sc2 = new Scanner(s2).useDelimiter("\\.")) {
-        while (sc1.hasNextInt() && sc2.hasNextInt()) {
-          int diff = sc1.nextInt() - sc2.nextInt();
-          if (diff != 0) {
-            return Integer.signum(diff);
-          }
-        }
-        if (sc1.hasNextInt()) {
-          return 1;
-        }
-        if (sc2.hasNextInt()) {
-          return -1;
-        }
-        return 0;
-      }
-    }
-  };
-
-  /** List of known (and supported) Task attributes */
-  enum TaskFields {
-    ID(TaskDefaultColumn.ID.getNameKey()),
-    NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK("webLink"),
-    NOTES("notes"), COMPLETION("tableColCompletion"),
-    COORDINATOR("tableColCoordinator"),
-    RESOURCES("resources"),
-    ASSIGNMENTS("Assignments") {
-      @Override
-      public String toString() {
-        return this.text;
+class TaskRecords(
+  private val taskManager: TaskManager,
+  private val resourceManager: HumanResourceManager?,
+  private val myTimeUnitStack: TimeUnitStack
+) : RecordGroup(
+  "Task group",
+  Sets.newHashSet(GanttCSVOpen.getFieldNames(*TaskFields.values())),
+  Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.NAME, TaskFields.BEGIN_DATE))
+) {
+  /** List of known (and supported) Task attributes  */
+  public enum class TaskFields(protected val text: String) {
+    ID(TaskDefaultColumn.ID.nameKey), NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK(
+      "webLink"
+    ),
+    NOTES("notes"), COMPLETION("tableColCompletion"), COORDINATOR("tableColCoordinator"), RESOURCES("resources"), ASSIGNMENTS(
+      "Assignments"
+    ) {
+      override fun toString(): String {
+        return text
       }
     },
-    DURATION("tableColDuration"),
-    PREDECESSORS(TaskDefaultColumn.PREDECESSORS.getNameKey()),
-    OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.getNameKey()),
-    COST(TaskDefaultColumn.COST.getNameKey()),
-    COLOR(TaskDefaultColumn.COLOR.getNameKey());
+    DURATION("tableColDuration"), PREDECESSORS(TaskDefaultColumn.PREDECESSORS.nameKey), OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.nameKey), COST(
+      TaskDefaultColumn.COST.nameKey
+    ),
+    COLOR(TaskDefaultColumn.COLOR.nameKey);
 
-    protected final String text;
-
-    TaskFields(final String text) {
-      this.text = text;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
       // Return translated field name
-      return GanttLanguage.getInstance().getText(text);
+      return GanttLanguage.getInstance().getText(text)
     }
   }
-  private final Map<Task, AssignmentSpec> myAssignmentMap = Maps.newHashMap();
-  private final Map<Task, String> myPredecessorMap = Maps.newHashMap();
-  private final SortedMap<String, Task> myWbsMap = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR);
-  private final Map<String, Task> myTaskIdMap = Maps.newHashMap();
-  private final TaskManager taskManager;
-  private final HumanResourceManager resourceManager;
-  private final TimeUnitStack myTimeUnitStack;
 
-  TaskRecords(TaskManager taskManager, HumanResourceManager resourceManager, TimeUnitStack timeUnitStack) {
-    super("Task group",
-      Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.values())),
-      Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.NAME, TaskFields.BEGIN_DATE)));
-    this.taskManager = taskManager;
-    this.resourceManager = resourceManager;
-    myTimeUnitStack = timeUnitStack;
+  private val myAssignmentMap: MutableMap<Task, AssignmentSpec?> = Maps.newHashMap()
+  private val myPredecessorMap: MutableMap<Task, String?> = Maps.newHashMap()
+  private val myWbsMap: SortedMap<String, Task> = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR)
+  private val myTaskIdMap: MutableMap<String?, Task> = Maps.newHashMap()
+  override fun setHeader(header: List<String>) {
+    super.setHeader(header)
+    GanttCSVOpen.createCustomProperties(customFields, taskManager.customPropertyManager)
   }
 
-  @Override
-  public void setHeader(List<String> header) {
-    super.setHeader(header);
-    GanttCSVOpen.createCustomProperties(getCustomFields(), taskManager.getCustomPropertyManager());
-  }
-
-  private Date parseDateOrError(String strDate) {
-    Date result = GanttCSVOpen.language.parseDate(strDate);
-    if (result == null) {
-      addError(Level.WARNING, GanttLanguage.getInstance().formatText("impex.csv.error.parse_date",
-          strDate,
-          GanttLanguage.getInstance().getShortDateFormat().toPattern(),
-          GanttLanguage.getInstance().getShortDateFormat().format(new Date())));
-    }
-    return result;
-  }
-  @Override
-  protected boolean doProcess(SpreadsheetRecord record) {
+  override fun doProcess(record: SpreadsheetRecord): Boolean {
     if (!super.doProcess(record)) {
-      return false;
+      return false
     }
     if (!hasMandatoryFields(record)) {
-      return false;
+      return false
     }
-    Date startDate = parseDateOrError(getOrNull(record, TaskFields.BEGIN_DATE.toString()));
-    // Create the task
-    TaskManager.TaskBuilder builder = taskManager.newTaskBuilder()
-        .withName(getOrNull(record, TaskFields.NAME.toString()))
-        .withStartDate(startDate)
-        .withWebLink(getOrNull(record, TaskFields.WEB_LINK.toString()))
-        .withNotes(getOrNull(record, TaskFields.NOTES.toString()));
-    String duration = record.isSet(TaskDefaultColumn.DURATION.getName())
-        ? record.get(TaskDefaultColumn.DURATION.getName()).trim()
-        : "";
-    if (!duration.isEmpty()) {
-      builder = builder.withDuration(taskManager.createLength(duration));
-    }
-    if (record.isSet(TaskFields.END_DATE.toString())) {
+
+    val startDate = record.getDate(TaskFields.BEGIN_DATE.toString())
+      ?: parseDateOrError(record[TaskFields.BEGIN_DATE.toString()], this::addError)
+
+      // Create the task
+    var builder = taskManager.newTaskBuilder()
+      .withName(record[TaskFields.NAME.toString()])
+      .withStartDate(startDate)
+      .withWebLink(record[TaskFields.WEB_LINK.toString()])
+      .withNotes(record[TaskFields.NOTES.toString()])
+    val duration =
+      if (record.isSet(TaskDefaultColumn.DURATION.getName())) record[TaskDefaultColumn.DURATION.getName()]!!
+        .trim { it <= ' ' } else ""
       if (!duration.isEmpty()) {
-        if (Objects.equal(record.get(TaskFields.BEGIN_DATE.toString()), record.get(TaskFields.END_DATE.toString()))
-            && "0".equals(duration)) {
-          builder = builder.withLegacyMilestone();
+        builder = builder.withDuration(taskManager.createLength(duration))
+      }
+      if (record.isSet(TaskFields.END_DATE.toString())) {
+        if (!duration.isEmpty()) {
+          if (Objects.equal(record[TaskFields.BEGIN_DATE.toString()], record[TaskFields.END_DATE.toString()])
+            && "0" == duration
+          ) {
+            builder = builder.withLegacyMilestone()
+          }
+        } else {
+          val endDate = parseDateOrError(getOrNull(record, TaskFields.END_DATE.toString()), this::addError)
+          if (endDate != null) {
+            builder = builder.withEndDate(myTimeUnitStack.defaultTimeUnit.adjustRight(endDate))
+          }
         }
-      } else {
-        Date endDate = parseDateOrError(getOrNull(record, TaskFields.END_DATE.toString()));
-        if (endDate != null) {
-          builder = builder.withEndDate(myTimeUnitStack.getDefaultTimeUnit().adjustRight(endDate));
+      }
+      if (record.isSet(TaskFields.COMPLETION.toString())) {
+        val completion = record[TaskFields.COMPLETION.toString()]
+        if (!Strings.isNullOrEmpty(completion)) {
+          builder = builder.withCompletion(completion!!.toInt())
         }
       }
-    }
-    if (record.isSet(TaskFields.COMPLETION.toString())) {
-      String completion = record.get(TaskFields.COMPLETION.toString());
-      if (!Strings.isNullOrEmpty(completion)) {
-        builder = builder.withCompletion(Integer.parseInt(completion));
-      }
-    }
-    if (record.isSet(TaskFields.COLOR.toString())) {
-      String taskColorAsString = getOrNull(record, TaskFields.COLOR.toString());
-      if (ColorOption.Util.isValidColor(taskColorAsString)) {
-        builder.withColor(ColorConvertion.determineColor(taskColorAsString));
-      } else if (taskManager.getTaskDefaultColorOption().getValue() != null) {
-        builder.withColor(taskManager.getTaskDefaultColorOption().getValue());
-      }
-    }
-    if (record.isSet(TaskDefaultColumn.COST.getName())) {
-      try {
-        String cost = record.get(TaskDefaultColumn.COST.getName());
-        if (!Strings.isNullOrEmpty(cost)) {
-          builder = builder.withCost(new BigDecimal(cost));
+      if (record.isSet(TaskFields.COLOR.toString())) {
+        val taskColorAsString = getOrNull(record, TaskFields.COLOR.toString())
+        if (ColorOption.Util.isValidColor(taskColorAsString)) {
+          builder.withColor(ColorConvertion.determineColor(taskColorAsString))
+        } else if (taskManager.taskDefaultColorOption.value != null) {
+          builder.withColor(taskManager.taskDefaultColorOption.value)
         }
-      } catch (NumberFormatException e) {
-        GPLogger.logToLogger(e);
-        GPLogger.log(String.format("Failed to parse %s as cost value", record.get(TaskDefaultColumn.COST.getName())));
       }
-    }
-    Task task = builder.build();
-
-    if (record.isSet(TaskDefaultColumn.ID.getName())) {
-      myTaskIdMap.put(record.get(TaskDefaultColumn.ID.getName()), task);
-    }
-    myAssignmentMap.put(task, parseAssignmentSpec(record));
-    myPredecessorMap.put(task, getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName()));
-    String outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName());
-    if (outlineNumber != null) {
-      myWbsMap.put(outlineNumber, task);
-    }
-    for (String customField : getCustomFields()) {
-      String value = getOrNull(record, customField);
-      if (value == null) {
-        continue;
-      }
-      CustomPropertyDefinition def = taskManager.getCustomPropertyManager().getCustomPropertyDefinition(customField);
-      if (def == null) {
-        GPLogger.logToLogger("Can't find custom field with name=" + customField + " value=" + value);
-        continue;
-      }
-      task.getCustomValues().addCustomProperty(def, value);
-    }
-    return true;
-  }
-
-  private interface AssignmentSpec {
-    void apply(Task task, HumanResourceManager resourceManager);
-    AssignmentSpec VOID = new AssignmentSpec() {
-      @Override
-      public void apply(Task task, HumanResourceManager resourceManager) {
-        // Do nothing.
-      }
-    };
-  }
-
-  private static class AssignmentColumnSpecImpl implements AssignmentSpec {
-    private final String myValue;
-    private final List<Pair<Level, String>> myErrors;
-    private final String myCoordinator;
-
-    AssignmentColumnSpecImpl(String value, String coordinator, List<Pair<Level, String>> errors) {
-      myValue = value;
-      myErrors = errors;
-      myCoordinator = coordinator;
-    }
-
-    @Override
-    public void apply(Task task, HumanResourceManager resourceManager) {
-      String[] assignments = myValue.split(";");
-      for (String item : assignments) {
-        String[] idAndLoad = item.split(":");
-        if (idAndLoad.length != 2) {
-          RecordGroup.addError(myErrors, Level.SEVERE, String.format(
-              "Malformed entry=%s in assignment cell=%s of task=%d", item, myValue, task.getTaskID()));
-          continue;
-        }
+      if (record.isSet(TaskDefaultColumn.COST.getName())) {
         try {
-          Integer resourceId = Integer.parseInt(idAndLoad[0]);
-          HumanResource resource = resourceManager.getById(resourceId);
-          if (resource == null) {
-            RecordGroup.addError(myErrors, Level.WARNING, String.format(
-                "Resource not found by id=%d from assignment cell=%s of task=%d", item, myValue, task.getTaskID()));
-            continue;
+          val cost = record[TaskDefaultColumn.COST.getName()]
+          if (!Strings.isNullOrEmpty(cost)) {
+            builder = builder.withCost(BigDecimal(cost))
           }
-          Float load = Float.parseFloat(idAndLoad[1]);
-          ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(resource);
-          assignment.setLoad(load);
-          if (myCoordinator != null && myCoordinator.equals(resource.getName())) {
-            assignment.setCoordinator(true);
-          }
-        } catch (NumberFormatException e) {
-          RecordGroup.addError(myErrors, Level.SEVERE, String.format(
-              "Failed to parse number from assignment cell=%s of task=%d %n%s",
-              item, task.getTaskID(), e.getMessage()));
+        } catch (e: NumberFormatException) {
+          GPLogger.logToLogger(e)
+          GPLogger.log(String.format("Failed to parse %s as cost value", record[TaskDefaultColumn.COST.getName()]))
         }
       }
-    }
-  }
-
-  private static class ResourceColumnSpecImpl implements AssignmentSpec {
-    private static Map<String, HumanResource> resourceMap;
-    private final String myCoordinator;
-
-    static Map<String, HumanResource> getIndexByName(HumanResourceManager resourceManager) {
-      if (resourceMap == null) {
-        resourceMap = Maps.uniqueIndex(resourceManager.getResources(), new Function<HumanResource, String>() {
-          @Override
-          public String apply(HumanResource input) {
-            return input.getName();
-          }
-        });
+      val task = builder.build()
+      if (record.isSet(TaskDefaultColumn.ID.getName())) {
+        myTaskIdMap[record[TaskDefaultColumn.ID.getName()]] = task
       }
-      return resourceMap;
-    }
-    private final String myValue;
-    private final List<Pair<Level, String>> myErrors;
-
-    ResourceColumnSpecImpl(String value, String coordinator, List<Pair<Level, String>> errors) {
-      myValue = value;
-      myErrors = errors;
-      myCoordinator = coordinator;
-    }
-
-    @Override
-    public void apply(Task task, HumanResourceManager resourceManager) {
-      String[] names = myValue.split(";");
-      for (String name : names) {
-        HumanResource resource = getIndexByName(resourceManager).get(name);
-        if (resource != null) {
-          ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(resource);
-          if (myCoordinator != null && myCoordinator.equals(name)) {
-            assignment.setCoordinator(true);
-          }
+      myAssignmentMap[task] = parseAssignmentSpec(record)
+      myPredecessorMap[task] = getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName())
+      val outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())
+      if (outlineNumber != null) {
+        myWbsMap[outlineNumber] = task
+      }
+      for (customField in customFields) {
+        val value = getOrNull(record, customField) ?: continue
+        val def = taskManager.customPropertyManager.getCustomPropertyDefinition(customField)
+        if (def == null) {
+          GPLogger.logToLogger("Can't find custom field with name=$customField value=$value")
+          continue
         }
+        task.customValues.addCustomProperty(def, value)
       }
-    }
-
+      return true
   }
-  private AssignmentSpec parseAssignmentSpec(SpreadsheetRecord record) {
-    final String assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString());
-    final String coordinatorColumn = getOrNull(record, TaskFields.COORDINATOR.toString());
 
+
+
+  private fun parseAssignmentSpec(record: SpreadsheetRecord): AssignmentSpec {
+    val assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString())
+    val coordinatorColumn = getOrNull(record, TaskFields.COORDINATOR.toString())
     if (!Strings.isNullOrEmpty(assignmentsColumn)) {
-      return new AssignmentColumnSpecImpl(assignmentsColumn, coordinatorColumn, getErrorOutput());
+      return AssignmentColumnSpecImpl(assignmentsColumn, coordinatorColumn, errorOutput)
     }
-    String resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString());
-    if (!Strings.isNullOrEmpty(resourcesColumn)) {
-      return new ResourceColumnSpecImpl(resourcesColumn, coordinatorColumn, getErrorOutput());
-    }
-    return AssignmentSpec.VOID;
+    val resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString())
+    return if (!Strings.isNullOrEmpty(resourcesColumn)) {
+      ResourceColumnSpecImpl(resourcesColumn, coordinatorColumn, errorOutput)
+    } else AssignmentSpec.VOID
   }
 
-  @Override
-  protected void postProcess() {
-    for (Map.Entry<String, Task> wbsEntry : myWbsMap.entrySet()) {
-      String outlineNumber = wbsEntry.getKey();
-      List<String> components = Arrays.asList(outlineNumber.split("\\."));
-      if (components.size() <= 1) {
-        continue;
+  override fun postProcess() {
+    for ((outlineNumber, value) in myWbsMap) {
+      val components = Arrays.asList(*outlineNumber.split("\\.").toTypedArray())
+      if (components.size <= 1) {
+        continue
       }
-      String parentOutlineNumber = Joiner.on('.').join(components.subList(0,  components.size() - 1));
-      Task parentTask = myWbsMap.get(parentOutlineNumber);
-      if (parentTask == null) {
-        continue;
-      }
-      taskManager.getTaskHierarchy().move(wbsEntry.getValue(), parentTask, 0);
+      val parentOutlineNumber = Joiner.on('.').join(components.subList(0, components.size - 1))
+      val parentTask = myWbsMap[parentOutlineNumber] ?: continue
+      taskManager.taskHierarchy.move(value, parentTask, 0)
     }
     if (resourceManager != null) {
-      for (Entry<Task, AssignmentSpec> assignment : myAssignmentMap.entrySet()) {
-        if (assignment.getValue() == null) {
-          continue;
+      for ((key, value) in myAssignmentMap) {
+        if (value == null) {
+          continue
         }
-        assignment.getValue().apply(assignment.getKey(), resourceManager);
+        value.apply(key, resourceManager)
       }
     }
-    Function<Integer, Task> taskIndex = new Function<Integer, Task>() {
-      @Override
-      public Task apply(Integer id) {
-        return myTaskIdMap.get(String.valueOf(id));
+    val taskIndex: Function<Int, Task> = object : Function<Int, Task> {
+      override fun apply(id: Int?): Task {
+        return myTaskIdMap[id.toString()]!!
       }
-    };
-    for (Entry<Task, String> entry : myPredecessorMap.entrySet()) {
-      if (entry.getValue() == null) {
-        continue;
+    }
+    for ((successor, value) in myPredecessorMap) {
+      if (value == null) {
+        continue
       }
-      Task successor = entry.getKey();
-      String[] depSpecs = entry.getValue().split(";");
+      val depSpecs = value.split(";").toTypedArray()
       try {
-        Map<Integer, Supplier<TaskDependency>> constructors = TaskProperties.parseDependencies(
-            Arrays.asList(depSpecs), successor, taskIndex);
-        for (Supplier<TaskDependency> constructor : constructors.values()) {
-          constructor.get();
+        val constructors = TaskProperties.parseDependencies(
+          Arrays.asList(*depSpecs), successor, taskIndex
+        )
+        for (constructor in constructors.values) {
+          constructor.get()
         }
-      } catch (IllegalArgumentException e) {
-        GPLogger.logToLogger(String.format("%s\nwhen parsing predecessor specification %s of task %s",
-            e.getMessage(), entry.getValue(), successor));
-      } catch (TaskDependencyException e) {
-        GPLogger.logToLogger(e);
+      } catch (e: IllegalArgumentException) {
+        GPLogger.logToLogger(
+          String.format(
+            "%s\nwhen parsing predecessor specification %s of task %s",
+            e.message, value, successor
+          )
+        )
+      } catch (e: TaskDependencyException) {
+        GPLogger.logToLogger(e)
+      }
+    }
+  }
+}
+
+private interface AssignmentSpec {
+  fun apply(task: Task, resourceManager: HumanResourceManager)
+
+  companion object {
+    val VOID: AssignmentSpec = object : AssignmentSpec {
+      override fun apply(task: Task, resourceManager: HumanResourceManager) {
+        // Do nothing.
+      }
+    }
+  }
+}
+
+private class AssignmentColumnSpecImpl internal constructor(
+  private val myValue: String,
+  private val myCoordinator: String?,
+  private val myErrors: List<Pair<Level, String>>
+) : AssignmentSpec {
+  override fun apply(task: Task, resourceManager: HumanResourceManager) {
+    val assignments = myValue.split(";").toTypedArray()
+    for (item in assignments) {
+      val idAndLoad = item.split(":").toTypedArray()
+      if (idAndLoad.size != 2) {
+        addError(
+          myErrors, Level.SEVERE, String.format(
+            "Malformed entry=%s in assignment cell=%s of task=%d", item, myValue, task.taskID
+          )
+        )
+        continue
+      }
+      try {
+        val resourceId = idAndLoad[0].toInt()
+        val resource = resourceManager.getById(resourceId)
+        if (resource == null) {
+          addError(
+            myErrors, Level.WARNING, String.format(
+              "Resource not found by id=%d from assignment cell=%s of task=%d", item, myValue, task.taskID
+            )
+          )
+          continue
+        }
+        val load = idAndLoad[1].toFloat()
+        val assignment = task.assignmentCollection.addAssignment(resource)
+        assignment.load = load
+        if (myCoordinator != null && myCoordinator == resource.name) {
+          assignment.isCoordinator = true
+        }
+      } catch (e: NumberFormatException) {
+        addError(
+          myErrors, Level.SEVERE, String.format(
+            "Failed to parse number from assignment cell=%s of task=%d %n%s",
+            item, task.taskID, e.message
+          )
+        )
+      }
+    }
+  }
+}
+
+class ResourceColumnSpecImpl(
+  private val myValue: String,
+  private val myCoordinator: String?,
+  private val myErrors: List<Pair<Level, String>>
+) : AssignmentSpec {
+  override fun apply(task: Task, resourceManager: HumanResourceManager) {
+    val names = myValue.split(";").toTypedArray()
+    for (name in names) {
+      val resource = getIndexByName(resourceManager)!![name]
+      if (resource != null) {
+        val assignment = task.assignmentCollection.addAssignment(resource)
+        if (myCoordinator != null && myCoordinator == name) {
+          assignment.isCoordinator = true
+        }
       }
     }
   }
 
+  companion object {
+    private var resourceMap: Map<String, HumanResource>? = null
+    fun getIndexByName(resourceManager: HumanResourceManager): Map<String, HumanResource>? {
+      if (resourceMap == null) {
+        resourceMap = Maps.uniqueIndex(resourceManager.resources, object : Function<HumanResource, String> {
+          override fun apply(input: HumanResource?): String? {
+            return input?.name
+          }
+        })
+      }
+      return resourceMap
+    }
+  }
 }
 
+public val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
+  Scanner(s1).useDelimiter("\\.").use { sc1 ->
+    Scanner(s2).useDelimiter("\\.").use { sc2 ->
+      while (sc1.hasNextInt() && sc2.hasNextInt()) {
+        val diff = sc1.nextInt() - sc2.nextInt()
+        if (diff != 0) {
+          return@Comparator Integer.signum(diff)
+        }
+      }
+      if (sc1.hasNextInt()) {
+        return@Comparator 1
+      }
+      if (sc2.hasNextInt()) {
+        return@Comparator -1
+      }
+      return@Comparator 0
+    }
+  }
+}

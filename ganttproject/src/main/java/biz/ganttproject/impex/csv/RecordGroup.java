@@ -21,7 +21,6 @@ package biz.ganttproject.impex.csv;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import java.util.Collection;
@@ -65,26 +64,26 @@ public abstract class RecordGroup {
     return thoseFields.containsAll(myMandatoryFields);
   }
 
-  boolean process(SpreadsheetRecord record) {
-    assert record.size() > 0;
-    boolean allEmpty = true;
-    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
-      if (!Strings.isNullOrEmpty(it.next())) {
-        allEmpty = false;
-        break;
-      }
-    }
-    if (allEmpty) {
-      return false;
-    }
-    try {
-      return doProcess(record);
-    } catch (Throwable e) {
-      GPLogger.getLogger(GanttCSVOpen.class).log(Level.WARNING, String.format("Failed to process record:\n%s", record), e);
-      return false;
-    }
-  }
-
+//  boolean process(SpreadsheetRecord record) {
+//    assert record.size() > 0;
+//    boolean allEmpty = true;
+//    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
+//      if (!Strings.isNullOrEmpty(it.next())) {
+//        allEmpty = false;
+//        break;
+//      }
+//    }
+//    if (allEmpty) {
+//      return false;
+//    }
+//    try {
+//      return doProcess(record);
+//    } catch (Throwable e) {
+//      GPLogger.getLogger(GanttCSVOpen.class).log(Level.WARNING, String.format("Failed to process record:\n%s", record), e);
+//      return false;
+//    }
+//  }
+//
   protected boolean hasMandatoryFields(SpreadsheetRecord record) {
     for (String s : myMandatoryFields) {
       if (!record.isSet(s)) {
@@ -98,9 +97,6 @@ public abstract class RecordGroup {
   }
 
   protected String getOrNull(SpreadsheetRecord record, String columnName) {
-    if (!record.isMapped(columnName)) {
-      return null;
-    }
     return record.get(columnName);
   }
 

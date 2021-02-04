@@ -123,7 +123,7 @@ public class GanttCSVOpen {
       return true;
     }
     for (int i = 0; i < record.size(); i++) {
-      if (!Strings.isNullOrEmpty(record.get(i))) {
+      if (!record.isEmpty()) {
         return false;
       }
     }

@@ -16,50 +16,45 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import org.apache.commons.csv.CSVRecord;
-
-import java.util.Iterator;
+import biz.ganttproject.core.time.GanttCalendar
+import org.apache.commons.csv.CSVRecord
+import biz.ganttproject.impex.csv.SpreadsheetRecord
+import java.math.BigDecimal
+import java.util.*
 
 /**
  * @author torkhov
  */
-class CsvRecordImpl implements SpreadsheetRecord {
-
-  private final CSVRecord myRecord;
-
-  CsvRecordImpl(CSVRecord record) {
-    myRecord = record;
+internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecord {
+  override fun get(name: String): String? {
+    return if (isMapped(name)) myRecord[name] else null
   }
 
-  @Override
-  public String get(String name) {
-    return myRecord.get(name);
+  override fun getDouble(name: String): Double? = get(name)?.toDoubleOrNull()
+
+  override fun getDate(name: String): Date? = get(name)?.let {
+    GanttCSVOpen.language.parseDate(it)
+  }
+  override fun getInt(name: String): Int? = get(name)?.toIntOrNull()
+  override fun getBigDecimal(name: String): BigDecimal? = get(name)?.toBigDecimalOrNull()
+
+  override fun isEmpty(): Boolean = myRecord.all { it.isBlank() }
+
+  override fun isMapped(name: String): Boolean {
+    return myRecord.isMapped(name)
   }
 
-  @Override
-  public String get(int i) {
-    return myRecord.get(i);
+  override fun isSet(name: String): Boolean {
+    return myRecord.isSet(name)
   }
 
-  @Override
-  public boolean isMapped(String name) {
-    return myRecord.isMapped(name);
+  override fun iterator(): Iterator<String?> {
+    return myRecord.iterator()
   }
 
-  @Override
-  public boolean isSet(String name) {
-    return myRecord.isSet(name);
-  }
-
-  @Override
-  public Iterator<String> iterator() {
-    return myRecord.iterator();
-  }
-
-  @Override
-  public int size() {
-    return myRecord.size();
+  override fun size(): Int {
+    return myRecord.size()
   }
 }

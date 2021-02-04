@@ -53,7 +53,8 @@ class XlsReaderImpl implements SpreadsheetReader {
 
   @Override
   public Iterator<SpreadsheetRecord> iterator() {
-    return Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(getCellValues(input), myHeaders));
+    return Iterators.transform(myBook.getSheetAt(0).iterator(), (input) -> new XlsRecordImpl(
+        Lists.newArrayList(input), myHeaders));
   }
 
   private List<String> getCellValues(Row row) {
