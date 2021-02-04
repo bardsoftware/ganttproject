@@ -166,19 +166,8 @@ class TaskRecords(
     if (outlineNumber != null) {
       myWbsMap[outlineNumber] = task
     }
-    for (customField in customFields) {
-      val def = taskManager.customPropertyManager.let {
-        it.getCustomPropertyDefinition(customField)
-          ?: record.getType(customField)?.let { type ->
-            it.createDefinition(customField, type.id, customField, null)
-          }
-      }
-      if (def == null) {
-        GPLogger.logToLogger("Can't find custom field with name=$customField value=${getOrNull(record, customField)}")
-        continue
-      }
-
-      task.customValues.addCustomProperty(def, record[customField])
+    readCustomProperties(names = customFields, customPropertyMgr = taskManager.customPropertyManager, record = record) { def, value ->
+      task.customValues.addCustomProperty(def, value)
     }
     return true
   }
