@@ -16,90 +16,68 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.roles.RoleManager;
-
-import java.util.List;
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.Sets
+import net.sourceforge.ganttproject.ResourceDefaultColumn
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.roles.RoleManager
 
 /**
  * Class responsible for processing resource records in CSV import
  *
  * @author dbarashev (Dmitry Barashev)
  */
-class ResourceRecords extends RecordGroup {
+internal class ResourceRecords(
+    private val resourceManager: HumanResourceManager,
+    private val myRoleManager: RoleManager) : RecordGroup("Resource group",
+      Sets.union(
+          Sets.newHashSet(GanttCSVOpen.getFieldNames(*ResourceFields.values())),
+          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())
+      ),
+      Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME))
+    ) {
 
-  public enum ResourceFields {
+  enum class ResourceFields(private val text: String) {
     ID("tableColID"), NAME("tableColResourceName"), EMAIL("tableColResourceEMail"), PHONE("tableColResourcePhone"), ROLE("tableColResourceRole");
 
-    private final String text;
-
-    private ResourceFields(final String text) {
-      this.text = text;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
       // Return translated field name
-      return GanttLanguage.getInstance().getText(text);
+      return GanttLanguage.getInstance().getText(text)
     }
   }
 
-  private final HumanResourceManager resourceManager;
-  private final RoleManager myRoleManager;
-
-  ResourceRecords(HumanResourceManager resourceManager, RoleManager roleManager) {
-    super("Resource group",
-      Sets.union(
-          Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.values())),
-          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())),
-      Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME)));
-    this.resourceManager = Preconditions.checkNotNull(resourceManager);
-    myRoleManager = Preconditions.checkNotNull(roleManager);
-  }
-  @Override
-  public void setHeader(List<String> header) {
-    super.setHeader(header);
-    GanttCSVOpen.createCustomProperties(getCustomFields(), resourceManager.getCustomPropertyManager());
+  override fun setHeader(header: List<String>) {
+    super.setHeader(header)
+    //    GanttCSVOpen.createCustomProperties(getCustomFields(), resourceManager.getCustomPropertyManager());
   }
 
-  @Override
-  protected boolean doProcess(SpreadsheetRecord record) {
+  override fun doProcess(record: SpreadsheetRecord): Boolean {
     if (!super.doProcess(record)) {
-      return false;
+      return false
     }
     if (!hasMandatoryFields(record)) {
-      return false;
+      return false
     }
-    assert record.size() > 0;
-    String role = getOrNull(record, ResourceFields.ROLE.toString());
+    assert(record.size() > 0)
+    var role = getOrNull(record, ResourceFields.ROLE.toString())
     if (role != null && myRoleManager.getRole(role) == null) {
-      Role newRole = myRoleManager.getProjectRoleSet().createRole(role);
-      role = newRole.getPersistentID();
+      val newRole = myRoleManager.projectRoleSet.createRole(role)
+      role = newRole.persistentID
     }
-
-    HumanResource hr = resourceManager.newResourceBuilder()
+    val hr = resourceManager.newResourceBuilder()
         .withName(getOrNull(record, ResourceFields.NAME.toString()))
         .withID(record.getInt(ResourceFields.ID.toString()))
         .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
         .withRole(role)
         .withStandardRate(record.getBigDecimal(ResourceDefaultColumn.STANDARD_RATE.getName()))
-        .build();
-    for (String customField : getCustomFields()) {
-      String value = getOrNull(record, customField);
-      if (value != null) {
-        hr.addCustomProperty(resourceManager.getCustomPropertyManager().getCustomPropertyDefinition(customField), value);
-      }
+        .build()
+    readCustomProperties(names = customFields, record = record, customPropertyMgr = resourceManager.customPropertyManager) { def, value -> hr.addCustomProperty(def, value)
     }
-    return true;
+    return true
   }
+
 }
