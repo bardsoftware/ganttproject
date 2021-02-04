@@ -16,24 +16,41 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import java.util.Iterator;
+import net.sourceforge.ganttproject.language.GanttLanguage
+import java.math.BigDecimal
+import java.util.*
+import java.util.logging.Level
 
 /**
  * @author torkhov
  */
 interface SpreadsheetRecord {
+  operator fun get(name: String): String?
+  fun getDouble(name: String): Double?
+  fun getDate(name: String): Date?
+  fun getInt(name: String): Int?
+  fun getBigDecimal(name: String): BigDecimal?
 
-  String get(String name);
+  fun isEmpty(): Boolean
+  fun isMapped(name: String): Boolean
+  fun isSet(name: String): Boolean
+  operator fun iterator(): Iterator<String?>
+  fun size(): Int
+}
 
-  String get(int i);
-
-  boolean isMapped(String name);
-
-  boolean isSet(String name);
-
-  Iterator<String> iterator();
-
-  int size();
+internal fun parseDateOrError(strDate: String?, addError: (Level, String) -> Any): Date? {
+  val result = GanttCSVOpen.language.parseDate(strDate)
+  if (result == null) {
+    addError(
+      Level.WARNING, GanttLanguage.getInstance().formatText(
+        "impex.csv.error.parse_date",
+        strDate,
+        GanttLanguage.getInstance().shortDateFormat.toPattern(),
+        GanttLanguage.getInstance().shortDateFormat.format(Date())
+      )
+    )
+  }
+  return result
 }

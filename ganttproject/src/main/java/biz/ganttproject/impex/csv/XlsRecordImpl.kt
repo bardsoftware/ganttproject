@@ -16,59 +16,96 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.CellType
+import java.lang.IllegalArgumentException
+import java.math.BigDecimal
+import java.util.*
 
 /**
  * @author torkhov
  */
-class XlsRecordImpl implements SpreadsheetRecord {
+internal class XlsRecordImpl(private val myValues: List<Cell>, private val myMapping: Map<String, Int>) :
+  SpreadsheetRecord {
+  override fun get(name: String): String? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> it.stringCellValue
+          CellType.NUMERIC -> it.numericCellValue.toString()
+          else -> null
+        }
+      }
+    } else null
 
-  private final List<String> myValues;
-  private final Map<String, Integer> myMapping;
 
-  XlsRecordImpl(List<String> values, Map<String, Integer> mapping) {
-    myValues = values;
-    myMapping = mapping;
+  private fun idx(name: String) =
+    myMapping[name] ?: throw IllegalArgumentException(
+      "Mapping for $name not found, expected one of ${myMapping.keys}"
+    )
+
+  override fun getDouble(name: String): Double? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> it.stringCellValue.toDoubleOrNull()
+          CellType.NUMERIC -> it.numericCellValue
+          else -> null
+        }
+      }
+    } else null
+
+  override fun getDate(name: String): Date? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> GanttCSVOpen.language.parseDate(it.stringCellValue)
+          CellType.NUMERIC -> it.dateCellValue
+          else -> null
+        }
+      }
+    } else null
+
+  override fun getInt(name: String): Int? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> it.stringCellValue.toIntOrNull()
+          CellType.NUMERIC -> it.numericCellValue.toInt()
+          else -> null
+        }
+      }
+    } else null
+
+  override fun getBigDecimal(name: String): BigDecimal? =
+    if (isMapped(name)) {
+      myValues[idx(name)]?.let {
+        when (it.cellType) {
+          CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
+          CellType.NUMERIC -> it.numericCellValue.toBigDecimal()
+          else -> null
+        }
+      }
+    } else null
+
+  override fun isEmpty(): Boolean = myValues.all { it.cellType == CellType.BLANK }
+
+
+  override fun isMapped(name: String): Boolean {
+    return myMapping != null && myMapping.containsKey(name)
   }
 
-  @Override
-  public String get(String name) {
-    if (myMapping == null) {
-      throw new IllegalStateException("No header mapping was specified, the record values can\'t be accessed by name");
-    }
-    Integer index = myMapping.get(name);
-    if (index == null) {
-      throw new IllegalArgumentException(String.format("Mapping for %s not found, expected one of %s", name, myMapping.keySet()));
-    }
-    return myValues.get(index);
+  override fun isSet(name: String): Boolean {
+    return isMapped(name) && myMapping!![name]!! >= 0 && myMapping[name]!! < myValues.size
   }
 
-  @Override
-  public String get(int i) {
-    return myValues.get(i);
+  override fun iterator(): Iterator<String?> {
+    return myValues.map { it.stringCellValue }.iterator()
   }
 
-  @Override
-  public boolean isMapped(String name) {
-    return myMapping != null && myMapping.containsKey(name);
-  }
-
-  @Override
-  public boolean isSet(String name) {
-    return isMapped(name) && myMapping.get(name) >= 0 && myMapping.get(name) < myValues.size();
-  }
-
-  @Override
-  public Iterator<String> iterator() {
-    return myValues.iterator();
-  }
-
-  @Override
-  public int size() {
-    return myValues.size();
+  override fun size(): Int {
+    return myValues.size
   }
 }

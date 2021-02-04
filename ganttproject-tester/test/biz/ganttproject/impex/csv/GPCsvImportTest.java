@@ -385,10 +385,10 @@ public class GPCsvImportTest extends TestCase {
   }
 
   private static void assertOrder(String first, String second) {
-    assertEquals(-1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, second));
-    assertEquals(1, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, first));
-    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(first, first));
-    assertEquals(0, TaskRecords.OUTLINE_NUMBER_COMPARATOR.compare(second, second));
+    assertEquals(-1, TaskRecordsKt.getOUTLINE_NUMBER_COMPARATOR().compare(first, second));
+    assertEquals(1, TaskRecordsKt.getOUTLINE_NUMBER_COMPARATOR().compare(second, first));
+    assertEquals(0, TaskRecordsKt.getOUTLINE_NUMBER_COMPARATOR().compare(first, first));
+    assertEquals(0, TaskRecordsKt.getOUTLINE_NUMBER_COMPARATOR().compare(second, second));
   }
 
   public void testOutlineNumberComparator() {
