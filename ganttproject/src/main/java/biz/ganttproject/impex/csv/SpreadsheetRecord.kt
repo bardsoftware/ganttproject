@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
+import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.math.BigDecimal
 import java.util.*
@@ -27,11 +28,13 @@ import java.util.logging.Level
  * @author torkhov
  */
 interface SpreadsheetRecord {
+  fun getType(name: String): CustomPropertyClass?
   operator fun get(name: String): String?
   fun getDouble(name: String): Double?
   fun getDate(name: String): Date?
   fun getInt(name: String): Int?
   fun getBigDecimal(name: String): BigDecimal?
+  fun getBoolean(name: String): Boolean?
 
   fun isEmpty(): Boolean
   fun isMapped(name: String): Boolean

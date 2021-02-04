@@ -54,6 +54,10 @@ class CsvWriterImpl @JvmOverloads internal constructor(
     print(value?.toString())
   }
 
+  override fun print(value: Boolean?) {
+    print(value?.toString())
+  }
+
   @Throws(IOException::class)
   override fun println() {
     myCsvPrinter.println()

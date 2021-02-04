@@ -34,6 +34,7 @@ interface SpreadsheetWriter : AutoCloseable {
   fun print(value: Double?)
   fun print(value: BigDecimal?)
   fun print(value: GanttCalendar?)
+  fun print(value: Boolean?)
 
   @Throws(IOException::class)
   fun println()
