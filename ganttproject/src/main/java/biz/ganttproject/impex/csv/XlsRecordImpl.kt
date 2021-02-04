@@ -27,8 +27,10 @@ import java.util.*
 /**
  * @author torkhov
  */
-internal class XlsRecordImpl(private val myValues: List<Cell>, private val myMapping: Map<String, Int>) :
-  SpreadsheetRecord {
+internal class XlsRecordImpl(
+    private val myValues: List<Cell>,
+    private val myMapping: Map<String, Int> = mapOf()) : SpreadsheetRecord {
+
   override fun get(name: String): String? =
     if (isMapped(name)) {
       myValues[idx(name)]?.let {
@@ -90,7 +92,9 @@ internal class XlsRecordImpl(private val myValues: List<Cell>, private val myMap
       }
     } else null
 
-  override fun isEmpty(): Boolean = myValues.all { it.cellType == CellType.BLANK }
+  override fun isEmpty(): Boolean = myValues.all {
+    it.cellType == CellType.BLANK || it.cellType == CellType.STRING && it.stringCellValue.isBlank()
+  }
 
 
   override fun isMapped(name: String): Boolean {

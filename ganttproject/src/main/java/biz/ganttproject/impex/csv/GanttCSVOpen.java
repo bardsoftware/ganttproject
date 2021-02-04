@@ -122,12 +122,7 @@ public class GanttCSVOpen {
     if (record.size() == 0) {
       return true;
     }
-    for (int i = 0; i < record.size(); i++) {
-      if (!record.isEmpty()) {
-        return false;
-      }
-    }
-    return true;
+    return record.isEmpty();
   }
 
   private int doLoad(SpreadsheetReader reader, int numGroup, int linesToSkip) {

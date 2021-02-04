@@ -59,7 +59,7 @@ class TaskRecords(
   Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.NAME, TaskFields.BEGIN_DATE))
 ) {
   /** List of known (and supported) Task attributes  */
-  public enum class TaskFields(protected val text: String) {
+  enum class TaskFields(protected val text: String) {
     ID(TaskDefaultColumn.ID.nameKey), NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK(
       "webLink"
     ),
@@ -190,7 +190,7 @@ class TaskRecords(
 
   override fun postProcess() {
     for ((outlineNumber, value) in myWbsMap) {
-      val components = Arrays.asList(*outlineNumber.split("\\.").toTypedArray())
+      val components = outlineNumber.split(".")
       if (components.size <= 1) {
         continue
       }
@@ -249,7 +249,7 @@ private interface AssignmentSpec {
   }
 }
 
-private class AssignmentColumnSpecImpl internal constructor(
+private class AssignmentColumnSpecImpl(
   private val myValue: String,
   private val myCoordinator: String?,
   private val myErrors: List<Pair<Level, String>>
@@ -328,7 +328,7 @@ class ResourceColumnSpecImpl(
   }
 }
 
-public val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
+val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
   Scanner(s1).useDelimiter("\\.").use { sc1 ->
     Scanner(s2).useDelimiter("\\.").use { sc2 ->
       while (sc1.hasNextInt() && sc2.hasNextInt()) {
