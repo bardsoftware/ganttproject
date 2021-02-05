@@ -32,12 +32,13 @@ import net.sourceforge.ganttproject.roles.RoleManager
  */
 internal class ResourceRecords(
     private val resourceManager: HumanResourceManager,
-    private val myRoleManager: RoleManager) : RecordGroup("Resource group",
-      Sets.union(
-          Sets.newHashSet(GanttCSVOpen.getFieldNames(*ResourceFields.values())),
-          ImmutableSet.of(ResourceDefaultColumn.STANDARD_RATE.getName())
-      ),
-      Sets.newHashSet(GanttCSVOpen.getFieldNames(ResourceFields.ID, ResourceFields.NAME))
+    private val myRoleManager: RoleManager) : RecordGroup(
+      name = "Resource group",
+      regularFields =
+          (ResourceFields.values().map { it.toString() } + ResourceDefaultColumn.STANDARD_RATE.getName()).toSet()
+      ,
+      mandatoryFields = setOf(ResourceFields.ID.toString(), ResourceFields.NAME.toString()),
+      customProcessor = null
     ) {
 
   enum class ResourceFields(private val text: String) {
@@ -47,11 +48,6 @@ internal class ResourceRecords(
       // Return translated field name
       return GanttLanguage.getInstance().getText(text)
     }
-  }
-
-  override fun setHeader(header: List<String>) {
-    super.setHeader(header)
-    //    GanttCSVOpen.createCustomProperties(getCustomFields(), resourceManager.getCustomPropertyManager());
   }
 
   override fun doProcess(record: SpreadsheetRecord): Boolean {
@@ -75,7 +71,10 @@ internal class ResourceRecords(
         .withRole(role)
         .withStandardRate(record.getBigDecimal(ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build()
-    readCustomProperties(names = customFields, record = record, customPropertyMgr = resourceManager.customPropertyManager) { def, value -> hr.addCustomProperty(def, value)
+    readCustomProperties(
+        names = customFields ?: emptyList(),
+        record = record,
+        customPropertyMgr = resourceManager.customPropertyManager) { def, value -> hr.addCustomProperty(def, value)
     }
     return true
   }

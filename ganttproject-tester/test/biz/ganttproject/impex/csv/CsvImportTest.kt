@@ -23,11 +23,14 @@ import com.google.common.base.Joiner
 import com.google.common.base.Supplier
 import com.google.common.collect.ImmutableSet
 import junit.framework.TestCase
+import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.collect.Pair
+import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.math.BigDecimal
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -47,17 +50,12 @@ class CsvImportTest : TestCase() {
     val data = "a1, b1"
     for (pair in createPairs(header, data)) {
       val wasCalled = AtomicBoolean(false)
-      val recordGroup: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      val recordGroup = RecordGroup("AB", ImmutableSet.of("A", "B")) { record, _ ->
           wasCalled.set(true)
           assertEquals("a1", record["A"])
           assertEquals("b1", record["B"])
-          return true
+          true
         }
-      }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
       importer.load()
       assertTrue(wasCalled.get())
@@ -70,16 +68,11 @@ class CsvImportTest : TestCase() {
     val data = "a1, b1"
     for (pair in createPairs(header, "", data)) {
       val wasCalled = AtomicBoolean(false)
-      val recordGroup: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      val recordGroup = RecordGroup("AB", ImmutableSet.of("A", "B")) { record, _ ->
           wasCalled.set(true)
           assertEquals("a1", record["A"])
           assertEquals("b1", record["B"])
-          return true
-        }
+          true
       }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
       importer.load()
@@ -95,30 +88,20 @@ class CsvImportTest : TestCase() {
     val data2 = "c1, d1, e1"
     for (pair in createPairs(header1, data1, "", header2, data2)) {
       val wasCalled1 = AtomicBoolean(false)
-      val recordGroup1: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      val recordGroup1 = RecordGroup("AB", ImmutableSet.of("A", "B")) { record, _ ->
           assertEquals("a1", record["A"])
           assertEquals("b1", record["B"])
           wasCalled1.set(true)
-          return true
+          true
         }
-      }
       val wasCalled2 = AtomicBoolean(false)
-      val recordGroup2: RecordGroup = object : RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) {
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      val recordGroup2 = RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) { record, _ ->
           assertEquals("c1", record["C"])
           assertEquals("d1", record["D"])
           assertEquals("e1", record["E"])
           wasCalled2.set(true)
-          return true
+          true
         }
-      }
       val importer = GanttCSVOpen(
         createSupplier(
           Joiner.on('\n').join(header1, data1, groupSeparator, header2, data2).toByteArray(
@@ -145,22 +128,16 @@ class CsvImportTest : TestCase() {
     val data = "a1, b1"
     for (pair in createPairs(header, data)) {
       val wasCalled = AtomicBoolean(false)
-      val recordGroup: RecordGroup = object : RecordGroup(
+      val recordGroup = RecordGroup(
         "ABC",
         ImmutableSet.of("A", "B", "C"),  // all fields
         ImmutableSet.of("A", "B")
-      ) {
-        // mandatory fields
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      ) { record, _ ->
           wasCalled.set(true)
           assertEquals("a1", record["A"])
           assertEquals("b1", record["B"])
-          return true
+          true
         }
-      }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
       importer.load()
       assertTrue(wasCalled.get())
@@ -174,15 +151,14 @@ class CsvImportTest : TestCase() {
     val data = "a1, b1"
     for (pair in createPairs(notHeader, header, data)) {
       val wasCalled = AtomicBoolean(false)
-      val recordGroup: RecordGroup = object : RecordGroup("ABC", ImmutableSet.of("A", "B")) {
-        override fun doProcess(record: SpreadsheetRecord): Boolean {
-          if (!super.doProcess(record)) {
-            return false
-          }
+      val recordGroup = RecordGroup("ABC", ImmutableSet.of("A", "B")) { record, group ->
+        if (group.header == null) {
+          false
+        } else {
           wasCalled.set(true)
           assertEquals("a1", record["A"])
           assertEquals("b1", record["B"])
-          return true
+          true
         }
       }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
@@ -200,21 +176,17 @@ class CsvImportTest : TestCase() {
     val data3 = ",b3,c3"
     for (pair in createPairs(header, data1, data2, data3)) {
       val wasCalled = AtomicBoolean(false)
-      val recordGroup: RecordGroup =
-        object : RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
-          override fun doProcess(record: SpreadsheetRecord): Boolean {
-            if (!super.doProcess(record)) {
-              return false
+      val recordGroup =
+        RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) { record, group ->
+            if (!group.hasMandatoryFields(record)) {
+              false
+            } else {
+              wasCalled.set(true)
+              assertEquals("a2", record["A"])
+              assertEquals("b2", record["B"])
+              true
             }
-            if (!hasMandatoryFields(record)) {
-              return false
-            }
-            wasCalled.set(true)
-            assertEquals("a2", record["A"])
-            assertEquals("b2", record["B"])
-            return true
           }
-        }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
       importer.load()
       assertTrue(wasCalled.get())
@@ -254,33 +226,23 @@ class CsvImportTest : TestCase() {
     val header1 = "A, B, C, D"
     val data1 = "a1, b1, c1, d1"
     val wasCalled1 = AtomicBoolean(false)
-    val recordGroup1: RecordGroup = object : RecordGroup("ABCD", ImmutableSet.of("A", "B", "C", "D")) {
-      override fun doProcess(record: SpreadsheetRecord): Boolean {
-        if (!super.doProcess(record)) {
-          return false
-        }
+    val recordGroup1 = RecordGroup("ABCD", ImmutableSet.of("A", "B", "C", "D")) { record, _ ->
         assertEquals("a1", record["A"])
         assertEquals("b1", record["B"])
         assertEquals("c1", record["C"])
         assertEquals("d1", record["D"])
         wasCalled1.set(true)
-        return true
+        true
       }
-    }
     val header2 = "E,,,"
     val data2 = "e1,,,"
     val wasCalled2 = AtomicBoolean(false)
-    val recordGroup2: RecordGroup = object : RecordGroup("E", ImmutableSet.of("E")) {
-      override fun doProcess(record: SpreadsheetRecord): Boolean {
-        if (!super.doProcess(record)) {
-          return false
-        }
+    val recordGroup2 = RecordGroup("E", ImmutableSet.of("E")) { record, _ ->
         assertEquals("e1", record["E"])
         assertFalse(record.isMapped("B"))
         wasCalled2.set(true)
-        return true
+        true
       }
-    }
     val importer = GanttCSVOpen(
       createSupplier(
         Joiner.on('\n').join(header1, data1, ",,,", header2, data2).toByteArray(
@@ -291,5 +253,23 @@ class CsvImportTest : TestCase() {
     )
     importer.load()
     assertTrue(wasCalled1.get() && wasCalled2.get())
+  }
+
+  fun testDataTypes() {
+    val today = DateParser.parse("2021-02-05")
+    val header = "A, B, C, D, E"
+    val data = "1, 3.14, true, ${GanttLanguage.getInstance().shortDateFormat.format(today)}, 6.15"
+    for (pair in createPairs(header, data)) {
+      val recordGroup = RecordGroup("AB", setOf("A", "B", "C", "D", "E")) { record, _ ->
+        assertEquals(1, record.getInt("A"))
+        assertEquals(3.14, record.getDouble("B"))
+        assertEquals(true, record.getBoolean("C"))
+        assertEquals(today, record.getDate("D"))
+        assertEquals(BigDecimal.valueOf(6.15), record.getBigDecimal("E"))
+        true
+      }
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+    }
   }
 }

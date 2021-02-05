@@ -16,19 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
-import net.sourceforge.ganttproject.util.collect.Pair;
+import com.google.common.base.Strings
+import com.google.common.collect.Sets
+import net.sourceforge.ganttproject.util.collect.Pair
+import java.util.logging.Level
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-
+typealias RecordProcessor = (SpreadsheetRecord, RecordGroup) -> Boolean
 /**
  * Record group is a set of homogeneous CSV records. CSV file consists of a few
  * record groups separated with blank records. Each group may have its own header and
@@ -36,108 +31,84 @@ import java.util.logging.Level;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public abstract class RecordGroup {
-  private final Set<String> myFields;
-  private final Set<String> myMandatoryFields;
-  private SetView<String> myCustomFields;
-  private List<String> myHeader;
-  private final String myName;
-  private List<Pair<Level, String>> myErrorOutput;
+open class RecordGroup {
+  private val myFields: Set<String>
+  private val myMandatoryFields: Set<String>
+  private var myCustomFields: Sets.SetView<String>? = null
+  private var myHeader: List<String>? = null
+  private val myName: String
+  private var myErrorOutput: MutableList<Pair<Level, String>>? = null
+  private val recordProcessor: RecordProcessor
 
-  RecordGroup(String name, Set<String> fields) {
-    myName = name;
-    myFields = fields;
-    myMandatoryFields = fields;
+  constructor(name: String, fields: Set<String>, customProcessor: RecordProcessor?) {
+    myName = name
+    myFields = fields
+    myMandatoryFields = fields
+    recordProcessor = customProcessor ?: {_, _ -> myHeader != null}
   }
 
-  RecordGroup(String name, Set<String> regularFields, Set<String> mandatoryFields) {
-    myName = name;
-    myFields = regularFields;
-    myMandatoryFields = mandatoryFields;
+  constructor(name: String, regularFields: Set<String>, mandatoryFields: Set<String>, customProcessor: RecordProcessor?) {
+    myName = name
+    myFields = regularFields
+    myMandatoryFields = mandatoryFields
+    recordProcessor = customProcessor ?: {_, _ -> myHeader != null}
   }
 
-  boolean isHeader(SpreadsheetRecord record) {
-    Set<String> thoseFields = Sets.newHashSet();
-    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
-      thoseFields.add(it.next());
+  fun isHeader(record: SpreadsheetRecord): Boolean {
+    val thoseFields: MutableSet<String?> = Sets.newHashSet()
+    val it = record.iterator()
+    while (it.hasNext()) {
+      thoseFields.add(it.next())
     }
-    return thoseFields.containsAll(myMandatoryFields);
+    return thoseFields.containsAll(myMandatoryFields)
   }
 
-//  boolean process(SpreadsheetRecord record) {
-//    assert record.size() > 0;
-//    boolean allEmpty = true;
-//    for (Iterator<String> it = record.iterator(); it.hasNext(); ) {
-//      if (!Strings.isNullOrEmpty(it.next())) {
-//        allEmpty = false;
-//        break;
-//      }
-//    }
-//    if (allEmpty) {
-//      return false;
-//    }
-//    try {
-//      return doProcess(record);
-//    } catch (Throwable e) {
-//      GPLogger.getLogger(GanttCSVOpen.class).log(Level.WARNING, String.format("Failed to process record:\n%s", record), e);
-//      return false;
-//    }
-//  }
-//
-  protected boolean hasMandatoryFields(SpreadsheetRecord record) {
-    for (String s : myMandatoryFields) {
-      if (!record.isSet(s)) {
-        return false;
+  fun hasMandatoryFields(record: SpreadsheetRecord): Boolean {
+    for (s in myMandatoryFields) {
+      if (!record.isSet(s!!)) {
+        return false
       }
-      if (Strings.isNullOrEmpty(record.get(s))) {
-        return false;
+      if (Strings.isNullOrEmpty(record[s])) {
+        return false
       }
     }
-    return true;
+    return true
   }
 
-  protected String getOrNull(SpreadsheetRecord record, String columnName) {
-    return record.get(columnName);
+  protected fun getOrNull(record: SpreadsheetRecord, columnName: String?): String? {
+    return record[columnName!!]
   }
 
-  protected boolean doProcess(SpreadsheetRecord record) {
-    return (myHeader != null);
+  open fun doProcess(record: SpreadsheetRecord): Boolean {
+    return recordProcessor(record, this)
   }
 
-  protected void postProcess() {
+  open fun postProcess() {}
+  open var header: List<String>?
+    get() = myHeader
+    set(header) {
+      myHeader = header
+      myCustomFields = Sets.difference(Sets.newHashSet(header), myFields)
+    }
+  val customFields: Collection<String>?
+    get() = myCustomFields
+
+  override fun toString(): String {
+    return myName
   }
 
-  public void setHeader(List<String> header) {
-    myHeader = header;
-    myCustomFields = Sets.difference(Sets.newHashSet(header), myFields);
+  fun setErrorOutput(errors: MutableList<Pair<Level, String>>?) {
+    myErrorOutput = errors
   }
 
-  List<String> getHeader() {
-    return myHeader;
-  }
+  protected val errorOutput: MutableList<Pair<Level, String>>?
+    protected get() = myErrorOutput
 
-  Collection<String> getCustomFields() {
-    return myCustomFields;
+  fun addError(level: Level, message: String) {
+    myErrorOutput?.let { addError(it, level, message) }
   }
+}
 
-  @Override
-  public String toString() {
-    return myName;
-  }
-
-  void setErrorOutput(List<Pair<Level, String>> errors) {
-    myErrorOutput = errors;
-  }
-
-  protected List<Pair<Level, String>> getErrorOutput() {
-    return myErrorOutput;
-  }
-
-  void addError(Level level, String message) {
-    addError(myErrorOutput, level, message);
-  }
-
-  static void addError(List<Pair<Level, String>> output, Level level, String message) {
-    output.add(Pair.create(level, message));
-  }
+fun addError(output: MutableList<Pair<Level, String>>, level: Level, message: String) {
+  output.add(Pair.create(level, message))
 }
