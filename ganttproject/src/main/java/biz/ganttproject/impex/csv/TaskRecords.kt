@@ -21,12 +21,10 @@ package biz.ganttproject.impex.csv
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ColorOption
 import biz.ganttproject.core.time.TimeUnitStack
-import biz.ganttproject.impex.csv.RecordGroup.addError
 import com.google.common.base.Function
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import com.google.common.collect.Maps
-import com.google.common.collect.Sets
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResource
@@ -51,8 +49,9 @@ class TaskRecords(
   private val myTimeUnitStack: TimeUnitStack
 ) : RecordGroup(
   "Task group",
-  Sets.newHashSet(GanttCSVOpen.getFieldNames(*TaskFields.values())),
-  Sets.newHashSet(GanttCSVOpen.getFieldNames(TaskFields.NAME, TaskFields.BEGIN_DATE))
+  TaskFields.values().map { it.toString() }.toSet(),
+  setOf(TaskFields.NAME.toString(), TaskFields.BEGIN_DATE.toString()),
+  null
 ) {
   /** List of known (and supported) Task attributes  */
   enum class TaskFields(protected val text: String) {
@@ -81,10 +80,6 @@ class TaskRecords(
   private val myPredecessorMap: MutableMap<Task, String?> = Maps.newHashMap()
   private val myWbsMap: SortedMap<String, Task> = Maps.newTreeMap(OUTLINE_NUMBER_COMPARATOR)
   private val myTaskIdMap: MutableMap<Int, Task> = Maps.newHashMap()
-  override fun setHeader(header: List<String>) {
-    super.setHeader(header)
-    //GanttCSVOpen.createCustomProperties(customFields, taskManager.customPropertyManager)
-  }
 
   override fun doProcess(record: SpreadsheetRecord): Boolean {
     if (!super.doProcess(record)) {
@@ -166,7 +161,10 @@ class TaskRecords(
     if (outlineNumber != null) {
       myWbsMap[outlineNumber] = task
     }
-    readCustomProperties(names = customFields, customPropertyMgr = taskManager.customPropertyManager, record = record) { def, value ->
+    readCustomProperties(
+        names = customFields ?: emptyList(),
+        customPropertyMgr = taskManager.customPropertyManager,
+        record = record) { def, value ->
       task.customValues.addCustomProperty(def, value)
     }
     return true
@@ -176,11 +174,11 @@ class TaskRecords(
     val assignmentsColumn = getOrNull(record, TaskFields.ASSIGNMENTS.toString())
     val coordinatorColumn = getOrNull(record, TaskFields.COORDINATOR.toString())
     if (!Strings.isNullOrEmpty(assignmentsColumn)) {
-      return AssignmentColumnSpecImpl(assignmentsColumn, coordinatorColumn, errorOutput)
+      return AssignmentColumnSpecImpl(assignmentsColumn!!, coordinatorColumn, errorOutput ?: mutableListOf())
     }
     val resourcesColumn = getOrNull(record, TaskFields.RESOURCES.toString())
     return if (!Strings.isNullOrEmpty(resourcesColumn)) {
-      ResourceColumnSpecImpl(resourcesColumn, coordinatorColumn, errorOutput)
+      ResourceColumnSpecImpl(resourcesColumn!!, coordinatorColumn, errorOutput ?: mutableListOf())
     } else AssignmentSpec.VOID
   }
 
@@ -246,7 +244,7 @@ private interface AssignmentSpec {
 private class AssignmentColumnSpecImpl(
   private val myValue: String,
   private val myCoordinator: String?,
-  private val myErrors: List<Pair<Level, String>>
+  private val myErrors: MutableList<Pair<Level, String>>
 ) : AssignmentSpec {
   override fun apply(task: Task, resourceManager: HumanResourceManager) {
     val assignments = myValue.split(";").toTypedArray()
