@@ -23,6 +23,7 @@ import com.google.common.base.Joiner
 import com.google.common.base.Supplier
 import com.google.common.collect.ImmutableSet
 import junit.framework.TestCase
+import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.collect.Pair
 import org.w3c.util.DateParser
@@ -255,17 +256,21 @@ class CsvImportTest : TestCase() {
     assertTrue(wasCalled1.get() && wasCalled2.get())
   }
 
-  fun testDataTypes() {
+  fun testDataTypesFromStrings() {
     val today = DateParser.parse("2021-02-05")
     val header = "A, B, C, D, E"
     val data = "1, 3.14, true, ${GanttLanguage.getInstance().shortDateFormat.format(today)}, 6.15"
     for (pair in createPairs(header, data)) {
-      val recordGroup = RecordGroup("AB", setOf("A", "B", "C", "D", "E")) { record, _ ->
+      val header = setOf("A", "B", "C", "D", "E")
+      val recordGroup = RecordGroup("AB", header) { record, _ ->
         assertEquals(1, record.getInt("A"))
         assertEquals(3.14, record.getDouble("B"))
         assertEquals(true, record.getBoolean("C"))
         assertEquals(today, record.getDate("D"))
         assertEquals(BigDecimal.valueOf(6.15), record.getBigDecimal("E"))
+
+        // Although we can read typed values, they are actually strings in the input
+        header.forEach { assertEquals(CustomPropertyClass.TEXT, record.getType(it)) }
         true
       }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)

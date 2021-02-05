@@ -38,7 +38,7 @@ import java.util.*
  *       by Dmitry Barashev
  * 2017: initially written in Java by Roman Torkhov
  */
-internal class XlsReaderImpl(`is`: InputStream, columnHeaders: List<String>?) : SpreadsheetReader {
+class XlsReaderImpl(`is`: InputStream, columnHeaders: List<String>?) : SpreadsheetReader {
   private val myBook: Workbook
   private val myHeaders: Map<String, Int>?
   init {
