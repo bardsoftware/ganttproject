@@ -31,7 +31,7 @@ import java.math.BigDecimal
 /**
  * @author akurutin on 04.04.2017.
  */
-class XlsWriterImpl internal constructor(private val myStream: OutputStream) : SpreadsheetWriter {
+class XlsWriterImpl(private val myStream: OutputStream) : SpreadsheetWriter {
   private val myWorkbook: Workbook = HSSFWorkbook()
   private val mySheet: Sheet = myWorkbook.createSheet()
   private val dateFormat = myWorkbook.creationHelper.createDataFormat().getFormat("m/d/yy")
