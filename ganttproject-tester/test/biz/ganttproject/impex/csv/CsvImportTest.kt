@@ -16,276 +16,280 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-package biz.ganttproject.impex.csv;
+package biz.ganttproject.impex.csv
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableSet;
-import junit.framework.TestCase;
-import net.sourceforge.ganttproject.util.collect.Pair;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static biz.ganttproject.impex.csv.SpreadsheetFormat.CSV;
-import static biz.ganttproject.impex.csv.SpreadsheetFormat.XLS;
+import com.google.common.base.Charsets
+import com.google.common.base.Joiner
+import com.google.common.base.Supplier
+import com.google.common.collect.ImmutableSet
+import junit.framework.TestCase
+import net.sourceforge.ganttproject.util.collect.Pair
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Tests for spreadsheet (CSV and XLS) import.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class CsvImportTest extends TestCase {
-
-  private Supplier<InputStream> createSupplier(final byte[] data) {
-    return () -> new ByteArrayInputStream(data);
+class CsvImportTest : TestCase() {
+  private fun createSupplier(data: ByteArray): Supplier<InputStream> {
+    return Supplier { ByteArrayInputStream(data) }
   }
 
-  public void testBasic() throws Exception {
-    String header = "A, B";
-    String data = "a1, b1";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(Exception::class)
+  fun testBasic() {
+    val header = "A, B"
+    val data = "a1, b1"
+    for (pair in createPairs(header, data)) {
+      val wasCalled = AtomicBoolean(false)
+      val recordGroup: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
+          wasCalled.set(true)
+          assertEquals("a1", record["A"])
+          assertEquals("b1", record["B"])
+          return true
         }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
+      }
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+      assertTrue(wasCalled.get())
     }
   }
 
-  public void testSkipEmptyLine() throws Exception {
-    String header = "A, B";
-    String data = "a1, b1";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, "", data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(Exception::class)
+  fun testSkipEmptyLine() {
+    val header = "A, B"
+    val data = "a1, b1"
+    for (pair in createPairs(header, "", data)) {
+      val wasCalled = AtomicBoolean(false)
+      val recordGroup: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
+          wasCalled.set(true)
+          assertEquals("a1", record["A"])
+          assertEquals("b1", record["B"])
+          return true
         }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
+      }
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+      assertTrue(wasCalled.get())
     }
   }
 
-  private void doTestTwoGroups(String groupSeparator) throws Exception {
-    String header1 = "A, B";
-    String data1 = "a1, b1";
-
-    String header2 = "C, D, E";
-    String data2 = "c1, d1, e1";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, "", header2, data2)) {
-      final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
-      RecordGroup recordGroup1 = new RecordGroup("AB", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(Exception::class)
+  private fun doTestTwoGroups(groupSeparator: String) {
+    val header1 = "A, B"
+    val data1 = "a1, b1"
+    val header2 = "C, D, E"
+    val data2 = "c1, d1, e1"
+    for (pair in createPairs(header1, data1, "", header2, data2)) {
+      val wasCalled1 = AtomicBoolean(false)
+      val recordGroup1: RecordGroup = object : RecordGroup("AB", ImmutableSet.of("A", "B")) {
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          wasCalled1.set(true);
-          return true;
+          assertEquals("a1", record["A"])
+          assertEquals("b1", record["B"])
+          wasCalled1.set(true)
+          return true
         }
-      };
-
-      final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
-      RecordGroup recordGroup2 = new RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+      }
+      val wasCalled2 = AtomicBoolean(false)
+      val recordGroup2: RecordGroup = object : RecordGroup("CDE", ImmutableSet.of("C", "D", "E")) {
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          assertEquals("c1", record.get("C"));
-          assertEquals("d1", record.get("D"));
-          assertEquals("e1", record.get("E"));
-          wasCalled2.set(true);
-          return true;
+          assertEquals("c1", record["C"])
+          assertEquals("d1", record["D"])
+          assertEquals("e1", record["E"])
+          wasCalled2.set(true)
+          return true
         }
-      };
-
-      GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, groupSeparator, header2, data2).getBytes(Charsets.UTF_8)),
-          CSV,
-          recordGroup1, recordGroup2);
-      importer.load();
-      assertTrue(wasCalled1.get() && wasCalled2.get());
+      }
+      val importer = GanttCSVOpen(
+        createSupplier(
+          Joiner.on('\n').join(header1, data1, groupSeparator, header2, data2).toByteArray(
+            Charsets.UTF_8
+          )
+        ), SpreadsheetFormat.CSV,
+        recordGroup1, recordGroup2
+      )
+      importer.load()
+      assertTrue(wasCalled1.get() && wasCalled2.get())
     }
   }
 
-  public void testTwoGroups() throws Exception {
-    doTestTwoGroups("");
-    doTestTwoGroups(",,,,,,,,");
-    doTestTwoGroups("           ");
+  @Throws(Exception::class)
+  fun testTwoGroups() {
+    doTestTwoGroups("")
+    doTestTwoGroups(",,,,,,,,")
+    doTestTwoGroups("           ")
   }
 
-  public void testIncompleteHeader() throws Exception {
-    String header = "A, B";
-    String data = "a1, b1";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("ABC",
-          ImmutableSet.of("A", "B", "C"), // all fields
-          ImmutableSet.of("A", "B")) { // mandatory fields
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(Exception::class)
+  fun testIncompleteHeader() {
+    val header = "A, B"
+    val data = "a1, b1"
+    for (pair in createPairs(header, data)) {
+      val wasCalled = AtomicBoolean(false)
+      val recordGroup: RecordGroup = object : RecordGroup(
+        "ABC",
+        ImmutableSet.of("A", "B", "C"),  // all fields
+        ImmutableSet.of("A", "B")
+      ) {
+        // mandatory fields
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
+          wasCalled.set(true)
+          assertEquals("a1", record["A"])
+          assertEquals("b1", record["B"])
+          return true
         }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
+      }
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+      assertTrue(wasCalled.get())
     }
   }
 
-  public void testSkipUntilFirstHeader() throws Exception {
-    String notHeader = "FOO, BAR, A";
-    String header = "A, B";
-    String data = "a1, b1";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(notHeader, header, data)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(Exception::class)
+  fun testSkipUntilFirstHeader() {
+    val notHeader = "FOO, BAR, A"
+    val header = "A, B"
+    val data = "a1, b1"
+    for (pair in createPairs(notHeader, header, data)) {
+      val wasCalled = AtomicBoolean(false)
+      val recordGroup: RecordGroup = object : RecordGroup("ABC", ImmutableSet.of("A", "B")) {
+        override fun doProcess(record: SpreadsheetRecord): Boolean {
           if (!super.doProcess(record)) {
-            return false;
+            return false
           }
-          wasCalled.set(true);
-          assertEquals("a1", record.get("A"));
-          assertEquals("b1", record.get("B"));
-          return true;
+          wasCalled.set(true)
+          assertEquals("a1", record["A"])
+          assertEquals("b1", record["B"])
+          return true
         }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
-      assertEquals(1, importer.getSkippedLineCount());
+      }
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+      assertTrue(wasCalled.get())
+      assertEquals(1, importer.skippedLineCount)
     }
   }
 
-  public void testSkipLinesWithEmptyMandatoryFields() throws Exception {
-    String header = "A, B, C";
-    String data1 = "a1,,c1";
-    String data2 = "a2,b2,c2";
-    String data3 = ",b3,c3";
-
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header, data1, data2, data3)) {
-      final AtomicBoolean wasCalled = new AtomicBoolean(false);
-      RecordGroup recordGroup = new RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
-        @Override
-        protected boolean doProcess(SpreadsheetRecord record) {
-          if (!super.doProcess(record)) {
-            return false;
+  @Throws(Exception::class)
+  fun testSkipLinesWithEmptyMandatoryFields() {
+    val header = "A, B, C"
+    val data1 = "a1,,c1"
+    val data2 = "a2,b2,c2"
+    val data3 = ",b3,c3"
+    for (pair in createPairs(header, data1, data2, data3)) {
+      val wasCalled = AtomicBoolean(false)
+      val recordGroup: RecordGroup =
+        object : RecordGroup("ABC", ImmutableSet.of("A", "B", "C"), ImmutableSet.of("A", "B")) {
+          override fun doProcess(record: SpreadsheetRecord): Boolean {
+            if (!super.doProcess(record)) {
+              return false
+            }
+            if (!hasMandatoryFields(record)) {
+              return false
+            }
+            wasCalled.set(true)
+            assertEquals("a2", record["A"])
+            assertEquals("b2", record["B"])
+            return true
           }
-          if (!hasMandatoryFields(record)) {
-            return false;
-          }
-          wasCalled.set(true);
-          assertEquals("a2", record.get("A"));
-          assertEquals("b2", record.get("B"));
-          return true;
         }
-      };
-      GanttCSVOpen importer = new GanttCSVOpen(pair.second(), pair.first(), recordGroup);
-      importer.load();
-      assertTrue(wasCalled.get());
-      assertEquals(2, importer.getSkippedLineCount());
+      val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)
+      importer.load()
+      assertTrue(wasCalled.get())
+      assertEquals(2, importer.skippedLineCount)
     }
   }
 
-  private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
-    List<Pair<SpreadsheetFormat, Supplier<InputStream>>> pairs = new ArrayList<>();
-    pairs.add(Pair.create(CSV, createSupplier(Joiner.on('\n').join(data).getBytes(Charsets.UTF_8))));
-    pairs.add(Pair.create(XLS, createSupplier(createXls(data))));
-    return pairs;
+  @Throws(Exception::class)
+  private fun createPairs(vararg data: String): List<Pair<SpreadsheetFormat?, Supplier<InputStream>?>> {
+    val pairs: MutableList<Pair<SpreadsheetFormat?, Supplier<InputStream>?>> = ArrayList()
+    pairs.add(
+      Pair.create(
+        SpreadsheetFormat.CSV,
+        createSupplier(Joiner.on('\n').join(data).toByteArray(Charsets.UTF_8))
+      )
+    )
+    pairs.add(Pair.create(SpreadsheetFormat.XLS, createSupplier(createXls(*data))))
+    return pairs
   }
 
-  private byte[] createXls(String... rows) throws Exception {
-    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = new XlsWriterImpl(stream)) {
-      for (String row : rows) {
-        for (String cell : row.split(",", -1)) {
-          writer.print(cell.trim());
+  @Throws(Exception::class)
+  private fun createXls(vararg rows: String): ByteArray {
+    val stream = ByteArrayOutputStream()
+    XlsWriterImpl(stream).use { writer ->
+      for (row in rows) {
+        for (cell in row.split(",").dropLastWhile { it.isEmpty() }.toTypedArray()) {
+          writer.print(cell.trim { it <= ' ' })
         }
-        writer.println();
+        writer.println()
       }
     }
-    return stream.toByteArray();
+    return stream.toByteArray()
   }
 
-  public void testTrailingEmptyCells() throws IOException {
-    String header1 = "A, B, C, D";
-    String data1 = "a1, b1, c1, d1";
-    final AtomicBoolean wasCalled1 = new AtomicBoolean(false);
-    RecordGroup recordGroup1 = new RecordGroup("ABCD", ImmutableSet.<String>of("A", "B", "C", "D")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
+  @Throws(IOException::class)
+  fun testTrailingEmptyCells() {
+    val header1 = "A, B, C, D"
+    val data1 = "a1, b1, c1, d1"
+    val wasCalled1 = AtomicBoolean(false)
+    val recordGroup1: RecordGroup = object : RecordGroup("ABCD", ImmutableSet.of("A", "B", "C", "D")) {
+      override fun doProcess(record: SpreadsheetRecord): Boolean {
         if (!super.doProcess(record)) {
-          return false;
+          return false
         }
-        assertEquals("a1", record.get("A"));
-        assertEquals("b1", record.get("B"));
-        assertEquals("c1", record.get("C"));
-        assertEquals("d1", record.get("D"));
-        wasCalled1.set(true);
-        return true;
+        assertEquals("a1", record["A"])
+        assertEquals("b1", record["B"])
+        assertEquals("c1", record["C"])
+        assertEquals("d1", record["D"])
+        wasCalled1.set(true)
+        return true
       }
-    };
-
-    String header2 = "E,,,";
-    String data2 = "e1,,,";
-    final AtomicBoolean wasCalled2 = new AtomicBoolean(false);
-    RecordGroup recordGroup2 = new RecordGroup("E", ImmutableSet.<String>of("E")) {
-      @Override
-      protected boolean doProcess(SpreadsheetRecord record) {
+    }
+    val header2 = "E,,,"
+    val data2 = "e1,,,"
+    val wasCalled2 = AtomicBoolean(false)
+    val recordGroup2: RecordGroup = object : RecordGroup("E", ImmutableSet.of("E")) {
+      override fun doProcess(record: SpreadsheetRecord): Boolean {
         if (!super.doProcess(record)) {
-          return false;
+          return false
         }
-        assertEquals("e1", record.get("E"));
-        assertFalse(record.isMapped("B"));
-        wasCalled2.set(true);
-        return true;
+        assertEquals("e1", record["E"])
+        assertFalse(record.isMapped("B"))
+        wasCalled2.set(true)
+        return true
       }
-    };
-    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1, ",,,", header2, data2).getBytes(Charsets.UTF_8)),
-        CSV,
-        recordGroup1, recordGroup2);
-    importer.load();
-    assertTrue(wasCalled1.get() && wasCalled2.get());
+    }
+    val importer = GanttCSVOpen(
+      createSupplier(
+        Joiner.on('\n').join(header1, data1, ",,,", header2, data2).toByteArray(
+          Charsets.UTF_8
+        )
+      ), SpreadsheetFormat.CSV,
+      recordGroup1, recordGroup2
+    )
+    importer.load()
+    assertTrue(wasCalled1.get() && wasCalled2.get())
   }
 }
