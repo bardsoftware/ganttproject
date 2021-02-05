@@ -244,6 +244,6 @@ public class GanttCSVOpen {
     if (extension.isEmpty()) {
       throw new IllegalArgumentException("No file extension!");
     }
-    return SpreadsheetFormat.getSpreadsheetFormat(extension);
+    return SpreadsheetFormat.Companion.getSpreadsheetFormat(extension);
   }
 }

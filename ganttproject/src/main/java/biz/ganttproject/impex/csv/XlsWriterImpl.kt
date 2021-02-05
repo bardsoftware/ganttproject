@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Alexandr Kurutin, BarD Software s.r.o
+Copyright 2017-2021 Alexandr Kurutin, Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -29,7 +29,13 @@ import java.math.BigDecimal
 
 
 /**
- * @author akurutin on 04.04.2017.
+ * This is an implementation of SpreadsheetWriter which writes to Excel workbook.
+ *
+ * @author Dmitry Barashev
+ * ------
+ * 2021: translated to Kotlin and significantly updated to allow for data types other than strings
+ *       by Dmitry Barashev
+ * 2017: initially written in Java by Alexander Kurutin.
  */
 class XlsWriterImpl(private val myStream: OutputStream) : SpreadsheetWriter {
   private val myWorkbook: Workbook = HSSFWorkbook()
