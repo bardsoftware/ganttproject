@@ -602,6 +602,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
       }, new Action[]{taskDeleteAction, resourceDeleteAction});
     }
+    builder.setArtefactActions(newAction, deleteAction);
 
     final ArtefactAction propertiesAction;
     {

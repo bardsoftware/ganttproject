@@ -51,7 +51,7 @@ class SaveProjectAction private constructor(
     if (calledFromAppleScreenMenu(e)) {
       return
     }
-    this.isEnabled = false
+    //this.isEnabled = false
     GlobalScope.launch(Dispatchers.IO) {
       myProjectUiFacade.saveProject(myProject, null)
     }
