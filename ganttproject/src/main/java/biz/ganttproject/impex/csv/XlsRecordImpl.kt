@@ -1,7 +1,7 @@
 /*
-Copyright 2017 Roman Torkhov, BarD Software s.r.o
+Copyright 2017-2021 Roman Torkhov, Dmitry Barashev, BarD Software s.r.o
 
-This file is part of GanttProject, an opensource project management tool.
+This file is part of GanttProject, an open-source project management tool.
 
 GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +27,13 @@ import java.math.BigDecimal
 import java.util.*
 
 /**
- * @author torkhov
+ * This is an implementation of SpreadsheetRecord over a row in Excel workbook
+ *
+ * @author Dmitry Barashev
+ * ------
+ * 2021: translated to Kotlin and significantly updated to allow for data types other than strings
+ *       by Dmitry Barashev
+ * 2017: initially written in Java by Roman Torkhov
  */
 internal class XlsRecordImpl(
     private val myValues: List<Cell>,
