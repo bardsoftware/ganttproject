@@ -55,19 +55,24 @@ class TaskRecords(
 ) {
   /** List of known (and supported) Task attributes  */
   enum class TaskFields(protected val text: String) {
-    ID(TaskDefaultColumn.ID.nameKey), NAME("tableColName"), BEGIN_DATE("tableColBegDate"), END_DATE("tableColEndDate"), WEB_LINK(
-      "webLink"
-    ),
-    NOTES("notes"), COMPLETION("tableColCompletion"), COORDINATOR("tableColCoordinator"), RESOURCES("resources"), ASSIGNMENTS(
-      "Assignments"
-    ) {
+    ID(TaskDefaultColumn.ID.nameKey),
+    NAME("tableColName"),
+    BEGIN_DATE("tableColBegDate"),
+    END_DATE("tableColEndDate"),
+    WEB_LINK("webLink"),
+    NOTES("notes"),
+    COMPLETION("tableColCompletion"),
+    COORDINATOR("tableColCoordinator"),
+    RESOURCES("resources"),
+    ASSIGNMENTS("Assignments") {
       override fun toString(): String {
         return text
       }
     },
-    DURATION("tableColDuration"), PREDECESSORS(TaskDefaultColumn.PREDECESSORS.nameKey), OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.nameKey), COST(
-      TaskDefaultColumn.COST.nameKey
-    ),
+    DURATION("tableColDuration"),
+    PREDECESSORS(TaskDefaultColumn.PREDECESSORS.nameKey),
+    OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.nameKey),
+    COST(TaskDefaultColumn.COST.nameKey),
     COLOR(TaskDefaultColumn.COLOR.nameKey);
 
     override fun toString(): String {
@@ -162,7 +167,8 @@ class TaskRecords(
       myWbsMap[outlineNumber] = task
     }
     readCustomProperties(
-        names = customFields ?: emptyList(),
+        headerRecord = header!!,
+        customFields = customFields ?: emptyList(),
         customPropertyMgr = taskManager.customPropertyManager,
         record = record) { def, value ->
       task.customValues.addCustomProperty(def, value)

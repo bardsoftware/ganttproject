@@ -39,8 +39,10 @@ internal class XlsRecordImpl(
     private val myValues: List<Cell>,
     private val myMapping: Map<String, Int> = mapOf()) : SpreadsheetRecord {
 
-  override fun getType(name: String) = if (isMapped(name)) {
-    myValues[idx(name)]?.let {
+  override fun getType(name: String) = if (isMapped(name)) getType(idx(name)) else null
+
+  override fun getType(idx: Int) = if (idx >= 0 && idx < myValues.size) {
+    myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> CustomPropertyClass.TEXT
         CellType.NUMERIC -> {
@@ -55,7 +57,12 @@ internal class XlsRecordImpl(
 
   override fun get(name: String): String? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let { cell ->
+      get(idx(name))
+    } else null
+
+  override fun get(idx: Int): String? =
+    if (idx >= 0 && idx < myValues.size) {
+      myValues[idx]?.let { cell ->
         when (cell.cellType) {
           CellType.STRING -> cell.stringCellValue
           CellType.NUMERIC -> {
@@ -69,7 +76,6 @@ internal class XlsRecordImpl(
         }
       }
     } else null
-
 
   private fun idx(name: String) =
     myMapping[name] ?: throw IllegalArgumentException(

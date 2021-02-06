@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
-import com.google.common.collect.ImmutableSet
-import com.google.common.collect.Sets
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceManager
@@ -72,7 +70,8 @@ internal class ResourceRecords(
         .withStandardRate(record.getBigDecimal(ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build()
     readCustomProperties(
-        names = customFields ?: emptyList(),
+        headerRecord = header!!,
+        customFields = customFields ?: emptyList(),
         record = record,
         customPropertyMgr = resourceManager.customPropertyManager) { def, value -> hr.addCustomProperty(def, value)
     }

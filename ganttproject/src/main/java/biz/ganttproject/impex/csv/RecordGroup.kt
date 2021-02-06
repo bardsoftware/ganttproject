@@ -35,7 +35,7 @@ open class RecordGroup {
   private val myFields: Set<String>
   private val myMandatoryFields: Set<String>
   private var myCustomFields: Sets.SetView<String>? = null
-  private var myHeader: List<String>? = null
+  private var myHeader: SpreadsheetRecord? = null
   private val myName: String
   private var myErrorOutput: MutableList<Pair<Level, String>>? = null
   private val recordProcessor: RecordProcessor
@@ -53,6 +53,12 @@ open class RecordGroup {
     myMandatoryFields = mandatoryFields
     recordProcessor = customProcessor ?: {_, _ -> myHeader != null}
   }
+
+  open fun doProcess(record: SpreadsheetRecord): Boolean {
+    return recordProcessor(record, this)
+  }
+
+  open fun postProcess() {}
 
   fun isHeader(record: SpreadsheetRecord): Boolean {
     val thoseFields: MutableSet<String?> = Sets.newHashSet()
@@ -79,16 +85,16 @@ open class RecordGroup {
     return record[columnName!!]
   }
 
-  open fun doProcess(record: SpreadsheetRecord): Boolean {
-    return recordProcessor(record, this)
-  }
-
-  open fun postProcess() {}
-  open var header: List<String>?
+  open var header: SpreadsheetRecord?
     get() = myHeader
     set(header) {
       myHeader = header
-      myCustomFields = Sets.difference(Sets.newHashSet(header), myFields)
+      header?.let {
+        myCustomFields = Sets.difference(
+          header.notBlankValues().toHashSet(),
+          myFields
+        )
+      }
     }
   val customFields: Collection<String>?
     get() = myCustomFields
