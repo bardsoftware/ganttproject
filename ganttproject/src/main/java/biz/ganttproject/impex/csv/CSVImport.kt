@@ -70,10 +70,15 @@ internal class CsvReaderImpl(`is`: InputStream, format: CSVFormat) : Spreadsheet
  */
 internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecord {
   override fun getType(name: String) = if (isMapped(name)) CustomPropertyClass.TEXT else null
+  override fun getType(idx: Int) = if (idx >= 0 && idx < myRecord.size()) CustomPropertyClass.TEXT else null
 
   override fun get(name: String): String? {
     return if (isMapped(name)) myRecord[name] else null
   }
+  override fun get(idx: Int): String? =
+    if (idx >= 0 && idx < myRecord.size()) {
+      myRecord[idx]
+    } else null
 
   override fun getDouble(name: String): Double? = get(name)?.toDoubleOrNull()
 
@@ -108,23 +113,28 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
  * adds missing custom property definitions and calls the receiver with the custom property
  * definition and value.
  */
-internal fun readCustomProperties(
-    names: Iterable<String>,
-    record: SpreadsheetRecord,
-    customPropertyMgr: CustomPropertyManager,
-    receiver: (CustomPropertyDefinition, String?) -> Unit) {
-  for (customField in names) {
-    val def = customPropertyMgr.let {
-      it.getCustomPropertyDefinition(customField)
-        ?: record.getType(customField)?.let { type ->
-          it.createDefinition(customField, type.id, customField, null)
+fun readCustomProperties(
+  headerRecord: SpreadsheetRecord,
+  customFields: Iterable<String>,
+  record: SpreadsheetRecord,
+  customPropertyMgr: CustomPropertyManager,
+  receiver: (CustomPropertyDefinition, String?) -> Unit) {
+  headerRecord.iterator().withIndex().forEach {
+    it.value?.let { fieldName ->
+      if (fieldName in customFields) {
+        val def = customPropertyMgr.let { mgr ->
+          mgr.getCustomPropertyDefinition(fieldName)
+            ?: record.getType(it.index)?.let { type ->
+              mgr.createDefinition(fieldName, type.id, fieldName, null)
+            }
         }
-    }
-    if (def == null) {
-      GPLogger.logToLogger("Can't find custom field with name=$customField value=${record[customField]}")
-      continue
-    }
+        if (def == null) {
+          GPLogger.logToLogger("Can't find custom field with name=$fieldName value=${record[fieldName]}")
+          return@let
+        }
 
-    receiver(def, record[customField])
+        receiver(def, record[it.index])
+      }
+    }
   }
 }

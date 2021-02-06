@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -18,13 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.GregorianCalendar;
-
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import java.util.GregorianCalendar;
+
 public enum CustomPropertyClass {
-  TEXT("text", "", String.class), INTEGER("integer", "0", Integer.class), DOUBLE("double", "0.0", Double.class), DATE(
-      "date", null, GregorianCalendar.class), BOOLEAN("boolean", "false", Boolean.class);
+  TEXT("text", "", String.class),
+  INTEGER("integer", "0", Integer.class),
+  DOUBLE("double", "0.0", Double.class),
+  DATE("date", null, GregorianCalendar.class),
+  BOOLEAN("boolean", "false", Boolean.class);
 
   private final String myI18Ntifier;
   private final Class myJavaClass;

@@ -42,7 +42,9 @@ import java.util.logging.Level
  */
 interface SpreadsheetRecord {
   fun getType(name: String): CustomPropertyClass?
+  fun getType(idx: Int): CustomPropertyClass?
   operator fun get(name: String): String?
+  operator fun get(idx: Int): String?
   fun getDouble(name: String): Double?
   fun getDate(name: String): Date?
   fun getInt(name: String): Int?
@@ -54,6 +56,10 @@ interface SpreadsheetRecord {
   fun isSet(name: String): Boolean
   operator fun iterator(): Iterator<String?>
   fun size(): Int
+
+  fun notBlankValues(): List<String> =
+    iterator().asSequence().filterNotNull().filter { it.isNotBlank() }.toList()
+
 }
 
 /**

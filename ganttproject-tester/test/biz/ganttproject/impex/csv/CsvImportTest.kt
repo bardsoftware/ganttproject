@@ -258,11 +258,10 @@ class CsvImportTest : TestCase() {
 
   fun testDataTypesFromStrings() {
     val today = DateParser.parse("2021-02-05")
-    val header = "A, B, C, D, E"
+    val header = "A,B,C,D,E"
     val data = "1, 3.14, true, ${GanttLanguage.getInstance().shortDateFormat.format(today)}, 6.15"
     for (pair in createPairs(header, data)) {
-      val header = setOf("A", "B", "C", "D", "E")
-      val recordGroup = RecordGroup("AB", header) { record, _ ->
+      val recordGroup = RecordGroup("AB", header.split(",").toSet()) { record, _ ->
         assertEquals(1, record.getInt("A"))
         assertEquals(3.14, record.getDouble("B"))
         assertEquals(true, record.getBoolean("C"))
@@ -270,7 +269,7 @@ class CsvImportTest : TestCase() {
         assertEquals(BigDecimal.valueOf(6.15), record.getBigDecimal("E"))
 
         // Although we can read typed values, they are actually strings in the input
-        header.forEach { assertEquals(CustomPropertyClass.TEXT, record.getType(it)) }
+        header.split(",").forEach { assertEquals(CustomPropertyClass.TEXT, record.getType(it)) }
         true
       }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)

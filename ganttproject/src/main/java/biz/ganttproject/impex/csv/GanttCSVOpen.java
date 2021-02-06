@@ -20,7 +20,6 @@ package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Function;
-import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -157,13 +156,13 @@ public class GanttCSVOpen {
           if (nextGroup.isHeader(record)) {
             debug(logger, "[CSV] ^^^ This seems to be a header");
 
-            List<String> headerCells = Lists.newArrayList(record.iterator());
-            for (int i = headerCells.size() - 1; i >= 0; i--) {
-              if (Strings.isNullOrEmpty(headerCells.get(i))) {
-                headerCells.remove(i);
-              }
-            }
-            nextGroup.setHeader(headerCells);
+//            List<String> headerCells = Lists.newArrayList(record.iterator());
+//            for (int i = headerCells.size() - 1; i >= 0; i--) {
+//              if (Strings.isNullOrEmpty(headerCells.get(i))) {
+//                headerCells.remove(i);
+//              }
+//            }
+            nextGroup.setHeader(record);
             return lineCounter;
           }
         }
@@ -190,7 +189,7 @@ public class GanttCSVOpen {
     int idxCurrentGroup = 0;
     int idxNextGroup;
     int skipHeadLines = 0;
-    List<String> headers;
+    SpreadsheetRecord headers;
     do {
       idxNextGroup = idxCurrentGroup;
       RecordGroup currentGroup = myRecordGroups.get(idxCurrentGroup);
@@ -198,7 +197,8 @@ public class GanttCSVOpen {
       if (headers != null) {
         idxNextGroup++;
       }
-      try (SpreadsheetReader reader = createReader(myInputSupplier.get(), headers)) {
+
+      try (SpreadsheetReader reader = createReader(myInputSupplier.get(), headers == null ? null : headers.notBlankValues())) {
         skipHeadLines = doLoad(reader, idxCurrentGroup, skipHeadLines);
       }
       idxCurrentGroup = idxNextGroup;
