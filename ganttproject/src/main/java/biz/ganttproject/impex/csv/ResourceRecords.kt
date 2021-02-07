@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
+import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceManager
@@ -73,8 +74,9 @@ internal class ResourceRecords(
         headerRecord = header!!,
         customFields = customFields ?: emptyList(),
         record = record,
-        customPropertyMgr = resourceManager.customPropertyManager) { def, value -> hr.addCustomProperty(def, value)
-    }
+        customPropertyMgr = resourceManager.customPropertyManager,
+        receiver = hr::addCustomProperty
+    )
     return true
   }
 

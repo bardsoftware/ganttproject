@@ -84,58 +84,73 @@ internal class XlsRecordImpl(
 
   override fun getDouble(name: String): Double? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> it.stringCellValue.toDoubleOrNull()
-          CellType.NUMERIC -> it.numericCellValue
-          else -> null
-        }
-      }
+      getDouble(idx(name))
     } else null
+
+  override fun getDouble(idx: Int): Double? =
+    myValues[idx]?.let {
+      when (it.cellType) {
+        CellType.STRING -> it.stringCellValue.toDoubleOrNull()
+        CellType.NUMERIC -> it.numericCellValue
+        else -> null
+      }
+    }
 
   override fun getDate(name: String): Date? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> GanttCSVOpen.language.parseDate(it.stringCellValue)
-          CellType.NUMERIC -> it.dateCellValue
-          else -> null
-        }
-      }
+      getDate(idx(name))
     } else null
+
+  override fun getDate(idx: Int): Date? =
+    myValues[idx]?.let {
+      when (it.cellType) {
+        CellType.STRING -> GanttCSVOpen.language.parseDate(it.stringCellValue)
+        CellType.NUMERIC -> it.dateCellValue
+        else -> null
+      }
+    }
 
   override fun getInt(name: String): Int? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> it.stringCellValue.toIntOrNull()
-          CellType.NUMERIC -> it.numericCellValue.toInt()
-          else -> null
-        }
-      }
+      getInt(idx(name))
     } else null
+
+  override fun getInt(idx: Int): Int? =
+    myValues[idx]?.let {
+      when (it.cellType) {
+        CellType.STRING -> it.stringCellValue.toIntOrNull()
+        CellType.NUMERIC -> it.numericCellValue.toInt()
+        else -> null
+      }
+    }
 
   override fun getBigDecimal(name: String): BigDecimal? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
-          CellType.NUMERIC -> it.numericCellValue.toBigDecimal()
-          else -> null
-        }
-      }
+      getBigDecimal(idx(name))
     } else null
+
+  override fun getBigDecimal(idx: Int): BigDecimal? =
+    myValues[idx]?.let {
+      when (it.cellType) {
+        CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
+        CellType.NUMERIC -> it.numericCellValue.toBigDecimal()
+        else -> null
+      }
+    }
 
   override fun getBoolean(name: String): Boolean? =
     if (isMapped(name)) {
-      myValues[idx(name)]?.let {
-        when (it.cellType) {
-          CellType.STRING -> it.stringCellValue.toBoolean()
-          CellType.BOOLEAN -> it.booleanCellValue
-          else -> null
-        }
-      }
+      getBoolean(idx(name))
     } else null
+
+  override fun getBoolean(idx: Int): Boolean? =
+    myValues[idx]?.let {
+      when (it.cellType) {
+        CellType.STRING -> it.stringCellValue.toBoolean()
+        CellType.BOOLEAN -> it.booleanCellValue
+        else -> null
+      }
+    }
 
   override fun isEmpty(): Boolean = myValues.all {
     it.cellType == CellType.BLANK || it.cellType == CellType.STRING && it.stringCellValue.isBlank()

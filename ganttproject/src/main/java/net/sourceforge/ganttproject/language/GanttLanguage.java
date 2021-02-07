@@ -244,6 +244,7 @@ public class GanttLanguage {
     return shortCurrentDateFormat.format(date.getTime());
   }
 
+  public String formatShortDate(Date date) { return shortCurrentDateFormat.format(date); }
   public String formatTime(Calendar date) {
     return currentTimeFormat.format(date.getTime());
   }

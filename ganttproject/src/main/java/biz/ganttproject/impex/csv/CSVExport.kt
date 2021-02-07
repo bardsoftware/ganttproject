@@ -40,7 +40,7 @@ import java.math.BigDecimal
  *       by Dmitry Barashev
  * 2017: initially written in Java by Alexander Kurutin.
  */
-class CsvWriterImpl @JvmOverloads internal constructor(
+class CsvWriterImpl @JvmOverloads constructor(
   stream: OutputStream, format: CSVFormat, addBom: Boolean = false) : SpreadsheetWriter {
   private val myCsvPrinter: CSVPrinter
 
