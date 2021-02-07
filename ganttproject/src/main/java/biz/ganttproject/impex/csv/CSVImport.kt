@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -43,7 +44,7 @@ import java.util.*
  *       by Dmitry Barashev
  * 2017: initially written in Java by Roman Torkhov
  */
-internal class CsvReaderImpl(`is`: InputStream, format: CSVFormat) : SpreadsheetReader {
+class CsvReaderImpl(`is`: InputStream, format: CSVFormat) : SpreadsheetReader {
   private val myParser: CSVParser = CSVParser(InputStreamReader(`is`, Charsets.UTF_8), format)
 
   @Throws(IOException::class)
@@ -81,13 +82,24 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
     } else null
 
   override fun getDouble(name: String): Double? = get(name)?.toDoubleOrNull()
+  override fun getDouble(idx: Int): Double? = get(idx)?.toDoubleOrNull()
 
   override fun getDate(name: String): Date? = get(name)?.let {
     GanttCSVOpen.language.parseDate(it)
   }
+
+  override fun getDate(idx: Int): Date? = get(idx)?.let {
+    GanttCSVOpen.language.parseDate(it)
+  }
+
   override fun getInt(name: String): Int? = get(name)?.toIntOrNull()
+  override fun getInt(idx: Int): Int? = get(idx)?.toIntOrNull()
+
   override fun getBigDecimal(name: String): BigDecimal? = get(name)?.toBigDecimalOrNull()
+  override fun getBigDecimal(idx: Int): BigDecimal? = get(idx)?.toBigDecimalOrNull()
+
   override fun getBoolean(name: String): Boolean? = get(name)?.toBoolean()
+  override fun getBoolean(idx: Int): Boolean? = get(idx)?.toBoolean()
 
   override fun isEmpty(): Boolean = myRecord.all { it.isBlank() }
 
@@ -108,6 +120,7 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
   }
 }
 
+typealias CustomPropertyReceiver = (CustomPropertyDefinition, String?) -> Unit
 /**
  * Looks for the values of the specified custom properties in the current record,
  * adds missing custom property definitions and calls the receiver with the custom property
@@ -118,7 +131,7 @@ fun readCustomProperties(
   customFields: Iterable<String>,
   record: SpreadsheetRecord,
   customPropertyMgr: CustomPropertyManager,
-  receiver: (CustomPropertyDefinition, String?) -> Unit) {
+  receiver: CustomPropertyReceiver) {
   headerRecord.iterator().withIndex().forEach {
     it.value?.let { fieldName ->
       if (fieldName in customFields) {
@@ -133,7 +146,13 @@ fun readCustomProperties(
           return@let
         }
 
-        receiver(def, record[it.index])
+        when (def.propertyClass) {
+          CustomPropertyClass.TEXT -> receiver(def, record.get(it.index))
+          CustomPropertyClass.INTEGER -> receiver(def, record.getInt(it.index).toString())
+          CustomPropertyClass.DOUBLE -> receiver(def, record.getDouble(it.index).toString())
+          CustomPropertyClass.DATE -> receiver(def, GanttLanguage.getInstance().formatShortDate(record.getDate(it.index)))
+          CustomPropertyClass.BOOLEAN -> receiver(def, record.getBoolean(it.index).toString())
+        }
       }
     }
   }

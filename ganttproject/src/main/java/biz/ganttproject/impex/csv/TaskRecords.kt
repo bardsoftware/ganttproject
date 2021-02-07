@@ -170,9 +170,9 @@ class TaskRecords(
         headerRecord = header!!,
         customFields = customFields ?: emptyList(),
         customPropertyMgr = taskManager.customPropertyManager,
-        record = record) { def, value ->
-      task.customValues.addCustomProperty(def, value)
-    }
+        record = record,
+        receiver = task.customValues::addCustomProperty
+    )
     return true
   }
 

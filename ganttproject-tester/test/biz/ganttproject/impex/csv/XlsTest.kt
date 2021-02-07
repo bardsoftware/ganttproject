@@ -25,8 +25,6 @@ import biz.ganttproject.core.time.GanttCalendar
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.CustomColumnsManager
-import net.sourceforge.ganttproject.task.CustomColumnsValues
 import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -105,70 +103,6 @@ class XlsTest : TestCase() {
         assertEquals(null, record.getInt("G"))
         assertEquals(null, record.getType("G"))
       }
-    }
-  }
-
-  /**
-   * Here we write some typed values with "custom" property names using a writer and then
-   * check that after reading we create appropriately typed custom properties and their values.
-   */
-  fun testCustomPropertyTypesImport() {
-    val standardFields = listOf(
-      TaskRecords.TaskFields.NAME,
-      TaskRecords.TaskFields.BEGIN_DATE,
-      TaskRecords.TaskFields.DURATION
-    ).map { it.toString() }
-    val customFields = listOf("F1", "F2", "F3", "F4")
-    val header = standardFields + customFields
-
-    val out = ByteArrayOutputStream()
-    XlsWriterImpl(out).let {
-      // -- Header row
-      header.forEach(it::print)
-      it.println()
-      // -- Data row
-      // -- Standard fields
-      it.print("task1")
-      it.print(GanttCalendar.parseXMLDate("2021-04-05"))
-      it.print(1)
-      // -- Custom fields
-      it.print(42)
-      it.print(BigDecimal.valueOf(Int.MAX_VALUE.toLong()))
-      it.print(true)
-      it.print(GanttCalendar.parseXMLDate("2021-04-05"))
-      it.println()
-      it.close()
-    }
-    val inputStream = ByteArrayInputStream(out.toByteArray())
-    XlsReaderImpl(inputStream, standardFields).iterator().let {
-      // Read the header row
-      val headerRecord = it.next().let { first ->
-        assertEquals(header, first.iterator().asSequence().toList())
-        assertTrue(it.hasNext())
-        first
-      }
-      // Create a custom property with name F1 and Int type. When reading custom
-      // property values, we're supposed to find this definition and properly
-      // interpret numeric value as integer.
-      val customPropertyMgr = CustomColumnsManager().also { mgr ->
-        mgr.createDefinition("F1", "int", "F1", "0")
-      }
-      val customValues = CustomColumnsValues(customPropertyMgr)
-      it.next().let{ record ->
-        readCustomProperties(headerRecord, customFields, record, customPropertyMgr) { def, value ->
-          customValues.addCustomProperty(def, value)
-        }
-      }
-      customPropertyMgr.getCustomPropertyDefinition("F1").let {
-        assertEquals(CustomPropertyClass.INTEGER, it.propertyClass)
-        assertEquals("42", customValues.getValue(it))
-      }
-
-      assertEquals(CustomPropertyClass.DOUBLE, customPropertyMgr.getCustomPropertyDefinition("F2").propertyClass)
-      assertEquals(CustomPropertyClass.BOOLEAN, customPropertyMgr.getCustomPropertyDefinition("F3").propertyClass)
-      assertEquals(CustomPropertyClass.DATE, customPropertyMgr.getCustomPropertyDefinition("F4").propertyClass)
-
-
     }
   }
 }

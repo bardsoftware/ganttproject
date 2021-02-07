@@ -45,11 +45,21 @@ interface SpreadsheetRecord {
   fun getType(idx: Int): CustomPropertyClass?
   operator fun get(name: String): String?
   operator fun get(idx: Int): String?
+
   fun getDouble(name: String): Double?
+  fun getDouble(idx: Int): Double?
+
   fun getDate(name: String): Date?
+  fun getDate(idx: Int): Date?
+
   fun getInt(name: String): Int?
+  fun getInt(idx: Int): Int?
+
   fun getBigDecimal(name: String): BigDecimal?
+  fun getBigDecimal(idx: Int): BigDecimal?
+
   fun getBoolean(name: String): Boolean?
+  fun getBoolean(idx: Int): Boolean?
 
   fun isEmpty(): Boolean
   fun isMapped(name: String): Boolean
@@ -65,8 +75,8 @@ interface SpreadsheetRecord {
 /**
  * Interface of a stream of spreadsheet records.
  */
-internal interface SpreadsheetReader : Closeable {
-  operator fun iterator(): Iterator<SpreadsheetRecord?>?
+interface SpreadsheetReader : Closeable {
+  operator fun iterator(): Iterator<SpreadsheetRecord>
 }
 
 /**
