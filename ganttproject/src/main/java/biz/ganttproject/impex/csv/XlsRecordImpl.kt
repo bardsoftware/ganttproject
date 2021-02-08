@@ -87,7 +87,7 @@ internal class XlsRecordImpl(
       getDouble(idx(name))
     } else null
 
-  override fun getDouble(idx: Int): Double? =
+  override fun getDouble(idx: Int): Double? = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> it.stringCellValue.toDoubleOrNull()
@@ -95,13 +95,14 @@ internal class XlsRecordImpl(
         else -> null
       }
     }
+  } else null
 
   override fun getDate(name: String): Date? =
     if (isMapped(name)) {
       getDate(idx(name))
     } else null
 
-  override fun getDate(idx: Int): Date? =
+  override fun getDate(idx: Int): Date? = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> GanttCSVOpen.language.parseDate(it.stringCellValue)
@@ -109,13 +110,14 @@ internal class XlsRecordImpl(
         else -> null
       }
     }
+  } else null
 
   override fun getInt(name: String): Int? =
     if (isMapped(name)) {
       getInt(idx(name))
     } else null
 
-  override fun getInt(idx: Int): Int? =
+  override fun getInt(idx: Int): Int? = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> it.stringCellValue.toIntOrNull()
@@ -123,13 +125,14 @@ internal class XlsRecordImpl(
         else -> null
       }
     }
+  } else null
 
   override fun getBigDecimal(name: String): BigDecimal? =
     if (isMapped(name)) {
       getBigDecimal(idx(name))
     } else null
 
-  override fun getBigDecimal(idx: Int): BigDecimal? =
+  override fun getBigDecimal(idx: Int): BigDecimal? = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
@@ -137,13 +140,14 @@ internal class XlsRecordImpl(
         else -> null
       }
     }
+  } else null
 
   override fun getBoolean(name: String): Boolean? =
     if (isMapped(name)) {
       getBoolean(idx(name))
     } else null
 
-  override fun getBoolean(idx: Int): Boolean? =
+  override fun getBoolean(idx: Int): Boolean? = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
         CellType.STRING -> it.stringCellValue.toBoolean()
@@ -151,6 +155,7 @@ internal class XlsRecordImpl(
         else -> null
       }
     }
+  } else null
 
   override fun isEmpty(): Boolean = myValues.all {
     it.cellType == CellType.BLANK || it.cellType == CellType.STRING && it.stringCellValue.isBlank()
@@ -158,11 +163,11 @@ internal class XlsRecordImpl(
 
 
   override fun isMapped(name: String): Boolean {
-    return myMapping != null && myMapping.containsKey(name)
+    return myMapping.containsKey(name)
   }
 
   override fun isSet(name: String): Boolean {
-    return isMapped(name) && myMapping!![name]!! >= 0 && myMapping[name]!! < myValues.size
+    return isMapped(name) && myMapping[name]!! >= 0 && myMapping[name]!! < myValues.size
   }
 
   override fun iterator(): Iterator<String?> {

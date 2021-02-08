@@ -52,10 +52,23 @@ class XlsReaderImpl(`is`: InputStream, columnHeaders: List<String>?) : Spreadshe
   }
 
   override fun iterator(): Iterator<SpreadsheetRecord> {
-    return Iterators.transform<Row, SpreadsheetRecord>(myBook.getSheetAt(0).iterator()) { input: Row? ->
-      myHeaders?.let { XlsRecordImpl(Lists.newArrayList(input), it) }
-        ?: XlsRecordImpl(Lists.newArrayList(input))
+    val rows = myBook.getSheetAt(0).iterator().asSequence().toList()
+    val result = mutableListOf<SpreadsheetRecord>()
+    var lastIdx = -1
+    for (row in rows) {
+      if (lastIdx != -1) {
+        if (row.rowNum - lastIdx > 1) {
+          repeat(row.rowNum - lastIdx - 1) {
+            result.add(XlsRecordImpl(emptyList()))
+          }
+        }
+      }
+      result.add(myHeaders?.let { XlsRecordImpl(Lists.newArrayList(row), it) }
+        ?: XlsRecordImpl(Lists.newArrayList(row)))
+      lastIdx = row.rowNum
+
     }
+    return result.iterator()
   }
 
   private fun getCellValues(row: Row): List<String> {
