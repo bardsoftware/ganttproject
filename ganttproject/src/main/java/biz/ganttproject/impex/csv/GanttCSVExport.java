@@ -233,6 +233,10 @@ public class GanttCSVExport {
       if (!entry.getValue().isChecked()) {
         continue;
       }
+      if (defaultColumn == ResourceDefaultColumn.ROLE_IN_TASK) {
+        // There's not too much sense in exporting role in task not in the assignment context.
+        continue;
+      }
       if (defaultColumn == null) {
         if ("id".equals(entry.getKey())) {
           writer.print(i18n("tableColID"));
@@ -290,7 +294,7 @@ public class GanttCSVExport {
               writer.print(sRoleID);
               break;
             case ROLE_IN_TASK:
-              writer.print("");
+              // There's not too much sense in exporting role in task not in the assignment context.
               break;
             case STANDARD_RATE:
               writer.print(p.getStandardPayRate());
