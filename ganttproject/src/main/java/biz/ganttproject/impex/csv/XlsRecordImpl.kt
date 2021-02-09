@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.DateUtil
 import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.util.*
@@ -46,7 +47,7 @@ internal class XlsRecordImpl(
       when (it.cellType) {
         CellType.STRING -> CustomPropertyClass.TEXT
         CellType.NUMERIC -> {
-          if (it.cellStyle.dataFormat == it.sheet.workbook.creationHelper.createDataFormat().getFormat("m/d/yy")) CustomPropertyClass.DATE
+          if (DateUtil.isCellDateFormatted(it)) CustomPropertyClass.DATE
           else CustomPropertyClass.DOUBLE
         }
         CellType.BOOLEAN -> CustomPropertyClass.BOOLEAN
