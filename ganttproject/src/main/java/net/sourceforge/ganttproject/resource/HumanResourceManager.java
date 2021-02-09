@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.CustomProperty;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -270,7 +272,10 @@ public class HumanResourceManager {
 
   }
 
-  public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
+  public Map<HumanResource, HumanResource> importData(
+      HumanResourceManager hrManager,
+      HumanResourceMerger merger,
+      Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs) {
     Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
     List<HumanResource> foreignResources = hrManager.getResources();
     List<HumanResource> createdResources = Lists.newArrayList();
@@ -283,6 +288,13 @@ public class HumanResourceManager {
         createdResources.add(nativeHR);
       }
       foreign2native.put(foreignHR, nativeHR);
+
+      for (CustomProperty foreignCP : foreignHR.getCustomProperties()) {
+        CustomPropertyDefinition thisDef = that2thisCustomDefs.get(foreignCP.getDefinition());
+        if (foreignCP.getValue() != null) {
+          nativeHR.addCustomProperty(thisDef, foreignCP.getValueAsString());
+        }
+      }
     }
     for (HumanResource created : createdResources) {
       add(created);
