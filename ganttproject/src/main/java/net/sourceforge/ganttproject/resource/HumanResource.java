@@ -237,6 +237,7 @@ public class HumanResource implements CustomPropertyHolder {
     }
   }
 
+
   @Override
   public List<CustomProperty> getCustomProperties() {
     return myCustomProperties.getCustomProperties();

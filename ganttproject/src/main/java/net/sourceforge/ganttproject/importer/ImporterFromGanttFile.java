@@ -224,12 +224,12 @@ public class ImporterFromGanttFile extends ImporterBase {
     if (importCalendarOption != null) {
       targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
     }
-    {
-      CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
-      targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
-    }
+
+    CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
+    var that2thisResourceCustomDefs = targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
+
     Map<HumanResource, HumanResource> original2ImportedResource = targetProject.getHumanResourceManager().importData(
-        bufferProject.getHumanResourceManager(), new OverwritingMerger(mergeOption));
+        bufferProject.getHumanResourceManager(), new OverwritingMerger(mergeOption), that2thisResourceCustomDefs);
 
     Map<Task, Task> result = null;
     {
