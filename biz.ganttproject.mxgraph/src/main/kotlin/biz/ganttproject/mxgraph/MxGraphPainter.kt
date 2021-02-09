@@ -40,10 +40,12 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
   val chartProperties = Properties().also {
     PropertiesUtil.loadProperties(it, "/resources/chart.properties")
   }
+  private val containerRectanglePainter = SummaryTaskPainter(mxPainter, chartProperties)
   private val resourceLoadPainter = ResourceLoadPainter(mxPainter, uiConfig)
   private val dayoffPainter = DayoffPainter(mxPainter, uiConfig)
   private val textPainter = MxTextPainter(mxPainter, chartProperties) { Fonts.DEFAULT_CHART_FONT }
   private val styleToPainter = mapOf(
+      "task.supertask" to containerRectanglePainter,
       "load.normal" to resourceLoadPainter,
       "load.normal.first" to resourceLoadPainter,
       "load.normal.last" to resourceLoadPainter,
