@@ -1,5 +1,5 @@
 /*
-Copyright 2014 BarD Software s.r.o
+Copyright 2014-2021 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
-import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceManager
