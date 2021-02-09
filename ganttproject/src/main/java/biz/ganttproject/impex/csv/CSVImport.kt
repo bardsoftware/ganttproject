@@ -132,12 +132,12 @@ fun readCustomProperties(
   record: SpreadsheetRecord,
   customPropertyMgr: CustomPropertyManager,
   receiver: CustomPropertyReceiver) {
-  headerRecord.iterator().withIndex().forEach {
-    it.value?.let { fieldName ->
+  headerRecord.iterator().withIndex().forEach { header ->
+    header.value?.let { fieldName ->
       if (fieldName in customFields) {
         val def = customPropertyMgr.let { mgr ->
           mgr.getCustomPropertyDefinition(fieldName)
-            ?: record.getType(it.index)?.let { type ->
+            ?: record.getType(header.index)?.let { type ->
               mgr.createDefinition(fieldName, type.id, fieldName, null)
             }
         }
@@ -147,11 +147,19 @@ fun readCustomProperties(
         }
 
         when (def.propertyClass) {
-          CustomPropertyClass.TEXT -> receiver(def, record.get(it.index))
-          CustomPropertyClass.INTEGER -> receiver(def, record.getInt(it.index).toString())
-          CustomPropertyClass.DOUBLE -> receiver(def, record.getDouble(it.index).toString())
-          CustomPropertyClass.DATE -> receiver(def, GanttLanguage.getInstance().formatShortDate(record.getDate(it.index)))
-          CustomPropertyClass.BOOLEAN -> receiver(def, record.getBoolean(it.index).toString())
+          CustomPropertyClass.TEXT -> record.get(header.index)?.let { receiver(def, it) }
+          CustomPropertyClass.INTEGER -> record.getInt(header.index)?.let {
+            receiver(def, it.toString())
+          }
+          CustomPropertyClass.DOUBLE -> record.getDouble(header.index)?.let {
+            receiver(def, it.toString())
+          }
+          CustomPropertyClass.DATE -> record.getDate(header.index)?.let {
+            receiver(def, GanttLanguage.getInstance().formatShortDate(it))
+          }
+          CustomPropertyClass.BOOLEAN -> record.getBoolean(header.index)?.let {
+            receiver(def, it.toString())
+          }
         }
       }
     }
