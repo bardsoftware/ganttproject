@@ -9,15 +9,15 @@ import com.google.common.collect.Lists
 import net.sourceforge.ganttproject.chart.TaskActivityPart
 //import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskActivity
+import biz.ganttproject.core.model.task.ConstraintType
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint
 import java.awt.Dimension
 import java.util.*
 
 internal interface IDependency {
   val start: TaskActivity
   val end: TaskActivity
-  val constraintType: TaskDependencyConstraint.Type
+  val constraintType: ConstraintType
   val hardness: TaskDependency.Hardness
 }
 
@@ -41,7 +41,7 @@ internal class BarChartConnectorImpl(
       )
     }
     val type = dependency.constraintType
-    return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+    return if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
       splitActivities[splitActivities.size - 1]
     } else {
       splitActivities[0]
@@ -58,7 +58,7 @@ internal class BarChartConnectorImpl(
       )
     }
     val type = dependency.constraintType
-    return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+    return if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
       splitActivities[0]
     } else {
       splitActivities[splitActivities.size - 1]
@@ -71,14 +71,14 @@ internal class BarChartConnectorImpl(
 
   override fun getStartVector(): Dimension {
     val type = dependency.constraintType
-    return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+    return if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
       Connector.Vector.EAST
     } else Connector.Vector.WEST
   }
 
   override fun getEndVector(): Dimension {
     val type = dependency.constraintType
-    return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
+    return if (type == ConstraintType.finishfinish || type == ConstraintType.startfinish) {
       Connector.Vector.EAST
     } else Connector.Vector.WEST
   }

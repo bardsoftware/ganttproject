@@ -32,7 +32,7 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.core.time.TimeDurationImpl
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import net.sourceforge.ganttproject.GanttProjectImpl
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint
+import biz.ganttproject.core.model.task.ConstraintType
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness
 import java.awt.Color
 import java.awt.Dimension
@@ -99,7 +99,7 @@ class UnboundedViewportTaskSceneBuilder(
       }
     }
 
-    class Dependant(val task: Task, val type: TaskDependencyConstraint.Type, val hardness: Hardness)
+    class Dependant(val task: Task, val type: ConstraintType, val hardness: Hardness)
   }
 
   private class DependencySceneTaskApi(
@@ -134,14 +134,14 @@ class UnboundedViewportTaskSceneBuilder(
     override fun getEnd() = dependant.task.activity
 
     override fun getStartVector(): Dimension {
-      return if (dependant.type == TaskDependencyConstraint.Type.finishfinish || dependant.type == TaskDependencyConstraint.Type.finishstart)
+      return if (dependant.type == ConstraintType.finishfinish || dependant.type == ConstraintType.finishstart)
         Connector.Vector.EAST
       else
         Connector.Vector.WEST
     }
 
     override fun getEndVector(): Dimension {
-      return if (dependant.type == TaskDependencyConstraint.Type.finishfinish || dependant.type == TaskDependencyConstraint.Type.startfinish)
+      return if (dependant.type == ConstraintType.finishfinish || dependant.type == ConstraintType.startfinish)
         Connector.Vector.EAST
       else
         Connector.Vector.WEST

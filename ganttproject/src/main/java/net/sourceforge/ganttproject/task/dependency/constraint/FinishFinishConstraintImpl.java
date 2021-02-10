@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
@@ -38,7 +39,7 @@ import biz.ganttproject.core.time.GanttCalendar;
  */
 public class FinishFinishConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public FinishFinishConstraintImpl() {
-    super(TaskDependencyConstraint.Type.finishfinish, GanttLanguage.getInstance().getText("finishfinish"));
+    super(ConstraintType.finishfinish, GanttLanguage.getInstance().getText("finishfinish"));
   }
 
   @Override

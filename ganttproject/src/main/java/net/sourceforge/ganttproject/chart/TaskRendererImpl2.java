@@ -44,8 +44,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.task.*;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -311,8 +311,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       TaskActivity startActivity = (TaskActivity) myDep.getStart();
       List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(startActivity));
       assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+      ConstraintType type = myDep.getConstraint().getType();
+      if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
         return splitActivities.get(splitActivities.size() - 1);
       } else {
         return splitActivities.get(0);
@@ -324,8 +324,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       TaskActivity endActivity = (TaskActivity) myDep.getEnd();
       List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(endActivity));
       assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+      ConstraintType type = myDep.getConstraint().getType();
+      if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
         return splitActivities.get(0);
       } else {
         return splitActivities.get(splitActivities.size() - 1);
@@ -339,8 +339,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     @Override
     public Dimension getStartVector() {
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
+      ConstraintType type = myDep.getConstraint().getType();
+      if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
         return Connector.Vector.EAST;
       }
       return Connector.Vector.WEST;
@@ -348,8 +348,8 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     @Override
     public Dimension getEndVector() {
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
+      ConstraintType type = myDep.getConstraint().getType();
+      if (type == ConstraintType.finishfinish || type == ConstraintType.startfinish) {
         return Connector.Vector.EAST;
       }
       return Connector.Vector.WEST;
