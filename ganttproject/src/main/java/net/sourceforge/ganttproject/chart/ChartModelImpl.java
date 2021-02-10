@@ -176,7 +176,7 @@ public class ChartModelImpl extends ChartModelBase {
   // return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
   // }
 
-  List<Task> getVisibleTasks() {
+  public List<Task> getVisibleTasks() {
     return myVisibleTasks == null ? Collections.<Task> emptyList() : myVisibleTasks;
   }
 
@@ -220,7 +220,7 @@ public class ChartModelImpl extends ChartModelBase {
     return (calculateRowHeight());
   }
 
-  List<GanttPreviousStateTask> getBaseline() {
+  public List<GanttPreviousStateTask> getBaseline() {
     return myBaseline;
   }
 

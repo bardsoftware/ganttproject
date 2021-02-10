@@ -384,7 +384,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     return myOffsetManager.getAtomUnitOffsets();
   }
 
-  Date getOffsetAnchorDate() {
+  public Date getOffsetAnchorDate() {
     return /*
             * myScrollingSession == null ? myStartDate :
             */getBottomUnit().jumpLeft(myStartDate);
@@ -509,7 +509,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myOffsetManager.reset();
   }
 
-  protected UIConfiguration getProjectConfig() {
+  public UIConfiguration getProjectConfig() {
     return myProjectConfig;
   }
 
@@ -595,7 +595,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myVerticalOffset = offset;
   }
 
-  protected int getVerticalOffset() {
+  public int getVerticalOffset() {
     return myVerticalOffset;
   }
 
