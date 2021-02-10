@@ -56,7 +56,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static net.sourceforge.ganttproject.chart.gantt.GanttChartSceneBuilderInternalKt.splitOnBounds;
+import static net.sourceforge.ganttproject.chart.gantt.DependencySceneApiImplKt.splitOnBounds;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings

@@ -7,20 +7,31 @@ import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import net.sourceforge.ganttproject.chart.TaskActivityPart
-import net.sourceforge.ganttproject.task.Task
+//import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskActivity
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint
 import java.awt.Dimension
 import java.util.*
 
+internal interface IDependency {
+  val start: TaskActivity
+  val end: TaskActivity
+  val constraintType: TaskDependencyConstraint.Type
+  val hardness: TaskDependency.Hardness
+}
+
+internal interface ITask {
+  val dependencies: List<IDependency>
+  val isMilestone: Boolean
+}
 internal class BarChartConnectorImpl(
-    internal val dependency: TaskDependency,
+    internal val dependency: IDependency,
     private val chartStartDate: Date,
     private val chartEndDate: Date
-    ) : BarChartConnector<Task, BarChartConnectorImpl> {
+    ) : BarChartConnector<ITask, BarChartConnectorImpl> {
 
-  override fun getStart(): BarChartActivity<Task> {
+  override fun getStart(): BarChartActivity<ITask> {
     val startActivity = dependency.start as TaskActivity
     val splitActivities: List<TaskActivity> = splitOnBounds(listOf(startActivity), chartStartDate, chartEndDate)
     assert(splitActivities.size > 0) {
@@ -29,7 +40,7 @@ internal class BarChartConnectorImpl(
         dependency.toString()
       )
     }
-    val type = dependency.constraint.type
+    val type = dependency.constraintType
     return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
       splitActivities[splitActivities.size - 1]
     } else {
@@ -37,7 +48,7 @@ internal class BarChartConnectorImpl(
     }
   }
 
-  override fun getEnd(): BarChartActivity<Task> {
+  override fun getEnd(): BarChartActivity<ITask> {
     val endActivity = dependency.end as TaskActivity
     val splitActivities: List<TaskActivity> = splitOnBounds(listOf(endActivity), chartStartDate, chartEndDate)
     assert(splitActivities.size > 0) {
@@ -46,7 +57,7 @@ internal class BarChartConnectorImpl(
         dependency.toString()
       )
     }
-    val type = dependency.constraint.type
+    val type = dependency.constraintType
     return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
       splitActivities[0]
     } else {
@@ -59,14 +70,14 @@ internal class BarChartConnectorImpl(
   }
 
   override fun getStartVector(): Dimension {
-    val type = dependency.constraint.type
+    val type = dependency.constraintType
     return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
       Connector.Vector.EAST
     } else Connector.Vector.WEST
   }
 
   override fun getEndVector(): Dimension {
-    val type = dependency.constraint.type
+    val type = dependency.constraintType
     return if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
       Connector.Vector.EAST
     } else Connector.Vector.WEST
@@ -74,15 +85,15 @@ internal class BarChartConnectorImpl(
 }
 
 internal class DependencySceneTaskApi(
-    private val taskList: List<Task>,
-    private val chartStartDate: Date,
-    private val chartEndDate: Date) : DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl> {
-  override fun isMilestone(task: Task): Boolean {
+  private val taskList: List<ITask>,
+  private val chartStartDate: Date,
+  private val chartEndDate: Date) : DependencySceneBuilder.TaskApi<ITask, BarChartConnectorImpl> {
+  override fun isMilestone(task: ITask): Boolean {
     return task.isMilestone
   }
 
   override fun getUnitVector(
-    activity: BarChartActivity<Task?>,
+    activity: BarChartActivity<ITask?>,
     connector: BarChartConnectorImpl
   ): Dimension? {
     return if (activity == connector.getStart()) {
@@ -99,8 +110,8 @@ internal class DependencySceneTaskApi(
     return if (dependency.dependency.hardness === TaskDependency.Hardness.STRONG) "dependency.line.hard" else "dependency.line.rubber"
   }
 
-  override fun getConnectors(task: Task): Iterable<BarChartConnectorImpl>? {
-    val deps = task.dependencies.toArray()
+  override fun getConnectors(task: ITask): Iterable<BarChartConnectorImpl>? {
+    val deps = task.dependencies
     val result: MutableList<BarChartConnectorImpl> = Lists.newArrayListWithCapacity(deps.size)
     for (d in deps) {
       result.add(BarChartConnectorImpl(d, chartStartDate, chartEndDate))
@@ -108,7 +119,7 @@ internal class DependencySceneTaskApi(
     return result
   }
 
-  override fun getTasks(): List<Task> = taskList
+  override fun getTasks(): List<ITask> = taskList
 }
 
 /**
