@@ -25,9 +25,6 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
-import biz.ganttproject.core.chart.scene.BarChartActivity;
-import biz.ganttproject.core.chart.scene.BarChartConnector;
-import biz.ganttproject.core.chart.scene.gantt.Connector;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
@@ -37,7 +34,6 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -47,24 +43,20 @@ import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
-import net.sourceforge.ganttproject.chart.TaskActivityPart;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
+
+import static net.sourceforge.ganttproject.chart.gantt.GanttChartSceneBuilderInternalKt.splitOnBounds;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -311,68 +303,6 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     renderDependencies();
   }
 
-  private class BarChartConnectorImpl implements BarChartConnector<Task, BarChartConnectorImpl> {
-    private final Task myTask;
-    private final TaskDependency myDep;
-
-    public BarChartConnectorImpl(Task task, TaskDependency d) {
-      myTask = Preconditions.checkNotNull(task);
-      myDep = Preconditions.checkNotNull(d);
-    }
-
-    @Override
-    public BarChartActivity<Task> getStart() {
-      TaskActivity startActivity = (TaskActivity) myDep.getStart();
-      List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(startActivity));
-      assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
-        return splitActivities.get(splitActivities.size() - 1);
-      } else {
-        return splitActivities.get(0);
-      }
-    }
-
-    @Override
-    public BarChartActivity<Task> getEnd() {
-      TaskActivity endActivity = (TaskActivity) myDep.getEnd();
-      List<TaskActivity> splitActivities = splitOnViewportBounds(Collections.singletonList(endActivity));
-      assert (splitActivities.size() > 0) : String.format("It is expected that split activities length is >= 1 for dep=%s", myDep.toString());
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
-        return splitActivities.get(0);
-      } else {
-        return splitActivities.get(splitActivities.size() - 1);
-      }
-    }
-
-    @Override
-    public BarChartConnectorImpl getImpl() {
-      return this;
-    }
-
-    @Override
-    public Dimension getStartVector() {
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.finishstart) {
-        return Connector.Vector.EAST;
-      }
-      return Connector.Vector.WEST;
-    }
-
-    @Override
-    public Dimension getEndVector() {
-      TaskDependencyConstraint.Type type = myDep.getConstraint().getType();
-      if (type == TaskDependencyConstraint.Type.finishfinish || type == TaskDependencyConstraint.Type.startfinish) {
-        return Connector.Vector.EAST;
-      }
-      return Connector.Vector.WEST;
-    }
-
-    TaskDependency getDependency() {
-      return myDep;
-    }
-  }
 
   private void renderDependencies() {
     DependencySceneBuilder.ChartApi chartApi = new DependencySceneBuilder.ChartApi() {
@@ -381,45 +311,8 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
         return getRectangleHeight();
       }
     };
-    DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl> taskApi = new DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl>() {
-      @Override
-      public boolean isMilestone(Task task) {
-        return task.isMilestone();
-      }
-
-      @Override
-      public Dimension getUnitVector(BarChartActivity<Task> activity, BarChartConnectorImpl connector) {
-        if (activity.equals(connector.getStart())) {
-          return connector.getStartVector();
-        } else if (activity.equals(connector.getEnd())) {
-          return connector.getEndVector();
-        } else {
-          assert false : String.format("Should not be here. activity=%s, connector=%s", activity, connector);
-          return null;
-        }
-      }
-
-      @Override
-      public String getStyle(BarChartConnectorImpl dependency) {
-        return dependency.getDependency().getHardness() == TaskDependency.Hardness.STRONG
-            ? "dependency.line.hard" : "dependency.line.rubber";
-      }
-
-      @Override
-      public Iterable<BarChartConnectorImpl> getConnectors(Task task) {
-        TaskDependency[] deps = task.getDependencies().toArray();
-        List<BarChartConnectorImpl> result = Lists.newArrayListWithCapacity(deps.length);
-        for (TaskDependency d : deps) {
-          result.add(new BarChartConnectorImpl(task, d));
-        }
-        return result;
-      }
-
-      @Override
-      public List<Task> getTasks() {
-        return myModel.getVisibleTasks();
-      }
-    };
+    DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl> taskApi = new DependencySceneTaskApi(
+        myModel.getVisibleTasks(), getChartModel().getStartDate(), myChartApi.getEndDate());
     DependencySceneBuilder<Task, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
     dependencyRenderer.build();
@@ -451,7 +344,7 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     for (Task t : visibleTasks) {
       boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
-      activities = splitOnViewportBounds(activities);
+      activities = splitOnBounds(activities, getChartModel().getStartDate(), myChartApi.getEndDate());
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
         if (p.getModelObject() != null) {
@@ -465,62 +358,6 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
           (int) getChartModel().getBounds().getWidth(), rowNum * getRowHeight());
       nextLine.setForegroundColor(Color.GRAY);
     }
-  }
-
-  /**
-   * Some parts of the renderer, e.g. progress bar rendering, don't like activities which cross
-   * the viewport borders. The reason is that we build shapes (specifically, rectangles) only for
-   * visible parts of activities. When activity crosses the viewport border, the invisible parts
-   * are no more than ~20px wide. However, progress bar needs to know pixel size of all shapes from
-   * the task beginning up to the point where progress bar should be terminated OR needs activities
-   * to be split exactly at the viewport border.
-   *
-   * @param activities
-   * @return
-   */
-  private List<TaskActivity> splitOnViewportBounds(List<TaskActivity> activities) {
-    return GanttChartSceneBuilder.splitOnBounds(activities, getChartModel().getStartDate(), myChartApi.getEndDate());
-  }
-  /**
-   * This method scans the list of activities and splits activities crossing the borders
-   * of the given frame into parts "before" and "after" the border date. Activities which
-   * do not cross frame borders are left as is, and the relative order of activities is preserved.
-   *
-   * Normally no more than two activities from the input list are partitioned.
-   *
-   * @return input activities with those crossing frame borders partitioned into left and right parts
-   */
-  static List<TaskActivity> splitOnBounds(List<TaskActivity> activities, Date frameStartDate, Date frameEndDate) {
-    Preconditions.checkArgument(frameEndDate.compareTo(frameStartDate) >= 0,
-        String.format("Invalid frame: start=%s end=%s", frameStartDate, frameEndDate));
-    List<TaskActivity> result = Lists.newArrayList();
-    Deque<TaskActivity> queue = new LinkedList<>(activities);
-    while (!queue.isEmpty()) {
-      TaskActivity head = queue.pollFirst();
-      if (head.getStart().compareTo(frameStartDate) < 0
-          && head.getEnd().compareTo(frameStartDate) > 0) {
-
-        // Okay, this activity crosses frame start. Lets add its left part to the result
-        // and push back its right part
-        TaskActivity beforeViewport = new TaskActivityPart(head, head.getStart(), frameStartDate);
-        TaskActivity remaining = new TaskActivityPart(head, frameStartDate, head.getEnd());
-        result.add(beforeViewport);
-        queue.addFirst(remaining);
-        continue;
-      }
-      if (head.getStart().compareTo(frameEndDate) < 0
-          && head.getEnd().compareTo(frameEndDate) > 0) {
-        // This activity crosses frame end date. Again, lets add its left part to the result
-        // and push back the remainder.
-        TaskActivity insideViewport = new TaskActivityPart(head, head.getStart(), frameEndDate);
-        TaskActivity remaining = new TaskActivityPart(head, frameEndDate, head.getEnd());
-        result.add(insideViewport);
-        queue.addFirst(remaining);
-        continue;
-      }
-      result.add(head);
-    }
-    return result;
   }
 
   private int getRowHeight() {
@@ -646,7 +483,7 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     return myLabelOptions;
   }
 
-  int calculateRowHeight() {
+  public int calculateRowHeight() {
     int rowHeight = myLabelsRenderer.calculateRowHeight();
     if (myModel.getBaseline() != null) {
       rowHeight = rowHeight + 8;
@@ -671,7 +508,7 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
   public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
     List<Rectangle> result = new ArrayList<Rectangle>();
     List<TaskActivity> originalActivities = t.getActivities();
-    List<TaskActivity> splitOnBounds = GanttChartSceneBuilder.splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
+    List<TaskActivity> splitOnBounds = splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
     for (TaskActivity activity : splitOnBounds) {
       assert activity != null : "Got null activity in task="+t;
       Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);

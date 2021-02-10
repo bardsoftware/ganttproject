@@ -8,12 +8,12 @@ package net.sourceforge.ganttproject.chart;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSceneBuilder;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
@@ -23,7 +23,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.util.Arrays;
@@ -38,7 +37,7 @@ public class ChartModelImpl extends ChartModelBase {
 
   private List<Task> myVisibleTasks;
 
-  private final TaskRendererImpl2 myTaskRendererImpl;
+  private final GanttChartSceneBuilder myTaskRendererImpl;
 
   private TaskManager taskManager;
 
@@ -57,7 +56,7 @@ public class ChartModelImpl extends ChartModelBase {
   public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     super(taskManager, timeUnitStack, projectConfig);
     this.taskManager = taskManager;
-    myTaskRendererImpl = new TaskRendererImpl2(this);
+    myTaskRendererImpl = new GanttChartSceneBuilder(this);
     getRenderers().add(myTaskRendererImpl);
 
     myTaskDefaultColorOption = taskManager.getTaskDefaultColorOption();
