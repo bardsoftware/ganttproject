@@ -28,7 +28,6 @@ import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
-import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -37,6 +36,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
@@ -50,16 +50,12 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskProperties;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -320,68 +316,8 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
         return getRectangleHeight();
       }
     };
-    var taskApi = new DependencySceneTaskApi(
-        myModel.getVisibleTasks().stream().map((task) -> new ITask() {
-          @Override
-          public int getRowId() {
-            return task.getTaskID();
-          }
-
-          @Override
-          public int hashCode() {
-            return task.hashCode();
-          }
-
-          @Override
-          public boolean equals(Object obj) {
-            if (obj == this) {
-              return true;
-            }
-            if (obj instanceof Task) {
-              return task.equals(obj);
-            } else {
-              return false;
-            }
-          }
-
-          ITask getITask() { return this; }
-          @NotNull
-          @Override
-          public List<IDependency> getDependencies() {
-            return Arrays.stream(task.getDependencies().toArray()).map((dep) -> new IDependency() {
-              @NotNull
-              @Override
-              public ITaskActivity getStart() {
-                var startActivity = dep.getStart();
-                return new TaskActivityPart(getITask(), startActivity.getStart(), startActivity.getEnd(), startActivity.getDuration());
-              }
-
-              @NotNull
-              @Override
-              public ITaskActivity getEnd() {
-                var endActivity = dep.getEnd();
-                return new TaskActivityPart(getITask(), endActivity.getStart(), endActivity.getEnd(), endActivity.getDuration());
-              }
-
-              @NotNull
-              @Override
-              public ConstraintType getConstraintType() {
-                return dep.getConstraint().getType();
-              }
-
-              @NotNull
-              @Override
-              public TaskDependency.Hardness getHardness() {
-                return dep.getHardness();
-              }
-            }).collect(Collectors.toList());
-          }
-
-          @Override
-          public boolean isMilestone() {
-            return task.isMilestone();
-          }
-        }).collect(Collectors.toList()), mySplitter);
+    var id2itask = DependencySceneApiAdapterKt.tasks2itasks(myModel.getVisibleTasks());
+    var taskApi = new DependencySceneTaskApi(ImmutableList.copyOf(id2itask.values()), mySplitter);
     DependencySceneBuilder<ITask, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
     dependencyRenderer.build();

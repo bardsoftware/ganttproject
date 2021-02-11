@@ -33,7 +33,7 @@ internal data class TaskActivityPart<T : IdentifiableRow>(
       return true
     }
     return if (obj is BarChartActivity<*>) {
-      obj.owner.rowId == _owner.rowId
+      obj.owner.rowId == _owner.rowId && obj.start == this._start
     } else false
   }
 
