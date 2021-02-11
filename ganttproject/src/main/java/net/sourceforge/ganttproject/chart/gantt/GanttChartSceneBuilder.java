@@ -28,6 +28,7 @@ import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
+import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -49,14 +50,16 @@ import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import static net.sourceforge.ganttproject.chart.gantt.DependencySceneApiImplKt.splitOnBounds;
+import java.util.stream.Collectors;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -152,12 +155,18 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
   private final TaskActivitySceneBuilder<Task, TaskActivity> myBaselineActivityRenderer;
 
   private final Canvas myLabelsLayer;
-
   private TaskActivityChartApi myChartApi;
+  private TaskActivitySplitter mySplitter;
 
   public GanttChartSceneBuilder(ChartModelImpl model) {
     super(model);
     this.myModel = model;
+    this.mySplitter = new TaskActivitySplitter<ITask>(
+        () -> myModel.getStartDate(),
+        () -> myChartApi.getEndDate(),
+        (TimeUnit timeUnit, Date startDate, Date endDate) -> myModel.getTaskManager().createLength(timeUnit, startDate, endDate)
+    );
+
     getPrimitiveContainer().setOffset(0, model.getChartUIConfiguration().getHeaderHeight());
     getPrimitiveContainer().newLayer();
     getPrimitiveContainer().newLayer();
@@ -311,9 +320,69 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
         return getRectangleHeight();
       }
     };
-    DependencySceneBuilder.TaskApi<Task, BarChartConnectorImpl> taskApi = new DependencySceneTaskApi(
-        myModel.getVisibleTasks(), getChartModel().getStartDate(), myChartApi.getEndDate());
-    DependencySceneBuilder<Task, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
+    var taskApi = new DependencySceneTaskApi(
+        myModel.getVisibleTasks().stream().map((task) -> new ITask() {
+          @Override
+          public int getRowId() {
+            return task.getTaskID();
+          }
+
+          @Override
+          public int hashCode() {
+            return task.hashCode();
+          }
+
+          @Override
+          public boolean equals(Object obj) {
+            if (obj == this) {
+              return true;
+            }
+            if (obj instanceof Task) {
+              return task.equals(obj);
+            } else {
+              return false;
+            }
+          }
+
+          ITask getITask() { return this; }
+          @NotNull
+          @Override
+          public List<IDependency> getDependencies() {
+            return Arrays.stream(task.getDependencies().toArray()).map((dep) -> new IDependency() {
+              @NotNull
+              @Override
+              public ITaskActivity getStart() {
+                var startActivity = dep.getStart();
+                return new TaskActivityPart(getITask(), startActivity.getStart(), startActivity.getEnd(), startActivity.getDuration());
+              }
+
+              @NotNull
+              @Override
+              public ITaskActivity getEnd() {
+                var endActivity = dep.getEnd();
+                return new TaskActivityPart(getITask(), endActivity.getStart(), endActivity.getEnd(), endActivity.getDuration());
+              }
+
+              @NotNull
+              @Override
+              public ConstraintType getConstraintType() {
+                return dep.getConstraint().getType();
+              }
+
+              @NotNull
+              @Override
+              public TaskDependency.Hardness getHardness() {
+                return dep.getHardness();
+              }
+            }).collect(Collectors.toList());
+          }
+
+          @Override
+          public boolean isMilestone() {
+            return task.isMilestone();
+          }
+        }).collect(Collectors.toList()), mySplitter);
+    DependencySceneBuilder<ITask, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
     dependencyRenderer.build();
   }
@@ -344,7 +413,7 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     for (Task t : visibleTasks) {
       boundPolygons.clear();
       List<TaskActivity> activities = t.getActivities();
-      activities = splitOnBounds(activities, getChartModel().getStartDate(), myChartApi.getEndDate());
+      activities = mySplitter.split(activities);
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
         if (p.getModelObject() != null) {
@@ -505,18 +574,23 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
   }
 
-  public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
-    List<Rectangle> result = new ArrayList<Rectangle>();
-    List<TaskActivity> originalActivities = t.getActivities();
-    List<TaskActivity> splitOnBounds = splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
-    for (TaskActivity activity : splitOnBounds) {
-      assert activity != null : "Got null activity in task="+t;
-      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
-      assert graphicPrimitive != null : "Got null for activity="+activity;
-      assert graphicPrimitive instanceof Rectangle;
-      result.add((Rectangle) graphicPrimitive);
-    }
-    return result;
-
-  }
+//  public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
+//    List<Rectangle> result = new ArrayList<Rectangle>();
+//    List<TaskActivity> originalActivities = t.getActivities();
+//    var splitter = new TaskActivitySplitter(
+//        () -> chartModel.getStartDate(),
+//        () -> chartModel.getEndDate(),
+//        (timeUnit, startDate, endDate) -> t.getManager().createLength(timeUnit, startDate, endDate)
+//    );
+//    List<TaskActivity> splitOnBounds = splitter.split(originalActivities);
+//    for (TaskActivity activity : splitOnBounds) {
+//      assert activity != null : "Got null activity in task="+t;
+//      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
+//      assert graphicPrimitive != null : "Got null for activity="+activity;
+//      assert graphicPrimitive instanceof Rectangle;
+//      result.add((Rectangle) graphicPrimitive);
+//    }
+//    return result;
+//
+//  }
 }

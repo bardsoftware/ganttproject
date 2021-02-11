@@ -2,38 +2,67 @@ package net.sourceforge.ganttproject.chart.gantt
 
 import biz.ganttproject.core.chart.scene.BarChartActivity
 import biz.ganttproject.core.chart.scene.BarChartConnector
+import biz.ganttproject.core.chart.scene.IdentifiableRow
 import biz.ganttproject.core.chart.scene.gantt.Connector
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder
-import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
-import net.sourceforge.ganttproject.chart.TaskActivityPart
-//import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskActivity
 import biz.ganttproject.core.model.task.ConstraintType
+import biz.ganttproject.core.time.TimeDuration
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import java.awt.Dimension
 import java.util.*
 
+internal interface ITaskActivity<T : IdentifiableRow> : BarChartActivity<T>
+
+internal data class TaskActivityPart<T : IdentifiableRow>(
+    val _owner: T,
+    val _start: Date,
+    val _end: Date,
+    val _duration: TimeDuration) : ITaskActivity<T>{
+  override fun getStart() = _start
+  override fun getEnd() = _end
+  override fun getDuration() = _duration
+  override fun getOwner() = _owner
+
+
+  override fun equals(obj: Any?): Boolean {
+    if (obj == null) {
+      return false;
+    }
+    if (obj === this) {
+      return true
+    }
+    return if (obj is BarChartActivity<*>) {
+      obj.owner.rowId == _owner.rowId
+    } else false
+  }
+
+  override fun hashCode(): Int {
+    return _start.hashCode()
+  }
+
+
+}
+
 internal interface IDependency {
-  val start: TaskActivity
-  val end: TaskActivity
+  val start: ITaskActivity<ITask>
+  val end: ITaskActivity<ITask>
   val constraintType: ConstraintType
   val hardness: TaskDependency.Hardness
 }
 
-internal interface ITask {
+internal interface ITask : IdentifiableRow {
   val dependencies: List<IDependency>
   val isMilestone: Boolean
 }
+
 internal class BarChartConnectorImpl(
     internal val dependency: IDependency,
-    private val chartStartDate: Date,
-    private val chartEndDate: Date
-    ) : BarChartConnector<ITask, BarChartConnectorImpl> {
+    private val splitter: ITaskActivitySplitter<ITask>) : BarChartConnector<ITask, BarChartConnectorImpl> {
 
   override fun getStart(): BarChartActivity<ITask> {
-    val startActivity = dependency.start as TaskActivity
-    val splitActivities: List<TaskActivity> = splitOnBounds(listOf(startActivity), chartStartDate, chartEndDate)
+    val startActivity = dependency.start
+    val splitActivities = splitter.split(listOf(startActivity))
     assert(splitActivities.size > 0) {
       String.format(
         "It is expected that split activities length is >= 1 for dep=%s",
@@ -49,8 +78,8 @@ internal class BarChartConnectorImpl(
   }
 
   override fun getEnd(): BarChartActivity<ITask> {
-    val endActivity = dependency.end as TaskActivity
-    val splitActivities: List<TaskActivity> = splitOnBounds(listOf(endActivity), chartStartDate, chartEndDate)
+    val endActivity = dependency.end
+    val splitActivities = splitter.split(listOf(endActivity))
     assert(splitActivities.size > 0) {
       String.format(
         "It is expected that split activities length is >= 1 for dep=%s",
@@ -84,10 +113,13 @@ internal class BarChartConnectorImpl(
   }
 }
 
+internal interface ITaskActivitySplitter<T : IdentifiableRow> {
+  fun split(activities: List<BarChartActivity<T>>): List<BarChartActivity<T>>
+}
+
 internal class DependencySceneTaskApi(
   private val taskList: List<ITask>,
-  private val chartStartDate: Date,
-  private val chartEndDate: Date) : DependencySceneBuilder.TaskApi<ITask, BarChartConnectorImpl> {
+  private val splitter: ITaskActivitySplitter<ITask>) : DependencySceneBuilder.TaskApi<ITask, BarChartConnectorImpl> {
   override fun isMilestone(task: ITask): Boolean {
     return task.isMilestone
   }
@@ -114,7 +146,7 @@ internal class DependencySceneTaskApi(
     val deps = task.dependencies
     val result: MutableList<BarChartConnectorImpl> = Lists.newArrayListWithCapacity(deps.size)
     for (d in deps) {
-      result.add(BarChartConnectorImpl(d, chartStartDate, chartEndDate))
+      result.add(BarChartConnectorImpl(d, splitter))
     }
     return result
   }
@@ -122,61 +154,4 @@ internal class DependencySceneTaskApi(
   override fun getTasks(): List<ITask> = taskList
 }
 
-/**
- * Some parts of the renderer, e.g. progress bar rendering, don't like activities which cross
- * the viewport borders. The reason is that we build shapes (specifically, rectangles) only for
- * visible parts of activities. When activity crosses the viewport border, the invisible parts
- * are no more than ~20px wide. However, progress bar needs to know pixel size of all shapes from
- * the task beginning up to the point where progress bar should be terminated OR needs activities
- * to be split exactly at the viewport border.
- *
- * @param activities
- * @return
- */
-
-/**
- * This method scans the list of activities and splits activities crossing the borders
- * of the given frame into parts "before" and "after" the border date. Activities which
- * do not cross frame borders are left as is, and the relative order of activities is preserved.
- *
- * Normally no more than two activities from the input list are partitioned.
- *
- * @return input activities with those crossing frame borders partitioned into left and right parts
- */
-fun splitOnBounds(activities: List<TaskActivity>, frameStartDate: Date, frameEndDate: Date): List<TaskActivity> {
-  Preconditions.checkArgument(
-    frameEndDate.compareTo(frameStartDate) >= 0,
-    String.format("Invalid frame: start=%s end=%s", frameStartDate, frameEndDate)
-  )
-  val result: MutableList<TaskActivity> = Lists.newArrayList()
-  val queue: Deque<TaskActivity> = LinkedList(activities)
-  while (!queue.isEmpty()) {
-    val head = queue.pollFirst()
-    if (head.start.compareTo(frameStartDate) < 0
-      && head.end.compareTo(frameStartDate) > 0
-    ) {
-
-      // Okay, this activity crosses frame start. Lets add its left part to the result
-      // and push back its right part
-      val beforeViewport: TaskActivity = TaskActivityPart(head, head.start, frameStartDate)
-      val remaining: TaskActivity = TaskActivityPart(head, frameStartDate, head.end)
-      result.add(beforeViewport)
-      queue.addFirst(remaining)
-      continue
-    }
-    if (head.start.compareTo(frameEndDate) < 0
-      && head.end.compareTo(frameEndDate) > 0
-    ) {
-      // This activity crosses frame end date. Again, lets add its left part to the result
-      // and push back the remainder.
-      val insideViewport: TaskActivity = TaskActivityPart(head, head.start, frameEndDate)
-      val remaining: TaskActivity = TaskActivityPart(head, frameEndDate, head.end)
-      result.add(insideViewport)
-      queue.addFirst(remaining)
-      continue
-    }
-    result.add(head)
-  }
-  return result
-}
 

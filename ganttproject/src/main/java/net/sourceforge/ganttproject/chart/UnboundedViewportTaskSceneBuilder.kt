@@ -23,6 +23,7 @@ import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.chart.scene.BarChartActivity
 import biz.ganttproject.core.chart.scene.BarChartConnector
+import biz.ganttproject.core.chart.scene.IdentifiableRow
 import biz.ganttproject.core.chart.scene.gantt.Connector
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
@@ -71,7 +72,7 @@ class UnboundedViewportTaskSceneBuilder(
     dependencyRenderer.build()
   }
 
-  abstract class Task {
+  abstract class Task : IdentifiableRow {
     abstract val start: Date
     abstract val end: Date
     abstract val isMilestone: Boolean

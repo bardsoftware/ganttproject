@@ -3,7 +3,7 @@ Copyright 2004-2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -18,23 +18,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.scene.gantt;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.EnumerationOption;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is responsible for rendering text labels on the sides of task bars.
- * 
+ *
  * @author dbarashev (Dmitry Barashev)
  */
-public class TaskLabelSceneBuilder<T> {
+public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   public static final String ID_TASK_DATES = "taskDates";
 
   public static final String ID_TASK_NAME = "name";
@@ -116,7 +117,7 @@ public class TaskLabelSceneBuilder<T> {
       createLeftSideText(firstRectangle);
     }
   }
-  
+
   private void createRightSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = "";
