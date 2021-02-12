@@ -20,13 +20,11 @@ package biz.ganttproject.app
 
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
+import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -153,7 +151,22 @@ class FXToolbarBuilder {
 
   fun addSearchBox(searchUi: FXSearchUi) {
     visitors.add { toolbar ->
-      toolbar.toolbar.items.add(searchUi.node)
+      val grid = GridPane()
+      grid.columnConstraints.addAll(
+        ColumnConstraints().apply {
+          percentWidth = 25.0
+          hgrow = Priority.SOMETIMES
+          minWidth = 20.0
+        },
+        ColumnConstraints().apply {
+          percentWidth = 75.0
+          hgrow = Priority.SOMETIMES
+          minWidth = 100.0
+        })
+      GridPane.setValignment(searchUi.node, VPos.CENTER)
+      HBox.setHgrow(grid, Priority.ALWAYS)
+      grid.add(searchUi.node, 1, 0)
+      toolbar.toolbar.items.addAll(grid)
       searchUi.swingToolbar = { toolbar.component }
     }
   }

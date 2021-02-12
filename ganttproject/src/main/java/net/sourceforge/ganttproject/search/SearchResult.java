@@ -56,7 +56,7 @@ public class SearchResult<SearchObjectType> {
 
   String getQueryMatch() { return myQueryMatch; }
 
-  String getLabel() {
+  public String getLabel() {
     return myLabel;
   }
 
@@ -71,7 +71,7 @@ public class SearchResult<SearchObjectType> {
     return myLabel;
   }
 
-  SearchService<?, SearchObjectType> getSearchService() {
+  public SearchService<?, SearchObjectType> getSearchService() {
     return mySearchService;
   }
 }

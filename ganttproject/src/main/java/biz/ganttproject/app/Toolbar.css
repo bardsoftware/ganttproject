@@ -64,6 +64,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-fill: derive(-gp-medium-gray, -15%);
 }
 
+.toolbar-main GridPane {
+    -fx-alignment: center;
+}
+
 .toolbar-main Separator {
     -fx-min-width: 2em;
     -fx-border-style: none;
