@@ -22,9 +22,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.render.AlphaRenderingOption;
-import biz.ganttproject.core.chart.render.ShapeConstants;
-import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
@@ -35,7 +33,6 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -43,13 +40,9 @@ import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
-import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivitiesAlgorithm;
-import net.sourceforge.ganttproject.task.TaskActivity;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskImpl;
-import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.*;
+
+import static net.sourceforge.ganttproject.chart.gantt.TaskActivitySceneApiAdapterKt.mapTaskSceneTask2Task;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -66,92 +59,15 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
 
   private GPOptionGroup myLabelOptions;
 
-  private final TaskLabelSceneBuilder<Task> myLabelsRenderer;
+  private final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
-  private TaskActivitySceneBuilder.TaskApi<Task, TaskActivity> myTaskApi = new TaskActivitySceneBuilder.TaskApi<Task, TaskActivity>() {
-    @Override
-    public boolean isFirst(TaskActivity activity) {
-      return activity.isFirst();
-    }
-    @Override
-    public boolean isLast(TaskActivity activity) {
-      return activity.isLast();
-    }
-    @Override
-    public boolean isVoid(TaskActivity activity) {
-      return activity.getIntensity() == 0f;
-    }
-    @Override
-    public boolean isCriticalTask(Task task) {
-      return myModel.getChartUIConfiguration().isCriticalPathOn() && task.isCritical();
-    }
-    @Override
-    public boolean isProjectTask(Task task) {
-      return task.isProjectTask();
-    }
-    @Override
-    public boolean isMilestone(Task task) {
-      return ((TaskImpl)task).isLegacyMilestone();
-    }
-    @Override
-    public boolean hasNestedTasks(Task task) {
-      return getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(task);
-    }
-    @Override
-    public Color getColor(Task task) {
-      return task.getColor();
-    }
-    @Override
-    public ShapePaint getShapePaint(Task task) {
-      if (task.getShape() == null) {
-        return ShapeConstants.TRANSPARENT;
-      }
-      return task.getShape();
-    }
-    @Override
-    public boolean hasNotes(Task task) {
-      return !Strings.isNullOrEmpty(task.getNotes());
-    }
-  };
+  private TaskActivitySceneBuilder.TaskApi<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskApi = new TaskActivitySceneTaskApi();
 
-  class TaskActivityChartApi implements TaskActivitySceneBuilder.ChartApi {
-    TaskActivityChartApi() {
-    }
-    @Override
-    public Date getChartStartDate() {
-      return myModel.getOffsetAnchorDate();
-    }
-    @Override
-    public Date getEndDate() {
-      return getChartModel().getEndDate();
-    }
-    @Override
-    public OffsetList getBottomUnitOffsets() {
-      return getChartModel().getBottomUnitOffsets();
-    }
-    @Override
-    public int getRowHeight() {
-      return calculateRowHeight();
-    }
-    @Override
-    public int getBarHeight() {
-      return getRectangleHeight();
-    }
-    @Override
-    public int getViewportWidth() {
-      return myModel.getBounds().width;
-    }
-    @Override
-    public AlphaRenderingOption getWeekendOpacityOption() {
-      return myModel.getChartUIConfiguration().getWeekendAlphaValue();
-    }
-  }
-
-  private final TaskActivitySceneBuilder<Task, TaskActivity> myTaskActivityRenderer;
-  private final TaskActivitySceneBuilder<Task, TaskActivity> myBaselineActivityRenderer;
+  private final TaskActivitySceneBuilder<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskActivityRenderer;
+  private final TaskActivitySceneBuilder<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myBaselineActivityRenderer;
 
   private final Canvas myLabelsLayer;
-  private TaskActivityChartApi myChartApi;
+  private TaskActivitySceneBuilder.ChartApi myChartApi;
   private TaskActivitySplitter mySplitter;
 
   public GanttChartSceneBuilder(ChartModelImpl model) {
@@ -175,14 +91,7 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
     final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
 
-    myLabelsRenderer = new TaskLabelSceneBuilder<Task>(new TaskLabelSceneBuilder.TaskApi<Task>() {
-      TaskProperties myLabelFormatter = new TaskProperties(getChartModel().getTimeUnitStack());
-
-      @Override
-      public Object getProperty(Task task, String propertyID) {
-        return myLabelFormatter.getProperty(task, propertyID);
-      }
-    }, new TaskLabelSceneBuilder.InputApi() {
+    myLabelsRenderer = new TaskLabelSceneBuilder<>(new TaskLabelSceneTaskApi(), new TaskLabelSceneBuilder.InputApi() {
       @Override
       public EnumerationOption getTopLabelOption() {
         return topLabelOption;
@@ -212,80 +121,25 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
         new GPOption[] {topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption},
         model.getOptionEventDispatcher());
 
-    myChartApi = new TaskActivityChartApi();
+    myChartApi = new TaskActivitySceneChartApi(myModel) {
+      @Override
+      public int getFontBasedRowHeight() {
+        return myLabelsRenderer.calculateRowHeight();
+      }
+      @Override
+      public int getBarHeight() {
+        return myLabelsRenderer.getFontHeight();
+      }
+    };
     myTaskActivityRenderer = createTaskActivitySceneBuilder(getPrimitiveContainer(), myChartApi,
         new TaskActivitySceneBuilder.Style(0));
     myBaselineActivityRenderer = createTaskActivitySceneBuilder(
-        getPrimitiveContainer().getLayer(2), new TaskActivityChartApi(),
+        getPrimitiveContainer().getLayer(2), myChartApi,
         new TaskActivitySceneBuilder.Style(getRectangleHeight()));
   }
 
   private List<Task> getVisibleTasks() {
     return ((ChartModelImpl) getChartModel()).getVisibleTasks();
-  }
-
-  /**
-    This class splits all tasks into 4 groups. One group is pure virtual: it contains
-    tasks which are hidden under some collapsed parent and hence are just filtered out.
-    The remaining groups are: tasks which are shown in the chart viewport, tasks above the viewport
-    and tasks below the viewport. We need tasks outside the viewport because we want to show
-    dependency lines which may connect them with tasks inside the viewport.
-   */
-  static class VerticalPartitioning {
-    final List<Task> aboveViewport = Lists.newArrayList();
-    final List<Task> belowViewport = Lists.newArrayList();
-    final List<Task> insideViewport;
-
-    /**
-     * @param tasksInsideViewport partition with tasks inside viewport, with hidden tasks already filtered.
-     *        Tasks must be ordered in their document order.
-     */
-    VerticalPartitioning(List<Task> tasksInsideViewport) {
-      insideViewport = tasksInsideViewport;
-    }
-
-    /**
-     * Builds the remaining partitions.
-     *
-     * In this method we iterate through *all* the tasks in their document order. If we find some
-     * collapsed task then we filter out its children. Until we reach the first task in the vieport
-     * partition,  we're above the viewport, then we skip the viewport partition and proceed to
-     * below viewport
-     */
-    void build(TaskContainmentHierarchyFacade containment) {
-      List<Task> tasksInDocumentOrder = containment.getTasksInDocumentOrder();
-      final Task firstVisible = insideViewport.isEmpty() ? null : insideViewport.get(0);
-      final Task lastVisible = insideViewport.isEmpty() ? null : insideViewport.get(insideViewport.size() - 1);
-      List<Task> addTo = aboveViewport;
-
-      Task collapsedRoot = null;
-      for (Task nextTask : tasksInDocumentOrder) {
-        if (addTo == null) {
-          if (nextTask.equals(lastVisible)) {
-            addTo = belowViewport;
-          }
-          continue;
-        }
-        if (nextTask.equals(firstVisible)) {
-          addTo = null;
-          continue;
-        }
-
-        if (collapsedRoot != null) {
-          if (containment.areUnrelated(nextTask, collapsedRoot)) {
-            collapsedRoot = null;
-          } else {
-            continue;
-          }
-        }
-        addTo.add(nextTask);
-
-        if (!nextTask.getExpand()) {
-          assert collapsedRoot == null : "All tasks processed prior to this one must be expanded";
-          collapsedRoot = nextTask;
-        }
-      }
-    }
   }
 
   @Override
@@ -299,12 +153,19 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     getPrimitiveContainer().getLayer(2).setOffset(0,
         myModel.getChartUIConfiguration().getHeaderHeight() - myModel.getVerticalOffset());
 
-    VerticalPartitioning vp = new VerticalPartitioning(getVisibleTasks());
-    vp.build(getChartModel().getTaskManager().getTaskHierarchy());
+    TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();
+    var tasksMap = mapTaskSceneTask2Task(containment.getTasksInDocumentOrder(), myModel);
+    var visibleTasks = ImmutableList.copyOf(mapTaskSceneTask2Task(getVisibleTasks(), myModel).keySet());
+
+    VerticalPartitioning vp = new VerticalPartitioning(
+      visibleTasks,
+      (ITaskSceneTask t1, ITaskSceneTask t2) -> containment.areUnrelated(tasksMap.get(t1), tasksMap.get(t2))
+    );
+    vp.build(ImmutableList.copyOf(tasksMap.keySet()));
     OffsetList defaultUnitOffsets = getChartModel().getDefaultUnitOffsets();
 
-    renderVisibleTasks(getVisibleTasks(), defaultUnitOffsets);
-    renderTasksAboveAndBelowViewport(vp.aboveViewport, vp.belowViewport, defaultUnitOffsets);
+    renderVisibleTasks(visibleTasks, defaultUnitOffsets);
+    renderTasksAboveAndBelowViewport(vp.getAboveViewport(), vp.getBelowViewport(), defaultUnitOffsets);
     renderDependencies();
   }
 
@@ -323,17 +184,17 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     dependencyRenderer.build();
   }
 
-  private void renderTasksAboveAndBelowViewport(List<Task> tasksAboveViewport, List<Task> tasksBelowViewport,
+  private void renderTasksAboveAndBelowViewport(List<ITaskSceneTask> tasksAboveViewport, List<ITaskSceneTask> tasksBelowViewport,
       OffsetList defaultUnitOffsets) {
-    for (Task nextAbove : tasksAboveViewport) {
-      List<TaskActivity> activities = /*nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
+    for (ITaskSceneTask nextAbove : tasksAboveViewport) {
+      List<ITaskActivity<ITaskSceneTask>> activities = /*nextAbove.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
           nextAbove)) : */nextAbove.getActivities();
       for (Canvas.Shape s : renderActivities(-1, nextAbove, activities, defaultUnitOffsets, false)) {
         s.setVisible(false);
       }
     }
-    for (Task nextBelow : tasksBelowViewport) {
-      List<TaskActivity> activities = /*nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
+    for (ITaskSceneTask nextBelow : tasksBelowViewport) {
+      List<ITaskActivity<ITaskSceneTask>> activities = /*nextBelow.isMilestone() ? Collections.<TaskActivity> singletonList(new MilestoneTaskFakeActivity(
           nextBelow)) : */nextBelow.getActivities();
       List<Polygon> rectangles = renderActivities(getVisibleTasks().size() + 1, nextBelow, activities,
           defaultUnitOffsets, false);
@@ -343,12 +204,12 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     }
   }
 
-  private void renderVisibleTasks(List<Task> visibleTasks, OffsetList defaultUnitOffsets) {
+  private void renderVisibleTasks(List<ITaskSceneTask> visibleTasks, OffsetList defaultUnitOffsets) {
     List<Polygon> boundPolygons = Lists.newArrayList();
     int rowNum = 0;
-    for (Task t : visibleTasks) {
+    for (ITaskSceneTask t : visibleTasks) {
       boundPolygons.clear();
-      List<TaskActivity> activities = t.getActivities();
+      List<ITaskActivity<ITaskSceneTask>> activities = t.getActivities();
       activities = mySplitter.split(activities);
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
@@ -369,12 +230,15 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     return calculateRowHeight();
   }
 
-  private void renderBaseline(Task t, int rowNum, OffsetList defaultUnitOffsets) {
-    TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(getCalendar());
+  private void renderBaseline(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
+    TaskActivitiesSceneAlgorithm alg = new TaskActivitiesSceneAlgorithm(
+      getCalendar(),
+      (Date s, Date e) -> myModel.getTaskManager().createLength(t.getDuration().getTimeUnit(), s, e)
+    );
     List<GanttPreviousStateTask> baseline = myModel.getBaseline();
     if (baseline != null) {
       for (GanttPreviousStateTask taskBaseline : baseline) {
-        if (taskBaseline.getId() == t.getTaskID()) {
+        if (taskBaseline.getId() == t.getRowId()) {
           Date startDate = taskBaseline.getStart().getTime();
           TimeDuration duration = getChartModel().getTaskManager().createLength(taskBaseline.getDuration());
           Date endDate = getCalendar().shiftDate(startDate, duration);
@@ -390,9 +254,11 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
           } else {
             styles.add("earlier");
           }
-          List<TaskActivity> baselineActivities = new ArrayList<TaskActivity>();
+          List<ITaskActivity<ITaskSceneTask>> baselineActivities = new ArrayList<ITaskActivity<ITaskSceneTask>>();
           if (t.isMilestone()) {
-            baselineActivities.add(new MilestoneTaskFakeActivity(t, startDate, endDate));
+            baselineActivities.add(
+              new TaskSceneMilestoneActivity(t, startDate, endDate, myModel.getTaskManager().createLength(1))
+            );
           } else {
             alg.recalculateActivities(t, baselineActivities, startDate, endDate);
           }
@@ -423,10 +289,10 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
       return !shape.hasStyle("task.ending");
     }
   };
-  private List<Polygon> renderActivities(final int rowNum, Task t, List<TaskActivity> activities,
+  private List<Polygon> renderActivities(final int rowNum, ITaskSceneTask t, List<ITaskActivity<ITaskSceneTask>> activities,
       OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
-    if (areVisible && !getChartModel().getTaskManager().getTaskHierarchy().hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
+    if (areVisible && !myTaskApi.hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
       renderProgressBar(Lists.newArrayList(Iterables.filter(rectangles, REMOVE_SUPERTASK_ENDINGS)));
     }
     if (areVisible && myTaskApi.hasNotes(t)) {
@@ -449,13 +315,13 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     }
     final Canvas container = getPrimitiveContainer().getLayer(0);
     final TimeUnit timeUnit = getChartModel().getTimeUnitStack().getDefaultTimeUnit();
-    final Task task = ((TaskActivity) rectangles.get(0).getModelObject()).getOwner();
+    final ITaskSceneTask task = ((ITaskActivity<ITaskSceneTask>) rectangles.get(0).getModelObject()).getOwner();
     float length = task.getDuration().getLength(timeUnit);
     float completed = task.getCompletionPercentage() * length / 100f;
     Polygon lastProgressRectangle = null;
 
     for (Polygon nextRectangle : rectangles) {
-      final TaskActivity nextActivity = (TaskActivity) nextRectangle.getModelObject();
+      final ITaskActivity<ITaskSceneTask> nextActivity = (ITaskActivity<ITaskSceneTask>) nextRectangle.getModelObject();
       final float nextLength = nextActivity.getDuration().getLength(timeUnit);
 
       final int nextProgressBarLength;
@@ -505,9 +371,9 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
     return myLabelsLayer;
   }
 
-  private TaskActivitySceneBuilder<Task, TaskActivity> createTaskActivitySceneBuilder(
+  private TaskActivitySceneBuilder<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> createTaskActivitySceneBuilder(
       Canvas canvas, TaskActivitySceneBuilder.ChartApi chartApi, TaskActivitySceneBuilder.Style style) {
-    return new TaskActivitySceneBuilder<Task, TaskActivity>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
+    return new TaskActivitySceneBuilder<>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
   }
 
 //  public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {

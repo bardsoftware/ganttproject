@@ -33,13 +33,13 @@ internal class TaskActivitySplitter<T : IdentifiableRow>(
     private val frameStartDate: () -> Date,
     private val frameEndDate: () -> Date,
     private val durationCalculator: (TimeUnit, Date, Date) -> TimeDuration) : ITaskActivitySplitter<T> {
-  override fun split(activities: List<BarChartActivity<T>>): List<BarChartActivity<T>> {
+  override fun split(activities: List<ITaskActivity<T>>): List<ITaskActivity<T>> {
     Preconditions.checkArgument(
       frameEndDate().compareTo(frameStartDate()) >= 0,
       String.format("Invalid frame: start=%s end=%s", frameStartDate(), frameEndDate())
     )
-    val result: MutableList<BarChartActivity<T>> = mutableListOf()
-    val queue: Deque<BarChartActivity<T>> = LinkedList(activities)
+    val result: MutableList<ITaskActivity<T>> = mutableListOf()
+    val queue: Deque<ITaskActivity<T>> = LinkedList(activities)
     while (!queue.isEmpty()) {
       val head = queue.pollFirst()
       if (head.start.compareTo(frameStartDate()) < 0
@@ -48,9 +48,9 @@ internal class TaskActivitySplitter<T : IdentifiableRow>(
 
         // Okay, this activity crosses frame start. Lets add its left part to the result
         // and push back its right part
-        val beforeViewport = TaskActivityPart(head.owner, head.start, frameStartDate(),
+        val beforeViewport = TaskActivityPart(head, head.start, frameStartDate(),
           durationCalculator(head.duration.timeUnit, head.start, frameStartDate()))
-        val remaining = TaskActivityPart(head.owner, frameStartDate(), head.end, durationCalculator(head.duration.timeUnit, frameStartDate(), head.end))
+        val remaining = TaskActivityPart(head, frameStartDate(), head.end, durationCalculator(head.duration.timeUnit, frameStartDate(), head.end))
         result.add(beforeViewport)
         queue.addFirst(remaining)
         continue
@@ -60,8 +60,8 @@ internal class TaskActivitySplitter<T : IdentifiableRow>(
       ) {
         // This activity crosses frame end date. Again, lets add its left part to the result
         // and push back the remainder.
-        val insideViewport = TaskActivityPart(head.owner, head.start, frameEndDate(), durationCalculator(head.duration.timeUnit, head.start, frameEndDate()))
-        val remaining = TaskActivityPart(head.owner, frameEndDate(), head.end, durationCalculator(head.duration.timeUnit, frameEndDate(), head.end))
+        val insideViewport = TaskActivityPart(head, head.start, frameEndDate(), durationCalculator(head.duration.timeUnit, head.start, frameEndDate()))
+        val remaining = TaskActivityPart(head, frameEndDate(), head.end, durationCalculator(head.duration.timeUnit, frameEndDate(), head.end))
         result.add(insideViewport)
         queue.addFirst(remaining)
         continue
@@ -69,7 +69,5 @@ internal class TaskActivitySplitter<T : IdentifiableRow>(
       result.add(head)
     }
     return result
-
   }
-
 }
