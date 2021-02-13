@@ -57,6 +57,9 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
     if (obj === this) {
       return true
     }
+    if (obj is ITaskSceneTaskImpl) {
+      return this.task.taskID == obj.task.taskID
+    }
     return if (obj is Task) {
       task == obj
     } else {
