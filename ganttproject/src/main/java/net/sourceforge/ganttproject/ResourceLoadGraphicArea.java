@@ -94,6 +94,11 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
   }
 
   @Override
+  public void focus() {
+    myTreeUi.getTreeComponent().requestFocus();
+  }
+
+  @Override
   protected ChartModelBase getChartModel() {
     return myChartModel;
   }

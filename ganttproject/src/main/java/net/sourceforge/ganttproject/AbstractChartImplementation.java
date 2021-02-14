@@ -407,6 +407,11 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
     mySelectionListeners.remove(listener);
   }
 
+  @Override
+  public void focus() {
+    myChartComponent.focus();
+  }
+
   private void fireSelectionChanged() {
     for (ChartSelectionListener nextListener : mySelectionListeners) {
       nextListener.selectionChanged();
