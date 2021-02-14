@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.search;
 
 public class SearchResult<SearchObjectType> {
+  public static SearchResult EMPTY = new SearchResult(-1, "", "", "", "", "", null, null);
   private final int myId;
   private final String mySecondaryLabel;
   private final String myTypeOfResult;
@@ -75,3 +76,4 @@ public class SearchResult<SearchObjectType> {
     return mySearchService;
   }
 }
+
