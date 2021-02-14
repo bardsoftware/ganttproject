@@ -123,8 +123,13 @@ public class GanttChartSceneBuilder extends ChartRendererBase {
 
     myChartApi = new TaskActivitySceneChartApi(myModel) {
       @Override
-      public int getFontBasedRowHeight() {
-        return myLabelsRenderer.calculateRowHeight();
+      public int getRowHeight() {
+        int rowHeight = myLabelsRenderer.calculateRowHeight();
+        if (myModel.getBaseline() != null) {
+          rowHeight = rowHeight + 8;
+        }
+        int appFontSize = myModel.getProjectConfig().getAppFontSize().get();
+        return Math.max(appFontSize, rowHeight);
       }
       @Override
       public int getBarHeight() {

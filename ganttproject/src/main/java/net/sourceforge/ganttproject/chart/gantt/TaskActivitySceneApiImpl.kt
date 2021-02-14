@@ -1,3 +1,21 @@
+/*
+Copyright 2020 Dmitry Kazakov, BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.chart.gantt
 
 import biz.ganttproject.core.chart.render.ShapeConstants
@@ -6,7 +24,6 @@ import biz.ganttproject.core.chart.scene.IdentifiableRow
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder
 import biz.ganttproject.core.time.*
-import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import com.google.common.base.Strings
 import java.awt.Color
 import java.util.*
@@ -31,8 +48,10 @@ internal interface ITaskSceneTask : IdentifiableRow {
 }
 
 internal class TaskActivityDataImpl<T : IdentifiableRow>(
-  override val isFirst: Boolean, override val isLast: Boolean, override val intensity: Float,
-  val _owner: T, val _start: Date, val _end: Date, val _duration: TimeDuration
+  override val isFirst: Boolean, override val isLast: Boolean,
+  override val intensity: Float, private val _owner: T,
+  private val _start: Date, private val _end: Date,
+  private val _duration: TimeDuration
 ) : ITaskActivity<T>() {
   override fun getStart() = _start
   override fun getEnd() = _end
@@ -41,7 +60,9 @@ internal class TaskActivityDataImpl<T : IdentifiableRow>(
 }
 
 internal class TaskSceneMilestoneActivity(
-  val task: ITaskSceneTask, val _start: Date, val _end: Date, val _duration: TimeDuration
+  val task: ITaskSceneTask,
+  private val _start: Date, private val _end: Date,
+  private val _duration: TimeDuration
 ) : TaskSceneTaskActivity() {
   override val isFirst = true
   override val isLast = true
@@ -54,7 +75,10 @@ internal class TaskSceneMilestoneActivity(
 }
 
 internal class TaskSceneTaskActivityImpl(
-  val task: ITaskSceneTask, val _start: Date, val _end: Date, val _duration: TimeDuration, override val intensity: Float
+  private val task: ITaskSceneTask,
+  private val _start: Date, private val _end: Date,
+  private val _duration: TimeDuration,
+  override val intensity: Float
 ) : TaskSceneTaskActivity() {
   constructor(task: ITaskSceneTask, _start: Date, _end: Date, _duration: TimeDuration) : this(task, _start, _end, _duration, 1f)
 

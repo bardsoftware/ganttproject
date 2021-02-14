@@ -1,3 +1,21 @@
+/*
+Copyright 2020 Dmitry Kazakov, BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.chart.gantt
 
 import biz.ganttproject.core.chart.grid.OffsetList
@@ -6,7 +24,6 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.core.time.TimeUnit
 import net.sourceforge.ganttproject.chart.ChartModel
 import net.sourceforge.ganttproject.chart.ChartModelImpl
 import net.sourceforge.ganttproject.task.Task
@@ -23,7 +40,7 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
   override val isCritical
     get() = model.chartUIConfiguration.isCriticalPathOn && task.isCritical
   override val isProjectTask
-    get() = model.chartUIConfiguration.isCriticalPathOn && task.isProjectTask
+    get() = task.isProjectTask
   override val hasNestedTasks
     get() = model.taskManager.taskHierarchy.hasNestedTasks(task)
   override val color: Color
@@ -38,7 +55,7 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
     get() = task.end
   override val activities: List<TaskSceneTaskActivity>
     get() = task.activities.map {
-      TaskActivityDataImpl(it.isFirst, it.isLast, it.intensity, ITaskSceneTaskImpl(it.owner, model), it.start, it.end, it.duration)
+      TaskActivityDataImpl(it.isFirst, it.isLast, it.intensity, this, it.start, it.end, it.duration)
     }
   override val expand
     get() = task.expand
@@ -81,17 +98,6 @@ internal abstract class TaskActivitySceneChartApi(
 
   override fun getBottomUnitOffsets(): OffsetList {
     return model.bottomUnitOffsets
-  }
-
-  abstract fun getFontBasedRowHeight(): Int
-
-  override fun getRowHeight(): Int {
-    var rowHeight = getFontBasedRowHeight()
-    if (model.baseline != null) {
-      rowHeight += 8
-    }
-    val appFontSize = model.projectConfig.appFontSize.get()
-    return max(appFontSize, rowHeight)
   }
 
   override fun getViewportWidth(): Int {
