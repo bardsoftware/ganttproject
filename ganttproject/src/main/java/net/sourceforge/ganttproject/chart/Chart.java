@@ -66,4 +66,5 @@ public interface Chart extends IAdaptable {
 
   public void removeSelectionListener(ChartSelectionListener listener);
 
+  void focus();
 }

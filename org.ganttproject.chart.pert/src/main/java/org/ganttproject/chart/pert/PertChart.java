@@ -134,4 +134,8 @@ public abstract class PertChart extends JPanel implements Chart {
   Font getBoldFont() {
     return myBoldFont;
   }
+
+  @Override
+  public void focus() {
+  }
 }

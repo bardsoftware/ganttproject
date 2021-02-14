@@ -21,6 +21,8 @@ package biz.ganttproject.app
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import de.jensd.fx.glyphs.materialicons.MaterialIcon
+import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
@@ -63,8 +65,16 @@ class FXSearchUi(
         icon.onMouseClicked = EventHandler { this.runSearch() }
       }
       it.onKeyPressed = EventHandler { evt ->
-        if (evt.code == KeyCode.ENTER) {
-          this.runSearch()
+        when (evt.code) {
+          KeyCode.ENTER -> this.runSearch()
+          KeyCode.KP_DOWN, KeyCode.DOWN -> {
+            listView.selectionModel.select(0)
+            listView.requestFocus()
+          }
+          KeyCode.ESCAPE -> {
+            uiFacade.activeChart.focus()
+          }
+          else -> {}
         }
       }
       it.promptText = searchAction.keyStroke.toString().replace("pressed", "+").capitalize()
@@ -73,28 +83,21 @@ class FXSearchUi(
 
   val node: Node get() = textField
   lateinit var swingToolbar: () -> JComponent
+  val results = FXCollections.observableArrayList<SearchResult<*>>()
+  val listView = ListView(results).also {
+    it.setCellFactory {
+      SearchCell()
+    }
+  }
 
   private fun runSearch() {
+    results.clear()
     val textFieldBounds = this.textField.run {
       localToScreen(boundsInLocal).let {
         Rectangle(it.minX.toInt(), it.minY.toInt(), it.width.toInt(), it.height.toInt())
       }
     }
-    val results = FXCollections.observableArrayList<SearchResult<*>>()
-    val listView = ListView(results).also {
-      it.setCellFactory {
-        SearchCell()
-      }
-    }
-    val scroll = ScrollPane(listView).also { scroll ->
-      scroll.minWidth = textField.width
-      scroll.isFitToWidth = true
-    }
-    val popOver = Popup().also {
-      it.anchorLocation = PopupWindow.AnchorLocation.CONTENT_TOP_RIGHT
-      it.content.add(scroll)
-      it.show(this.textField, textFieldBounds.maxX, textFieldBounds.minY + textFieldBounds.height)
-    }
+    val popOver = Popup()
     listView.onMouseClicked = EventHandler { evt ->
       if (evt.clickCount == 2) {
         onAction(listView)
@@ -110,6 +113,12 @@ class FXSearchUi(
         KeyCode.ESCAPE -> {
           popOver.hide()
         }
+        KeyCode.DOWN, KeyCode.KP_DOWN -> {
+          listView.requestFocus()
+          if (listView.selectionModel.selectedIndices.isEmpty()) {
+            listView.selectionModel.select(0)
+          }
+        }
         else -> {}
       }
     }
@@ -124,21 +133,41 @@ class FXSearchUi(
       for (result in resultChannel) {
         results.add(result)
       }
+      val scroll = ScrollPane(listView).also { scroll ->
+        scroll.minWidth = textField.width
+        scroll.isFitToWidth = true
+      }
+      if (results.isEmpty()) {
+        results.add(SearchResult.EMPTY)
+        scroll.maxHeight = 50.0
+        scroll.vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+      } else {
+        scroll.maxHeight = -1.0
+        listView.maxHeight = -1.0
+      }
+      popOver.also {
+        it.anchorLocation = PopupWindow.AnchorLocation.CONTENT_TOP_RIGHT
+        it.content.add(scroll)
+        it.show(textField, textFieldBounds.maxX, textFieldBounds.minY + textFieldBounds.height)
+        listView.requestFocus()
+      }
     }
+
   }
 
   private fun onAction(listView: ListView<SearchResult<*>>) {
     listView.selectionModel.selectedItem?.also {
-      val service: SearchService<SearchResult<*>, out Any> = it.searchService as SearchService<SearchResult<*>, out Any>
-      service.select(mutableListOf(it))
+      it.searchService?.let { service ->
+        (service as SearchService<SearchResult<*>, out Any>).select(mutableListOf(it))
+      }
     }
   }
 
   override fun requestFocus() {
     swingToolbar().requestFocus()
     Platform.runLater {
-
       textField.requestFocus()
+      textField.selectAll()
     }
   }
 }
@@ -175,6 +204,11 @@ class SearchCell : ListCell<SearchResult<*>>() {
 
   override fun updateItem(item: SearchResult<*>?, empty: Boolean) {
     whenNotEmpty(item, empty) {
+      if (it == SearchResult.EMPTY) {
+        graphic = MaterialIconView(MaterialIcon.CANCEL, "32")
+        text = i18n.formatText("noResults")
+        return@whenNotEmpty
+      }
       val label = it.label
       val searchTerm = it.queryMatch
       val boldedLabel = label.replace(searchTerm.toRegex(RegexOption.IGNORE_CASE), "**$0**")
@@ -186,7 +220,6 @@ class SearchCell : ListCell<SearchResult<*>>() {
         
         $line2
         """.trimIndent()
-      println(resultMd)
       graphic = MDFXNode(resultMd).also {
         stylesheets.clear()
         stylesheets.add("/biz/ganttproject/app/mdfx-default.css")
@@ -194,3 +227,5 @@ class SearchCell : ListCell<SearchResult<*>>() {
     }
   }
 }
+
+private val i18n = RootLocalizer.createWithRootKey("search")
