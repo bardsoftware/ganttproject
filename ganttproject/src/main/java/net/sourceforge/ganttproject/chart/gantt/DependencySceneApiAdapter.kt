@@ -20,6 +20,7 @@
 package net.sourceforge.ganttproject.chart.gantt
 
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskActivity
 
 internal class ITaskImpl(
     private val task: Task,
@@ -30,22 +31,20 @@ internal class ITaskImpl(
         object : IDependency {
           override val start: ITaskActivity<ITask>
             get() {
-              val startActivity = dep.start
-              return TaskActivityPart(
-                mapping(startActivity.owner)!!,
-                startActivity.start,
-                startActivity.end,
-                startActivity.duration
+              // this cast used to be in TaskRendererImpl2::BarChartConnectorImpl::getStart
+              val startActivity = dep.start as TaskActivity
+              return TaskActivityDataImpl(
+                startActivity.isFirst, startActivity.isLast, startActivity.intensity, mapping(startActivity.owner)!!,
+                startActivity.start, startActivity.end, startActivity.duration
               )
             }
           override val end: ITaskActivity<ITask>
             get() {
-              val endActivity = dep.end
-              return TaskActivityPart(
-                mapping(endActivity.owner)!!,
-                endActivity.start,
-                endActivity.end,
-                endActivity.duration
+              // this cast used to be in TaskRendererImpl2::BarChartConnectorImpl::getEnd
+              val endActivity = dep.end as TaskActivity
+              return TaskActivityDataImpl(
+                endActivity.isFirst, endActivity.isLast, endActivity.intensity, mapping(endActivity.owner)!!,
+                endActivity.start, endActivity.end, endActivity.duration
               )
             }
           override val constraintType = dep.constraint.type

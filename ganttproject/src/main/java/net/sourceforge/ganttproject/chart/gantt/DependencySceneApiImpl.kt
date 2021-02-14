@@ -12,18 +12,10 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import java.awt.Dimension
 import java.util.*
 
-internal interface ITaskActivity<T : IdentifiableRow> : BarChartActivity<T>
-
-internal data class TaskActivityPart<T : IdentifiableRow>(
-    val _owner: T,
-    val _start: Date,
-    val _end: Date,
-    val _duration: TimeDuration) : ITaskActivity<T>{
-  override fun getStart() = _start
-  override fun getEnd() = _end
-  override fun getDuration() = _duration
-  override fun getOwner() = _owner
-
+internal abstract class ITaskActivity<T : IdentifiableRow> : BarChartActivity<T> {
+  abstract val isFirst: Boolean
+  abstract val isLast: Boolean
+  abstract val intensity: Float
 
   override fun equals(obj: Any?): Boolean {
     if (obj == null) {
@@ -33,15 +25,31 @@ internal data class TaskActivityPart<T : IdentifiableRow>(
       return true
     }
     return if (obj is BarChartActivity<*>) {
-      obj.owner.rowId == _owner.rowId && obj.start == this._start
+      obj.owner.rowId == owner.rowId && obj.start == this.start
     } else false
   }
 
   override fun hashCode(): Int {
-    return _start.hashCode()
+    return start.hashCode()
   }
+}
 
+internal class TaskActivityPart<T : IdentifiableRow>(
+    val original: ITaskActivity<T>,
+    val _start: Date,
+    val _end: Date,
+    val _duration: TimeDuration) : ITaskActivity<T>(){
+  override fun getStart() = _start
+  override fun getEnd() = _end
+  override fun getDuration() = _duration
+  override fun getOwner() = original.owner
 
+  override val isFirst: Boolean
+    get() = original.isFirst && _start == original.start
+  override val isLast: Boolean
+    get() = original.isLast && _end == original.end
+  override val intensity: Float
+    get() = original.intensity
 }
 
 internal interface IDependency {
@@ -114,7 +122,7 @@ internal class BarChartConnectorImpl(
 }
 
 internal interface ITaskActivitySplitter<T : IdentifiableRow> {
-  fun split(activities: List<BarChartActivity<T>>): List<BarChartActivity<T>>
+  fun split(activities: List<ITaskActivity<T>>): List<ITaskActivity<T>>
 }
 
 internal class DependencySceneTaskApi(
