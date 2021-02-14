@@ -21,10 +21,10 @@ package biz.ganttproject.app
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.scene.Node
-import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.control.ScrollPane
@@ -37,13 +37,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.search.SearchResult
 import net.sourceforge.ganttproject.search.SearchService
 import net.sourceforge.ganttproject.search.SearchUi
-import org.controlsfx.control.PopOver
 import org.controlsfx.control.textfield.CustomTextField
 import java.awt.Rectangle
 import javax.swing.JComponent
@@ -53,7 +52,11 @@ import javax.swing.JComponent
  *
  * @author dbarashev@bardsoftware.com
  */
-class FXSearchUi(private val project: IGanttProject, private val uiFacade: UIFacade) : SearchUi {
+class FXSearchUi(
+  private val project: IGanttProject,
+  private val uiFacade: UIFacade,
+  searchAction: GPAction
+) : SearchUi {
   private val textField: CustomTextField by lazy {
     CustomTextField().also {
       it.right = FontAwesomeIconView(FontAwesomeIcon.SEARCH).also { icon ->
@@ -64,7 +67,7 @@ class FXSearchUi(private val project: IGanttProject, private val uiFacade: UIFac
           this.runSearch()
         }
       }
-      it.promptText = "Ctrl+F"
+      it.promptText = searchAction.keyStroke.toString().replace("pressed", "+").capitalize()
     }
   }
 
@@ -132,7 +135,11 @@ class FXSearchUi(private val project: IGanttProject, private val uiFacade: UIFac
   }
 
   override fun requestFocus() {
-    textField.requestFocus()
+    swingToolbar().requestFocus()
+    Platform.runLater {
+
+      textField.requestFocus()
+    }
   }
 }
 

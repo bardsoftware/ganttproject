@@ -316,6 +316,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
     bar.add(myEditMenu);
+    getTree().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
+    getResourcePanel().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
     bar.add(viewMenu);
@@ -640,7 +642,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addWhitespace()
         .addButton(myEditMenu.getUndoAction().asToolbarAction())
         .addButton(myEditMenu.getRedoAction().asToolbarAction());
-    mySearchUi = new FXSearchUi(getProject(), getUIFacade());
+    mySearchUi = new FXSearchUi(getProject(), getUIFacade(), myEditMenu.getSearchAction());
     builder.addSearchBox(mySearchUi);
 
     //return result;
@@ -859,6 +861,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public GanttTree2 getTree() {
     if (tree == null) {
       tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
+
     }
     return tree;
   }
@@ -875,6 +878,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return getViewManager().getPasteAction();
   }
 
+  GPAction getSearchAction() { return myEditMenu.getSearchAction(); }
   @Override
   public ZoomActionSet getZoomActionSet() {
     return myZoomActions;
