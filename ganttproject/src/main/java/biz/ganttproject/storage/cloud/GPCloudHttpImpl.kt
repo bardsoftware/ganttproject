@@ -32,6 +32,9 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
 import javafx.concurrent.Task
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -44,6 +47,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
+import kotlin.random.Random
 
 class GPCloudException(val status: Int) : Exception()
 /**
@@ -196,28 +200,29 @@ class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
   }
 }
 
-class WebSocketListenerImpl : WebSocketListener() {
+internal enum class CloseReason {
+  UNKNOWN, INVALID_UID, UNKNOWN_HEARTBEAT
+}
+class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
   private var webSocket: WebSocket? = null
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val closeListeners = mutableListOf<(CloseReason) -> Unit>()
 
-  internal val token: String?
-    get() = GPCloudOptions.websocketAuthToken
   lateinit var onAuthCompleted: () -> Unit
 
   override fun onOpen(webSocket: WebSocket, response: Response) {
-    println("WebSocket opened")
+    LOG.debug("WebSocket opened")
     this.webSocket = webSocket
     this.trySendToken()
   }
 
   private fun trySendToken() {
-    println("Trying sending token ${this.token}")
+    LOG.debug("Trying sending token ${this.token}")
     if (this.webSocket != null && this.token != null) {
       this.webSocket?.send("Basic ${this.token}")
       this.onAuthCompleted()
-      println("Token is sent!")
     }
   }
 
@@ -253,12 +258,20 @@ class WebSocketListenerImpl : WebSocketListener() {
   }
 
   override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
-    LOG.debug("WebSocket closed")
+    LOG.error("WebSocket closed. Code={}, reason={}", code, reason ?: "")
+    if (code == 1003) {
+      when (reason) {
+        "UNKNOWN_HEARTBEAT" -> this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN_HEARTBEAT) }
+        "INVALID_UID" -> this.closeListeners.forEach { it.invoke(CloseReason.INVALID_UID) }
+        else -> this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN) }
+      }
+    } else {
+      this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN) }
+    }
   }
 
   override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-    println("failure: $response.")
-    t.printStackTrace()
+    LOG.error("WebSocket network failure: {}", response ?: "", exception = t)
   }
 
   fun addOnStructureChange(listener: (Any) -> Unit): () -> Unit {
@@ -274,27 +287,37 @@ class WebSocketListenerImpl : WebSocketListener() {
     this.contentChangeListeners.add(listener)
   }
 
+  internal fun addOnClosed(listener: (CloseReason) -> Unit) = this.closeListeners.add(listener)
+
 }
 
 class WebSocketClient {
   private val okClient = OkHttpClient.Builder()
           .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
           .build()
-  private var isStarted = false
-  private val wsListener = WebSocketListenerImpl()
+  private val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken)
   private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
-  private lateinit var websocket: WebSocket
+  private var websocket: WebSocket? = null
 
   fun start() {
-    if (isStarted) {
-      return
-    }
+    this.websocket?.let { it.cancel() }
     val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
     this.wsListener.onAuthCompleted = {
       this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
     }
+    this.wsListener.addOnClosed {
+      when (it) {
+        CloseReason.UNKNOWN_HEARTBEAT, CloseReason.INVALID_UID -> GlobalScope.launch {
+          LOG.error("Trying to restart WebSocket")
+          delay(Random.nextLong(10000, 60000))
+          start()
+        }
+        else -> {
+          LOG.error("WebSocket has been closed")
+        }
+      }
+    }
     this.websocket = this.okClient.newWebSocket(req, this.wsListener)
-    isStarted = true
   }
 
   fun onStructureChange(listener: (Any) -> Unit): () -> Unit {
@@ -310,7 +333,7 @@ class WebSocketClient {
   }
 
   fun sendHeartbeat() {
-    this.websocket.send("HB")
+    this.websocket?.send("HB")
   }
 }
 
@@ -351,7 +374,7 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
         }
       }
       else -> {
-        println("Unknown URI: ${session.uri}")
+        LOG.error("Request to unknown URI: {}", session.uri)
         newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "").apply {
           addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
         }
