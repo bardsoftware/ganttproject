@@ -42,8 +42,7 @@ import java.util.function.Consumer
 
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 const val GPCLOUD_SCHEME = "https"
-const val GPCLOUD_IP = "216.239.32.21"
-//const val GPCLOUD_HOST = "ganttproject.localhost"
+//const val GPCLOUD_HOST = "cloud.ganttproject.biz"
 const val GPCLOUD_HOST = "ganttproject.cloud"
 const val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST"
 const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"

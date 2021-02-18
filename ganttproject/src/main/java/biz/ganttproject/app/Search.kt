@@ -206,7 +206,7 @@ class SearchCell : ListCell<SearchResult<*>>() {
     whenNotEmpty(item, empty) {
       if (it == SearchResult.EMPTY) {
         graphic = MaterialIconView(MaterialIcon.CANCEL, "32")
-        text = i18n.formatText("noResults")
+        text = i18n.formatTextOrNull("noResults") ?: "No results"
         return@whenNotEmpty
       }
       val label = it.label
