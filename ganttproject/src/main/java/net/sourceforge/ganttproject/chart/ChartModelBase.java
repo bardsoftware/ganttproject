@@ -25,6 +25,7 @@ import biz.ganttproject.core.chart.grid.*;
 import biz.ganttproject.core.chart.grid.OffsetManager.OffsetBuilderFactory;
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl;
 import biz.ganttproject.core.chart.scene.DayGridSceneBuilder;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.chart.scene.TimelineSceneBuilder;
 import biz.ganttproject.core.chart.text.TimeFormatter;
@@ -674,6 +675,11 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     copy.calculateRowHeight();
   }
 
+  protected Task getTask(Canvas.Shape polygon) {
+    IdentifiableRow task = (IdentifiableRow) polygon.getModelObject();
+    return myTaskManager.getTask(task.getRowId());
+  }
+
   @Override
   public OptionEventDispatcher getOptionEventDispatcher() {
     return myOptionEventDispatcher;
@@ -695,7 +701,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   public ChartItem getChartItemWithCoordinates(int x, int y) {
     Canvas.Shape text = myTimelineLabelRenderer.getLabelLayer().getPrimitive(x, y);
     if (text instanceof Canvas.Text) {
-      return new TimelineLabelChartItem((Task)text.getModelObject());
+      return new TimelineLabelChartItem(getTask(text));
     }
     Offset offset = getOffsetAt(x);
     if (offset != null) {

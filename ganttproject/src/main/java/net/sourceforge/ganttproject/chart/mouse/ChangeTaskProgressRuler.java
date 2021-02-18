@@ -24,8 +24,10 @@ import java.util.TreeMap;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
+import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 
@@ -56,7 +58,7 @@ class ChangeTaskProgressRuler {
     myMinPx = taskRectangles.get(0).getLeftX();
     myPixel2progress.put(myMinPx, 0);
     for (Rectangle r : taskRectangles) {
-      TaskActivity activity = (TaskActivity) r.getModelObject();
+      ITaskActivity<IdentifiableRow> activity = (ITaskActivity<IdentifiableRow>) r.getModelObject();
       if (r.isVisible()) {
         visiblePixels = r.getRightX();
       }

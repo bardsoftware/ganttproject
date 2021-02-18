@@ -97,7 +97,7 @@ public class ChartModelImpl extends ChartModelBase {
     if (primitive instanceof Canvas.Rectangle) {
       Canvas.Rectangle rect = (Canvas.Rectangle) primitive;
       if ("task.progress.end".equals(primitive.getStyle()) && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-        result = new TaskProgressChartItem((Task) primitive.getModelObject());
+        result = new TaskProgressChartItem(getTask(primitive));
       }
     }
     return result;
@@ -122,7 +122,7 @@ public class ChartModelImpl extends ChartModelBase {
     if (primitive instanceof Canvas.Polygon) {
       Canvas.Polygon rect = (Canvas.Polygon) primitive;
       if ("task.notesMark".equals(rect.getStyle())) {
-        return new TaskNotesChartItem((Task)primitive.getModelObject());
+        return new TaskNotesChartItem(getTask(primitive));
       }
       ITaskActivity<IdentifiableRow> activity = (ITaskActivity<IdentifiableRow>) primitive.getModelObject();
       if (activity != null) {

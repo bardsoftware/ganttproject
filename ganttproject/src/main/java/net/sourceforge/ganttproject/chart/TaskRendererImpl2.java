@@ -22,6 +22,7 @@ import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.GPOption;
@@ -37,7 +38,6 @@ import net.sourceforge.ganttproject.task.*;
 
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static net.sourceforge.ganttproject.chart.gantt.TaskActivitySceneApiAdapterKt.mapTaskSceneTask2Task;
@@ -179,70 +179,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     return ((ChartModelImpl) getChartModel()).getVisibleTasks();
   }
 
-  /**
-    This class splits all tasks into 4 groups. One group is pure virtual: it contains
-    tasks which are hidden under some collapsed parent and hence are just filtered out.
-    The remaining groups are: tasks which are shown in the chart viewport, tasks above the viewport
-    and tasks below the viewport. We need tasks outside the viewport because we want to show
-    dependency lines which may connect them with tasks inside the viewport.
-   */
-  static class VerticalPartitioning {
-    final List<Task> aboveViewport = Lists.newArrayList();
-    final List<Task> belowViewport = Lists.newArrayList();
-    final List<Task> insideViewport;
-
-    /**
-     * @param tasksInsideViewport partition with tasks inside viewport, with hidden tasks already filtered.
-     *        Tasks must be ordered in their document order.
-     */
-    VerticalPartitioning(List<Task> tasksInsideViewport) {
-      insideViewport = tasksInsideViewport;
-    }
-
-    /**
-     * Builds the remaining partitions.
-     *
-     * In this method we iterate through *all* the tasks in their document order. If we find some
-     * collapsed task then we filter out its children. Until we reach the first task in the vieport
-     * partition,  we're above the viewport, then we skip the viewport partition and proceed to
-     * below viewport
-     */
-    void build(TaskContainmentHierarchyFacade containment) {
-      List<Task> tasksInDocumentOrder = containment.getTasksInDocumentOrder();
-      final Task firstVisible = insideViewport.isEmpty() ? null : insideViewport.get(0);
-      final Task lastVisible = insideViewport.isEmpty() ? null : insideViewport.get(insideViewport.size() - 1);
-      List<Task> addTo = aboveViewport;
-
-      Task collapsedRoot = null;
-      for (Task nextTask : tasksInDocumentOrder) {
-        if (addTo == null) {
-          if (nextTask.equals(lastVisible)) {
-            addTo = belowViewport;
-          }
-          continue;
-        }
-        if (nextTask.equals(firstVisible)) {
-          addTo = null;
-          continue;
-        }
-
-        if (collapsedRoot != null) {
-          if (containment.areUnrelated(nextTask, collapsedRoot)) {
-            collapsedRoot = null;
-          } else {
-            continue;
-          }
-        }
-        addTo.add(nextTask);
-
-        if (!nextTask.getExpand()) {
-          assert collapsedRoot == null : "All tasks processed prior to this one must be expanded";
-          collapsedRoot = nextTask;
-        }
-      }
-    }
-  }
-
   @Override
   public void render() {
     chartRenderer.render();
@@ -308,7 +244,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     List<TaskActivity> splitOnBounds = TaskRendererImpl2.splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
     for (TaskActivity activity : splitOnBounds) {
       assert activity != null : "Got null activity in task="+t;
-      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
+      ITaskActivity<IdentifiableRow> iActivity = new TaskActivityDataImpl<>(
+        activity.isFirst(), activity.isLast(), activity.getIntensity(),
+        activity.getOwner(), activity.getStart(), activity.getEnd(), activity.getDuration()
+      );
+      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(iActivity);
       assert graphicPrimitive != null : "Got null for activity="+activity;
       assert graphicPrimitive instanceof Rectangle;
       result.add((Rectangle) graphicPrimitive);
