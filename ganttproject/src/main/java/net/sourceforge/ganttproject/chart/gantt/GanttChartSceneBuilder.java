@@ -51,7 +51,6 @@ public class GanttChartSceneBuilder {
     int getHeaderHeight();
     int getWidth();
     int getLabelsFontSize();
-    int getAppFontSize();
     int getVerticalOffset();
     OffsetList getTasksUnitOffsets();
     TimeUnit getProgressBarTimeUnit();
@@ -67,20 +66,20 @@ public class GanttChartSceneBuilder {
     TimeDuration createLength(int duration);
   }
 
-  private Canvas canvas;
-  private InputApi input;
-  private TaskLabelSceneBuilder.InputApi taskLabelSceneApi;
+  private final Canvas canvas;
+  private final InputApi input;
+  private final TaskLabelSceneBuilder.InputApi taskLabelSceneApi;
 
   private final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
-  private TaskActivitySceneBuilder.TaskApi<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskApi = new TaskActivitySceneTaskApi();
+  private final TaskActivitySceneBuilder.TaskApi<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskApi = new TaskActivitySceneTaskApi();
 
   private final TaskActivitySceneBuilder<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskActivityRenderer;
   private final TaskActivitySceneBuilder<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myBaselineActivityRenderer;
 
   private final Canvas myLabelsLayer;
-  private TaskActivitySceneBuilder.ChartApi myChartApi;
-  private TaskActivitySplitter mySplitter;
+  private final TaskActivitySceneBuilder.ChartApi myChartApi;
+  private final TaskActivitySplitter mySplitter;
 
   public GanttChartSceneBuilder(InputApi input) {
     this(input, new Canvas());
@@ -224,8 +223,8 @@ public class GanttChartSceneBuilder {
     }
   }
 
-  private int getRowHeight() {
-    return calculateRowHeight();
+  public int getRowHeight() {
+    return myChartApi.getRowHeight();
   }
 
   private void renderBaseline(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
@@ -346,15 +345,6 @@ public class GanttChartSceneBuilder {
       lastProgressRectangle = rectangles.get(rectangles.size() - 1);
     }
     // createDownSideText(lastProgressRectangle);
-  }
-
-  public int calculateRowHeight() {
-    int rowHeight = myLabelsRenderer.calculateRowHeight();
-    if (input.getBaseline() != null) {
-      rowHeight = rowHeight + 8;
-    }
-    int appFontSize = input.getAppFontSize();
-    return Math.max(appFontSize, rowHeight);
   }
 
   private int getRectangleHeight() {

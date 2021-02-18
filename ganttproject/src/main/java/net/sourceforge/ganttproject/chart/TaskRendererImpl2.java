@@ -37,6 +37,8 @@ import net.sourceforge.ganttproject.task.*;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static net.sourceforge.ganttproject.chart.gantt.TaskActivitySceneApiAdapterKt.mapTaskSceneTask2Task;
 
@@ -45,11 +47,11 @@ import static net.sourceforge.ganttproject.chart.gantt.TaskActivitySceneApiAdapt
  * in the gantt chart
  */
 public class TaskRendererImpl2 extends ChartRendererBase {
-  private GanttChartSceneBuilder chartRenderer;
+  private final GanttChartSceneBuilder chartRenderer;
 
-  private ChartModelImpl myModel;
+  private final ChartModelImpl myModel;
 
-  private GPOptionGroup myLabelOptions;
+  private final GPOptionGroup myLabelOptions;
 
   class GanttChartSceneApi implements GanttChartSceneBuilder.InputApi {
     @Override
@@ -65,11 +67,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public int getLabelsFontSize() {
       return getChartModel().getChartUIConfiguration().getBaseFontSize();
-    }
-
-    @Override
-    public int getAppFontSize() {
-      return myModel.getProjectConfig().getAppFontSize().get();
     }
 
     @Override
@@ -99,9 +96,9 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     @Override
     public List<ITask> getVisibleTasks() {
-      return ImmutableList.copyOf(
-        DependencySceneApiAdapterKt.tasks2itasks(myModel.getVisibleTasks()).values()
-      );
+      TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();
+      Map<Task, ITask> tasks2itasks = DependencySceneApiAdapterKt.tasks2itasks(containment.getTasksInDocumentOrder());
+      return myModel.getVisibleTasks().stream().map(tasks2itasks::get).collect(Collectors.toList());
     }
 
     @Override
@@ -113,7 +110,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
     @Override
     public List<ITaskSceneTask> getTasksInDocumentOrder() {
-      TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();;
+      TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();
       return ImmutableList.copyOf(
         mapTaskSceneTask2Task(containment.getTasksInDocumentOrder(), myModel).keySet()
       );
@@ -298,7 +295,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   public int calculateRowHeight() {
-    return chartRenderer.calculateRowHeight();
+    return chartRenderer.getRowHeight();
   }
 
   Canvas getLabelLayer() {
