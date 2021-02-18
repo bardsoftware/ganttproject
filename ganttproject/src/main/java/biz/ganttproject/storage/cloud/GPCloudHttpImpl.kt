@@ -201,7 +201,7 @@ class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
 }
 
 internal enum class CloseReason {
-  UNKNOWN, INVALID_UID, UNKNOWN_HEARTBEAT
+  UNKNOWN, INVALID_UID, UNKNOWN_HEARTBEAT, NETWORK_FAILURE
 }
 class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
   private var webSocket: WebSocket? = null
@@ -272,6 +272,7 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
 
   override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
     LOG.error("WebSocket network failure: {}", response ?: "", exception = t)
+    this.closeListeners.forEach { it.invoke(CloseReason.NETWORK_FAILURE) }
   }
 
   fun addOnStructureChange(listener: (Any) -> Unit): () -> Unit {
@@ -307,7 +308,13 @@ class WebSocketClient {
     }
     this.wsListener.addOnClosed {
       when (it) {
-        CloseReason.UNKNOWN_HEARTBEAT, CloseReason.INVALID_UID -> GlobalScope.launch {
+        CloseReason.UNKNOWN_HEARTBEAT -> GlobalScope.launch {
+          LOG.error("Trying to restart WebSocket")
+          delay(Random.nextLong(10000, 60000))
+          start()
+        }
+        CloseReason.INVALID_UID -> LOG.error("Need to re-authenticate!")
+        CloseReason.NETWORK_FAILURE -> GlobalScope.launch {
           LOG.error("Trying to restart WebSocket")
           delay(Random.nextLong(10000, 60000))
           start()
