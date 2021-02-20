@@ -22,16 +22,13 @@ import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.gantt.*;
 import net.sourceforge.ganttproject.task.*;
@@ -184,48 +181,6 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     chartRenderer.render();
   }
 
-  /**
-   * This method scans the list of activities and splits activities crossing the borders
-   * of the given frame into parts "before" and "after" the border date. Activities which
-   * do not cross frame borders are left as is, and the relative order of activities is preserved.
-   *
-   * Normally no more than two activities from the input list are partitioned.
-   *
-   * @return input activities with those crossing frame borders partitioned into left and right parts
-   */
-  static List<TaskActivity> splitOnBounds(List<TaskActivity> activities, Date frameStartDate, Date frameEndDate) {
-    Preconditions.checkArgument(frameEndDate.compareTo(frameStartDate) >= 0,
-        String.format("Invalid frame: start=%s end=%s", frameStartDate, frameEndDate));
-    List<TaskActivity> result = Lists.newArrayList();
-    Deque<TaskActivity> queue = new LinkedList<>(activities);
-    while (!queue.isEmpty()) {
-      TaskActivity head = queue.pollFirst();
-      if (head.getStart().compareTo(frameStartDate) < 0
-          && head.getEnd().compareTo(frameStartDate) > 0) {
-
-        // Okay, this activity crosses frame start. Lets add its left part to the result
-        // and push back its right part
-        TaskActivity beforeViewport = new TaskActivityPart(head, head.getStart(), frameStartDate);
-        TaskActivity remaining = new TaskActivityPart(head, frameStartDate, head.getEnd());
-        result.add(beforeViewport);
-        queue.addFirst(remaining);
-        continue;
-      }
-      if (head.getStart().compareTo(frameEndDate) < 0
-          && head.getEnd().compareTo(frameEndDate) > 0) {
-        // This activity crosses frame end date. Again, lets add its left part to the result
-        // and push back the remainder.
-        TaskActivity insideViewport = new TaskActivityPart(head, head.getStart(), frameEndDate);
-        TaskActivity remaining = new TaskActivityPart(head, frameEndDate, head.getEnd());
-        result.add(insideViewport);
-        queue.addFirst(remaining);
-        continue;
-      }
-      result.add(head);
-    }
-    return result;
-  }
-
   public GPOptionGroup getLabelOptions() {
     return myLabelOptions;
   }
@@ -240,15 +195,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
 
   public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
     List<Rectangle> result = new ArrayList<Rectangle>();
-    List<TaskActivity> originalActivities = t.getActivities();
-    List<TaskActivity> splitOnBounds = TaskRendererImpl2.splitOnBounds(originalActivities, chartModel.getStartDate(), chartModel.getEndDate());
-    for (TaskActivity activity : splitOnBounds) {
+    ITaskSceneTask task = new ITaskSceneTaskImpl(t, chartModel);
+    List<ITaskActivity<ITaskSceneTask>> originalActivities = task.getActivities();
+    TaskActivitySplitter<ITaskSceneTask> splitter = new TaskActivitySplitter<ITaskSceneTask>(
+      chartModel::getStartDate,
+      chartModel::getEndDate,
+      (u, s, e) -> chartModel.getTaskManager().createLength(u, s, e)
+    );
+    List<ITaskActivity<ITaskSceneTask>> splitOnBounds = splitter.split(originalActivities);
+    for (ITaskActivity<ITaskSceneTask> activity : splitOnBounds) {
       assert activity != null : "Got null activity in task="+t;
-      ITaskActivity<IdentifiableRow> iActivity = new TaskActivityDataImpl<>(
-        activity.isFirst(), activity.isLast(), activity.getIntensity(),
-        activity.getOwner(), activity.getStart(), activity.getEnd(), activity.getDuration()
-      );
-      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(iActivity);
+      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
       assert graphicPrimitive != null : "Got null for activity="+activity;
       assert graphicPrimitive instanceof Rectangle;
       result.add((Rectangle) graphicPrimitive);

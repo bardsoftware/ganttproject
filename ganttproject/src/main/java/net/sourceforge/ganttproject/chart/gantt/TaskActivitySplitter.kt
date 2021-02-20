@@ -1,11 +1,9 @@
 package net.sourceforge.ganttproject.chart.gantt
 
-import biz.ganttproject.core.chart.scene.BarChartActivity
 import biz.ganttproject.core.chart.scene.IdentifiableRow
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.core.time.TimeUnit
 import com.google.common.base.Preconditions
-import com.google.common.collect.Lists
 import java.util.*
 
 /**

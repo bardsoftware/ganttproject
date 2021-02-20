@@ -359,23 +359,4 @@ public class GanttChartSceneBuilder {
       Canvas canvas, TaskActivitySceneBuilder.ChartApi chartApi, TaskActivitySceneBuilder.Style style) {
     return new TaskActivitySceneBuilder<>(myTaskApi, chartApi, canvas, myLabelsRenderer, style);
   }
-//  public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
-//    List<Rectangle> result = new ArrayList<Rectangle>();
-//    List<TaskActivity> originalActivities = t.getActivities();
-//    var splitter = new TaskActivitySplitter(
-//        () -> chartModel.getStartDate(),
-//        () -> chartModel.getEndDate(),
-//        (timeUnit, startDate, endDate) -> t.getManager().createLength(timeUnit, startDate, endDate)
-//    );
-//    List<TaskActivity> splitOnBounds = splitter.split(originalActivities);
-//    for (TaskActivity activity : splitOnBounds) {
-//      assert activity != null : "Got null activity in task="+t;
-//      Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
-//      assert graphicPrimitive != null : "Got null for activity="+activity;
-//      assert graphicPrimitive instanceof Rectangle;
-//      result.add((Rectangle) graphicPrimitive);
-//    }
-//    return result;
-//
-//  }
 }

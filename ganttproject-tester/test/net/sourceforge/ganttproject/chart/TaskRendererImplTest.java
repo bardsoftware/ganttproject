@@ -26,16 +26,14 @@ import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Lists;
 import kotlin.jvm.functions.Function2;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
-import net.sourceforge.ganttproject.chart.gantt.ITaskSceneTask;
-import net.sourceforge.ganttproject.chart.gantt.VerticalPartitioning;
+import net.sourceforge.ganttproject.chart.gantt.*;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +41,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -130,10 +130,16 @@ public class TaskRendererImplTest extends TaskTestCase {
   // and "after viewport" parts
   public void testSplitOnBounds() {
     Task task = createTask(TestSetupHelper.newFriday(), 5);
+    List<ITaskActivity<ITaskSceneTask>> taskActivities = task.getActivities().stream()
+      .map((a) -> new TaskActivityDataImpl<ITaskSceneTask>(
+        a.isFirst(), a.isLast(), a.getIntensity(), new TaskSceneTask(task), a.getStart(), a.getEnd(), a.getDuration()
+      ))
+      .collect(Collectors.toList());
     {
       // Split on frame with frame start = task start
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newFriday().getTime(), TestSetupHelper.newMonday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newFriday().getTime(), TestSetupHelper.newMonday().getTime()
+      ).split(taskActivities);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -145,8 +151,9 @@ public class TaskRendererImplTest extends TaskTestCase {
     }
     {
       // Task crosses both frame borders
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newSaturday().getTime(), TestSetupHelper.newTuesday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newSaturday().getTime(), TestSetupHelper.newTuesday().getTime()
+      ).split(taskActivities);
       assertEquals(3, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -163,8 +170,9 @@ public class TaskRendererImplTest extends TaskTestCase {
     }
     {
       // Split on frame with frame end = task end
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newMonday().getTime(), TestSetupHelper.newWendesday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newMonday().getTime(), TestSetupHelper.newWendesday().getTime()
+      ).split(taskActivities);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -213,6 +221,14 @@ public class TaskRendererImplTest extends TaskTestCase {
     assertNotNull(part2);
     assertEquals(TestSetupHelper.newWendesday().getTime(), part2.getStart());
     assertEquals(2, part2.getDuration().getLength());
+  }
+
+  private TaskActivitySplitter<ITaskSceneTask> getSplitter(Date start, Date end) {
+    return new TaskActivitySplitter<ITaskSceneTask>(
+      () -> start,
+      () -> end,
+      (u, s, e) -> new TimeDurationImpl(u, TimeUnit.DAYS.convert(s.getTime() - e.getTime(), TimeUnit.MILLISECONDS))
+    );
   }
 
   private static class TaskSceneTask implements ITaskSceneTask {
