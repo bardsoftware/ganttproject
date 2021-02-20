@@ -12,7 +12,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import java.awt.Dimension
 import java.util.*
 
-internal abstract class ITaskActivity<T : IdentifiableRow> : BarChartActivity<T> {
+abstract class ITaskActivity<T : IdentifiableRow> : BarChartActivity<T> {
   abstract val isFirst: Boolean
   abstract val isLast: Boolean
   abstract val intensity: Float
@@ -52,14 +52,14 @@ internal class TaskActivityPart<T : IdentifiableRow>(
     get() = original.intensity
 }
 
-internal interface IDependency {
+interface IDependency {
   val start: ITaskActivity<ITask>
   val end: ITaskActivity<ITask>
   val constraintType: ConstraintType
   val hardness: TaskDependency.Hardness
 }
 
-internal interface ITask : IdentifiableRow {
+interface ITask : IdentifiableRow {
   val dependencies: List<IDependency>
   val isMilestone: Boolean
 }

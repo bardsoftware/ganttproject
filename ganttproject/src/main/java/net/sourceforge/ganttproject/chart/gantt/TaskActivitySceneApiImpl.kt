@@ -28,9 +28,9 @@ import com.google.common.base.Strings
 import java.awt.Color
 import java.util.*
 
-internal typealias TaskSceneTaskActivity = ITaskActivity<ITaskSceneTask>
+typealias TaskSceneTaskActivity = ITaskActivity<ITaskSceneTask>
 
-internal interface ITaskSceneTask : IdentifiableRow {
+interface ITaskSceneTask : IdentifiableRow {
   val isCritical: Boolean
   val isProjectTask: Boolean
   val hasNestedTasks: Boolean

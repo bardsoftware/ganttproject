@@ -30,7 +30,7 @@ import com.google.common.collect.Lists
  * @param tasksInsideViewport partition with tasks inside viewport, with hidden tasks already filtered.
  * Tasks must be ordered in their document order.
  */
-internal class VerticalPartitioning(
+class VerticalPartitioning(
   private val insideViewport: List<ITaskSceneTask>,
   private val areUnrelated: (ITaskSceneTask, ITaskSceneTask) -> Boolean
 ) {
