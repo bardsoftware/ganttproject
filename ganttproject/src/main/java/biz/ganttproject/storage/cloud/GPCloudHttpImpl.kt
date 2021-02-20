@@ -43,6 +43,7 @@ import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
 import java.io.IOException
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -275,9 +276,9 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
     this.closeListeners.forEach { it.invoke(CloseReason.NETWORK_FAILURE) }
   }
 
-  fun addOnStructureChange(listener: (Any) -> Unit): () -> Unit {
+  fun addOnStructureChange(listener: (Any) -> Unit) {
     this.structureChangeListeners.add(listener)
-    return { this.structureChangeListeners.remove(listener) }
+    //return { this.structureChangeListeners.remove(listener) }
   }
 
   fun addOnLockStatusChange(listener: (ObjectNode) -> Unit) {
@@ -293,50 +294,54 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
 }
 
 class WebSocketClient {
-  private val okClient = OkHttpClient.Builder()
-          .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
-          .build()
-  private val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken)
+  private var heartbeatFuture: ScheduledFuture<*>? = null
+  private var wsListener: WebSocketListenerImpl? = null
   private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
   private var websocket: WebSocket? = null
 
   fun start() {
-    this.websocket?.let { it.cancel() }
     val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
-    this.wsListener.onAuthCompleted = {
-      this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
-    }
-    this.wsListener.addOnClosed {
-      when (it) {
-        CloseReason.UNKNOWN_HEARTBEAT -> GlobalScope.launch {
-          LOG.error("Trying to restart WebSocket")
-          delay(Random.nextLong(10000, 60000))
-          start()
-        }
-        CloseReason.INVALID_UID -> LOG.error("Need to re-authenticate!")
-        CloseReason.NETWORK_FAILURE -> GlobalScope.launch {
-          LOG.error("Trying to restart WebSocket")
-          delay(Random.nextLong(10000, 60000))
-          start()
-        }
-        else -> {
-          LOG.error("WebSocket has been closed")
+    this.websocket?.let { it.cancel() }
+    this.heartbeatFuture?.cancel(true)
+    wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken).also {
+      it.onAuthCompleted = {
+        this.heartbeatFuture = this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
+      }
+      it.addOnClosed { reason ->
+        LOG.debug("WebSocket closed. reason={}", reason)
+        when (reason) {
+          CloseReason.UNKNOWN_HEARTBEAT -> GlobalScope.launch {
+            LOG.debug("Trying to restart WebSocket")
+            delay(Random.nextLong(10000, 60000))
+            start()
+          }
+          CloseReason.INVALID_UID -> LOG.error("Need to re-authenticate!")
+          CloseReason.NETWORK_FAILURE -> GlobalScope.launch {
+            LOG.error("Trying to restart WebSocket")
+            delay(Random.nextLong(10000, 60000))
+            start()
+          }
+          else -> {
+            LOG.error("WebSocket has been closed")
+          }
         }
       }
     }
-    this.websocket = this.okClient.newWebSocket(req, this.wsListener)
+    this.websocket = OkHttpClient.Builder()
+      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
+      .build().newWebSocket(req, this.wsListener)
   }
 
-  fun onStructureChange(listener: (Any) -> Unit): () -> Unit {
-    return this.wsListener.addOnStructureChange(listener)
+  fun onStructureChange(listener: (Any) -> Unit) {
+    this.wsListener?.addOnStructureChange(listener)
   }
 
   fun onLockStatusChange(listener: (ObjectNode) -> Unit) {
-    return this.wsListener.addOnLockStatusChange(listener)
+    this.wsListener?.addOnLockStatusChange(listener)
   }
 
   fun onContentChange(listener: (ObjectNode) -> Unit) {
-    return this.wsListener.addOnContentChange(listener)
+    this.wsListener?.addOnContentChange(listener)
   }
 
   fun sendHeartbeat() {
