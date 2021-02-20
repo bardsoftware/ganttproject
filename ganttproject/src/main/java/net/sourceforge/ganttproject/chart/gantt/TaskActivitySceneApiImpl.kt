@@ -37,13 +37,13 @@ interface ITaskSceneTask : IdentifiableRow {
   val color: Color
   val shape: ShapePaint?
   val notes: String?
-  val isMilestone: Boolean
   val end: GanttCalendar
   val activities: List<TaskSceneTaskActivity>
   val expand: Boolean
   val duration: TimeDuration
   val completionPercentage: Int
 
+  fun isMilestone(): Boolean
   fun getProperty(propertyID: String?): Any?
 }
 
@@ -113,7 +113,7 @@ internal class TaskActivitySceneTaskApi : TaskActivitySceneBuilder.TaskApi<ITask
   }
 
   override fun isMilestone(task: ITaskSceneTask): Boolean {
-    return task.isMilestone
+    return task.isMilestone()
   }
 
   override fun hasNestedTasks(task: ITaskSceneTask): Boolean {

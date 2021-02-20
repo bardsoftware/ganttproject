@@ -61,7 +61,7 @@ interface IDependency {
 
 interface ITask : IdentifiableRow {
   val dependencies: List<IDependency>
-  val isMilestone: Boolean
+  fun isMilestone(): Boolean
 }
 
 internal class BarChartConnectorImpl(
@@ -129,7 +129,7 @@ internal class DependencySceneTaskApi(
   private val taskList: List<ITask>,
   private val splitter: ITaskActivitySplitter<ITask>) : DependencySceneBuilder.TaskApi<ITask, BarChartConnectorImpl> {
   override fun isMilestone(task: ITask): Boolean {
-    return task.isMilestone
+    return task.isMilestone()
   }
 
   override fun getUnitVector(

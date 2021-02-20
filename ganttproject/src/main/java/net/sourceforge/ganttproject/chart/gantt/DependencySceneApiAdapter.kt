@@ -58,7 +58,8 @@ internal class ITaskImpl(
         }
       }
     }
-  override val isMilestone: Boolean = task.isMilestone
+
+  override fun isMilestone(): Boolean = task.isMilestone
   override fun getRowId() = task.taskID
 
   override fun hashCode(): Int {
