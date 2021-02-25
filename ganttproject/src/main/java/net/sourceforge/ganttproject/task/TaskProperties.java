@@ -243,15 +243,12 @@ public class TaskProperties {
     ConstraintType depType = ConstraintType.fromReadablePersistentValue(depSpec.substring(posDash + 1, posDash + 3));
     if (depSpec.length() == posDash + 3) {
       final TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
-      out.put(predecessorId, new Supplier<TaskDependency>() {
-        @Override
-        public TaskDependency get() {
-          if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
-            return taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint);
-          }
-          throw new TaskDependencyException(MessageFormat.format(
-              "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
+      out.put(predecessorId, () -> {
+        if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
+          return taskMgr.getDependencyCollection().createDependency(successor, predecessor, constraint);
         }
+        throw new TaskDependencyException(MessageFormat.format(
+            "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
       });
       return;
     }

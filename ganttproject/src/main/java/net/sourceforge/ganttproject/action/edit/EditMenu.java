@@ -29,18 +29,20 @@ import javax.swing.*;
 public class EditMenu extends JMenu {
   private final UndoAction myUndoAction;
   private final RedoAction myRedoAction;
+  private final SearchDialogAction mySearchAction;
 
   public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, Runnable searchUi, String key) {
     super(GPAction.createVoidAction(key));
     final GPUndoManager undoManager = uiFacade.getUndoManager();
     myUndoAction = new UndoAction(undoManager);
     myRedoAction = new RedoAction(undoManager);
+    mySearchAction = new SearchDialogAction(searchUi);
 
     add(getUndoAction());
     add(getRedoAction());
     addSeparator();
     add(new RefreshViewAction(uiFacade));
-    add(new SearchDialogAction(searchUi));
+    add(mySearchAction);
     addSeparator();
     add(viewManager.getCutAction());
     add(viewManager.getCopyAction());
@@ -64,4 +66,6 @@ public class EditMenu extends JMenu {
   public GPAction getRedoAction() {
     return myRedoAction;
   }
+
+  public GPAction getSearchAction() { return mySearchAction; }
 }

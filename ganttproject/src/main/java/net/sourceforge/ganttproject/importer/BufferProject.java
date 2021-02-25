@@ -104,5 +104,8 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
     return myBufferResourceManager;
   }
 
-
+  @Override
+  public CustomPropertyManager getResourceCustomPropertyManager() {
+    return myBufferResourceManager.getCustomPropertyManager();
+  }
 }
