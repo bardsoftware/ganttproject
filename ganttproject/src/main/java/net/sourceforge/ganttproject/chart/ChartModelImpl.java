@@ -6,6 +6,7 @@
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.chart.scene.SceneBuilder;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.GPOption;
@@ -13,7 +14,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-import net.sourceforge.ganttproject.chart.gantt.GanttChartSceneBuilder;
+import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
@@ -22,7 +23,6 @@ import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public class ChartModelImpl extends ChartModelBase {
 
   private List<Task> myVisibleTasks;
 
-  private final GanttChartSceneBuilder myTaskRendererImpl;
+  private final TaskRendererImpl2 myTaskRendererImpl;
 
   private TaskManager taskManager;
 
@@ -56,7 +56,7 @@ public class ChartModelImpl extends ChartModelBase {
   public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     super(taskManager, timeUnitStack, projectConfig);
     this.taskManager = taskManager;
-    myTaskRendererImpl = new GanttChartSceneBuilder(this);
+    myTaskRendererImpl = new TaskRendererImpl2(this);
     getRenderers().add(myTaskRendererImpl);
 
     myTaskDefaultColorOption = taskManager.getTaskDefaultColorOption();
@@ -97,7 +97,7 @@ public class ChartModelImpl extends ChartModelBase {
     if (primitive instanceof Canvas.Rectangle) {
       Canvas.Rectangle rect = (Canvas.Rectangle) primitive;
       if ("task.progress.end".equals(primitive.getStyle()) && rect.getRightX() >= x - 4 && rect.getRightX() <= x + 4) {
-        result = new TaskProgressChartItem((Task) primitive.getModelObject());
+        result = new TaskProgressChartItem(getTask(primitive));
       }
     }
     return result;
@@ -122,19 +122,20 @@ public class ChartModelImpl extends ChartModelBase {
     if (primitive instanceof Canvas.Polygon) {
       Canvas.Polygon rect = (Canvas.Polygon) primitive;
       if ("task.notesMark".equals(rect.getStyle())) {
-        return new TaskNotesChartItem((Task)primitive.getModelObject());
+        return new TaskNotesChartItem(getTask(primitive));
       }
-      TaskActivity activity = (TaskActivity) primitive.getModelObject();
+      ITaskActivity<IdentifiableRow> activity = (ITaskActivity<IdentifiableRow>) primitive.getModelObject();
       if (activity != null) {
+        Task owner = taskManager.getTask(activity.getOwner().getRowId());
         if (activity.isFirst() && rect.getLeftX() - 2 <= x && rect.getLeftX() + 2 >= x) {
-          result = new TaskBoundaryChartItem(activity.getOwner(), true);
+          result = new TaskBoundaryChartItem(owner, true);
         }
         if (result == null && activity.isLast() && rect.getRightX() - 2 <= x
             && rect.getRightX() + 2 >= x) {
-          result = new TaskBoundaryChartItem(activity.getOwner(), false);
+          result = new TaskBoundaryChartItem(owner, false);
         }
         if (result == null) {
-          result = new TaskRegularAreaChartItem(activity.getOwner());
+          result = new TaskRegularAreaChartItem(owner);
         }
       }
     }

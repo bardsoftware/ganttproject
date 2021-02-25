@@ -34,8 +34,13 @@ internal class ITaskImpl(
               // this cast used to be in TaskRendererImpl2::BarChartConnectorImpl::getStart
               val startActivity = dep.start as TaskActivity
               return TaskActivityDataImpl(
-                startActivity.isFirst, startActivity.isLast, startActivity.intensity, mapping(startActivity.owner)!!,
-                startActivity.start, startActivity.end, startActivity.duration
+                startActivity.isFirst,
+                startActivity.isLast,
+                startActivity.intensity,
+                mapping(startActivity.owner)!!,
+                startActivity.start,
+                startActivity.end,
+                startActivity.duration
               )
             }
           override val end: ITaskActivity<ITask>
@@ -53,7 +58,8 @@ internal class ITaskImpl(
         }
       }
     }
-  override val isMilestone: Boolean = task.isMilestone
+
+  override fun isMilestone(): Boolean = task.isMilestone
   override fun getRowId() = task.taskID
 
   override fun hashCode(): Int {

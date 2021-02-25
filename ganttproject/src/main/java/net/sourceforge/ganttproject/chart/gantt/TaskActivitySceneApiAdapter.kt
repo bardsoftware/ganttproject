@@ -49,8 +49,8 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
     get() = task.shape
   override val notes: String?
     get() = task.notes
-  override val isMilestone
-    get() = (task as TaskImpl).isLegacyMilestone
+
+  override fun isMilestone() = (task as TaskImpl).isLegacyMilestone
   override val end: GanttCalendar
     get() = task.end
   override val activities: List<TaskSceneTaskActivity>

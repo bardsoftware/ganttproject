@@ -45,6 +45,8 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
   private val dayoffPainter = DayoffPainter(mxPainter, uiConfig)
   private val textPainter = MxTextPainter(mxPainter, chartProperties) { Fonts.DEFAULT_CHART_FONT }
   private val styleToPainter = mapOf(
+      "task.progress" to ColouredRectanglePainter(mxPainter, Color.BLACK),
+      "task.progress.end" to ColouredRectanglePainter(mxPainter, Color.BLACK),
       "task.supertask" to containerRectanglePainter,
       "load.normal" to resourceLoadPainter,
       "load.normal.first" to resourceLoadPainter,
@@ -97,11 +99,13 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
 
   override fun paint(line: Line) {
     val chartStyle = Style.getStyle(chartProperties, line.style)
+    val stroke = chartStyle.getBorder(line)?.top?.stroke
     val style = mapOf(
         mxConstants.STYLE_ENDARROW to
             if (line.arrow.length == 0 && line.arrow.width == 0) mxConstants.NONE else mxConstants.ARROW_CLASSIC,
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(line) ?: Color.BLACK.toHexString()),
-        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100
+        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100,
+        mxConstants.STYLE_DASHED to if (stroke?.dashArray != null) 1 else 0
     )
     mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
   }
