@@ -47,7 +47,7 @@ interface ITaskSceneTask : IdentifiableRow {
   fun getProperty(propertyID: String?): Any?
 }
 
-internal class TaskActivityDataImpl<T : IdentifiableRow>(
+class TaskActivityDataImpl<T : IdentifiableRow>(
   override val isFirst: Boolean, override val isLast: Boolean,
   override val intensity: Float, private val _owner: T,
   private val _start: Date, private val _end: Date,

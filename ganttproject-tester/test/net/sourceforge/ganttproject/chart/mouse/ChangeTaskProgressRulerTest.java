@@ -18,25 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package net.sourceforge.ganttproject.chart.mouse;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
+import net.sourceforge.ganttproject.chart.gantt.TaskActivityDataImpl;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
-
 import org.easymock.EasyMock;
 
-import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * Tests for {@link ChangeTaskProgressRuler}.
@@ -73,8 +71,11 @@ public class ChangeTaskProgressRulerTest extends TestCase {
     Canvas primitives = new Canvas();
     Rectangle r = primitives.createRectangle(0, 0, 100, 10);
 
-    assertEquals(1, task.getActivities().size());
-    primitives.bind(r, task.getActivities().get(0));
+    var activities = task.getActivities().stream()
+        .map(it -> new TaskActivityDataImpl(it.isFirst(), it.isLast(), it.getIntensity(), it.getOwner(), it.getStart(), it.getEnd(), it.getDuration()))
+        .collect(Collectors.toList());
+    assertEquals(1, activities.size());
+    primitives.bind(r, activities.get(0));
 
     EasyMock.expect(mockChartModel.getTaskRectangles(task)).andReturn(Collections.singletonList(r));
     EasyMock.replay(mockChartModel);
@@ -97,7 +98,9 @@ public class ChangeTaskProgressRulerTest extends TestCase {
     task.setStart(TestSetupHelper.newFriday());
     task.setDuration(taskManager.createLength(2));
 
-    List<TaskActivity> activities = task.getActivities();
+    var activities = task.getActivities().stream()
+        .map(it -> new TaskActivityDataImpl(it.isFirst(), it.isLast(), it.getIntensity(), it.getOwner(), it.getStart(), it.getEnd(), it.getDuration()))
+        .collect(Collectors.toList());
     assertEquals(3, activities.size());
 
     Canvas primitives = new Canvas();
