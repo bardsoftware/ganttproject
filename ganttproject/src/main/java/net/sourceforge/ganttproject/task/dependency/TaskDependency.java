@@ -31,14 +31,14 @@ import net.sourceforge.ganttproject.task.TaskActivity;
  * this template use File | Settings | File Templates.
  */
 public interface TaskDependency extends BarChartConnector<Task, TaskDependency> {
-  abstract class Hardness {
-    public static final Hardness RUBBER = new Hardness("Rubber") {
+  enum Hardness {
+    RUBBER("Rubber") {
       @Override
       public String toString() {
         return GanttLanguage.getInstance().getText("hardness.rubber");
       }
-    };
-    public static final Hardness STRONG = new Hardness("Strong") {
+    },
+    STRONG("Strong") {
       @Override
       public String toString() {
         return GanttLanguage.getInstance().getText("hardness.strong");

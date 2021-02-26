@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
@@ -40,7 +41,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
  */
 public class StartStartConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public StartStartConstraintImpl() {
-    super(TaskDependencyConstraint.Type.startstart, GanttLanguage.getInstance().getText("startstart"));
+    super(ConstraintType.startstart, GanttLanguage.getInstance().getText("startstart"));
   }
 
   @Override

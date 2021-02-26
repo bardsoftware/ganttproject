@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.document.Document;
@@ -33,7 +34,7 @@ import java.util.List;
  *
  * @author bard
  */
-public interface Task extends MutableTask {
+public interface Task extends MutableTask, IdentifiableRow {
   /** Available task priorities */
   public enum Priority {
     LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");

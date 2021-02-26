@@ -24,7 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
+import biz.ganttproject.core.model.task.ConstraintType;
 
 /**
  * @author bard
@@ -34,9 +34,9 @@ public abstract class ConstraintImpl implements Cloneable {
 
   private TaskDependency myDependency;
 
-  private final Type myType;
+  private final ConstraintType myType;
 
-  public ConstraintImpl(TaskDependencyConstraint.Type type, String myName) {
+  public ConstraintImpl(ConstraintType type, String myName) {
     myType = type;
     this.myName = myName;
   }
@@ -63,7 +63,7 @@ public abstract class ConstraintImpl implements Cloneable {
     return getName();
   }
 
-  public Type getType() {
+  public ConstraintType getType() {
     return myType;
   }
 

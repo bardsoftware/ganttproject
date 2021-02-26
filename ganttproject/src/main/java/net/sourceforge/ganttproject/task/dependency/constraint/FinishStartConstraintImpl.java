@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBinding;
@@ -38,7 +39,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.ActivityBindi
  */
 public class FinishStartConstraintImpl extends ConstraintImpl implements TaskDependencyConstraint {
   public FinishStartConstraintImpl() {
-    super(TaskDependencyConstraint.Type.finishstart, GanttLanguage.getInstance().getText("finishstart"));
+    super(ConstraintType.finishstart, GanttLanguage.getInstance().getText("finishstart"));
   }
 
   @Override

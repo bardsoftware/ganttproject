@@ -28,8 +28,8 @@ import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskProperties;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
@@ -112,7 +112,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     assertEquals(predecessor, dependency.getDependee());
     assertEquals(TaskDependency.Hardness.STRONG, dependency.getHardness());
     assertEquals(0, dependency.getDifference());
-    assertEquals(TaskDependencyConstraint.Type.finishstart, dependency.getConstraint().getType());
+    assertEquals(ConstraintType.finishstart, dependency.getConstraint().getType());
   }
 
   public void testDependencyTypeParsing() {
@@ -126,7 +126,7 @@ public class TestDependencyFormatting extends TaskTestCase {
     assertEquals(predecessor, dependency.getDependee());
     assertEquals(TaskDependency.Hardness.STRONG, dependency.getHardness());
     assertEquals(0, dependency.getDifference());
-    assertEquals(TaskDependencyConstraint.Type.finishfinish, dependency.getConstraint().getType());
+    assertEquals(ConstraintType.finishfinish, dependency.getConstraint().getType());
   }
 
   public void testFullDependencyParsing() {
@@ -141,7 +141,7 @@ public class TestDependencyFormatting extends TaskTestCase {
       assertEquals(predecessor, dependency.getDependee());
       assertEquals(TaskDependency.Hardness.STRONG, dependency.getHardness());
       assertEquals(0, dependency.getDifference());
-      assertEquals(TaskDependencyConstraint.Type.finishstart, dependency.getConstraint().getType());
+      assertEquals(ConstraintType.finishstart, dependency.getConstraint().getType());
     }
     {
       Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
@@ -153,7 +153,7 @@ public class TestDependencyFormatting extends TaskTestCase {
       assertEquals(predecessor, dependency.getDependee());
       assertEquals(TaskDependency.Hardness.STRONG, dependency.getHardness());
       assertEquals(1, dependency.getDifference());
-      assertEquals(TaskDependencyConstraint.Type.finishstart, dependency.getConstraint().getType());
+      assertEquals(ConstraintType.finishstart, dependency.getConstraint().getType());
     }
     {
       Task predecessor = createTask(TestSetupHelper.newTuesday(), 1);
@@ -165,7 +165,7 @@ public class TestDependencyFormatting extends TaskTestCase {
       assertEquals(predecessor, dependency.getDependee());
       assertEquals(TaskDependency.Hardness.RUBBER, dependency.getHardness());
       assertEquals(1, dependency.getDifference());
-      assertEquals(TaskDependencyConstraint.Type.finishstart, dependency.getConstraint().getType());
+      assertEquals(ConstraintType.finishstart, dependency.getConstraint().getType());
     }
   }
 

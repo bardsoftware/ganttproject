@@ -34,6 +34,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.event.TaskListener;
@@ -179,7 +180,7 @@ public interface TaskManager {
 
   AlgorithmCollection getAlgorithmCollection();
 
-  TaskDependencyConstraint createConstraint(TaskDependencyConstraint.Type constraintType);
+  TaskDependencyConstraint createConstraint(ConstraintType constraintType);
 
   GPCalendarCalc getCalendar();
 

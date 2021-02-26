@@ -15,7 +15,7 @@ import java.util.Objects;
 /**
  * @author bard
  */
-class TaskActivityPart implements TaskActivity {
+public class TaskActivityPart implements TaskActivity {
 
   private final Date myEndDate;
 
@@ -25,7 +25,7 @@ class TaskActivityPart implements TaskActivity {
 
   private final TaskActivity myOriginal;
 
-  TaskActivityPart(TaskActivity original, Date startDate, Date endDate) {
+  public TaskActivityPart(TaskActivity original, Date startDate, Date endDate) {
     myStartDate = Preconditions.checkNotNull(startDate);
     myEndDate = Preconditions.checkNotNull(endDate);
     myOriginal = Preconditions.checkNotNull(original);

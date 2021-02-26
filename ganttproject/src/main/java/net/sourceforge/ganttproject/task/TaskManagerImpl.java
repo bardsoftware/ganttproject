@@ -52,6 +52,7 @@ import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorith
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
@@ -646,7 +647,7 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   @Override
-  public TaskDependencyConstraint createConstraint(final TaskDependencyConstraint.Type type) {
+  public TaskDependencyConstraint createConstraint(final ConstraintType type) {
     TaskDependencyConstraint result;
     switch (type) {
     case finishstart:

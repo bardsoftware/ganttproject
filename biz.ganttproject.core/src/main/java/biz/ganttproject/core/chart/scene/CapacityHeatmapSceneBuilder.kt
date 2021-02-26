@@ -42,7 +42,7 @@ class CapacityHeatmapSceneBuilder(
    */
   fun build() {
     canvas.clear()
-    canvas.setOffset(0, input.yCanvasOffset)
+    canvas.setOffset(0, input.getYCanvasOffset())
     var ypos = 0
     resources.forEach { resource ->
       // Draw day off loads
@@ -52,8 +52,8 @@ class CapacityHeatmapSceneBuilder(
       if (resource.isExpanded) {
         ypos = buildLoadDetails(resource.loads, ypos)
       }
-      ypos += input.rowHeight
-      val nextLine = canvas.createLine(0, ypos, input.chartWidth, ypos)
+      ypos += input.getRowHeight()
+      val nextLine = canvas.createLine(0, ypos, input.getChartWidth(), ypos)
       nextLine.foregroundColor = Color.GRAY
     }
   }
@@ -66,7 +66,7 @@ class CapacityHeatmapSceneBuilder(
     var yPos2 = ypos
     loads.groupBy { it.taskId }.forEach {
       if (it.key != null) {
-        yPos2 += input.rowHeight
+        yPos2 += input.getRowHeight()
         buildTasksLoadsRectangles(it.value, yPos2)
       }
     }
@@ -119,7 +119,7 @@ class CapacityHeatmapSceneBuilder(
   }
 
   private fun createLoadText(rect: Canvas.Rectangle, load: Float) {
-    val loadLabel = canvas.createText(rect.middleX, rect.middleY - input.yCanvasOffset, "")
+    val loadLabel = canvas.createText(rect.middleX, rect.middleY - input.getYCanvasOffset(), "")
     loadLabel.setSelector { textLengthCalculator ->
       val loadInt = load.roundToInt()
       val loadStr = "$loadInt%"
@@ -132,12 +132,12 @@ class CapacityHeatmapSceneBuilder(
   }
 
   private fun createRectangle(start: Date, end: Date, ypos: Int): Canvas.Rectangle? {
-    if (start.after(input.chartEndDate) || end <= input.chartStartDate) {
+    if (start.after(input.getChartEndDate()) || end <= input.getChartStartDate()) {
       return null
     }
     val offsetLookup = OffsetLookup()
-    val bounds = offsetLookup.getBounds(start, end, input.offsets)
-    return canvas.createRectangle(bounds[0], ypos, bounds[1] - bounds[0], input.rowHeight)
+    val bounds = offsetLookup.getBounds(start, end, input.getOffsets())
+    return canvas.createRectangle(bounds[0], ypos, bounds[1] - bounds[0], input.getRowHeight())
   }
 
   private fun Long.toDate() = Date.from(Instant.ofEpochMilli(this))
@@ -146,12 +146,12 @@ class CapacityHeatmapSceneBuilder(
   class Load(val startTs: Long, val endTs: Long, val load: Float, val taskId: Int? = null)
 
   interface InputApi {
-    val yCanvasOffset: Int
-    val rowHeight: Int
-    val chartWidth: Int
-    val chartStartDate: Date
-    val chartEndDate: Date
-    val offsets: List<Offset>
+    fun getYCanvasOffset(): Int
+    fun getRowHeight(): Int
+    fun getChartWidth(): Int
+    fun getChartStartDate(): Date
+    fun getChartEndDate(): Date
+    fun getOffsets(): List<Offset>
   }
 }
 

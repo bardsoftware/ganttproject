@@ -19,22 +19,32 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.FontSpec;
+import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Lists;
+import kotlin.jvm.functions.Function2;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.chart.TaskRendererImpl2.VerticalPartitioning;
+import net.sourceforge.ganttproject.chart.gantt.*;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskActivity;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -48,62 +58,71 @@ public class TaskRendererImplTest extends TaskTestCase {
     return result;
   }
 
+  private List<ITaskSceneTask> toSceneTask(List<Task> tasks) {
+    return tasks.stream().map(TaskSceneTask::new).collect(Collectors.toList());
+  }
+
   public void testVerticalPartitioningNoCollapsed() {
     TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
-    List<Task> allTasks = createTasks(taskManager, 10);
+    Function2<ITaskSceneTask, ITaskSceneTask, Boolean> areUnrelated = (t1, t2) ->
+      taskManager.getTaskHierarchy().areUnrelated(taskManager.getTask(t1.getRowId()), taskManager.getTask(t2.getRowId()));
+    List<ITaskSceneTask> allTasks = toSceneTask(createTasks(taskManager, 10));
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(0, 10));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertTrue(partitioning.aboveViewport.isEmpty());
-      assertTrue(partitioning.belowViewport.isEmpty());
+      VerticalPartitioning partitioning = new VerticalPartitioning(allTasks.subList(0, 10), areUnrelated);
+      partitioning.build(allTasks);
+      assertTrue(partitioning.getAboveViewport().isEmpty());
+      assertTrue(partitioning.getBelowViewport().isEmpty());
     }
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(0, 5));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertTrue(partitioning.aboveViewport.isEmpty());
-      assertEquals(5, partitioning.belowViewport.size());
+      VerticalPartitioning partitioning = new VerticalPartitioning(allTasks.subList(0, 5), areUnrelated);
+      partitioning.build(allTasks);
+      assertTrue(partitioning.getAboveViewport().isEmpty());
+      assertEquals(5, partitioning.getBelowViewport().size());
     }
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(5, 10));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertEquals(5, partitioning.aboveViewport.size());
-      assertTrue(partitioning.belowViewport.isEmpty());
+      VerticalPartitioning partitioning = new VerticalPartitioning(allTasks.subList(5, 10), areUnrelated);
+      partitioning.build(allTasks);
+      assertEquals(5, partitioning.getAboveViewport().size());
+      assertTrue(partitioning.getBelowViewport().isEmpty());
     }
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(3, 7));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertEquals(3, partitioning.aboveViewport.size());
-      assertEquals(3, partitioning.belowViewport.size());
+      VerticalPartitioning partitioning = new VerticalPartitioning(allTasks.subList(3, 7), areUnrelated);
+      partitioning.build(allTasks);
+      assertEquals(3, partitioning.getAboveViewport().size());
+      assertEquals(3, partitioning.getBelowViewport().size());
     }
   }
 
   public void testVerticalPartitioningWithCollapsedTasks() {
     TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
+    Function2<ITaskSceneTask, ITaskSceneTask, Boolean> areUnrelated = (t1, t2) ->
+      taskManager.getTaskHierarchy().areUnrelated(taskManager.getTask(t1.getRowId()), taskManager.getTask(t2.getRowId()));
     List<Task> allTasks = createTasks(taskManager, 10);
+    List<ITaskSceneTask> sceneTasks = toSceneTask(allTasks);
     allTasks.get(2).move(allTasks.get(1));
     allTasks.get(1).move(allTasks.get(0));
     allTasks.get(0).setExpand(false);
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(4, 10));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertEquals(2, partitioning.aboveViewport.size());
-      assertEquals(0, partitioning.aboveViewport.get(0).getTaskID());
-      assertEquals(3, partitioning.aboveViewport.get(1).getTaskID());
-      assertTrue(partitioning.belowViewport.isEmpty());
+      VerticalPartitioning partitioning = new VerticalPartitioning(sceneTasks.subList(4, 10), areUnrelated);
+      partitioning.build(sceneTasks);
+      assertEquals(2, partitioning.getAboveViewport().size());
+      assertEquals(0, partitioning.getAboveViewport().get(0).getRowId());
+      assertEquals(3, partitioning.getAboveViewport().get(1).getRowId());
+      assertTrue(partitioning.getBelowViewport().isEmpty());
     }
     allTasks.get(7).move(allTasks.get(6));
     allTasks.get(9).move(allTasks.get(8));
     allTasks.get(6).setExpand(false);
     allTasks.get(8).setExpand(false);
     {
-      VerticalPartitioning partitioning = new TaskRendererImpl2.VerticalPartitioning(allTasks.subList(4, 6));
-      partitioning.build(taskManager.getTaskHierarchy());
-      assertEquals(2, partitioning.aboveViewport.size());
-      assertEquals(0, partitioning.aboveViewport.get(0).getTaskID());
-      assertEquals(3, partitioning.aboveViewport.get(1).getTaskID());
-      assertEquals(2, partitioning.belowViewport.size());
-      assertEquals(6, partitioning.belowViewport.get(0).getTaskID());
-      assertEquals(8, partitioning.belowViewport.get(1).getTaskID());
+      VerticalPartitioning partitioning = new VerticalPartitioning(sceneTasks.subList(4, 6), areUnrelated);
+      partitioning.build(sceneTasks);
+      assertEquals(2, partitioning.getAboveViewport().size());
+      assertEquals(0, partitioning.getAboveViewport().get(0).getRowId());
+      assertEquals(3, partitioning.getAboveViewport().get(1).getRowId());
+      assertEquals(2, partitioning.getBelowViewport().size());
+      assertEquals(6, partitioning.getBelowViewport().get(0).getRowId());
+      assertEquals(8, partitioning.getBelowViewport().get(1).getRowId());
     }
   }
 
@@ -111,10 +130,16 @@ public class TaskRendererImplTest extends TaskTestCase {
   // and "after viewport" parts
   public void testSplitOnBounds() {
     Task task = createTask(TestSetupHelper.newFriday(), 5);
+    List<ITaskActivity<ITaskSceneTask>> taskActivities = task.getActivities().stream()
+      .map((a) -> new TaskActivityDataImpl<ITaskSceneTask>(
+        a.isFirst(), a.isLast(), a.getIntensity(), new TaskSceneTask(task), a.getStart(), a.getEnd(), a.getDuration()
+      ))
+      .collect(Collectors.toList());
     {
       // Split on frame with frame start = task start
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newFriday().getTime(), TestSetupHelper.newMonday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newFriday().getTime(), TestSetupHelper.newMonday().getTime()
+      ).split(taskActivities);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -126,8 +151,9 @@ public class TaskRendererImplTest extends TaskTestCase {
     }
     {
       // Task crosses both frame borders
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newSaturday().getTime(), TestSetupHelper.newTuesday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newSaturday().getTime(), TestSetupHelper.newTuesday().getTime()
+      ).split(taskActivities);
       assertEquals(3, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -144,8 +170,9 @@ public class TaskRendererImplTest extends TaskTestCase {
     }
     {
       // Split on frame with frame end = task end
-      List<TaskActivity> activities = TaskRendererImpl2.splitOnBounds(
-          task.getActivities(), TestSetupHelper.newMonday().getTime(), TestSetupHelper.newWendesday().getTime());
+      List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
+        TestSetupHelper.newMonday().getTime(), TestSetupHelper.newWendesday().getTime()
+      ).split(taskActivities);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -185,15 +212,107 @@ public class TaskRendererImplTest extends TaskTestCase {
     // and one visible
     List<Canvas.Rectangle> rectangles = TaskRendererImpl2.getTaskRectangles(t, chartModel);
     assertEquals(2, rectangles.size());
-    TaskActivity part1 = (TaskActivity) rectangles.get(0).getModelObject();
+    ITaskActivity<IdentifiableRow> part1 = (ITaskActivity<IdentifiableRow>) rectangles.get(0).getModelObject();
     assertNotNull(part1);
     assertEquals(TestSetupHelper.newMonday().getTime(), part1.getStart());
     assertEquals(TestSetupHelper.newWendesday().getTime(), part1.getEnd());
 
-    TaskActivity part2 = (TaskActivity) rectangles.get(1).getModelObject();
+    ITaskActivity<IdentifiableRow> part2 = (ITaskActivity<IdentifiableRow>) rectangles.get(1).getModelObject();
     assertNotNull(part2);
     assertEquals(TestSetupHelper.newWendesday().getTime(), part2.getStart());
     assertEquals(2, part2.getDuration().getLength());
   }
 
+  private TaskActivitySplitter<ITaskSceneTask> getSplitter(Date start, Date end) {
+    return new TaskActivitySplitter<ITaskSceneTask>(
+      () -> start,
+      () -> end,
+      (u, s, e) -> new TimeDurationImpl(u, TimeUnit.DAYS.convert(s.getTime() - e.getTime(), TimeUnit.MILLISECONDS))
+    );
+  }
+
+  private static class TaskSceneTask implements ITaskSceneTask {
+    private final Task task;
+
+    TaskSceneTask(Task task) {
+      this.task = task;
+    }
+
+    @Override
+    public int getRowId() {
+      return task.getRowId();
+    }
+
+    @Override
+    public boolean isCritical() {
+      return false;
+    }
+
+    @Override
+    public boolean isProjectTask() {
+      return false;
+    }
+
+    @Override
+    public boolean getHasNestedTasks() {
+      return false;
+    }
+
+    @NotNull
+    @Override
+    public Color getColor() {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public ShapePaint getShape() {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public String getNotes() {
+      return null;
+    }
+
+    @Override
+    public boolean isMilestone() {
+      return false;
+    }
+
+    @NotNull
+    @Override
+    public GanttCalendar getEnd() {
+      return null;
+    }
+
+    @NotNull
+    @Override
+    public List<ITaskActivity<ITaskSceneTask>> getActivities() {
+      return null;
+    }
+
+    @Override
+    public boolean getExpand() {
+      return task.getExpand();
+    }
+
+    @NotNull
+    @Override
+    public TimeDuration getDuration() {
+      return null;
+    }
+
+    @Override
+    public int getCompletionPercentage() {
+      return 0;
+    }
+
+    @Nullable
+    @Override
+    public Object getProperty(@Nullable String propertyID) {
+      return null;
+    }
+  }
 }
