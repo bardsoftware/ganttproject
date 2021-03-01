@@ -81,6 +81,7 @@ public class ProxyDocument implements Document {
   private final ColumnList myTaskVisibleFields;
 
   private final ColumnList myResourceVisibleFields;
+  private byte[] myContents;
 
   ProxyDocument(DocumentCreator creator, Document physicalDocument, IGanttProject project, UIFacade uiFacade,
       ColumnList taskVisibleFields, ColumnList resourceVisibleFields, ParserFactory parserFactory) {
@@ -191,25 +192,25 @@ public class ProxyDocument implements Document {
     // lock.enter();
   }
 
+  public void createContents() throws IOException {
+    GPSaver saver = myParserFactory.newSaver();
+    ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
+    saver.save(bufferStream);
+    bufferStream.flush();
+    myContents = bufferStream.toByteArray();
+  }
   @Override
   public void write() throws IOException {
-    GPSaver saver = myParserFactory.newSaver();
-    byte[] buffer;
-    try {
-      ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-      saver.save(bufferStream);
-      bufferStream.flush();
-      buffer = bufferStream.toByteArray();
-    } catch (IOException e) {
-      getUIFacade().showErrorDialog(e);
-      return;
+    if (myContents == null) {
+      createContents();
     }
     OutputStream output = getOutputStream();
     try {
-      output.write(buffer);
+      output.write(myContents);
       output.flush();
     } finally {
       output.close();
+      myContents = null;
     }
   }
 
