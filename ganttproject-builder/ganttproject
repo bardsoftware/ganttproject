@@ -126,7 +126,7 @@ check_java() {
     return 1
   fi
 
-  VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
+  VERSION="$( $JAVA_COMMAND -version 2>&1 | grep version | head -n 1)"
   log "...found $VERSION"
   [[ "$VERSION" =~ "11." ]] && return 0;
   [[ "$VERSION" =~ "12." ]] && return 0;
