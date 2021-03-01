@@ -32,15 +32,23 @@ internal class ResourceRecords(
     private val resourceManager: HumanResourceManager,
     private val myRoleManager: RoleManager) : RecordGroup(
       name = "Resource group",
-      regularFields =
-          (ResourceFields.values().map { it.toString() } + ResourceDefaultColumn.STANDARD_RATE.getName()).toSet()
+      regularFields = (
+          ResourceFields.values().map { it.toString() } + listOf(
+            ResourceDefaultColumn.STANDARD_RATE.getName(),
+            ResourceDefaultColumn.TOTAL_COST.name,
+            ResourceDefaultColumn.TOTAL_LOAD.name
+          )).toSet()
       ,
       mandatoryFields = setOf(ResourceFields.ID.toString(), ResourceFields.NAME.toString()),
       customProcessor = null
     ) {
 
   enum class ResourceFields(private val text: String) {
-    ID("tableColID"), NAME("tableColResourceName"), EMAIL("tableColResourceEMail"), PHONE("tableColResourcePhone"), ROLE("tableColResourceRole");
+    ID("tableColID"),
+    NAME("tableColResourceName"),
+    EMAIL("tableColResourceEMail"),
+    PHONE("tableColResourcePhone"),
+    ROLE("tableColResourceRole");
 
     override fun toString(): String {
       // Return translated field name
