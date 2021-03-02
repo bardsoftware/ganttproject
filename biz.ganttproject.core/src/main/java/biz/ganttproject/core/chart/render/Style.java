@@ -18,9 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.BasicStroke;
-import java.awt.Image;
-import java.awt.Paint;
+import biz.ganttproject.core.chart.canvas.Canvas;
+import biz.ganttproject.core.option.ColorOption;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -29,16 +35,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.imageio.ImageIO;
-
-import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.option.ColorOption;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Encapsulates style information for rendering graphic primitives. Styles
@@ -118,7 +114,7 @@ public class Style {
       } else if ("solid".equalsIgnoreCase(components[i])) {
         solid = true;
         components[i] = null;
-        break;        
+        break;
       }
     }
     int width = 1;
@@ -128,7 +124,7 @@ public class Style {
         width = Integer.parseInt(s.substring(0, s.length() - 2));
         components[i] = null;
       }
-    }    
+    }
     if (solid) {
       return new BasicStroke(width);
     }
@@ -148,7 +144,7 @@ public class Style {
     Border(java.awt.Color color) {
       this(color, DEFAULT_STROKE);
     }
-    
+
     Border(java.awt.Color color, BasicStroke stroke) {
       myColor = color;
       myStroke = stroke;
@@ -162,7 +158,7 @@ public class Style {
     public BasicStroke getStroke() {
       return myStroke;
     }
-    
+
     static Border parse(String value) {
       if (value == null) {
         return null;
@@ -172,28 +168,28 @@ public class Style {
       java.awt.Color color = java.awt.Color.BLACK;
       for (String s : components) {
         if (s != null) {
-          color = ColorOption.Util.determineColor(s);
+          color = ColorOption.Util.INSTANCE.determineColor(s);
           break;
         }
       }
       return new Border(color, stroke);
     }
   }
-  
+
   public static class Borders {
     private Border myTop;
     private Border myLeft;
     private Border myRight;
     private Border myBottom;
     private boolean isHomogeneous = false;
-    
+
     Borders(Border top, Border left, Border bottom, Border right) {
       myTop = top;
       myLeft = left;
       myRight = right;
       myBottom = bottom;
     }
-    
+
     public Borders(java.awt.Color color) {
       this(new Border(color));
     }
@@ -206,15 +202,15 @@ public class Style {
     public Border getTop() {
       return myTop;
     }
-    
+
     public Border getLeft() {
       return myLeft;
     }
-    
+
     public Border getBottom() {
       return myBottom;
     }
-    
+
     public Border getRight() {
       return myRight;
     }
@@ -222,13 +218,13 @@ public class Style {
     public boolean isHomogeneous() {
       return isHomogeneous;
     }
-    
+
     public Borders withColor(java.awt.Color color) {
-      return isHomogeneous ? new Borders(new Border(color, myTop.getStroke())) : 
+      return isHomogeneous ? new Borders(new Border(color, myTop.getStroke())) :
         new Borders(
-          new Border(color, myTop.getStroke()), 
-          new Border(color, myLeft.getStroke()), 
-          new Border(color, myBottom.getStroke()), 
+          new Border(color, myTop.getStroke()),
+          new Border(color, myLeft.getStroke()),
+          new Border(color, myBottom.getStroke()),
           new Border(color, myRight.getStroke()));
     }
   }
@@ -248,7 +244,7 @@ public class Style {
       if (value == null) {
         return null;
       }
-      return new Color(ColorOption.Util.determineColor(value));
+      return new Color(ColorOption.Util.INSTANCE.determineColor(value));
     }
   }
 
@@ -257,16 +253,16 @@ public class Style {
     private static final String URL_PREFIX = "url(";
     private final Paint myPaint;
     private final Image myImage;
-    
+
     private BackgroundImage(Paint paint, Image image) {
       myPaint = paint;
       myImage = image;
     }
-    
+
     public Paint getPaint() {
       return myPaint;
     }
-    
+
     static BackgroundImage parse(String value) {
       if (value == null) {
         return null;
@@ -311,7 +307,7 @@ public class Style {
   public enum Visibility {
     VISIBLE, HIDDEN
   }
-  
+
   private Padding myPadding;
 
   /**
@@ -321,7 +317,7 @@ public class Style {
    * Example: text.foo.color = #ffffff
    */
   private Color myColor;
-  
+
   /**
    * Background color. Property name is 'background-color' and value is
    * a 6-digit hex RGB value prefixed with #
@@ -362,7 +358,7 @@ public class Style {
     }
     return myColor;
   }
-  
+
   public Color getBackgroundColor(Canvas.Shape primitive) {
     if (primitive.getBackgroundColor() != null) {
       return new Color(primitive.getBackgroundColor());
@@ -380,22 +376,22 @@ public class Style {
     myBackgroundImage = BackgroundImage.parse(myProperties.getProperty(myStyleName + ".background-image"));
     return myBackgroundImage == null ? null : myBackgroundImage.getPaint();
   }
-  
+
   public Image getBackgroundImage() {
     if (myBackgroundImage != null) {
       return myBackgroundImage.myImage;
     }
     myBackgroundImage = BackgroundImage.parse(myProperties.getProperty(myStyleName + ".background-image"));
-    return myBackgroundImage == null ? null : myBackgroundImage.myImage;    
+    return myBackgroundImage == null ? null : myBackgroundImage.myImage;
   }
-  
+
   public Borders getBorder(Canvas.Shape shape) {
     if ((shape instanceof Canvas.Line || shape instanceof Canvas.Text) && shape.getForegroundColor() != null) {
       return myBorders == null ? new Borders(shape.getForegroundColor()) : myBorders.withColor(shape.getForegroundColor());
     }
     return myBorders;
   }
-  
+
   public static Style getStyle(Properties props, String styleName) {
     Style result = ourCache.get(styleName);
     if (result == null) {
@@ -404,7 +400,7 @@ public class Style {
     }
     return result;
   }
-  
+
   public Visibility getVisibility(Canvas.Shape shape) {
     if (!shape.isVisible()) {
       return Visibility.HIDDEN;
@@ -412,7 +408,7 @@ public class Style {
     String value = myProperties.getProperty(myStyleName + ".visibility");
     if (value == null) {
      // ugly hack for Rectangles to let RectangleRenderer report if it consumed a shape or not
-      return (shape instanceof Canvas.Rectangle) ? Visibility.HIDDEN : Visibility.VISIBLE;  
+      return (shape instanceof Canvas.Rectangle) ? Visibility.HIDDEN : Visibility.VISIBLE;
     }
     try {
       return Visibility.valueOf(value.toUpperCase());
@@ -420,7 +416,7 @@ public class Style {
       return Visibility.VISIBLE;
     }
   }
-  
+
   public Float getOpacity(Canvas.Shape shape) {
     Float result = shape.getOpacity();
     if (result != null) {

@@ -16,28 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package biz.ganttproject.core.option;
+package biz.ganttproject.core.option
 
-import java.awt.Color;
+import biz.ganttproject.core.option.ColorOption.Util.getColor
+import biz.ganttproject.core.option.ColorOption.Util.determineColor
+import biz.ganttproject.core.option.GPAbstractOption
+import biz.ganttproject.core.option.ColorOption
+import java.awt.Color
 
-public class DefaultColorOption extends GPAbstractOption<Color> implements ColorOption {
-  public DefaultColorOption(String id) {
-    super(id);
+open class DefaultColorOption : GPAbstractOption<Color?>, ColorOption {
+  constructor(id: String?) : super(id) {}
+  constructor(id: String?, initialValue: Color?) : super(id, initialValue) {}
+
+  override fun getPersistentValue(): String? {
+    return if (value == null) null else getColor(value!!)
   }
 
-  public DefaultColorOption(String id, Color initialValue) {
-    super(id, initialValue);
-  }
-
-  @Override
-  public String getPersistentValue() {
-    return getValue() == null ? null : Util.getColor(getValue());
-  }
-
-  @Override
-  public void loadPersistentValue(String value) {
+  override fun loadPersistentValue(value: String) {
     if (value != null) {
-      resetValue(Util.determineColor(value), true);
+      resetValue(determineColor(value), true)
     }
   }
 }
