@@ -18,19 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Color;
-import java.util.List;
-
 import biz.ganttproject.core.option.ColorOption.Util;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.option.ListOption;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
+import java.awt.*;
+import java.util.List;
 
 /**
  * Option class for working with a list of colors.
@@ -61,7 +60,7 @@ public class RecentColorsOption extends GPAbstractOption<Color> implements ListO
     List<String> values = Lists.transform(myColors, new Function<Color, String>() {
       @Override
       public String apply(Color c) {
-        return Util.getColor(c);
+        return Util.INSTANCE.getColor(c);
       }
     });
     return Joiner.on(' ').join(values);
@@ -72,7 +71,7 @@ public class RecentColorsOption extends GPAbstractOption<Color> implements ListO
     myColors.clear();
     String[] values = value.trim().split("\\s+");
     for (String strColor : values) {
-      Color color = Util.determineColor(strColor);
+      Color color = Util.INSTANCE.determineColor(strColor);
       myColors.add(color);
     }
   }
