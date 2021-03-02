@@ -32,6 +32,7 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public enum ResourceDefaultColumn {
+  ID(new ColumnList.ColumnStub("", null, false, 0, 75), Integer.class, "tableColID", true),
   NAME(new ColumnList.ColumnStub("0", null, true, 0, 200), String.class, "tableColResourceName", true),
   ROLE(new ColumnList.ColumnStub("1", null, true, 1, 75), String.class, "tableColResourceRole", true),
   EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75), String.class, "tableColResourceEMail", true),
@@ -71,6 +72,11 @@ public enum ResourceDefaultColumn {
 
   public String getName() {
     return MoreObjects.firstNonNull(GanttLanguage.getInstance().getText(myNameKey), myNameKey);
+  }
+
+  @Override
+  public String toString() {
+    return getName();
   }
 
   public Class<?> getValueClass() {

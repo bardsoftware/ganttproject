@@ -33,28 +33,15 @@ internal class ResourceRecords(
     private val myRoleManager: RoleManager) : RecordGroup(
       name = "Resource group",
       regularFields = (
-          ResourceFields.values().map { it.toString() } + listOf(
+          ResourceDefaultColumn.values().map { it.toString() } + listOf(
             ResourceDefaultColumn.STANDARD_RATE.getName(),
-            ResourceDefaultColumn.TOTAL_COST.name,
-            ResourceDefaultColumn.TOTAL_LOAD.name
+            ResourceDefaultColumn.TOTAL_COST.getName(),
+            ResourceDefaultColumn.TOTAL_LOAD.getName()
           )).toSet()
       ,
-      mandatoryFields = setOf(ResourceFields.ID.toString(), ResourceFields.NAME.toString()),
+      mandatoryFields = setOf(ResourceDefaultColumn.ID.toString(), ResourceDefaultColumn.NAME.toString()),
       customProcessor = null
     ) {
-
-  enum class ResourceFields(private val text: String) {
-    ID("tableColID"),
-    NAME("tableColResourceName"),
-    EMAIL("tableColResourceEMail"),
-    PHONE("tableColResourcePhone"),
-    ROLE("tableColResourceRole");
-
-    override fun toString(): String {
-      // Return translated field name
-      return GanttLanguage.getInstance().getText(text)
-    }
-  }
 
   override fun doProcess(record: SpreadsheetRecord): Boolean {
     if (!super.doProcess(record)) {
@@ -64,16 +51,16 @@ internal class ResourceRecords(
       return false
     }
     assert(record.size() > 0)
-    var role = getOrNull(record, ResourceFields.ROLE.toString())
+    var role = getOrNull(record, ResourceDefaultColumn.ROLE.toString())
     if (role != null && myRoleManager.getRole(role) == null) {
       val newRole = myRoleManager.projectRoleSet.createRole(role)
       role = newRole.persistentID
     }
     val hr = resourceManager.newResourceBuilder()
-        .withName(getOrNull(record, ResourceFields.NAME.toString()))
-        .withID(record.getInt(ResourceFields.ID.toString()))
-        .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
-        .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
+        .withName(getOrNull(record, ResourceDefaultColumn.NAME.toString()))
+        .withID(record.getInt(ResourceDefaultColumn.ID.toString()))
+        .withEmail(getOrNull(record, ResourceDefaultColumn.EMAIL.toString()))
+        .withPhone(getOrNull(record, ResourceDefaultColumn.PHONE.toString()))
         .withRole(role)
         .withStandardRate(record.getBigDecimal(ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build()
