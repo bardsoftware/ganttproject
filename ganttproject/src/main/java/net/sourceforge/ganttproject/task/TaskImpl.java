@@ -207,6 +207,11 @@ public class TaskImpl implements Task {
     return result;
   }
 
+  @Override
+  public int getRowId() {
+    return getTaskID();
+  }
+
   class MutatorException extends RuntimeException {
     public MutatorException(String msg) {
       super(msg);

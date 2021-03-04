@@ -221,7 +221,7 @@ public class GanttProjectImpl implements IGanttProject {
 
   ;
 
-  private static Color DEFAULT_TASK_COLOR = new Color(140, 182, 206);
+  static public final Color DEFAULT_TASK_COLOR = new Color(140, 182, 206);
 
   private static class TaskManagerConfigImpl implements TaskManagerConfig {
     private final HumanResourceManager myResourceManager;

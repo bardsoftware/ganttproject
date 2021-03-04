@@ -28,6 +28,7 @@ import biz.ganttproject.core.chart.render.AlphaRenderingOption;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import com.google.common.collect.Lists;
 
 import java.awt.*;
@@ -39,7 +40,7 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class TaskActivitySceneBuilder<T, A extends BarChartActivity<T>> {
+public class TaskActivitySceneBuilder<T extends IdentifiableRow, A extends BarChartActivity<T>> {
   private final Canvas myCanvas;
   private final TaskLabelSceneBuilder<T> myLabelsRenderer;
   private final Style myStyle;

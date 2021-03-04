@@ -25,8 +25,8 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
@@ -91,7 +91,7 @@ public class DependencyTagHandler extends AbstractTagHandler implements ParsingL
       String hardnessAsString = attrs.getValue("hardness");
       if (dependencyTypeAsString != null) {
         try {
-          gds.setDependType(TaskDependencyConstraint.Type.fromPersistentValue(dependencyTypeAsString));
+          gds.setDependType(ConstraintType.fromPersistentValue(dependencyTypeAsString));
         } catch (NumberFormatException e) {
         }
       }
@@ -140,7 +140,7 @@ public class DependencyTagHandler extends AbstractTagHandler implements ParsingL
 
     public int difference = 0;
 
-    public TaskDependencyConstraint.Type dependType = TaskDependencyConstraint.Type.finishstart;
+    public ConstraintType dependType = ConstraintType.finishstart;
 
     private Hardness myHardness = TaskDependency.Hardness.STRONG;
 
@@ -163,7 +163,7 @@ public class DependencyTagHandler extends AbstractTagHandler implements ParsingL
       this.successorTaskID = successorTaskID;
     }
 
-    public void setDependType(TaskDependencyConstraint.Type dependType) {
+    public void setDependType(ConstraintType dependType) {
       this.dependType = dependType;
     }
   }

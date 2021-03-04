@@ -18,18 +18,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.util;
 
-import java.awt.Color;
 import biz.ganttproject.core.option.ColorOption;
+
+import java.awt.*;
 
 public class ColorConvertion {
 
   /** @return the color as hexadecimal version like #RRGGBB */
   public static String getColor(Color color) {
-    return ColorOption.Util.getColor(color);
+    return ColorOption.Util.INSTANCE.getColor(color);
   }
 
   /** parse a string as hew and return the corresponding color. */
   public static Color determineColor(String hexString) {
-    return ColorOption.Util.determineColor(hexString);
+    return ColorOption.Util.INSTANCE.determineColor(hexString);
   }
 }

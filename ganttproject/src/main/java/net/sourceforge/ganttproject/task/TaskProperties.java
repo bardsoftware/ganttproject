@@ -30,7 +30,7 @@ import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Type;
+import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import java.text.MessageFormat;
@@ -174,7 +174,7 @@ public class TaskProperties {
             return builder.toString();
           }
           TaskDependencyConstraint constraint = input.getConstraint();
-          if (constraint.getType() == Type.finishstart && input.getDifference() == 0 && input.getHardness() == TaskDependency.Hardness.STRONG) {
+          if (constraint.getType() == ConstraintType.finishstart && input.getDifference() == 0 && input.getHardness() == TaskDependency.Hardness.STRONG) {
             return builder.toString();
           }
           builder.append("-").append(constraint.getType().getReadablePersistentValue());
@@ -240,7 +240,7 @@ public class TaskProperties {
     if (predecessor == null) {
       throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
     }
-    TaskDependencyConstraint.Type depType = TaskDependencyConstraint.Type.fromReadablePersistentValue(depSpec.substring(posDash + 1, posDash + 3));
+    ConstraintType depType = ConstraintType.fromReadablePersistentValue(depSpec.substring(posDash + 1, posDash + 3));
     if (depSpec.length() == posDash + 3) {
       final TaskDependencyConstraint constraint = taskMgr.createConstraint(depType);
       out.put(predecessorId, () -> {

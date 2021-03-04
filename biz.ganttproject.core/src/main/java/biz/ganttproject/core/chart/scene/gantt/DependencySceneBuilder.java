@@ -22,6 +22,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Line;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.BarChartConnector;
+import biz.ganttproject.core.chart.scene.IdentifiableRow;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.List;
  *
  * @author Dmitry Barashev
  */
-public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
+public class DependencySceneBuilder<T extends IdentifiableRow, D extends BarChartConnector<T, D>> {
   private final Canvas myTaskCanvas;
   private final Canvas myOutputCanvas;
   private final ChartApi myChartApi;
@@ -41,7 +42,7 @@ public class DependencySceneBuilder<T, D extends BarChartConnector<T, D>> {
   private int myBarHeight;
   private Canvas.Arrow myFinishArrow;
 
-  public interface TaskApi<T, D> {
+  public interface TaskApi<T extends IdentifiableRow, D> {
     boolean isMilestone(T task);
     Dimension getUnitVector(BarChartActivity<T> activity, D dependency);
     String getStyle(D dependency);
