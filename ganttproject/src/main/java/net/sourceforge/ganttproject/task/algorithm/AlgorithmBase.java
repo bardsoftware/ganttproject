@@ -26,6 +26,7 @@ public class AlgorithmBase {
 
   public static interface Diagnostic {
     void addModifiedTask(Task t, Date newStart, Date newEnd);
+    void logError(Exception ex);
   }
 
   private boolean isEnabled = true;

@@ -25,6 +25,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
@@ -81,6 +82,11 @@ class ProjectOpenDiagnosticImpl implements AlgorithmBase.Diagnostic {
       myHasOnlyEndDateChange = true;
     }
     myModifiedTasks.put(t, entry);
+  }
+
+  @Override
+  public void logError(Exception ex) {
+    GPLogger.log(ex);
   }
 
   void addReason(Task t, String reasonKey) {

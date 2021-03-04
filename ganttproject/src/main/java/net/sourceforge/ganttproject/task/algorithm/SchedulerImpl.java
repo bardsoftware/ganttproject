@@ -108,7 +108,7 @@ public class SchedulerImpl extends AlgorithmBase {
         try {
           schedule(node);
         } catch (IllegalArgumentException e) {
-          GPLogger.log(e);
+          getDiagnostic().logError(e);
         }
       }
     }
