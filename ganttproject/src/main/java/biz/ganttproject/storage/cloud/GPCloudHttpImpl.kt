@@ -205,94 +205,49 @@ class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
 internal enum class CloseReason {
   UNKNOWN, INVALID_UID, UNKNOWN_HEARTBEAT, NETWORK_FAILURE
 }
-class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
-  private lateinit var webSocket: WebSocket
-  private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
-  private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
-  private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
-  private val closeListeners = mutableListOf<(CloseReason) -> Unit>()
 
-  lateinit var onAuthCompleted: () -> Unit
+private class WebSocketListenerImpl(
+    private val token: String,
+    private val onAuthCompleted: () -> Unit,
+    private val onPayload: (ObjectNode) -> Unit,
+    private val onClose: (CloseReason) -> Unit
+) : WebSocketListener() {
+  private lateinit var webSocket: WebSocket
 
   override fun onOpen(webSocket: WebSocket, response: Response) {
     LOG.debug("WebSocket opened")
     this.webSocket = webSocket
-    this.trySendToken()
-  }
-
-  private fun trySendToken() {
     LOG.debug("Trying sending token ${this.token}")
     this.webSocket.send("Basic ${this.token}")
-    this.onAuthCompleted()
+    onAuthCompleted()
   }
 
   override fun onMessage(webSocket: WebSocket, text: String?) {
     val payload = OBJECT_MAPPER.readTree(text)
     if (payload is ObjectNode) {
       LOG.debug("WebSocket message:\n{}", payload)
-      payload.get("type")?.textValue()?.let {
-        when (it) {
-          "ProjectLockStatusChange" -> onLockStatusChange(payload)
-          "ProjectChange", "ProjectRevert" -> onProjectContentsChange(payload)
-          else -> onStructureChange(payload)
-        }
-      }
+      onPayload(payload)
     }
-  }
-
-  private fun onStructureChange(payload: ObjectNode) {
-    for (listener in this.structureChangeListeners) {
-      listener(Any())
-    }
-  }
-
-  private fun onLockStatusChange(payload: ObjectNode) {
-    for (listener in this.lockStatusChangeListeners) {
-      listener(payload)
-    }
-  }
-
-  private fun onProjectContentsChange(payload: ObjectNode) {
-    LOG.debug("ProjectChange: {}", payload)
-    this.contentChangeListeners.forEach { it(payload) }
   }
 
   override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
     LOG.error("WebSocket closed. Code={}, reason={}", code, reason ?: "")
-    if (code == 1003) {
+    val reasonEnum = if (code == 1003) {
       when (reason) {
-        "UNKNOWN_HEARTBEAT" -> this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN_HEARTBEAT) }
-        "INVALID_UID" -> this.closeListeners.forEach { it.invoke(CloseReason.INVALID_UID) }
-        else -> this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN) }
+        "UNKNOWN_HEARTBEAT" -> CloseReason.UNKNOWN_HEARTBEAT
+        "INVALID_UID" -> CloseReason.INVALID_UID
+        else -> CloseReason.UNKNOWN
       }
     } else {
-      this.closeListeners.forEach { it.invoke(CloseReason.UNKNOWN) }
+      CloseReason.UNKNOWN
     }
+    onClose(reasonEnum)
   }
 
   override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
     LOG.error("WebSocket network failure: {}", response ?: "", exception = t)
-    this.closeListeners.forEach { it.invoke(CloseReason.NETWORK_FAILURE) }
+    onClose(CloseReason.NETWORK_FAILURE)
   }
-
-  fun addOnStructureChange(listener: (Any) -> Unit) {
-    this.structureChangeListeners.add(listener)
-  }
-
-  fun addOnLockStatusChange(listener: (ObjectNode) -> Unit) {
-    this.lockStatusChangeListeners.add(listener)
-  }
-
-  fun addOnContentChange(listener: (ObjectNode) -> Unit) {
-    this.contentChangeListeners.add(listener)
-  }
-
-  internal fun addOnClosed(listener: (CloseReason) -> Unit) = this.closeListeners.add(listener)
-  fun clear() {
-    this.webSocket.close(1000, "Restart")
-    listOf(contentChangeListeners, lockStatusChangeListeners, structureChangeListeners).forEach { it.clear() }
-  }
-
 }
 
 class WebSocketClient {
@@ -300,55 +255,108 @@ class WebSocketClient {
   private var wsListener: WebSocketListenerImpl? = null
   private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
   private var websocket: WebSocket? = null
+  private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
+  private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private var listeningDocument: GPCloudDocument? = null
 
   fun start() {
+
     LOG.debug("WebSocket started")
     val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
-    this.wsListener?.clear()
+    this.websocket?.close(1000, "Reset Websocket")
     this.heartbeatFuture?.cancel(true)
-    wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken).also {
-      it.onAuthCompleted = {
-        this.heartbeatFuture = this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
-      }
-      it.addOnClosed { reason ->
-        LOG.debug("WebSocket closed. reason={}", reason)
-        when (reason) {
-          CloseReason.UNKNOWN_HEARTBEAT -> GlobalScope.launch {
-            LOG.debug("Trying to restart WebSocket")
-            delay(Random.nextLong(10000, 60000))
-            start()
-          }
-          CloseReason.INVALID_UID -> LOG.error("Need to re-authenticate!")
-          CloseReason.NETWORK_FAILURE -> GlobalScope.launch {
-            LOG.error("Trying to restart WebSocket")
-            delay(Random.nextLong(10000, 60000))
-            start()
-          }
-          else -> {
-            LOG.error("WebSocket has been closed")
-          }
-        }
-      }
-    }
+    wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage, this::onClose)
     this.websocket = OkHttpClient.Builder()
       .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
       .build().newWebSocket(req, this.wsListener)
   }
 
+  private fun onAuthDone() {
+    this.heartbeatFuture = this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
+  }
+
+  private fun onMessage(payload: ObjectNode) {
+    payload.get("type")?.textValue()?.let {
+      when (it) {
+        "ProjectLockStatusChange" -> fireLockStatusChange(payload)
+        "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
+        else -> fireStructureChange(payload)
+      }
+    }
+  }
+
+  private fun onClose(reason: CloseReason) {
+    LOG.debug("WebSocket closed. reason={}", reason)
+    when (reason) {
+      CloseReason.UNKNOWN_HEARTBEAT -> GlobalScope.launch {
+        LOG.debug("Trying to restart WebSocket")
+        delay(Random.nextLong(10000, 60000))
+        start()
+      }
+      CloseReason.INVALID_UID -> LOG.error("Need to re-authenticate!")
+      CloseReason.NETWORK_FAILURE -> GlobalScope.launch {
+        LOG.error("Trying to restart WebSocket")
+        delay(Random.nextLong(10000, 60000))
+        start()
+      }
+      else -> {
+        LOG.error("WebSocket has been closed")
+      }
+    }
+  }
+
+  private fun fireStructureChange(payload: ObjectNode) {
+    for (listener in this.structureChangeListeners) {
+      listener(Any())
+    }
+  }
+
+  private fun fireLockStatusChange(payload: ObjectNode) {
+    for (listener in this.lockStatusChangeListeners) {
+      listener(payload)
+    }
+  }
+
+  private fun fireContentsChange(payload: ObjectNode) {
+    LOG.debug("ProjectChange: {}", payload)
+    this.contentChangeListeners.forEach { it(payload) }
+  }
+
   fun onStructureChange(listener: (Any) -> Unit) {
-    this.wsListener?.addOnStructureChange(listener)
+    this.structureChangeListeners.add(listener)
   }
 
-  fun onLockStatusChange(listener: (ObjectNode) -> Unit) {
-    this.wsListener?.addOnLockStatusChange(listener)
+  fun onLockStatusChange(listener: (ObjectNode) -> Unit): ()->Unit {
+    this.lockStatusChangeListeners.add(listener)
+    return {
+      this.lockStatusChangeListeners.remove(listener)
+    }
   }
 
-  fun onContentChange(listener: (ObjectNode) -> Unit) {
-    this.wsListener?.addOnContentChange(listener)
+  fun onContentChange(listener: (ObjectNode) -> Unit): ()->Unit {
+    this.contentChangeListeners.add(listener)
+    return {
+      this.contentChangeListeners.remove(listener)
+    }
   }
 
-  fun sendHeartbeat() {
-    this.websocket?.send("HB")
+  private fun sendHeartbeat() {
+    this.websocket?.let { websocket ->
+      websocket.send("HB")
+    }
+  }
+
+  fun register(document: GPCloudDocument) {
+    this.listeningDocument?.let {
+      it.detachWebsocket(this)
+    }
+    this.listeningDocument = document.also {
+      it.attachWebsocket(this)
+    }
+    if (this.heartbeatFuture?.let { it.isCancelled } != false) {
+      this.start()
+    }
   }
 }
 
