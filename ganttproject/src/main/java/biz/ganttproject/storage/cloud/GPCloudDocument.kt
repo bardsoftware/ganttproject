@@ -475,21 +475,31 @@ class GPCloudDocument(private val teamRefid: String?,
 
   override fun isLocal(): Boolean = false
 
-  fun listenEvents(webSocket: WebSocketClient) {
-    webSocket.apply {
-      onLockStatusChange { msg ->
+  private val websocketCleaners = mutableListOf<()->Unit>()
+  fun attachWebsocket(webSocket: WebSocketClient) {
+    websocketCleaners.add(webSocket.onLockStatusChange { msg ->
+      if (msg["projectRefid"].textValue() == this.projectRefid) {
         if (!msg["locked"].booleanValue()) {
           status.set(LockStatus(false))
         } else {
-          status.set(LockStatus(locked = true,
+          status.set(
+            LockStatus(
+              locked = true,
               lockOwnerName = msg.path("author")?.path("name")?.textValue(),
               lockOwnerEmail = null,
-              lockOwnerId = msg.path("author")?.path("id")?.textValue()))
+              lockOwnerId = msg.path("author")?.path("id")?.textValue()
+            )
+          )
         }
       }
+    })
 
-      onContentChange { msg -> GlobalScope.launch(Dispatchers.IO) { onWebSocketContentChange(msg) }}
-    }
+    websocketCleaners.add(webSocket.onContentChange { msg -> GlobalScope.launch(Dispatchers.IO) { onWebSocketContentChange(msg) }})
+  }
+
+  fun detachWebsocket(webSocket: WebSocketClient) {
+    this.websocketCleaners.forEach { it() }
+    this.websocketCleaners.clear()
   }
 
   internal suspend fun onWebSocketContentChange(msg: ObjectNode) {
@@ -552,7 +562,7 @@ class GPCloudDocument(private val teamRefid: String?,
 fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSocketClient) {
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
-  this.listenEvents(webSocket)
+  webSocket.register(this)
   if (GPCloudOptions.defaultOfflineMode.value && !GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint).onlineOnly.toBoolean()) {
     this.modeValue = OnlineDocumentMode.MIRROR
   }
