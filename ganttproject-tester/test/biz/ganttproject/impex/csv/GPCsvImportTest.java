@@ -332,8 +332,10 @@ public class GPCsvImportTest extends TestCase {
     String data3 = "3,t3,24/07/12,26/07/12,1,1.2";
     String data4 = "4,t4,24/07/12,25/07/12,1,1.2.1";
     String data5 = "5,t5,25/07/12,26/07/12,1,1.2.2";
+    String data6 = "6,t6,25/07/12,26/07/12,1,3.0";
+    String data7 = "7,t7,25/07/12,26/07/12,1,3.1";
 
-    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5)) {
+    for (Pair<SpreadsheetFormat, Supplier<InputStream>> pair : createPairs(header1, data1, data2, data3, data4, data5, data6, data7)) {
       TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
       TaskManager taskManager = builder.build();
       Map<String, Task> taskMap = doTestImportAssignments(pair.second(), pair.first(), builder, taskManager, null, null);
@@ -343,10 +345,13 @@ public class GPCsvImportTest extends TestCase {
       Task t3 = taskMap.get("t3");
       Task t4 = taskMap.get("t4");
       Task t5 = taskMap.get("t5");
+      Task t6 = taskMap.get("t6");
+      Task t7 = taskMap.get("t7");
       assertEquals(t3, hierarchy.getContainer(t5));
       assertEquals(t3, hierarchy.getContainer(t4));
       assertEquals(t1, hierarchy.getContainer(t3));
       assertEquals(t1, hierarchy.getContainer(t2));
+      assertEquals(t6, hierarchy.getContainer(t7));
     }
   }
 
