@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.random.Random
 
 class GPCloudException(val status: Int) : Exception()
@@ -205,7 +206,7 @@ internal enum class CloseReason {
   UNKNOWN, INVALID_UID, UNKNOWN_HEARTBEAT, NETWORK_FAILURE
 }
 class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
-  private var webSocket: WebSocket? = null
+  private lateinit var webSocket: WebSocket
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
@@ -221,13 +222,11 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
 
   private fun trySendToken() {
     LOG.debug("Trying sending token ${this.token}")
-    if (this.webSocket != null && this.token != null) {
-      this.webSocket?.send("Basic ${this.token}")
-      this.onAuthCompleted()
-    }
+    this.webSocket.send("Basic ${this.token}")
+    this.onAuthCompleted()
   }
 
-  override fun onMessage(webSocket: WebSocket?, text: String?) {
+  override fun onMessage(webSocket: WebSocket, text: String?) {
     val payload = OBJECT_MAPPER.readTree(text)
     if (payload is ObjectNode) {
       LOG.debug("WebSocket message:\n{}", payload)
@@ -278,7 +277,6 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
 
   fun addOnStructureChange(listener: (Any) -> Unit) {
     this.structureChangeListeners.add(listener)
-    //return { this.structureChangeListeners.remove(listener) }
   }
 
   fun addOnLockStatusChange(listener: (ObjectNode) -> Unit) {
@@ -290,6 +288,10 @@ class WebSocketListenerImpl(private val token: String?) : WebSocketListener() {
   }
 
   internal fun addOnClosed(listener: (CloseReason) -> Unit) = this.closeListeners.add(listener)
+  fun clear() {
+    this.webSocket.close(1000, "Restart")
+    listOf(contentChangeListeners, lockStatusChangeListeners, structureChangeListeners).forEach { it.clear() }
+  }
 
 }
 
@@ -300,8 +302,9 @@ class WebSocketClient {
   private var websocket: WebSocket? = null
 
   fun start() {
+    LOG.debug("WebSocket started")
     val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
-    this.websocket?.let { it.cancel() }
+    this.wsListener?.clear()
     this.heartbeatFuture?.cancel(true)
     wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken).also {
       it.onAuthCompleted = {
