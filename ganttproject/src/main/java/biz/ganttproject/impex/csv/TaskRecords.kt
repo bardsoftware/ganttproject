@@ -161,7 +161,12 @@ class TaskRecords(
     }
     myAssignmentMap[task] = parseAssignmentSpec(record)
     myPredecessorMap[task] = getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName())
-    val outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())
+    val outlineNumber =
+      getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())?.let {
+        if (it.endsWith(".0")) {
+          it.removeSuffix(".0")
+        } else it
+      }
     if (outlineNumber != null) {
       myWbsMap[outlineNumber] = task
     }
