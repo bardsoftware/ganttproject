@@ -286,7 +286,7 @@ class ProjectSaveFlow(
   fun run() {
     try {
       project.document?.let {
-        if (it.asLocalDocument()?.canRead() != true) {
+        if (it.asLocalDocument()?.canRead() == false) {
           saveProjectAs(project)
         } else {
           if (it is ProxyDocument) {
@@ -357,6 +357,7 @@ class ProjectSaveFlow(
     try {
       saveProject(document)
     } catch (e: VersionMismatchException) {
+      done(success = false)
       val onlineDoc = document.asOnlineDocument()
       if (onlineDoc != null) {
         OptionPaneBuilder<VersionMismatchChoice>().also {
