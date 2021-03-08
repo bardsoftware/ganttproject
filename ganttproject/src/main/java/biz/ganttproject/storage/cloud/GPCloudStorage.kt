@@ -99,7 +99,7 @@ class GPCloudStorage(
       }
       signupPane.tryAccessToken(
           success = Consumer {
-            webSocket.start()
+            //webSocket.start()
             GlobalScope.launch(Dispatchers.Main) {
               sceneChanger(storageUi, SceneId.BROWSER)
               browserPane.reset()

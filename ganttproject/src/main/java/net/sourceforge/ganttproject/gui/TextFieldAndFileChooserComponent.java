@@ -18,33 +18,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.awt.Component;
-import java.awt.Container;
+import com.google.common.base.Objects;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.OkAction;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.text.JTextComponent;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.OkAction;
-
-import com.google.common.base.Objects;
 
 /**
  * @author bard
@@ -273,7 +264,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
   }
 
   private File getWorkingDir() {
-    return new File(System.getProperty("user.dir"));
+    return new File(System.getProperty("user.home"));
   }
 
   public void tryFile() {

@@ -19,13 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.table.ColumnList;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -94,10 +97,7 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
-      if (currentSelection != null) {
-        expandAll(currentSelection);
-      }
+      RootNodesAlgorithm.getSelectionRoots(getSelectedNodes()).forEach(node -> expandAll(TreeUtil.createPath(node)));
     }
   }
 
@@ -108,12 +108,10 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      TreePath currentSelection = getTree().getTreeSelectionModel().getSelectionPath();
-      if (currentSelection != null) {
-        collapseAll(currentSelection);
-      }
+      RootNodesAlgorithm.getSelectionRoots(getSelectedNodes()).forEach(node -> collapseAll(TreeUtil.createPath(node)));
     }
   }
+
   TreeTableContainer(Pair<TreeTableClass, TreeTableModelClass> tableAndModel) {
     super(new BorderLayout());
     myTreeTableModel = tableAndModel.second();
@@ -349,4 +347,15 @@ public abstract class TreeTableContainer<ModelObject, TreeTableClass extends GPT
   }
 
   public abstract void addToolbarActions(ToolbarBuilder builder);
+
+  private static class RootNodesAlgorithm {
+    private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = node -> (DefaultMutableTreeTableNode) node.getParent();
+    private static final RetainRootsAlgorithm<DefaultMutableTreeTableNode> retainRoots = new RetainRootsAlgorithm<>();
+
+    static List<DefaultMutableTreeTableNode> getSelectionRoots(DefaultMutableTreeTableNode[] selectedNodes) {
+      List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
+      retainRoots.run(selectedNodes, getParentNode, selectedRoots);
+      return selectedRoots;
+    }
+  }
 }

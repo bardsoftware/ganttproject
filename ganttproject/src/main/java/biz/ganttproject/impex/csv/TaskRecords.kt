@@ -135,11 +135,10 @@ class TaskRecords(
     }
 
     if (record.isSet(TaskFields.COLOR.toString())) {
-      val taskColorAsString = getOrNull(record, TaskFields.COLOR.toString())
-      if (ColorOption.Util.isValidColor(taskColorAsString)) {
-        builder.withColor(ColorConvertion.determineColor(taskColorAsString))
-      } else if (taskManager.taskDefaultColorOption.value != null) {
-        builder.withColor(taskManager.taskDefaultColorOption.value)
+      getOrNull(record, TaskFields.COLOR.toString())?.let {
+        if (ColorOption.Util.isValidColor(it)) {
+          builder = builder.withColor(ColorConvertion.determineColor(it))
+        }
       }
     }
 
@@ -162,7 +161,12 @@ class TaskRecords(
     }
     myAssignmentMap[task] = parseAssignmentSpec(record)
     myPredecessorMap[task] = getOrNull(record, TaskDefaultColumn.PREDECESSORS.getName())
-    val outlineNumber = getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())
+    val outlineNumber =
+      getOrNull(record, TaskDefaultColumn.OUTLINE_NUMBER.getName())?.let {
+        if (it.endsWith(".0")) {
+          it.removeSuffix(".0")
+        } else it
+      }
     if (outlineNumber != null) {
       myWbsMap[outlineNumber] = task
     }
