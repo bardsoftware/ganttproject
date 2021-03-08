@@ -193,23 +193,23 @@ public class ProxyDocument implements Document {
   }
 
   public void createContents() throws IOException {
-    GPSaver saver = myParserFactory.newSaver();
-    ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-    saver.save(bufferStream);
-    bufferStream.flush();
-    myContents = bufferStream.toByteArray();
+    if (myContents == null) {
+      GPSaver saver = myParserFactory.newSaver();
+      ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
+      saver.save(bufferStream);
+      bufferStream.flush();
+      myContents = bufferStream.toByteArray();
+    }
   }
   @Override
   public void write() throws IOException {
     if (myContents == null) {
       createContents();
     }
-    OutputStream output = getOutputStream();
-    try {
+    try (OutputStream output = getOutputStream()) {
       output.write(myContents);
       output.flush();
     } finally {
-      output.close();
       myContents = null;
     }
   }
