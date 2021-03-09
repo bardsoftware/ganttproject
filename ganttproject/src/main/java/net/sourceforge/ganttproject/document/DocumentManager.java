@@ -39,7 +39,7 @@ public interface DocumentManager {
 
   Document getDocument(String path);
 
-  Document getProxyDocument(Document physicalDocument);
+  ProxyDocument getProxyDocument(Document physicalDocument);
 
   void changeWorkingDirectory(File parentFile);
 

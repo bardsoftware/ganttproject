@@ -33,7 +33,9 @@ import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
@@ -41,6 +43,7 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
@@ -68,125 +71,34 @@ class ProjectUIFacadeImpl(
       GPLogger.logToLogger("We're saving the project now. This save request was rejected")
     }
     isSaving = true
-    GlobalScope.launch {
-      try {
-        if (project.document == null) {
-          saveProjectAs(project)
-          onFinish?.send(true)
-          return@launch
+    try {
+      val broadcastChannel = BroadcastChannel<Boolean>(1)
+      broadcastChannel.openSubscription().let { channel ->
+        GlobalScope.launch {
+          if (channel.receive()) {
+            afterSaveProject(project)
+          }
         }
-
-        if (project.document.asLocalDocument()?.canRead() == false) {
-          saveProjectAs(project)
-          onFinish?.send(true)
-          return@launch
-        }
-
-        val document = project.document
-        saveProjectTryWrite(project, document)
-        onFinish?.send(true)
-      } finally {
-        isSaving = false
       }
+      onFinish?.let {
+        broadcastChannel.openSubscription().let { channel -> GlobalScope.launch { it.send(channel.receive()) }}
+      }
+      ProjectSaveFlow(project = project, onFinish = broadcastChannel,
+        signin = this::signin,
+        error = myWorkbenchFacade::showErrorDialog,
+        saveAs = { saveProjectAs(project) }
+      ).run()
+    } finally {
+      isSaving = false
     }
+  }
+
+  override fun saveProjectAs(project: IGanttProject) {
+    StorageDialogAction(project, this, project.documentManager,
+      (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, StorageDialogBuilder.Mode.SAVE, "project.save").actionPerformed(null)
   }
 
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
-  private fun saveProjectTryWrite(project: IGanttProject, document: Document): Boolean {
-    val canWrite = document.canWrite()
-    if (!canWrite.isOK) {
-      GPLogger.getLogger(Document::class.java).log(Level.INFO, canWrite.message, canWrite.exception)
-      OptionPaneBuilder<CantWriteChoice>().also {
-        it.i18n = RootLocalizer.createWithRootKey(
-            rootKey = "document.error.write.cantWrite",
-            baseLocalizer = RootLocalizer
-        )
-        it.styleClass = "dlg-lock"
-        it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-        it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-        it.titleString.update(document.fileName)
-        it.titleHelpString?.update(canWrite.message)
-        it.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK, "64").also { icon ->
-          icon.styleClass.add("img")
-        }
-        it.elements = listOf(
-            OptionElementData("document.option.makeCopy", CantWriteChoice.MAKE_COPY, true),
-            OptionElementData("cancel", CantWriteChoice.CANCEL, false),
-            OptionElementData("generic.retry", CantWriteChoice.RETRY, false),
-        )
-        it.showDialog { choice ->
-          SwingUtilities.invokeLater {
-            when (choice) {
-              CantWriteChoice.MAKE_COPY -> {
-                saveProjectAs(project)
-              }
-              CantWriteChoice.RETRY -> {
-                saveProjectTryWrite(project, document)
-              }
-              else -> {}
-            }
-          }
-        }
-      }
-      return false
-    }
-    return saveProjectTryLock(project, document)
-  }
-
-  private fun saveProjectTryLock(project: IGanttProject, document: Document): Boolean {
-    return saveProjectTrySave(project, document)
-  }
-
-  enum class VersionMismatchChoice { OVERWRITE, MAKE_COPY }
-
-  private fun saveProjectTrySave(project: IGanttProject, document: Document): Boolean {
-    try {
-      saveProject(document)
-      afterSaveProject(project)
-      return true
-    } catch (e: VersionMismatchException) {
-      val onlineDoc = document.asOnlineDocument()
-      if (onlineDoc != null) {
-        OptionPaneBuilder<VersionMismatchChoice>().also {
-          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch", baseLocalizer = RootLocalizer)
-          it.styleClass = "dlg-lock"
-          it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-          it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-          it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64").also {icon ->
-            icon.styleClass.add("img")
-          }
-          it.elements = Lists.newArrayList(
-              OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
-              OptionElementData("document.option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
-          )
-          it.showDialog { choice ->
-            SwingUtilities.invokeLater {
-              when (choice) {
-                VersionMismatchChoice.OVERWRITE -> {
-                  onlineDoc.write(force = true)
-                  afterSaveProject(project)
-                }
-                VersionMismatchChoice.MAKE_COPY -> {
-                  saveProjectAs(project)
-                }
-              }
-            }
-          }
-
-        }
-      }
-      return false
-    } catch (e: ForbiddenException) {
-      signin {
-        saveProjectTrySave(project, document)
-      }
-      return false
-    } catch (e: Throwable) {
-      myWorkbenchFacade.showErrorDialog(e)
-      return false
-    }
-
-  }
 
   private fun signin(onAuth: ()->Unit) {
     dialog {
@@ -221,17 +133,6 @@ class ProjectUIFacadeImpl(
       }
     }
     project.isModified = false
-  }
-
-  @Throws(IOException::class)
-  private fun saveProject(document: Document) {
-    //myWorkbenchFacade.setStatusText(GanttLanguage.getInstance().getText("saving") + " " + document.path)
-    document.write()
-  }
-
-  override fun saveProjectAs(project: IGanttProject) {
-    StorageDialogAction(project, this, project.documentManager,
-        (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, StorageDialogBuilder.Mode.SAVE, "project.save").actionPerformed(null)
   }
 
   /**
@@ -370,3 +271,138 @@ class ProjectUIFacadeImpl(
   }
 }
 
+@ExperimentalCoroutinesApi
+class ProjectSaveFlow(
+    private val project: IGanttProject,
+    private val onFinish: BroadcastChannel<Boolean>,
+    private val signin: (()->Unit) -> Unit,
+    private val error: (Exception) -> Unit,
+    private val saveAs: () -> Unit) {
+
+  private fun done(success: Boolean) {
+    GlobalScope.launch { onFinish.send(success) }
+  }
+
+  fun run() {
+    try {
+      project.document?.let {
+        if (it.asLocalDocument()?.canRead() == false) {
+          saveProjectAs(project)
+        } else {
+          if (it is ProxyDocument) {
+            it.createContents()
+          }
+          saveProjectTryWrite(project, it)
+        }
+      } ?: run {
+        saveProjectAs(project)
+      }
+    } catch (ex: Exception) {
+      error(ex)
+      done(success = false)
+    }
+  }
+
+
+  private fun saveProjectTryWrite(project: IGanttProject, document: Document) {
+    val canWrite = document.canWrite()
+    if (!canWrite.isOK) {
+      GPLogger.getLogger(Document::class.java).log(Level.INFO, canWrite.message, canWrite.exception)
+      OptionPaneBuilder<ProjectUIFacadeImpl.CantWriteChoice>().also {
+        it.i18n = RootLocalizer.createWithRootKey(
+          rootKey = "document.error.write.cantWrite",
+          baseLocalizer = RootLocalizer
+        )
+        it.styleClass = "dlg-lock"
+        it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+        it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+        it.titleString.update(document.fileName)
+        it.titleHelpString?.update(canWrite.message)
+        it.graphic = FontAwesomeIconView(FontAwesomeIcon.LOCK, "64").also { icon ->
+          icon.styleClass.add("img")
+        }
+        it.elements = listOf(
+          OptionElementData("document.option.makeCopy", ProjectUIFacadeImpl.CantWriteChoice.MAKE_COPY, true),
+          OptionElementData("cancel", ProjectUIFacadeImpl.CantWriteChoice.CANCEL, false),
+          OptionElementData("generic.retry", ProjectUIFacadeImpl.CantWriteChoice.RETRY, false),
+        )
+        it.showDialog { choice ->
+          SwingUtilities.invokeLater {
+            when (choice) {
+              ProjectUIFacadeImpl.CantWriteChoice.MAKE_COPY -> {
+                saveProjectAs(project)
+              }
+              ProjectUIFacadeImpl.CantWriteChoice.RETRY -> {
+                saveProjectTryWrite(project, document)
+              }
+              else -> {
+                done(success = false)
+              }
+            }
+          }
+        }
+      }
+    } else {
+      saveProjectTryLock(project, document)
+    }
+  }
+
+  private fun saveProjectTryLock(project: IGanttProject, document: Document) {
+    saveProjectTrySave(project, document)
+  }
+
+  enum class VersionMismatchChoice { OVERWRITE, MAKE_COPY }
+
+  private fun saveProjectTrySave(project: IGanttProject, document: Document) {
+    try {
+      saveProject(document)
+    } catch (e: VersionMismatchException) {
+      done(success = false)
+      val onlineDoc = document.asOnlineDocument()
+      if (onlineDoc != null) {
+        OptionPaneBuilder<VersionMismatchChoice>().also {
+          it.i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.versionMismatch", baseLocalizer = RootLocalizer)
+          it.styleClass = "dlg-lock"
+          it.styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+          it.styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+          it.graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64").also {icon ->
+            icon.styleClass.add("img")
+          }
+          it.elements = Lists.newArrayList(
+            OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
+            OptionElementData("document.option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
+          )
+          it.showDialog { choice ->
+            SwingUtilities.invokeLater {
+              when (choice) {
+                VersionMismatchChoice.OVERWRITE -> {
+                  onlineDoc.write(force = true)
+                }
+                VersionMismatchChoice.MAKE_COPY -> {
+                  saveProjectAs(project)
+                }
+              }
+            }
+          }
+
+        }
+      }
+    } catch (e: ForbiddenException) {
+      signin {
+        saveProjectTrySave(project, document)
+      }
+    }
+  }
+
+  @Throws(IOException::class)
+  private fun saveProject(document: Document) {
+    //myWorkbenchFacade.setStatusText(GanttLanguage.getInstance().getText("saving") + " " + document.path)
+    document.write()
+    done(success = true)
+  }
+
+  private fun saveProjectAs(project: IGanttProject) {
+    done(success = false)
+    saveAs()
+  }
+}
