@@ -21,8 +21,6 @@ package biz.ganttproject.storage
 //import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
-import biz.ganttproject.storage.cloud.onboard
-import biz.ganttproject.storage.cloud.webSocket
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -32,6 +30,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
+import org.controlsfx.validation.ValidationResult
 import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
@@ -75,7 +74,12 @@ class RecentProjects(
 
       fun onAction() {
         selectedItem?.let {
-          it.asDocument()?.let(documentReceiver)
+          it.asDocument()?.let(documentReceiver) ?: run {
+            LOG.error("File {} seems to be not existing", it)
+            paneElements.setValidationResult(ValidationResult.fromError(
+              paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
+            ))
+          }
         }
       }
     }
@@ -91,6 +95,7 @@ class RecentProjects(
           },
           cellFactory = { CellWithBasePath() }
       )
+      withValidator { _, _ -> ValidationResult() }
     }.build()
     paneElements.breadcrumbView?.show()
     return paneElements.browserPane.also {
@@ -128,7 +133,7 @@ class RecentProjects(
   }
 }
 
-class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
   init {
@@ -197,6 +202,10 @@ class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDo
       else -> null
     }
 
+  override fun toString(): String {
+    return "RecentDocAsFolderItem(url=$url, scheme='$scheme', stored urlstring=$urlString)"
+  }
+
 
   override val isLocked: Boolean = false
   override val isLockable: Boolean = false
@@ -213,6 +222,7 @@ class RecentDocAsFolderItem(urlString: String) : FolderItem, Comparable<RecentDo
 
   val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
+
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.recent", BROWSE_PANE_LOCALIZER)
