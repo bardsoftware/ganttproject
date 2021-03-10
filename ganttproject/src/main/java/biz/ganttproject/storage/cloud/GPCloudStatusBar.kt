@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.dialog
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.*
 import com.evanlennick.retry4j.AsyncCallExecutor
@@ -72,6 +73,7 @@ import kotlin.random.Random
  */
 class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Document>, private val uiFacade: UIFacade) {
   private var onLatestVersionChange: ChangeListener<LatestVersion>? = null
+  private val btnConnect = Button("Connect")
   private val btnLock = Button().also {
     it.isVisible = false
   }
@@ -82,7 +84,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
   private val reconnectStatus = ReconnectStatus(reconnectLabel)
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(btnOffline, btnLock, reconnectLabel)
+    it.children.addAll(btnConnect, btnOffline, btnLock, reconnectLabel)
   }
 
   private val modeChangeListener = ChangeListener<OnlineDocumentMode> {
@@ -98,6 +100,9 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     observableDocument.addListener { _, oldDocument: Document?, newDocument: Document? ->
       onDocumentChange(oldDocument, newDocument)
     }
+    btnConnect.addEventHandler(ActionEvent.ACTION) {
+      showConnect()
+    }
     btnOffline.addEventHandler(ActionEvent.ACTION) {
       showProperties()
     }
@@ -106,6 +111,13 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
     }
   }
 
+  private fun showConnect() {
+    val signinPane = SigninPane { _, _, _, _ -> }
+    dialog { controller ->
+      controller.setContent(signinPane.createSigninPane())
+    }
+
+  }
   private fun showProperties() {
     this.observableDocument.get().apply {
       val onlineDocument = this.asOnlineDocument()
