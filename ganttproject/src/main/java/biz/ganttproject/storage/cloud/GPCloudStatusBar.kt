@@ -43,14 +43,15 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
+import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.decoration.Decorator
 import org.controlsfx.control.decoration.GraphicDecoration
-import java.lang.RuntimeException
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -64,13 +65,18 @@ import kotlin.math.roundToLong
 import kotlin.random.Random
 
 /**
- * This status bar appears in the bottom-lef corner of the app window and shows
+ * This status bar appears in the bottom-left corner of the app window and shows
  * document lock status and access mode. When clicked, it opens a dialog for changing
  * lock status and access mode.
  *
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Document>, private val uiFacade: UIFacade) {
+class GPCloudStatusBar(
+  private val observableDocument: ObservableObjectValue<Document>,
+  private val uiFacade: UIFacade,
+  private val projectUIFacade: ProjectUIFacade,
+  private val project: IGanttProject
+) {
   private var onLatestVersionChange: ChangeListener<LatestVersion>? = null
   private val btnLock = Button().also {
     it.isVisible = false
@@ -163,7 +169,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
         // Listen to the version updates
         onLatestVersionChange = ChangeListener { _, _, newValue ->
-          handleLatestVersionChange(newDoc, newValue)
+          handleLatestVersionChange(newDocument!!, newDoc, newValue)
         }
         newDoc.latestVersionProperty.addListener(onLatestVersionChange)
       } else {
@@ -249,7 +255,7 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
 
   // This is called when cloud document changes and we receive an update notification.
   // We want to show a dialog asking to reload document or ignore the update.
-  private fun handleLatestVersionChange(doc: OnlineDocument, newValue: LatestVersion) {
+  private fun handleLatestVersionChange(newDocument: Document, doc: OnlineDocument, newValue: LatestVersion) {
     OptionPaneBuilder<Boolean>().run {
       i18n = RootLocalizer.createWithRootKey("cloud.loadLatestVersion")
       graphic = FontAwesomeIconView(FontAwesomeIcon.REFRESH)
@@ -264,7 +270,10 @@ class GPCloudStatusBar(private val observableDocument: ObservableObjectValue<Doc
       showDialog { choice ->
         if (choice) {
           GlobalScope.launch(Dispatchers.IO) {
-            doc.fetch().update()
+            doc.fetch().also {
+              it.update()
+              projectUIFacade.openProject(newDocument, this@GPCloudStatusBar.project, null)
+            }
           }
         }
       }
