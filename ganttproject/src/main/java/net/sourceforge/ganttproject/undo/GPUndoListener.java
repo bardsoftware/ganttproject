@@ -25,4 +25,5 @@ import javax.swing.event.UndoableEditListener;
  */
 public interface GPUndoListener extends UndoableEditListener {
   void undoOrRedoHappened();
+  void undoReset();
 }
