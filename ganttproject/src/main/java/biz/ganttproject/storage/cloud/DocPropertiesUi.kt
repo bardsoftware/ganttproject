@@ -40,7 +40,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.BorderLayout
@@ -48,6 +50,7 @@ import java.awt.Component
 import java.time.Duration
 import java.util.*
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 typealias OnLockDone = (JsonNode?) -> Unit
 typealias BusyUi = (Boolean) -> Unit
@@ -178,7 +181,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
 
-  private fun createHistoryPane(): HistoryPaneData {
+  private fun createHistoryPane(fetchConsumer: (FetchResult) -> Unit): HistoryPaneData {
     val folderView = FolderView(
         exceptionUi = {},
         maybeCellFactory = this@DocPropertiesUi::createHistoryCell
@@ -201,7 +204,10 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
         GlobalScope.launch {
-          folderView.document?.fetchVersion(selected.generation)?.update()
+          folderView.document?.fetchVersion(selected.generation)?.also {
+            it.update()
+            fetchConsumer(it)
+          }
         }
       }
       add(btnGet, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER).also {
@@ -267,7 +273,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     val commitChanges: () -> Unit
   )
 
-  fun buildPane(document: GPCloudDocument): LockOfflinePaneElements {
+  fun buildPane(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit): LockOfflinePaneElements {
     val lockToggleGroup = ToggleGroup()
     val mirrorToggleGroup = ToggleGroup()
 
@@ -299,7 +305,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
 
     val lockingOffline = Tab(RootLocalizer.formatText("cloud.lockAndOfflinePane.tab"), vboxBuilder.vbox)
-    val historyPane = createHistoryPane()
+    val historyPane = createHistoryPane(fetchConsumer)
     val versions = Tab(RootLocalizer.formatText("cloud.historyPane.tab"), historyPane.pane)
     val tabPane = TabPane(lockingOffline, versions).also {
       it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
@@ -324,9 +330,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   }
 
 
-  fun showDialog(document: GPCloudDocument) {
+  fun showDialog(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
     dialog { dialogController ->
-      val paneElements = buildPane(document)
+      val paneElements = buildPane(document, fetchConsumer)
       dialogController.addStyleClass("dlg-lock")
       dialogController.addStyleClass("dlg-cloud-file-options")
       dialogController.addStyleSheet(
@@ -370,7 +376,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildScene(): Scene {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
     return if (onlineDocument is GPCloudDocument) {
-      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument).let {
+      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument, this::onOnlineDocFetch).let {
         paneElements = it
         Scene(vbox {
           addClasses("dlg-lock", "dlg-cloud-file-options")
@@ -387,6 +393,28 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     }
   }
 
+  private fun onOnlineDocFetch(fetchResult: FetchResult) {
+    val document = this.project.document
+    ProjectOpenStrategy(project, uiFacade).use { strategy ->
+      val docFuture = strategy.open(document)
+      runBlocking {
+        try {
+          docFuture.await()
+        } catch (ex: Exception) {
+          GPLogger.log(ex)
+          null
+        }
+      }?.let {
+        // If document is obtained, we need to run further steps.
+        // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+        SwingUtilities.invokeLater {
+          uiFacade.undoManager.die()
+          project.close()
+          strategy.openFileAsIs(it)
+        }
+      }
+    }
+  }
   private fun buildNotOnlineDocumentScene(): Scene {
     // TODO: this probably needs to be fixed?
     val signinPane = SigninPane(onTokenCallback = { _, _, _, _ -> })
