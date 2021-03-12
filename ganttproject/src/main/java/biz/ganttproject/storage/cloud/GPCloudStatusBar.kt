@@ -128,7 +128,9 @@ class GPCloudStatusBar(
     this.observableDocument.get().apply {
       val onlineDocument = this.asOnlineDocument()
       if (onlineDocument is GPCloudDocument) {
-        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument)
+        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument) {
+          projectUIFacade.openProject(this, this@GPCloudStatusBar.project, null)
+        }
       }
     }
   }
