@@ -18,22 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.undo;
 
-import java.io.IOException;
-
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
-import javax.swing.undo.UndoableEditSupport;
-
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+
+import javax.swing.*;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEditSupport;
+import java.io.IOException;
 
 /**
  * UndoManager implementation, it manages the undoable edits in GanttProject
@@ -86,11 +84,17 @@ public class UndoManagerImpl implements GPUndoManager {
   }
 
   private void fireUndoOrRedoHappened() {
-    UndoableEditListener[] listeners = myUndoEventDispatcher.getUndoableEditListeners();
-    for (int i = 0; i < listeners.length; i++) {
-      ((GPUndoListener) listeners[i]).undoOrRedoHappened();
+    for (UndoableEditListener listener : myUndoEventDispatcher.getUndoableEditListeners()) {
+      ((GPUndoListener) listener).undoOrRedoHappened();
     }
   }
+
+  private void fireUndoReset() {
+    for (UndoableEditListener listener : myUndoEventDispatcher.getUndoableEditListeners()) {
+      ((GPUndoListener) listener).undoReset();
+    }
+  }
+
 
   DocumentManager getDocumentManager() {
     return myDocumentManager;
@@ -154,5 +158,6 @@ public class UndoManagerImpl implements GPUndoManager {
     if (mySwingUndoManager != null) {
       mySwingUndoManager.discardAllEdits();
     }
+    fireUndoReset();
   }
 }

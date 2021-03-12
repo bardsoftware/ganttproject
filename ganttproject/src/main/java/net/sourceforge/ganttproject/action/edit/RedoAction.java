@@ -70,6 +70,11 @@ public class RedoAction extends GPAction implements GPUndoListener {
   }
 
   @Override
+  public void undoReset() {
+    undoOrRedoHappened();
+  }
+
+  @Override
   protected String getLocalizedName() {
     if (myUndoManager == null || myUndoManager.canRedo() == false) {
       return super.getLocalizedName();
