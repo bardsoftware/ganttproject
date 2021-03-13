@@ -32,12 +32,9 @@ import biz.ganttproject.storage.cloud.onAuthToken
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
@@ -50,13 +47,13 @@ import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.eclipse.core.runtime.IStatus
-import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.util.logging.Level
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 
+@ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
     private val myWorkbenchFacade: UIFacade,
     private val documentManager: DocumentManager,
@@ -193,38 +190,10 @@ class ProjectUIFacadeImpl(
     try {
       ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
         // Run coroutine which fetches document and wait until it sends the result to the channel.
-        GlobalScope.launch(Dispatchers.IO) {
-          val successChannel = Channel<Document>()
-
-          strategy.open(document, successChannel)
+        val docFuture = strategy.open(document)
+        runBlocking {
           try {
-            val doc = try {
-              successChannel.receive().also {
-                it.checkWellFormed()
-              }
-            } catch (ex: SAXException) {
-              onFinish?.close(DocumentException(
-                  RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex)
-              )
-              return@launch
-            }
-
-            onFinish?.send(true)
-            // If document is obtained, we need to run further steps.
-            // Because if historical reasons they run in Swing thread (they may modify the state of Swing components)
-            SwingUtilities.invokeLater {
-              beforeClose()
-              project.close()
-              strategy.openFileAsIs(doc)
-                  .checkLegacyMilestones()
-                  .checkEarliestStartConstraints()
-                  .runUiTasks()
-                  .onFetchResultChange(doc) {
-                    SwingUtilities.invokeLater {
-                      openProject(doc, project, null)
-                    }
-                  }
-            }
+            docFuture.await()
           } catch (ex: Exception) {
             when (ex) {
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
@@ -233,11 +202,33 @@ class ProjectUIFacadeImpl(
                   openProject(document, project, onFinish)
                 }
               }
+              is DocumentException -> {
+                GPLogger.log(ex)
+                onFinish?.close(ex)
+              }
               else -> {
                 GPLogger.log(DocumentException("Can't open document $document", ex ))
                 onFinish?.close(ex)
               }
             }
+            null
+          }
+        }?.let {
+          runBlocking { onFinish?.send(true) }
+          // If document is obtained, we need to run further steps.
+          // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+          SwingUtilities.invokeLater {
+            beforeClose()
+            project.close()
+            strategy.openFileAsIs(it)
+              .checkLegacyMilestones()
+              .checkEarliestStartConstraints()
+              .runUiTasks()
+//                  .onFetchResultChange(doc) {
+//                    SwingUtilities.invokeLater {
+//                      openProject(doc, project, null)
+//                    }
+//                  }
           }
         }
       }

@@ -24,20 +24,15 @@ import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.storage.FetchResult
-import biz.ganttproject.storage.asOnlineDocument
-import biz.ganttproject.storage.checksum
+import biz.ganttproject.storage.*
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
@@ -48,6 +43,7 @@ import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection
 import org.jdesktop.swingx.JXRadioGroup
+import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import javax.swing.*
@@ -102,20 +98,35 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     }
   }
 
-  suspend fun open(document: Document, successChannel: Channel<Document>) {
+  fun open(document: Document): Deferred<Document> {
+    val docChannel = Channel<Document>()
+
     GlobalScope.launch(Dispatchers.IO) {
       val online = document.asOnlineDocument()
       if (online == null) {
-        successChannel.send(document)
+        docChannel.send(document)
       } else {
         try {
           val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-          processFetchResult(currentFetch, document, successChannel)
-        } catch (ex: Exception) {
-          successChannel.close(ex)
+          processFetchResult(currentFetch, document, docChannel)
+        } catch (ex: ForbiddenException) {
+          docChannel.close(ex)
         }
       }
     }
+
+    return GlobalScope.async {
+      try {
+        docChannel.receive().also {
+          it.checkWellFormed()
+        }
+      } catch (ex: SAXException) {
+         throw Document.DocumentException(
+            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
+         )
+      }
+    }
+
   }
 
   private suspend fun processFetchResult(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
