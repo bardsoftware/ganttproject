@@ -20,6 +20,7 @@ package biz.ganttproject.storage.webdav
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.*
+import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -42,8 +43,10 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
                         private val myMode: StorageDialogBuilder.Mode,
                         private val myOpenDocument: (Document) -> Unit,
                         private val myDialogUi: StorageDialogBuilder.DialogUi) {
+  private lateinit var path: Path
   private val myLoadService: WebdavLoadService = WebdavLoadService(myServer)
   private val myState = State(server = myServer, resource = null, filename = null, folder = null)
+  private lateinit var paneElements: BrowserPaneElements<WebDavResourceAsFolderItem>
 
   private fun createResource(state: State): WebDavResource {
     return state.resource ?: myLoadService.createResource(state.folder, state.filename)
@@ -51,12 +54,8 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
 
   fun createStorageUi(): Pane {
     val builder = BrowserPaneBuilder<WebDavResourceAsFolderItem>(this.myMode, this.myDialogUi::error) { path, success, loading ->
-        val wrappers = FXCollections.observableArrayList<WebDavResourceAsFolderItem>()
-        val consumer = Consumer { webDavResources: ObservableList<WebDavResource> ->
-            webDavResources.forEach { resource -> wrappers.add(WebDavResourceAsFolderItem(resource)) }
-            success.accept(wrappers)
-        }
-        loadFolder(path, loading, consumer, myDialogUi)
+      this.path = path
+      refresh()
     }
     val isLockingSupported = SimpleBooleanProperty()
     isLockingSupported.addListener { _, _, newValue ->
@@ -101,9 +100,19 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
         }
       }
     }
-    val browserPaneElements = builder.build()
-    browserPaneElements.breadcrumbView?.show()
-    return browserPaneElements.browserPane
+    paneElements = builder.build()
+    paneElements.breadcrumbView?.show()
+    return paneElements.browserPane
+  }
+
+  private fun refresh() {
+    val success = Consumer<ObservableList<WebDavResourceAsFolderItem>> { Platform.runLater { paneElements.listView.setResources(it) } }
+    val wrappers = FXCollections.observableArrayList<WebDavResourceAsFolderItem>()
+    val consumer = Consumer { webDavResources: ObservableList<WebDavResource> ->
+      webDavResources.forEach { resource -> wrappers.add(WebDavResourceAsFolderItem(resource)) }
+      success.accept(wrappers)
+    }
+    loadFolder(path, paneElements.busyIndicator, consumer, myDialogUi)
   }
 
   private fun deleteResource(folderItem: WebDavResourceAsFolderItem) {
@@ -123,6 +132,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
       } else {
         resource.lock(-1)
       }
+      refresh()
     } catch (e: WebDavResource.WebDavException) {
       myDialogUi.error(e)
     }
