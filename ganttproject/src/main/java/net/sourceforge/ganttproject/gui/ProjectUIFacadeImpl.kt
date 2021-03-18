@@ -214,7 +214,7 @@ class ProjectUIFacadeImpl(
             null
           }
         }?.let {
-          runBlocking { onFinish?.send(true) }
+          GlobalScope.launch { onFinish?.send(true) }
           // If document is obtained, we need to run further steps.
           // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
           SwingUtilities.invokeLater {
