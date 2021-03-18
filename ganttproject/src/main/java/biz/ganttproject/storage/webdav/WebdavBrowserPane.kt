@@ -108,9 +108,16 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
   private fun refresh() {
     val success = Consumer<ObservableList<WebDavResourceAsFolderItem>> { Platform.runLater { paneElements.listView.setResources(it) } }
     val wrappers = FXCollections.observableArrayList<WebDavResourceAsFolderItem>()
+    val selectedName = paneElements.listView.selectedResource.orElse(null)?.name
     val consumer = Consumer { webDavResources: ObservableList<WebDavResource> ->
       webDavResources.forEach { resource -> wrappers.add(WebDavResourceAsFolderItem(resource)) }
       success.accept(wrappers)
+      if (selectedName != null) {
+        val selectedIdx = webDavResources.indexOfFirst { it.name == selectedName }
+        if (selectedIdx >= 0) {
+          Platform.runLater { paneElements.listView.listView.selectionModel.select(selectedIdx) }
+        }
+      }
     }
     loadFolder(path, paneElements.busyIndicator, consumer, myDialogUi)
   }
