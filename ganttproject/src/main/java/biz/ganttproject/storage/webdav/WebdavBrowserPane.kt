@@ -126,6 +126,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
     val resource = folderItem.myResource
     try {
       resource.delete()
+      refresh()
     } catch (e: WebDavResource.WebDavException) {
       myDialogUi.error(e)
     }

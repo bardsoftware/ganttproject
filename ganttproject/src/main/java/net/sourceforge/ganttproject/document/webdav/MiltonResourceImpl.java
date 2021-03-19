@@ -137,8 +137,15 @@ public class MiltonResourceImpl implements WebDavResource {
 
   @Override
   public List<String> getLockOwners() {
-    String lockOwner = myImpl == null ? null : myImpl.getLockOwner();
-    return lockOwner == null ? Collections.<String>emptyList() : ImmutableList.<String>of(lockOwner);
+    if (myImpl == null) {
+      return Collections.emptyList();
+    }
+    String lockOwner = myImpl.getLockOwner();
+    if (lockOwner != null) {
+      return ImmutableList.of(lockOwner);
+    }
+    String lockToken = myImpl.getLockToken();
+    return lockToken == null ? Collections.emptyList() : ImmutableList.of("Unknown user");
   }
 
   public boolean canLock(String username) {
@@ -166,7 +173,11 @@ public class MiltonResourceImpl implements WebDavResource {
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
-      throw new WebDavException(MessageFormat.format("HTTP problems when accessing {0}", myUrl.hostName), e);
+      if (e.getResult() == 423) {
+        throw new WebDavException(MessageFormat.format("Document {0} at {1} seems to be already locked", myUrl.path, myUrl.hostName), e);
+      } else {
+        throw new WebDavException(MessageFormat.format("HTTP error {1} when accessing {0}", myUrl.hostName, e.getResult()), e);
+      }
     } catch (ConflictException e) {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
     } catch (NotFoundException e) {
