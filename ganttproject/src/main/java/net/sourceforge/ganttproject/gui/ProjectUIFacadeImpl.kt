@@ -224,11 +224,6 @@ class ProjectUIFacadeImpl(
               .checkLegacyMilestones()
               .checkEarliestStartConstraints()
               .runUiTasks()
-//                  .onFetchResultChange(doc) {
-//                    SwingUtilities.invokeLater {
-//                      openProject(doc, project, null)
-//                    }
-//                  }
           }
         }
       }

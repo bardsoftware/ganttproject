@@ -137,8 +137,15 @@ public class MiltonResourceImpl implements WebDavResource {
 
   @Override
   public List<String> getLockOwners() {
-    String lockOwner = myImpl == null ? null : myImpl.getLockOwner();
-    return lockOwner == null ? Collections.<String>emptyList() : ImmutableList.<String>of(lockOwner);
+    if (myImpl == null) {
+      return Collections.emptyList();
+    }
+    String lockOwner = myImpl.getLockOwner();
+    if (lockOwner != null) {
+      return ImmutableList.of(lockOwner);
+    }
+    String lockToken = myImpl.getLockToken();
+    return lockToken == null ? Collections.emptyList() : ImmutableList.of("Unknown user");
   }
 
   public boolean canLock(String username) {
@@ -160,17 +167,24 @@ public class MiltonResourceImpl implements WebDavResource {
     assertExists();
     try {
       myImpl.lock(timeout);
+      myImpl.parent.flush();
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
-      throw new WebDavException(MessageFormat.format("HTTP problems when accessing {0}", myUrl.hostName), e);
+      if (e.getResult() == 423) {
+        throw new WebDavException(MessageFormat.format("Document {0} at {1} seems to be already locked", myUrl.path, myUrl.hostName), e);
+      } else {
+        throw new WebDavException(MessageFormat.format("HTTP error {1} when accessing {0}", myUrl.hostName, e.getResult()), e);
+      }
     } catch (ConflictException e) {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
     } catch (NotFoundException e) {
       throw new WebDavException(MessageFormat.format("Resource {0} is not found on {1}", myUrl.path, myUrl.hostName), e);
     } catch (RuntimeException e) {
+      throw new WebDavException(MessageFormat.format("Something went wrong when locking {0}: {1}", myUrl.buildUrl(), e.getMessage()), e);
+    } catch (IOException e) {
       throw new WebDavException(MessageFormat.format("Something went wrong when locking {0}: {1}", myUrl.buildUrl(), e.getMessage()), e);
     }
   }
@@ -183,6 +197,7 @@ public class MiltonResourceImpl implements WebDavResource {
     assertExists();
     try {
       myImpl.unlock();
+      myImpl.parent.flush();
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
@@ -193,6 +208,8 @@ public class MiltonResourceImpl implements WebDavResource {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
     } catch (NotFoundException e) {
       throw new WebDavException(MessageFormat.format("Resource {0} is not found on {1}", myUrl.path, myUrl.hostName), e);
+    } catch (IOException e) {
+      throw new WebDavException(MessageFormat.format("Something went wrong when locking {0}: {1}", myUrl.buildUrl(), e.getMessage()), e);
     }
   }
 
