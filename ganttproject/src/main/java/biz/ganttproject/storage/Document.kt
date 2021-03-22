@@ -178,6 +178,7 @@ interface LockableDocument {
 
 class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
 class VersionMismatchException(val canOverwrite: Boolean = true) : RuntimeException()
+class PaymentRequiredException(msg: String) : RuntimeException(msg)
 class ForbiddenException : RuntimeException()
 
 enum class OnlineDocumentMode {

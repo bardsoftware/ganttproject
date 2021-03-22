@@ -123,6 +123,9 @@ class StorageDialogBuilder(
           myDialogUi.close()
         } catch (e: Exception) {
           killProgress()
+          if (e is PaymentRequiredException) {
+
+          }
           myDialogUi.error(e.message ?: "")
           LOG.error("Failed to save document {}", document.uri, exception = e)
         }

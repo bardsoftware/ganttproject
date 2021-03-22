@@ -210,6 +210,9 @@ class ProjectUIFacadeImpl(
                   openProject(document, project, onFinish)
                 }
               }
+              is PaymentRequiredException -> {
+                onFinish?.close(ex)
+              }
               is DocumentException -> {
                 GPLogger.log(ex)
                 onFinish?.close(ex)
