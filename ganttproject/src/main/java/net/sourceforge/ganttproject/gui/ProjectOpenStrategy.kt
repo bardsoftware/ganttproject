@@ -111,6 +111,8 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
           processFetchResult(currentFetch, document, docChannel)
         } catch (ex: ForbiddenException) {
           docChannel.close(ex)
+        } catch (ex: PaymentRequiredException) {
+          docChannel.close(ex)
         }
       }
     }

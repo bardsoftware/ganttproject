@@ -91,7 +91,10 @@ class StorageDialogBuilder(
           killProgress()
           myDialogUi.error(e.message ?: "")
           LOG.error("Failed to open document {}", document.uri, exception = e)
-        } catch (e: Document.DocumentException) {
+        } catch (e: PaymentRequiredException) {
+          println(e)
+        }
+        catch (e: Document.DocumentException) {
           killProgress()
           myDialogUi.error(e.message ?: "")
           LOG.error("Failed to open document {}", document.uri, exception = e)
@@ -124,7 +127,7 @@ class StorageDialogBuilder(
         } catch (e: Exception) {
           killProgress()
           if (e is PaymentRequiredException) {
-
+            println(e.message)
           }
           myDialogUi.error(e.message ?: "")
           LOG.error("Failed to save document {}", document.uri, exception = e)
