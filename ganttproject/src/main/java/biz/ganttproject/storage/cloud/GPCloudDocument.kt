@@ -328,7 +328,7 @@ class GPCloudDocument(private val teamRefid: String?,
               fetchResultProperty::setValue
           )
         }
-        403 -> {
+        401, 403 -> {
           throw ForbiddenException()
         }
         else -> {
@@ -432,7 +432,7 @@ class GPCloudDocument(private val teamRefid: String?,
           this.saveOfflineMirror(fetch)
           fetch.update()
         }
-        403 -> {
+        401, 403 -> {
           throw ForbiddenException()
         }
         412 -> {
