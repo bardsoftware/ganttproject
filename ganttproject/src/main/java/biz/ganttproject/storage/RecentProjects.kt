@@ -184,6 +184,9 @@ class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Compara
       "cloud" -> {
         this.tags.add(i18n.formatText("tag.cloud"))
       }
+      "http", "https" -> {
+        this.tags.add(i18n.formatText("tag.webdav"))
+      }
       else -> {
       }
     }
