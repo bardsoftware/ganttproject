@@ -61,6 +61,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -977,6 +978,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     // renderer = TableCellRenderers.getNewDefaultRenderer(columnClass);
     //
     // }
+    if (Color.class.equals(columnClass)) {
+      return new ColorRenderer();
+    }
     return getTreeTable().getDefaultRenderer(columnClass);
   }
 
@@ -1240,4 +1244,14 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       getUiFacade().getGanttChart().reset();
     }
   }
+
+  static class ColorRenderer extends DefaultTableCellRenderer.UIResource {
+    public void setValue(Object value) {
+      if (value instanceof Color) {
+        setPreferredSize(new Dimension(16, 16));
+        setBackground((Color) value);
+      }
+    }
+  }
+
 }
