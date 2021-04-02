@@ -36,9 +36,8 @@ class ResourceSaver extends SaverBase {
     final AttributesImpl attrs = new AttributesImpl();
     startElement("resources", handler);
     saveCustomColumnDefinitions(project, handler);
-    HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
-    for (int i = 0; i < resources.length; i++) {
-      HumanResource p = resources[i];
+
+    for (HumanResource p : project.getHumanResourceManager().getResources()) {
       addAttribute("id", p.getId(), attrs);
       addAttribute("name", p.getName(), attrs);
       addAttribute("function", p.getRole().getPersistentID(), attrs);
