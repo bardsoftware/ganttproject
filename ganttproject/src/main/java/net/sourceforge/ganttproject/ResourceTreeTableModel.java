@@ -118,29 +118,16 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   public void updateResources() {
-    HumanResource[] listResources = myResourceManager.getResourcesArray();
-
-    for (int idxResource = 0; idxResource < listResources.length; idxResource++) {
-      HumanResource hr = listResources[idxResource];
-
+    for (HumanResource hr : myResourceManager.getResources()) {
       ResourceNode rnRes = getNodeForResource(hr);
       if (rnRes == null) {
         rnRes = new ResourceNode(hr);
       }
       buildAssignmentsSubtree(rnRes);
-      // for (int i = 0; i < tra.length; i++) {
-      // AssignmentNode an = exists(rnRes, tra[i]);
-      // if (an == null) {
-      // an = new AssignmentNode(tra[i]);
-      // rnRes.add(an);
-      // }
-      // }
       if (getNodeForResource(hr) == null) {
         root.add(rnRes);
       }
     }
-    // this.setRoot(root);
-
   }
 
   public void updateResources(List<HumanResource> sorted){
