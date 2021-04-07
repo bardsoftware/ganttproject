@@ -67,7 +67,7 @@ class ResourcesTableModel extends TableModelExt<ResourceAssignment>
   private boolean isChanged = false;
 
   public ResourcesTableModel(ResourceAssignmentCollection assignmentCollection) {
-    myAssignments = new ArrayList<ResourceAssignment>(Arrays.asList(assignmentCollection.getAssignments()));
+    myAssignments = new ArrayList<>(Arrays.asList(assignmentCollection.getAssignments()));
     myMutator = assignmentCollection.createMutator();
   }
 
@@ -108,7 +108,7 @@ class ResourcesTableModel extends TableModelExt<ResourceAssignment>
           result = String.valueOf(assignment.getLoad());
           break;
         case 3:
-          result = new Boolean(assignment.isCoordinator());
+          result = assignment.isCoordinator();
           break;
         case 4:
           result = assignment.getRoleForAssignment();
