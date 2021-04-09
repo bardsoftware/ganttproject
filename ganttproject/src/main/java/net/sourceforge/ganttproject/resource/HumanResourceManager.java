@@ -185,10 +185,6 @@ public class HumanResourceManager {
     return resources;
   }
 
-  public HumanResource[] getResourcesArray() {
-    return resources.toArray(new HumanResource[resources.size()]);
-  }
-
   public void remove(HumanResource resource) {
     fireResourcesRemoved(new HumanResource[] { resource });
     resources.remove(resource);

@@ -32,9 +32,8 @@ class VacationSaver extends SaverBase {
   void save(IGanttProject project, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     startElement("vacations", handler);
-    HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
-    for (int i = 0; i < resources.length; i++) {
-      HumanResource p = resources[i];
+
+    for (HumanResource p : project.getHumanResourceManager().getResources()) {
       if (p.getDaysOff() != null)
         for (int j = 0; j < p.getDaysOff().size(); j++) {
           GanttDaysOff gdo = (GanttDaysOff) p.getDaysOff().getElementAt(j);
