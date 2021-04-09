@@ -195,6 +195,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
    * Create the popup menu
    */
   private void createPopupMenu(MouseEvent e) {
+    commitIfEditing();
     JPopupMenu menu = new JPopupMenu();
     AbstractAction[] resourceActions = myResourceActionSet.getActions();
     menu.add(resourceActions[0]);
