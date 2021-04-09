@@ -43,13 +43,12 @@ public class GanttStatusBar extends JPanel {
   public GanttStatusBar(JFrame mainFrame) {
     super(new BorderLayout());
     myMainFrame = mainFrame;
-    add(new JPanel(), BorderLayout.CENTER);
   }
 
   public void setLeftScene(Scene scene) {
     panel.setScene(scene);
     SwingUtilities.invokeLater(() -> {
-      add(panel, BorderLayout.WEST);
+      add(panel, BorderLayout.CENTER);
       panel.doLayout();
       doLayout();
     });

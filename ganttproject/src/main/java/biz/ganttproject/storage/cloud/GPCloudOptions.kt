@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.core.option.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import java.util.*
 
 data class GPCloudFileOptions(
@@ -113,8 +115,11 @@ class CloudFileOptions : KeyValueOption("files") {
   }
 }
 
+enum class CloudStatus {UNKNOWN, DISCONNECTED, CONNECTED}
+
 // Persistently stored options
 object GPCloudOptions {
+  val cloudStatus = SimpleObjectProperty(CloudStatus.UNKNOWN)
   val authToken: StringOption = object : DefaultStringOption("authToken", "") {
     override fun getPersistentValue(): String? {
       return GPCloudOptions.validity.value.toLongOrNull()?.let {

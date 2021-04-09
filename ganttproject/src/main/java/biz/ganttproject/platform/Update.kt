@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.ToggleSwitchSkin
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.platform.PgpUtil.verifyFile
 import com.bardsoftware.eclipsito.update.UpdateMetadata
@@ -112,11 +113,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
     props.add(Label(ourLocalizer.formatText("checkUpdates")).also {
       GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
     }, 0, 1)
-    val toggleSwitch = object : ToggleSwitch() {
-      override fun createDefaultSkin(): Skin<*> {
-        return ToggleSwitchSkin(this)
-      }
-    }.also {
+    val toggleSwitch = createToggleSwitch().also {
       it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
       it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
     }

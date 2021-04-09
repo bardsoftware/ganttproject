@@ -98,14 +98,14 @@ class GPCloudStorage(
         return
       }
       signupPane.tryAccessToken(
-          success = Consumer {
+          onSuccess = {
             //webSocket.start()
             GlobalScope.launch(Dispatchers.Main) {
               sceneChanger(storageUi, SceneId.BROWSER)
               browserPane.reset()
             }
           },
-          unauthenticated = Consumer {
+          onError = {
             when (it) {
               "NO_ACCESS_TOKEN" -> {
                 GlobalScope.launch(Dispatchers.Main) {
@@ -174,15 +174,16 @@ class GPCloudStorage(
 fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
   return { token, validity, userId, websocketToken ->
     val validityAsLong = validity?.toLongOrNull()
-      this.authToken.value = token
-      this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
-        ""
-      } else {
-        Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
-      }
-      this.userId.value = userId
-      this.websocketToken = websocketToken
-      webSocket.start()
+    this.authToken.value = token
+    this.validity.value = if (validityAsLong == null || validityAsLong == 0L) {
+      ""
+    } else {
+      Instant.now().plus(validityAsLong, ChronoUnit.HOURS).epochSecond.toString()
+    }
+    this.userId.value = userId
+    this.websocketToken = websocketToken
+    webSocket.start()
+    this.cloudStatus.value = CloudStatus.CONNECTED
   }
 }
 

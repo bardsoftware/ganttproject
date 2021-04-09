@@ -371,7 +371,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     FXToolbar fxToolbar = createToolbar();
     Platform.runLater(() -> {
-      GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject());
+      GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(
+          myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
+      );
       Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
       statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
       getStatusBar().setLeftScene(statusBarScene);

@@ -34,15 +34,8 @@ import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import net.sourceforge.ganttproject.GPLogger
-import org.apache.http.client.methods.HttpGet
-import java.net.UnknownHostException
 import java.time.Duration
 import java.time.Instant
-import java.util.function.Consumer
-import java.util.logging.Level
 
 
 /**
@@ -103,104 +96,26 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
     return paneAndImage(vboxBuilder.vbox)
   }
 
-  fun tryAccessToken(success: Consumer<String>, unauthenticated: Consumer<String>) {
-    if (Strings.isNullOrEmpty(GPCloudOptions.authToken.value)) {
-      unauthenticated.accept("NO_ACCESS_TOKEN")
-      return
-    }
-    if (Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0).isBefore(Instant.now())) {
-      unauthenticated.accept("ACCESS_TOKEN_EXPIRED")
-      return
-    }
-
-    pageSwitcher(tokenVerificationUi, SceneId.TOKEN_SPINNER)
-
-    GlobalScope.launch {
-      try {
-        callAuthCheck(success, unauthenticated)
-      } catch (ex: Exception) {
-        if (ex is UnknownHostException) {
-          if (!isNetworkAvailable()) {
-            unauthenticated.accept("OFFLINE")
-          } else {
-            unauthenticated.accept("")
-          }
-        } else {
-          GPLogger.getLogger("GPCloud").log(Level.SEVERE, "Failed to contact GPCloud server", ex)
-          unauthenticated.accept("")
-        }
+  fun tryAccessToken(onSuccess: (String)->Unit, onError: (String)->Unit) {
+    biz.ganttproject.storage.cloud.http.tryAccessToken(
+      onStart = { pageSwitcher(tokenVerificationUi, SceneId.TOKEN_SPINNER) },
+      onSuccess = {
+        GPCloudOptions.cloudStatus.value = CloudStatus.CONNECTED
+        onSuccess(it)
+      },
+      onError = {
+        GPCloudOptions.cloudStatus.value = CloudStatus.DISCONNECTED
+        onError(it)
       }
-    }
+    )
   }
-
-  private fun callAuthCheck(onSuccess: Consumer<String>, onUnauthenticated: Consumer<String>) {
-    val http = HttpClientBuilder.buildHttpClient()
-    val resp = http.sendGet("/access-token/check")
-    when (resp.code) {
-      200 -> onSuccess.accept("")
-      401 -> onUnauthenticated.accept("INVALID")
-      else -> {
-        onUnauthenticated.accept("INVALID")
-      }
-    }
-  }
-
-//  fun createSigninPane(): Pane {
-//    val i18nSignin = RootLocalizer.createWithRootKey("cloud.signin", i18n)
-//    val vboxBuilder = VBoxBuilder()
-//    vboxBuilder.addTitle(i18nSignin.formatText("title"))
-//    vboxBuilder.add(Label().apply {
-//      this.textProperty().bind(i18nSignin.create("titleHelp"))
-//      this.styleClass.add("help")
-//    })
-//
-//    val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
-//
-////    vboxBuilder.add(HBox().apply {
-////      styleClass.addAll("smallskip", "row-copy-link")
-////      children.add(
-////          Button(i18nSignin.formatText("copyLink"), FontAwesomeIconView(FontAwesomeIcon.COPY)).apply {
-////            contentDisplay = ContentDisplay.RIGHT
-////            styleClass.add("btn-secondary")
-////            addEventHandler(ActionEvent.ACTION) {
-////              Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
-////                putString(uri)
-////              })
-////            }
-////            HBox.setMargin(this, Insets(0.0, 0.0, 0.0, 5.0))
-////          }
-////      )
-////      children.add(TextField().apply {
-////        text = uri
-////        isEditable = false
-////        onMouseClicked = EventHandler { this.selectAll() }
-////        HBox.setHgrow(this, Priority.ALWAYS)
-////      })
-////    }, Pos.CENTER_LEFT, Priority.NEVER)
-//
-//    vboxBuilder.add(ProgressIndicator(-1.0).also {
-//      it.maxWidth = Double.MAX_VALUE
-//      it.maxHeight = Double.MAX_VALUE
-//    }, Pos.CENTER, Priority.ALWAYS)
-//
-//    vboxBuilder.add(Label("Waiting for the browser..."), Pos.CENTER, Priority.NEVER)
-//
-//
-//    return paneAndImage(vboxBuilder.vbox).also {
-//      it.stylesheets.addAll("/com/sandec/mdfx/mdfx.css")
-//
-//      GlobalScope.launch(Dispatchers.IO) {
-//        openInBrowser(uri.trim())
-//      }
-//    }
-//  }
 
   private fun createTokenVerificationProgressUi(): Pane {
     val i18nSignin = RootLocalizer.createWithRootKey("cloud.authPane", i18n)
 
-    val expirationValue = {
-      val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
-      val remainingDuration = Duration.between(Instant.now(), expirationInstant)
+    val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
+    val remainingDuration = Duration.between(Instant.now(), expirationInstant)
+    val expirationValue =
       if (!remainingDuration.isNegative) {
         val hours = remainingDuration.toHours()
         val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
@@ -210,7 +125,6 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
           i18nSignin.formatText("expirationValue_m", minutes)
         }
       } else ""
-    }()
 
     return paneAndImage(vbox {
       vbox.styleClass.add("fill-parent")

@@ -23,12 +23,15 @@ import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.storage.*
+import biz.ganttproject.storage.cloud.http.tryAccessToken
 import com.evanlennick.retry4j.AsyncCallExecutor
 import com.evanlennick.retry4j.CallExecutorBuilder
 import com.evanlennick.retry4j.config.RetryConfigBuilder
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableObjectValue
 import javafx.event.ActionEvent
@@ -79,7 +82,18 @@ class GPCloudStatusBar(
   private val project: IGanttProject
 ) {
   private var onLatestVersionChange: ChangeListener<LatestVersion>? = null
-  private val btnConnect = Button("Connect")
+  private var cloudConnected: Boolean = false
+    set(value) {
+      field = value
+      Platform.runLater {
+        toggleConnect.isSelected = value
+        labelConnect.text = STATUS_BAR_LOCALIZER.formatText("connected.${value.toString().toLowerCase()}")
+        GPCloudOptions.cloudStatus.value = if (value) CloudStatus.CONNECTED else CloudStatus.DISCONNECTED
+      }
+    }
+  private val toggleConnect = createToggleSwitch()
+  private val labelConnect = Label()
+
   private val btnLock = Button().also {
     it.isVisible = false
   }
@@ -90,7 +104,7 @@ class GPCloudStatusBar(
   private val reconnectStatus = ReconnectStatus(reconnectLabel)
   val lockPanel = HBox().also {
     it.styleClass.add("statusbar")
-    it.children.addAll(btnConnect, btnOffline, btnLock, reconnectLabel)
+    it.children.addAll(toggleConnect, labelConnect, btnOffline, btnLock, reconnectLabel)
   }
 
   private val modeChangeListener = ChangeListener<OnlineDocumentMode> {
@@ -106,8 +120,12 @@ class GPCloudStatusBar(
     observableDocument.addListener { _, oldDocument: Document?, newDocument: Document? ->
       onDocumentChange(oldDocument, newDocument)
     }
-    btnConnect.addEventHandler(ActionEvent.ACTION) {
-      showConnect()
+    toggleConnect.selectedProperty().addListener { _, _, newValue ->
+      if (newValue && !this.cloudConnected) {
+        showConnect()
+      } else {
+        // disconnect here
+      }
     }
     btnOffline.addEventHandler(ActionEvent.ACTION) {
       showProperties()
@@ -115,15 +133,31 @@ class GPCloudStatusBar(
     btnLock.addEventHandler(ActionEvent.ACTION) {
       showProperties()
     }
+    fun applyCloudStatus(status: CloudStatus) =
+      when (status) {
+        CloudStatus.UNKNOWN -> {
+          tryAccessToken(onSuccess = { this.cloudConnected = true }, onError = { this.cloudConnected = false })
+        }
+        CloudStatus.DISCONNECTED -> this.cloudConnected = false
+        CloudStatus.CONNECTED -> this.cloudConnected = true
+      }
+    GPCloudOptions.cloudStatus.apply {
+      addListener { _, _, newValue ->
+        applyCloudStatus(newValue)
+      }
+      applyCloudStatus(value)
+    }
   }
 
   private fun showConnect() {
-    val signinPane = SigninPane { _, _, _, _ -> }
     dialog { controller ->
-      controller.setContent(signinPane.createSigninPane())
+      SigninPane { token, validity, userId, websocketToken ->
+        GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
+        controller.hide()
+      }.also { controller.setContent(it.createSigninPane()) }
     }
-
   }
+
   private fun showProperties() {
     this.observableDocument.get().apply {
       val onlineDocument = this.asOnlineDocument()

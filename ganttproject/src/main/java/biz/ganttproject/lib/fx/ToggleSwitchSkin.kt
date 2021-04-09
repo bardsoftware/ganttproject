@@ -34,6 +34,7 @@ import javafx.css.StyleableDoubleProperty
 import javafx.css.StyleableProperty
 import javafx.css.converter.SizeConverter
 import javafx.event.EventHandler
+import javafx.scene.control.Skin
 import javafx.scene.control.SkinBase
 import javafx.scene.layout.StackPane
 import javafx.util.Duration
@@ -206,3 +207,8 @@ class ToggleSwitchSkin(control: ToggleSwitch) : SkinBase<ToggleSwitch>(control) 
   }
 }
 
+fun createToggleSwitch(): ToggleSwitch = object : ToggleSwitch() {
+  override fun createDefaultSkin(): Skin<*> {
+    return ToggleSwitchSkin(this)
+  }
+}
