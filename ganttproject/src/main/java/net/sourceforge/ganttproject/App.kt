@@ -38,7 +38,9 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javafx.application.Platform
+import java.awt.Toolkit
 import java.io.File
+import java.lang.reflect.Field
 import javax.swing.SwingUtilities
 
 
@@ -68,6 +70,16 @@ val mainWindow = AtomicReference<GanttProject?>(null)
  */
 @JvmOverloads
 fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
+  try {
+    val toolkit: Toolkit = Toolkit.getDefaultToolkit()
+    val awtAppClassNameField: Field = toolkit.javaClass.getDeclaredField("awtAppClassName")
+    awtAppClassNameField.setAccessible(true)
+    awtAppClassNameField.set(toolkit, RootLocalizer.formatText("appliTitle"))
+  } catch (e: NoSuchFieldException) {
+    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)", exception = e)
+  } catch (e: IllegalAccessException) {
+    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)", exception = e)
+  }
   val autosaveCleanup = DocumentCreator.createAutosaveCleanup()
 
   val splashCloser = showAsync()
