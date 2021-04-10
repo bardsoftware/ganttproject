@@ -61,7 +61,7 @@ const val URL_SCHEME = "cloud:"
 /**
  * This class represents a document stored on GanttProject Cloud.
  */
-class GPCloudDocument(private val teamRefid: String?,
+class GPCloudDocument(val teamRefid: String?,
                       private val teamName: String,
                       internal var projectRefid: String?,
                       private val projectName: String,
@@ -207,8 +207,8 @@ class GPCloudDocument(private val teamRefid: String?,
     }
   }
 
-  constructor(projectJson: ProjectJsonAsFolderItem) : this(
-      teamRefid = null,
+  constructor(projectJson: ProjectJsonAsFolderItem, teamRefid: String?) : this(
+      teamRefid = teamRefid,
       teamName = projectJson.node["team"].asText(),
       projectRefid = projectJson.node["refid"].asText(),
       projectName = projectJson.node["name"].asText(),
@@ -318,6 +318,7 @@ class GPCloudDocument(private val teamRefid: String?,
 
           val documentBody = resp.decodedBody
 
+          //GlobalScope.launch { println(loadTeamResources(this@GPCloudDocument)) }
           return FetchResult(
               this@GPCloudDocument,
               this.mirrorOptions?.lastOnlineChecksum ?: "",

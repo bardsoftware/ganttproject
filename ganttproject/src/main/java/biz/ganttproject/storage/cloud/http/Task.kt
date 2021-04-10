@@ -56,6 +56,8 @@ class JsonTask(
       throw IOException("Server responded with HTTP ${resp.code}")
     }
   }
+
+  fun execute(): JsonNode = call()
 }
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()

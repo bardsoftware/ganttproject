@@ -52,6 +52,7 @@ class TeamJsonAsFolderItem(val node: JsonNode) : CloudJsonAsFolderItem() {
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory = true
+  val refid: String get() = this.node["refid"].asText()
 }
 
 class ProjectJsonAsFolderItem(val node: JsonNode) : CloudJsonAsFolderItem() {
@@ -181,7 +182,7 @@ class GPCloudBrowserPane(
         }
 
       fun onAction() {
-        selectedProject?.let { this@GPCloudBrowserPane.openDocument(it) }
+        selectedProject?.let { this@GPCloudBrowserPane.openDocument(it, selectedTeam) }
             ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
 
       }
@@ -240,7 +241,7 @@ class GPCloudBrowserPane(
           onOpenDirectory = {},
           onLaunch = {
             if (it is ProjectJsonAsFolderItem) {
-              this@GPCloudBrowserPane.openDocument(it)
+              this@GPCloudBrowserPane.openDocument(it, actionButtonHandler.selectedTeam)
             }
           },
           onNameTyped = actionButtonHandler::onNameTyped
@@ -265,9 +266,9 @@ class GPCloudBrowserPane(
     this.documentConsumer(GPCloudDocument(selectedTeam, text))
   }
 
-  private fun openDocument(item: ProjectJsonAsFolderItem) {
+  private fun openDocument(item: ProjectJsonAsFolderItem, selectedTeam: TeamJsonAsFolderItem?) {
     if (item.node is ObjectNode) {
-      GPCloudDocument(item).also {
+      GPCloudDocument(item, selectedTeam?.refid).also {
         this.documentConsumer(it)
       }
     }
