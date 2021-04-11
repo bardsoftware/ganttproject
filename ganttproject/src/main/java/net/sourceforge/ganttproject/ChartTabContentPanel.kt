@@ -20,12 +20,16 @@ package net.sourceforge.ganttproject
 
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.chart.TimelineChart
-import biz.ganttproject.app.FXToolbar
 import biz.ganttproject.app.FXToolbarBuilder
+import biz.ganttproject.app.getGlyphIcon
 import net.sourceforge.ganttproject.language.GanttLanguage
 import biz.ganttproject.core.option.ChangeValueListener
 import com.google.common.base.Preconditions
 import com.google.common.base.Supplier
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.scene.control.MenuButton
+import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.action.GPAction
 import java.awt.event.ComponentEvent
@@ -48,25 +52,27 @@ internal abstract class ChartTabContentPanel(
 
   //  private int myImageHeight;
   private var myHeaderHeight: Supplier<Int>? = null
-
-  fun buildToolbar(): FXToolbar =
+  private val toolbar by lazy {
     FXToolbarBuilder().run {
-      addDropdown(buildToolbarActions())
+      val dropdownActions = buildDropdownActions()
+      addNode(buildDropdown(dropdownActions.firstOrNull(), dropdownActions))
       addTail(Pane())
       buildToolbarActions().forEach { addButton(it) }
       build()
     }.also {
       it.toolbar.stylesheets.add("/net/sourceforge/ganttproject/ChartTabContentPanel.css")
+      it.toolbar.styleClass.remove("toolbar-big")
     }
+  }
 
-
+  protected open fun buildDropdownActions(): List<GPAction> = emptyList()
   protected open fun buildToolbarActions(): List<GPAction> = emptyList()
 
   fun createContentComponent(): JComponent {
     val tabContentPanel = JPanel(BorderLayout())
     val left = JPanel(BorderLayout())
     val treeHeader = Box.createVerticalBox()
-    treeHeader.add(buildToolbar().component)
+    treeHeader.add(toolbar.component)
     //final JComponent buttonPanel = (JComponent) createButtonPanel();
     //JPanel buttonWrapper = new JPanel(new BorderLayout());
     //buttonWrapper.add(buttonPanel, BorderLayout.WEST);
@@ -167,7 +173,7 @@ internal abstract class ChartTabContentPanel(
   }
 
   private fun updateTimelineHeight() {
-    val timelineHeight = myHeaderHeight!!.get() + 64 /* + myImageHeight*/
+    val timelineHeight = toolbar.component.height /* + myImageHeight*/
     myChart.setTimelineHeight(timelineHeight)
   }
 
@@ -219,4 +225,17 @@ internal abstract class ChartTabContentPanel(
       }
     })
   }
+
+  fun buildDropdown(titleAction: GPAction?, actions: List<GPAction>) =
+    MenuButton().apply {
+      styleClass.add("btn-create-item")
+      text = "New"
+      graphic = titleAction?.getGlyphIcon() ?: FontAwesomeIconView(FontAwesomeIcon.PLUS)
+      items.addAll(actions.map { action ->
+        MenuItem(action.localizedName).also { item ->
+          item.setOnAction { SwingUtilities.invokeLater { action.actionPerformed(null) }}
+        }
+      })
+
+    }
 }

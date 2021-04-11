@@ -6,10 +6,22 @@
     -gp-control-background: white;
 }
 
-.combo-box {
+.btn-create-item {
     -fx-background-color: -gp-orange;
-    -fx-padding: 10;
+    -fx-cursor: hand;
+    -fx-padding: 3 5 3 5;
+    -fx-text-fill: -gp-dark-gray;
 }
-.combo-box .arrow, .combo-box .arrow-button{
+
+.btn-create-item:hover {
+    -fx-background-color: derive(-gp-orange, 10%);
+    -fx-text-fill: derive(-gp-dark-gray, -10%);
+    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+}
+
+.btn-create-item .arrow, .btn-create-item .arrow-button{
     -fx-background-color: transparent;
+}
+.toolbar-main {
+    -fx-pref-height: 64;
 }

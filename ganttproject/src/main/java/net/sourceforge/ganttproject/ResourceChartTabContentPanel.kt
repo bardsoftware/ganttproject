@@ -26,6 +26,8 @@ internal class ResourceChartTabContentPanel(
       return myTabContentPanel!!
     }
 
+  override fun buildDropdownActions(): List<GPAction> = listOf(myTreeFacade.resourceActionSet.resourceNewAction)
+
   override fun buildToolbarActions(): List<GPAction> = listOf(
     myTreeFacade.resourceActionSet.resourceMoveUpAction,
     myTreeFacade.resourceActionSet.resourceMoveDownAction
