@@ -3,15 +3,17 @@
  */
 package net.sourceforge.ganttproject
 
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.view.GPView
 import javax.swing.JComponent
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
+import net.sourceforge.ganttproject.resource.HumanResource
 import java.awt.Component
 
 internal class ResourceChartTabContentPanel(
-  project: IGanttProject, workbenchFacade: UIFacade, private val myTreeFacade: TreeTableContainer<*, *, *>,
+  project: IGanttProject, workbenchFacade: UIFacade, private val myTreeFacade: GanttResourcePanel,
   override val chartComponent: Component
 ) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), GPView {
 
@@ -23,6 +25,11 @@ internal class ResourceChartTabContentPanel(
       }
       return myTabContentPanel!!
     }
+
+  override fun buildToolbarActions(): List<GPAction> = listOf(
+    myTreeFacade.resourceActionSet.resourceMoveUpAction,
+    myTreeFacade.resourceActionSet.resourceMoveDownAction
+  )
 
   override fun createButtonPanel(): Component? {
     val builder = ToolbarBuilder()

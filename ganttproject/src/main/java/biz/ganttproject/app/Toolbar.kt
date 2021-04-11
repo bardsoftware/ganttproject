@@ -102,6 +102,38 @@ fun addSeparator(toolbar: FXToolbar) {
   toolbar.toolbar.items.add(Separator())
 }
 
+private class DropdownVisitor(private val actions: List<GPAction>) {
+  fun visit(toolbar: FXToolbar) {
+    ComboBox<GPAction>().apply {
+      items.addAll(actions)
+      setCellFactory {
+        object : ListCell<GPAction?>() {
+          override fun updateItem(
+            item: GPAction?,
+            empty: Boolean
+          ) {
+            super.updateItem(item, empty)
+            text = item?.localizedName
+          }
+        }
+      }
+      buttonCell = object: ListCell<GPAction>() {
+        override fun updateItem(
+          item: GPAction?,
+          empty: Boolean
+        ) {
+          super.updateItem(item, empty)
+          text = "Create Resource"
+        }
+      }
+
+      selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+        newValue.actionPerformed(null)
+      }
+      toolbar.toolbar.items.add(this)
+    }
+  }
+}
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -111,6 +143,10 @@ class FXToolbarBuilder {
   private lateinit var insertAction: GPAction
   private val visitors = mutableListOf<ToolbarVisitor>()
 
+  fun addDropdown(actions: List<GPAction>): FXToolbarBuilder {
+    visitors.add(DropdownVisitor(actions)::visit)
+    return this
+  }
   fun addButton(action: GPAction): FXToolbarBuilder {
     visitors.add(ButtonVisitor(action)::visit)
     return this
