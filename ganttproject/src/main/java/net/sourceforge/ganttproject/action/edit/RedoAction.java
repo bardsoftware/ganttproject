@@ -75,7 +75,7 @@ public class RedoAction extends GPAction implements GPUndoListener {
   }
 
   @Override
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     if (myUndoManager == null || myUndoManager.canRedo() == false) {
       return super.getLocalizedName();
     }

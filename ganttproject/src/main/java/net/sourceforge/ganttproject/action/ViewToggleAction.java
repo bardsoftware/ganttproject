@@ -18,13 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.view.GPView;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+
+import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 /**
  * @author bard
@@ -49,7 +48,7 @@ public class ViewToggleAction extends GPAction {
   }
 
   @Override
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     return myChart == null ? null : myChart.getName();
   }
 
