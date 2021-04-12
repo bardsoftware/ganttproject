@@ -6,22 +6,81 @@
     -gp-control-background: white;
 }
 
-.btn-create-item {
+.split-menu-button {
     -fx-background-color: -gp-orange;
-    -fx-cursor: hand;
-    -fx-padding: 3 5 3 5;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.5ex 1em 0.5ex 1em; /* 0 */
     -fx-text-fill: -gp-dark-gray;
 }
 
-.btn-create-item:hover {
-    -fx-background-color: derive(-gp-orange, 10%);
-    -fx-text-fill: derive(-gp-dark-gray, -10%);
-    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+.split-menu-button:focused {
+    -fx-background-color: -gp-orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
-.btn-create-item .arrow, .btn-create-item .arrow-button{
-    -fx-background-color: transparent;
+.split-menu-button > .label:hover {
+    -fx-color: derive(-gp-dark-gray, 10%);
 }
+
+.split-menu-button:armed > .label {
+    -fx-color: -gp-dark-gray;
+}
+
+/* The SplitMenuButton skin uses an inner Label part */
+.split-menu-button > .label {
+    -fx-background-color:  -gp-orange;
+    -fx-background-insets: 0, 1 0 1 1, 2 1 2 2;
+    -fx-background-radius: 5 0 0 5, 4 0 0 4, 3 0 0 3;
+    -fx-padding: 0.166667em 0.667em 0.25em 0.833333em; /* 2 8 3 10 */
+}
+
+.split-menu-button > .arrow-button {
+    -fx-background-color: -gp-orange;
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;
+    -fx-padding: 0.5em 0.667em 0.5em 0.667em; /* 6 8 6 8 */
+}
+
+.split-menu-button > .arrow-button:hover {
+    -fx-color: derive(-gp-dark-gray, 10%);
+}
+
+.split-menu-button > .arrow-button:pressed {
+    -fx-color: -gp-dark-gray;
+}
+
+.split-menu-button > .arrow-button > .arrow {
+    -fx-background-color: -gp-orange;
+    -fx-background-insets: 1 0 -1 0, 0;
+    -fx-padding: 0.25em; /* 3 */
+    -fx-shape: "";
+}
+
+/*.split-menu-button > .arrow-button > .arrow {*/
+/*    !*-fx-background-color: -gp-dark-gray;*!*/
+/*    -fx-background-insets: 1 0 -1 0, 0;*/
+/*    -fx-padding: 0.25em; !* 3 *!*/
+/*    -fx-shape: "";*/
+/*}*/
+
+.split-menu-button > * {
+    -fx-cursor: hand;
+}
+.split-menu-button:hover > * {
+    -fx-text-fill: derive(-gp-dark-gray, 10%);
+}
+.split-menu-button:hover > .arrow-button > .arrow > .first {
+    -fx-opacity: 0;
+}
+.split-menu-button:hover > .arrow-button > .arrow > .second {
+    -fx-opacity: 1;
+}
+.split-menu-button > .arrow-button > .arrow > .second {
+    -fx-opacity: 0;
+}
+
 .toolbar-main {
     -fx-pref-height: 64;
 }

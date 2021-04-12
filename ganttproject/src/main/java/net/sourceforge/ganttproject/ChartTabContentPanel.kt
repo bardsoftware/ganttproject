@@ -18,28 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject
 
-import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.chart.TimelineChart
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.getGlyphIcon
-import net.sourceforge.ganttproject.language.GanttLanguage
 import biz.ganttproject.core.option.ChangeValueListener
 import com.google.common.base.Preconditions
 import com.google.common.base.Supplier
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.scene.control.MenuButton
 import javafx.scene.control.MenuItem
+import javafx.scene.control.Skin
+import javafx.scene.control.SplitMenuButton
 import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
+import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
-import java.awt.event.ComponentEvent
+import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.*
 import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.util.ArrayList
+import java.util.*
 import javax.swing.*
 
 internal abstract class ChartTabContentPanel(
@@ -227,15 +230,35 @@ internal abstract class ChartTabContentPanel(
   }
 
   fun buildDropdown(titleAction: GPAction?, actions: List<GPAction>) =
-    MenuButton().apply {
-      styleClass.add("btn-create-item")
-      text = "New"
-      graphic = titleAction?.getGlyphIcon() ?: FontAwesomeIconView(FontAwesomeIcon.PLUS)
-      items.addAll(actions.map { action ->
-        MenuItem(action.localizedName).also { item ->
-          item.setOnAction { SwingUtilities.invokeLater { action.actionPerformed(null) }}
-        }
-      })
-
+    MyMenuButton().apply {
+      setup(titleAction, actions)
     }
+}
+
+class MyMenuButton : SplitMenuButton() {
+  private lateinit var arrowIcon: Text
+  override fun createDefaultSkin(): Skin<*> {
+    return super.createDefaultSkin().also {
+      arrowIcon.styleClass.add("first")
+      ((children[1] as StackPane).children[0] as StackPane).children.let {
+        it.add(arrowIcon)
+        it.add(FontAwesomeIconView(FontAwesomeIcon.PLUS).also {it.styleClass.add("second")})
+      }
+    }
+  }
+
+  fun setup(titleAction: GPAction?, actions: List<GPAction>) {
+    styleClass.add("btn-create-item")
+    text = "New"
+    arrowIcon = titleAction?.getGlyphIcon() ?: FontAwesomeIconView(FontAwesomeIcon.PLUS)
+    items.addAll(actions.map { action ->
+      MenuItem(action.localizedName).also { item ->
+        item.setOnAction { SwingUtilities.invokeLater { action.actionPerformed(null) }}
+      }
+    })
+    setOnAction {
+      titleAction?.let { SwingUtilities.invokeLater { it.actionPerformed(null) }}
+    }
+  }
+
 }
