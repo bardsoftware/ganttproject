@@ -1,0 +1,14 @@
+@import "../app/dialogs";
+@import "../app/theme";
+
+.dlg-cloud-resource-list {
+  .header {
+    @include dialog-header($gp-orange);
+  }
+  .content-pane {
+    @include dialog-scrollable-content-padding();
+  }
+  .button-pane {
+    @include dialog-button-pane();
+  }
+}

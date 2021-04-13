@@ -201,7 +201,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
     if (buttonBar == null) {
-      buttonBar = ButtonBar()
+      buttonBar = ButtonBar().also { it.styleClass.add("button-pane") }
     }
     buttons.add(type)
     this.buttonNodes[type]?.let {
