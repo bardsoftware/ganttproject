@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource
 
+import biz.ganttproject.resource.GPCloudResourceListAction
 import net.sourceforge.ganttproject.resource.AssignmentContext
 import net.sourceforge.ganttproject.GanttProject
 import net.sourceforge.ganttproject.gui.UIFacade
@@ -39,6 +40,7 @@ class ResourceActionSet(
   projectFrame: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
 ) {
   val resourceNewAction = ResourceNewAction(projectFrame.humanResourceManager, projectFrame.roleManager, projectFrame.taskManager, uiFacade)
+  val cloudResourceList = GPCloudResourceListAction()
   val resourceDeleteAction: ResourceDeleteAction
   val resourcePropertiesAction = ResourcePropertiesAction(projectFrame, resourceContext, uiFacade)
   val resourceMoveUpAction: ResourceMoveUpAction

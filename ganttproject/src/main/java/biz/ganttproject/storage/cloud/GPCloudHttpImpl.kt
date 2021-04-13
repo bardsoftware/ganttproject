@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.DocumentUri
 import biz.ganttproject.storage.Path
+import biz.ganttproject.storage.cloud.http.JsonTask
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -128,28 +129,27 @@ class LoaderTask<T : CloudJsonAsFolderItem>(
     val path: Path,
     private val resultStorage: Property<JsonNode>) : Task<ObservableList<T>>() {
   override fun call(): ObservableList<T>? {
-    busyIndicator.accept(true)
-    val log = GPLogger.getLogger("GPCloud")
-    val http = HttpClientBuilder.buildHttpClient()
-
     return try {
-      val jsonBody = let {
-        val resp = http.sendGet("/team/list", mapOf("owned" to "true", "participated" to "true"))
-        if (resp.code == 200) {
-          resp.rawBody.toString(Charsets.UTF_8)
-        } else {
-          with(log) {
-            warning(
-                "Failed to get team list. Response code=${resp.code} reason=${resp.reason}")
+      val jsonNode = JsonTask(
+        method = HttpMethod.GET,
+        uri = "/team/list",
+        kv = mapOf("owned" to "true", "participated" to "true"),
+        busyIndicator = { busyIndicator.accept(it) },
+        onFailure = {_, resp ->
+          with(LOG) {
+            error(
+              "Failed to get team list. Response code=${resp.code} reason=${resp.reason}")
           }
           throw GPCloudException(resp.code)
         }
+      ).let {
+        it.execute()
       }
-      val jsonNode = OBJECT_MAPPER.readTree(jsonBody)
+
       resultStorage.value = jsonNode
       CachedTask<T>(this.path, this.resultStorage).callPublic()
     } catch (ex: IOException) {
-      log.log(Level.SEVERE, "Failed to contact ${HOST}", ex)
+      LOG.error("Failed to contact ${HOST}", ex)
       throw GPCloudException(HttpStatus.SC_SERVICE_UNAVAILABLE)
     }
 

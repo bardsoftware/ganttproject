@@ -28,7 +28,7 @@ internal class ResourceChartTabContentPanel(
 
   override fun buildDropdownActions(): List<GPAction> = listOf(
     myTreeFacade.resourceActionSet.resourceNewAction,
-
+    myTreeFacade.resourceActionSet.cloudResourceList
   )
 
   override fun buildToolbarActions(): List<GPAction> = listOf(
