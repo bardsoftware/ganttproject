@@ -1,5 +1,6 @@
 package biz.ganttproject.resource
 
+import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -7,11 +8,14 @@ import biz.ganttproject.storage.cloud.HttpMethod
 import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
 import biz.ganttproject.storage.cloud.http.loadTeamResources
+import javafx.geometry.Pos
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -32,16 +36,24 @@ class GPCloudResourceListDialog {
   }
   fun show() {
     dialog { controller ->
-      VBoxBuilder().apply {
-        addTitle("cloud.resource.list.title")
-        add(Label().also {
-          it.textProperty().bind(this.i18n.create("cloud.resource.list.titleHelp"))
-          it.styleClass.add("help")
-        })
-        add(listView, alignment = null, growth = Priority.ALWAYS)
-      }.also {
-        controller.setContent(it.vbox)
-      }
+      controller.addStyleClass("dlg-cloud-resource-list")
+      controller.addStyleSheet(
+        "/biz/ganttproject/resource/GPCloudResources.css"
+      )
+      controller.setHeader(
+        VBoxBuilder("header").apply {
+          addTitle(LocalizedString("cloud.resource.list.title", RootLocalizer)).also { hbox ->
+            hbox.alignment = Pos.CENTER_LEFT
+            hbox.isFillHeight = true
+          }
+        }.vbox
+      )
+
+      controller.setContent(
+        VBoxBuilder("content-pane").apply {
+          add(listView, alignment = null, growth = Priority.ALWAYS)
+        }.vbox
+      )
 
       controller.setupButton(ButtonType.APPLY) { btn ->
         btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
