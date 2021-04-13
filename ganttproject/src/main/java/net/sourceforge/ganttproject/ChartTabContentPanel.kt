@@ -242,17 +242,17 @@ class MyMenuButton : SplitMenuButton() {
       arrowIcon.styleClass.add("first")
       ((children[1] as StackPane).children[0] as StackPane).children.let {
         it.add(arrowIcon)
-        it.add(FontAwesomeIconView(FontAwesomeIcon.PLUS).also {it.styleClass.add("second")})
+        it.add(FontAwesomeIconView(FontAwesomeIcon.ARROW_CIRCLE_DOWN).also {it.styleClass.add("second")})
       }
     }
   }
 
   fun setup(titleAction: GPAction?, actions: List<GPAction>) {
     styleClass.add("btn-create-item")
-    text = "New"
+    text = "Add"
     arrowIcon = titleAction?.getGlyphIcon() ?: FontAwesomeIconView(FontAwesomeIcon.PLUS)
     items.addAll(actions.map { action ->
-      MenuItem(action.localizedName).also { item ->
+      MenuItem(GanttLanguage.correctLabel(action.localizedName)).also { item ->
         item.setOnAction { SwingUtilities.invokeLater { action.actionPerformed(null) }}
       }
     })
