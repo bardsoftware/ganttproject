@@ -16,81 +16,47 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action.resource;
+package net.sourceforge.ganttproject.action.resource
 
-import net.sourceforge.ganttproject.GanttProject;
-import net.sourceforge.ganttproject.ResourceTreeTable;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.resource.AssignmentContext;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.resource.ResourceContext;
+import net.sourceforge.ganttproject.resource.AssignmentContext
+import net.sourceforge.ganttproject.GanttProject
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.ResourceTreeTable
+import net.sourceforge.ganttproject.action.resource.ResourceNewAction
+import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction
+import net.sourceforge.ganttproject.action.resource.ResourcePropertiesAction
+import net.sourceforge.ganttproject.action.resource.ResourceMoveUpAction
+import net.sourceforge.ganttproject.action.resource.ResourceMoveDownAction
+import net.sourceforge.ganttproject.action.resource.ResourceSendMailAction
+import net.sourceforge.ganttproject.action.resource.AssignmentDeleteAction
+import javax.swing.AbstractAction
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.resource.ResourceContext
+import javax.swing.Action
 
-import javax.swing.*;
-
-public class ResourceActionSet {
-  private final ResourceNewAction myResourceNewAction;
-
-  private final ResourceDeleteAction myResourceDeleteAction;
-
-  private final ResourcePropertiesAction myResourcePropertiesAction;
-
-  private final ResourceMoveUpAction myResourceMoveUpAction;
-
-  private final ResourceMoveDownAction myResourceMoveDownAction;
-
-  private final ResourceSendMailAction myResourceSendMailAction;
-
-  private final AssignmentDeleteAction myAssignmentDelete;
-
-  private AbstractAction[] myActions;
-
-  public ResourceActionSet(ResourceContext resourceContext, AssignmentContext assignmentContext,
-      GanttProject projectFrame, UIFacade uiFacade, ResourceTreeTable table) {
-    HumanResourceManager manager = projectFrame.getHumanResourceManager();
-    myResourceNewAction = new ResourceNewAction(manager, projectFrame.getRoleManager(), projectFrame.getTaskManager(), uiFacade);
-    myResourceDeleteAction = new ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade);
-    myResourcePropertiesAction = new ResourcePropertiesAction(projectFrame, resourceContext, uiFacade);
-    myResourceMoveUpAction = new ResourceMoveUpAction(table);
-    myResourceMoveDownAction = new ResourceMoveDownAction(table);
-    myResourceSendMailAction = new ResourceSendMailAction(table);
-    myAssignmentDelete = new AssignmentDeleteAction(assignmentContext, uiFacade);
+class ResourceActionSet(
+  resourceContext: ResourceContext, assignmentContext: AssignmentContext,
+  projectFrame: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
+) {
+  val resourceNewAction = ResourceNewAction(projectFrame.humanResourceManager, projectFrame.roleManager, projectFrame.taskManager, uiFacade)
+  val resourceDeleteAction: ResourceDeleteAction
+  val resourcePropertiesAction = ResourcePropertiesAction(projectFrame, resourceContext, uiFacade)
+  val resourceMoveUpAction: ResourceMoveUpAction
+  val resourceMoveDownAction: ResourceMoveDownAction
+  val resourceSendMailAction = ResourceSendMailAction(table)
+  val assignmentDelete: AssignmentDeleteAction
+  val actions: Array<AbstractAction> by lazy {
+    resourceNewAction.putValue(Action.SHORT_DESCRIPTION, null)
+    resourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null)
+    resourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null)
+    arrayOf(resourceNewAction, resourcePropertiesAction)
   }
 
-  public AbstractAction[] getActions() {
-    if (myActions == null) {
-      myResourceNewAction.putValue(Action.SHORT_DESCRIPTION, null);
-      myResourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null);
-      myResourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null);
-      myActions = new AbstractAction[] { myResourceNewAction, myResourcePropertiesAction };
-    }
-    return myActions;
-  }
-
-  public ResourceNewAction getResourceNewAction() {
-    return myResourceNewAction;
-  }
-
-  public ResourceDeleteAction getResourceDeleteAction() {
-    return myResourceDeleteAction;
-  }
-
-  public ResourcePropertiesAction getResourcePropertiesAction() {
-    return myResourcePropertiesAction;
-  }
-
-  public ResourceMoveUpAction getResourceMoveUpAction() {
-    return myResourceMoveUpAction;
-  }
-
-  public ResourceMoveDownAction getResourceMoveDownAction() {
-    return myResourceMoveDownAction;
-  }
-
-  public ResourceSendMailAction getResourceSendMailAction() {
-    return myResourceSendMailAction;
-  }
-
-  public AssignmentDeleteAction getAssignmentDelete() {
-    return myAssignmentDelete;
+  init {
+    val manager = projectFrame.humanResourceManager
+    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade)
+    resourceMoveUpAction = ResourceMoveUpAction(table)
+    resourceMoveDownAction = ResourceMoveDownAction(table)
+    assignmentDelete = AssignmentDeleteAction(assignmentContext, uiFacade)
   }
 }
