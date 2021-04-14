@@ -1,5 +1,6 @@
 @import "../app/dialogs";
 @import "../app/theme";
+@import "../app/typography";
 
 .dlg-cloud-resource-list {
   .header {
@@ -7,6 +8,21 @@
   }
   .content-pane {
     @include dialog-scrollable-content-padding();
+
+    .resource-cell {
+      -fx-padding: 3 5;
+      .labels {
+        -fx-padding: 0 0 0 5;
+        .name {
+          -fx-font-size: 110%;
+          -fx-text-fill: $gp-dark-gray;
+        }
+
+        .email {
+          @include text-secondary();
+        }
+      }
+    }
   }
   .button-pane {
     @include dialog-button-pane();

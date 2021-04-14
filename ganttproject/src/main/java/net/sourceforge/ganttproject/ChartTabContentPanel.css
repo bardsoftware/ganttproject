@@ -7,7 +7,7 @@
 }
 
 .menu-item {
-    -fx-padding: 0.25ex 2em 0.25ex 2em;
+    -fx-padding: 1ex 2em 1ex 2em;
     -fx-color: -gp-dark-gray;
     -fx-background-color: -gp-control-background;
     -fx-font-size: 110%;
@@ -26,15 +26,15 @@
 .split-menu-button {
     -fx-background-color: -gp-orange;
     -fx-background-insets: 0;
-    -fx-background-radius: 3;
-    -fx-padding: 0.25ex 0.5em 0.25ex 0.5em;
+    -fx-background-radius: 15;
+    -fx-padding: 0.5ex 0.5em 0.5ex 0.5em;
     -fx-text-fill: -gp-dark-gray;
 }
 
 .split-menu-button:focused {
     -fx-background-color: -gp-orange;
     -fx-background-insets: 0;
-    -fx-background-radius: 0;
+    -fx-background-radius: 15;
 }
 
 .split-menu-button > .label:hover {
@@ -51,11 +51,12 @@
     /*-fx-background-insets: 0, 1 0 1 1, 2 1 2 2;*/
     /*-fx-background-radius: 5 0 0 5, 4 0 0 4, 3 0 0 3;*/
     /*-fx-padding: 0.166667em 0.667em 0.25em 0.833333em; !* 2 8 3 10 *!*/
-    -fx-font-size: 120%;
+    -fx-font-size: 110%;
 }
 
 .split-menu-button > .arrow-button {
     -fx-background-color: -gp-orange;
+    -fx-padding: 0;
     /*-fx-background-insets: 0, 1, 2;*/
     /*-fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
     /*-fx-padding: 0.5em 0.667em 0.5em 0.667em; !* 6 8 6 8 *!*/
@@ -100,5 +101,5 @@
 }
 
 .toolbar-main {
-    -fx-pref-height: 64;
+    -fx-pref-height: 80;
 }

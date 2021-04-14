@@ -67,7 +67,7 @@ compileSass {
     outputDir = project.file("${projectDir}/src/main/resources")
 }
 
-compileKotlin.finalizedBy('compileSass')
+processResources.dependsOn('compileSass')
 
 sourceSets {
     main {

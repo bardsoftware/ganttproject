@@ -94,6 +94,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
 class DialogControllerImpl(private val root: BorderPane) : DialogController {
   override var beforeShow: () -> Unit = {}
+  override var onShown: () -> Unit = {}
   private lateinit var contentNode: Node
   private val buttonBar = ButtonBar().also {
     it.maxWidth = Double.MAX_VALUE

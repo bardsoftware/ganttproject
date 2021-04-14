@@ -40,7 +40,7 @@ class ResourceActionSet(
   projectFrame: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
 ) {
   val resourceNewAction = ResourceNewAction(projectFrame.humanResourceManager, projectFrame.roleManager, projectFrame.taskManager, uiFacade)
-  val cloudResourceList = GPCloudResourceListAction()
+  val cloudResourceList = GPCloudResourceListAction(projectFrame.humanResourceManager)
   val resourceDeleteAction: ResourceDeleteAction
   val resourcePropertiesAction = ResourcePropertiesAction(projectFrame, resourceContext, uiFacade)
   val resourceMoveUpAction: ResourceMoveUpAction

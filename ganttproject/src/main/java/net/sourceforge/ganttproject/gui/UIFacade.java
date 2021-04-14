@@ -51,6 +51,7 @@ public interface UIFacade {
     void layout();
 
     void center(Centering centering);
+    void onShown(Runnable onShown);
     //void resize();
   }
 
