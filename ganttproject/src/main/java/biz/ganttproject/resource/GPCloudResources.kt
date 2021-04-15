@@ -1,11 +1,9 @@
 package biz.ganttproject.resource
 
-import biz.ganttproject.app.DialogController
-import biz.ganttproject.app.LocalizedString
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.cloud.HttpMethod
+import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
 import biz.ganttproject.storage.cloud.http.loadTeamResources
@@ -102,19 +100,22 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
     }
   }
 
-  private fun loadTeams(dlg: DialogController): List<String> {
+  private fun loadTeams(dlg: DialogController): List<String> = try {
     JsonTask(
       method = HttpMethod.GET,
       uri = "/team/list",
       kv = mapOf("owned" to "true", "participated" to "true"),
       busyIndicator = {},
-      onFailure = {_, resp -> }
+      onFailure = {_, _ -> }
     ).execute().let { result ->
-      return if (result.isArray) {
+      if (result.isArray) {
         result.elements().asSequence().map { it["refid"].asText() }.toList()
       } else emptyList()
     }
+  } catch (ex: JsonHttpException) {
 
+    dlg.showAlert(i18n.create("http.error"), createAlertBody("Server returned HTTP ${ex.statusCode}"))
+    emptyList()
   }
 }
 
@@ -146,3 +147,5 @@ class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanPro
     }
   }
 }
+
+private val i18n = RootLocalizer.createWithRootKey("cloud.resource.list")
