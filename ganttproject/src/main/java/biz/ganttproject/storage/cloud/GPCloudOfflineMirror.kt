@@ -55,11 +55,15 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
 class GPCloudOfflinePane(
     val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: (Document) -> Unit) {
-  var controller: GPCloudStorage.Controller? = null
+    private val documentConsumer: (Document) -> Unit) : FlowPage {
+  private lateinit var controller: GPCloudUiFlow
 
-  fun createPane(): Pane {
-    return buildContentPane()
+  override fun createUi() = buildContentPane()
+
+  override fun resetUi() {}
+
+  override fun setController(controller: GPCloudUiFlow) {
+    this.controller = controller;
   }
 
   enum class OfflineChoice {

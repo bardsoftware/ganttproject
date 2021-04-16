@@ -57,7 +57,7 @@ import kotlin.concurrent.schedule
  *
  * @author dbarashev@bardsoftware.com
  */
-class SigninPane(private val onTokenCallback: AuthTokenCallback) {
+class SigninPane(private val onTokenCallback: AuthTokenCallback) : FlowPage {
   enum class Status {
     INIT, WAITING_FOR_BROWSER, WAITING_FOR_AUTH, AUTH_COMPLETED
   }
@@ -159,6 +159,12 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
       }, Pos.CENTER, Priority.NEVER)
     }
   }
+
+  override fun createUi(): Pane = createSigninPane()
+
+  override fun resetUi() {}
+
+  override fun setController(controller: GPCloudUiFlow) {}
 }
 
 
