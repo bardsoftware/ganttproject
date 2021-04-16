@@ -29,9 +29,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-padding: 1ex 2em 2ex 2em;
 }
 
-.toolbar-main Button {
+.toolbar-big Button {
     -fx-min-width: 40px;
     -fx-min-height: 40px;
+}
+.toolbar-main Button {
     -fx-alignment: center;
     -fx-background-color: transparent;
     -fx-border-style: solid;
@@ -43,6 +45,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 .toolbar-main Button .glyph-icon {
     -fx-alignment: center;
     -fx-fill: -gp-medium-gray;
+}
+
+.toolbar-big Button .glyph-icon {
     -glyph-size: 32px;
 }
 
@@ -53,6 +58,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .toolbar-main Button:hover .glyph-icon {
     -fx-fill: derive(-gp-medium-gray, -10%);
+}
+
+.toolbar-big Button:hover .glyph-icon {
     -glyph-size: 32px;
 }
 

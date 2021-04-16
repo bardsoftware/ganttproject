@@ -99,7 +99,7 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
   val jfxPanel = JFXPanel()
   val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
-    val dialogController = DialogControllerSwing { swingDialogController.get()}
+    val dialogController = DialogControllerSwing()
     contentBuilder(dialogController)
     jfxPanel.scene = Scene(dialogController.build())
     SwingUtilities.invokeLater {
@@ -124,10 +124,12 @@ interface DialogController {
   fun toggleProgress(shown: Boolean): () -> Unit
   fun resize()
   var beforeShow: () -> Unit
+  var onShown: () -> Unit
 }
 
-class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) : DialogController {
+class DialogControllerSwing() : DialogController {
   override var beforeShow: () -> Unit = {}
+  override var onShown: () -> Unit = {}
 
   private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
@@ -190,7 +192,8 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
   }
 
   internal fun setDialogFrame(dlgFrame: UIFacade.Dialog) {
-    this.dialogFrame = dlgFrame;
+    this.dialogFrame = dlgFrame
+    dlgFrame.onShown(this.onShown)
     this.beforeShow()
     this.dialogFrame.show()
   }
@@ -201,7 +204,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
     if (buttonBar == null) {
-      buttonBar = ButtonBar()
+      buttonBar = ButtonBar().also { it.styleClass.add("button-pane") }
     }
     buttons.add(type)
     this.buttonNodes[type]?.let {
@@ -212,7 +215,10 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
   override fun toggleProgress(shown: Boolean): () -> Unit {
     GlobalScope.launch(Dispatchers.JavaFx) {
       createOverlayPane(this@DialogControllerSwing.content, this@DialogControllerSwing.contentStack) {pane ->
-        pane.center = Label("")
+        pane.center = Spinner().let {
+          it.state = Spinner.State.WAITING
+          it.pane
+        }
         pane.opacity = 0.5
         pane.styleClass.add("overlay")
       }
@@ -222,6 +228,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
         this@DialogControllerSwing.contentStack.children.removeIf {
           it.styleClass.contains("overlay")
         }
+        this@DialogControllerSwing.content.effect = null
       }
     }
   }
@@ -252,7 +259,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 
   override fun hide() {
     SwingUtilities.invokeLater {
-      this.swingDialogApi()?.hide()
+      this.dialogFrame.hide()
     }
   }
 
@@ -295,6 +302,7 @@ class DialogControllerSwing(private val swingDialogApi: () -> UIFacade.Dialog?) 
 
 class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
   override var beforeShow: () -> Unit = {}
+  override var onShown: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 

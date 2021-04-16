@@ -1,0 +1,26 @@
+$default-vertical-padding: 1ex;
+
+@mixin dialog-header($bgColor) {
+  -fx-spacing: 5;
+  -fx-background-color: $bgColor;
+  -fx-alignment: center-left;
+  -fx-fill-width: true;
+  -fx-padding: 15;
+  -fx-background-insets: 0 0 4 0;
+  -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
+  -fx-font-size: 110%;
+  -fx-font-weight: bold;
+}
+
+@mixin dialog-content-padding {
+  -fx-padding: 1ex 1em;
+}
+
+@mixin dialog-scrollable-content-padding {
+  -fx-padding: 0;
+}
+
+@mixin dialog-button-pane {
+  -fx-padding: 2*$default-vertical-padding 1em $default-vertical-padding 1em;
+  -fx-background-color: whitesmoke;
+}

@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud.http
 
-import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.HttpMethod
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -40,8 +39,7 @@ data class ResourceDto @JsonCreator constructor(
   var paymentRate: BigDecimal? = null
 )
 
-fun loadTeamResources(doc: GPCloudDocument) : List<ResourceDto> {
-  val teamRefid = doc.teamRefid ?: throw TeamResourcesException()
+fun loadTeamResources(teamRefid: String) : List<ResourceDto> {
   val resourcesJson = JsonTask(
     method = HttpMethod.GET,
     uri = "/team/resources/list",

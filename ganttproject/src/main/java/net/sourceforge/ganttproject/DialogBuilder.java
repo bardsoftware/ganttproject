@@ -77,6 +77,15 @@ public class DialogBuilder {
       myDlg.setVisible(true);
     }
 
+    @Override
+    public void onShown(Runnable onShown) {
+      myDlg.addWindowListener(new WindowAdapter() {
+        @Override
+        public void windowOpened(WindowEvent e) {
+          onShown.run();
+        }
+      });
+    }
 
     @Override
     public void layout() {

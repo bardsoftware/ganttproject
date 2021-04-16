@@ -64,7 +64,7 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
   }
 
   @Override
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     if (myProvider == null) {
       return super.getLocalizedName();
     }

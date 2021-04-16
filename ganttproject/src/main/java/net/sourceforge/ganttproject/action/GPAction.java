@@ -182,7 +182,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   /**
    * @return translation of ID
    */
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     return getID() == null ? null : getI18n(getID());
   }
 

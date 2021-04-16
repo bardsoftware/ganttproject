@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
+
+import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 public class ShowChannelAction extends GPAction implements NotificationChannel.Listener {
   private final NotificationChannel myChannel;
@@ -43,7 +43,7 @@ public class ShowChannelAction extends GPAction implements NotificationChannel.L
   }
 
   @Override
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     int unreadCount = myChannel == null ? 0 : myChannel.getUnreadCount();
     String channelName = super.getLocalizedName();
     return unreadCount == 0 ? MessageFormat.format(getI18n("notification.channel.clearformat"), channelName)

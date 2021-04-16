@@ -53,12 +53,14 @@ class JsonTask(
       }
     } else {
       onFailure(this, resp)
-      throw IOException("Server responded with HTTP ${resp.code}")
+      throw JsonHttpException(resp.code, resp.reason)
     }
   }
 
   fun execute(): JsonNode = call()
 }
+
+class JsonHttpException(val statusCode: Int, val statusPhrase: String) : IOException(statusPhrase)
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()

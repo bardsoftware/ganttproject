@@ -322,7 +322,7 @@ public class GanttLanguage {
   }
 
   /** @return label with the $ removed from it (if it was included) */
-  public String correctLabel(String label) {
+  public static String correctLabel(String label) {
     if (label == null) {
       return null;
     }

@@ -272,7 +272,7 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
 
       @Override
-      protected String getLocalizedName() {
+      public String getLocalizedName() {
         String fallbackLabel = String.format("%s %s", language.getText("copy"), language.getText("generic.startDate.label"));
         return MoreObjects.firstNonNull(super.getLocalizedName(), fallbackLabel);
       }

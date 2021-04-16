@@ -52,6 +52,7 @@ class FXToolbar {
   internal val toolbar: ToolBar by lazy {
     ToolBar().also {
       it.styleClass.addAll("toolbar-main")
+      it.styleClass.addAll("toolbar-big")
     }
   }
 
@@ -107,10 +108,16 @@ fun addSeparator(toolbar: FXToolbar) {
  */
 class FXToolbarBuilder {
 
-  private lateinit var deleteAction: GPAction
-  private lateinit var insertAction: GPAction
+  private var deleteAction: GPAction? = null
+  private var insertAction: GPAction? = null
   private val visitors = mutableListOf<ToolbarVisitor>()
 
+  fun addNode(node: Node): FXToolbarBuilder {
+    visitors.add {
+      it.toolbar.items.add(node)
+    }
+    return this
+  }
   fun addButton(action: GPAction): FXToolbarBuilder {
     visitors.add(ButtonVisitor(action)::visit)
     return this
@@ -138,8 +145,8 @@ class FXToolbarBuilder {
           it.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED) {evt ->
             if (!evt.isConsumed) {
               when (evt.code.code) {
-                insertAction.keyStroke.keyCode -> SwingUtilities.invokeLater { insertAction.actionPerformed(null) }
-                deleteAction.keyStroke.keyCode -> SwingUtilities.invokeLater { deleteAction.actionPerformed(null) }
+                insertAction?.keyStroke?.keyCode -> SwingUtilities.invokeLater { insertAction?.actionPerformed(null) }
+                deleteAction?.keyStroke?.keyCode -> SwingUtilities.invokeLater { deleteAction?.actionPerformed(null) }
               }
             }
           }

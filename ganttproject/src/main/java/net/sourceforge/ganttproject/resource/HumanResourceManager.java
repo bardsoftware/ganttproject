@@ -42,7 +42,7 @@ public class HumanResourceManager {
 
   public abstract static class ResourceBuilder {
     String myName;
-    Integer myID;
+    Integer myID = -1;
     String myEmail;
     String myPhone;
     String myRole;

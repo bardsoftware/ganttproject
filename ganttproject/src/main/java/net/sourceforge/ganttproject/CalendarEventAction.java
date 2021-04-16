@@ -49,7 +49,7 @@ public abstract class CalendarEventAction extends GPAction {
   }
 
   @Override
-  protected String getLocalizedName() {
+  public String getLocalizedName() {
     GanttLanguage i18n = GanttLanguage.getInstance();
     return myDate == null ? super.getLocalizedName()
         : i18n.formatText(getID(), i18n.formatShortDate(CalendarFactory.createGanttCalendar(myDate)));

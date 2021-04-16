@@ -1,0 +1,105 @@
+* {
+    -gp-orange: #ffca28;
+    -gp-light-gray: #e0e0e0;
+    -gp-medium-gray: #616161;
+    -gp-dark-gray: #424242;
+    -gp-control-background: white;
+}
+
+.menu-item {
+    -fx-padding: 1ex 2em 1ex 2em;
+    -fx-color: -gp-dark-gray;
+    -fx-background-color: -gp-control-background;
+    -fx-font-size: 110%;
+    -fx-cursor: hand;
+}
+.menu-item > .label {
+    -fx-text-fill: -gp-dark-gray;
+}
+.menu-item:focused {
+    -fx-background-color: -gp-light-gray;
+}
+.menu-item:focused > .label {
+    -fx-text-fill: -gp-dark-gray;
+}
+
+.split-menu-button {
+    -fx-background-color: -gp-orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 15;
+    -fx-padding: 0.5ex 0.5em 0.5ex 0.5em;
+    -fx-text-fill: -gp-dark-gray;
+}
+
+.split-menu-button:focused {
+    -fx-background-color: -gp-orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 15;
+}
+
+.split-menu-button > .label:hover {
+    -fx-color: derive(-gp-dark-gray, 10%);
+}
+
+.split-menu-button:armed > .label {
+    -fx-color: -gp-dark-gray;
+}
+
+/* The SplitMenuButton skin uses an inner Label part */
+.split-menu-button > .label {
+    -fx-background-color:  -gp-orange;
+    /*-fx-background-insets: 0, 1 0 1 1, 2 1 2 2;*/
+    /*-fx-background-radius: 5 0 0 5, 4 0 0 4, 3 0 0 3;*/
+    /*-fx-padding: 0.166667em 0.667em 0.25em 0.833333em; !* 2 8 3 10 *!*/
+    -fx-font-size: 110%;
+}
+
+.split-menu-button > .arrow-button {
+    -fx-background-color: -gp-orange;
+    -fx-padding: 0;
+    /*-fx-background-insets: 0, 1, 2;*/
+    /*-fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
+    /*-fx-padding: 0.5em 0.667em 0.5em 0.667em; !* 6 8 6 8 *!*/
+}
+
+.split-menu-button > .arrow-button:hover {
+    -fx-color: derive(-gp-dark-gray, 10%);
+}
+
+.split-menu-button > .arrow-button:pressed {
+    -fx-color: -gp-dark-gray;
+}
+
+.split-menu-button > .arrow-button > .arrow {
+    -fx-background-color: -gp-orange;
+    /*-fx-background-insets: 1 0 -1 0, 0;*/
+    /*-fx-padding: 0.25em; !* 3 *!*/
+    -fx-shape: "";
+}
+
+.split-menu-button > * {
+    -fx-cursor: hand;
+}
+.split-menu-button:hover > * {
+    -fx-text-fill: derive(-gp-dark-gray, 10%);
+}
+.split-menu-button > .arrow-button > .arrow > .glyph-icon {
+    -glyph-size: 20;
+}
+
+/* This replaces arrow-button icon with arrow-down when mouse pointer is over the button,
+   to make it more obvious that the button can show the menu.
+*/
+.split-menu-button:hover > .arrow-button > .arrow > .first {
+    -fx-opacity: 0;
+}
+.split-menu-button:hover > .arrow-button > .arrow > .second {
+    -fx-opacity: 1;
+}
+.split-menu-button > .arrow-button > .arrow > .second {
+    -fx-opacity: 0;
+}
+
+.toolbar-main {
+    -fx-pref-height: 80;
+}
