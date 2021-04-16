@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.chart.overview.NavigationPanel
 import net.sourceforge.ganttproject.chart.overview.ZoomingPanel
+import net.sourceforge.ganttproject.gui.GanttImagePanel
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.*
@@ -52,9 +53,10 @@ internal abstract class ChartTabContentPanel(
   private var mySplitPane: JSplitPane? = null
   private val myPanels: MutableList<Component> = ArrayList()
   private val myUiFacade: UIFacade
-
-  //  private int myImageHeight;
+  private var myImageHeight = 0
+  private var myImagePanel: GanttImagePanel? = null
   private var myHeaderHeight: Supplier<Int>? = null
+
   private val toolbar by lazy {
     FXToolbarBuilder().run {
       val dropdownActions = buildDropdownActions()
@@ -75,20 +77,23 @@ internal abstract class ChartTabContentPanel(
     val tabContentPanel = JPanel(BorderLayout())
     val left = JPanel(BorderLayout())
     val treeHeader = Box.createVerticalBox()
-    treeHeader.add(toolbar.component)
-    //final JComponent buttonPanel = (JComponent) createButtonPanel();
-    //JPanel buttonWrapper = new JPanel(new BorderLayout());
-    //buttonWrapper.add(buttonPanel, BorderLayout.WEST);
-    //button.setAlignmentX(Component.LEFT_ALIGNMENT);
-    //treeHeader.add(buttonWrapper);
+    //treeHeader.add(toolbar.component)
 
-//    int defaultScaledHeight = (int)(UIFacade.DEFAULT_LOGO.getIconHeight() * myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
-//    myImagePanel = new GanttImagePanel(myUiFacade.getLogo(), 300, defaultScaledHeight);
-//    myImageHeight = myImagePanel.getPreferredSize().height;
-//    JPanel imageWrapper = new JPanel(new BorderLayout());
-//    imageWrapper.add(myImagePanel, BorderLayout.WEST);
-    //myImagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-//    treeHeader.add(imageWrapper);
+    // /*
+    val buttonPanel = createButtonPanel() as JComponent
+    val buttonWrapper = JPanel(BorderLayout())
+    buttonWrapper.add(buttonPanel, BorderLayout.WEST)
+    //button.setAlignmentX(Component.LEFT_ALIGNMENT);
+    treeHeader.add(buttonWrapper)
+    val defaultScaledHeight =
+      (UIFacade.DEFAULT_LOGO.iconHeight * myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI)).toInt()
+    myImagePanel = GanttImagePanel(myUiFacade.logo, 300, defaultScaledHeight)
+    myImageHeight = myImagePanel!!.preferredSize.height
+    val imageWrapper = JPanel(BorderLayout())
+    imageWrapper.add(myImagePanel, BorderLayout.WEST)
+    treeHeader.add(imageWrapper)
+    // */
+
     left.add(treeHeader, BorderLayout.NORTH)
     left.add(getTreeComponent(), BorderLayout.CENTER)
     val minSize = Dimension(0, 0)
@@ -119,9 +124,10 @@ internal abstract class ChartTabContentPanel(
       if (myUiFacade.dpiOption.value < 96) {
         return@ChangeValueListener
       }
-      SwingUtilities.invokeLater { //            alignTopPanelHeights(buttonPanel, chartPanels);
-//            myImagePanel.setScale(myUiFacade.getDpiOption().getValue() / (1f * UIFacade.DEFAULT_DPI));
-//            myImageHeight = myImagePanel.getHeight();
+      SwingUtilities.invokeLater {
+        alignTopPanelHeights(buttonPanel, chartPanels)
+        myImagePanel!!.setScale(myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI))
+        myImageHeight = myImagePanel!!.height
         updateTimelineHeight()
       }
     }
@@ -129,22 +135,25 @@ internal abstract class ChartTabContentPanel(
     return tabContentPanel
   }
 
-  //  private void alignTopPanelHeights(JComponent buttonPanel, JComponent chartPanels) {
-  //    int maxHeight = Math.max(buttonPanel.getSize().height, chartPanels.getSize().height);
-  //    if (buttonPanel.getHeight() < maxHeight) {
-  //      //left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
-  //      int diff = maxHeight - buttonPanel.getHeight();
-  //      Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
-  //      buttonPanel.setBorder(emptyBorder);
-  //    }
-  //    if (chartPanels.getHeight() < maxHeight) {
-  //      int diff = maxHeight - chartPanels.getHeight();
-  //      //Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
-  //      //chartPanels.setBorder(emptyBorder);
-  //      chartPanels.remove(chartPanels.getComponent(chartPanels.getComponentCount() - 1));
-  //      chartPanels.add(Box.createRigidArea(new Dimension(0, diff)));
-  //    }
-  //  }
+  // /*
+  private fun alignTopPanelHeights(buttonPanel: JComponent, chartPanels: JComponent) {
+    val maxHeight = Math.max(buttonPanel.size.height, chartPanels.size.height)
+    if (buttonPanel.height < maxHeight) {
+      //left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
+      val diff = maxHeight - buttonPanel.height
+      val emptyBorder = BorderFactory.createEmptyBorder((diff + 1) / 2, 0, diff / 2, 0)
+      buttonPanel.border = emptyBorder
+    }
+    if (chartPanels.height < maxHeight) {
+      val diff = maxHeight - chartPanels.height
+      //Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
+      //chartPanels.setBorder(emptyBorder);
+      chartPanels.remove(chartPanels.getComponent(chartPanels.componentCount - 1))
+      chartPanels.add(Box.createRigidArea(Dimension(0, diff)))
+    }
+  }
+  // */
+
   abstract val chartComponent: Component?
     get
 
@@ -176,7 +185,8 @@ internal abstract class ChartTabContentPanel(
   }
 
   private fun updateTimelineHeight() {
-    val timelineHeight = toolbar.component.height /* + myImageHeight*/
+    //val timelineHeight = toolbar.component.height /* + myImageHeight*/
+    val timelineHeight = myHeaderHeight!!.get() + myImageHeight
     myChart.setTimelineHeight(timelineHeight)
   }
 
