@@ -31,7 +31,7 @@ import java.time.Instant
 /**
  * @author dbarashev@bardsoftware.com
  */
-class TokenVerificationPage : FlowPage {
+class TokenVerificationPage : FlowPage() {
   override fun createUi(): Pane {
     val i18nSignin = RootLocalizer.createWithRootKey("cloud.authPane", i18n)
 

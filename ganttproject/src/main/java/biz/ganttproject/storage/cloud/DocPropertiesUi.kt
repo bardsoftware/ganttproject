@@ -417,8 +417,8 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
   private fun buildNotOnlineDocumentScene(): Scene {
     // TODO: this probably needs to be fixed?
-    val signinPane = SigninPane(onTokenCallback = { _, _, _, _ -> })
-    val signupPane = GPCloudSignupPane(signinPane) { _, _ -> }
+    val signinPane = SigninPane()
+    val signupPane = GPCloudSignupPane()
     return Scene(signupPane.createPane())
   }
 }

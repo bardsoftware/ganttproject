@@ -2,6 +2,9 @@ package biz.ganttproject.resource
 
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.storage.cloud.FlowPage
+import biz.ganttproject.storage.cloud.GPCloudUiFlow
+import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
 import biz.ganttproject.storage.cloud.HttpMethod
 import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.JsonTask
@@ -12,20 +15,88 @@ import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
-import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import java.awt.event.ActionEvent
 
 class GPCloudResourceListAction(private val resourceManager: HumanResourceManager) : GPAction("cloud.resource.list.action") {
   override fun actionPerformed(e: ActionEvent?) {
     GPCloudResourceListDialog(resourceManager).show()
+  }
+}
+
+class ResourceListPage(
+  private val listView: ListView<ResourceDto>,
+  private val controller: DialogController,
+  private val resource2selected: MutableMap<String, BooleanProperty>
+) : FlowPage() {
+  private lateinit var controllerr: GPCloudUiFlow
+
+  override fun createUi(): Pane =
+    VBoxBuilder("content-pane").apply {
+      add(listView, alignment = null, growth = Priority.ALWAYS)
+    }.vbox
+
+  override fun resetUi() {
+  }
+
+  override fun setController(controller: GPCloudUiFlow) {
+    this.controllerr = controller
+  }
+
+  override var active: Boolean = false
+    get() = super.active
+    set(value) {
+      if (value) {
+        field = value
+        GlobalScope.launch(Dispatchers.IO) {
+          val stopProgress = controller.toggleProgress(true)
+          val allResources = try {
+            loadTeams(controller).map {
+              async { loadTeamResources(it) }
+            }.map { it.await() }.reduce { acc, list -> acc + list }.distinctBy { it.email }
+          } finally {
+            stopProgress()
+          }
+          fillListView(allResources)
+        }
+
+      }
+    }
+
+  private fun fillListView(resources: List<ResourceDto>) {
+    resources.forEach {
+      resource2selected[it.email] = SimpleBooleanProperty(false)
+    }
+    Platform.runLater {
+      listView.items.addAll(resources)
+    }
+  }
+
+  private fun loadTeams(dlg: DialogController): List<String> = try {
+    JsonTask(
+      method = HttpMethod.GET,
+      uri = "/team/list",
+      kv = mapOf("owned" to "true", "participated" to "true"),
+      busyIndicator = {},
+      onFailure = {_, _ -> }
+    ).execute().let { result ->
+      if (result.isArray) {
+        result.elements().asSequence().map { it["refid"].asText() }.toList()
+      } else emptyList()
+    }
+  } catch (ex: JsonHttpException) {
+
+    dlg.showAlert(i18n.create("http.error"), createAlertBody("Server returned HTTP ${ex.statusCode}"))
+    emptyList()
   }
 }
 
@@ -54,11 +125,15 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
         }.vbox
       )
 
-      controller.setContent(
-        VBoxBuilder("content-pane").apply {
-          add(listView, alignment = null, growth = Priority.ALWAYS)
-        }.vbox
-      )
+      val wrapper = BorderPane()
+
+      controller.setContent(wrapper)
+      val cloudUiFlow = GPCloudUiFlowBuilder().run {
+        wrapperPane = wrapper
+        dialog = controller
+        mainPage = ResourceListPage(listView, controller, resource2selected)
+        build()
+      }
 
       controller.setupButton(ButtonType.APPLY) { btn ->
         btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
@@ -69,17 +144,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       }
 
       controller.onShown = {
-        GlobalScope.launch(Dispatchers.IO) {
-          val stopProgress = controller.toggleProgress(true)
-          val allResources = try {
-            loadTeams(controller).map {
-              async { loadTeamResources(it) }
-            }.map { it.await() }.reduce { acc, list -> acc + list }.distinctBy { it.email }
-          } finally {
-            stopProgress()
-          }
-          fillListView(allResources)
-        }
+        cloudUiFlow.start()
       }
     }
   }
@@ -89,33 +154,6 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
     listView.items.filter { it.email in selectedEmails }.forEach {
       this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
     }
-  }
-
-  private fun fillListView(resources: List<ResourceDto>) {
-    resources.forEach {
-      resource2selected[it.email] = SimpleBooleanProperty(false)
-    }
-    Platform.runLater {
-      listView.items.addAll(resources)
-    }
-  }
-
-  private fun loadTeams(dlg: DialogController): List<String> = try {
-    JsonTask(
-      method = HttpMethod.GET,
-      uri = "/team/list",
-      kv = mapOf("owned" to "true", "participated" to "true"),
-      busyIndicator = {},
-      onFailure = {_, _ -> }
-    ).execute().let { result ->
-      if (result.isArray) {
-        result.elements().asSequence().map { it["refid"].asText() }.toList()
-      } else emptyList()
-    }
-  } catch (ex: JsonHttpException) {
-
-    dlg.showAlert(i18n.create("http.error"), createAlertBody("Server returned HTTP ${ex.statusCode}"))
-    emptyList()
   }
 }
 

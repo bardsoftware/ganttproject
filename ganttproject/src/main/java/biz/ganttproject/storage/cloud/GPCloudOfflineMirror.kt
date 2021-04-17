@@ -52,10 +52,7 @@ class OfflineMirrorOptionsAsFolderItem(val options: GPCloudFileOptions) : CloudJ
 /**
  * Builds offline notification pane and offline browser pane.
  */
-class GPCloudOfflinePane(
-    val mode: StorageDialogBuilder.Mode,
-    private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentConsumer: (Document) -> Unit) : FlowPage {
+class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode) : FlowPage() {
   private lateinit var controller: GPCloudUiFlow
 
   override fun createUi() = buildContentPane()
@@ -91,8 +88,8 @@ class GPCloudOfflinePane(
     btnContinue.addEventHandler(ActionEvent.ACTION) {
       offlineChoice.selectedToggle.userData.let {
         when (it) {
-          OfflineChoice.TRY_AGAIN -> controller?.start()
-          OfflineChoice.OPEN_MIRROR -> controller?.sceneChanger?.invoke(this@GPCloudOfflinePane.browser, SceneId.OFFLINE_BROWSER)
+          OfflineChoice.TRY_AGAIN -> controller.start()
+          OfflineChoice.OPEN_MIRROR -> controller.transition(SceneId.OFFLINE_BROWSER)
         }
       }
     }
@@ -104,61 +101,6 @@ class GPCloudOfflinePane(
       add(optionPaneBuilder.buildPane(), alignment = Pos.CENTER, growth = Priority.ALWAYS)
       add(btnContinue, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
     }.vbox
-  }
-
-  val browser: Pane by lazy(this::createBrowserPane)
-
-  private val actionButtonHandler = object {
-    private var selectedProject: FolderItem? = null
-
-    fun onSelectionChange(item: FolderItem) {
-      this.selectedProject = item
-    }
-
-    fun onAction() {
-      selectedProject?.let {
-        if (it is OfflineMirrorOptionsAsFolderItem) {
-          it.options.offlineMirror?.let { path ->
-            documentConsumer(GPCloudDocument(
-                teamRefid = null,
-                teamName = it.options.teamName,
-                projectRefid = it.options.projectRefid,
-                projectName = it.name,
-                projectJson = null
-            ))
-          }
-        }
-      }
-    }
-  }
-
-  private fun createBrowserPane(): Pane {
-    val builder = BrowserPaneBuilder<OfflineMirrorOptionsAsFolderItem>(this.mode, this.dialogUi::error) { _, success, _ ->
-      loadOfflineMirrors(success)
-    }
-
-    val paneElements = builder.apply {
-      withI18N(ourLocalizer)
-      withBreadcrumbs(DocumentUri(listOf(), true, ourLocalizer.formatText("breadcrumbs.root")))
-      withActionButton {}
-      withListView(
-          onSelectionChange = actionButtonHandler::onSelectionChange,
-          itemActionFactory = { Collections.emptyMap() },
-          cellFactory = { CellWithBasePath() }
-      )
-      withActionButton { btn ->
-        btn.addEventHandler(ActionEvent.ACTION) {
-          actionButtonHandler.onAction()
-        }
-      }
-
-    }.build()
-    paneElements.breadcrumbView?.show()
-    paneElements.browserPane.stylesheets.addAll(
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/FolderViewCells.css"
-    )
-    return paneElements.browserPane
   }
 }
 

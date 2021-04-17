@@ -86,17 +86,17 @@ class GPCloudStorage(
       }
     }
     browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
-    val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
-      GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-      Platform.runLater {
-        nextPage(browserPane.createStorageUi(), SceneId.BROWSER)
-      }
-    }
 
-    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi, documentConsumer)
-    val signinPane = SigninPane(onTokenCallback)
-    val signupPane = GPCloudSignupPane(signinPane) { node, sceneId -> nextPage(node, sceneId) }
-    GPCloudUiFlow(signupPane, signinPane, offlinePane, browserPane, this::nextPage).start()
+    val offlinePane = GPCloudOfflinePane(this.mode)
+    val offlineBrowser = GPCloudOfflineBrowser(this.mode, this.dialogUi, documentConsumer)
+    GPCloudUiFlowBuilder().apply {
+      wrapperPane = myPane
+      dialog = dialogUi.dialogController
+      mainPage = browserPane
+      offlineAlertPage = offlinePane
+      offlineMainPage = offlineBrowser
+      build().start()
+    }
     return myPane
   }
 

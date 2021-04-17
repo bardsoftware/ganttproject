@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DialogController
+import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
@@ -27,31 +30,49 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-interface FlowPage {
-  fun createUi(): Pane
-  fun resetUi()
-  fun setController(controller: GPCloudUiFlow)
+abstract class FlowPage {
+  open var active: Boolean
+    get() = false
+    set(_) {}
+
+  val ui: Pane by lazy { createUi() }
+
+  abstract fun createUi(): Pane
+  abstract fun resetUi()
+  abstract fun setController(controller: GPCloudUiFlow)
 }
-interface SignupPage : FlowPage
+
+open class EmptyFlowPage : FlowPage() {
+  override fun createUi() = Pane()
+  override fun resetUi() {}
+  override fun setController(controller: GPCloudUiFlow) {}
+}
 
 class GPCloudUiFlow(
   private val signupPane: FlowPage,
   private val signinPane: FlowPage,
-  val offlinePane: FlowPage,
-  private val browserPane: FlowPage,
-  val sceneChanger: SceneChanger
+  private val offlineAlertPage: FlowPage,
+  private val mainPane: FlowPage,
+  private val wrapperPane: BorderPane,
+  private val dialog: DialogController,
+  private val offlineMainPage: FlowPage
 ) {
-  private val tokenVerificationPage = TokenVerificationPage()
-  init {
-    offlinePane.setController(this)
-    browserPane.setController(this)
+  internal val httpd: HttpServerImpl by lazy {
+    HttpServerImpl().apply { this.start() }
   }
 
-  private val tokenVerificationUi: Pane by lazy { tokenVerificationPage.createUi() }
-  private val storageUi: Pane by lazy { browserPane.createUi() }
-  private val signupUi: Pane by lazy { signupPane.createUi() }
-  private val signinUi: Pane by lazy { signinPane.createUi() }
-  private val offlineUi: Pane by lazy { offlinePane.createUi() }
+  private val tokenVerificationPage = TokenVerificationPage()
+  private var currentPage: FlowPage = EmptyFlowPage()
+
+  init {
+    listOf(signupPane, signinPane, offlineAlertPage, offlineMainPage, mainPane).forEach { it.setController(this) }
+  }
+
+//  private val tokenVerificationUi: Pane by lazy { tokenVerificationPage.createUi() }
+//  private val mainUi: Pane by lazy { mainPane.createUi() }
+//  private val signupUi: Pane by lazy { signupPane.createUi() }
+//  private val signinUi: Pane by lazy { signinPane.createUi() }
+//  private val offlineUi: Pane by lazy { offlinePane.createUi() }
   private var startCount = 0
 
   fun start() {
@@ -62,29 +83,29 @@ class GPCloudUiFlow(
         onSuccess = {
           //webSocket.start()
           GlobalScope.launch(Dispatchers.Main) {
-            sceneChanger(storageUi, SceneId.BROWSER)
-            browserPane.resetUi()
+            sceneChanger(mainPane, SceneId.BROWSER)
+            mainPane.resetUi()
           }
         },
         onError = {
           when (it) {
             "NO_ACCESS_TOKEN" -> {
               GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signupUi, SceneId.SIGNUP)
+                sceneChanger(signupPane, SceneId.SIGNUP)
               }
             }
             "ACCESS_TOKEN_EXPIRED" -> {
               GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signinUi, SceneId.SIGNIN)
+                sceneChanger(signinPane, SceneId.SIGNIN)
               }
             }
             "INVALID" -> {
               GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signupUi, SceneId.SIGNUP)
+                sceneChanger(signupPane, SceneId.SIGNUP)
               }
             }
             "OFFLINE" -> {
-              sceneChanger(offlineUi, SceneId.OFFLINE)
+              sceneChanger(offlineAlertPage, SceneId.OFFLINE)
             }
             else -> {
             }
@@ -93,10 +114,10 @@ class GPCloudUiFlow(
     )
   }
 
-  fun tryAccessToken(onSuccess: (String) -> Unit,
-                     onError: (String) -> Unit) {
+  private fun tryAccessToken(onSuccess: (String) -> Unit,
+                             onError: (String) -> Unit) {
     biz.ganttproject.storage.cloud.http.tryAccessToken(
-      onStart = { sceneChanger(tokenVerificationUi, SceneId.TOKEN_SPINNER) },
+      onStart = { sceneChanger(tokenVerificationPage, SceneId.TOKEN_SPINNER) },
       onSuccess = {
         GPCloudOptions.cloudStatus.value = CloudStatus.CONNECTED
         onSuccess(it)
@@ -107,8 +128,56 @@ class GPCloudUiFlow(
       }
     )
   }
+
+  private fun sceneChanger(newPage: FlowPage, sceneId: SceneId) {
+    Platform.runLater {
+      currentPage.active = false
+      when (sceneId) {
+        SceneId.SIGNIN -> httpd.onTokenReceived = { token, validity, userId, websocketToken ->
+          GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
+          transition(SceneId.BROWSER)
+        }
+      }
+      FXUtil.transitionCenterPane(wrapperPane, newPage.ui) {
+        dialog.resize()
+        newPage.active = true
+        currentPage = newPage
+      }
+    }
+  }
+
+  fun transition(page: SceneId) {
+    when(page) {
+      SceneId.SIGNIN -> {
+        sceneChanger(signinPane, page)
+      }
+      SceneId.BROWSER -> { sceneChanger(mainPane, page) }
+      SceneId.OFFLINE_BROWSER -> { sceneChanger(offlineMainPage, page) }
+    }
+  }
+
 }
 
+class GPCloudUiFlowBuilder {
+  lateinit var wrapperPane: BorderPane
+  lateinit var dialog: DialogController
+  lateinit var mainPage: FlowPage
+  var offlineAlertPage: FlowPage = EmptyFlowPage()
+  var offlineMainPage: FlowPage = EmptyFlowPage()
+  var signinPage: FlowPage = SigninPane()
+  var signupPane: FlowPage = GPCloudSignupPane()
+
+
+  fun build(): GPCloudUiFlow = GPCloudUiFlow(
+    signupPane = signupPane,
+    signinPane = signinPage,
+    offlineAlertPage = offlineAlertPage,
+    offlineMainPage = offlineMainPage,
+    mainPane = mainPage,
+    wrapperPane = wrapperPane,
+    dialog = dialog
+  )
+}
 
 fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
   return BorderPane().also {

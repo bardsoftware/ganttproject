@@ -141,7 +141,7 @@ class GPCloudBrowserPane(
     private val dialogUi: StorageDialogBuilder.DialogUi,
     private val documentManager: DocumentManager,
     private val documentConsumer: (Document) -> Unit,
-    private val currentDocument: Document) : FlowPage {
+    private val currentDocument: Document) : FlowPage() {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
 
   private lateinit var paneElements: BrowserPaneElements<CloudJsonAsFolderItem>
@@ -153,7 +153,13 @@ class GPCloudBrowserPane(
     this.controller = controller
   }
 
-  fun createStorageUi(): Pane {
+  override var active: Boolean = false
+    set(value) {
+      field = value
+      if (value) focus()
+    }
+
+  private fun createStorageUi(): Pane {
     val listViewHint = SimpleStringProperty("")
     val actionButtonHandler = object {
       var button: Button? = null

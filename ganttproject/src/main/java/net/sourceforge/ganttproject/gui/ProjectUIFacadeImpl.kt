@@ -25,13 +25,11 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.*
-import biz.ganttproject.storage.cloud.AuthTokenCallback
-import biz.ganttproject.storage.cloud.GPCloudOptions
-import biz.ganttproject.storage.cloud.SigninPane
-import biz.ganttproject.storage.cloud.onAuthToken
+import biz.ganttproject.storage.cloud.*
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.scene.layout.BorderPane
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -98,16 +96,26 @@ class ProjectUIFacadeImpl(
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
 
   private fun signin(onAuth: ()->Unit) {
-    dialog {
-      val onAuthToken: AuthTokenCallback = { token, validity, userId, websocketToken ->
-        GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-        it.hide()
-        onAuth()
+    dialog { controller ->
+      val wrapper = BorderPane()
+      controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
+      controller.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
+      controller.setContent(wrapper)
+      GPCloudUiFlowBuilder().apply {
+        wrapperPane = wrapper
+        dialog = controller
+        mainPage = object : EmptyFlowPage() {
+          override var active: Boolean
+            get() = super.active
+            set(value) {
+              if (value) {
+                controller.hide()
+                onAuth()
+              }
+            }
+        }
+        build().start()
       }
-      it.addStyleClass("dlg-lock", "dlg-cloud-file-options")
-      it.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
-      val pane = SigninPane(onAuthToken)
-      it.setContent(pane.createSigninPane())
     }
   }
   private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {

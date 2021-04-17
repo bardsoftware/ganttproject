@@ -41,13 +41,15 @@ import java.time.Instant
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudSignupPane(private val signinPane: SigninPane,
-                        private val pageSwitcher: SceneChanger) : SignupPage {
+class GPCloudSignupPane() : FlowPage() {
+  private lateinit var controller: GPCloudUiFlow
   private val i18n = RootLocalizer.createWithRootKey("cloud.signup", RootLocalizer)
 
   override fun createUi() = createPane()
   override fun resetUi() {}
-  override fun setController(controller: GPCloudUiFlow) {}
+  override fun setController(controller: GPCloudUiFlow) {
+    this.controller = controller
+  }
 
   fun createPane(msgIntro: String? = null): Pane {
     val vboxBuilder = VBoxBuilder()
@@ -74,7 +76,7 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
     }
     val btnSignIn = Button(i18n.formatText("generic.signIn")).also {
       it.addEventFilter(ActionEvent.ACTION) {
-        this@GPCloudSignupPane.pageSwitcher(signinPane.createSigninPane(), SceneId.SIGNIN)
+        this.controller.transition(SceneId.SIGNIN)
       }
       it.styleClass.addAll("btn-attention", "secondary")
     }
