@@ -40,6 +40,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Tooltip
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
 import kotlinx.coroutines.Dispatchers
@@ -151,10 +152,20 @@ class GPCloudStatusBar(
 
   private fun showConnect() {
     dialog { controller ->
-      SigninPane { token, validity, userId, websocketToken ->
-        GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-        controller.hide()
-      }.also { controller.setContent(it.createSigninPane()) }
+      val wrapper = BorderPane()
+      controller.setContent(wrapper)
+      GPCloudUiFlowBuilder().apply {
+        wrapperPane = wrapper
+        dialog = controller
+        mainPage = object : EmptyFlowPage() {
+          override var active: Boolean
+            get() = super.active
+            set(value) {
+              if (value) controller.hide()
+            }
+        }
+        build().start()
+      }
     }
   }
 

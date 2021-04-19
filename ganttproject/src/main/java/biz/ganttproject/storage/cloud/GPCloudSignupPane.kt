@@ -41,12 +41,15 @@ import java.time.Instant
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPCloudSignupPane(private val signinPane: SigninPane,
-                        private val pageSwitcher: SceneChanger) {
+class GPCloudSignupPane() : FlowPage() {
+  private lateinit var controller: GPCloudUiFlow
   private val i18n = RootLocalizer.createWithRootKey("cloud.signup", RootLocalizer)
 
-  private val tokenVerificationUi: Pane by lazy { createTokenVerificationProgressUi() }
-
+  override fun createUi() = createPane()
+  override fun resetUi() {}
+  override fun setController(controller: GPCloudUiFlow) {
+    this.controller = controller
+  }
 
   fun createPane(msgIntro: String? = null): Pane {
     val vboxBuilder = VBoxBuilder()
@@ -73,7 +76,7 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
     }
     val btnSignIn = Button(i18n.formatText("generic.signIn")).also {
       it.addEventFilter(ActionEvent.ACTION) {
-        this@GPCloudSignupPane.pageSwitcher(signinPane.createSigninPane(), SceneId.SIGNIN)
+        this.controller.transition(SceneId.SIGNIN)
       }
       it.styleClass.addAll("btn-attention", "secondary")
     }
@@ -95,69 +98,6 @@ class GPCloudSignupPane(private val signinPane: SigninPane,
 
     return paneAndImage(vboxBuilder.vbox)
   }
-
-  fun tryAccessToken(onSuccess: (String)->Unit, onError: (String)->Unit) {
-    biz.ganttproject.storage.cloud.http.tryAccessToken(
-      onStart = { pageSwitcher(tokenVerificationUi, SceneId.TOKEN_SPINNER) },
-      onSuccess = {
-        GPCloudOptions.cloudStatus.value = CloudStatus.CONNECTED
-        onSuccess(it)
-      },
-      onError = {
-        GPCloudOptions.cloudStatus.value = CloudStatus.DISCONNECTED
-        onError(it)
-      }
-    )
-  }
-
-  private fun createTokenVerificationProgressUi(): Pane {
-    val i18nSignin = RootLocalizer.createWithRootKey("cloud.authPane", i18n)
-
-    val expirationInstant = Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0)
-    val remainingDuration = Duration.between(Instant.now(), expirationInstant)
-    val expirationValue =
-      if (!remainingDuration.isNegative) {
-        val hours = remainingDuration.toHours()
-        val minutes = remainingDuration.minusMinutes(hours * 60).toMinutes()
-        if (hours > 0) {
-          i18nSignin.formatText("expirationValue_hm", hours, minutes)
-        } else {
-          i18nSignin.formatText("expirationValue_m", minutes)
-        }
-      } else ""
-
-    return paneAndImage(vbox {
-      vbox.styleClass.add("fill-parent")
-      addTitle(i18nSignin.formatText("title"))
-      add(Label(i18nSignin.formatText("expirationMsg", expirationValue)).apply {
-        this.styleClass.add("help")
-      })
-      add(Spinner(Spinner.State.WAITING).pane.also {
-        it.maxWidth = Double.MAX_VALUE
-        it.maxHeight = Double.MAX_VALUE
-      }, Pos.CENTER, Priority.ALWAYS)
-      add(Label(i18nSignin.formatText("progressLabel")), Pos.CENTER, Priority.NEVER).also {
-        it.styleClass.add("medskip")
-      }
-      vbox
-    })
-  }
-
 }
 
 
-fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
-  return BorderPane().also {
-    it.styleClass.addAll("dlg", "signup-pane")
-    it.stylesheets.addAll(
-        "/biz/ganttproject/app/Dialog.css",
-        "/biz/ganttproject/app/Util.css",
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/cloud/GPCloudSignupPane.css"
-    )
-    it.left = ImageView(Image(
-        GPCloudStorage::class.java.getResourceAsStream(imagePath),
-        64.0, 64.0, false, true))
-    it.center = centerNode.also { node -> node.styleClass.add("signup-body") }
-  }
-}

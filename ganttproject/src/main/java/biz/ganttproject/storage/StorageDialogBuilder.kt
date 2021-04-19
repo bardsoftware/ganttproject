@@ -238,7 +238,7 @@ class StorageDialogBuilder(
     OPEN, SAVE
   }
 
-  class DialogUi(private val dialogController: DialogController,
+  class DialogUi(internal val dialogController: DialogController,
                  private val notificationPane: () -> NotificationPane) {
     fun close() {
       dialogController.hide()

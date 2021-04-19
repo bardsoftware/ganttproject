@@ -139,7 +139,8 @@ class DialogControllerSwing() : DialogController {
 
   private val contentStack = StackPane()
   private lateinit var content: Node
-  private var buttonBar: ButtonBar? = null
+  private var buttonBar: ButtonBar = ButtonBar().also { it.styleClass.add("button-pane") }
+  private var buttonBarDisabled = false
   private val buttons = FXCollections.observableArrayList<ButtonType>().also {
     it.addListener(ListChangeListener { c ->
       while (c.next()) {
@@ -160,6 +161,7 @@ class DialogControllerSwing() : DialogController {
   private val buttonNodes = WeakHashMap<ButtonType, Button>()
 
   private var header: Node? = null
+  private var isBuilt = false
 
   internal fun build(): Parent {
     this.header?.let {
@@ -169,11 +171,13 @@ class DialogControllerSwing() : DialogController {
       this.contentStack.children.add(it)
       this.paneBuilder.add(this.contentStack, alignment = null, growth = Priority.ALWAYS)
     }
-    this.buttonBar?.let {
-      updateButtons(it)
-      this.paneBuilder.add(it)
+    if (!this.buttonBarDisabled) {
+      this.buttonBar.let {
+        updateButtons(it)
+        this.paneBuilder.add(it)
+      }
     }
-    val defaultButton = this.buttonBar?.buttons?.firstOrNull {
+    val defaultButton = this.buttonBar.buttons?.firstOrNull {
       if (it is Button) it.isDefaultButton else false
     }
     this.paneBuilder.vbox.addEventHandler(KeyEvent.KEY_PRESSED) {
@@ -188,6 +192,7 @@ class DialogControllerSwing() : DialogController {
         it.consume()
       }
     }
+    isBuilt = true
     return this.paneBuilder.vbox
   }
 
@@ -203,12 +208,12 @@ class DialogControllerSwing() : DialogController {
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
-    if (buttonBar == null) {
-      buttonBar = ButtonBar().also { it.styleClass.add("button-pane") }
-    }
     buttons.add(type)
     this.buttonNodes[type]?.let {
       code(it)
+    }
+    if (isBuilt) {
+      updateButtons(buttonBar)
     }
   }
 
@@ -266,7 +271,8 @@ class DialogControllerSwing() : DialogController {
   override fun removeButtonBar() {
     this.buttons.clear()
     this.buttonNodes.clear()
-    this.buttonBar = null
+    this.buttonBarDisabled = true
+    //this.buttonBar = null
   }
 
   private fun updateButtons(buttonBar: ButtonBar) {

@@ -57,15 +57,13 @@ import kotlin.concurrent.schedule
  *
  * @author dbarashev@bardsoftware.com
  */
-class SigninPane(private val onTokenCallback: AuthTokenCallback) {
+class SigninPane() : FlowPage() {
   enum class Status {
     INIT, WAITING_FOR_BROWSER, WAITING_FOR_AUTH, AUTH_COMPLETED
   }
 
-  private val httpd: HttpServerImpl by lazy {
-    HttpServerImpl().apply { this.start() }
-  }
 
+  private lateinit var controller: GPCloudUiFlow
   private var status = Status.INIT
   private var statusText = SimpleStringProperty()
   private val spinner = Spinner()
@@ -73,12 +71,7 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
     styleClass.add("indicator-pane")
   }
 
-  init {
-    this.httpd.onTokenReceived = this.onTokenCallback
-    this.httpd.onStart = ::onStartCallback
-  }
-
-  fun onStartCallback() {
+  private fun onStartCallback() {
     GlobalScope.launch(Dispatchers.JavaFx) {
       status = Status.WAITING_FOR_AUTH
       spinner.state = Spinner.State.ATTENTION
@@ -88,7 +81,7 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
   }
 
   fun createSigninPane(): Pane {
-    val uri = "$GPCLOUD_SIGNIN_URL?callback=${httpd.listeningPort}"
+    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}"
 
     val vboxBuilder = VBoxBuilder("signin-pane", "pane-service-contents")
     vboxBuilder.addTitle(ourLocalizer.formatText("title")).also {
@@ -158,6 +151,15 @@ class SigninPane(private val onTokenCallback: AuthTokenCallback) {
         }
       }, Pos.CENTER, Priority.NEVER)
     }
+  }
+
+  override fun createUi(): Pane = createSigninPane()
+
+  override fun resetUi() {}
+
+  override fun setController(controller: GPCloudUiFlow) {
+    this.controller = controller
+    controller.httpd.onStart = ::onStartCallback
   }
 }
 

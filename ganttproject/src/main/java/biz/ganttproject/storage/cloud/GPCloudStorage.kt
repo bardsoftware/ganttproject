@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.document.DocumentManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.function.Consumer
 
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 const val GPCLOUD_SCHEME = "https"
@@ -76,63 +75,6 @@ class GPCloudStorage(
     return doCreateUi()
   }
 
-  data class Controller(
-      val signupPane: GPCloudSignupPane,
-      private val signinPane: SigninPane,
-      val offlinePane: GPCloudOfflinePane,
-      private val browserPane: GPCloudBrowserPane,
-      val sceneChanger: SceneChanger) {
-    init {
-      offlinePane.controller = this
-      browserPane.controller = this
-    }
-
-    private val storageUi: Pane by lazy { browserPane.createStorageUi() }
-    private val signupUi: Pane by lazy { signupPane.createPane() }
-    private val signinUi: Pane by lazy { signinPane.createSigninPane() }
-    private val offlineUi: Pane by lazy { offlinePane.createPane() }
-    private var startCount = 0
-
-    fun start() {
-      if (startCount++ >= 5) {
-        return
-      }
-      signupPane.tryAccessToken(
-          onSuccess = {
-            //webSocket.start()
-            GlobalScope.launch(Dispatchers.Main) {
-              sceneChanger(storageUi, SceneId.BROWSER)
-              browserPane.reset()
-            }
-          },
-          onError = {
-            when (it) {
-              "NO_ACCESS_TOKEN" -> {
-                GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupUi, SceneId.SIGNUP)
-                }
-              }
-              "ACCESS_TOKEN_EXPIRED" -> {
-                GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signinUi, SceneId.SIGNIN)
-                }
-              }
-              "INVALID" -> {
-                GlobalScope.launch(Dispatchers.Main) {
-                  sceneChanger(signupUi, SceneId.SIGNUP)
-                }
-              }
-              "OFFLINE" -> {
-                sceneChanger(offlineUi, SceneId.OFFLINE)
-              }
-              else -> {
-              }
-            }
-          }
-      )
-    }
-  }
-
   private fun doCreateUi(): Pane {
     val documentConsumer: (Document) -> Unit = {doc ->
       GlobalScope.async(Dispatchers.JavaFx) {
@@ -144,17 +86,17 @@ class GPCloudStorage(
       }
     }
     browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
-    val onTokenCallback: AuthTokenCallback = { token, validity, userId, websocketToken ->
-      GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
-      Platform.runLater {
-        nextPage(browserPane.createStorageUi(), SceneId.BROWSER)
-      }
-    }
 
-    val offlinePane = GPCloudOfflinePane(this.mode, this.dialogUi, documentConsumer)
-    val signinPane = SigninPane(onTokenCallback)
-    val signupPane = GPCloudSignupPane(signinPane) { node, sceneId -> nextPage(node, sceneId) }
-    Controller(signupPane, signinPane, offlinePane, browserPane, this::nextPage).start()
+    val offlinePane = GPCloudOfflinePane(this.mode)
+    val offlineBrowser = GPCloudOfflineBrowser(this.mode, this.dialogUi, documentConsumer)
+    GPCloudUiFlowBuilder().apply {
+      wrapperPane = myPane
+      dialog = dialogUi.dialogController
+      mainPage = browserPane
+      offlineAlertPage = offlinePane
+      offlineMainPage = offlineBrowser
+      build().start()
+    }
     return myPane
   }
 
