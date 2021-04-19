@@ -36,7 +36,8 @@ class GPCloudResourceListAction(private val resourceManager: HumanResourceManage
 class ResourceListPage(
   private val listView: ListView<ResourceDto>,
   private val controller: DialogController,
-  private val resource2selected: MutableMap<String, BooleanProperty>
+  private val resource2selected: MutableMap<String, BooleanProperty>,
+  private val resourceManager: HumanResourceManager
 ) : FlowPage() {
   private lateinit var controllerr: GPCloudUiFlow
 
@@ -69,6 +70,13 @@ class ResourceListPage(
           fillListView(allResources)
         }
 
+        controller.setupButton(ButtonType.APPLY) { btn ->
+          btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
+          btn.styleClass.add("btn-attention")
+          btn.setOnAction {
+            addResourcesToProject()
+          }
+        }
       }
     }
 
@@ -98,6 +106,14 @@ class ResourceListPage(
     dlg.showAlert(i18n.create("http.error"), createAlertBody("Server returned HTTP ${ex.statusCode}"))
     emptyList()
   }
+
+  private fun addResourcesToProject() {
+    val selectedEmails = resource2selected.filter { it.value.value }.keys
+    listView.items.filter { it.email in selectedEmails }.forEach {
+      this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
+    }
+  }
+
 }
 
 class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager) {
@@ -131,30 +147,17 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       val cloudUiFlow = GPCloudUiFlowBuilder().run {
         wrapperPane = wrapper
         dialog = controller
-        mainPage = ResourceListPage(listView, controller, resource2selected)
+        mainPage = ResourceListPage(listView, controller, resource2selected, resourceManager)
         build()
-      }
-
-      controller.setupButton(ButtonType.APPLY) { btn ->
-        btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
-        btn.styleClass.add("btn-attention")
-        btn.setOnAction {
-          addResourcesToProject()
-        }
       }
 
       controller.onShown = {
         cloudUiFlow.start()
+        controller.resize()
       }
     }
   }
 
-  private fun addResourcesToProject() {
-    val selectedEmails = resource2selected.filter { it.value.value }.keys
-    listView.items.filter { it.email in selectedEmails }.forEach {
-      this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
-    }
-  }
 }
 
 class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanProperty?) : ListCell<ResourceDto>() {

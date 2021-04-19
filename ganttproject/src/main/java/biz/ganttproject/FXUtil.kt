@@ -193,7 +193,7 @@ object FXUtil {
     if (newCenter == null) { return }
     val replacePane = Runnable {
       borderPane.center = newCenter
-      resizer()
+        //resizer()
     }
     if (borderPane.center == null) {
       replacePane.run()

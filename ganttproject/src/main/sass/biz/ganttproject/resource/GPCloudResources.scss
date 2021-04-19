@@ -3,6 +3,7 @@
 @import "../app/typography";
 
 .dlg-cloud-resource-list {
+  -fx-min-height: 400;
   .header {
     @include dialog-header($gp-orange);
   }
