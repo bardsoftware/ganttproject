@@ -1,3 +1,21 @@
+/*
+Copyright 2021 Dmitry Barashev, BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.resource
 
 import biz.ganttproject.app.*
@@ -27,19 +45,25 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import java.awt.event.ActionEvent
 
+/**
+ * Just an action to plug into the application menu.
+ */
 class GPCloudResourceListAction(private val resourceManager: HumanResourceManager) : GPAction("cloud.resource.list.action") {
   override fun actionPerformed(e: ActionEvent?) {
     GPCloudResourceListDialog(resourceManager).show()
   }
 }
 
+/**
+ * Pane with a list of resources fetched from GP Cloud.
+ */
 class ResourceListPage(
   private val listView: ListView<ResourceDto>,
-  private val controller: DialogController,
+  private val dialog: DialogController,
   private val resource2selected: MutableMap<String, BooleanProperty>,
   private val resourceManager: HumanResourceManager
 ) : FlowPage() {
-  private lateinit var controllerr: GPCloudUiFlow
+  private lateinit var uiFlow: GPCloudUiFlow
 
   override fun createUi(): Pane =
     VBoxBuilder("content-pane").apply {
@@ -50,18 +74,17 @@ class ResourceListPage(
   }
 
   override fun setController(controller: GPCloudUiFlow) {
-    this.controllerr = controller
+    this.uiFlow = controller
   }
 
   override var active: Boolean = false
-    get() = super.active
     set(value) {
+      field = value
       if (value) {
-        field = value
         GlobalScope.launch(Dispatchers.IO) {
-          val stopProgress = controller.toggleProgress(true)
+          val stopProgress = dialog.toggleProgress(true)
           val allResources = try {
-            loadTeams(controller).map {
+            loadTeams(dialog).map {
               async { loadTeamResources(it) }
             }.map { it.await() }.reduce { acc, list -> acc + list }.distinctBy { it.email }
           } finally {
@@ -70,7 +93,7 @@ class ResourceListPage(
           fillListView(allResources)
         }
 
-        controller.setupButton(ButtonType.APPLY) { btn ->
+        dialog.setupButton(ButtonType.APPLY) { btn ->
           btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
           btn.styleClass.add("btn-attention")
           btn.setOnAction {
@@ -116,23 +139,26 @@ class ResourceListPage(
 
 }
 
+/**
+ * Builds a UI flow with the main page (resources list) and sign-in and other pages.
+ */
 class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager) {
   private val resource2selected = mutableMapOf<String, BooleanProperty>()
-  private val listView = ListView<ResourceDto>().also {
-    it.setCellFactory {
-      ResourceListCell() {
+  private val listView = ListView<ResourceDto>().apply {
+    setCellFactory { _ ->
+      ResourceListCell {
         resource2selected[it.email]
       }
     }
   }
 
   fun show() {
-    dialog { controller ->
-      controller.addStyleClass("dlg-cloud-resource-list")
-      controller.addStyleSheet(
+    dialog { dlg ->
+      dlg.addStyleClass("dlg-cloud-resource-list")
+      dlg.addStyleSheet(
         "/biz/ganttproject/resource/GPCloudResources.css"
       )
-      controller.setHeader(
+      dlg.setHeader(
         VBoxBuilder("header").apply {
           addTitle(LocalizedString("cloud.resource.list.title", RootLocalizer)).also { hbox ->
             hbox.alignment = Pos.CENTER_LEFT
@@ -143,29 +169,31 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
 
       val wrapper = BorderPane()
 
-      controller.setContent(wrapper)
+      dlg.setContent(wrapper)
       val cloudUiFlow = GPCloudUiFlowBuilder().run {
         wrapperPane = wrapper
-        dialog = controller
-        mainPage = ResourceListPage(listView, controller, resource2selected, resourceManager)
+        dialog = dlg
+        mainPage = ResourceListPage(listView, dlg, resource2selected, resourceManager)
         build()
       }
 
-      controller.onShown = {
+      dlg.onShown = {
         cloudUiFlow.start()
-        controller.resize()
+        dlg.resize()
       }
     }
   }
-
 }
 
+/**
+ * Renders a cell in the list of resources.
+ */
 class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanProperty?) : ListCell<ResourceDto>() {
   private val checkBox = CheckBox()
   private var isChecked: BooleanProperty? = null
 
   override fun updateItem(item: ResourceDto?, empty: Boolean) {
-    super.updateItem(item, empty);
+    super.updateItem(item, empty)
 
     if (empty || item == null) {
       text = null
@@ -177,9 +205,9 @@ class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanPro
       styleClass.add("resource-cell")
       children.add(checkBox)
       children.add(
-        VBoxBuilder("labels").also {
-          it.add(Label(item.name).also { it.styleClass.add("name") })
-          it.add(Label(item.email).also { it.styleClass.add("email") })
+        VBoxBuilder("labels").apply {
+          add(Label(item.name).also { it.styleClass.add("name") })
+          add(Label(item.email).also { it.styleClass.add("email") })
         }.vbox
       )
       isChecked?.let { checkBox.selectedProperty().unbindBidirectional(it) }
