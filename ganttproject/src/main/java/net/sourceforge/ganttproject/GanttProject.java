@@ -24,10 +24,13 @@ import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
@@ -210,6 +213,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     class TaskManagerConfigImpl implements TaskManagerConfig {
       final DefaultColorOption myDefaultColorOption = new GanttProjectImpl.DefaultTaskColorOption();
+      final DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
 
       @Override
       public Color getDefaultColor() {
@@ -219,6 +223,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       @Override
       public ColorOption getDefaultColorOption() {
         return myDefaultColorOption;
+      }
+
+      @Override
+      public BooleanOption getSchedulerDisabledOption() {
+        return mySchedulerDisabledOption;
       }
 
       @Override
@@ -251,8 +260,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         return getUIFacade().getNotificationManager();
       }
 
+      GPOptionGroup getTaskOptions() {
+        return new GPOptionGroup("task", mySchedulerDisabledOption);
+      }
     }
-    TaskManagerConfig taskConfig = new TaskManagerConfigImpl();
+    TaskManagerConfigImpl taskConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(new TaskContainmentHierarchyFacade.Factory() {
       @Override
       public TaskContainmentHierarchyFacade createFacade() {
@@ -277,7 +289,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptions(GPCloudOptions.INSTANCE.getOptionGroup());
     options.addOptions(getRssFeedChecker().getOptions());
     options.addOptions(UpdateOptions.INSTANCE.getOptionGroup());
-
+    options.addOptions(taskConfig.getTaskOptions());
     startupLogger.debug("2. loading options");
     initOptions();
     // Not a joke. This takes value from the option and applies it to the UI.

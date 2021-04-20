@@ -21,7 +21,9 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -65,7 +67,7 @@ public class GanttProjectImpl implements IGanttProject {
   public GanttProjectImpl() {
     myResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
         new CustomColumnsManager());
-    myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, myCalendar, GanttLanguage.getInstance());
+    myTaskManagerConfig = new TaskManagerConfigImpl(myResourceManager, myCalendar);
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
     myUIConfiguration = new UIConfiguration(Color.BLUE, true);
     myTaskCustomColumnManager = new CustomColumnsManager();
@@ -228,12 +230,14 @@ public class GanttProjectImpl implements IGanttProject {
     private final GPTimeUnitStack myTimeUnitStack;
     private final GPCalendarCalc myCalendar;
     private final ColorOption myDefaultTaskColorOption;
+    private final BooleanOption mySchedulerDisabledOption;
 
-    private TaskManagerConfigImpl(HumanResourceManager resourceManager, GPCalendarCalc calendar, GanttLanguage i18n) {
+    private TaskManagerConfigImpl(HumanResourceManager resourceManager, GPCalendarCalc calendar) {
       myResourceManager = resourceManager;
       myTimeUnitStack = new GPTimeUnitStack();
       myCalendar = calendar;
       myDefaultTaskColorOption = new DefaultTaskColorOption(DEFAULT_TASK_COLOR);
+      mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
     }
 
     @Override
@@ -244,6 +248,11 @@ public class GanttProjectImpl implements IGanttProject {
     @Override
     public ColorOption getDefaultColorOption() {
       return myDefaultTaskColorOption;
+    }
+
+    @Override
+    public BooleanOption getSchedulerDisabledOption() {
+      return mySchedulerDisabledOption;
     }
 
     @Override

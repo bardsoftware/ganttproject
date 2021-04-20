@@ -11,6 +11,7 @@
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -36,4 +37,6 @@ public interface TaskManagerConfig {
   URL getProjectDocumentURL();
 
   NotificationManager getNotificationManager();
+
+  BooleanOption getSchedulerDisabledOption();
 }

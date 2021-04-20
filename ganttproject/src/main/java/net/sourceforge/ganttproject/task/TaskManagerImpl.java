@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithmImpl;
@@ -53,6 +54,7 @@ import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPerc
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
 import biz.ganttproject.core.model.task.ConstraintType;
+import net.sourceforge.ganttproject.task.algorithm.SchedulerOptional;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
@@ -67,6 +69,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstra
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListener;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
@@ -136,7 +139,7 @@ public class TaskManagerImpl implements TaskManager {
     }
   });
 
-  private final SchedulerImpl myScheduler = new SchedulerImpl(myDependencyGraph, myHierarchySupplier);
+  private final AlgorithmBase myScheduler;
 
   private boolean areEventsEnabled = true;
 
@@ -211,6 +214,11 @@ public class TaskManagerImpl implements TaskManager {
     myCustomColumnsManager.addListener(getCustomPropertyListener());
 
     myConfig = config;
+    myScheduler = new SchedulerOptional(
+        config.getSchedulerDisabledOption(),
+        new SchedulerImpl(myDependencyGraph, myHierarchySupplier)
+    );
+    myDependencyGraph.addListener(() -> myScheduler.run());
     myHierarchyManager = new TaskHierarchyManagerImpl();
     EventDispatcher dispatcher = new EventDispatcher() {
       @Override
@@ -271,7 +279,12 @@ public class TaskManagerImpl implements TaskManager {
     ChartBoundsAlgorithm alg5 = new ChartBoundsAlgorithm();
     CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
     myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6, myScheduler);
-    addTaskListener(myScheduler.getTaskModelListener());
+    addTaskListener(new TaskListenerAdapter() {
+      @Override
+      public void dependencyChanged(TaskDependencyEvent e) {
+        myScheduler.run();
+      }
+    });
   }
 
   private CustomPropertyListener getCustomPropertyListener() {
