@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 Dmitry Barashev, BarD Software s.r.o
+Copyright 2017-2021 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-//import biz.ganttproject.storage.local.setupErrorLabel
 import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
@@ -48,7 +47,6 @@ import java.util.function.Consumer
 class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
     private val documentManager: DocumentManager,
-    private val currentDocument: Document,
     private val documentReceiver: (Document) -> Unit) : StorageUi {
 
   private lateinit var paneElements: BrowserPaneElements<RecentDocAsFolderItem>
@@ -121,14 +119,16 @@ class RecentProjects(
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
     busyIndicator.accept(true)
     progressLabel.update("0", documentManager.recentDocuments.size.toString())
-    var counter = AtomicInteger(0)
+    val counter = AtomicInteger(0)
     val asyncs = documentManager.recentDocuments.map { path ->
       try {
         val doc = RecentDocAsFolderItem(path)
         GlobalScope.async(Dispatchers.IO) {
           doc.updateMetadata()
           result.add(doc)
-          Platform.runLater { progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString()) }
+          Platform.runLater {
+            progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
+          }
         }
       } catch (ex: MalformedURLException) {
         LOG.error("Can't parse this recent document record: {}", path, ex)
@@ -136,11 +136,14 @@ class RecentProjects(
       }
     }
     GlobalScope.launch {
-      asyncs.awaitAll()
-      consumer.accept(result)
-      Platform.runLater {
-        busyIndicator.accept(false)
-        progressLabel.clear()
+      try {
+        asyncs.awaitAll()
+        consumer.accept(result)
+      } finally {
+        Platform.runLater {
+          busyIndicator.accept(false)
+          progressLabel.clear()
+        }
       }
     }
   }
@@ -150,6 +153,9 @@ class RecentProjects(
   }
 }
 
+/**
+ * Plugs a recent document string into the folder view.
+ */
 class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
