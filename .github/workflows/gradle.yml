@@ -26,4 +26,4 @@ jobs:
           java-version: 11.0.5
           java-package: jdk+fx
       - name: Build with Gradle
-        run: gradle build
+        run: ./gradlew build
