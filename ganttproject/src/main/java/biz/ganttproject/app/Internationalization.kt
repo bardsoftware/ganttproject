@@ -47,6 +47,10 @@ class LocalizedString(
     observable.value = build()
   }
 
+  fun clear() {
+    observable.value = ""
+  }
+
   fun update(vararg args: String): LocalizedString {
     this.args = args.toList()
     observable.value = build()
