@@ -39,14 +39,16 @@ public class AlgorithmCollection {
 
   private final CriticalPathAlgorithm myCriticalPathAlgorithm;
 
-  private final SchedulerImpl myScheduler;
+  private final AlgorithmBase myScheduler;
 
-  public AlgorithmCollection(TaskManagerImpl taskManager,
+  public AlgorithmCollection(
+      TaskManagerImpl taskManager,
       FindPossibleDependeesAlgorithm myFindPossibleDependeesAlgorithm,
       RecalculateTaskScheduleAlgorithm recalculateTaskScheduleAlgorithm,
       AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
       RecalculateTaskCompletionPercentageAlgorithm completionPercentageAlgorithm,
-      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm, SchedulerImpl scheduler) {
+      ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm,
+      AlgorithmBase scheduler) {
     myScheduler = scheduler;
     this.myFindPossibleDependeesAlgorithm = myFindPossibleDependeesAlgorithm;
     myRecalculateTaskScheduleAlgorithm = recalculateTaskScheduleAlgorithm;
