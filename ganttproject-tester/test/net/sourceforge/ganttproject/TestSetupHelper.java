@@ -2,7 +2,9 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -30,6 +32,8 @@ public class TestSetupHelper {
         private RoleManager myRoleManager;
 
         private DefaultColorOption myDefaultColorOption = new DefaultColorOption("taskcolor", Color.CYAN);
+
+        private DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
 
         public TaskManagerBuilder() {
             myTimeUnitStack = new GPTimeUnitStack();
@@ -80,6 +84,11 @@ public class TestSetupHelper {
         public NotificationManager getNotificationManager() {
           return null;
         }
+
+      @Override
+      public BooleanOption getSchedulerDisabledOption() {
+        return mySchedulerDisabledOption;
+      }
     }
 
     public static TaskManagerBuilder newTaskManagerBuilder() {

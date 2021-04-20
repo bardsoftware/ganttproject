@@ -37,9 +37,6 @@ import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.DependencyEdge;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.ImplicitSubSuperTaskDependency;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.Node;
-import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListener;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 
 import java.util.Collection;
 import java.util.Date;
@@ -56,23 +53,10 @@ public class SchedulerImpl extends AlgorithmBase {
   private final DependencyGraph myGraph;
   private boolean isRunning;
   private final Supplier<TaskContainmentHierarchyFacade> myTaskHierarchy;
-  private final TaskListener myTaskListener;
 
   public SchedulerImpl(DependencyGraph graph, Supplier<TaskContainmentHierarchyFacade> taskHierarchy) {
     myGraph = graph;
-    myGraph.addListener(new DependencyGraph.Listener() {
-      @Override
-      public void onChange() {
-        run();
-      }
-    });
     myTaskHierarchy = taskHierarchy;
-    myTaskListener = new TaskListenerAdapter() {
-      @Override
-      public void dependencyChanged(TaskDependencyEvent e) {
-        run();
-      }
-    };
   }
 
   @Override
@@ -81,10 +65,6 @@ public class SchedulerImpl extends AlgorithmBase {
     if (isEnabled()) {
       run();
     }
-  }
-
-  public TaskListener getTaskModelListener() {
-    return myTaskListener;
   }
 
   @Override

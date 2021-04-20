@@ -2,7 +2,9 @@ package net.sourceforge.ganttproject.test.task;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import junit.framework.TestCase;
@@ -190,6 +192,11 @@ public class TestResourceAssignments extends TestCase {
             @Override
             public NotificationManager getNotificationManager() {
               return null;
+            }
+
+            @Override
+            public BooleanOption getSchedulerDisabledOption() {
+                return new DefaultBooleanOption("scheduler.disabled", false);
             }
         });
     }
