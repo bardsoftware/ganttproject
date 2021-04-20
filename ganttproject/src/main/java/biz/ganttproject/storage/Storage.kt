@@ -187,7 +187,6 @@ class StoragePane internal constructor(
     val recentProjects = RecentProjects(
         mode,
         documentManager,
-        currentDocument,
         openDocument)
     val cloudStorage = GPCloudStorage(dialogUi, mode, currentDocument, openDocument, documentManager)
     storageUiList.addAll(listOf(localStorage, recentProjects, cloudStorage))
