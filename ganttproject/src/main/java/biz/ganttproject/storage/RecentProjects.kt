@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 Dmitry Barashev, BarD Software s.r.o
+Copyright 2017-2021 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -18,9 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-//import biz.ganttproject.storage.local.setupErrorLabel
+import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -35,6 +36,7 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 /**
@@ -45,7 +47,6 @@ import java.util.function.Consumer
 class RecentProjects(
     private val mode: StorageDialogBuilder.Mode,
     private val documentManager: DocumentManager,
-    private val currentDocument: Document,
     private val documentReceiver: (Document) -> Unit) : StorageUi {
 
   private lateinit var paneElements: BrowserPaneElements<RecentDocAsFolderItem>
@@ -58,8 +59,9 @@ class RecentProjects(
   }
 
   override fun createUi(): Pane {
-    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, _ ->
-      loadRecentDocs(success)
+    val progressLabel = i18n.create("progress.label")
+    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
+      loadRecentDocs(success, busyIndicator, progressLabel)
     }
 
     val actionButtonHandler = object {
@@ -95,6 +97,7 @@ class RecentProjects(
           },
           cellFactory = { CellWithBasePath() }
       )
+      withListViewHint(progressLabel)
       withValidator { _, _ -> ValidationResult() }
     }.build()
     paneElements.breadcrumbView?.show()
@@ -103,29 +106,46 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      loadRecentDocs(builder.resultConsumer)
+      loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
     }
 
   }
 
-  private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
+  private fun loadRecentDocs(
+    consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
+    busyIndicator: Consumer<Boolean>,
+    progressLabel: LocalizedString
+  ) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
-
-    runBlocking {
-      documentManager.recentDocuments.map { path ->
-        try {
-          val doc = RecentDocAsFolderItem(path)
-          GlobalScope.async(Dispatchers.IO) {
-            doc.updateMetadata()
-            doc
+    busyIndicator.accept(true)
+    progressLabel.update("0", documentManager.recentDocuments.size.toString())
+    val counter = AtomicInteger(0)
+    val asyncs = documentManager.recentDocuments.map { path ->
+      try {
+        val doc = RecentDocAsFolderItem(path)
+        GlobalScope.async(Dispatchers.IO) {
+          doc.updateMetadata()
+          result.add(doc)
+          Platform.runLater {
+            progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
           }
-        } catch (ex: MalformedURLException) {
-          LOG.error("Can't parse this recent document record: {}", path)
-          CompletableDeferred(value = null)
         }
-      }.awaitAll()
-    }.filterNotNullTo(result)
-    consumer.accept(result)
+      } catch (ex: MalformedURLException) {
+        LOG.error("Can't parse this recent document record: {}", path, ex)
+        CompletableDeferred(value = null)
+      }
+    }
+    GlobalScope.launch {
+      try {
+        asyncs.awaitAll()
+        consumer.accept(result)
+      } finally {
+        Platform.runLater {
+          busyIndicator.accept(false)
+          progressLabel.clear()
+        }
+      }
+    }
   }
 
   override fun focus() {
@@ -133,6 +153,9 @@ class RecentProjects(
   }
 }
 
+/**
+ * Plugs a recent document string into the folder view.
+ */
 class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
