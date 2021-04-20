@@ -108,7 +108,7 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      loadRecentDocs(builder.resultConsumer, {}, progressLabel)
+      loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
     }
 
   }
@@ -137,8 +137,11 @@ class RecentProjects(
     }
     GlobalScope.launch {
       asyncs.awaitAll()
-      busyIndicator.accept(false)
       consumer.accept(result)
+      Platform.runLater {
+        busyIndicator.accept(false)
+        progressLabel.clear()
+      }
     }
   }
 

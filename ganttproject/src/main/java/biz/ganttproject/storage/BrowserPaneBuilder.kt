@@ -34,6 +34,7 @@ import javafx.collections.ObservableList
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
+import javafx.scene.control.ProgressBar
 import javafx.scene.layout.*
 import org.controlsfx.control.textfield.CustomTextField
 import org.controlsfx.validation.ValidationResult
@@ -126,6 +127,9 @@ class BrowserPaneBuilder<T: FolderItem>(
 //    text = ""
 //    HBox.setHgrow(this, Priority.ALWAYS)
 //  }
+  private val progressBar = ProgressBar().also {
+    it.styleClass.add("folder-view-progress")
+  }
   private val errorLabel = Label("", FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_TRIANGLE))
   private val filename = CustomTextField()
   private val listViewHint = Label().also {
@@ -146,7 +150,9 @@ class BrowserPaneBuilder<T: FolderItem>(
   private var hasValidator = false
 
   val busyIndicatorToggler: Consumer<Boolean>
-    get() = Consumer { Platform.runLater { /*busyIndicator.progress = if (it) -1.0 else 0.0*/ } }
+    get() = Consumer { Platform.runLater {
+      progressBar.progress = if (it) -1.0 else 0.0
+    }}
 
   val resultConsumer: Consumer<ObservableList<T>>
     get() = Consumer { Platform.runLater { this.listView.setResources(it) } }
@@ -292,6 +298,9 @@ class BrowserPaneBuilder<T: FolderItem>(
             it.children.add(errorLabel)
           })
         }
+      })
+      add(progressBar.also {
+        it.maxWidth = Double.MAX_VALUE
       })
       add(listView.listView, alignment = null, growth = Priority.ALWAYS)
       add(listViewHint)
