@@ -19,8 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 //import biz.ganttproject.storage.local.setupErrorLabel
+import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
@@ -35,6 +37,7 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 /**
@@ -58,8 +61,9 @@ class RecentProjects(
   }
 
   override fun createUi(): Pane {
-    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, _ ->
-      loadRecentDocs(success)
+    val progressLabel = i18n.create("progress.label")
+    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
+      loadRecentDocs(success, busyIndicator, progressLabel)
     }
 
     val actionButtonHandler = object {
@@ -95,6 +99,7 @@ class RecentProjects(
           },
           cellFactory = { CellWithBasePath() }
       )
+      withListViewHint(progressLabel)
       withValidator { _, _ -> ValidationResult() }
     }.build()
     paneElements.breadcrumbView?.show()
@@ -103,29 +108,38 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      loadRecentDocs(builder.resultConsumer)
+      loadRecentDocs(builder.resultConsumer, {}, progressLabel)
     }
 
   }
 
-  private fun loadRecentDocs(consumer: Consumer<ObservableList<RecentDocAsFolderItem>>) {
+  private fun loadRecentDocs(
+    consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
+    busyIndicator: Consumer<Boolean>,
+    progressLabel: LocalizedString
+  ) {
     val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
-
-    runBlocking {
-      documentManager.recentDocuments.map { path ->
-        try {
-          val doc = RecentDocAsFolderItem(path)
-          GlobalScope.async(Dispatchers.IO) {
-            doc.updateMetadata()
-            doc
-          }
-        } catch (ex: MalformedURLException) {
-          LOG.error("Can't parse this recent document record: {}", path)
-          CompletableDeferred(value = null)
+    busyIndicator.accept(true)
+    progressLabel.update("0", documentManager.recentDocuments.size.toString())
+    var counter = AtomicInteger(0)
+    val asyncs = documentManager.recentDocuments.map { path ->
+      try {
+        val doc = RecentDocAsFolderItem(path)
+        GlobalScope.async(Dispatchers.IO) {
+          doc.updateMetadata()
+          result.add(doc)
+          Platform.runLater { progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString()) }
         }
-      }.awaitAll()
-    }.filterNotNullTo(result)
-    consumer.accept(result)
+      } catch (ex: MalformedURLException) {
+        LOG.error("Can't parse this recent document record: {}", path, ex)
+        CompletableDeferred(value = null)
+      }
+    }
+    GlobalScope.launch {
+      asyncs.awaitAll()
+      busyIndicator.accept(false)
+      consumer.accept(result)
+    }
   }
 
   override fun focus() {
