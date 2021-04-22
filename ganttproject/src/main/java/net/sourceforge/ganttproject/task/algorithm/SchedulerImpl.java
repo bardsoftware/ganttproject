@@ -62,9 +62,6 @@ public class SchedulerImpl extends AlgorithmBase {
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
-    if (isEnabled()) {
-      run();
-    }
   }
 
   @Override

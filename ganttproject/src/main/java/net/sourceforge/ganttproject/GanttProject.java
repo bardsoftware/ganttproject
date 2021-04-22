@@ -292,7 +292,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptions(taskConfig.getTaskOptions());
     startupLogger.debug("2. loading options");
     initOptions();
-    // Not a joke. This takes value from the option and applies it to the UI.
+
     getTree().setGraphicArea(area);
     getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
     myRowHeightAligners.add(getTree().getRowHeightAligner());
