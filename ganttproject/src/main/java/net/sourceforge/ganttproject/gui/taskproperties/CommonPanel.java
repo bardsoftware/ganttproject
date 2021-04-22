@@ -18,14 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.TableModelExt;
 import net.sourceforge.ganttproject.gui.UIUtil;
-
 import org.jdesktop.swingx.JXTable;
+
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import java.util.Map;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -52,5 +52,21 @@ public abstract class CommonPanel {
 
   static JPanel createTableAndActions(JTable table, TableModelExt model) {
     return AbstractTableAndActionsComponent.createDefaultTableAndActions(table, model);
+  }
+
+  public static void saveColumnWidths(JTable table, Map<Integer, Integer> column2pctgsWidth) {
+    int totalWidth = table.getColumnModel().getTotalColumnWidth();
+    table.getColumnModel().getColumns().asIterator().forEachRemaining(column ->
+        column2pctgsWidth.put(column.getModelIndex(), column.getWidth()*100 / totalWidth)
+    );
+  }
+
+  public static void loadColumnWidth(JTable table, Map<Integer, Integer> column2pctgWidth) {
+    int totalWidth = table.getColumnModel().getTotalColumnWidth();
+    table.getColumnModel().getColumns().asIterator().forEachRemaining(column -> {
+      int columnPercentage = column2pctgWidth.getOrDefault(
+          column.getModelIndex(), 100/table.getColumnModel().getColumnCount());
+      column.setPreferredWidth(totalWidth*columnPercentage/100);
+    });
   }
 }

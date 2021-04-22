@@ -18,12 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
+import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * UI component in a resource properties dialog: a table with tasks assigned to
@@ -32,6 +35,7 @@ import javax.swing.table.TableColumn;
  * @author Oleg Kushnikov
  */
 public class ResourceAssignmentsPanel {
+  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
   private final TaskManager myTaskManager;
   private ResourceAssignmentsTableModel myModel;
   private final HumanResource myPerson;
@@ -51,6 +55,7 @@ public class ResourceAssignmentsPanel {
     myTable = new JTable(myModel);
     UIUtil.setupTableUI(getTable());
     setUpTasksComboColumn(getTable().getColumnModel().getColumn(ResourceAssignmentsTableModel.Column.NAME.ordinal()), getTable());
+    SwingUtilities.invokeLater(() -> CommonPanel.loadColumnWidth(myTable, ourColumnWidth));
     return AbstractTableAndActionsComponent.createDefaultTableAndActions(getTable(), myModel);
   }
 
@@ -59,6 +64,7 @@ public class ResourceAssignmentsPanel {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
+    CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
   }
 
   private void setUpTasksComboColumn(TableColumn column, final JTable table) {
