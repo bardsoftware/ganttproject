@@ -18,17 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-
 import biz.ganttproject.core.table.ColumnList;
-
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
@@ -39,12 +29,20 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This class implements a UI component for editing custom properties.
  *
  * @author dbarashev (Dmitry Barashev)
  */
 public class CustomColumnsPanel {
+  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
   private static GanttLanguage language = GanttLanguage.getInstance();
   private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
     CustomColumnsPanel.language.getText("typeClass"), CustomColumnsPanel.language.getText("value") };
@@ -85,6 +83,7 @@ public class CustomColumnsPanel {
         myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);
+    SwingUtilities.invokeLater(() -> CommonPanel.loadColumnWidth(myTable, ourColumnWidth));
     return CommonPanel.createTableAndActions(myTable, buttonPanel);
   }
 
@@ -92,6 +91,7 @@ public class CustomColumnsPanel {
     if (myTable.isEditing()) {
       myTable.getCellEditor().stopCellEditing();
     }
+    CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
   }
 
   class CustomColumnTableModel extends DefaultTableModel {
