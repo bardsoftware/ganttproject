@@ -31,7 +31,7 @@ dependencies {
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported 'com.jgoodies:jgoodies-looks:2.7.+'
     exported 'com.sandec:mdfx:0.+'
-    exported 'com.squareup.okhttp3:okhttp:3.+'
+    exported 'com.squareup.okhttp3:okhttp:4.+'
 
     exported 'de.jensd:fontawesomefx-commons:11.+'
     exported 'de.jensd:fontawesomefx-fontawesome:4.7.0-11'
