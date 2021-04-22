@@ -21,6 +21,7 @@ package biz.ganttproject.storage
 import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -31,6 +32,8 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
+import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import org.controlsfx.validation.ValidationResult
 import java.io.File
 import java.net.MalformedURLException
@@ -122,7 +125,7 @@ class RecentProjects(
     val counter = AtomicInteger(0)
     val asyncs = documentManager.recentDocuments.map { path ->
       try {
-        val doc = RecentDocAsFolderItem(path)
+        val doc = RecentDocAsFolderItem(path, (documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, documentManager)
         GlobalScope.async(Dispatchers.IO) {
           doc.updateMetadata()
           result.add(doc)
@@ -156,11 +159,17 @@ class RecentProjects(
 /**
  * Plugs a recent document string into the folder view.
  */
-class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Comparable<RecentDocAsFolderItem> {
+class RecentDocAsFolderItem(
+    private val urlString: String,
+    webdabServers: GPCloudStorageOptions,
+    private val documentManager: DocumentManager
+  ) : FolderItem, Comparable<RecentDocAsFolderItem> {
   private val url: URL
   private val scheme: String
+  private val webdavServer: WebDavServerDescriptor?
+
   init {
-    val (url, scheme) = try {
+    var (url, scheme) = try {
       URL(urlString).let {it to it.protocol }
     } catch (ex: MalformedURLException) {
       if (File(urlString).exists()) {
@@ -177,6 +186,16 @@ class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Compara
         }
       }
     }
+
+    if ("http" == scheme || "https" == scheme) {
+      webdavServer = webdabServers.list.firstOrNull { urlString.startsWith(it.rootUrl) }
+      if (webdavServer != null) {
+        scheme = "webdav"
+      }
+    } else {
+      webdavServer = null
+    }
+
     this.url = url
     this.scheme = scheme
   }
@@ -207,6 +226,9 @@ class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Compara
       "cloud" -> {
         this.tags.add(i18n.formatText("tag.cloud"))
       }
+      "webdav" -> {
+        this.tags.add(i18n.formatText("tag.webdav"))
+      }
       else -> {
       }
     }
@@ -222,6 +244,9 @@ class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Compara
           projectName = this.name,
           projectJson = null
       )
+      "webdav" -> {
+          documentManager.getDocument(this.urlString)
+      }
       else -> null
     }
 
@@ -238,8 +263,9 @@ class RecentDocAsFolderItem(private val urlString: String) : FolderItem, Compara
     get() = DocumentUri.createPath(this.fullPath).getFileName()
   override val basePath: String
     get() = when (scheme) {
-      "file", "webdav" -> DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
+      "file" -> DocumentUri.createPath(this.fullPath).getParent().normalize().toString()
       "cloud" -> DocumentUri.createPath(this.fullPath).getParent().getFileName()
+      "webdav" -> "${this.webdavServer!!.name} ${DocumentUri.createPath(this.fullPath).getParent().normalize()}"
       else -> ""
     }
 
