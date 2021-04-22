@@ -3,7 +3,7 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile('net.sf.mpxj:mpxj:8.+') {
+    compile('net.sf.mpxj:mpxj:9.+') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
