@@ -35,7 +35,9 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * UI component in a task properties dialog: a table with task predecessors
@@ -43,6 +45,8 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskDependenciesPanel {
+  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
+
   private static TaskDependencyConstraint[] CONSTRAINTS = new TaskDependencyConstraint[]{
       new FinishStartConstraintImpl(), new FinishFinishConstraintImpl(), new StartFinishConstraintImpl(),
       new StartStartConstraintImpl()};
@@ -93,6 +97,7 @@ public class TaskDependenciesPanel {
     };
 
     tableAndActions.setEnabled(predecessorCandidates.length > 0);
+    SwingUtilities.invokeLater(() -> CommonPanel.loadColumnWidth(myTable, ourColumnWidth));
     return CommonPanel.createTableAndActions(myTable, tableAndActions.getActionsComponent());
   }
 
@@ -105,6 +110,7 @@ public class TaskDependenciesPanel {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
+    CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
   }
 
   private Task getTask() {

@@ -18,7 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.taskproperties;
 
-import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultDoubleOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.BooleanOptionRadioUi;
@@ -32,6 +36,8 @@ import org.jdesktop.swingx.MultiSplitLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * UI component in a task properties dialog: a table with resources assigned to
@@ -40,6 +46,7 @@ import java.math.BigDecimal;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
+  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
   private ResourcesTableModel myModel;
   private final HumanResourceManager myHRManager;
   private final RoleManager myRoleManager;
@@ -85,6 +92,7 @@ public class TaskAllocationsPanel {
     result.getMultiSplitLayout().setModel(modelRoot);
     result.add(tablePanel, "resources");
     result.add(UIUtil.border(createCostPanel(), 10, UIUtil.LEFT), "cost");
+    SwingUtilities.invokeLater(() -> CommonPanel.loadColumnWidth(myTable, ourColumnWidth));
     return result;
   }
 
@@ -130,5 +138,6 @@ public class TaskAllocationsPanel {
     if (!cost.isCalculated()) {
       cost.setValue(BigDecimal.valueOf(myCostValue.getValue()));
     }
+    CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
   }
 }
