@@ -45,7 +45,7 @@ dependencies {
     exported 'org.apache.poi:poi:4.+'
     exported 'org.controlsfx:controlsfx:11.+'
     exported 'org.nanohttpd:nanohttpd:2.3.+'
-    exported 'org.jdom:jdom:1.+'
+    exported 'org.jdom:jdom:2.+'
     exported 'org.swinglabs:jxlayer:3.0.4'
 
     exported fileTree(dir: project.ext.libDir, include: ['*.jar'])
