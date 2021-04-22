@@ -18,7 +18,7 @@ dependencies {
     testCompile fileTree(dir: project.ext.libDir, include: ['*.jar'])
     testCompile project(':ganttproject')
     testCompile project(':biz.ganttproject.impex.msproject2')
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.1.+'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.7.+'
 
     testCompile fileTree(dir: project.projectDir.absolutePath + "/resources")
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
