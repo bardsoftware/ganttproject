@@ -28,6 +28,7 @@ class SchedulerOptional(private val isDisabled: BooleanOption, private val deleg
   override fun isEnabled() = if (isDisabled.isChecked) false else delegate.isEnabled
   override fun setEnabled(enabled: Boolean) {
     delegate.isEnabled = enabled
+    run()
   }
 
   override fun setDiagnostic(d: Diagnostic?) {
