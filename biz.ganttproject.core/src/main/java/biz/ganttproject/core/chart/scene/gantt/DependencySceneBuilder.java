@@ -109,8 +109,8 @@ public class DependencySceneBuilder<T extends IdentifiableRow, D extends BarChar
         line.setStyle(lineStyle);
         line.setArrow(myFinishArrow);
       } else {
-        Point first = dependeeVector.getPoint(3);
-        Point forth = dependantVector.getPoint(3);
+        Point first = dependeeVector.getPoint(10);
+        Point forth = dependantVector.getPoint(10);
         Point second = new Point(first.x, (first.y + forth.y) / 2);
         Point third = new Point(forth.x, (first.y + forth.y) / 2);
         primitiveContainer.createLine(dependeeVector.getPoint().x, dependeeVector.getPoint().y, first.x,
@@ -118,8 +118,10 @@ public class DependencySceneBuilder<T extends IdentifiableRow, D extends BarChar
         primitiveContainer.createLine(first.x, first.y, second.x, second.y).setStyle(lineStyle);
         primitiveContainer.createLine(second.x, second.y, third.x, third.y).setStyle(lineStyle);
         primitiveContainer.createLine(third.x, third.y, forth.x, forth.y).setStyle(lineStyle);
-        primitiveContainer.createLine(forth.x, forth.y, dependantVector.getPoint().x,
-            dependantVector.getPoint().y).setStyle(lineStyle);
+        Line lastLine = primitiveContainer.createLine(forth.x, forth.y, dependantVector.getPoint().x,
+            dependantVector.getPoint().y);
+        lastLine.setStyle(lineStyle);
+        lastLine.setArrow(myFinishArrow);
       }
     }
   }
@@ -156,17 +158,30 @@ public class DependencySceneBuilder<T extends IdentifiableRow, D extends BarChar
       return;
     }
 
+    Connector c = createConnector(connector, dependant, dependee, dependantRectangle, dependeeRectangle, ConnectorEndArrow.VERTICAL);
+    if (!c.getStart().getHProjection().reaches(c.getEnd().getHProjection().getPoint()) &&
+        !c.getEnd().getHProjection().reaches(c.getStart().getHProjection().getPoint(3))) {
+      c = createConnector(connector, dependant, dependee, dependantRectangle, dependeeRectangle, ConnectorEndArrow.HORIZONTAL);
+    }
+    result.add(c);
+  }
+
+  private enum ConnectorEndArrow { VERTICAL, HORIZONTAL }
+  private Connector createConnector(D connector, BarChartActivity<T> dependant, BarChartActivity<T> dependee,
+                                    Canvas.Polygon dependantRectangle, Canvas.Polygon dependeeRectangle, ConnectorEndArrow endArrrow) {
     final int ysign = Integer.signum(dependeeRectangle.getMiddleY() - dependantRectangle.getMiddleY());
 
+    final int yDantEntry = endArrrow == ConnectorEndArrow.VERTICAL
+        ? (ysign > 0 ? dependantRectangle.getBottomY() : dependantRectangle.getTopY())
+        : dependantRectangle.getMiddleY();
     final Dimension dependantDirection = myTaskApi.getUnitVector(dependant, connector);
-    final int yDantEntry = ysign > 0 ? dependantRectangle.getBottomY() : dependantRectangle.getTopY();
     int xDantEntry;
     if (myTaskApi.isMilestone(dependant.getOwner())) {
       xDantEntry = dependantRectangle.getMiddleX();
     } else if (dependantDirection == Connector.Vector.WEST) {
-      xDantEntry = dependantRectangle.getLeftX() + 3;
+      xDantEntry = endArrrow == ConnectorEndArrow.VERTICAL ? dependantRectangle.getLeftX() + 3 : dependantRectangle.getLeftX();
     } else if (dependantDirection == Connector.Vector.EAST) {
-      xDantEntry = dependantRectangle.getRightX() - 3;
+      xDantEntry = endArrrow == ConnectorEndArrow.VERTICAL ? dependantRectangle.getRightX() - 3 : dependantRectangle.getRightX();
     } else {
       xDantEntry = dependantRectangle.getMiddleX();
     }
@@ -188,7 +203,7 @@ public class DependencySceneBuilder<T extends IdentifiableRow, D extends BarChar
       }
     }
     Connector.Vector dependeeVector = new Connector.Vector(new Point(xDeeExit, yDeeExit), dependeeDirection);
-
-    result.add(new Connector(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl())));
+    return new Connector(dependeeVector, dependantVector, myTaskApi.getStyle(connector.getImpl()));
   }
+
 }
