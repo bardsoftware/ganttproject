@@ -16,7 +16,7 @@ dependencies {
     providedCompile project(':ganttproject')
 
     compile 'com.github.vlsi.mxgraph:jgraphx:4.2.+'
-    direct 'com.github.vlsi.mxgraph:jgraphx:4.1.+'
+    direct 'com.github.vlsi.mxgraph:jgraphx:4.2.+'
 
     compile configurations.providedCompile
 }
