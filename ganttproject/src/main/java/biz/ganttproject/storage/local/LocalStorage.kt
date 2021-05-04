@@ -29,7 +29,6 @@ import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
 import javafx.scene.layout.Pane
-import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import java.io.File
@@ -79,7 +78,13 @@ class LocalStorage(
   override val name = i18n.formatText("listLabel")
   override val category = "desktop"
 
-  private fun loadFiles(path: Path, success: Consumer<ObservableList<FileAsFolderItem>>, state: LocalStorageState) {
+  private fun loadFiles(
+    path: Path,
+    success: Consumer<ObservableList<FileAsFolderItem>>,
+    state: LocalStorageState,
+    busyIndicator: Consumer<Boolean>
+  ) {
+    busyIndicator.accept(true)
     val dir = DocumentUri.toFile(path)
     val result = FXCollections.observableArrayList<FileAsFolderItem>()
     dir.listFiles()
@@ -91,6 +96,7 @@ class LocalStorage(
     val currentFilename = paneElements.filenameInput.text
     state.currentDir.set(dir)
     state.setCurrentFile(currentFilename)
+    busyIndicator.accept(false)
   }
 
   private fun onBrowse() {
@@ -115,8 +121,8 @@ class LocalStorage(
   }
 
   override fun createUi(): Pane {
-    val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, _ ->
-      loadFiles(path, success, state)
+    val builder = BrowserPaneBuilder<FileAsFolderItem>(this.mode, myDialogUi::error) { path, success, busyIndicator ->
+      loadFiles(path, success, state, busyIndicator)
     }
 
     val actionButtonHandler = object {

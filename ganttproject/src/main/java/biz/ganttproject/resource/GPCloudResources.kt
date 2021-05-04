@@ -87,6 +87,9 @@ class ResourceListPage(
             loadTeams(dialog).map {
               async { loadTeamResources(it) }
             }.map { it.await() }.reduce { acc, list -> acc + list }.distinctBy { it.email }
+          } catch (ex: JsonHttpException) {
+            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
+            emptyList()
           } finally {
             stopProgress()
           }
@@ -146,7 +149,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
   private val resource2selected = mutableMapOf<String, BooleanProperty>()
   private val listView = ListView<ResourceDto>().apply {
     setCellFactory { _ ->
-      ResourceListCell {
+      ResourceListCell(resourceManager) {
         resource2selected[it.email]
       }
     }
@@ -188,7 +191,8 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
 /**
  * Renders a cell in the list of resources.
  */
-class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanProperty?) : ListCell<ResourceDto>() {
+class ResourceListCell(private val resourceManager: HumanResourceManager,
+                       private val resource2checked: (ResourceDto) -> BooleanProperty?) : ListCell<ResourceDto>() {
   private val checkBox = CheckBox()
   private var isChecked: BooleanProperty? = null
 
@@ -210,9 +214,14 @@ class ResourceListCell(private val resource2checked: (ResourceDto) -> BooleanPro
           add(Label(item.email).also { it.styleClass.add("email") })
         }.vbox
       )
-      isChecked?.let { checkBox.selectedProperty().unbindBidirectional(it) }
-      isChecked = resource2checked(item)
-      isChecked?.let { checkBox.selectedProperty().bindBidirectional(it) }
+      if (resourceManager.resources.find { it.mail == item.email } == null) {
+        isChecked?.let { checkBox.selectedProperty().unbindBidirectional(it) }
+        isChecked = resource2checked(item)
+        isChecked?.let { checkBox.selectedProperty().bindBidirectional(it) }
+      } else {
+        checkBox.selectedProperty().value = true
+        this.isDisable = true
+      }
     }
   }
 }

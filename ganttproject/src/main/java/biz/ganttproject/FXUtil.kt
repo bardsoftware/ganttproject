@@ -206,7 +206,9 @@ object FXUtil {
       fadeOut.fromValue = 1.0
       fadeOut.toValue = 0.1
       fadeOut.play()
+      //Exception("Fade out! ").printStackTrace()
       fadeOut.setOnFinished {
+        //Exception("Fade in!").printStackTrace()
         replacePane.run()
         fadeIn.setOnFinished {
           borderPane.requestLayout()

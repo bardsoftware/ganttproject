@@ -130,6 +130,7 @@ class GPCloudUiFlow(
   }
 
   private fun sceneChanger(newPage: FlowPage, sceneId: SceneId) {
+    //Exception("sceneChanger: sceneId=$sceneId").printStackTrace()
     Platform.runLater {
       currentPage.active = false
       when (sceneId) {
