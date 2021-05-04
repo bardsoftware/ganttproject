@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.0'
     repositories {
         mavenCentral()
     }
@@ -15,8 +15,8 @@ dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(':ganttproject')
 
-    compile 'com.github.vlsi.mxgraph:jgraphx:4.1.+'
-    direct 'com.github.vlsi.mxgraph:jgraphx:4.1.+'
+    compile 'com.github.vlsi.mxgraph:jgraphx:4.2.+'
+    direct 'com.github.vlsi.mxgraph:jgraphx:4.2.+'
 
     compile configurations.providedCompile
 }
