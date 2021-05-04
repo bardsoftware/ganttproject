@@ -30,7 +30,6 @@ dependencies {
     exported 'com.fasterxml.jackson.core:jackson-databind:2.11.+'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported 'com.jgoodies:jgoodies-looks:2.7.+'
-    exported 'com.sandec:mdfx:0.+'
     exported 'com.squareup.okhttp3:okhttp:3.+'
 
     exported 'de.jensd:fontawesomefx-commons:11.+'
