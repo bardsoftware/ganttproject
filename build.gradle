@@ -15,16 +15,6 @@ version = "${semver}.${getBuildNum()}"
 def getBuildNum() {
     return "2919"
 }
-/*
-  def stdout = new ByteArrayOutputStream()
-    exec {
-        workingDir "ganttproject-builder"
-        commandLine "bash", "-c", " git rev-list --count ganttproject-2.7.. || echo 0"
-        standardOutput = stdout
-    }
-    return String.valueOf(Integer.valueOf("${stdout}".trim()) + 1891)
-*/
-}
 
 // Config for all projects: deps come from Maven repository,
 // compile using Java 8, libs normally sit in lib
@@ -36,10 +26,6 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
-        maven {
-            url "http://sandec.bintray.com/repo"
-        }
-
     }
     apply plugin: 'java'
     ext {
