@@ -50,6 +50,7 @@ import net.sourceforge.ganttproject.DialogBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
 import java.util.*
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
 
@@ -218,8 +219,9 @@ class DialogControllerSwing() : DialogController {
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
+    val countDown = CountDownLatch(2)
     GlobalScope.launch(Dispatchers.JavaFx) {
-      createOverlayPane(this@DialogControllerSwing.content, this@DialogControllerSwing.contentStack) {pane ->
+      val transition = createOverlayPane(this@DialogControllerSwing.content, this@DialogControllerSwing.contentStack) {pane ->
         pane.center = Spinner().let {
           it.state = Spinner.State.WAITING
           it.pane
@@ -227,14 +229,21 @@ class DialogControllerSwing() : DialogController {
         pane.opacity = 0.5
         pane.styleClass.add("overlay")
       }
+      transition.setOnFinished {
+        countDown.countDown()
+      }
     }
-    return {
-      GlobalScope.launch(Dispatchers.JavaFx) {
+    GlobalScope.launch {
+      countDown.await()
+      Platform.runLater {
         this@DialogControllerSwing.contentStack.children.removeIf {
           it.styleClass.contains("overlay")
         }
         this@DialogControllerSwing.content.effect = null
       }
+    }
+    return {
+      countDown.countDown()
     }
   }
 
@@ -370,7 +379,7 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 }
 
-fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) {
+fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) : Transition {
   val notificationPane = BorderPane().also(overlayBuilder)
   stackPane.children.add(notificationPane)
   val fadeIn = FadeTransition(Duration.seconds(1.0), notificationPane)
@@ -391,7 +400,9 @@ fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: 
       underlayPane.effect = bb
     }
   }
-  ParallelTransition(fadeIn, washOut).play()
+  return ParallelTransition(fadeIn, washOut).also {
+    it.play()
+  }
 }
 
 fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
