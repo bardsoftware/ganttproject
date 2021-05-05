@@ -272,6 +272,11 @@ class WebSocketClient {
       .build().newWebSocket(req, this.wsListener)
   }
 
+  fun stop() {
+    this.websocket?.close(1000, "Close Websocket")
+    this.heartbeatFuture?.cancel(true)
+  }
+
   private fun onAuthDone() {
     this.heartbeatFuture = this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 30, 60, TimeUnit.SECONDS)
   }
@@ -423,23 +428,20 @@ interface GPCloudHttpClient {
 class HttpClientOk(
     private val host: String,
     val userId: String = "",
-    val authToken: String = "") : GPCloudHttpClient {
-  private val okHttpClient: OkHttpClient
-  private val credentials = Credentials.basic(userId, authToken)
-  init {
-    okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .callTimeout(60, TimeUnit.SECONDS)
-        .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
-        .followRedirects(true)
-        .followSslRedirects(true).apply {
-          if (userId.isNotBlank() && authToken.isNotBlank()) {
-            addInterceptor {
-              it.proceed(it.request().newBuilder().header("Authorization", credentials).build())
-            }
+    val authToken: () -> String = {""}) : GPCloudHttpClient {
+  private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+      .connectTimeout(5, TimeUnit.SECONDS)
+      .callTimeout(60, TimeUnit.SECONDS)
+      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
+      .followRedirects(true)
+      .followSslRedirects(true).apply {
+        if (userId.isNotBlank() && authToken().isNotBlank()) {
+          addInterceptor {
+            it.proceed(it.request().newBuilder().header("Authorization", Credentials.basic(userId, authToken())).build())
           }
-        }.build()
-  }
+        }
+      }.build()
+
   override fun sendGet(uri: String, args: Map<String, String?>): GPCloudHttpClient.Response {
     val uriBuilder = URIBuilder(uri).also {
       args.forEach { (key, value) -> it.addParameter(key, value) }
@@ -498,7 +500,7 @@ object HttpClientBuilder {
 
   fun buildHttpClientOk(withAuth: Boolean): HttpClientOk {
     return if (withAuth) {
-      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId?.value ?: "", GPCloudOptions.authToken?.value ?: "")
+      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId?.value ?: "", { GPCloudOptions.authToken?.value ?: "" })
     } else {
       HttpClientOk(HOST.toHostString())
     }

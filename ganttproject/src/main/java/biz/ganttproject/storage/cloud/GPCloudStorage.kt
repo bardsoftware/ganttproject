@@ -77,10 +77,6 @@ class GPCloudStorage(
 
   private fun doCreateUi(): Pane {
     val documentConsumer: (Document) -> Unit = {doc ->
-      GlobalScope.async(Dispatchers.JavaFx) {
-        val spinner = Spinner().also { it.state = Spinner.State.WAITING }
-        nextPage(spinner.pane, SceneId.SPINNER)
-      }
       GlobalScope.launch {
         openDocument(doc)
       }
@@ -129,4 +125,13 @@ fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
   }
 }
 
+fun (GPCloudOptions).disconnect() {
+  webSocket.stop()
+  authToken.value = ""
+  validity.value = ""
+  userId.value = ""
+  websocketToken = ""
+  cloudStatus.value = CloudStatus.DISCONNECTED
+
+}
 private val i18n = RootLocalizer.createWithRootKey("storageService.cloud", BROWSE_PANE_LOCALIZER)

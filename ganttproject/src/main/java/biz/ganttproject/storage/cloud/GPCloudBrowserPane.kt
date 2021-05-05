@@ -333,7 +333,9 @@ class GPCloudBrowserPane(
   override fun resetUi() {
     this.loaderService.jsonResult.set(null)
     this.loaderService.restart()
-    this.paneElements.breadcrumbView?.path = ROOT_URI
+    if (this::paneElements.isInitialized) {
+      this.paneElements.breadcrumbView?.path = ROOT_URI
+    }
   }
 
   fun focus() {

@@ -124,8 +124,8 @@ class GPCloudStatusBar(
     toggleConnect.selectedProperty().addListener { _, _, newValue ->
       if (newValue && !this.cloudConnected) {
         showConnect()
-      } else {
-        // disconnect here
+      } else if (!newValue && this.cloudConnected){
+        GPCloudOptions.disconnect()
       }
     }
     btnOffline.addEventHandler(ActionEvent.ACTION) {
