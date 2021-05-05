@@ -433,12 +433,9 @@ class GPCloudDocument(val teamRefid: String?,
           this.saveOfflineMirror(fetch)
           fetch.update()
         }
-        401, 403 -> {
-          throw ForbiddenException()
-        }
-        412 -> {
-          throw VersionMismatchException()
-        }
+        401, 403 -> throw ForbiddenException()
+        409 -> throw VersionMismatchException(canOverwrite = false)
+        412 -> throw VersionMismatchException()
         404 -> {
           if (!isNetworkAvailable()) {
             this.modeValue = OnlineDocumentMode.OFFLINE_ONLY

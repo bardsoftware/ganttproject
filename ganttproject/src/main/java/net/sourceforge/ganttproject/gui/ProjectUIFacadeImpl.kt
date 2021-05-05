@@ -363,9 +363,12 @@ class ProjectSaveFlow(
             icon.styleClass.add("img")
           }
           it.elements = Lists.newArrayList(
-            OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false),
             OptionElementData("document.option.makeCopy", VersionMismatchChoice.MAKE_COPY, true)
-          )
+          ).also { list ->
+            if (e.canOverwrite) {
+              list.add(OptionElementData("option.overwrite", VersionMismatchChoice.OVERWRITE, false))
+            }
+          }
           it.showDialog { choice ->
             SwingUtilities.invokeLater {
               when (choice) {
