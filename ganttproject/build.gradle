@@ -9,7 +9,7 @@ buildscript {
     dependencies {
         classpath "gradle.plugin.io.miret.etienne.gradle:sass-gradle-plugin:1.+"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'org.openjfx:javafx-plugin:0.0.9'
+        classpath 'org.openjfx:javafx-plugin:0.0.10'
     }
 }
 
