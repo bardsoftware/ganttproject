@@ -27,7 +27,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   }
   .content-pane {
     @include dialog-scrollable-content-padding();
-
+    .list-cell:selected {
+      -fx-background-color: $gp-light-gray;
+    }
     .resource-cell {
       -fx-padding: 3 5;
       .labels {
@@ -40,6 +42,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
         .email {
           @include text-secondary();
         }
+      }
+      &:selected, &:focused {
+
       }
     }
   }

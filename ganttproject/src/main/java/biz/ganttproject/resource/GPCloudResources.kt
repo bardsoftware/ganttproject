@@ -31,6 +31,7 @@ import biz.ganttproject.storage.cloud.http.loadTeamResources
 import javafx.application.Platform
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
@@ -212,7 +213,13 @@ class ResourceListCell(private val resourceManager: HumanResourceManager,
         VBoxBuilder("labels").apply {
           add(Label(item.name).also { it.styleClass.add("name") })
           add(Label(item.email).also { it.styleClass.add("email") })
-        }.vbox
+        }.vbox.also {
+          it .onMouseClicked = EventHandler { evt ->
+            if (evt.clickCount == 2) {
+              isChecked?.let { it.value = !it.value }
+            }
+          }
+        }
       )
       if (resourceManager.resources.find { it.mail == item.email } == null) {
         isChecked?.let { checkBox.selectedProperty().unbindBidirectional(it) }
