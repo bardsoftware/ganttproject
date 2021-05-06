@@ -152,6 +152,10 @@ class GPCloudStatusBar(
 
   private fun showConnect() {
     dialog { controller ->
+      controller.addStyleClass("dlg-connect")
+      controller.addStyleSheet(
+        "/biz/ganttproject/app/StatusBar.css"
+      )
       val wrapper = BorderPane()
       controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
