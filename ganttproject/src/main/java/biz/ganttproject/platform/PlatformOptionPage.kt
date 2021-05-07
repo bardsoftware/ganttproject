@@ -80,7 +80,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
       it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
     }
     val dialogBuildApi = DialogControllerImpl(group)
-    val updateUi = UpdateDialog(filteredUpdates) {
+    val updateUi = UpdateDialog(filteredUpdates, filteredUpdates) {
       SwingUtilities.invokeLater {
         uiFacade.quitApplication(false)
         org.eclipse.core.runtime.Platform.restart()

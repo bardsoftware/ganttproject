@@ -25,7 +25,6 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.lib.fx.ToggleSwitchSkin
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
@@ -48,7 +47,6 @@ import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
-import org.controlsfx.control.ToggleSwitch
 import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -74,10 +72,14 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
   val latestShownUpdateMetadata = UpdateMetadata(
       cutoffVersion,
       null, null, null, 0, "")
-  val filteredUpdates = updates
+  val visibleUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
-  if (filteredUpdates.isNotEmpty()) {
-    val dlg = UpdateDialog(filteredUpdates) {
+  if (visibleUpdates.isNotEmpty()) {
+    val runningUpdateMetadata = UpdateMetadata(
+      runningVersion,
+      null, null, null, 0, "")
+    val applyUpdates = updates.filter { it > runningUpdateMetadata }
+    val dlg = UpdateDialog(applyUpdates, visibleUpdates) {
       SwingUtilities.invokeLater {
         uiFacade.quitApplication(false)
         org.eclipse.core.runtime.Platform.restart()
@@ -95,10 +97,13 @@ data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
 /**
  * @author dbarashev@bardsoftware.com
  */
-internal class UpdateDialog(private val updates: List<UpdateMetadata>, private val restarter: AppRestarter) {
+internal class UpdateDialog(
+    private val updates: List<UpdateMetadata>,
+    private val visibleUpdates: List<UpdateMetadata>,
+    private val restarter: AppRestarter) {
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
-  private val hasUpdates: Boolean get() = this.updates.isNotEmpty()
+  private val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
 
   fun createPane(bean: PlatformBean): Node {
     val bodyBuilder = VBoxBuilder("content-pane")
@@ -131,7 +136,7 @@ internal class UpdateDialog(private val updates: List<UpdateMetadata>, private v
 
     if (this.hasUpdates) {
       val updateBox = VBoxBuilder()
-      this.updates
+      this.visibleUpdates
           .map {
             UpdateComponentUi(it).also { ui ->
               version2ui[it.version] = ui
