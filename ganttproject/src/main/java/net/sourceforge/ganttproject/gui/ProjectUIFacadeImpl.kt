@@ -391,6 +391,9 @@ class ProjectSaveFlow(
       signin {
         saveProjectTrySave(project, document)
       }
+    } catch (e: PaymentRequiredException) {
+      done(success = false)
+      error(e)
     }
   }
 
