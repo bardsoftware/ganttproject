@@ -432,7 +432,7 @@ class HttpClientOk(
   private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
       .connectTimeout(5, TimeUnit.SECONDS)
       .callTimeout(60, TimeUnit.SECONDS)
-      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
+      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT, ConnectionSpec.MODERN_TLS))
       .followRedirects(true)
       .followSslRedirects(true).apply {
         if (userId.isNotBlank() && authToken().isNotBlank()) {
@@ -446,7 +446,7 @@ class HttpClientOk(
     val uriBuilder = URIBuilder(uri).also {
       args.forEach { (key, value) -> it.addParameter(key, value) }
       it.host = host
-      it.scheme = "https"
+      it.scheme = GPCLOUD_SCHEME
     }
     val req = Request.Builder().url(uriBuilder.build().toURL()).build()
     return this.okHttpClient.newCall(req).execute().use {
@@ -462,7 +462,7 @@ class HttpClientOk(
         }.build()
         val uriBuilder = URIBuilder(uri).also {
           it.host = host
-          it.scheme = "https"
+          it.scheme = GPCLOUD_SCHEME
         }
         Request.Builder().url(uriBuilder.build().toURL()).post(body).build()
       }
@@ -472,7 +472,7 @@ class HttpClientOk(
         }.build()
         val uriBuilder = URIBuilder(uri).also {
           it.host = host
-          it.scheme = "https"
+          it.scheme = GPCLOUD_SCHEME
         }
         Request.Builder().url(uriBuilder.build().toURL()).post(body).build()
       }

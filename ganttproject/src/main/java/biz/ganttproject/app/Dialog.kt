@@ -47,6 +47,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.DialogBuilder
+import net.sourceforge.ganttproject.action.CancelAction
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
 import java.util.*
@@ -105,7 +107,10 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
     jfxPanel.scene = Scene(dialogController.build())
     SwingUtilities.invokeLater {
       val dialogBuilder = DialogBuilder(mainWindow.get())
-      dialogBuilder.createDialog(jfxPanel, arrayOf(), title?.value ?: "", null).also {
+      dialogBuilder.createDialog(
+          jfxPanel,
+          arrayOf(CancelAction("close").also { it.putValue(GPAction.HAS_DIALOG_BUTTON, false) }),
+          title?.value ?: "", null).also {
         swingDialogController.set(it)
         dialogController.setDialogFrame(it)
       }
@@ -408,21 +413,13 @@ fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: 
 fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
   createOverlayPane(underlayPane, stackPane) { pane ->
     pane.styleClass.add("alert-glasspane")
-    val vboxBuilder = VBoxBuilder("alert-box")
-    vboxBuilder.addTitle(title).also { hbox ->
-      hbox.alignment = Pos.CENTER_LEFT
-      hbox.isFillHeight = true
-      hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
-      val btnClose = Button(null, FontAwesomeIconView(FontAwesomeIcon.TIMES)).also { btn -> btn.styleClass.add("alert-dismiss") }
-      hbox.children.add(btnClose)
-      btnClose.addEventHandler(ActionEvent.ACTION) {
+    buildAlertPane(title, body, true).let {
+      pane.center = it.contents
+      it.btnClose?.addEventHandler(ActionEvent.ACTION) {
         stackPane.children.remove(pane)
         underlayPane.effect = null
       }
-
     }
-    vboxBuilder.add(body, Pos.CENTER, Priority.ALWAYS)
-    pane.center = vboxBuilder.vbox
     pane.opacity = 0.0
   }
 }

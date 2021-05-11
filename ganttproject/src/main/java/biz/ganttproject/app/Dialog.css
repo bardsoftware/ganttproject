@@ -110,22 +110,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 }
 .dlg .alert-box {
-    -fx-background-color: #ff7777;
-    -fx-padding: 2ex 2em;
-    -fx-background-radius: 5px;
+    -fx-background-color: #f8d7da;;
+    -fx-padding: 0;
 }
 
+.dlg .alert-box .title {
+    -fx-font-size: 120%;
+    -fx-padding: 3 5;
+}
 .dlg .alert-box > * {
     -fx-padding: 3px;
     -fx-background-color: #ff7777;
 }
 
 .dlg .alert-box ScrollPane {
-    -fx-background-color: white;
+    -fx-background-color: derive(#f8d7da, 10%);
 }
 
 .dlg .alert-box ScrollPane MDFXNode {
-    -fx-background-color: white;
+    -fx-background-color: derive(#f8d7da, 10%);
     -fx-padding: 20;
 }
 

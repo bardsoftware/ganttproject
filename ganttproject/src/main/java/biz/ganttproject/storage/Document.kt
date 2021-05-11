@@ -178,6 +178,9 @@ interface LockableDocument {
 
 class NetworkUnavailableException(cause: Exception) : RuntimeException(cause)
 class VersionMismatchException(val canOverwrite: Boolean = true) : RuntimeException()
+class PaymentRequiredException(msg: String) : RuntimeException(msg) {
+  constructor() : this("It appears that your team on GanttProject Cloud have run out of credits. Please contact the team owner to resolve this issue.")
+}
 class ForbiddenException : RuntimeException()
 
 enum class OnlineDocumentMode {
