@@ -93,7 +93,7 @@ class StorageDialogBuilder(
           LOG.error("Failed to open document {}", document.uri, exception = e)
         } catch (e: PaymentRequiredException) {
           LOG.error("Failed to open document {}: payment required", document.uri, exception = e)
-          myDialogUi.error("It appears that your team on GanttProject Cloud have run out of credits. Please contact the team owner to solve this issue.")
+          myDialogUi.error(e.message ?: "")
         }
         catch (e: Document.DocumentException) {
           killProgress()

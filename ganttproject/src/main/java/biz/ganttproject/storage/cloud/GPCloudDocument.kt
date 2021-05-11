@@ -329,7 +329,7 @@ class GPCloudDocument(val teamRefid: String?,
               fetchResultProperty::setValue
           )
         }
-        402 -> throw PaymentRequiredException(resp.reason)
+        402 -> throw PaymentRequiredException()
         401, 403 -> {
           throw ForbiddenException()
         }
@@ -436,7 +436,7 @@ class GPCloudDocument(val teamRefid: String?,
         }
         401, 403 -> throw ForbiddenException()
         409 -> throw VersionMismatchException(canOverwrite = false)
-        402 -> throw PaymentRequiredException(resp.reason)
+        402 -> throw PaymentRequiredException()
         412 -> throw VersionMismatchException()
         404 -> {
           if (!isNetworkAvailable()) {

@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import net.sourceforge.ganttproject.action.CancelAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.DialogAligner;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -28,7 +29,6 @@ import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -124,6 +124,7 @@ public class DialogBuilder {
 
     final Commiter commiter = new Commiter();
     Action cancelAction = null;
+    int buttonCount = 0;
     if (buttonActions.length > 0) {
       JPanel buttonBox = new JPanel(new GridLayout(1, buttonActions.length, 5, 0));
       for (final Action nextAction : buttonActions) {
@@ -188,16 +189,19 @@ public class DialogBuilder {
           }
 
         }
-        if (nextAction instanceof CancelAction) {
+        else if (nextAction instanceof CancelAction) {
           cancelAction = nextAction;
-          nextButton = new JButton(nextAction);
-          nextButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+          Boolean hasButton = (Boolean) nextAction.getValue(GPAction.HAS_DIALOG_BUTTON);
+          if (hasButton == null) {
+            hasButton = true;
+          }
+          if (hasButton) {
+            nextButton = new JButton(nextAction);
+            nextButton.addActionListener(e -> {
               result.hide();
               commiter.commit();
-            }
-          });
+            });
+          }
           dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
               KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), nextAction.getValue(Action.NAME));
           dlg.getRootPane().getActionMap().put(nextAction.getValue(Action.NAME), new AbstractAction() {
@@ -208,20 +212,25 @@ public class DialogBuilder {
             }
           });
         }
-        if (nextButton == null) {
+        else if (nextButton == null) {
           nextButton = new JButton(nextAction);
         }
-        buttonBox.add(nextButton);
+        if (nextButton != null) {
+          buttonBox.add(nextButton);
+          buttonCount += 1;
+        }
         KeyStroke accelerator = (KeyStroke) nextAction.getValue(Action.ACCELERATOR_KEY);
         if (accelerator != null) {
           dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(accelerator, nextAction);
           dlg.getRootPane().getActionMap().put(nextAction, nextAction);
         }
       }
-      JPanel buttonPanel = new JPanel(new BorderLayout());
-      buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
-      buttonPanel.add(buttonBox, BorderLayout.EAST);
-      dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+      if (buttonCount > 0) {
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
+        buttonPanel.add(buttonBox, BorderLayout.EAST);
+        dlg.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+      }
     }
 
     dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
