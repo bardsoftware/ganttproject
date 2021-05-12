@@ -187,7 +187,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final ChartOptionGroup myChartGridOptions;
   private final GPOptionGroup myTimelineLabelOptions;
 
-  private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
   private final FontOption myChartFontOption;
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
@@ -262,7 +261,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
         new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
-          myChartUIConfiguration.getChartStylesOption()},
+          myChartUIConfiguration.getChartStylesOption() },
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
@@ -307,7 +306,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     }, myChartHeader.getTimelineContainer());
     myBackgroundRenderer = new BackgroundRendererImpl(this);
-    myTimelineLabelOptions = new ChartOptionGroup("timelineLabels", new GPOption[] { myTimelineMilestonesOption }, getOptionEventDispatcher());
+    myTimelineLabelOptions = new ChartOptionGroup("timelineLabels", new GPOption[] {
+        projectConfig.getTimelineMilestonesOption()
+    }, getOptionEventDispatcher());
     myTimelineLabelRenderer = new TimelineLabelRendererImpl(this);
     addRenderer(myBackgroundRenderer);
     addRenderer(myChartHeader);
@@ -664,7 +665,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     copy.setChartUIConfiguration(myChartUIConfiguration.createCopy());
     copy.setBounds(getBounds());
     copy.setTimelineTasks(myTimelineTasks);
-    copy.myTimelineMilestonesOption.setValue(myTimelineMilestonesOption.getValue());
     GPOptionGroup[] copyOptions = copy.getChartOptionGroups();
     GPOptionGroup[] thisOptions = getChartOptionGroups();
     assert copyOptions.length == thisOptions.length;
@@ -716,7 +716,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   private Set<Task> getMilestones() {
-    return myTimelineMilestonesOption.getValue() ? Sets.filter(Sets.newHashSet(getTaskManager().getTasks()), MILESTONE_PREDICATE) : Collections.<Task>emptySet();
+    return myProjectConfig.getTimelineMilestonesOption().getValue() ? Sets.filter(Sets.newHashSet(getTaskManager().getTasks()), MILESTONE_PREDICATE) : Collections.<Task>emptySet();
   }
 
   public void setTimelineTasks(Set<Task> timelineTasks) {

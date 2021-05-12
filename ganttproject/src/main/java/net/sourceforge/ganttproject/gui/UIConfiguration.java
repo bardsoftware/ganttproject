@@ -64,6 +64,7 @@ public class UIConfiguration {
   private final AlphaRenderingOption myWeekendAlphaRenderingOption;
   private final RedlineOption myRedlineOption = new RedlineOption();
   private BooleanOption myProjectDatesOption = new DefaultBooleanOption("showProjectDates");
+  private final BooleanOption myTimelineMilestonesOption = new DefaultBooleanOption("timeline.showMilestones", true);
 
   private FontOption myChartFontOption;
   private Supplier<Integer> myAppFontSize;
@@ -215,6 +216,7 @@ public class UIConfiguration {
     return myProjectDatesOption;
   }
 
+  public BooleanOption getTimelineMilestonesOption() { return myTimelineMilestonesOption; }
   public void setChartFontOption(FontOption chartFontOption) {
     myChartFontOption = chartFontOption;
   }
