@@ -185,6 +185,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private Set<Task> myTimelineTasks = Collections.emptySet();
 
   private final ChartOptionGroup myChartGridOptions;
+  private final GPOptionGroup myTimelineLabelOptions;
 
   private final FontOption myChartFontOption;
 
@@ -260,7 +261,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
         new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
-          myChartUIConfiguration.getChartStylesOption(), projectConfig.getTimelineMilestonesOption()},
+          myChartUIConfiguration.getChartStylesOption() },
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
@@ -305,6 +306,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     }, myChartHeader.getTimelineContainer());
     myBackgroundRenderer = new BackgroundRendererImpl(this);
+    myTimelineLabelOptions = new ChartOptionGroup("timelineLabels", new GPOption[] {
+        projectConfig.getTimelineMilestonesOption()
+    }, getOptionEventDispatcher());
     myTimelineLabelRenderer = new TimelineLabelRendererImpl(this);
     addRenderer(myBackgroundRenderer);
     addRenderer(myChartHeader);
@@ -638,7 +642,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   }
 
   public GPOptionGroup[] getChartOptionGroups() {
-    return new GPOptionGroup[] { myChartGridOptions };
+    return new GPOptionGroup[] { myChartGridOptions, myTimelineLabelOptions };
   }
 
   public void addOptionChangeListener(GPOptionChangeListener listener) {
