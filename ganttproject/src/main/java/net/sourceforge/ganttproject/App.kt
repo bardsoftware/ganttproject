@@ -76,9 +76,9 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
     awtAppClassNameField.setAccessible(true)
     awtAppClassNameField.set(toolkit, RootLocalizer.formatText("appliTitle"))
   } catch (e: NoSuchFieldException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)", exception = e)
+    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
   } catch (e: IllegalAccessException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)", exception = e)
+    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
   }
   val autosaveCleanup = DocumentCreator.createAutosaveCleanup()
 

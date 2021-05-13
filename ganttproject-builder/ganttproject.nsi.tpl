@@ -1,6 +1,6 @@
 Unicode True
-!define VERSION "3.0"
-!define VERSION_BUILD "2914"
+!define VERSION "3.1"
+!define VERSION_BUILD "3100"
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
@@ -13,7 +13,7 @@ Icon "ganttproject.ico"
 OutFile ganttproject-${VERSION_BUILD}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-3.0
+InstallDir $PROGRAMFILES\GanttProject-3.1
 
 
 !define MUI_ABORTWARNING
