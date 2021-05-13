@@ -4,20 +4,15 @@
 // Path to launch4j binary
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
-ext.semver = '3.0'
+ext.semver = '3.1'
+ext.buildNum = '3100'
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
-ext.buildNum = getBuildNum()
 
-version = "${semver}.${getBuildNum()}"
-
-
-def getBuildNum() {
-    return "2919"
-}
+version = "${semver}.${buildNum}"
 
 // Config for all projects: deps come from Maven repository,
-// compile using Java 8, libs normally sit in lib
+// compile using Java 11, libs normally sit in lib
 allprojects {
     configurations {
         direct
