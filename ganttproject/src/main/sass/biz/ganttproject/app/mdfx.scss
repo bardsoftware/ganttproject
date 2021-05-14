@@ -1,8 +1,15 @@
 
+$mdfx-font-color: black;
+$mdfx-border-color-1: #888;
+
+$mdfx-bg-color-1: #ccc;
+$mdfx-bg-color-2: #ddd;
+$mdfx-bg-color-3: #eee;
+
 
 .markdown-text {
   -fx-font-size: 14;
-  -fx-fill: -mdfx-font-color;
+  -fx-fill: $mdfx-font-color;
 }
 
 .markdown-normal-flow {
@@ -11,7 +18,7 @@
 
 .markdown-heading .markdown-text {
   /*-fx-line-spacing: 100;*/
-  -fx-fill: -mdfx-font-color;
+  -fx-fill: $mdfx-font-color;
 }
 .markdown-heading-1 { -fx-padding: 14 0 14 0;}
 .markdown-heading-2 { -fx-padding: 10 0 10 0;}
@@ -54,7 +61,7 @@
 }
 .markdown-listitem-dot {
   -fx-font-size: 14;
-  -fx-text-fill: -mdfx-font-color;
+  -fx-text-fill: $mdfx-font-color;
 }
 
 .markdown-codeblock-box,
@@ -73,14 +80,14 @@
 .markdown-code-background {
   -fx-padding: 8;
   -fx-border-radius: 8;
-  -fx-border-color: -mdfx-border-color-1;
+  -fx-border-color: $mdfx-border-color-1;
   -fx-border-width: 0.5;
   -fx-background-radius: 8;
-  -fx-background-color: #00000009; /*  -mdfx-bg-color-3*/
+  -fx-background-color: #00000009; /*  $mdfx-bg-color-3*/
 }
 .markdown-code-background {
   -fx-border-width: 0;
-  -fx-background-color: #0000AA10;  /*  -mdfx-bg-color-3*/
+  -fx-background-color: #0000AA10;  /*  $mdfx-bg-color-3*/
 }
 
 .markdown-code-anti-padding {
@@ -96,18 +103,18 @@
 
 .markdown-table-cell {
   -fx-padding: 8;
-  -fx-border-color: -mdfx-border-color-1;
+  -fx-border-color: $mdfx-border-color-1;
   -fx-border-width: 0;
 }
 
 .markdown-table-even {
-  -fx-background-color: -mdfx-bg-color-1;
+  -fx-background-color: $mdfx-bg-color-1;
 }
 .markdown-table-odd {
-  -fx-background-color: -mdfx-bg-color-2;
+  -fx-background-color: $mdfx-bg-color-2;
 }
 .markdown-table-cell-top {
-  -fx-background-color: -mdfx-bg-color-3;
+  -fx-background-color: $mdfx-bg-color-3;
 }
 .markdown-table-cell-top .markdown-normal-flow {
   -fx-alignment: center;

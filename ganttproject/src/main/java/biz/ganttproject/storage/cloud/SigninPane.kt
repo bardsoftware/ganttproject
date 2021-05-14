@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DIALOG_STYLESHEET
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.Spinner
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -101,7 +102,7 @@ class SigninPane() : FlowPage() {
 
     vboxBuilder.vbox.let {
       it.stylesheets.addAll(
-          "/biz/ganttproject/app/Dialog.css",
+          DIALOG_STYLESHEET,
           "/biz/ganttproject/app/Util.css",
           "biz/ganttproject/storage/StorageDialog.css",
           "/biz/ganttproject/storage/cloud/GPCloudSignupPane.css"

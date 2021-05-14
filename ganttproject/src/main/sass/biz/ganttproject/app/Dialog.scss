@@ -16,11 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+$gp-orange: #ffca28;
+$gp-light-gray: #e0e0e0;
+$gp-medium-gray: #616161;
+$gp-dark-gray: #424242;
+
 .btn-attention {
-    -fx-background-color: -gp-orange;
+    -fx-background-color: $gp-orange;
     -fx-border-color: transparent;
     -fx-border-radius: 0;
-    -fx-text-fill: -gp-dark-gray;
+    -fx-text-fill: $gp-dark-gray;
     /*    -fx-font-size: 110%;*/
     -fx-font-weight: bold;
     -fx-padding: 0.75ex 2em;
@@ -28,17 +33,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 .btn-attention.secondary {
     -fx-background-color: transparent;
-    -fx-border-color: -gp-orange;
+    -fx-border-color: $gp-orange;
 }
 
 .btn-attention:hover {
-    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
-    -fx-background-color: derive(-gp-orange, 10%);
-    -fx-text-fill: derive(-gp-dark-gray, -10%);
+    -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
+    -fx-background-color: derive($gp-orange, 10%);
+    -fx-text-fill: derive($gp-dark-gray, -10%);
 }
 
 .btn-attention.secondary:hover {
-    -fx-background-color: derive(-gp-orange, 10%);
+    -fx-background-color: derive($gp-orange, 10%);
 }
 
 .btn-attention:disabled {
@@ -48,8 +53,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .btn-attention:pressed {
     -fx-effect: none;
-    -fx-background-color: derive(-gp-orange, 10%);
-    -fx-text-fill: derive(-gp-dark-gray, -10%);
+    -fx-background-color: derive($gp-orange, 10%);
+    -fx-text-fill: derive($gp-dark-gray, -10%);
 }
 
 .border-etched {
@@ -76,7 +81,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg Button {
-    -fx-text-fill: -gp-dark-gray;
+    -fx-text-fill: $gp-dark-gray;
     -fx-cursor: hand;
     -fx-padding: 0.75ex 2em;
     -fx-border-insets: 0;
@@ -84,7 +89,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg Button:hover {
-    -fx-effect: dropshadow(gaussian, -gp-light-gray, 4, 0, 0, 4);
+    -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
 }
 
 .dlg Button:pressed {
@@ -97,7 +102,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .dlg .btn {
     -fx-background-color: white;
-    -fx-border-color: -gp-light-gray;
+    -fx-border-color: $gp-light-gray;
 }
 
 .dlg .button-bar {
@@ -106,7 +111,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .dlg .alert-glasspane {
     -fx-padding: 40px 20px;
-    -fx-effect: dropshadow(gaussian, -gp-dark-gray, 8, 0.5, 0, 0);
+    -fx-effect: dropshadow(gaussian, $gp-dark-gray, 8, 0.5, 0, 0);
 
 }
 .dlg .alert-box {
@@ -151,7 +156,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .dlg .alert-dismiss:hover {
-    -fx-background-color: -gp-light-gray;
+    -fx-background-color: $gp-light-gray;
     -fx-background-radius: 50%;
     -fx-effect: none;
 }
@@ -160,13 +165,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-fill-width: true;
     -fx-spacing: 5;
     -fx-padding: 15;
-    -fx-background-color: -gp-light-gray;
+    -fx-background-color: $gp-light-gray;
     -fx-background-insets: 0 0 4 0;
     -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
 }
 
 .dlg .helpline {
-    -fx-fill: -gp-medium-gray;
+    -fx-fill: $gp-medium-gray;
     -fx-font-size: 80%;
     -fx-font-weight: normal;
 }

@@ -65,6 +65,12 @@ compileKotlin {
 
 compileSass {
     outputDir = project.file("${projectDir}/src/main/resources")
+    doLast {
+        copy {
+            from "${projectDir}/src/main/resources/biz/ganttproject/app/mdfx.css"
+            into "${projectDir}/src/main/resources/com/sandec/mdfx/"
+        }
+    }
 }
 
 processResources.dependsOn('compileSass')
