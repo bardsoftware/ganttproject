@@ -241,12 +241,10 @@ class ProjectUIFacadeImpl(
                 onFinish?.close(ex)
               }
               is DocumentException -> {
-                GPLogger.log(ex)
-                onFinish?.close(ex)
+                onFinish?.close(ex) ?: GPLogger.log(ex)
               }
               else -> {
-                GPLogger.log(DocumentException("Can't open document $document", ex ))
-                onFinish?.close(ex)
+                onFinish?.close(ex) ?: GPLogger.log(DocumentException("Can't open document $document", ex ))
               }
             }
             null

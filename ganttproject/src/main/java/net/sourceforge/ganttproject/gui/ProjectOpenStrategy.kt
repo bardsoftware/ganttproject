@@ -38,18 +38,23 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.importer.Importer
 import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskManagerImpl
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection
 import org.jdesktop.swingx.JXRadioGroup
+import org.osgi.service.prefs.Preferences
 import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
+import java.io.File
+import java.io.IOException
+import java.util.regex.Pattern
 import javax.swing.*
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * When we open a file, we need to complete a number of steps in order to be sure
@@ -445,5 +450,66 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   companion object {
     val milestonesOption = DefaultEnumerationOption(
         "milestones_to_zero", ConvertMilestones.values())
+  }
+}
+
+/**
+ * This class controls the process of opening a document passed in the command line arguments (or double-clicked in the
+ * user interface). It tries to open the document and should it fail, tries to import it from MS Project format.
+ */
+internal class CommandLineProjectOpenStrategy(
+  private val project: IGanttProject,
+  private val documentManager: DocumentManager,
+  private val taskManager: TaskManagerImpl,
+  private val uiFacade: UIFacade,
+  private val projectUiFacade: ProjectUIFacade,
+  private val preferences: Preferences
+) {
+  fun openStartupDocument(path: String, hackFireProjectCreated: ()->Unit) {
+    val document: Document = documentManager.getDocument(path)
+    val finishChannel = Channel<Boolean>()
+    GlobalScope.launch { projectUiFacade.openProject(document, project, finishChannel) }
+    GlobalScope.launch {
+      try {
+        finishChannel.receive()
+      } catch (e: Document.DocumentException) {
+        hackFireProjectCreated() // this will create columns in the tables, which are removed by previous call to openProject()
+        if (!tryImportDocument(document)) {
+          uiFacade.showErrorDialog(e)
+        }
+      } catch (e: IOException) {
+        hackFireProjectCreated() // this will create columns in the tables, which are removed by previous call to openProject()
+        if (!tryImportDocument(document)) {
+          uiFacade.showErrorDialog(e)
+        }
+      }
+    }
+  }
+
+  private fun tryImportDocument(document: Document): Boolean {
+    var success = false
+    val importers = PluginManager.getExtensions(
+      Importer.EXTENSION_POINT_ID,
+      Importer::class.java
+    )
+    for (importer in importers) {
+      if (Pattern.matches(".*(" + importer.fileNamePattern + ")$", document.filePath)) {
+        try {
+          taskManager.setEventsEnabled(false)
+          importer.setContext(project, uiFacade, preferences)
+          importer.setFile(File(document.filePath))
+          importer.run()
+          success = true
+          break
+        } catch (e: Throwable) {
+          if (!GPLogger.log(e)) {
+            e.printStackTrace(System.err)
+          }
+        } finally {
+          taskManager.setEventsEnabled(true)
+        }
+      }
+    }
+    return success
   }
 }
