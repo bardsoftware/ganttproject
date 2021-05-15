@@ -43,6 +43,7 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactAction;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
@@ -62,6 +63,7 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
+import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
@@ -69,7 +71,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
-import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.io.GanttXMLSaver;
@@ -110,7 +111,6 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 /**
  * Main frame of the project
@@ -744,46 +744,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public void openStartupDocument(String path) {
-    if (path != null) {
-      final Document document = getDocumentManager().getDocument(path);
-      try {
-        getProjectUIFacade().openProject(document, getProject(), null);
-      } catch (DocumentException e) {
-        fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
-        if (!tryImportDocument(document)) {
-          getUIFacade().showErrorDialog(e);
-        }
-      } catch (IOException e) {
-        fireProjectCreated(); // this will create columns in the tables, which are removed by previous call to openProject()
-        if (!tryImportDocument(document)) {
-          getUIFacade().showErrorDialog(e);
-        }
-      }
+    if (path == null) {
+      return;
     }
-  }
-
-  private boolean tryImportDocument(Document document) {
-    boolean success = false;
-    List<Importer> importers = PluginManager.getExtensions(Importer.EXTENSION_POINT_ID, Importer.class);
-    for (Importer importer : importers) {
-      if (Pattern.matches(".*(" + importer.getFileNamePattern() + ")$", document.getFilePath())) {
-        try {
-          ((TaskManagerImpl) getTaskManager()).setEventsEnabled(false);
-          importer.setContext(getProject(), getUIFacade(), getGanttOptions().getPluginPreferences());
-          importer.setFile(new File(document.getFilePath()));
-          importer.run();
-          success = true;
-          break;
-        } catch (Throwable e) {
-          if (!GPLogger.log(e)) {
-            e.printStackTrace(System.err);
-          }
-        } finally {
-          ((TaskManagerImpl) getTaskManager()).setEventsEnabled(true);
-        }
-      }
-    }
-    return success;
+    var strategy = new CommandLineProjectOpenStrategy(getProject(), getDocumentManager(), (TaskManagerImpl) getTaskManager(), getUIFacade(), getProjectUIFacade(), getGanttOptions().getPluginPreferences());
+    strategy.openStartupDocument(path, () -> {
+      fireProjectCreated();
+      return Unit.INSTANCE;
+    });
   }
 
   /**
