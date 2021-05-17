@@ -247,7 +247,7 @@ public class TaskManagerImpl implements TaskManager {
       }
 
     };
-    myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
+    myFacadeFactory = new FacadeFactoryImpl();
     // clear();
     myRoot = createRootTask();
 
@@ -810,9 +810,12 @@ public class TaskManagerImpl implements TaskManager {
     return myConfig;
   }
 
-  private final class FacadeImpl implements TaskContainmentHierarchyFacade {
-    // private final Task myRoot;
+  public static final class FacadeImpl implements TaskContainmentHierarchyFacade {
+    private final Task myRoot;
 
+    public FacadeImpl(Task root) {
+      myRoot = root;
+    }
     private List<Task> myPathBuffer = new ArrayList<Task>();
 
     // public FacadeImpl(Task root) {
@@ -846,7 +849,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public Task getRootTask() {
-      return TaskManagerImpl.this.getRootTask();
+      return myRoot;
     }
 
     @Override
@@ -1038,7 +1041,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public TaskContainmentHierarchyFacade createFacade() {
-      return new FacadeImpl();
+      return new FacadeImpl(myRoot);
     }
   }
 

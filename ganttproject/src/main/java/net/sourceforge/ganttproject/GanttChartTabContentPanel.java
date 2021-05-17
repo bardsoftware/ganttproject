@@ -19,6 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import com.google.common.base.Function;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -27,10 +33,13 @@ import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final Container myTaskTree;
@@ -39,11 +48,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
+  private final IGanttProject myProject;
   private JComponent myComponent;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
       JComponent ganttChart, UIConfiguration uiConfiguration) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
+    myProject = project;
     myWorkbenchFacade = workbenchFacade;
     myTreeFacade = treeFacade;
     myTaskTree = (Container) treeFacade.getTreeComponent();
@@ -104,7 +115,39 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   @Override
   protected Component getTreeComponent() {
-    return myTaskTree;
+    var jfxPanel = new JFXPanel();
+    Platform.runLater(() -> {
+      var treeModel = new TaskManagerImpl.FacadeImpl(myProject.getTaskManager().getRootTask());
+      var rootItem = new TreeItem<>(treeModel.getRootTask());
+      var treeTable = new TreeTableView<>(rootItem);
+      treeTable.getColumns().add(new TreeTableColumn<Task, String>("Name"));
+      treeTable.getColumns().add(new TreeTableColumn<Task, String>("Begin"));
+      myProject.addProjectEventListener(new ProjectEventListener.Stub() {
+        @Override
+        public void projectOpened() {
+          Platform.runLater(() -> {
+            var treeModel = new TaskManagerImpl.FacadeImpl(myProject.getTaskManager().getRootTask());
+            treeTable.getRoot().getChildren().clear();
+            var task2treeItem = new HashMap<Task, TreeItem<Task>>();
+            task2treeItem.put(treeModel.getRootTask(), rootItem);
+            treeModel.breadthFirstSearch(treeModel.getRootTask(), (pair) -> {
+              if (pair.first() == null) {
+                return true;
+              }
+              var parentItem = task2treeItem.get(pair.first());
+              var childItem = new TreeItem<>(pair.second());
+              parentItem.getChildren().add(childItem);
+              task2treeItem.put(pair.second(), childItem);
+              return true;
+            });
+          });
+        }
+      });
+      jfxPanel.setScene(new Scene(treeTable));
+    });
+    return jfxPanel;
+    //return myTaskTree;
+
   }
 
   // //////////////////////////////////////////////
