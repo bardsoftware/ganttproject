@@ -78,6 +78,7 @@ check_java() {
   [[ "$VERSION" =~ "13." ]] && return 0;
   [[ "$VERSION" =~ "14." ]] && return 0;
   [[ "$VERSION" =~ "15." ]] && return 0;
+  [[ "$VERSION" =~ "16." ]] && return 0;
   log "... this seems to be an old Java Runtime";
   JAVA_COMMAND=""
   return 1
