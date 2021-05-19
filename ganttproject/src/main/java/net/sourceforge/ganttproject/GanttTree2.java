@@ -147,16 +147,16 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         getTreeTable().updateUI();
       }
     });
-    mySelectionManager.addSelectionListener(new TaskSelectionManager.Listener() {
-      @Override
-      public void userInputConsumerChanged(Object newConsumer) {
-      }
-
-      @Override
-      public void selectionChanged(List<Task> currentSelection) {
-        onTaskSelectionChanged(currentSelection);
-      }
-    });
+//    mySelectionManager.addSelectionListener(new TaskSelectionManager.Listener() {
+//      @Override
+//      public void userInputConsumerChanged(Object newConsumer) {
+//      }
+//
+//      @Override
+//      public void selectionChanged(List<Task> currentSelection) {
+//        onTaskSelectionChanged(currentSelection);
+//      }
+//    });
 
     // Create Actions
     GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
@@ -594,10 +594,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   @Override
   public void startDefaultEditing(Task modelElement) {
-    if (getTable().isEditing()) {
-      getTable().getCellEditor().stopCellEditing();
-    }
-    setEditingTask(modelElement);
+//    if (getTable().isEditing()) {
+//      getTable().getCellEditor().stopCellEditing();
+//    }
+//    setEditingTask(modelElement);
   }
 
   @Override

@@ -55,7 +55,7 @@ internal abstract class ChartTabContentPanel(
   private val myUiFacade: UIFacade
   private var myImageHeight = 0
   private var myImagePanel: GanttImagePanel? = null
-  private var myHeaderHeight: Supplier<Int>? = null
+  protected var myHeaderHeight: Supplier<Int>? = null
 
   private val toolbar by lazy {
     FXToolbarBuilder().run {
