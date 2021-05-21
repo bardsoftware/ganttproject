@@ -65,6 +65,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Arrays;
 import java.util.List;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
@@ -160,7 +161,8 @@ public class GanttChartController extends AbstractChartImplementation implements
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
-      List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
+      // List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
+      List<Task> visibleTasks = Arrays.asList(getTaskManager().getTasks());
       model.setVisibleTasks(visibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);

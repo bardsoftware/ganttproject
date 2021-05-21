@@ -991,7 +991,8 @@ public class TaskImpl implements Task {
 
   @Override
   public boolean isSupertask() {
-    return myManager.getTaskHierarchy().hasNestedTasks(this);
+    //return myManager.getTaskHierarchy().hasNestedTasks(this);
+    return myTaskHierarchyItem.hasNested();
   }
 
   @Override

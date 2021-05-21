@@ -57,10 +57,10 @@ class TaskTableModel(private val taskManager: TaskManager) {
         }
         TaskDefaultColumn.PREDECESSORS -> res = TaskProperties.formatPredecessors(t, ",", true)
         TaskDefaultColumn.ID -> res = t.taskID
-//        TaskDefaultColumn.OUTLINE_NUMBER -> {
-//          val outlinePath = t.manager.taskHierarchy.getOutlinePath(t)
-//          res = Joiner.on('.').join(outlinePath)
-//        }
+        TaskDefaultColumn.OUTLINE_NUMBER -> {
+          val outlinePath = t.manager.taskHierarchy.getOutlinePath(t)
+          res = Joiner.on('.').join(outlinePath)
+        }
         TaskDefaultColumn.COST -> res = t.cost.value
         TaskDefaultColumn.COLOR -> res = t.color
         TaskDefaultColumn.RESOURCES -> {

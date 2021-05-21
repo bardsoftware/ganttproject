@@ -113,7 +113,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   protected Component getTreeComponent() {
     var jfxPanel = new JFXPanel();
     Platform.runLater(() -> {
-      taskTable = new TaskTable(myProject.getTaskManager(), myTreeFacade.getVisibleFields());
+      taskTable = new TaskTable(myProject, myProject.getTaskManager(), myTreeFacade.getVisibleFields());
       jfxPanel.setScene(new Scene(taskTable.getControl()));
       setMyHeaderHeight(() -> taskTable.getHeaderHeight());
     });
