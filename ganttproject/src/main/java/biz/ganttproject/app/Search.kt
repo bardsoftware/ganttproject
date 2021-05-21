@@ -84,9 +84,11 @@ class FXSearchUi(
   val node: Node get() = textField
   lateinit var swingToolbar: () -> JComponent
   val results = FXCollections.observableArrayList<SearchResult<*>>()
-  val listView = ListView(results).also {
-    it.setCellFactory {
-      SearchCell()
+  val listView: ListView<SearchResult<*>> by lazy {
+    ListView(results).also {
+      it.setCellFactory {
+        SearchCell()
+      }
     }
   }
 
