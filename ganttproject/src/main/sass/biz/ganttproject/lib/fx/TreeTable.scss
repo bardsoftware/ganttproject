@@ -1,0 +1,47 @@
+@import "../../app/theme";
+
+.gp-tree-table-view {
+    &:hover > .virtual-flow > .scroll-bar:vertical {
+        -fx-opacity: 1;
+    }
+    & > .virtual-flow > .scroll-bar:vertical {
+        -fx-background-insets: 0, 0 0 0 1;
+        -fx-padding: -1 -1 -1 0;
+        -fx-background-color: transparent;
+        -fx-opacity: 0.2;
+        -fx-pref-width: 10;
+
+        & > .track {
+            -fx-background-color: transparent;
+            -fx-background-insets:  0, 1;
+            -fx-background-radius: 0.5em; /* makes sure this remains circular */
+        }
+
+        & > .track-background {
+            -fx-background-color: transparent;
+            -fx-background-insets:  0, 1;
+        }
+
+        & > .thumb {
+            -fx-pref-width: 10;
+            -fx-background-color: $gp-light-gray;
+        }
+
+        & > .increment-button,.decrement-button {
+            -fx-background-color:transparent;
+            -fx-background-radius: 0em;
+            -fx-padding:0 10 0 0;
+            & > .increment-arrow,.decrement-arrow {
+                -fx-shape: " ";
+                -fx-padding:0;
+            }
+        }
+
+    }
+    & > .scroll-bar {
+        & > .increment-arrow,.decrement-arrow {
+            -fx-shape: " ";
+            -fx-padding:0;
+        }
+    }
+}

@@ -70,7 +70,7 @@ class TaskTable(
   fun buildColumns() {
     for (idx in 0 until columnList.size) {
       val column = columnList.getField(idx)
-      if (column.isVisible || true) {
+      if (column.isVisible) {
         TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
 
           when {

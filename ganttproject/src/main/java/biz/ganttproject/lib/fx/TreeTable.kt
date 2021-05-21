@@ -9,6 +9,11 @@ import javafx.scene.control.skin.TreeTableViewSkin
  * @author dbarashev@bardsoftware.com
  */
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
+  init {
+    columnResizePolicy = CONSTRAINED_RESIZE_POLICY;
+    stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
+    styleClass.add("gp-tree-table-view")
+  }
   override fun createDefaultSkin(): Skin<*>? {
     return GPTreeTableViewSkin(this)
   }
