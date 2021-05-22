@@ -3,8 +3,10 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.app.GPTreeTableView
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
+import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.collections.ObservableList
 import javafx.scene.Parent
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
@@ -19,15 +21,18 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
+import org.jetbrains.annotations.NotNull
 import java.util.*
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  private val project: IGanttProject,
-  private val taskManager: TaskManager,
-  private val columnList: ColumnList) {
+  private val project: @NotNull IGanttProject,
+  private val taskManager: @NotNull TaskManager,
+  private val columnList: @NotNull ColumnList,
+  private val taskTableChartSocket: TaskTableChartSocket
+) {
   private val treeModel = FacadeImpl(taskManager.rootTask)
   private val rootItem = TreeItem(treeModel.rootTask)
   private val treeTable = GPTreeTableView<Task>(rootItem)
@@ -64,7 +69,14 @@ class TaskTable(
         reload()
       }
     })
-
+    if (taskTableChartSocket.rowHeight.get() == -1) {
+      taskTableChartSocket.rowHeight.value = treeTable.fixedCellSize.toInt()
+    }
+    taskTableChartSocket.rowHeight.addListener { _, _, newValue ->
+      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
+        treeTable.fixedCellSize = newValue.toDouble()
+      }
+    }
   }
 
   fun buildColumns() {
@@ -117,6 +129,13 @@ class TaskTable(
       task2treeItem[pair.second()] = childItem
       true
     }
+    taskTableChartSocket.visibleTasks.clear()
+    taskTableChartSocket.visibleTasks.addAll(taskManager.tasks)
   }
 
 }
+
+data class TaskTableChartSocket(
+  val rowHeight: IntegerProperty,
+  val visibleTasks: ObservableList<Task>
+)

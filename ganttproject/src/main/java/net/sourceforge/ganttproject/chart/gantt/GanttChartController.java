@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.gantt;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.ganttview.TaskTableChartSocket;
 import com.google.common.collect.Lists;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
@@ -58,30 +59,29 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.Arrays;
 import java.util.List;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
   private final TaskManager myTaskManager;
   private final ChartModelImpl myChartModel;
   private final ChartViewState myChartViewState;
-  private final GanttTree2 myTree;
+  //private final GanttTree2 myTree;
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
+  private final TaskTableChartSocket myTaskTableSocket;
   protected CustomBalloonTip myTooltip;
   private final TaskSelectionManager mySelectionManager;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
-      ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState) {
+                              ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState, TaskTableChartSocket taskTableSocket) {
     super(project, uiFacade, chartModel, chartComponent);
-    myTree = tree;
+    //myTree = tree;
     myChartViewState = chartViewState;
     myTaskManager = project.getTaskManager();
     myChartModel = chartModel;
@@ -89,6 +89,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
     mySelection = new GanttChartSelection(project, tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
+    myTaskTableSocket = taskTableSocket;
   }
 
   private TaskManager getTaskManager() {
@@ -157,12 +158,13 @@ public class GanttChartController extends AbstractChartImplementation implements
       // GanttGraphicArea.super.paintComponent(g);
       ChartModel model = myChartModel;
       model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-      model.setRowHeight(myTree.getRowHeight());
+      myTaskTableSocket.getRowHeight().setValue(model.calculateRowHeight());
+      model.setRowHeight(myTaskTableSocket.getRowHeight().getValue().intValue());
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
       // List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
-      List<Task> visibleTasks = Arrays.asList(getTaskManager().getTasks());
+      List<Task> visibleTasks = myTaskTableSocket.getVisibleTasks();
       model.setVisibleTasks(visibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);
@@ -196,14 +198,14 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   @Override
   public void paste(ChartSelection selection) {
-    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();
-    if (selectedNodes.length > 1) {
-      return;
-    }
-    DefaultMutableTreeTableNode pasteRoot = selectedNodes.length == 0 ? myTree.getRoot() : selectedNodes[0];
-    for (Task t : mySelection.paste((Task)pasteRoot.getUserObject())) {
-      mySelectionManager.addTask(t);
-    }
+//    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();
+//    if (selectedNodes.length > 1) {
+//      return;
+//    }
+//    DefaultMutableTreeTableNode pasteRoot = selectedNodes.length == 0 ? myTree.getRoot() : selectedNodes[0];
+//    for (Task t : mySelection.paste((Task)pasteRoot.getUserObject())) {
+//      mySelectionManager.addTask(t);
+//    }
   }
 
   public Task findTaskUnderPointer(int xpos, int ypos) {

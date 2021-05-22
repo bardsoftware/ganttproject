@@ -26,6 +26,7 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.ganttview.TaskTableChartSocket;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -80,6 +81,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   public static final Cursor E_RESIZE_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
 
   public static final Cursor CHANGE_PROGRESS_CURSOR;
+  private final TaskTableChartSocket taskTableChartSocket;
 
   private GanttChartController myChartComponentImpl;
 
@@ -100,9 +102,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   private final ChartOptionGroup myStateDiffOptions;
 
   public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
-      GPUndoManager undoManager) {
+                          GPUndoManager undoManager, TaskTableChartSocket taskTableChartSocket) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
     this.setBackground(Color.WHITE);
+    this.taskTableChartSocket = taskTableChartSocket;
     myTaskManager = taskManager;
     myUndoManager = undoManager;
 
@@ -312,7 +315,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   GanttChartController getChartImplementation() {
     if (myChartComponentImpl == null) {
       myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this, tree,
-          getViewState());
+          getViewState(), this.taskTableChartSocket);
     }
     return myChartComponentImpl;
   }

@@ -32,6 +32,8 @@ import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.ganttview.TaskTableChartSocket;
 import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -41,7 +43,9 @@ import com.beust.jcommander.Parameter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
@@ -111,6 +115,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Main frame of the project
@@ -172,6 +177,21 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private MouseListener myStopEditingMouseListener = null;
 
+  private TaskTableChartSocket myTaskTableChartSocket = new TaskTableChartSocket(
+    new SimpleIntegerProperty(-1),
+      FXCollections.observableArrayList()
+  );
+  private Supplier<TaskTable> myTaskTableSupplier = new Supplier<>() {
+    private TaskTable value;
+
+    @Override
+    public TaskTable get() {
+      if (value == null) {
+        value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(), myTaskTableChartSocket);
+      }
+      return value;
+    }
+  };
   private GanttChartTabContentPanel myGanttChartTabContent;
 
   private ResourceChartTabContentPanel myResourceChartTabContent;
@@ -274,7 +294,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     getProject().addProjectEventListener(myFacadeInvalidator);
-    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager());
+    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(), myTaskTableChartSocket);
     getTree().init();
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
@@ -350,8 +370,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     bar.add(helpMenu.createMenu());
 
     startupLogger.debug("4. creating views...");
+
     myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTree(), area.getJComponent(),
-        getUIConfiguration());
+        getUIConfiguration(), myTaskTableSupplier);
+
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);
 

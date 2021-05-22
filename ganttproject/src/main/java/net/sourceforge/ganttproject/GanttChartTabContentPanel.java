@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.gui.view.GPView;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final Container myTaskTree;
@@ -43,14 +44,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
-  private final IGanttProject myProject;
+  private final Supplier<TaskTable> myTaskTableSupplier;
   private JComponent myComponent;
-  private TaskTable taskTable;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
-      JComponent ganttChart, UIConfiguration uiConfiguration) {
+                            JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
-    myProject = project;
+    myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
     myTreeFacade = treeFacade;
     myTaskTree = (Container) treeFacade.getTreeComponent();
@@ -113,9 +113,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   protected Component getTreeComponent() {
     var jfxPanel = new JFXPanel();
     Platform.runLater(() -> {
-      taskTable = new TaskTable(myProject, myProject.getTaskManager(), myTreeFacade.getVisibleFields());
-      jfxPanel.setScene(new Scene(taskTable.getControl()));
-      setMyHeaderHeight(() -> taskTable.getHeaderHeight());
+      jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
+      setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeight());
     });
     return jfxPanel;
     //return myTaskTree;
