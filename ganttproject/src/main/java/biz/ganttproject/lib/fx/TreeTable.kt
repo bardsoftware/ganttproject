@@ -26,3 +26,20 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   val headerHeight: Double
   get() = tableHeaderRow.height
 }
+
+interface TreeCollapseView<T> {
+  fun isExpanded(node: T): Boolean
+  fun setExpanded(node: T, value: Boolean)
+}
+
+class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
+  private val node2value = mutableMapOf<T, Boolean>()
+  override fun isExpanded(node: T): Boolean {
+    return node2value[node] ?: true
+  }
+
+  override fun setExpanded(node: T, value: Boolean) {
+    node2value[node] = value
+  }
+
+}

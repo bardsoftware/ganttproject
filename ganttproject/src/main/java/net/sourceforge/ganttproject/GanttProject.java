@@ -22,6 +22,8 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
+import biz.ganttproject.app.SimpleTreeCollapseView;
+import biz.ganttproject.app.TreeCollapseView;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.BooleanOption;
@@ -89,6 +91,7 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
@@ -181,13 +184,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     new SimpleIntegerProperty(-1),
       FXCollections.observableArrayList()
   );
+  private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   private Supplier<TaskTable> myTaskTableSupplier = new Supplier<>() {
     private TaskTable value;
 
     @Override
     public TaskTable get() {
       if (value == null) {
-        value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(), myTaskTableChartSocket);
+        value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(), myTaskTableChartSocket, myTaskCollapseView);
       }
       return value;
     }

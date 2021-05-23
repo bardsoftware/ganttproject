@@ -1,6 +1,7 @@
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.GPTreeTableView
+import biz.ganttproject.app.TreeCollapseView
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import javafx.beans.property.IntegerProperty
@@ -18,6 +19,7 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.task.FacadeImpl
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
@@ -31,7 +33,8 @@ class TaskTable(
   private val project: @NotNull IGanttProject,
   private val taskManager: @NotNull TaskManager,
   private val columnList: @NotNull ColumnList,
-  private val taskTableChartSocket: TaskTableChartSocket
+  private val taskTableChartSocket: TaskTableChartSocket,
+  private val treeCollapseView: TreeCollapseView<Task>
 ) {
   private val treeModel = FacadeImpl(taskManager.rootTask)
   private val rootItem = TreeItem(treeModel.rootTask)
@@ -119,23 +122,53 @@ class TaskTable(
     treeTable.root.children.clear()
     val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
     task2treeItem[treeModel.rootTask] = rootItem
-    treeModel.breadthFirstSearch(treeModel.rootTask) { pair ->
-      if (pair?.first() == null) {
-        return@breadthFirstSearch true
+
+    treeModel.depthFirstWalk(treeModel.rootTask) { parent, child ->
+      val parentItem = task2treeItem[parent]!!
+      val childItem = TreeItem(child).also {
+        it.isExpanded = treeCollapseView.isExpanded(child)
+        it.expandedProperty().addListener(this@TaskTable::onExpanded)
       }
-      val parentItem = task2treeItem[pair.first()]!!
-      val childItem = TreeItem(pair.second())
       parentItem.children.add(childItem)
-      task2treeItem[pair.second()] = childItem
+      task2treeItem[child] = childItem
       true
     }
     taskTableChartSocket.visibleTasks.clear()
-    taskTableChartSocket.visibleTasks.addAll(taskManager.tasks)
+    taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
   }
 
+  private fun onExpanded(observableValue: Any, old: Boolean, new: Boolean) {
+    rootItem.depthFirstWalk { child ->
+      treeCollapseView.setExpanded(child.value, child.isExpanded)
+      true
+    }
+    taskTableChartSocket.visibleTasks.clear()
+    taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+  }
+
+  private fun getExpandedTasks(): List<Task> {
+    val result = mutableListOf<Task>()
+    rootItem.depthFirstWalk { child ->
+      result.add(child.value)
+      treeCollapseView.isExpanded(child.value)
+    }
+    return result
+  }
 }
 
 data class TaskTableChartSocket(
   val rowHeight: IntegerProperty,
   val visibleTasks: ObservableList<Task>
 )
+
+private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task) -> Boolean) {
+  this.getNestedTasks(root).forEach { child ->
+    if (visitor(root, child)) {
+      this.depthFirstWalk(child, visitor)
+    }
+  }
+}
+
+private fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
+  this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
+}

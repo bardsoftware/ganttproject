@@ -24,7 +24,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
-import net.sourceforge.ganttproject.action.task.*;
+import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
+import net.sourceforge.ganttproject.action.task.TaskIndentAction;
+import net.sourceforge.ganttproject.action.task.TaskLinkAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveDownAction;
+import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
+import net.sourceforge.ganttproject.action.task.TaskNewAction;
+import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
+import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
+import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
@@ -48,11 +56,13 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
-import javax.swing.Timer;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -60,9 +70,20 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TooManyListenersException;
 import java.util.logging.Level;
 
 /**
@@ -450,19 +471,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   /** @return the root node */
   public DefaultMutableTreeTableNode getRoot() {
     return getRootNode();
-  }
-
-  /** Refresh the expansion (recursive function) */
-  public void expandRefresh(TreeTableNode moved) {
-    if (moved instanceof TaskNode) {
-      Task movedTask = (Task) moved.getUserObject();
-      if (movedTask.getExpand()) {
-        getTreeTable().getTree().expandPath(TreeUtil.createPath(moved));
-      }
-      for (int i = 0; i < moved.getChildCount(); i++) {
-        expandRefresh(moved.getChildAt(i));
-      }
-    }
   }
 
   public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
