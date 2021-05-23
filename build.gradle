@@ -38,6 +38,9 @@ allprojects {
 subprojects {
     group 'biz.ganttproject'
     version = new Date().format("yy.MM.dd")
+    dependencyLocking {
+        lockAllConfigurations()
+    }
 }
 
 
