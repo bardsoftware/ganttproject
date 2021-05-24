@@ -19,19 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.task.TaskDeleteAction;
-import net.sourceforge.ganttproject.action.task.TaskIndentAction;
 import net.sourceforge.ganttproject.action.task.TaskLinkAction;
-import net.sourceforge.ganttproject.action.task.TaskMoveDownAction;
-import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
 import net.sourceforge.ganttproject.action.task.TaskNewAction;
 import net.sourceforge.ganttproject.action.task.TaskPropertiesAction;
-import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
 import net.sourceforge.ganttproject.action.task.TaskUnlinkAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
@@ -91,6 +88,7 @@ import java.util.logging.Level;
  */
 public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> implements
     /*DragSourceListener, DragGestureListener,*/ TaskTreeUIFacade {
+  private final TaskActions myTaskActions;
   private GanttProjectBase.RowHeightAligner myRowHeightAligner;
   private UIFacade myUIFacade;
 
@@ -103,14 +101,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   private final TaskManager myTaskManager;
   private final TaskSelectionManager mySelectionManager;
-
-  private final GPAction myIndentAction;
-
-  private final GPAction myUnindentAction;
-
-  private final GPAction myMoveUpAction;
-
-  private final GPAction myMoveDownAction;
 
   private final GPAction myLinkTasksAction;
 
@@ -137,13 +127,13 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   }
 
   public GanttTree2(final GanttProject project, TaskManager taskManager, TaskSelectionManager selectionManager,
-      final UIFacade uiFacade) {
+                    final UIFacade uiFacade, TaskActions taskActions) {
     super(createTreeTable(project.getProject(), createDirtyfier(project), uiFacade));
     myUIFacade = uiFacade;
     myProject = project;
     myTaskManager = taskManager;
     mySelectionManager = selectionManager;
-
+    myTaskActions = taskActions;
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
       public void taskModelReset() {
@@ -181,18 +171,18 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
     // Create Actions
     GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
-    GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade, this);
+    GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade);
     GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
 
     setArtefactActions(newAction, propertiesAction, deleteAction);
     myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
     myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
-    myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, this);
-    myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
-    myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
-    myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
-    getTreeTable().setupActionMaps(myLinkTasksAction, myUnlinkTasksAction, myMoveUpAction, myMoveDownAction,
-            myIndentAction, myUnindentAction, newAction, myProject.getCutAction(), myProject.getCopyAction(),
+    //myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, );
+    //myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
+    //myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
+    //myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
+    getTreeTable().setupActionMaps(
+            newAction, myProject.getCutAction(), myProject.getCopyAction(),
             myProject.getPasteAction(), propertiesAction, deleteAction);
   }
 
@@ -577,7 +567,8 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   @Override
   public AbstractAction[] getTreeActions() {
     if (myTreeActions == null) {
-      myTreeActions = new AbstractAction[] { myUnindentAction, myIndentAction, myMoveUpAction, myMoveDownAction,
+      myTreeActions = new AbstractAction[] { myTaskActions.getUnindentAction(), myTaskActions.getIndentAction(),
+          myTaskActions.getMoveUpAction(), myTaskActions.getMoveDownAction(),
           myLinkTasksAction, myUnlinkTasksAction };
     }
     return myTreeActions;
@@ -585,8 +576,10 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   @Override
   public void addToolbarActions(ToolbarBuilder builder) {
-    builder.addButton(myUnindentAction.asToolbarAction()).addButton(myIndentAction.asToolbarAction())
-        .addButton(myMoveUpAction.asToolbarAction()).addButton(myMoveDownAction.asToolbarAction())
+    builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
+        .addButton(myTaskActions.getIndentAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
         .addButton(myLinkTasksAction.asToolbarAction()).addButton(myUnlinkTasksAction.asToolbarAction());
   }
 

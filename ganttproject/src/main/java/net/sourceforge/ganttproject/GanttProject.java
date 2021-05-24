@@ -40,6 +40,7 @@ import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
+import biz.ganttproject.task.TaskActions;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.ImmutableMap;
@@ -193,7 +194,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     @Override
     public TaskTable get() {
       if (value == null) {
-        value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(), myTaskTableChartSocket, myTaskCollapseView);
+        value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(),
+            myTaskTableChartSocket, myTaskCollapseView, getTaskSelectionManager());
       }
       return value;
     }
@@ -866,7 +868,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public GanttTree2 getTree() {
     if (tree == null) {
-      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade());
+      TaskActions taskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
+          () -> myTaskTableSupplier.get().getActionConnector()
+      );
+      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), taskActions);
 
     }
     return tree;

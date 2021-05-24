@@ -780,6 +780,15 @@ public class TaskManagerImpl implements TaskManager {
       }
     }
   }
+
+  void fireTaskMoved(Task task, Task movedFrom, Task movedTo) {
+    if (areEventsEnabled) {
+      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, movedFrom, movedTo);
+      for (TaskListener l : myListeners) {
+        l.taskMoved(e);
+      }
+    }
+  }
   void fireTaskPropertiesChanged(Task task) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(task);
@@ -813,7 +822,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public TaskContainmentHierarchyFacade createFacade() {
-      return new FacadeImpl(myRoot);
+      return new FacadeImpl(TaskManagerImpl.this, myRoot);
     }
   }
 

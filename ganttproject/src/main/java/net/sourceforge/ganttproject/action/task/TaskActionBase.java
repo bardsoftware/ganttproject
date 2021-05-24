@@ -18,17 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.ActionDelegate;
 import net.sourceforge.ganttproject.action.ActionStateChangedListener;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -41,21 +38,19 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
   private final TaskManager myTaskManager;
   private final UIFacade myUIFacade;
   private final TaskSelectionManager mySelectionManager;
-  private final GanttTree2 myTree;
   private List<Task> mySelection;
 
   protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
-      UIFacade uiFacade, GanttTree2 tree) {
-    this(name, taskManager, selectionManager, uiFacade, tree, IconSize.MENU);
+      UIFacade uiFacade) {
+    this(name, taskManager, selectionManager, uiFacade, IconSize.MENU);
   }
 
   protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
-      UIFacade uiFacade, GanttTree2 tree, IconSize size) {
+      UIFacade uiFacade, IconSize size) {
     super(name, size);
     myTaskManager = taskManager;
     mySelectionManager = selectionManager;
     myUIFacade = uiFacade;
-    myTree = tree;
     selectionManager.addSelectionListener(this);
     selectionChanged(selectionManager.getSelectedTasks());
   }
@@ -130,25 +125,6 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
 
   protected UIFacade getUIFacade() {
     return myUIFacade;
-  }
-
-  protected GanttTree2 getTree() {
-    return myTree;
-  }
-
-  protected TaskTreeUIFacade getTreeFacade() {
-    return myTree;
-  }
-
-  protected void forwardScheduling() throws TaskDependencyException {
-    // TODO 07 Sep 2011: It does seem necessary to reset() the charts: remove if
-    // this indeed is the case
-    // // TODO Find out which chart is opened and only reset that one (maybe add
-    // a resetChart to UIFacade?)
-    // myUIFacade.getGanttChart().reset();
-    // myUIFacade.getResourceChart().reset();
-    myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-    getUIFacade().getTaskTree().getTreeComponent().repaint();
   }
 
   protected abstract boolean isEnabled(List<Task> selection);

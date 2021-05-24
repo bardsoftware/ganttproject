@@ -8,8 +8,10 @@ import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.Parent
+import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import kotlinx.coroutines.Dispatchers
@@ -18,33 +20,36 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
-import net.sourceforge.ganttproject.task.FacadeImpl
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import org.jetbrains.annotations.NotNull
 import java.util.*
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  private val project: @NotNull IGanttProject,
-  private val taskManager: @NotNull TaskManager,
-  private val columnList: @NotNull ColumnList,
+  private val project: IGanttProject,
+  private val taskManager: TaskManager,
+  private val columnList: ColumnList,
   private val taskTableChartSocket: TaskTableChartSocket,
-  private val treeCollapseView: TreeCollapseView<Task>
+  private val treeCollapseView: TreeCollapseView<Task>,
+  private val selectionManager: TaskSelectionManager
 ) {
-  private val treeModel = FacadeImpl(taskManager.rootTask)
+  private val treeModel = taskManager.taskHierarchy
   private val rootItem = TreeItem(treeModel.rootTask)
   private val treeTable = GPTreeTableView<Task>(rootItem)
   private val taskTableModel = TaskTableModel(taskManager)
 
   val headerHeight: Int get() = treeTable.headerHeight.toInt()
   val control: Parent get() = treeTable
-
+  val actionConnector by lazy {
+    TaskTableActionConnector(
+      commitEdit = {},
+      runKeepingExpansion = { task, code -> code(task) },
+      scrollTo = {}
+    )
+  }
   init {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
       override fun taskModelReset() {
@@ -56,6 +61,10 @@ class TaskTable(
       }
 
       override fun taskMoved(e: TaskHierarchyEvent?) {
+        reload()
+      }
+
+      override fun taskRemoved(e: TaskHierarchyEvent?) {
         reload()
       }
     })
@@ -84,6 +93,10 @@ class TaskTable(
     treeTable.addScrollListener { newValue ->
       taskTableChartSocket.tableScrollOffset.value = newValue
     }
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
+      selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
+    })
   }
 
   fun buildColumns() {
@@ -166,6 +179,11 @@ data class TaskTableChartSocket(
   val tableScrollOffset: DoubleProperty
 )
 
+data class TaskTableActionConnector(
+  val commitEdit: ()->Unit,
+  val runKeepingExpansion: ((task: Task, code: (Task)->Void) -> Unit),
+  val scrollTo: (task: Task) -> Unit
+)
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task) -> Boolean) {
   this.getNestedTasks(root).forEach { child ->
     if (visitor(root, child)) {

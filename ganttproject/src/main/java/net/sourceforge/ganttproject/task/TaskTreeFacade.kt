@@ -9,7 +9,7 @@ import java.util.*
 /**
  * @author dbarashev@bardsoftware.com
  */
-class FacadeImpl(private val root: Task) : TaskContainmentHierarchyFacade {
+class FacadeImpl(private val taskManager: TaskManagerImpl, private val root: Task) : TaskContainmentHierarchyFacade {
   override fun getNestedTasks(container: Task): Array<Task> {
     return container.nestedTasks
   }
@@ -68,11 +68,15 @@ class FacadeImpl(private val root: Task) : TaskContainmentHierarchyFacade {
   }
 
   override fun move(whatMove: Task, whereMove: Task?) {
+    val oldParent = getContainer(whatMove)
     whatMove.move(whereMove)
+    this.taskManager.fireTaskMoved(whatMove, oldParent, whereMove)
   }
 
   override fun move(whatMove: Task, whereMove: Task?, index: Int) {
-    whatMove.move(whereMove)
+    val oldParent = getContainer(whatMove)
+    whatMove.move(whereMove, index)
+    this.taskManager.fireTaskMoved(whatMove, oldParent, whereMove)
   }
 
   override fun getDepth(task: Task): Int {

@@ -40,7 +40,7 @@ public class TaskPropertiesAction extends TaskActionBase {
 
   private TaskPropertiesAction(IGanttProject project, TaskSelectionManager selectionManager, UIFacade uiFacade,
       IconSize size) {
-    super("task.properties", project.getTaskManager(), selectionManager, uiFacade, null, size);
+    super("task.properties", project.getTaskManager(), selectionManager, uiFacade, size);
     myProject = project;
   }
 
