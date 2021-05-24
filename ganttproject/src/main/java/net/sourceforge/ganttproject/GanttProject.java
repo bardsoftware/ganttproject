@@ -45,6 +45,7 @@ import com.beust.jcommander.Parameter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -182,7 +183,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private TaskTableChartSocket myTaskTableChartSocket = new TaskTableChartSocket(
     new SimpleIntegerProperty(-1),
-      FXCollections.observableArrayList()
+      FXCollections.observableArrayList(),
+      new SimpleDoubleProperty(0.0)
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   private Supplier<TaskTable> myTaskTableSupplier = new Supplier<>() {

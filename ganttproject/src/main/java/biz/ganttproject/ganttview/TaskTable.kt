@@ -4,6 +4,7 @@ import biz.ganttproject.app.GPTreeTableView
 import biz.ganttproject.app.TreeCollapseView
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
+import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
@@ -79,6 +80,9 @@ class TaskTable(
       if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
         treeTable.fixedCellSize = newValue.toDouble()
       }
+    }
+    treeTable.addScrollListener { newValue ->
+      taskTableChartSocket.tableScrollOffset.value = newValue
     }
   }
 
@@ -158,7 +162,8 @@ class TaskTable(
 
 data class TaskTableChartSocket(
   val rowHeight: IntegerProperty,
-  val visibleTasks: ObservableList<Task>
+  val visibleTasks: ObservableList<Task>,
+  val tableScrollOffset: DoubleProperty
 )
 
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task) -> Boolean) {

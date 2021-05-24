@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart.gantt;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.ganttview.TaskTableChartSocket;
 import com.google.common.collect.Lists;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
@@ -91,12 +92,17 @@ public class GanttChartController extends AbstractChartImplementation implements
     mySelection = new GanttChartSelection(project, tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
     myTaskTableSocket = taskTableSocket;
-    myTaskTableSocket.getVisibleTasks().addListener(new ListChangeListener<Task>() {
-      @Override
-      public void onChanged(Change<? extends Task> c) {
-        SwingUtilities.invokeLater(() -> reset());
-      }
-    });
+    myTaskTableSocket.getVisibleTasks().addListener(
+        (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(() -> reset())
+    );
+    myTaskTableSocket.getTableScrollOffset().addListener(
+        (ChangeListener<? super Number>) (wtf, old, newValue) -> {
+          SwingUtilities.invokeLater(() -> {
+            getChartModel().setVerticalOffset(newValue.intValue());
+            reset();
+          });
+        }
+    );
   }
 
   private TaskManager getTaskManager() {

@@ -1,5 +1,6 @@
 package biz.ganttproject.app
 
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.Skin
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableView
@@ -15,16 +16,35 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     styleClass.add("gp-tree-table-view")
   }
   override fun createDefaultSkin(): Skin<*>? {
-    return GPTreeTableViewSkin(this)
+    return GPTreeTableViewSkin(this).also {
+      it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
+    }
   }
 
   val headerHeight: Double
   get() = (skin as GPTreeTableViewSkin<T>).headerHeight
+
+  var scrollListener: (Double)->Unit = {}
+  fun addScrollListener(listener: (Double)->Unit) {
+    this.scrollListener = listener
+  }
 }
 
 class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
+  val scrollValue = SimpleDoubleProperty()
   val headerHeight: Double
   get() = tableHeaderRow.height
+
+  init {
+    this.virtualFlow.positionProperty().addListener { _, _, newValue ->
+      var totalCellHeight = 0.0
+      for (idx in 0 until virtualFlow.cellCount) {
+        totalCellHeight += virtualFlow.getCell(idx).height
+      }
+      val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
+      scrollValue.value = result
+    }
+  }
 }
 
 interface TreeCollapseView<T> {
@@ -41,5 +61,4 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
   override fun setExpanded(node: T, value: Boolean) {
     node2value[node] = value
   }
-
 }
