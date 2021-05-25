@@ -28,9 +28,14 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   fun addScrollListener(listener: (Double)->Unit) {
     this.scrollListener = listener
   }
+
+  fun scrollBy(value: Double) {
+    (skin as GPTreeTableViewSkin<T>).scrollBy(value)
+  }
 }
 
 class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
+
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: Double
   get() = tableHeaderRow.height
@@ -44,6 +49,10 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
       val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
       scrollValue.value = result
     }
+  }
+
+  fun scrollBy(value: Double) {
+    this.virtualFlow.scrollPixels(value)
   }
 }
 

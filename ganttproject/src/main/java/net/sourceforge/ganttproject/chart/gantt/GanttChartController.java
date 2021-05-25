@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.gantt;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
-import biz.ganttproject.ganttview.TaskTableChartSocket;
+import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.collect.Lists;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
@@ -76,12 +76,13 @@ public class GanttChartController extends AbstractChartImplementation implements
   //private final GanttTree2 myTree;
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
-  private final TaskTableChartSocket myTaskTableSocket;
+  private final TaskTableChartConnector myTaskTableConnector;
   protected CustomBalloonTip myTooltip;
   private final TaskSelectionManager mySelectionManager;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
-                              ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState, TaskTableChartSocket taskTableSocket) {
+                              ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState,
+                              TaskTableChartConnector taskTableConnector) {
     super(project, uiFacade, chartModel, chartComponent);
     //myTree = tree;
     myChartViewState = chartViewState;
@@ -91,11 +92,11 @@ public class GanttChartController extends AbstractChartImplementation implements
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
     mySelection = new GanttChartSelection(project, tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
-    myTaskTableSocket = taskTableSocket;
-    myTaskTableSocket.getVisibleTasks().addListener(
+    myTaskTableConnector = taskTableConnector;
+    myTaskTableConnector.getVisibleTasks().addListener(
         (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(() -> reset())
     );
-    myTaskTableSocket.getTableScrollOffset().addListener(
+    myTaskTableConnector.getTableScrollOffset().addListener(
         (ChangeListener<? super Number>) (wtf, old, newValue) -> {
           SwingUtilities.invokeLater(() -> {
             getChartModel().setVerticalOffset(newValue.intValue());
@@ -103,6 +104,17 @@ public class GanttChartController extends AbstractChartImplementation implements
           });
         }
     );
+    setVScrollController(new VScrollController() {
+      @Override
+      public boolean isScrollable() {
+        return myTaskTableConnector.isTableScrollable();
+      }
+
+      @Override
+      public void scrollBy(int pixels) {
+        myTaskTableConnector.getChartScrollOffset().setValue(pixels);
+      }
+    });
   }
 
   private TaskManager getTaskManager() {
@@ -171,13 +183,13 @@ public class GanttChartController extends AbstractChartImplementation implements
       // GanttGraphicArea.super.paintComponent(g);
       ChartModel model = myChartModel;
       model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-      myTaskTableSocket.getRowHeight().setValue(model.calculateRowHeight());
-      model.setRowHeight(myTaskTableSocket.getRowHeight().getValue().intValue());
+      myTaskTableConnector.getRowHeight().setValue(model.calculateRowHeight());
+      model.setRowHeight(myTaskTableConnector.getRowHeight().getValue().intValue());
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
       // List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
-      List<Task> visibleTasks = myTaskTableSocket.getVisibleTasks();
+      List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();
       model.setVisibleTasks(visibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);

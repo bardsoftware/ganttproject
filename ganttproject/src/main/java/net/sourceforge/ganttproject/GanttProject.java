@@ -35,7 +35,7 @@ import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.ganttview.TaskTable;
-import biz.ganttproject.ganttview.TaskTableChartSocket;
+import biz.ganttproject.ganttview.TaskTableChartConnector;
 import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -182,9 +182,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private MouseListener myStopEditingMouseListener = null;
 
-  private TaskTableChartSocket myTaskTableChartSocket = new TaskTableChartSocket(
-    new SimpleIntegerProperty(-1),
+  private TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
+      new SimpleIntegerProperty(-1),
       FXCollections.observableArrayList(),
+      new SimpleDoubleProperty(0.0),
+      true,
       new SimpleDoubleProperty(0.0)
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
@@ -195,7 +197,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     public TaskTable get() {
       if (value == null) {
         value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(),
-            myTaskTableChartSocket, myTaskCollapseView, getTaskSelectionManager());
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager());
       }
       return value;
     }
@@ -302,7 +304,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     getProject().addProjectEventListener(myFacadeInvalidator);
-    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(), myTaskTableChartSocket);
+    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(), myTaskTableChartConnector);
     getTree().init();
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());

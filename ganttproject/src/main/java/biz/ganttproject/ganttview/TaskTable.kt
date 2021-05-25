@@ -32,7 +32,7 @@ class TaskTable(
   private val project: IGanttProject,
   private val taskManager: TaskManager,
   private val columnList: ColumnList,
-  private val taskTableChartSocket: TaskTableChartSocket,
+  private val taskTableChartConnector: TaskTableChartConnector,
   private val treeCollapseView: TreeCollapseView<Task>,
   private val selectionManager: TaskSelectionManager
 ) {
@@ -60,8 +60,8 @@ class TaskTable(
       override fun taskAdded(e: TaskHierarchyEvent) {
         keepSelection {
           e.newContainer.addChildTreeItem(e.task)
-          taskTableChartSocket.visibleTasks.clear()
-          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+          taskTableChartConnector.visibleTasks.clear()
+          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
       }
 
@@ -78,8 +78,8 @@ class TaskTable(
           task2treeItem[e.newContainer]?.let {
             it.children.add(e.indexAtNew, taskTreeItem)
           }
-          taskTableChartSocket.visibleTasks.clear()
-          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+          taskTableChartConnector.visibleTasks.clear()
+          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
       }
 
@@ -91,8 +91,8 @@ class TaskTable(
               it.children.removeAt(idx)
             }
           }
-          taskTableChartSocket.visibleTasks.clear()
-          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+          taskTableChartConnector.visibleTasks.clear()
+          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
       }
     })
@@ -110,16 +110,21 @@ class TaskTable(
         reload()
       }
     })
-    if (taskTableChartSocket.rowHeight.get() == -1) {
-      taskTableChartSocket.rowHeight.value = treeTable.fixedCellSize.toInt()
+    if (taskTableChartConnector.rowHeight.get() == -1) {
+      taskTableChartConnector.rowHeight.value = treeTable.fixedCellSize.toInt()
     }
-    taskTableChartSocket.rowHeight.addListener { _, _, newValue ->
+    taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
       if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
         treeTable.fixedCellSize = newValue.toDouble()
       }
     }
+    taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
+      GlobalScope.launch(Dispatchers.JavaFx) {
+        treeTable.scrollBy(newValue.toDouble())
+      }
+    }
     treeTable.addScrollListener { newValue ->
-      taskTableChartSocket.tableScrollOffset.value = newValue
+      taskTableChartConnector.tableScrollOffset.value = newValue
     }
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
@@ -172,8 +177,8 @@ class TaskTable(
       parent.addChildTreeItem(child)
       true
     }
-    taskTableChartSocket.visibleTasks.clear()
-    taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+    taskTableChartConnector.visibleTasks.clear()
+    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
   }
 
   private fun Task.addChildTreeItem(child: Task) {
@@ -193,8 +198,8 @@ class TaskTable(
       treeCollapseView.setExpanded(child.value, child.isExpanded)
       true
     }
-    taskTableChartSocket.visibleTasks.clear()
-    taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+    taskTableChartConnector.visibleTasks.clear()
+    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
   }
 
   private fun getExpandedTasks(): List<Task> {
@@ -216,10 +221,12 @@ class TaskTable(
   }
 }
 
-data class TaskTableChartSocket(
+data class TaskTableChartConnector(
   val rowHeight: IntegerProperty,
   val visibleTasks: ObservableList<Task>,
-  val tableScrollOffset: DoubleProperty
+  val tableScrollOffset: DoubleProperty,
+  var isTableScrollable: Boolean,
+  val chartScrollOffset: DoubleProperty
 )
 
 data class TaskTableActionConnector(

@@ -93,7 +93,7 @@ public class GanttTreeTable extends GPTreeTableBase {
     getTable().getModel().addTableModelListener(new ModelListener());
     VscrollAdjustmentListener vscrollListener = new VscrollAdjustmentListener(myUIfacade.getGanttChart(), true);
     getVerticalScrollBar().addAdjustmentListener(vscrollListener);
-    myUIfacade.getGanttChart().setVScrollController(vscrollListener);
+    //myUIfacade.getGanttChart().setVScrollController(vscrollListener);
     TableCellRenderer idRenderer = new DefaultTableCellRenderer() {
       @Override
       public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
