@@ -40,6 +40,7 @@ class TaskTable(
   private val rootItem = TreeItem(treeModel.rootTask)
   private val treeTable = GPTreeTableView<Task>(rootItem)
   private val taskTableModel = TaskTableModel(taskManager)
+  private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val headerHeight: Int get() = treeTable.headerHeight.toInt()
   val control: Parent get() = treeTable
@@ -56,21 +57,48 @@ class TaskTable(
         reload()
       }
 
-      override fun taskAdded(e: TaskHierarchyEvent?) {
-        reload()
+      override fun taskAdded(e: TaskHierarchyEvent) {
+        keepSelection {
+          e.newContainer.addChildTreeItem(e.task)
+          taskTableChartSocket.visibleTasks.clear()
+          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+        }
       }
 
-      override fun taskMoved(e: TaskHierarchyEvent?) {
-        reload()
+      override fun taskMoved(e: TaskHierarchyEvent)  {
+        keepSelection {
+          val taskTreeItem = task2treeItem[e.oldContainer]?.let {
+            val idx = it.children.indexOfFirst { it.value == e.task }
+            if (idx >= 0) {
+              it.children.removeAt(idx)
+            } else {
+              null
+            }
+          } ?: return@keepSelection
+          task2treeItem[e.newContainer]?.let {
+            it.children.add(e.indexAtNew, taskTreeItem)
+          }
+          taskTableChartSocket.visibleTasks.clear()
+          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+        }
       }
 
-      override fun taskRemoved(e: TaskHierarchyEvent?) {
-        reload()
+      override fun taskRemoved(e: TaskHierarchyEvent) {
+        GlobalScope.launch(Dispatchers.JavaFx) {
+          task2treeItem[e.oldContainer]?.let {
+            val idx = it.children.indexOfFirst { it.value == e.task }
+            if (idx >= 0) {
+              it.children.removeAt(idx)
+            }
+          }
+          taskTableChartSocket.visibleTasks.clear()
+          taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+        }
       }
     })
     GlobalScope.launch(Dispatchers.JavaFx) {
       treeTable.isShowRoot = false
-      buildColumns()
+      reload()
     }
     project.addProjectEventListener(object : ProjectEventListener {
       override fun projectModified() {}
@@ -137,21 +165,27 @@ class TaskTable(
 
     val treeModel = taskManager.taskHierarchy
     treeTable.root.children.clear()
-    val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
+    task2treeItem.clear()
     task2treeItem[treeModel.rootTask] = rootItem
 
     treeModel.depthFirstWalk(treeModel.rootTask) { parent, child ->
-      val parentItem = task2treeItem[parent]!!
-      val childItem = TreeItem(child).also {
-        it.isExpanded = treeCollapseView.isExpanded(child)
-        it.expandedProperty().addListener(this@TaskTable::onExpanded)
-      }
-      parentItem.children.add(childItem)
-      task2treeItem[child] = childItem
+      parent.addChildTreeItem(child)
       true
     }
     taskTableChartSocket.visibleTasks.clear()
     taskTableChartSocket.visibleTasks.addAll(getExpandedTasks())
+  }
+
+  private fun Task.addChildTreeItem(child: Task) {
+    val parentItem = task2treeItem[this]!!
+    val childItem = createTreeItem(child)
+    parentItem.children.add(childItem)
+    task2treeItem[child] = childItem
+  }
+
+  private fun createTreeItem(task: Task) = TreeItem(task).also {
+    it.isExpanded = treeCollapseView.isExpanded(task)
+    it.expandedProperty().addListener(this@TaskTable::onExpanded)
   }
 
   private fun onExpanded(observableValue: Any, old: Boolean, new: Boolean) {
@@ -170,6 +204,15 @@ class TaskTable(
       treeCollapseView.isExpanded(child.value)
     }
     return result
+  }
+
+  private fun keepSelection(code: ()->Unit) = GlobalScope.launch(Dispatchers.JavaFx) {
+    val selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }.toList()
+    code()
+    treeTable.selectionModel.clearSelection()
+    val selectedItems = selectedTasks.map { task2treeItem[it] }
+    selectedItems.mapNotNull { treeTable.selectionModel.select(it) }
+    treeTable.requestFocus()
   }
 }
 

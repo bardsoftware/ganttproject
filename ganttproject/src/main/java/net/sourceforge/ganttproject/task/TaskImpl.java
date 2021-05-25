@@ -516,6 +516,7 @@ public class TaskImpl implements Task {
   public void delete() {
     getDependencies().clear();
     getAssignmentCollection().clear();
+    myTaskHierarchyItem.delete();
   }
 
   @Override
