@@ -165,6 +165,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public boolean isOnlyViewer;
 
   private final ResourceActionSet myResourceActions;
+  private final TaskActions myTaskActions;
 
   private final ZoomActionSet myZoomActions;
 
@@ -197,7 +198,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     public TaskTable get() {
       if (value == null) {
         value = new TaskTable(getProject(), getTaskManager(), getTaskTree().getVisibleFields(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager());
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions);
       }
       return value;
     }
@@ -301,6 +302,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
+    myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
+        () -> myTaskTableSupplier.get().getActionConnector()
+    );
 
     myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     getProject().addProjectEventListener(myFacadeInvalidator);
@@ -870,11 +874,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public GanttTree2 getTree() {
     if (tree == null) {
-      TaskActions taskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
-          () -> myTaskTableSupplier.get().getActionConnector()
-      );
-      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), taskActions);
-
+      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
     }
     return tree;
   }

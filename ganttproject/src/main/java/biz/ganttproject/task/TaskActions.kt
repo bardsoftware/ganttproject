@@ -20,4 +20,6 @@ class TaskActions(private val project: IGanttProject,
   val unindentAction = TaskUnindentAction(project.taskManager, selectionManager, uiFacade, tableConnector)
   val moveUpAction = TaskMoveUpAction(project.taskManager, selectionManager, uiFacade, tableConnector)
   val moveDownAction = TaskMoveDownAction(project.taskManager, selectionManager, uiFacade, tableConnector)
+
+  fun all() = listOf(createAction, propertiesAction, deleteAction, indentAction, unindentAction, moveDownAction, moveUpAction)
 }

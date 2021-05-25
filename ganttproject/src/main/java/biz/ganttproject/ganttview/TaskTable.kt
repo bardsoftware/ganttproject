@@ -2,14 +2,17 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.GPTreeTableView
 import biz.ganttproject.app.TreeCollapseView
+import biz.ganttproject.app.triggeredBy
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.task.TaskActions
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.event.EventHandler
 import javafx.scene.Parent
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
@@ -34,7 +37,8 @@ class TaskTable(
   private val columnList: ColumnList,
   private val taskTableChartConnector: TaskTableChartConnector,
   private val treeCollapseView: TreeCollapseView<Task>,
-  private val selectionManager: TaskSelectionManager
+  private val selectionManager: TaskSelectionManager,
+  private val taskActions: TaskActions
 ) {
   private val treeModel = taskManager.taskHierarchy
   private val rootItem = TreeItem(treeModel.rootTask)
@@ -52,6 +56,63 @@ class TaskTable(
     )
   }
   init {
+    initTaskEventHandlers()
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      treeTable.isShowRoot = false
+      reload()
+    }
+    initProjectEventHandlers()
+    initChartConnector()
+    initKeyboardEventHandlers()
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
+      selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
+    })
+  }
+
+  private fun initKeyboardEventHandlers() {
+    treeTable.onKeyPressed = EventHandler { event ->
+      taskActions.all().firstOrNull { action ->
+        action.triggeredBy(event)
+      }?.let {
+        it.actionPerformed(null)
+      }
+    }
+  }
+
+  private fun initChartConnector() {
+    if (taskTableChartConnector.rowHeight.get() == -1) {
+      taskTableChartConnector.rowHeight.value = treeTable.fixedCellSize.toInt()
+    }
+    taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
+      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
+        treeTable.fixedCellSize = newValue.toDouble()
+      }
+    }
+    taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
+      GlobalScope.launch(Dispatchers.JavaFx) {
+        treeTable.scrollBy(newValue.toDouble())
+      }
+    }
+    treeTable.addScrollListener { newValue ->
+      taskTableChartConnector.tableScrollOffset.value = newValue
+    }
+  }
+
+  private fun initProjectEventHandlers() {
+    project.addProjectEventListener(object : ProjectEventListener {
+      override fun projectModified() {}
+      override fun projectSaved() {}
+      override fun projectClosed() {}
+      override fun projectCreated() {}
+
+      override fun projectOpened() {
+        reload()
+      }
+    })
+  }
+
+  private fun initTaskEventHandlers() {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
       override fun taskModelReset() {
         reload()
@@ -96,43 +157,9 @@ class TaskTable(
         }
       }
     })
-    GlobalScope.launch(Dispatchers.JavaFx) {
-      treeTable.isShowRoot = false
-      reload()
-    }
-    project.addProjectEventListener(object : ProjectEventListener {
-      override fun projectModified() {}
-      override fun projectSaved() {}
-      override fun projectClosed() {}
-      override fun projectCreated() {}
-
-      override fun projectOpened() {
-        reload()
-      }
-    })
-    if (taskTableChartConnector.rowHeight.get() == -1) {
-      taskTableChartConnector.rowHeight.value = treeTable.fixedCellSize.toInt()
-    }
-    taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
-        treeTable.fixedCellSize = newValue.toDouble()
-      }
-    }
-    taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
-      GlobalScope.launch(Dispatchers.JavaFx) {
-        treeTable.scrollBy(newValue.toDouble())
-      }
-    }
-    treeTable.addScrollListener { newValue ->
-      taskTableChartConnector.tableScrollOffset.value = newValue
-    }
-    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
-    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
-      selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
-    })
   }
 
-  fun buildColumns() {
+  private fun buildColumns() {
     for (idx in 0 until columnList.size) {
       val column = columnList.getField(idx)
       if (column.isVisible) {
