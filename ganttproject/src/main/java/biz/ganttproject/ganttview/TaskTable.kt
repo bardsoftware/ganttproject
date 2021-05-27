@@ -5,11 +5,10 @@ import biz.ganttproject.app.TreeCollapseView
 import biz.ganttproject.app.triggeredBy
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.task.TaskActions
-import javafx.beans.property.DoubleProperty
-import javafx.beans.property.IntegerProperty
-import javafx.beans.property.ReadOnlyObjectWrapper
-import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.beans.property.*
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
@@ -17,15 +16,23 @@ import javafx.scene.Parent
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
+import javafx.scene.control.cell.TextFieldTreeTableCell
+import javafx.util.StringConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
-import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.gui.UIUtil
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.util.*
 
 /**
@@ -43,7 +50,7 @@ class TaskTable(
   private val treeModel = taskManager.taskHierarchy
   private val rootItem = TreeItem(treeModel.rootTask)
   private val treeTable = GPTreeTableView<Task>(rootItem)
-  private val taskTableModel = TaskTableModel(taskManager)
+  private val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val headerHeight: Int get() = treeTable.headerHeight.toInt()
@@ -59,6 +66,8 @@ class TaskTable(
     initTaskEventHandlers()
     GlobalScope.launch(Dispatchers.JavaFx) {
       treeTable.isShowRoot = false
+      treeTable.isEditable = true
+      treeTable.isTableMenuButtonVisible = true
       reload()
     }
     initProjectEventHandlers()
@@ -114,6 +123,10 @@ class TaskTable(
 
   private fun initTaskEventHandlers() {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
+      override fun taskPropertiesChanged(e: TaskPropertyEvent) {
+        GlobalScope.launch(Dispatchers.JavaFx) { treeTable.refresh() }
+      }
+
       override fun taskModelReset() {
         reload()
       }
@@ -164,26 +177,46 @@ class TaskTable(
       val column = columnList.getField(idx)
       if (column.isVisible) {
         TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
-
           when {
             taskDefaultColumn.valueClass == java.lang.String::class.java -> {
               TreeTableColumn<Task, String>(column.name).apply {
                 setCellValueFactory {
                   ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
                 }
+                cellFactory = TextFieldTreeTableCell.forTreeTableColumn()
+                if (taskDefaultColumn == TaskDefaultColumn.NAME) {
+                  treeTable.treeColumn = this
+                }
+                onEditCommit = EventHandler { event ->
+                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
+                }
               }
             }
             GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
-              TreeTableColumn<Task, GregorianCalendar>(column.name).apply {
+              TreeTableColumn<Task, GanttCalendar>(column.name).apply {
                 setCellValueFactory {
                   ReadOnlyObjectWrapper(
-                    (taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as GregorianCalendar)
+                    (taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as GanttCalendar)
                   )
+                }
+                val converter = GanttCalendarStringConverter()
+                cellFactory = TextFieldTreeTableCell.forTreeTableColumn(converter)
+                onEditCommit = EventHandler { event ->
+                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
+                }
+              }
+            }
+            taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
+              TreeTableColumn<Task, Number>(column.name).apply {
+                setCellValueFactory {
+                  ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
                 }
               }
             }
             else -> null
           }?.let {
+            it.isEditable = taskDefaultColumn.isEditable(null)
+            println("column=$taskDefaultColumn editable=${it.isEditable}")
             treeTable.columns.add(it)
           }
         }
@@ -271,4 +304,16 @@ private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (
 
 private fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
+}
+
+class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
+  private val validator = UIUtil.createStringDateValidator(null) {
+    listOf(GanttLanguage.getInstance().shortDateFormat)
+  }
+  override fun toString(value: GanttCalendar): String = value.toString()
+
+  override fun fromString(text: String) =
+    CalendarFactory.createGanttCalendar(validator.parse(text))
+
+
 }
