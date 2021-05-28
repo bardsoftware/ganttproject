@@ -5,7 +5,7 @@
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.semver = '3.1'
-ext.buildNum = '3100'
+ext.buildNum = '3102'
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 
