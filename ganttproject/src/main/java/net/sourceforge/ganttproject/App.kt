@@ -85,6 +85,11 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   val splashCloser = showAsync()
 
   Platform.setImplicitExit(false)
+  Platform.runLater {
+    Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
+        _, e -> GPLogger.log(e)
+    }
+  }
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)
@@ -105,6 +110,9 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
     } finally {
       Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
         _, e -> GPLogger.log(e)
+      }
+      Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        GPLogger.log(e)
       }
     }
   }
