@@ -115,7 +115,7 @@ public enum TaskDefaultColumn {
   }
 
   public <T> boolean isEditable(T task) {
-    return ((Predicate<T>)myIsEditablePredicate).apply(task);
+    return myIsEditablePredicate == null ? true : ((Predicate<T>)myIsEditablePredicate).apply(task);
   }
 
   public String getNameKey() {

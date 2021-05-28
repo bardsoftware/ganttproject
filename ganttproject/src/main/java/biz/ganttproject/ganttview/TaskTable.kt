@@ -7,6 +7,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.task.TaskActions
 import javafx.beans.property.*
 import javafx.collections.ListChangeListener
@@ -77,6 +78,19 @@ class TaskTable(
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
       selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
     })
+    treeTable.onSort = EventHandler {
+      GlobalScope.launch(Dispatchers.JavaFx) {
+        if (treeTable.sortOrder.isEmpty()) {
+          reload()
+        } else {
+          taskTableChartConnector.visibleTasks.clear()
+          getExpandedTasks().also {
+            println(it)
+            taskTableChartConnector.visibleTasks.addAll(it)
+          }
+        }
+      }
+    }
   }
 
   private fun initKeyboardEventHandlers() {
@@ -175,7 +189,6 @@ class TaskTable(
   private fun buildColumns() {
     for (idx in 0 until columnList.size) {
       val column = columnList.getField(idx)
-      if (column.isVisible) {
         TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
           when {
             taskDefaultColumn.valueClass == java.lang.String::class.java -> {
@@ -209,18 +222,21 @@ class TaskTable(
             taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
               TreeTableColumn<Task, Number>(column.name).apply {
                 setCellValueFactory {
-                  ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
+                  if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
+                    ReadOnlyIntegerWrapper((taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as TimeDuration).length)
+                  } else {
+                    ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
+                  }
                 }
               }
             }
             else -> null
           }?.let {
             it.isEditable = taskDefaultColumn.isEditable(null)
-            println("column=$taskDefaultColumn editable=${it.isEditable}")
             treeTable.columns.add(it)
+            it.isVisible = column.isVisible
           }
         }
-      }
     }
   }
 
