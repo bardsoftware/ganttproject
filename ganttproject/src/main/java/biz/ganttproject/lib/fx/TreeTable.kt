@@ -1,19 +1,24 @@
 package biz.ganttproject.app
 
 import javafx.beans.property.SimpleDoubleProperty
-import javafx.scene.control.Skin
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeTableView
+import javafx.event.EventHandler
+import javafx.geometry.Side
+import javafx.scene.control.*
 import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.input.MouseEvent
+import javafx.scene.layout.Region
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
+  internal val tableMenu = ContextMenu()
+
   init {
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY;
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
+    tableMenu.items.add(MenuItem("Manage columns"))
   }
   override fun createDefaultSkin(): Skin<*>? {
     return GPTreeTableViewSkin(this).also {
@@ -22,7 +27,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   val headerHeight: Double
-  get() = (skin as GPTreeTableViewSkin<T>).headerHeight
+  get() = skin?.let { (it as GPTreeTableViewSkin<T>).headerHeight } ?: 0.0
 
   var scrollListener: (Double)->Unit = {}
   fun addScrollListener(listener: (Double)->Unit) {
@@ -30,7 +35,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   fun scrollBy(value: Double) {
-    (skin as GPTreeTableViewSkin<T>).scrollBy(value)
+    skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
   }
 }
 
@@ -49,6 +54,13 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
       val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
       scrollValue.value = result
     }
+    val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
+    cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
+      // show a popupMenu which lists all columns
+      control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
+      me.consume()
+    }
+
   }
 
   fun scrollBy(value: Double) {

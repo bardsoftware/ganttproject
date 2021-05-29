@@ -1,15 +1,25 @@
 @import "../../app/theme";
 
 .gp-tree-table-view {
+    .show-hide-column-image {
+        -fx-scale-x: 1.3;
+        -fx-scale-y: 1.3;
+        -fx-shape: "M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"
+    }
+    & > .column-header-background {
+        & > .show-hide-columns-button {
+            -fx-cursor: hand;
+        }
+    }
     &:hover > .virtual-flow > .scroll-bar:vertical {
         -fx-opacity: 1;
     }
     & > .virtual-flow > .scroll-bar:vertical {
-        -fx-background-insets: 0, 0 0 0 1;
-        -fx-padding: -1 -1 -1 0;
+        //-fx-background-insets: 0, 0 0 0 1;
+        //-fx-padding: -1 -1 -1 0;
         -fx-background-color: transparent;
         -fx-opacity: 0.2;
-        -fx-pref-width: 10;
+        -fx-pref-width: 15;
 
         & > .track {
             -fx-background-color: transparent;
@@ -23,7 +33,6 @@
         }
 
         & > .thumb {
-            -fx-pref-width: 10;
             -fx-background-color: $gp-light-gray;
         }
 
