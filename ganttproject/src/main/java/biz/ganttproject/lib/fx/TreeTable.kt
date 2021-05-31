@@ -1,5 +1,6 @@
 package biz.ganttproject.app
 
+import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.event.EventHandler
 import javafx.geometry.Side
@@ -23,11 +24,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   override fun createDefaultSkin(): Skin<*>? {
     return GPTreeTableViewSkin(this).also {
       it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
+      it.headerHeight.addListener { _, _, newValue -> headerHeight.value = newValue.toDouble() }
     }
   }
 
-  val headerHeight: Double
-  get() = skin?.let { (it as GPTreeTableViewSkin<T>).headerHeight } ?: 0.0
+  val headerHeight = SimpleDoubleProperty(0.0)
 
   var scrollListener: (Double)->Unit = {}
   fun addScrollListener(listener: (Double)->Unit) {
@@ -42,8 +43,8 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
 
   val scrollValue = SimpleDoubleProperty()
-  val headerHeight: Double
-  get() = tableHeaderRow.height
+  val headerHeight: ReadOnlyDoubleProperty
+  get() = tableHeaderRow.heightProperty()
 
   init {
     this.virtualFlow.positionProperty().addListener { _, _, newValue ->

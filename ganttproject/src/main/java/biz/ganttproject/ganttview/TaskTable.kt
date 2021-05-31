@@ -48,13 +48,14 @@ class TaskTable(
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions
 ) {
+  val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
   private val rootItem = TreeItem(treeModel.rootTask)
   private val treeTable = GPTreeTableView<Task>(rootItem)
   private val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
-  val headerHeight: Int get() = treeTable.headerHeight.toInt()
+  //val headerHeight: Int get() = treeTable.headerHeight.toInt()
   val control: Parent get() = treeTable
   val actionConnector by lazy {
     TaskTableActionConnector(
@@ -120,13 +121,16 @@ class TaskTable(
     treeTable.addScrollListener { newValue ->
       taskTableChartConnector.tableScrollOffset.value = newValue
     }
+
   }
 
   private fun initProjectEventHandlers() {
     project.addProjectEventListener(object : ProjectEventListener {
-      override fun projectModified() {}
+      override fun projectModified() {
+      }
       override fun projectSaved() {}
-      override fun projectClosed() {}
+      override fun projectClosed() {
+      }
       override fun projectCreated() {}
 
       override fun projectOpened() {
